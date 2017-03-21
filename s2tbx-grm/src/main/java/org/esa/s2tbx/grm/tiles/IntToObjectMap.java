@@ -1,7 +1,5 @@
 package org.esa.s2tbx.grm.tiles;
 
-import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -60,6 +58,9 @@ public class IntToObjectMap<E> {
     }
 
     public void put(int key, E value) {
+        if (value == null) {
+            throw new NullPointerException("value = null");
+        }
         int i = binarySearch(this.keys, this.size, key);
         if (i >= 0) {
             this.values[i] = value;
@@ -100,6 +101,10 @@ public class IntToObjectMap<E> {
 
     public Iterator<E> valuesIterator() {
         return new MapValuesIterator();
+    }
+
+    public Iterator<Entry<E>> entriesIterator() {
+        return new MapEntriesIterator();
     }
 
     private void gc() {
@@ -173,26 +178,67 @@ public class IntToObjectMap<E> {
         return ~lo;  // value not present
     }
 
-    private class MapValuesIterator implements Iterator<E> {
-        private int cursor; // index of next element to return
+    public interface Entry<E> {
 
-        MapValuesIterator() {
-            this.cursor = 0;
+        int getKey();
+
+        E getValue();
+    }
+
+    private class MapEntriesIterator extends AbstractMapIterator<Entry<E>> {
+        private final Entry<E> entry;
+
+        MapEntriesIterator() {
+            this.entry = new Entry<E>() {
+                @Override
+                public int getKey() {
+                    return IntToObjectMap.this.keys[MapEntriesIterator.this.cursor-1];
+                }
+
+                @Override
+                public E getValue() {
+                    return (E) IntToObjectMap.this.values[MapEntriesIterator.this.cursor-1];
+                }
+            };
         }
 
         @Override
-        public boolean hasNext() {
-            return (computeIndexForNextValue() >= 0);
+        public Entry<E> next() {
+            moveCursor();
+            return this.entry;
+        }
+    }
+
+    private class MapValuesIterator extends AbstractMapIterator<E> {
+
+        MapValuesIterator() {
         }
 
         @Override
         public E next() {
+            moveCursor();
+            return (E) IntToObjectMap.this.values[this.cursor-1];
+        }
+    }
+
+    private abstract class AbstractMapIterator<E> implements Iterator<E> {
+        protected int cursor; // index of next element to return
+
+        AbstractMapIterator() {
+            this.cursor = 0;
+        }
+
+        @Override
+        public final boolean hasNext() {
+            return (computeIndexForNextValue() >= 0);
+        }
+
+        final void moveCursor() {
             int index = computeIndexForNextValue();
             if (index < 0) {
                 throw new NoSuchElementException();
             }
             this.cursor = index + 1;
-            return (E) IntToObjectMap.this.values[index];
         }
 
         private int computeIndexForNextValue() {

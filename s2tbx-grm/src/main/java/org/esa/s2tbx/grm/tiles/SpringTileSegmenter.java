@@ -1,10 +1,11 @@
 package org.esa.s2tbx.grm.tiles;
 
-import org.esa.s2tbx.grm.AbstractSegmenter;
-import org.esa.s2tbx.grm.SpringSegmenter;
+import org.esa.s2tbx.grm.*;
+
+import java.io.IOException;
 
 /**
- * Created by jcoravu on 14/3/2017.
+ * @author Jean Coravu
  */
 public class SpringTileSegmenter extends AbstractTileSegmenter {
 
@@ -13,7 +14,35 @@ public class SpringTileSegmenter extends AbstractTileSegmenter {
     }
 
     @Override
+    protected SpringNode buildNode(int nodeId, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
+        return new SpringNode(nodeId, box, contour, perimeter, area, numberOfComponentsPerPixel);
+    }
+
+    @Override
     protected AbstractSegmenter buildSegmenter(float threshold) {
         return new SpringSegmenter(threshold);
+    }
+
+    @Override
+    protected void writeNode(BufferedOutputStreamWrapper nodesFileStream, Node nodeToWrite) throws IOException {
+        super.writeNode(nodesFileStream, nodeToWrite);
+
+        SpringNode node = (SpringNode)nodeToWrite;
+        int count = node.getNumberOfComponentsPerPixel();
+        for (int i=0; i<count; i++) {
+            nodesFileStream.writeFloat(node.getMeansAt(i));
+        }
+    }
+
+    @Override
+    protected Node readNode(BufferedInputStreamWrapper nodesFileStream) throws IOException {
+        SpringNode node = (SpringNode)super.readNode(nodesFileStream);
+
+        int count = node.getNumberOfComponentsPerPixel();
+        for (int i=0; i<count; i++) {
+            node.setMeansAt(i, nodesFileStream.readFloat());
+        }
+
+        return node;
     }
 }

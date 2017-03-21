@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /**
- * Created by jcoravu on 14/3/2017.
+ * @author Jean Coravu
  */
 public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     private final float spectralWeight;
@@ -17,6 +17,11 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
 
         this.spectralWeight = spectralWeight;
         this.shapeWeight = shapeWeight;
+    }
+
+    @Override
+    protected BaatzSchapeNode buildNode(int nodeId, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
+        return new BaatzSchapeNode(nodeId, box, contour, perimeter, area, numberOfComponentsPerPixel);
     }
 
     @Override
@@ -51,10 +56,5 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
         }
 
         return node;
-    }
-
-    @Override
-    protected BaatzSchapeNode buildNode(int nodeId, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
-        return new BaatzSchapeNode(nodeId, box, contour, perimeter, area, numberOfComponentsPerPixel);
     }
 }

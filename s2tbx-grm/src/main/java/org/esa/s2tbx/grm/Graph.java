@@ -1,17 +1,12 @@
 package org.esa.s2tbx.grm;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.esa.s2tbx.grm.tiles.BorderNodeWrapper;
 import org.esa.s2tbx.grm.tiles.IntToObjectMap;
 import org.esa.s2tbx.grm.tiles.ProcessingTile;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -121,8 +116,8 @@ public class Graph {
         return result;
     }
 
-    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
-        Int2ObjectMap<List<Node>> borderPixelMap = new Int2ObjectArrayMap<List<Node>>(); // key = node id
+    public IntToObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
+        IntToObjectMap<List<Node>> borderPixelMap = new IntToObjectMap<List<Node>>(); // key = node id
 
         int rowMin = (tile.getImageTopY() > 0) ? tile.getImageTopY() - 1 : tile.getImageTopY();
         int rowMax = tile.getImageBottomY() + 1;
@@ -166,10 +161,10 @@ public class Graph {
         return borderPixelMap;
     }
 
-    public void removeDuplicatedNodes(Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth) {
-        ObjectIterator<Int2ObjectMap.Entry<List<Node>>> it = borderPixelMap.int2ObjectEntrySet().iterator();
-        while (it.hasNext()) {
-            Int2ObjectMap.Entry<List<Node>> entry = it.next();
+    public void removeDuplicatedNodes(IntToObjectMap<List<Node>> borderPixelMap, int imageWidth) {
+        Iterator<IntToObjectMap.Entry<List<Node>>> itValues = borderPixelMap.entriesIterator();
+        while (itValues.hasNext()) {
+            IntToObjectMap.Entry<List<Node>> entry = itValues.next();
             List<Node> nodes = entry.getValue();
             if (nodes.size() > 1) {
                 Node refNode = nodes.get(0); // refNode

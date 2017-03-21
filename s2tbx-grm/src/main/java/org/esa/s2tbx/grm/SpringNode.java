@@ -9,6 +9,10 @@ public class SpringNode extends Node {
         super(id, upperLeftX, upperLeftY, numberOfComponentsPerPixel);
     }
 
+    public SpringNode(int id, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
+        super(id, box, contour, perimeter, area, numberOfComponentsPerPixel);
+    }
+
     @Override
     public void updateSpecificAttributes(Node nn2) {
         SpringNode n2 = (SpringNode)nn2;

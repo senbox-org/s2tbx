@@ -24,15 +24,22 @@ public class ImageTileSegmentation {
 
     public static void main(String args[]) {
         IntToObjectMap<String> borderNodes = new IntToObjectMap<String>();
-        borderNodes.put(2, "2");
-//        borderNodes.put(1, "1");
+        borderNodes.put(2, "2Value");
+        borderNodes.put(1, "1Value");
 //        borderNodes.put(3, "3");
 
-        Iterator<String> itValues = borderNodes.valuesIterator();
+        Iterator<IntToObjectMap.Entry<String>> itValues = borderNodes.entriesIterator();
         while (itValues.hasNext()) {
-            String node = itValues.next();
-            System.out.println("node="+node);
+            IntToObjectMap.Entry<String> entry = itValues.next();
+            System.out.println("key="+entry.getKey()+"  value="+entry.getValue());
         }
+
+//        Iterator<String> itValues = borderNodes.valuesIterator();
+//        while (itValues.hasNext()) {
+//            String node = itValues.next();
+//            System.out.println("node="+node);
+//        }
+
         try {
 //            File file = new File("D:\\GRM\\GTiff-4x4.tif");
 //            GeoTiffProductReaderPlugIn readerPlugin = new GeoTiffProductReaderPlugIn();
@@ -72,9 +79,10 @@ public class ImageTileSegmentation {
             int bandIndices[] = new int[] {0, 1, 2};
             int numberOfIterations = 75;
             int numberOfFirstIterations = 2;
+            boolean fastSegmentation = false;
 
             BaatzSchapeTileSegmenter tileSegmenter = new BaatzSchapeTileSegmenter(spectralWeight, shapeWeight, threshold);
-            AbstractSegmenter segmenter = tileSegmenter.runSegmentation(product, bandIndices, numberOfIterations, numberOfFirstIterations);
+            AbstractSegmenter segmenter = tileSegmenter.runSegmentation(product, bandIndices, numberOfIterations, numberOfFirstIterations, fastSegmentation);
             System.out.println("final graph.nodecount="+segmenter.getGraph().getNodeCount());
         } catch (Exception e) {
             e.printStackTrace();

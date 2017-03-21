@@ -3,7 +3,7 @@ package org.esa.s2tbx.grm.tiles;
 import java.io.*;
 
 /**
- * Created by jcoravu on 20/3/2017.
+ * @author Jean Coravu
  */
 public class BufferedInputStreamWrapper {
     private final BufferedInputStream inputStream;

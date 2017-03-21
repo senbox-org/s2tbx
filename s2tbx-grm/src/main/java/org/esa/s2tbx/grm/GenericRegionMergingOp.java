@@ -125,7 +125,7 @@ public class GenericRegionMergingOp extends Operator {
         try {
             int numberOfFirstIterations = 2;
             BaatzSchapeTileSegmenter tileSegmenter = new BaatzSchapeTileSegmenter(spectralWeight, shapeWeight, threshold);
-            segmenter = tileSegmenter.runSegmentation(this.sourceProduct, sourceBandIndices, numberOfIterations, numberOfFirstIterations);
+            segmenter = tileSegmenter.runSegmentation(this.sourceProduct, sourceBandIndices, numberOfIterations, numberOfFirstIterations, fastSegmentation);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }

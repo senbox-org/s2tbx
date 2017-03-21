@@ -1,7 +1,7 @@
 package org.esa.s2tbx.grm.tiles;
 
 /**
- * Created by jcoravu on 17/3/2017.
+ * @author Jean Coravu
  */
 public class SegmentationResult {
     private boolean isFusion = false;
