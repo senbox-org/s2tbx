@@ -25,7 +25,7 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     }
 
     @Override
-    protected void writeNode(RandomAccessFile nodesFileStream, Node nodeToWrite) throws IOException {
+    protected void writeNode(BufferedOutputStreamWrapper nodesFileStream, Node nodeToWrite) throws IOException {
         super.writeNode(nodesFileStream, nodeToWrite);
 
         BaatzSchapeNode node = (BaatzSchapeNode)nodeToWrite;
@@ -39,7 +39,7 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     }
 
     @Override
-    protected Node readNode(RandomAccessFile nodesFileStream) throws IOException {
+    protected Node readNode(BufferedInputStreamWrapper nodesFileStream) throws IOException {
         BaatzSchapeNode node = (BaatzSchapeNode)super.readNode(nodesFileStream);
 
         int count = node.getNumberOfComponentsPerPixel();

@@ -3,6 +3,7 @@ package org.esa.s2tbx.grm.tiles;
 import org.esa.s2tbx.dataio.jp2.JP2ProductReaderPlugin;
 import org.esa.s2tbx.grm.AbstractSegmenter;
 import org.esa.s2tbx.grm.Graph;
+import org.esa.s2tbx.grm.Node;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.rgb.ImageProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Graticule;
@@ -11,6 +12,7 @@ import org.esa.snap.dataio.geotiff.GeoTiffProductReaderPlugIn;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * Created by jcoravu on 14/3/2017.
@@ -21,6 +23,16 @@ public class ImageTileSegmentation {
     }
 
     public static void main(String args[]) {
+        IntToObjectMap<String> borderNodes = new IntToObjectMap<String>();
+        borderNodes.put(2, "2");
+//        borderNodes.put(1, "1");
+//        borderNodes.put(3, "3");
+
+        Iterator<String> itValues = borderNodes.valuesIterator();
+        while (itValues.hasNext()) {
+            String node = itValues.next();
+            System.out.println("node="+node);
+        }
         try {
 //            File file = new File("D:\\GRM\\GTiff-4x4.tif");
 //            GeoTiffProductReaderPlugIn readerPlugin = new GeoTiffProductReaderPlugIn();

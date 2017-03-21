@@ -7,6 +7,8 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.esa.s2tbx.grm.tiles.BorderNodeWrapper;
+import org.esa.s2tbx.grm.tiles.IntToObjectMap;
 import org.esa.s2tbx.grm.tiles.ProcessingTile;
 
 import java.util.ArrayList;
@@ -82,8 +84,8 @@ public class Graph {
         }
     }
 
-    public Object2IntMap<Node> detectBorderNodes(ProcessingTile tile, int imageWidth, int imageHeight) {
-        Object2IntMap<Node> borderNodesMap = new Object2IntArrayMap<Node>();
+    public List<Node> detectBorderNodes(ProcessingTile tile, int imageWidth, int imageHeight) {
+        List<Node> result = new ArrayList<Node>();
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
             Node node = this.nodes.get(i);
@@ -100,23 +102,23 @@ public class Graph {
                     int rowPixelInImage = gridIdInImage / imageWidth;
                     int colPixelInImage = gridIdInImage % imageWidth;
                     if (tile.getImageTopY() > 0 && rowPixelInImage == tile.getImageTopY()) {
-                        borderNodesMap.put(node, 0);
+                        result.add(node);
                         break;
                     } else if (tile.getImageRightX() < imageWidth - 1 && colPixelInImage == tile.getImageRightX()) {
-                        borderNodesMap.put(node, 0);
+                        result.add(node);
                         break;
                     } else if (tile.getImageBottomY() < imageHeight - 1 && rowPixelInImage == tile.getImageBottomY()) {
-                        borderNodesMap.put(node, 0);
+                        result.add(node);
                         break;
                     } else if (tile.getImageLeftX() > 0 && colPixelInImage == tile.getImageLeftX()) {
-                        borderNodesMap.put(node, 0);
+                        result.add(node);
                         break;
                     }
                 }
             }
         }
 
-        return borderNodesMap;
+        return result;
     }
 
     public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
@@ -257,7 +259,6 @@ public class Graph {
         int colNodeImg = 0;
         int regionWidth = tile.getRegion().getWidth();
         int nodeCount = this.nodes.size();
-//        System.out.println("rescaleGraph nodeCount="+nodeCount+" rowTileIndex="+rowTileIndex+" colTileIndex="+colTileIndex+" tileWidth="+tileWidth+" tileHeight="+tileHeight);
 
         for (int i=0; i<nodeCount; i++) {
             Node node = this.nodes.get(i);
@@ -270,12 +271,8 @@ public class Graph {
             rowNodeImg = rowTileIndex * tileHeight + rowNodeTile - tile.getTopMargin();
             colNodeImg = colTileIndex * tileWidth + colNodeTile - tile.getLeftMargin();
 
-//            System.out.print("node: "+rowNodeTile+" "+colNodeTile+" "+rowNodeImg+" "+colNodeImg+" old id="+node.getId());
-
             // set the node id in the image
             node.setId(rowNodeImg * imageWidth + colNodeImg);
-
-//            System.out.println(" new id="+node.getId());
 
             // change also its bounding box
             BoundingBox box = node.getBox();

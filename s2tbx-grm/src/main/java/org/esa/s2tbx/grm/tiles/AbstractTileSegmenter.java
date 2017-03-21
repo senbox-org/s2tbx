@@ -1,6 +1,5 @@
 package org.esa.s2tbx.grm.tiles;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -11,10 +10,7 @@ import org.esa.s2tbx.dataio.cache.S2CacheUtils;
 import org.esa.s2tbx.grm.*;
 import org.esa.snap.core.datamodel.Product;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -97,8 +93,6 @@ public abstract class AbstractTileSegmenter {
     private SegmentationResult runFirstPartialSegmentation(Product product, int bandIndices[], List<ProcessingTile> tiles, int numberOfFirstIterations,
                                             int numberOfIterationsForPartialSegmentations, boolean fastSegmentation, boolean addFourNeighbors) throws IllegalAccessException {
 
-        long t0 = System.currentTimeMillis();
-        System.out.println(" time="+new Date(System.currentTimeMillis()));
         System.out.println("--------runFirstPartialSegmentation numberOfFirstIterations="+numberOfFirstIterations+"  numberOfIterationsForPartialSegmentations="+numberOfIterationsForPartialSegmentations+"  time="+new Date(System.currentTimeMillis()));
 
         boolean isFusion = false;
@@ -140,15 +134,14 @@ public abstract class AbstractTileSegmenter {
 
                 System.out.println("----detectBorderNodes graph nodeCount="+graph.getNodeCount() +"  tileRow="+row+"  tileColumn="+col+"  time="+new Date(System.currentTimeMillis()));
                 // extract stability margin for all borders different from 0 imageWidth-1 and imageHeight -1 and write them to the stability margin
-                Object2IntMap<Node> borderNodesMap = graph.detectBorderNodes(currentTile, imageWidth, imageHeight);
+                List<Node> nodesToIterate = graph.detectBorderNodes(currentTile, imageWidth, imageHeight);
 
-                System.out.println("----extractStabilityMargin graph nodeCount="+graph.getNodeCount()+" borderNodesMap.size="+borderNodesMap.size() +" tileRow="+row+"  tileColumn="+col+"  time="+new Date(System.currentTimeMillis()));
+                System.out.println("----extractStabilityMargin graph nodeCount="+graph.getNodeCount()+" nodesToIterate.size="+nodesToIterate.size() +" tileRow="+row+"  tileColumn="+col+"  time="+new Date(System.currentTimeMillis()));
+                IntToObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
 
-                extractStabilityMargin(borderNodesMap, numberOfNeighborLayers);
+                System.out.println("----writeStabilityMargin graph nodeCount="+graph.getNodeCount()+" nodesToIterate.size="+nodesToIterate.size() +" tileRow="+row+"  tileColumn="+col+"  time="+new Date(System.currentTimeMillis()));
 
-                System.out.println("----writeStabilityMargin graph nodeCount="+graph.getNodeCount()+" borderNodesMap.size="+borderNodesMap.size() +" tileRow="+row+"  tileColumn="+col+"  time="+new Date(System.currentTimeMillis()));
-
-                writeStabilityMargin(borderNodesMap, currentTile.nodeMarginFileName, currentTile.edgeMarginFileName);
+                writeStabilityMargin(borderNodes, currentTile.nodeMarginFileName, currentTile.edgeMarginFileName);
             }
         }
         return new SegmentationResult(isFusion, accumulatedMemory);
@@ -222,11 +215,10 @@ public abstract class AbstractTileSegmenter {
 
                 Graph graph = readGraph(currentTile.nodeFileName, currentTile.edgeFileName);
 
-                Object2IntMap<Node> borderNodesMap = graph.detectBorderNodes(currentTile, imageWidth, imageHeight);
+                List<Node> nodesToIterate = graph.detectBorderNodes(currentTile, imageWidth, imageHeight);
+                IntToObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
 
-                extractStabilityMargin(borderNodesMap, numberOfNeighborLayers);
-
-                writeStabilityMargin(borderNodesMap, currentTile.nodeMarginFileName, currentTile.edgeMarginFileName);
+                writeStabilityMargin(borderNodes, currentTile.nodeMarginFileName, currentTile.edgeMarginFileName);
             }
         }
         return new SegmentationResult(isFusion, accumulatedMemory);
@@ -373,7 +365,7 @@ public abstract class AbstractTileSegmenter {
     }
 
     private void removeUselessNodes(Graph graph, ProcessingTile tile, int imageWidth, int numberOfLayers) {
-        Object2IntMap<Node> marginNodes = new Object2IntArrayMap<Node>();
+        List<Node> nodesToIterate = new ArrayList<Node>();
         int nodeCount = graph.getNodeCount();
         for (int i = 0; i < nodeCount; i++) {
             Node node = graph.getNodeAt(i);
@@ -392,12 +384,12 @@ public abstract class AbstractTileSegmenter {
                     int colPixel = gridId % imageWidth;
                     if (rowPixel == tile.getImageTopY() || rowPixel == tile.getImageBottomY()) {
                         if (colPixel >= tile.getImageLeftX() && colPixel <= tile.getImageRightX()) {
-                            marginNodes.put(node, 0); // the node is on the margin
+                            nodesToIterate.add(node);
                             break;
                         }
                     } else if (colPixel == tile.getImageLeftX() || colPixel == tile.getImageRightX()) {
                         if (rowPixel >= tile.getImageTopY() && rowPixel <= tile.getImageBottomY()) {
-                            marginNodes.put(node, 0); // the node is on the margin
+                            nodesToIterate.add(node);
                             break;
                         }
                     }
@@ -405,7 +397,7 @@ public abstract class AbstractTileSegmenter {
             }
         }
 
-        extractStabilityMargin(marginNodes, numberOfLayers);
+        IntToObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfLayers);
 
         nodeCount = graph.getNodeCount();
         for (int i = 0; i < nodeCount; i++) {
@@ -414,7 +406,7 @@ public abstract class AbstractTileSegmenter {
 
             if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
                 continue;
-            } else if (marginNodes.containsKey(node)) {
+            } else if (borderNodes.containsKey(node.getId())) {
                 graph.removeEdgeToUnstableNode(node);
                 node.setExpired(true);
             }
@@ -423,47 +415,51 @@ public abstract class AbstractTileSegmenter {
         graph.removeExpiredNodes();
     }
 
-    private void extractStabilityMargin(Object2IntMap<Node> borderNodesMap, int pmax) {
-        List<Node> nodesToIterate = new ArrayList<Node>(borderNodesMap.size());
-        ObjectIterator<Object2IntMap.Entry<Node>> it = borderNodesMap.object2IntEntrySet().iterator();
-        while (it.hasNext()) {
-            Object2IntMap.Entry<Node> entry = it.next();
-            Node node = entry.getKey();
-            nodesToIterate.add(node);
+    private IntToObjectMap<Node> extractStabilityMargin(List<Node> nodesToIterate, int pmax) {
+        IntToObjectMap<Integer> borderNodesValues = new IntToObjectMap<>(nodesToIterate.size());
+        IntToObjectMap<Node> borderNodes = new IntToObjectMap<>(nodesToIterate.size());
+        for (int i=0; i<nodesToIterate.size(); i++) {
+            Node node = nodesToIterate.get(i);
+            borderNodesValues.put(node.getId(), 0);
+            borderNodes.put(node.getId(), node);
         }
         for (int i=0; i<nodesToIterate.size(); i++) {
-            exploreDFS(nodesToIterate.get(i), 0, borderNodesMap, pmax);
+            exploreDFS(nodesToIterate.get(i), 0, borderNodesValues, borderNodes, pmax);
         }
+        return borderNodes;
     }
 
-    private void exploreDFS(Node node, int p, Object2IntMap<Node> borderNodesMap, int pmax) {
+    private void exploreDFS(Node node, int p, IntToObjectMap<Integer> borderNodesValues, IntToObjectMap<Node> borderNodes, int pmax) {
         if (p > pmax) {
             return;
         } else {
-            if (borderNodesMap.containsKey(node)) {
-                int value = borderNodesMap.getInt(node);
-                if (p <= value) {
-                    borderNodesMap.put(node, p);
+            Integer value = borderNodesValues.get(node.getId());
+            if (value != null) {
+                if (p <= value.intValue()) {
+                    borderNodesValues.put(node.getId(), p);
+                    borderNodes.put(node.getId(), node);
                     int edgeCount = node.getEdgeCount();
                     for (int i=0; i<edgeCount; i++) {
                         Edge edge = node.getEdgeAt(i);
-                        exploreDFS(edge.getTarget(), p + 1, borderNodesMap, pmax);
+                        exploreDFS(edge.getTarget(), p + 1, borderNodesValues, borderNodes, pmax);
                     }
                 } else {
                     return;
                 }
             } else {
-                borderNodesMap.put(node, p);
+                borderNodesValues.put(node.getId(), p);
+                borderNodes.put(node.getId(), node);
                 int edgeCount = node.getEdgeCount();
                 for (int i=0; i<edgeCount; i++) {
                     Edge edge = node.getEdgeAt(i);
-                    exploreDFS(edge.getTarget(), p + 1, borderNodesMap, pmax);
+                    exploreDFS(edge.getTarget(), p + 1, borderNodesValues, borderNodes, pmax);
                 }
             }
         }
     }
 
-    protected void writeNode(RandomAccessFile nodesFileStream, Node nodeToWrite) throws IOException {
+
+    protected void writeNode(BufferedOutputStreamWrapper nodesFileStream, Node nodeToWrite) throws IOException {
         nodesFileStream.writeInt(nodeToWrite.getId());
         nodesFileStream.writeInt(nodeToWrite.getPerimeter());
         nodesFileStream.writeInt(nodeToWrite.getArea());
@@ -483,7 +479,7 @@ public abstract class AbstractTileSegmenter {
         nodesFileStream.writeInt(nodeToWrite.getNumberOfComponentsPerPixel());
     }
 
-    protected Node readNode(RandomAccessFile nodesFileStream) throws IOException {
+    protected Node readNode(BufferedInputStreamWrapper nodesFileStream) throws IOException {
         int nodeId = nodesFileStream.readInt();
         int perimeter = nodesFileStream.readInt();
         int area = nodesFileStream.readInt();
@@ -515,9 +511,10 @@ public abstract class AbstractTileSegmenter {
         tempFolder.mkdir();
         try {
             File nodesFile = new File(tempFolder, nodesPath);
-            RandomAccessFile nodesFileStream = new RandomAccessFile(nodesFile, "rw");
+            BufferedOutputStreamWrapper nodesFileStream = new BufferedOutputStreamWrapper(nodesFile);
+
             File edgesFile = new File(tempFolder, edgesPath);
-            RandomAccessFile edgesFileStream = new RandomAccessFile(edgesFile, "rw");
+            BufferedOutputStreamWrapper edgesFileStream = new BufferedOutputStreamWrapper(edgesFile);
 
             int nodeCount = graph.getNodeCount();
             nodesFileStream.writeInt(nodeCount);
@@ -543,28 +540,32 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    private void writeEdge(RandomAccessFile edgesFileStream, Edge edge) throws IOException {
+    private void writeEdge(BufferedOutputStreamWrapper edgesFileStream, Edge edge) throws IOException {
         edgesFileStream.writeInt(edge.getTarget().getId());
         edgesFileStream.writeInt(edge.getBoundary());
     }
 
     private Graph readGraph(String nodesPath, String edgesPath) {
+        System.out.println("  start readGraph nodesPath="+nodesPath+"  edgesPath="+edgesPath+"  time="+new Date(System.currentTimeMillis()));
+
         File cacheFolder = S2CacheUtils.getSentinel2CacheFolder();
         File tempFolder = new File(cacheFolder, "image-segmentation");
         try {
             File nodesFile = new File(tempFolder, nodesPath);
-            RandomAccessFile nodesFileStream = new RandomAccessFile(nodesFile, "r");
-            File edgesFile = new File(tempFolder, edgesPath);
-            RandomAccessFile edgesFileStream = new RandomAccessFile(edgesFile, "r");
+            BufferedInputStreamWrapper nodesFileStream = new BufferedInputStreamWrapper(nodesFile);
 
             int nodeCount = nodesFileStream.readInt();
-            Int2ObjectMap<Node> nodesMap = new Int2ObjectArrayMap<Node>(nodeCount); // key = node id
+            IntToObjectMap<Node> nodesMap = new IntToObjectMap<Node>(nodeCount);
             Graph graph = new Graph(nodeCount);
             for (int i=0; i<nodeCount; i++) {
                 Node node = readNode(nodesFileStream);
                 nodesMap.put(node.getId(), node);
                 graph.addNode(node);
             }
+            nodesFileStream.close();
+
+            File edgesFile = new File(tempFolder, edgesPath);
+            BufferedInputStreamWrapper edgesFileStream = new BufferedInputStreamWrapper(edgesFile);
 
             for (int i=0; i<nodeCount; i++) {
                 Node node = graph.getNodeAt(i);
@@ -574,40 +575,39 @@ public abstract class AbstractTileSegmenter {
                 int edgeCount = edgesFileStream.readInt();
                 for (int k=0; k<edgeCount; k++) {
                     int targetNodeId = edgesFileStream.readInt();
-                    Node targetNode = nodesMap.get(targetNodeId);
                     int boundary = edgesFileStream.readInt();
+                    Node targetNode = nodesMap.get(targetNodeId);
                     node.addEdge(targetNode, boundary);
                 }
             }
 
-            nodesFileStream.close();
             edgesFileStream.close();
             return graph;
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            System.out.println("  finish readGraph nodesPath="+nodesPath+"  edgesPath="+edgesPath+"  time="+new Date(System.currentTimeMillis()));
         }
         return null;
     }
 
-    private void writeStabilityMargin(Object2IntMap<Node> stabilityMargin, String nodesPath, String edgesPath) {
+    private void writeStabilityMargin(IntToObjectMap<Node> borderNodes, String nodesPath, String edgesPath) {
         File cacheFolder = S2CacheUtils.getSentinel2CacheFolder();
         File tempFolder = new File(cacheFolder, "image-segmentation");
         tempFolder.mkdir();
         try {
             File nodesFile = new File(tempFolder, nodesPath);
-            RandomAccessFile nodesFileStream = new RandomAccessFile(nodesFile, "rw");
+            BufferedOutputStreamWrapper nodesFileStream = new BufferedOutputStreamWrapper(nodesFile);
+
             File edgesFile = new File(tempFolder, edgesPath);
-            RandomAccessFile edgesFileStream = new RandomAccessFile(edgesFile, "rw");
+            BufferedOutputStreamWrapper edgesFileStream = new BufferedOutputStreamWrapper(edgesFile);
 
             // write the number of nodes
-            nodesFileStream.writeInt(stabilityMargin.size());
+            nodesFileStream.writeInt(borderNodes.size());
 
-            ObjectIterator<Object2IntMap.Entry<Node>> it = stabilityMargin.object2IntEntrySet().iterator();
-            while (it.hasNext()) {
-                Object2IntMap.Entry<Node> entry = it.next();
-                Node node = entry.getKey();
-                int nodeId = entry.getIntValue();
-
+            Iterator<Node> itValues = borderNodes.valuesIterator();
+            while (itValues.hasNext()) {
+                Node node = itValues.next();
                 writeNode(nodesFileStream, node);
 
                 // write the node id in the edge file
@@ -618,7 +618,7 @@ public abstract class AbstractTileSegmenter {
                 for (int k=0; k<edgeCount; k++) {
                     Edge edge = node.getEdgeAt(k);
                     Node targetNode = edge.getTarget();
-                    if (stabilityMargin.containsKey(targetNode)) {
+                    if (borderNodes.containsKey(targetNode.getId())) {
                         edgeCountToWrite++;
                     }
                 }
@@ -629,7 +629,7 @@ public abstract class AbstractTileSegmenter {
                 for (int k=0; k<edgeCount; k++) {
                     Edge edge = node.getEdgeAt(k);
                     Node targetNode = edge.getTarget();
-                    if (stabilityMargin.containsKey(targetNode)) {
+                    if (borderNodes.containsKey(targetNode.getId())) {
                         writeEdge(edgesFileStream, edge);
                     }
                 }
