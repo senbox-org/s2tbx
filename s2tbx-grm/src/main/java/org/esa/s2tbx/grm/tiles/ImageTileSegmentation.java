@@ -23,17 +23,22 @@ public class ImageTileSegmentation {
     }
 
     public static void main(String args[]) {
-        IntToObjectMap<String> borderNodes = new IntToObjectMap<String>();
-        borderNodes.put(2, "2Value");
-        borderNodes.put(1, "1Value");
-//        borderNodes.put(3, "3");
-
-        Iterator<IntToObjectMap.Entry<String>> itValues = borderNodes.entriesIterator();
-        while (itValues.hasNext()) {
-            IntToObjectMap.Entry<String> entry = itValues.next();
-            System.out.println("key="+entry.getKey()+"  value="+entry.getValue());
-        }
-
+        IntSet set = new IntSet();
+        set.add(4);
+        set.add(1);
+        set.add(2);
+        System.out.println("size="+set.size());
+//        IntToObjectMap<String> borderNodes = new IntToObjectMap<String>();
+//        borderNodes.put(2, "2Value");
+//        borderNodes.put(1, "1Value");
+////        borderNodes.put(3, "3");
+//
+//        Iterator<IntToObjectMap.Entry<String>> itValues = borderNodes.entriesIterator();
+//        while (itValues.hasNext()) {
+//            IntToObjectMap.Entry<String> entry = itValues.next();
+//            System.out.println("key="+entry.getKey()+"  value="+entry.getValue());
+//        }
+//
 //        Iterator<String> itValues = borderNodes.valuesIterator();
 //        while (itValues.hasNext()) {
 //            String node = itValues.next();

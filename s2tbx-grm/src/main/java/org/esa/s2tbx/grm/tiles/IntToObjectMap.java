@@ -3,21 +3,23 @@ package org.esa.s2tbx.grm.tiles;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class IntToObjectMap<E> {
-    private static final int[] INT = new int[0];
+/**
+ * @author Jean Coravu
+ */
+public class IntToObjectMap<E> extends AbstractIntCollection {
     private static final Object[] OBJECT = new Object[0];
     private static final Object DELETED = new Object();
 
     private boolean garbage;
-    private int[] keys;
     private Object[] values;
-    private int size;
 
     public IntToObjectMap() {
         this(10);
     }
 
     public IntToObjectMap(int initialCapacity) {
+        super();
+
         if (initialCapacity == 0) {
             this.keys = INT;
             this.values = OBJECT;
@@ -35,6 +37,7 @@ public class IntToObjectMap<E> {
         if (i < 0 || this.values[i] == DELETED) {
             return null; // the key does not exist
         }
+        // the key exists
         return (E) this.values[i];
     }
 
@@ -42,6 +45,7 @@ public class IntToObjectMap<E> {
     public E remove(int key) {
         int i = binarySearch(this.keys, this.size, key);
         if (i >= 0) {
+            // the key exists
             if (this.values[i] != DELETED) {
                 E old = (E) this.values[i];
                 this.values[i] = DELETED;
@@ -63,8 +67,10 @@ public class IntToObjectMap<E> {
         }
         int i = binarySearch(this.keys, this.size, key);
         if (i >= 0) {
+            // the key already exists
             this.values[i] = value;
         } else {
+            // the key does not exist
             i = ~i;
             if (i < this.size && this.values[i] == DELETED) {
                 this.keys[i] = key;
@@ -139,43 +145,6 @@ public class IntToObjectMap<E> {
         newArray[index] = element;
         System.arraycopy(array, index, newArray, index + 1, array.length - index);
         return newArray;
-    }
-
-    private static int[] insertKey(int[] array, int currentSize, int index, int element) {
-        assert (currentSize <= array.length);
-        if (currentSize + 1 <= array.length) {
-            System.arraycopy(array, index, array, index + 1, currentSize - index);
-            array[index] = element;
-            return array;
-        }
-        int[] newArray = new int[computeGrowSize(currentSize)];
-        System.arraycopy(array, 0, newArray, 0, index);
-        newArray[index] = element;
-        System.arraycopy(array, index, newArray, index + 1, array.length - index);
-        return newArray;
-    }
-
-    private static int computeGrowSize(int currentSize) {
-        return currentSize <= 4 ? 8 : currentSize * 2;
-    }
-
-    private static int binarySearch(int[] array, int size, int value) {
-        int lo = 0;
-        int hi = size - 1;
-
-        while (lo <= hi) {
-            int mid = (lo + hi) >>> 1;
-            int midVal = array[mid];
-
-            if (midVal < value) {
-                lo = mid + 1;
-            } else if (midVal > value) {
-                hi = mid - 1;
-            } else {
-                return mid;  // value found
-            }
-        }
-        return ~lo;  // value not present
     }
 
     public interface Entry<E> {

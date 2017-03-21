@@ -9,6 +9,10 @@ public class FullLambdaScheduleNode extends Node {
         super(id, upperLeftX, upperLeftY, numberOfComponentsPerPixel);
     }
 
+    public FullLambdaScheduleNode(int id, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
+        super(id, box, contour, perimeter, area, numberOfComponentsPerPixel);
+    }
+
     @Override
     public void updateSpecificAttributes(Node nn2) {
         FullLambdaScheduleNode n2 = (FullLambdaScheduleNode)nn2;
