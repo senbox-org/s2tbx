@@ -66,26 +66,26 @@ public class GenericRegionMergingOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
-        if (this.mergingCostCriterion == null) {
-            throw new OperatorException("Please specify the merging cost criterion.");
-        }
-        if (this.regionMergingCriterion == null) {
-            throw new OperatorException("Please specify the region merging criterion.");
-        }
-        if (this.threshold == 0.0f) {
-            throw new OperatorException("Please specify the threshold.");
-        }
-        if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-            if (this.spectralWeight == 0.0f) {
-                throw new OperatorException("Please specify the spectral weight.");
-            }
-            if (this.shapeWeight == 0.0f) {
-                throw new OperatorException("Please specify the shape weight.");
-            }
-        }
-        if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
-            throw new OperatorException("Please select at least one band.");
-        }
+//        if (this.mergingCostCriterion == null) {
+//            throw new OperatorException("Please specify the merging cost criterion.");
+//        }
+//        if (this.regionMergingCriterion == null) {
+//            throw new OperatorException("Please specify the region merging criterion.");
+//        }
+//        if (this.threshold == 0.0f) {
+//            throw new OperatorException("Please specify the threshold.");
+//        }
+//        if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
+//            if (this.spectralWeight == 0.0f) {
+//                throw new OperatorException("Please specify the spectral weight.");
+//            }
+//            if (this.shapeWeight == 0.0f) {
+//                throw new OperatorException("Please specify the shape weight.");
+//            }
+//        }
+//        if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
+//            throw new OperatorException("Please select at least one band.");
+//        }
 
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
@@ -98,10 +98,16 @@ public class GenericRegionMergingOp extends Operator {
         long t0 = System.currentTimeMillis();
         System.out.println("startTime doExecute="+new Date(t0).toString());
 
-        int sourceBandIndices[] = new int[this.sourceBandNames.length];
-        for (int i=0; i<this.sourceBandNames.length; i++) {
-            sourceBandIndices[i] = this.sourceProduct.getBandIndex(this.sourceBandNames[i]);
-        }
+        this.threshold = 2000;
+        this.numberOfIterations = 75;
+        this.shapeWeight = 0.5f;
+        this.spectralWeight = 0.5f;
+        int sourceBandIndices[] = new int[] {0, 1, 2};
+
+//        int sourceBandIndices[] = new int[this.sourceBandNames.length];
+//        for (int i=0; i<this.sourceBandNames.length; i++) {
+//            sourceBandIndices[i] = this.sourceProduct.getBandIndex(this.sourceBandNames[i]);
+//        }
         AbstractSegmenter segmenter = null;
         if (SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
             segmenter = new SpringSegmenter(this.threshold);
@@ -117,10 +123,6 @@ public class GenericRegionMergingOp extends Operator {
         } else if (BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(this.regionMergingCriterion)) {
             fastSegmentation = false;
         }
-
-//        boolean addFourNeighbors = true;
-//        BoundingBox rectange = new BoundingBox(0, 0, this.sourceProduct.getSceneRasterWidth(), this.sourceProduct.getSceneRasterHeight());
-//        segmenter.update(this.sourceProduct, sourceBandIndices, rectange, this.numberOfIterations, fastSegmentation, addFourNeighbors);
 
         try {
             int numberOfFirstIterations = 2;

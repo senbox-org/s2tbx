@@ -199,7 +199,7 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
 
         @Override
         public final boolean hasNext() {
-            return (computeIndexForNextValue() >= 0);
+            return (IntToObjectMap.this.size > 0 && computeIndexForNextValue() >= 0);
         }
 
         final void moveCursor() {
@@ -213,9 +213,9 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
         private int computeIndexForNextValue() {
             int index = this.cursor;
             Object[] elementData = IntToObjectMap.this.values;
-            E value = null;
+            Object value = null;
             do {
-                value = (E) elementData[index];
+                value = elementData[index];
                 index++;
             } while ((value == null || value == IntToObjectMap.DELETED) && index < elementData.length);
             if (value == null || value == IntToObjectMap.DELETED) {
