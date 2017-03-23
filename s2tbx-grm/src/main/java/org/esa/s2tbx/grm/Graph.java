@@ -138,13 +138,13 @@ public class Graph {
                     int rowPixel = gridId / imageWidth;
                     int colPixel = gridId % imageWidth;
                     boolean addNode = false;
-                    if (rowTileIndex > 0 && (rowPixel == tile.rows[0] || rowPixel == rowMin)) {
+                    if (rowTileIndex > 0 && (rowPixel == tile.getImageTopY() || rowPixel == rowMin)) {
                         addNode = true;
-                    } else if (colTileIndex < nbTilesX - 1 && (colPixel == tile.columns[1] || colPixel == colMax)) {
+                    } else if (colTileIndex < nbTilesX - 1 && (colPixel == tile.getImageRightX() || colPixel == colMax)) {
                         addNode = true;
-                    } else if (rowTileIndex < nbTilesY - 1 && (rowPixel == tile.rows[1] || rowPixel == rowMax)) {
+                    } else if (rowTileIndex < nbTilesY - 1 && (rowPixel == tile.getImageBottomY() || rowPixel == rowMax)) {
                         addNode = true;
-                    } else if (colTileIndex > 0 && (colPixel == tile.columns[0] || colPixel == colMin)) {
+                    } else if (colTileIndex > 0 && (colPixel == tile.getImageLeftX() || colPixel == colMin)) {
                         addNode = true;
                     }
                     if (addNode) {

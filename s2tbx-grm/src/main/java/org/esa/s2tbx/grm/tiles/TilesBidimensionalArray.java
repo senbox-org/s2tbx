@@ -26,8 +26,8 @@ public class TilesBidimensionalArray {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
         this.tilesMap.put(key, tileToAdd);
 
-        this.tileCountX = Math.max(this.tileCountX, rowIndex+1);
-        this.tileCountY = Math.max(this.tileCountY, columnIndex+1);
+        this.tileCountX = Math.max(this.tileCountX, columnIndex+1);
+        this.tileCountY = Math.max(this.tileCountY, rowIndex+1);
     }
 
     public int getTileCountX() {
