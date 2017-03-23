@@ -247,32 +247,27 @@ public class Graph {
         }
     }
 
-    public void rescaleGraph(ProcessingTile tile, int rowTileIndex, int colTileIndex, int tileWidth, int tileHeight, int imageWidth) {
-        int rowNodeTile = 0;
-        int colNodeTile = 0;
-        int rowNodeImg = 0;
-        int colNodeImg = 0;
-        int regionWidth = tile.getRegion().getWidth();
+    public void rescaleGraph(ProcessingTile tile, int imageWidth) {
+        BoundingBox region = tile.getRegion();
         int nodeCount = this.nodes.size();
-
         for (int i=0; i<nodeCount; i++) {
             Node node = this.nodes.get(i);
 
             // start pixel index of the node (in the tile)
-            rowNodeTile = node.getId() / regionWidth;
-            colNodeTile = node.getId() % regionWidth;
+            int rowNodeTile = node.getId() / region.getWidth();
+            int colNodeTile = node.getId() % region.getWidth();
 
             // start pixel index of the node (in the image)
-            rowNodeImg = rowTileIndex * tileHeight + rowNodeTile - tile.getTopMargin();
-            colNodeImg = colTileIndex * tileWidth + colNodeTile - tile.getLeftMargin();
+            int rowNodeImg = region.getTopY() + rowNodeTile;// - tile.getTopMargin();
+            int colNodeImg = region.getLeftX() + colNodeTile;// - tile.getLeftMargin();
 
             // set the node id in the image
             node.setId(rowNodeImg * imageWidth + colNodeImg);
 
             // change also its bounding box
             BoundingBox box = node.getBox();
-            box.setLeftX(colTileIndex * tileWidth + box.getLeftX() - tile.getLeftMargin());
-            box.setTopY(rowTileIndex * tileHeight + box.getTopY() - tile.getTopMargin());
+            box.setLeftX(region.getLeftX() + box.getLeftX());// - tile.getLeftMargin());
+            box.setTopY(region.getTopY() + box.getTopY());// - tile.getTopMargin());
         }
     }
 

@@ -9,6 +9,7 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.math.MathUtils;
 
 import java.awt.*;
 import java.util.Date;
@@ -83,14 +84,23 @@ public class GenericRegionMergingOp extends Operator {
 //                throw new OperatorException("Please specify the shape weight.");
 //            }
 //        }
-//        if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
-//            throw new OperatorException("Please select at least one band.");
-//        }
+        if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
+            throw new OperatorException("Please select at least one band.");
+        }
 
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
+
+        Dimension tileSize = targetProduct.getPreferredTileSize();
+
+        int rasterHeight = targetProduct.getSceneRasterHeight();
+        int rasterWidth = targetProduct.getSceneRasterWidth();
+        int tileCountX = MathUtils.ceilInt(rasterWidth / 600.0d);//(double) tileSize.width);
+        int tileCountY = MathUtils.ceilInt(rasterHeight / 800.0d);//(double) tileSize.height);
+
+        System.out.println("rasterWidth="+rasterWidth+" rasterHeight="+rasterHeight+" tileCountX="+tileCountX+" tileCountY="+tileCountY);
     }
 
     @Override
@@ -102,12 +112,16 @@ public class GenericRegionMergingOp extends Operator {
         this.numberOfIterations = 75;
         this.shapeWeight = 0.5f;
         this.spectralWeight = 0.5f;
-        int sourceBandIndices[] = new int[] {0, 1, 2};
 
-//        int sourceBandIndices[] = new int[this.sourceBandNames.length];
-//        for (int i=0; i<this.sourceBandNames.length; i++) {
-//            sourceBandIndices[i] = this.sourceProduct.getBandIndex(this.sourceBandNames[i]);
-//        }
+        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+        int imageWidth = this.sourceProduct.getSceneRasterWidth();
+        int imageHeight = this.sourceProduct.getSceneRasterHeight();
+        Rectangle rectangle = new Rectangle(0, 0, imageWidth, imageHeight);
+        for (int i=0; i<this.sourceBandNames.length; i++) {
+            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
+            sourceTiles[i] = getSourceTile(band, rectangle);
+        }
+
         AbstractSegmenter segmenter = null;
         if (SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
             segmenter = new SpringSegmenter(this.threshold);
@@ -127,7 +141,7 @@ public class GenericRegionMergingOp extends Operator {
         try {
             int numberOfFirstIterations = 2;
             BaatzSchapeTileSegmenter tileSegmenter = new BaatzSchapeTileSegmenter(spectralWeight, shapeWeight, threshold);
-            segmenter = tileSegmenter.runSegmentation(this.sourceProduct, sourceBandIndices, numberOfIterations, numberOfFirstIterations, fastSegmentation);
+            segmenter = tileSegmenter.runSegmentation(sourceTiles, imageWidth, imageHeight, numberOfIterations, numberOfFirstIterations, fastSegmentation);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }

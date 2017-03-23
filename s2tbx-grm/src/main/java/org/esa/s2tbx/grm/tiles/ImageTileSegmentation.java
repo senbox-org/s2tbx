@@ -72,23 +72,23 @@ public class ImageTileSegmentation {
 //
 //            int bandIndices[] = new int[] {0};
 
-            File file = new File("D:\\GRM\\JPEG-1335x1600.jpg");
-            ImageProductReaderPlugIn readerPlugin = new ImageProductReaderPlugIn();
-            ProductReader productReader = readerPlugin.createReaderInstance();
-            Product product = productReader.readProductNodes(file, null);
-            System.out.println("product="+product);
-
-            float spectralWeight = 0.5f;
-            float shapeWeight = 0.5f;
-            float threshold = 2000.0f;
-            int bandIndices[] = new int[] {0, 1, 2};
-            int numberOfIterations = 75;
-            int numberOfFirstIterations = 2;
-            boolean fastSegmentation = false;
-
-            BaatzSchapeTileSegmenter tileSegmenter = new BaatzSchapeTileSegmenter(spectralWeight, shapeWeight, threshold);
-            AbstractSegmenter segmenter = tileSegmenter.runSegmentation(product, bandIndices, numberOfIterations, numberOfFirstIterations, fastSegmentation);
-            System.out.println("final graph.nodecount="+segmenter.getGraph().getNodeCount());
+//            File file = new File("D:\\GRM\\JPEG-1335x1600.jpg");
+//            ImageProductReaderPlugIn readerPlugin = new ImageProductReaderPlugIn();
+//            ProductReader productReader = readerPlugin.createReaderInstance();
+//            Product product = productReader.readProductNodes(file, null);
+//            System.out.println("product="+product);
+//
+//            float spectralWeight = 0.5f;
+//            float shapeWeight = 0.5f;
+//            float threshold = 2000.0f;
+//            int bandIndices[] = new int[] {0, 1, 2};
+//            int numberOfIterations = 75;
+//            int numberOfFirstIterations = 2;
+//            boolean fastSegmentation = false;
+//
+//            BaatzSchapeTileSegmenter tileSegmenter = new BaatzSchapeTileSegmenter(spectralWeight, shapeWeight, threshold);
+//            AbstractSegmenter segmenter = tileSegmenter.runSegmentation(product, bandIndices, numberOfIterations, numberOfFirstIterations, fastSegmentation);
+//            System.out.println("final graph.nodecount="+segmenter.getGraph().getNodeCount());
         } catch (Exception e) {
             e.printStackTrace();
         }

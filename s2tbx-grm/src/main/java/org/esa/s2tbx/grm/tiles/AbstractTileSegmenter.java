@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.dataio.cache.S2CacheUtils;
 import org.esa.s2tbx.grm.*;
-import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.gpf.Tile;
 
 import java.io.*;
 import java.util.*;
@@ -32,11 +32,11 @@ public abstract class AbstractTileSegmenter {
 
     protected abstract AbstractSegmenter buildSegmenter(float threshold);
 
-    public final AbstractSegmenter runSegmentation(Product product, int bandIndices[], int numberOfIterations, int numberOfFirstIterations, boolean fastSegmentation)
+    public final AbstractSegmenter runSegmentation(Tile[] sourceTiles, int imageWidth, int imageHeight, int numberOfIterations, int numberOfFirstIterations, boolean fastSegmentation)
                                                    throws IllegalAccessException {
 
-        this.imageWidth = product.getSceneRasterWidth();
-        this.imageHeight = product.getSceneRasterHeight();
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
         this.tileWidth = 600;//this.imageWidth / 2;
         this.tileHeight = 800;//this.imageHeight / 2;
         this.nbTilesX = this.imageWidth / this.tileWidth;
@@ -54,7 +54,7 @@ public abstract class AbstractTileSegmenter {
             int numberOfIterationsRemaining = numberOfIterations;
 
             // run the first partial segmentation
-            SegmentationResult result = runFirstPartialSegmentation(product, bandIndices, tiles, numberOfFirstIterations, numberOfIterationsForPartialSegmentations, fastSegmentation);
+            SegmentationResult result = runFirstPartialSegmentation(sourceTiles, tiles, numberOfFirstIterations, numberOfIterationsForPartialSegmentations, fastSegmentation);
 
             while (result.getAccumulatedMemory() > memory && result.isFusion()) {
                 result = runPartialSegmentation(tiles, numberOfIterationsForPartialSegmentations);
@@ -74,55 +74,69 @@ public abstract class AbstractTileSegmenter {
         } else {
             AbstractSegmenter segmenter = buildSegmenter(this.threshold);
             BoundingBox rectange = new BoundingBox(0, 0, this.imageWidth, this.imageHeight);
-            segmenter.update(product, bandIndices, rectange, numberOfIterations, fastSegmentation, this.addFourNeighbors);
+            segmenter.update(sourceTiles, rectange, numberOfIterations, fastSegmentation, this.addFourNeighbors);
             return segmenter;
         }
     }
 
-    private SegmentationResult runFirstPartialSegmentation(Product product, int bandIndices[], List<ProcessingTile> tiles, int numberOfFirstIterations,
+    private SegmentationResult runFirstPartialSegmentation(Tile[] sourceTiles, List<ProcessingTile> tiles, int numberOfFirstIterations,
                                                            int numberOfIterationsForPartialSegmentations, boolean fastSegmentation)
-                                                           throws IllegalAccessException {
+            throws IllegalAccessException {
 
         System.out.println("--------runFirstPartialSegmentation numberOfFirstIterations="+numberOfFirstIterations+"  numberOfIterationsForPartialSegmentations="+numberOfIterationsForPartialSegmentations+"  time="+new Date(System.currentTimeMillis()));
 
         boolean isFusion = false;
         long accumulatedMemory = 0;
-        int numberOfNeighborLayers = (int) (Math.pow(2, numberOfIterationsForPartialSegmentations + 1) - 2);
-
         for (int row = 0; row <this.nbTilesY; row++) {
             for (int col = 0; col<this.nbTilesX ; col++) {
                 int tileIndex = row*this.nbTilesX + col;
                 ProcessingTile currentTile = tiles.get(tileIndex);
 
-                System.out.println("----update tileRow="+row+"  tileColumn="+col+" region="+currentTile.getRegion()+"  time="+new Date(System.currentTimeMillis()));
+                System.out.println("----update tileRow="+row+"  tileColumn="+col+" region="+currentTile.getRegion()+" time="+new Date(System.currentTimeMillis()));
 
-                System.out.println("----segmenting");
-                AbstractSegmenter segmenter = buildSegmenter(this.threshold);
-                boolean complete = segmenter.update(product, bandIndices, currentTile.region, numberOfFirstIterations, fastSegmentation, this.addFourNeighbors);
-                if (!complete) {
+                SegmentationResult result = runFirstSegmentation(sourceTiles, currentTile, numberOfFirstIterations, numberOfIterationsForPartialSegmentations, fastSegmentation);
+                if (result.isFusion()) {
                     isFusion = true;
                 }
-
-                Graph graph = segmenter.getGraph();
-
-                // rescale the graph to be in the reference of the image
-                graph.rescaleGraph(currentTile, row, col, this.tileWidth, this.tileHeight, this.imageWidth);
-
-                // remove unstable segments
-                graph.removeUnstableSegments(currentTile, this.imageWidth);
-
-                accumulatedMemory = ObjectSizeCalculator.sizeOf(graph);
-
-                writeGraph(graph, currentTile.nodeFileName, currentTile.edgeFileName);
-
-                // extract stability margin for all borders different from 0 imageWidth-1 and imageHeight -1 and write them to the stability margin
-                List<Node> nodesToIterate = graph.detectBorderNodes(currentTile, this.imageWidth, this.imageHeight);
-
-                IntToObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
-
-                writeStabilityMargin(borderNodes, currentTile.nodeMarginFileName, currentTile.edgeMarginFileName);
+                accumulatedMemory += result.getAccumulatedMemory();
             }
         }
+        return new SegmentationResult(isFusion, accumulatedMemory * accumulatedMemory);
+    }
+
+    private SegmentationResult runFirstSegmentation(Tile[] sourceTiles, ProcessingTile currentTile, int numberOfFirstIterations,
+                                                    int numberOfIterationsForPartialSegmentations, boolean fastSegmentation)
+            throws IllegalAccessException {
+
+        boolean isFusion = false;
+        long accumulatedMemory = 0;
+        int numberOfNeighborLayers = (int) (Math.pow(2, numberOfIterationsForPartialSegmentations + 1) - 2);
+
+        AbstractSegmenter segmenter = buildSegmenter(this.threshold);
+        boolean complete = segmenter.update(sourceTiles, currentTile.getRegion(), numberOfFirstIterations, fastSegmentation, this.addFourNeighbors);
+        if (!complete) {
+            isFusion = true;
+        }
+
+        Graph graph = segmenter.getGraph();
+
+        // rescale the graph to be in the reference of the image
+        graph.rescaleGraph(currentTile, this.imageWidth);
+
+        // remove unstable segments
+        graph.removeUnstableSegments(currentTile, this.imageWidth);
+
+        accumulatedMemory = ObjectSizeCalculator.sizeOf(graph);
+
+        writeGraph(graph, currentTile.nodeFileName, currentTile.edgeFileName);
+
+        // extract stability margin for all borders different from 0 imageWidth-1 and imageHeight -1 and write them to the stability margin
+        List<Node> nodesToIterate = graph.detectBorderNodes(currentTile, this.imageWidth, this.imageHeight);
+
+        IntToObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
+
+        writeStabilityMargin(borderNodes, currentTile.nodeMarginFileName, currentTile.edgeMarginFileName);
+
         return new SegmentationResult(isFusion, accumulatedMemory);
     }
 
@@ -131,39 +145,25 @@ public abstract class AbstractTileSegmenter {
         long accumulatedMemory = 0;
         int numberOfNeighborLayers = (int) (Math.pow(2, numberOfIterationsForPartialSegmentations + 1) - 2);
 
-        System.out.println("\n********* runPartialSegmentation  numberOfIterationsForPartialSegmentations="+numberOfIterationsForPartialSegmentations+"  numberOfNeighborLayers="+numberOfNeighborLayers+"  time="+new Date(System.currentTimeMillis()));
+        System.out.println("********* runPartialSegmentation numberOfNeighborLayers="+numberOfNeighborLayers+"  numberOfIterationsForPartialSegmentations="+numberOfIterationsForPartialSegmentations+"  time="+new Date(System.currentTimeMillis()));
 
         for (int row = 0; row < this.nbTilesY; row++) {
             for (int col = 0; col < this.nbTilesX; col++) {
                 int tileIndex = row*this.nbTilesX + col;
                 ProcessingTile currentTile = tiles.get(tileIndex);
-                System.out.println("\n********* update tileRow="+row+"  tileColumn="+col+" region="+currentTile.getRegion()+"  numberOfNeighborLayers="+numberOfNeighborLayers);
 
                 Graph graph = readGraph(currentTile.nodeFileName, currentTile.edgeFileName);
 
-                System.out.println("********* after readGraph nodeCount="+graph.getNodeCount());
-
-                addStabilityMargin(graph, tiles, row, col, this.nbTilesX, this.nbTilesY);
-
-                System.out.println("********* after addStabilityMargin nodeCount="+graph.getNodeCount());
+                addStabilityMargin(graph, currentTile, tiles, this.nbTilesX, this.nbTilesY);
 
                 IntToObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, this.nbTilesX, this.nbTilesY, this.imageWidth);
 
-                System.out.println("********* after buildBorderPixelMap nodeCount="+graph.getNodeCount()+" borderPixelMap.size="+borderPixelMap.size());
-
                 graph.removeDuplicatedNodes(borderPixelMap, this.imageWidth);
-
-                System.out.println("********* after removeDuplicatedNodes nodeCount="+graph.getNodeCount()+" borderPixelMap.size="+borderPixelMap.size());
 
                 updateNeighborsOfNoneDuplicatedNodes(borderPixelMap, this.imageWidth, this.imageHeight);
 
-                System.out.println("********* after updateNeighborsOfNoneDuplicatedNodes nodeCount="+graph.getNodeCount()+" borderPixelMap.size="+borderPixelMap.size());
-
                 removeUselessNodes(graph, currentTile, this.imageWidth, numberOfNeighborLayers);
 
-                System.out.println("********* after removeUselessNodes nodeCount="+graph.getNodeCount());
-
-                System.out.println("********* partial segmentation");
                 // build the segmenter
                 AbstractSegmenter segmenter = buildSegmenter(this.threshold);
                 segmenter.setGraph(graph, this.imageWidth, this.imageHeight);
@@ -172,11 +172,7 @@ public abstract class AbstractTileSegmenter {
                     isFusion = true;
                 }
 
-                System.out.println("********* after segmentation isFusion="+isFusion+" nodeCount="+graph.getNodeCount());
-
                 graph.removeUnstableSegments(currentTile, this.imageWidth);
-
-                System.out.println("********* after removeUnstableSegments nodeCount="+graph.getNodeCount());
 
                 accumulatedMemory = ObjectSizeCalculator.sizeOf(graph);
 
@@ -203,8 +199,6 @@ public abstract class AbstractTileSegmenter {
     }
 
     private AbstractSegmenter mergeAllGraphsAndAchieveSegmentation(List<ProcessingTile> tiles, int numberOfIterations) {
-        System.out.println("++++++++++ mergeAllGraphsAndAchieveSegmentation numberOfIterations="+numberOfIterations+"  time="+new Date(System.currentTimeMillis()));
-
         // read the graph
         int numberOfNodes = this.imageWidth * this.imageHeight;
         Graph graph = new Graph(numberOfNodes);
@@ -215,8 +209,6 @@ public abstract class AbstractTileSegmenter {
                 ProcessingTile currentTile = tiles.get(tileIndex);
 
                 insertNodesFromTile(graph, currentTile, false);
-
-                System.out.println("++++++++++ importing graph tileRow="+row+"  tileColumn="+col+" region="+currentTile.getRegion()+" nodeCount="+graph.getNodeCount());
             }
         }
 
@@ -228,11 +220,7 @@ public abstract class AbstractTileSegmenter {
 
                 IntToObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, this.nbTilesX, this.nbTilesY, this.imageWidth);
 
-                System.out.println("++++++++++ after buildBorderPixelMap graph tileRow="+row+"  tileColumn="+col+" borderPixelMap.size="+borderPixelMap.size());
-
                 graph.removeDuplicatedNodes(borderPixelMap, this.imageWidth);
-
-                System.out.println("++++++++++ after removeDuplicatedNodes graph tileRow="+row+"  tileColumn="+col+" borderPixelMap.size="+borderPixelMap.size());
 
                 updateNeighborsOfNoneDuplicatedNodes(borderPixelMap, this.imageWidth, this.imageHeight);
             }
@@ -305,37 +293,45 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    private void addStabilityMargin(Graph graph, List<ProcessingTile> tiles, int row, int col, int nbTilesX, int nbTilesY) {
+    private void addStabilityMargin(Graph graph, ProcessingTile currentTile, List<ProcessingTile> tiles, int nbTilesX, int nbTilesY) {
+        BoundingBox region = currentTile.getRegion();
+        int startXWithoutMargin = region.getLeftX() + currentTile.getLeftMargin();
+        int startYWithoutMargin = region.getTopY() + currentTile.getTopMargin();
+        int finishXWithoutMargin = region.getRightX() - currentTile.getRightMargin();
+        int finishYWithoutMargin = region.getBottomY() - currentTile.getBottomMargin();
+        int row = startYWithoutMargin / this.tileHeight;
+        int col = startXWithoutMargin / this.tileWidth;
+
         // margin to retrieve at top
-        if (row > 0) {
+        if (startYWithoutMargin > 0) { //(row > 0) {
             insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + col), true);
         }
         // margin to retrieve at right
-        if (col < nbTilesX - 1) {
+        if (finishXWithoutMargin < this.imageWidth) { //(col < nbTilesX - 1) {
             insertNodesFromTile(graph, tiles.get(row * nbTilesX + (col+1)), true);
         }
         // margin to retrieve at bottom
-        if (row < nbTilesY - 1) {
+        if (finishYWithoutMargin < this.imageHeight) { //(row < nbTilesY - 1) {
             insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + col), true);
         }
         // margin to retrieve at left
-        if (col > 0) {
+        if (startXWithoutMargin > 0) { //(col > 0) {
             insertNodesFromTile(graph, tiles.get(row * nbTilesX + (col-1)), true);
         }
         // margin to retrieve at top right
-        if (row > 0 && col < nbTilesX - 1) {
+        if (startYWithoutMargin > 0 && finishXWithoutMargin < this.imageWidth) { //(row > 0 && col < nbTilesX - 1) {
             insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + (col+1)), true);
         }
         // margin to retrieve at bottom right
-        if (row < nbTilesY - 1 && col < nbTilesX - 1) {
+        if (finishYWithoutMargin < this.imageHeight && finishXWithoutMargin < this.imageWidth) { //(row < nbTilesY - 1 && col < nbTilesX - 1) {
             insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + (col+1)), true);
         }
         // margin to retrieve at bottom left
-        if (row < nbTilesY - 1 && col > 0) {
+        if (finishYWithoutMargin < this.imageHeight && startXWithoutMargin > 0) { //(row < nbTilesY - 1 && col > 0) {
             insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + (col-1)), true);
         }
         // margin to retrieve at top left
-        if (row > 0 && col > 0) {
+        if (startYWithoutMargin > 0 && startXWithoutMargin > 0) { //(row > 0 && col > 0) {
             insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + (col-1)), true);
         }
     }
@@ -602,7 +598,6 @@ public abstract class AbstractTileSegmenter {
     }
 
     private static List<ProcessingTile> splitImage(int imageWidth, int imageHeight, int tileWidth, int tileHeight, int margin, int nbTilesX, int nbTilesY) {
-        String temporaryFilesPrefix = "";
         List<ProcessingTile> tiles = new ArrayList<ProcessingTile>(nbTilesX * nbTilesY);
         for (int row=0; row<nbTilesY; row++) {
             for (int col=0; col<nbTilesX; col++) {
@@ -619,65 +614,74 @@ public abstract class AbstractTileSegmenter {
                 if (row == nbTilesY - 1) {
                     sizeY += imageHeight % tileHeight;
                 }
-                ProcessingTile tile = new ProcessingTile();
-                int tileIndex = tiles.size();
 
-                // margin at the top ?
-                if (row > 0) {
-                    tile.setTopMargin(margin);
-                    tile.rows[0] = row * tileHeight;
-                } else {
-                    // the tile is on the top row --> no top margin
-                    tile.setTopMargin(0);
-                    tile.rows[0] = 0;
-                }
-
-                // margin at the right
-                if (col < nbTilesX - 1) {
-                    tile.setRightMargin(margin);
-                    tile.columns[1] = col * tileWidth + sizeX - 1; //sizeX
-                } else {
-                    // the tile is on the right column --> no right margin
-                    tile.setRightMargin(0);
-                    tile.columns[1] = imageWidth - 1;
-                }
-
-                // margin at the bottom
-                if (row < nbTilesY - 1) {
-                    tile.setBottomMargin(margin);
-                    tile.rows[1] = row * tileHeight + sizeY - 1; // sizeY
-                } else {
-                    // the tile is on the bottom --> no bottom margin
-                    tile.setBottomMargin(0);
-                    tile.rows[1] = imageHeight - 1;
-                }
-
-                // margin at the left
-                if (col > 0) {
-                    tile.setLeftMargin(margin);
-                    tile.columns[0] = col * tileWidth;
-                } else {
-                    // the tile is on the left --> no left margin
-                    tile.setLeftMargin(0);
-                    tile.columns[0] = 0;
-                }
-
-                // store the tile region
-                int regionLeftX = startX - tile.getLeftMargin();
-                int regionTopY = startY - tile.getTopMargin();
-                int regionWidth = sizeX + tile.getLeftMargin() + tile.getRightMargin();
-                int regionHeight = sizeY + tile.getTopMargin() + tile.getBottomMargin();
-                tile.setRegion(new BoundingBox(regionLeftX, regionTopY, regionWidth, regionHeight));
-
-                String suffix = Integer.toString(row) + "_" + Integer.toString(col) + ".bin";
-                tile.nodeFileName = temporaryFilesPrefix + "_node_" + suffix;
-                tile.edgeFileName = temporaryFilesPrefix + "_edge_" + suffix;
-                tile.nodeMarginFileName = temporaryFilesPrefix + "_nodeMargin_" + suffix;
-                tile.edgeMarginFileName = temporaryFilesPrefix + "_edgeMargin_" + suffix;
+                ProcessingTile tile = buildTile(imageWidth, imageHeight, startX, startY, sizeX, sizeY, margin);
 
                 tiles.add(tile);
             }
         }
         return tiles;
+    }
+
+    private static ProcessingTile buildTile(int imageWidth, int imageHeight, int startX, int startY, int sizeX, int sizeY, int margin) {
+        // compute current tile start and size
+        ProcessingTile tile = new ProcessingTile();
+        int finishX = startX + sizeX;
+        int finishY = startY + sizeY;
+        // margin at the top
+        if (startY > 0) { //(row > 0) {
+            tile.setTopMargin(margin);
+            tile.rows[0] = startY;//row * tileHeight;
+        } else {
+            // the tile is on the top row --> no top margin
+            tile.setTopMargin(0);
+            tile.rows[0] = 0;
+        }
+
+        // margin at the right
+        if (finishX < imageWidth) { //(col < nbTilesX - 1) {
+            tile.setRightMargin(margin);
+            tile.columns[1] = startX + sizeX - 1; //sizeX
+        } else {
+            // the tile is on the right column --> no right margin
+            tile.setRightMargin(0);
+            tile.columns[1] = imageWidth - 1;
+        }
+
+        // margin at the bottom
+        if (finishY < imageHeight) { // (row < nbTilesY - 1) {
+            tile.setBottomMargin(margin);
+            tile.rows[1] = startY + sizeY - 1; // sizeY
+        } else {
+            // the tile is on the bottom --> no bottom margin
+            tile.setBottomMargin(0);
+            tile.rows[1] = imageHeight - 1;
+        }
+
+        // margin at the left
+        if (startX > 0) { //(col > 0) {
+            tile.setLeftMargin(margin);
+            tile.columns[0] = startX;//col * tileWidth;
+        } else {
+            // the tile is on the left --> no left margin
+            tile.setLeftMargin(0);
+            tile.columns[0] = 0;
+        }
+
+        // store the tile region
+        int regionLeftX = startX - tile.getLeftMargin();
+        int regionTopY = startY - tile.getTopMargin();
+        int regionWidth = sizeX + tile.getLeftMargin() + tile.getRightMargin();
+        int regionHeight = sizeY + tile.getTopMargin() + tile.getBottomMargin();
+        tile.setRegion(new BoundingBox(regionLeftX, regionTopY, regionWidth, regionHeight));
+
+        String temporaryFilesPrefix = "";
+        String suffix = Integer.toString(startX) + "_" + Integer.toString(startY) + ".bin";
+        tile.nodeFileName = temporaryFilesPrefix + "_node_" + suffix;
+        tile.edgeFileName = temporaryFilesPrefix + "_edge_" + suffix;
+        tile.nodeMarginFileName = temporaryFilesPrefix + "_nodeMargin_" + suffix;
+        tile.edgeMarginFileName = temporaryFilesPrefix + "_edgeMargin_" + suffix;
+
+        return tile;
     }
 }

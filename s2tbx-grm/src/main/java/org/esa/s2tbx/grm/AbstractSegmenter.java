@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.gpf.Tile;
 
 import java.util.*;
 
@@ -25,8 +26,8 @@ public abstract class AbstractSegmenter {
 
     protected abstract Node buildNode(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel);
 
-    public final boolean update(Product product, int bandIndices[], BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
-        initNodes(product, bandIndices, rectange, addFourNeighbors);
+    public final boolean update(Tile[] sourceTiles, BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
+        initNodes(sourceTiles, rectange, addFourNeighbors);
 
         boolean merged = false;
         if (fastSegmentation) {
@@ -69,7 +70,7 @@ public abstract class AbstractSegmenter {
         int iterations = 0;
         boolean merged = true;
         while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {
-            System.out.println("iterations " + iterations+"  nodes="+this.graph.getNodeCount());
+//            System.out.println("iterations " + iterations+"  nodes="+this.graph.getNodeCount());
             iterations++;
             merged = perfomOneIterationWithLMBF();
         }
@@ -161,11 +162,11 @@ public abstract class AbstractSegmenter {
         }
     }
 
-    private void initNodes(Product product, int bandIndices[], BoundingBox rectange, boolean addFourNeighbors) {
+    private void initNodes(Tile[] sourceTiles, BoundingBox rectange, boolean addFourNeighbors) {
         this.imageWidth = rectange.getWidth();
         this.imageHeight = rectange.getHeight();
 
-        int numberOfComponentsPerPixel = bandIndices.length;
+        int numberOfComponentsPerPixel = sourceTiles.length;
         int numberOfNodes = this.imageWidth * this.imageHeight;
         this.graph = new Graph(numberOfNodes);
 
@@ -196,10 +197,8 @@ public abstract class AbstractSegmenter {
 
             int x = rectange.getLeftX() + (node.getId() % this.imageWidth);
             int y = rectange.getTopY() + (node.getId() / this.imageWidth);
-            for (int b = 0; b < bandIndices.length; b++) {
-                int bandIndex = bandIndices[b];
-                Band band = product.getBandAt(bandIndex);
-                float pixel = band.getSampleFloat(x, y);
+            for (int b = 0; b < sourceTiles.length; b++) {
+                float pixel = sourceTiles[b].getSampleFloat(x, y);
                 node.initData(b, pixel);
             }
         }
