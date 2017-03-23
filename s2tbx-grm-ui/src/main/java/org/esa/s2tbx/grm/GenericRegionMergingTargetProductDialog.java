@@ -169,8 +169,8 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             try {
                 long t0 = System.currentTimeMillis();
                 OperatorProductReader opReader = (OperatorProductReader) this.targetProduct.getProductReader();
-                Operator execOp = opReader.getOperatorContext().getOperator();
-                execOp.execute(SubProgressMonitor.create(pm, 95));
+                GenericRegionMergingOp execOp = (GenericRegionMergingOp)opReader.getOperatorContext().getOperator();
+                execOp.runSegmentation();
 
                 File file = model.getProductFile();
                 String formatName = model.getFormatName();

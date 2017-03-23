@@ -1,14 +1,18 @@
 package org.esa.s2tbx.grm;
 
 import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.core.SubProgressMonitor;
+import org.esa.s2tbx.grm.tiles.AbstractTileSegmenter;
 import org.esa.s2tbx.grm.tiles.BaatzSchapeTileSegmenter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.*;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.util.math.MathUtils;
 
 import java.awt.*;
@@ -62,6 +66,8 @@ public class GenericRegionMergingOp extends Operator {
     @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
     private String[] sourceBandNames;
 
+    AbstractTileSegmenter tileSegmenter;
+
     public GenericRegionMergingOp() {
     }
 
@@ -93,25 +99,76 @@ public class GenericRegionMergingOp extends Operator {
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
 
-        Dimension tileSize = targetProduct.getPreferredTileSize();
+        Band targetBand = new Band("band_111", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
+        this.targetProduct.addBand(targetBand);
+    }
 
-        int rasterHeight = targetProduct.getSceneRasterHeight();
-        int rasterWidth = targetProduct.getSceneRasterWidth();
-        int tileCountX = MathUtils.ceilInt(rasterWidth / 600.0d);//(double) tileSize.width);
-        int tileCountY = MathUtils.ceilInt(rasterHeight / 800.0d);//(double) tileSize.height);
+    public void runSegmentation() {
+        System.out.println("   runSegmentation ");
+        //execute(ProgressMonitor.NULL);
+//        Dimension tileSize = targetProduct.getPreferredTileSize();
+        Dimension tileSize = new Dimension(600, 800);
 
-        System.out.println("rasterWidth="+rasterWidth+" rasterHeight="+rasterHeight+" tileCountX="+tileCountX+" tileCountY="+tileCountY);
+
+        int imageHeight = this.targetProduct.getSceneRasterHeight();
+        int imageWidth = targetProduct.getSceneRasterWidth();
+        Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), this.targetProduct.getSceneRasterHeight());
+
+        int tileCountX = MathUtils.ceilInt(imageWidth / 600.0d);//(double) tileSize.width);
+        int tileCountY = MathUtils.ceilInt(imageHeight / 800.0d);//(double) tileSize.height);
+        this.threshold = 2000;
+        this.numberOfIterations = 75;
+        this.shapeWeight = 0.5f;
+        this.spectralWeight = 0.5f;
+        int numberOfFirstIterations = 2;
+
+        boolean fastSegmentation = false;
+        if (BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(this.regionMergingCriterion)) {
+            fastSegmentation = true;
+        } else if (BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(this.regionMergingCriterion)) {
+            fastSegmentation = false;
+        }
+
+        this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation, spectralWeight, shapeWeight);
+
+        OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
+        operatorExecutor.execute(ProgressMonitor.NULL);
+
+//        try {
+//            AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
+//            Band targetBand = segmenter.buildBand();
+//            this.targetProduct.addBand(targetBand);
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
+
+    }
+
+    @Override
+    public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+        System.out.println("  computeTile targetTile.rectangle="+targetTile.getRectangle());
+
+//        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+//        Rectangle rectangle = targetTile.getRectangle();
+//        int imageWidth = this.sourceProduct.getSceneRasterWidth();
+//        int imageHeight = this.sourceProduct.getSceneRasterHeight();
+//        Rectangle imageRectangle = new Rectangle(0, 0, imageWidth, imageHeight);
+//        for (int i=0; i<this.sourceBandNames.length; i++) {
+//            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
+//            sourceTiles[i] = getSourceTile(band, imageRectangle);
+//        }
+//
+//        try {
+//            this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
         long t0 = System.currentTimeMillis();
         System.out.println("startTime doExecute="+new Date(t0).toString());
-
-        this.threshold = 2000;
-        this.numberOfIterations = 75;
-        this.shapeWeight = 0.5f;
-        this.spectralWeight = 0.5f;
 
         Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
         int imageWidth = this.sourceProduct.getSceneRasterWidth();
@@ -123,25 +180,10 @@ public class GenericRegionMergingOp extends Operator {
         }
 
         AbstractSegmenter segmenter = null;
-        if (SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-            segmenter = new SpringSegmenter(this.threshold);
-        } else if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-            segmenter = new BaatzSchapeSegmenter(this.spectralWeight, this.shapeWeight, this.threshold);
-        } else if (FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-            segmenter = new FullLambdaScheduleSegmenter(this.threshold);
-        }
-
-        boolean fastSegmentation = false;
-        if (BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(this.regionMergingCriterion)) {
-            fastSegmentation = true;
-        } else if (BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(this.regionMergingCriterion)) {
-            fastSegmentation = false;
-        }
+        Dimension tileSize = new Dimension(600, 800);
 
         try {
-            int numberOfFirstIterations = 2;
-            BaatzSchapeTileSegmenter tileSegmenter = new BaatzSchapeTileSegmenter(spectralWeight, shapeWeight, threshold);
-            segmenter = tileSegmenter.runSegmentation(sourceTiles, imageWidth, imageHeight, numberOfIterations, numberOfFirstIterations, fastSegmentation);
+            segmenter = this.tileSegmenter.runAllTilesSegmentation(sourceTiles);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -150,7 +192,6 @@ public class GenericRegionMergingOp extends Operator {
 
         Band targetBand = segmenter.buildBand();
         this.targetProduct.addBand(targetBand);
-
 
         long endTime = System.currentTimeMillis();
         System.out.println("endTime doExecute="+new Date(endTime).toString());

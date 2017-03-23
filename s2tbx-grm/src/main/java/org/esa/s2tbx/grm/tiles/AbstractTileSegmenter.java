@@ -6,8 +6,10 @@ import org.esa.s2tbx.dataio.cache.S2CacheUtils;
 import org.esa.s2tbx.grm.*;
 import org.esa.snap.core.gpf.Tile;
 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author Jean Coravu
@@ -15,109 +17,118 @@ import java.util.*;
 public abstract class AbstractTileSegmenter {
     private final float threshold;
     private final boolean addFourNeighbors;
+    private final boolean fastSegmentation;
 
-    int imageWidth = 100;
-    int imageHeight = 100;
-    int tileHeight = 0;
-    int tileWidth = 0;
-    int nbTilesX = 0;
-    int nbTilesY = 0;
+    private final int imageWidth;
+    private final int imageHeight;
+    private final int numberOfIterations;
+    private final int numberOfFirstIterations;
+    private final int tileWidth;
+    private final int tileHeight;
+    private final int numberOfIterationsForPartialSegmentations;
+    private final TilesBidimensionalArray tilesBidimensionalArray;
+    private final long availableMemory;
 
-    protected AbstractTileSegmenter(float threshold) {
+    private long accumulatedMemory;
+    private boolean isFusion;
+
+    protected AbstractTileSegmenter(Dimension imageSize, Dimension tileSize, int numberOfIterations, int numberOfFirstIterations, float threshold, boolean fastSegmentation) {
+        this.imageWidth = imageSize.width;
+        this.imageHeight = imageSize.height;
+        this.tileWidth = tileSize.width;
+        this.tileHeight = tileSize.height;
+        this.numberOfIterations = numberOfIterations;
+        this.numberOfFirstIterations = numberOfFirstIterations;
+        this.fastSegmentation = fastSegmentation;
         this.threshold = threshold;
         this.addFourNeighbors = true;
+        this.numberOfIterationsForPartialSegmentations = 3; // TODO: find a smart value
+
+        this.tilesBidimensionalArray = new TilesBidimensionalArray();
+        this.availableMemory = Runtime.getRuntime().totalMemory();
+
+        this.accumulatedMemory = 0;
+        this.isFusion = false;
     }
 
     protected abstract Node buildNode(int nodeId, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel);
 
     protected abstract AbstractSegmenter buildSegmenter(float threshold);
 
-    public final AbstractSegmenter runSegmentation(Tile[] sourceTiles, int imageWidth, int imageHeight, int numberOfIterations, int numberOfFirstIterations, boolean fastSegmentation)
-                                                   throws IllegalAccessException {
+    public final AbstractSegmenter runAllTilesSegmentation(Tile[] sourceTiles) throws IllegalAccessException {
+        // run the first partial segmentation
+        runAllTilesFirstPartialSegmentation(sourceTiles);
 
-        this.imageWidth = imageWidth;
-        this.imageHeight = imageHeight;
-        this.tileWidth = 600;//this.imageWidth / 2;
-        this.tileHeight = 800;//this.imageHeight / 2;
-        this.nbTilesX = this.imageWidth / this.tileWidth;
-        this.nbTilesY = this.imageHeight / this.tileHeight;
+        //TODO Jean remove
+        this.accumulatedMemory = this.accumulatedMemory * this.accumulatedMemory;
 
-        int margin = (int) (Math.pow(2, numberOfFirstIterations + 1) - 2);
-
-        long memory = Runtime.getRuntime().totalMemory();
-
-        List<ProcessingTile> tiles = splitImage(this.imageWidth, this.imageHeight, this.tileWidth, this.tileHeight, margin, this.nbTilesX, this.nbTilesY);
-        System.out.println("tile.count=" + tiles.size()+"  imageWidth="+imageWidth+"  imageHeight="+imageHeight+"  tileWidth="+tileWidth+"  tileHeight="+tileHeight+"  nbTilesX="+nbTilesX+"  nbTilesY="+nbTilesY+"  margin="+margin);
-
-        if (tiles.size() > 1) {
-            int numberOfIterationsForPartialSegmentations = 3; // TODO: find a smart value
-            int numberOfIterationsRemaining = numberOfIterations;
-
-            // run the first partial segmentation
-            SegmentationResult result = runFirstPartialSegmentation(sourceTiles, tiles, numberOfFirstIterations, numberOfIterationsForPartialSegmentations, fastSegmentation);
-
-            while (result.getAccumulatedMemory() > memory && result.isFusion()) {
-                result = runPartialSegmentation(tiles, numberOfIterationsForPartialSegmentations);
-
-                // update number of remaining iterations
-                if (numberOfIterationsRemaining < numberOfIterationsForPartialSegmentations) {
-                    break;
-                } else {
-                    numberOfIterationsRemaining -= numberOfIterationsForPartialSegmentations;
-                }
-            }
-
-            if (result.getAccumulatedMemory() <= memory) {
-                return mergeAllGraphsAndAchieveSegmentation(tiles, numberOfIterationsRemaining);
-            }
-            throw new IllegalArgumentException("No more possible fusions, but can not store the output graph");
-        } else {
-            AbstractSegmenter segmenter = buildSegmenter(this.threshold);
-            BoundingBox rectange = new BoundingBox(0, 0, this.imageWidth, this.imageHeight);
-            segmenter.update(sourceTiles, rectange, numberOfIterations, fastSegmentation, this.addFourNeighbors);
-            return segmenter;
-        }
+        return runAllTilesSecondSegmentation();
     }
 
-    private SegmentationResult runFirstPartialSegmentation(Tile[] sourceTiles, List<ProcessingTile> tiles, int numberOfFirstIterations,
-                                                           int numberOfIterationsForPartialSegmentations, boolean fastSegmentation)
-            throws IllegalAccessException {
+    public final AbstractSegmenter runAllTilesSecondSegmentation() throws IllegalAccessException {
+        int numberOfIterationsRemaining = this.numberOfIterations;
+        while (this.accumulatedMemory > this.availableMemory && this.isFusion) {
+            runPartialSegmentation();
 
+            // update number of remaining iterations
+            if (numberOfIterationsRemaining < this.numberOfIterationsForPartialSegmentations) {
+                break;
+            } else {
+                numberOfIterationsRemaining -= this.numberOfIterationsForPartialSegmentations;
+            }
+        }
+        if (this.accumulatedMemory <= this.availableMemory) {
+            return mergeAllGraphsAndAchieveSegmentation(numberOfIterationsRemaining);
+        }
+        throw new IllegalArgumentException("No more possible fusions, but can not store the output graph.");
+    }
+
+    private void runAllTilesFirstPartialSegmentation(Tile[] sourceTiles) throws IllegalAccessException {
         System.out.println("--------runFirstPartialSegmentation numberOfFirstIterations="+numberOfFirstIterations+"  numberOfIterationsForPartialSegmentations="+numberOfIterationsForPartialSegmentations+"  time="+new Date(System.currentTimeMillis()));
 
-        boolean isFusion = false;
-        long accumulatedMemory = 0;
-        for (int row = 0; row <this.nbTilesY; row++) {
-            for (int col = 0; col<this.nbTilesX ; col++) {
-                int tileIndex = row*this.nbTilesX + col;
-                ProcessingTile currentTile = tiles.get(tileIndex);
+        this.accumulatedMemory = 0;
+        this.isFusion = false;
 
-                System.out.println("----update tileRow="+row+"  tileColumn="+col+" region="+currentTile.getRegion()+" time="+new Date(System.currentTimeMillis()));
+        int nbTilesX = this.imageWidth / this.tileWidth;
+        int nbTilesY = this.imageHeight / this.tileHeight;
 
-                SegmentationResult result = runFirstSegmentation(sourceTiles, currentTile, numberOfFirstIterations, numberOfIterationsForPartialSegmentations, fastSegmentation);
-                if (result.isFusion()) {
-                    isFusion = true;
+        for (int row = 0; row <nbTilesY; row++) {
+            for (int col = 0; col<nbTilesX ; col++) {
+                // compute current tile start and size
+                int startX = col * tileWidth;
+                int startY = row * tileHeight;
+                int sizeX = tileWidth;
+                int sizeY = tileHeight;
+                // current tile size might be different for right and bottom borders
+                if (col == nbTilesX - 1) {
+                    sizeX += imageWidth % tileWidth;
                 }
-                accumulatedMemory += result.getAccumulatedMemory();
+                if (row == nbTilesY - 1) {
+                    sizeY += imageHeight % tileHeight;
+                }
+
+                runOneTileFirstSegmentation(sourceTiles, startX, startY, sizeX, sizeY);
             }
         }
-        return new SegmentationResult(isFusion, accumulatedMemory * accumulatedMemory);
     }
 
-    private SegmentationResult runFirstSegmentation(Tile[] sourceTiles, ProcessingTile currentTile, int numberOfFirstIterations,
-                                                    int numberOfIterationsForPartialSegmentations, boolean fastSegmentation)
-            throws IllegalAccessException {
+    public void runOneTileFirstSegmentation(Tile[] sourceTiles, int startX, int startY, int sizeX, int sizeY) throws IllegalAccessException {
+        int margin = (int) (Math.pow(2, this.numberOfFirstIterations + 1) - 2);
+        ProcessingTile currentTile = buildTile(this.imageWidth, this.imageHeight, startX, startY, sizeX, sizeY, margin);
 
-        boolean isFusion = false;
-        long accumulatedMemory = 0;
-        int numberOfNeighborLayers = (int) (Math.pow(2, numberOfIterationsForPartialSegmentations + 1) - 2);
+        System.out.println("runOneTileFirstSegmentation tile.region="+currentTile.getRegion()+"  startX="+startX+"  startY="+startY);
+
+        int row = startY / this.tileHeight;
+        int col = startX / this.tileWidth;
+        this.tilesBidimensionalArray.addTile(row, col, currentTile);
+
+        int numberOfNeighborLayers = (int) (Math.pow(2, this.numberOfIterationsForPartialSegmentations + 1) - 2);
 
         AbstractSegmenter segmenter = buildSegmenter(this.threshold);
-        boolean complete = segmenter.update(sourceTiles, currentTile.getRegion(), numberOfFirstIterations, fastSegmentation, this.addFourNeighbors);
+        boolean complete = segmenter.update(sourceTiles, currentTile.getRegion(), this.numberOfFirstIterations, this.fastSegmentation, this.addFourNeighbors);
         if (!complete) {
-            isFusion = true;
+            this.isFusion = true;
         }
-
         Graph graph = segmenter.getGraph();
 
         // rescale the graph to be in the reference of the image
@@ -126,7 +137,7 @@ public abstract class AbstractTileSegmenter {
         // remove unstable segments
         graph.removeUnstableSegments(currentTile, this.imageWidth);
 
-        accumulatedMemory = ObjectSizeCalculator.sizeOf(graph);
+        this.accumulatedMemory += ObjectSizeCalculator.sizeOf(graph);
 
         writeGraph(graph, currentTile.nodeFileName, currentTile.edgeFileName);
 
@@ -136,27 +147,29 @@ public abstract class AbstractTileSegmenter {
         IntToObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
 
         writeStabilityMargin(borderNodes, currentTile.nodeMarginFileName, currentTile.edgeMarginFileName);
-
-        return new SegmentationResult(isFusion, accumulatedMemory);
     }
 
-    private SegmentationResult runPartialSegmentation(List<ProcessingTile> tiles, int numberOfIterationsForPartialSegmentations) throws IllegalAccessException {
-        boolean isFusion = false;
-        long accumulatedMemory = 0;
+    private void runPartialSegmentation() throws IllegalAccessException {
+        this.accumulatedMemory = 0;
+        this.isFusion = false;
+
         int numberOfNeighborLayers = (int) (Math.pow(2, numberOfIterationsForPartialSegmentations + 1) - 2);
 
         System.out.println("********* runPartialSegmentation numberOfNeighborLayers="+numberOfNeighborLayers+"  numberOfIterationsForPartialSegmentations="+numberOfIterationsForPartialSegmentations+"  time="+new Date(System.currentTimeMillis()));
 
-        for (int row = 0; row < this.nbTilesY; row++) {
-            for (int col = 0; col < this.nbTilesX; col++) {
-                int tileIndex = row*this.nbTilesX + col;
-                ProcessingTile currentTile = tiles.get(tileIndex);
+        int nbTilesX = this.tilesBidimensionalArray.getTileCountX();
+        int nbTilesY = this.tilesBidimensionalArray.getTileCountY();
+        for (int row = 0; row < nbTilesY; row++) {
+            for (int col = 0; col < nbTilesX; col++) {
+                ProcessingTile currentTile = this.tilesBidimensionalArray.getTileAt(row, col);
 
                 Graph graph = readGraph(currentTile.nodeFileName, currentTile.edgeFileName);
 
-                addStabilityMargin(graph, currentTile, tiles, this.nbTilesX, this.nbTilesY);
+                System.out.println("********* addStabilityMargin region="+currentTile.getRegion());
 
-                IntToObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, this.nbTilesX, this.nbTilesY, this.imageWidth);
+                addStabilityMargin(graph, row, col, nbTilesX, nbTilesY);
+
+                IntToObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, nbTilesX, nbTilesY, this.imageWidth);
 
                 graph.removeDuplicatedNodes(borderPixelMap, this.imageWidth);
 
@@ -169,22 +182,21 @@ public abstract class AbstractTileSegmenter {
                 segmenter.setGraph(graph, this.imageWidth, this.imageHeight);
                 boolean merged = segmenter.perfomAllIterationsWithLMBF(numberOfIterationsForPartialSegmentations);
                 if (merged) {
-                    isFusion = true;
+                    this.isFusion = true;
                 }
 
                 graph.removeUnstableSegments(currentTile, this.imageWidth);
 
-                accumulatedMemory = ObjectSizeCalculator.sizeOf(graph);
+                this.accumulatedMemory += ObjectSizeCalculator.sizeOf(graph);
 
                 writeGraph(graph, currentTile.nodeFileName, currentTile.edgeFileName);
             }
         }
 
         // during this step we extract the stability margin for the next round
-        for(int row = 0; row < this.nbTilesY; row++) {
-            for (int col = 0; col<this.nbTilesX; col++) {
-                int tileIndex = row*this.nbTilesX + col;
-                ProcessingTile currentTile = tiles.get(tileIndex);
+        for(int row = 0; row < nbTilesY; row++) {
+            for (int col = 0; col<nbTilesX; col++) {
+                ProcessingTile currentTile = this.tilesBidimensionalArray.getTileAt(row, col);
 
                 Graph graph = readGraph(currentTile.nodeFileName, currentTile.edgeFileName);
 
@@ -195,30 +207,29 @@ public abstract class AbstractTileSegmenter {
                 writeStabilityMargin(borderNodes, currentTile.nodeMarginFileName, currentTile.edgeMarginFileName);
             }
         }
-        return new SegmentationResult(isFusion, accumulatedMemory);
     }
 
-    private AbstractSegmenter mergeAllGraphsAndAchieveSegmentation(List<ProcessingTile> tiles, int numberOfIterations) {
+    private AbstractSegmenter mergeAllGraphsAndAchieveSegmentation(int numberOfIterations) {
         // read the graph
         int numberOfNodes = this.imageWidth * this.imageHeight;
         Graph graph = new Graph(numberOfNodes);
+        int nbTilesX = this.tilesBidimensionalArray.getTileCountX();
+        int nbTilesY = this.tilesBidimensionalArray.getTileCountY();
 
-        for (int row = 0; row < this.nbTilesY; row++) {
-            for (int col = 0; col < this.nbTilesX; col++) {
-                int tileIndex = row * this.nbTilesX + col;
-                ProcessingTile currentTile = tiles.get(tileIndex);
+        for (int row = 0; row < nbTilesY; row++) {
+            for (int col = 0; col < nbTilesX; col++) {
+                ProcessingTile currentTile = this.tilesBidimensionalArray.getTileAt(row, col);
 
                 insertNodesFromTile(graph, currentTile, false);
             }
         }
 
         // removing duplicated nodes and updating neighbors
-        for (int row = 0; row < this.nbTilesY; row++) {
-            for (int col = 0; col < this.nbTilesX; col++) {
-                int tileIndex = row * this.nbTilesX + col;
-                ProcessingTile currentTile = tiles.get(tileIndex);
+        for (int row = 0; row < nbTilesY; row++) {
+            for (int col = 0; col < nbTilesX; col++) {
+                ProcessingTile currentTile = this.tilesBidimensionalArray.getTileAt(row, col);
 
-                IntToObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, this.nbTilesX, this.nbTilesY, this.imageWidth);
+                IntToObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, nbTilesX, nbTilesY, this.imageWidth);
 
                 graph.removeDuplicatedNodes(borderPixelMap, this.imageWidth);
 
@@ -293,46 +304,46 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    private void addStabilityMargin(Graph graph, ProcessingTile currentTile, List<ProcessingTile> tiles, int nbTilesX, int nbTilesY) {
-        BoundingBox region = currentTile.getRegion();
-        int startXWithoutMargin = region.getLeftX() + currentTile.getLeftMargin();
-        int startYWithoutMargin = region.getTopY() + currentTile.getTopMargin();
-        int finishXWithoutMargin = region.getRightX() - currentTile.getRightMargin();
-        int finishYWithoutMargin = region.getBottomY() - currentTile.getBottomMargin();
-        int row = startYWithoutMargin / this.tileHeight;
-        int col = startXWithoutMargin / this.tileWidth;
-
+    private void addStabilityMargin(Graph graph, int row, int col, int nbTilesX, int nbTilesY) {
         // margin to retrieve at top
-        if (startYWithoutMargin > 0) { //(row > 0) {
-            insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + col), true);
+        if (row > 0) { // (startYWithoutMargin > 0) { //(row > 0) {
+//            insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + col), true);
+            insertNodesFromTile(graph, this.tilesBidimensionalArray.getTileAt(row-1, col), true);
         }
         // margin to retrieve at right
-        if (finishXWithoutMargin < this.imageWidth) { //(col < nbTilesX - 1) {
-            insertNodesFromTile(graph, tiles.get(row * nbTilesX + (col+1)), true);
+        if (col < nbTilesX - 1) { //(finishXWithoutMargin < this.imageWidth) { //(col < nbTilesX - 1) {
+//            insertNodesFromTile(graph, tiles.get(row * nbTilesX + (col+1)), true);
+            insertNodesFromTile(graph, this.tilesBidimensionalArray.getTileAt(row, col+1), true);
         }
         // margin to retrieve at bottom
-        if (finishYWithoutMargin < this.imageHeight) { //(row < nbTilesY - 1) {
-            insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + col), true);
+        if (row < nbTilesY - 1) { //(finishYWithoutMargin < this.imageHeight) { //(row < nbTilesY - 1) {
+//            insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + col), true);
+            insertNodesFromTile(graph, this.tilesBidimensionalArray.getTileAt(row+1, col), true);
         }
         // margin to retrieve at left
-        if (startXWithoutMargin > 0) { //(col > 0) {
-            insertNodesFromTile(graph, tiles.get(row * nbTilesX + (col-1)), true);
+        if (col > 0) { // (startXWithoutMargin > 0) { //(col > 0) {
+//            insertNodesFromTile(graph, tiles.get(row * nbTilesX + (col-1)), true);
+            insertNodesFromTile(graph, this.tilesBidimensionalArray.getTileAt(row, col-1), true);
         }
         // margin to retrieve at top right
-        if (startYWithoutMargin > 0 && finishXWithoutMargin < this.imageWidth) { //(row > 0 && col < nbTilesX - 1) {
-            insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + (col+1)), true);
+        if (row > 0 && col < nbTilesX - 1) { // (startYWithoutMargin > 0 && finishXWithoutMargin < this.imageWidth) { //(row > 0 && col < nbTilesX - 1) {
+//            insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + (col+1)), true);
+            insertNodesFromTile(graph, this.tilesBidimensionalArray.getTileAt(row-1, col+1), true);
         }
         // margin to retrieve at bottom right
-        if (finishYWithoutMargin < this.imageHeight && finishXWithoutMargin < this.imageWidth) { //(row < nbTilesY - 1 && col < nbTilesX - 1) {
-            insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + (col+1)), true);
+        if (row < nbTilesY - 1 && col < nbTilesX - 1) { // (finishYWithoutMargin < this.imageHeight && finishXWithoutMargin < this.imageWidth) { //(row < nbTilesY - 1 && col < nbTilesX - 1) {
+//            insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + (col+1)), true);
+            insertNodesFromTile(graph, this.tilesBidimensionalArray.getTileAt(row+1, col+1), true);
         }
         // margin to retrieve at bottom left
-        if (finishYWithoutMargin < this.imageHeight && startXWithoutMargin > 0) { //(row < nbTilesY - 1 && col > 0) {
-            insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + (col-1)), true);
+        if (row < nbTilesY - 1 && col > 0) { // (finishYWithoutMargin < this.imageHeight && startXWithoutMargin > 0) { //(row < nbTilesY - 1 && col > 0) {
+//            insertNodesFromTile(graph, tiles.get((row+1) * nbTilesX + (col-1)), true);
+            insertNodesFromTile(graph, this.tilesBidimensionalArray.getTileAt(row+1, col-1), true);
         }
         // margin to retrieve at top left
-        if (startYWithoutMargin > 0 && startXWithoutMargin > 0) { //(row > 0 && col > 0) {
-            insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + (col-1)), true);
+        if (row > 0 && col > 0) { // (startYWithoutMargin > 0 && startXWithoutMargin > 0) { //(row > 0 && col > 0) {
+//            insertNodesFromTile(graph, tiles.get((row-1) * nbTilesX + (col-1)), true);
+            insertNodesFromTile(graph, this.tilesBidimensionalArray.getTileAt(row-1, col-1), true);
         }
     }
 
@@ -595,32 +606,6 @@ public abstract class AbstractTileSegmenter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private static List<ProcessingTile> splitImage(int imageWidth, int imageHeight, int tileWidth, int tileHeight, int margin, int nbTilesX, int nbTilesY) {
-        List<ProcessingTile> tiles = new ArrayList<ProcessingTile>(nbTilesX * nbTilesY);
-        for (int row=0; row<nbTilesY; row++) {
-            for (int col=0; col<nbTilesX; col++) {
-                // compute current tile start and size
-                int startX = col * tileWidth;
-                int startY = row * tileHeight;
-                int sizeX = tileWidth;
-                int sizeY = tileHeight;
-
-                // current tile size might be different for right and bottom borders
-                if (col == nbTilesX - 1) {
-                    sizeX += imageWidth % tileWidth;
-                }
-                if (row == nbTilesY - 1) {
-                    sizeY += imageHeight % tileHeight;
-                }
-
-                ProcessingTile tile = buildTile(imageWidth, imageHeight, startX, startY, sizeX, sizeY, margin);
-
-                tiles.add(tile);
-            }
-        }
-        return tiles;
     }
 
     private static ProcessingTile buildTile(int imageWidth, int imageHeight, int startX, int startY, int sizeX, int sizeY, int margin) {
