@@ -14,7 +14,7 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     private final float shapeWeight;
 
     public BaatzSchapeTileSegmenter(Dimension imageSize, Dimension tileSize, int numberOfIterations, int numberOfFirstIterations,
-                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight) {
+                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight) throws IOException {
 
         super(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation);
 

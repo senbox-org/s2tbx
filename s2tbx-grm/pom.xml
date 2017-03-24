@@ -55,11 +55,6 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>s2tbx-cache</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>s2tbx-jp2-reader</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -6,18 +6,18 @@ import java.util.NoSuchElementException;
 /**
  * @author Jean Coravu
  */
-public class IntToObjectMap<E> extends AbstractIntCollection {
+public class IntToObjectSortedMap<E> extends AbstractIntCollection {
     private static final Object[] OBJECT = new Object[0];
     private static final Object DELETED = new Object();
 
     private boolean garbage;
     private Object[] values;
 
-    public IntToObjectMap() {
+    public IntToObjectSortedMap() {
         this(10);
     }
 
-    public IntToObjectMap(int initialCapacity) {
+    public IntToObjectSortedMap(int initialCapacity) {
         super();
 
         if (initialCapacity == 0) {
@@ -77,7 +77,7 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
                 this.values[i] = value;
             } else {
                 if (this.garbage && this.size >= this.keys.length) {
-                    gc();
+                    garbageCollector();
                     // search again because indices may have changed
                     i = ~binarySearch(this.keys, this.size, key);
                 }
@@ -90,7 +90,7 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
 
     public int size() {
         if (this.garbage) {
-            gc();
+            garbageCollector();
         }
         return this.size;
     }
@@ -113,7 +113,7 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
         return new MapEntriesIterator();
     }
 
-    private void gc() {
+    private void garbageCollector() {
         int number = this.size;
         int count = 0;
         int[] keys = this.keys;
@@ -161,12 +161,12 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
             this.entry = new Entry<E>() {
                 @Override
                 public int getKey() {
-                    return IntToObjectMap.this.keys[MapEntriesIterator.this.cursor-1];
+                    return IntToObjectSortedMap.this.keys[MapEntriesIterator.this.cursor-1];
                 }
 
                 @Override
                 public E getValue() {
-                    return (E) IntToObjectMap.this.values[MapEntriesIterator.this.cursor-1];
+                    return (E) IntToObjectSortedMap.this.values[MapEntriesIterator.this.cursor-1];
                 }
             };
         }
@@ -186,7 +186,7 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
         @Override
         public E next() {
             moveCursor();
-            return (E) IntToObjectMap.this.values[this.cursor-1];
+            return (E) IntToObjectSortedMap.this.values[this.cursor-1];
         }
     }
 
@@ -199,7 +199,7 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
 
         @Override
         public final boolean hasNext() {
-            return (IntToObjectMap.this.size > 0 && computeIndexForNextValue() >= 0);
+            return (IntToObjectSortedMap.this.size > 0 && computeIndexForNextValue() >= 0);
         }
 
         final void moveCursor() {
@@ -212,13 +212,13 @@ public class IntToObjectMap<E> extends AbstractIntCollection {
 
         private int computeIndexForNextValue() {
             int index = this.cursor;
-            Object[] elementData = IntToObjectMap.this.values;
+            Object[] elementData = IntToObjectSortedMap.this.values;
             Object value = null;
             do {
                 value = elementData[index];
                 index++;
-            } while ((value == null || value == IntToObjectMap.DELETED) && index < elementData.length);
-            if (value == null || value == IntToObjectMap.DELETED) {
+            } while ((value == null || value == IntToObjectSortedMap.DELETED) && index < elementData.length);
+            if (value == null || value == IntToObjectSortedMap.DELETED) {
                 return -1; // no such value
             }
             return (index - 1); // return the index of the next value

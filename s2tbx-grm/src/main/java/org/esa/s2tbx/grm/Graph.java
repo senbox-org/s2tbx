@@ -2,7 +2,7 @@ package org.esa.s2tbx.grm;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.grm.tiles.IntToObjectMap;
+import org.esa.s2tbx.grm.tiles.IntToObjectSortedMap;
 import org.esa.s2tbx.grm.tiles.ProcessingTile;
 
 import java.util.ArrayList;
@@ -116,8 +116,8 @@ public class Graph {
         return result;
     }
 
-    public IntToObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
-        IntToObjectMap<List<Node>> borderPixelMap = new IntToObjectMap<List<Node>>(); // key = node id
+    public IntToObjectSortedMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
+        IntToObjectSortedMap<List<Node>> borderPixelMap = new IntToObjectSortedMap<List<Node>>(); // key = node id
 
         int rowMin = (tile.getImageTopY() > 0) ? tile.getImageTopY() - 1 : tile.getImageTopY();
         int rowMax = tile.getImageBottomY() + 1;
@@ -161,10 +161,10 @@ public class Graph {
         return borderPixelMap;
     }
 
-    public void removeDuplicatedNodes(IntToObjectMap<List<Node>> borderPixelMap, int imageWidth) {
-        Iterator<IntToObjectMap.Entry<List<Node>>> itValues = borderPixelMap.entriesIterator();
+    public void removeDuplicatedNodes(IntToObjectSortedMap<List<Node>> borderPixelMap, int imageWidth) {
+        Iterator<IntToObjectSortedMap.Entry<List<Node>>> itValues = borderPixelMap.entriesIterator();
         while (itValues.hasNext()) {
-            IntToObjectMap.Entry<List<Node>> entry = itValues.next();
+            IntToObjectSortedMap.Entry<List<Node>> entry = itValues.next();
             List<Node> nodes = entry.getValue();
             if (nodes.size() > 1) {
                 Node refNode = nodes.get(0); // refNode

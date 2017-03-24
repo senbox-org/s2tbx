@@ -3,13 +3,13 @@ package org.esa.s2tbx.grm.tiles;
 /**
  * @author Jean Coravu
  */
-public class IntSet extends AbstractIntCollection {
+public class IntSortedSet extends AbstractIntCollection {
 
-    public IntSet() {
+    public IntSortedSet() {
         this(10);
     }
 
-    public IntSet(int initialCapacity) {
+    public IntSortedSet(int initialCapacity) {
         super();
 
         if (initialCapacity == 0) {

@@ -2,9 +2,7 @@ package org.esa.s2tbx.grm;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.SubProgressMonitor;
-import org.esa.s2tbx.grm.tiles.AbstractTileSegmenter;
-import org.esa.s2tbx.grm.tiles.BaatzSchapeTileSegmenter;
-import org.esa.s2tbx.grm.tiles.ProcessingTile;
+import org.esa.s2tbx.grm.tiles.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -18,6 +16,7 @@ import org.esa.snap.core.util.math.MathUtils;
 
 import javax.media.jai.JAI;
 import java.awt.*;
+import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -103,7 +102,7 @@ public class GenericRegionMergingOp extends Operator {
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
 
-        Band targetBand = new Band("band_111", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
+        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
 
         Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), this.targetProduct.getSceneRasterHeight());
@@ -121,22 +120,31 @@ public class GenericRegionMergingOp extends Operator {
             fastSegmentation = false;
         }
 
-        this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation, spectralWeight, shapeWeight);
+        try {
+            this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation, spectralWeight, shapeWeight);
+//        if (SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
+//            this.tileSegmenter = new SpringTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation);
+//        } else if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
+//            this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation, spectralWeight, shapeWeight);
+//        } else if (FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
+//            this.tileSegmenter = new FullLambdaScheduleTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation);
+//        }
+        } catch (Exception ex) {
+            throw new OperatorException(ex);
+        }
     }
 
-    public void runSegmentation() {
+    public void runSegmentation() throws IOException, IllegalAccessException {
         System.out.println("  >>>>>>>>>>> start runSegmentation time="+ new Date(System.currentTimeMillis()));
 
         OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
         operatorExecutor.execute(ProgressMonitor.NULL);
 
-        try {
-            AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
-            Band targetBand = segmenter.buildBand();
-            this.targetProduct.addBand(targetBand);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
+        Band oldTargetBand = this.targetProduct.getBandAt(0);
+        Band targetBand = segmenter.buildBand();
+        this.targetProduct.removeBand(oldTargetBand);
+        this.targetProduct.addBand(targetBand);
 
         System.out.println("  >>>>>>>>>>> finish runSegmentation time="+ new Date(System.currentTimeMillis()));
     }
@@ -157,7 +165,7 @@ public class GenericRegionMergingOp extends Operator {
 
         try {
             this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
-        } catch (IllegalAccessException ex) {
+        } catch (Exception ex) {
             throw new OperatorException(ex);
         }
     }

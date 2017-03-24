@@ -14,9 +14,9 @@ import java.util.*;
 public abstract class AbstractSegmenter {
     protected final float threshold;
 
-    public Graph graph;
-    public int imageWidth;
-    public int imageHeight;
+    private Graph graph;
+    private int imageWidth;
+    private int imageHeight;
 
     protected AbstractSegmenter(float threshold) {
         this.threshold = threshold;
@@ -46,11 +46,22 @@ public abstract class AbstractSegmenter {
     }
 
     public Band buildBand() {
+        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, this.imageWidth, this.imageHeight);
+        fillBandData(targetBand);
+        return targetBand;
+    }
+
+    public final void fillBandData(Band targetBand) {
+        if (targetBand.getRasterWidth() != this.imageWidth) {
+            throw new IllegalArgumentException("Different band width.");
+        }
+        if (targetBand.getRasterHeight() != this.imageHeight) {
+            throw new IllegalArgumentException("Different band height.");
+        }
         int widthCount = this.imageWidth + 2;
         int heightCount = this.imageHeight + 2;
         int[][] marker = buildMarkerMatrix();
 
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, this.imageWidth, this.imageHeight);
         ProductData data = targetBand.createCompatibleRasterData();
         targetBand.setData(data);
         for (int y = 1; y < heightCount - 1; y++) {
@@ -58,8 +69,6 @@ public abstract class AbstractSegmenter {
                 targetBand.setPixelInt(x - 1, y - 1, marker[y][x]);
             }
         }
-
-        return targetBand;
     }
 
     public Graph getGraph() {
