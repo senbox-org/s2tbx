@@ -20,19 +20,28 @@ public class IntSortedSet extends AbstractIntCollection {
         this.size = 0;
     }
 
-    public void add(int key) {
-        int i = binarySearch(this.keys, this.size, key);
-        if (i >= 0) {
-            // the key already exists
-        } else {
-            // the key does not exist
-            i = ~i;
-            this.keys = insertKey(this.keys, this.size, i, key);
-            this.size++;
+    public boolean add(int key) {
+        int index = binarySearch(this.keys, this.size, key);
+        if (index >= 0) {
+            return false; // the key already exists
         }
+        // the key does not exist
+        index = ~index;
+        this.keys = insertKey(this.keys, this.size, index, key);
+        this.size++;
+        return true;
+    }
+
+    public boolean contains(int key) {
+        int index = binarySearch(this.keys, this.size, key);
+        return (index >= 0);
     }
 
     public int size() {
         return this.size;
+    }
+
+    public int get(int index) {
+        return this.keys[index];
     }
 }

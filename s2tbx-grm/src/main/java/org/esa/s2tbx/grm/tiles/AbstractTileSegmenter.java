@@ -380,10 +380,9 @@ public abstract class AbstractTileSegmenter {
                             Edge edge = currentNode.findEdge(firstNeighborNode);
                             if (edge == null) {
                                 int boundary = 0;
-                                IntSet borderCells = AbstractSegmenter.generateBorderCells(currentNode.getContour(), currentNode.getId(), imageWidth);
-                                IntIterator itCells = borderCells.iterator();
-                                while (itCells.hasNext()) {
-                                    int gridId = itCells.nextInt();
+                                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(currentNode.getContour(), currentNode.getId(), imageWidth);
+                                for (int b=0; b<borderCells.size(); b++) {
+                                    int gridId = borderCells.get(b);
                                     List<Node> resultNodes = borderPixelMap.get(gridId);
                                     if (resultNodes != null) {
                                         AbstractSegmenter.generateFourNeighborhood(cellNeighborhood, gridId, imageWidth, imageHeight);
@@ -468,10 +467,9 @@ public abstract class AbstractTileSegmenter {
             } else if (box.getLeftX() > tile.getImageRightX() || box.getTopY() > tile.getImageBottomY() || box.getRightX() - 1 < tile.getImageLeftX() || box.getBottomY() - 1 < tile.getImageTopY()) {
                 continue;
             } else {
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                IntIterator it = borderCells.iterator();
-                while (it.hasNext()) {
-                    int gridId = it.nextInt();
+                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                for (int k=0; k<borderCells.size(); k++) {
+                    int gridId = borderCells.get(k);
                     int rowPixel = gridId / imageWidth;
                     int colPixel = gridId % imageWidth;
                     if (rowPixel == tile.getImageTopY() || rowPixel == tile.getImageBottomY()) {

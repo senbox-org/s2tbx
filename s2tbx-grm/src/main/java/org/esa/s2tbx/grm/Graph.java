@@ -90,10 +90,9 @@ public class Graph {
                 continue;
             } else {
                 // the node is on the tile margin or outside the tile
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                IntIterator it = borderCells.iterator();
-                while (it.hasNext()) {
-                    int gridIdInImage = it.nextInt();
+                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                for (int k=0; k<borderCells.size(); k++) {
+                    int gridIdInImage = borderCells.get(k);
                     int rowPixelInImage = gridIdInImage / imageWidth;
                     int colPixelInImage = gridIdInImage % imageWidth;
                     if (tile.getImageTopY() > 0 && rowPixelInImage == tile.getImageTopY()) {
@@ -131,10 +130,9 @@ public class Graph {
             if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
                 continue;
             } else {
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                IntIterator it = borderCells.iterator();
-                while (it.hasNext()) {
-                    int gridId = it.nextInt();
+                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                for (int k=0; k<borderCells.size(); k++) {
+                    int gridId = borderCells.get(k);
                     int rowPixel = gridId / imageWidth;
                     int colPixel = gridId % imageWidth;
                     boolean addNode = false;
@@ -189,10 +187,9 @@ public class Graph {
                     currentNode.setExpired(true);
                 }
 
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(refNode.getContour(), refNode.getId(), imageWidth);
-                IntIterator itCells = borderCells.iterator();
-                while (itCells.hasNext()) {
-                    int gridId = itCells.nextInt();
+                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(refNode.getContour(), refNode.getId(), imageWidth);
+                for (int k=0; k<borderCells.size(); k++) {
+                    int gridId = borderCells.get(k);
                     List<Node> resultNodes = borderPixelMap.get(gridId);
                     if (resultNodes != null) {
                         resultNodes.clear();
@@ -216,11 +213,10 @@ public class Graph {
                 node.setExpired(true);
                 removeEdgeToUnstableNode(node);
             } else {
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
                 boolean stable = false;
-                IntIterator it = borderCells.iterator();
-                while (it.hasNext()) {
-                    int gridIdInImage = it.nextInt();
+                for (int k=0; k<borderCells.size(); k++) {
+                    int gridIdInImage = borderCells.get(k);
                     int rowPixelInImage = gridIdInImage / imageWidth;
                     int colPixelInImage = gridIdInImage % imageWidth;
                     if (rowPixelInImage >= tile.getImageTopY() && rowPixelInImage <= tile.getImageBottomY() && colPixelInImage >= tile.getImageLeftX() && colPixelInImage <= tile.getImageRightX()) {
