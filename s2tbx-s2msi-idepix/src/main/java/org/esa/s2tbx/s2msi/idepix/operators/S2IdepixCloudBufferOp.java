@@ -84,14 +84,14 @@ public class S2IdepixCloudBufferOp extends Operator {
                 if (targetRectangle.contains(x, y)) {
                     S2IdepixUtils.combineFlags(x, y, sourceFlagTile, targetTile);
                 }
-                boolean isCloud = sourceFlagTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_SURE) ||
-                        sourceFlagTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS);
+                boolean isCloud = sourceFlagTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE) ||
+                        sourceFlagTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS);
                 if (isCloud) {
                     S2IdepixCloudBuffer.computeSimpleCloudBuffer(x, y,
                                                                  targetTile,
                                                                  srcRectangle,
                                                                  cloudBufferWidth,
-                                                                 S2IdepixConstants.F_CLOUD_BUFFER);
+                                                                 S2IdepixConstants.IDEPIX_CLOUD_BUFFER);
                 }
             }
         }

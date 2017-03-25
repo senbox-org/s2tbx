@@ -26,20 +26,20 @@ public class FlagDetectorSentinel2 implements FlagDetector {
     @Override
     public boolean isLand(int x, int y) {
         final int sample = classifData[y * roiWidth + x];
-        return (sample & S2IdepixConstants.F_LAND) != 0;
+        return (sample & S2IdepixConstants.IDEPIX_LAND) != 0;
     }
 
     @Override
     public boolean isCloud(int x, int y) {
         final int classifSample = classifData[y * roiWidth + x];
-        return ((classifSample & S2IdepixConstants.F_CLOUD) != 0 || (classifSample & S2IdepixConstants.F_CLOUD_BUFFER) != 0);
+        return ((classifSample & S2IdepixConstants.IDEPIX_CLOUD) != 0 || (classifSample & S2IdepixConstants.IDEPIX_CLOUD_BUFFER) != 0);
     }
 
     @Override
     public boolean isCloudBuffer(int x, int y) {
         if (bufferData != null) {
             final int bufferSample = bufferData[y * roiWidth + x];
-            return ((bufferSample & S2IdepixConstants.F_CLOUD_BUFFER) != 0);
+            return ((bufferSample & S2IdepixConstants.IDEPIX_CLOUD_BUFFER) != 0);
         } else {
             return  false;
         }

@@ -278,44 +278,44 @@ public class S2IdepixClassificationOp extends Operator {
                     if (!ignoreNN) {
                         if (applyNNPure) {
                             // 'pure Schiller'
-                            if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.F_INVALID)) {
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, false);
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SURE, false);
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, false);
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_SNOW, false);
+                            if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_INVALID)) {
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, false);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, false);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, false);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_SNOW, false);
                                 if (nnOutput[0] > nnCloudAmbiguousLowerBoundaryValue &&
                                         nnOutput[0] <= nnCloudAmbiguousSureSeparationValue) {
                                     // this would be as 'CLOUD_AMBIGUOUS'...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, true);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
                                 }
                                 if (nnOutput[0] > nnCloudAmbiguousSureSeparationValue &&
                                         nnOutput[0] <= nnCloudSureSnowSeparationValue) {
                                     // this would be as 'CLOUD_SURE'...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SURE, true);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
                                 }
                                 if (nnOutput[0] > nnCloudSureSnowSeparationValue) {
                                     // this would be as 'SNOW/ICE'...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_SNOW, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_SNOW, true);
                                 }
                             }
                         } else {
                             // just 'refinement with Schiller', as with old net. // todo: what do we want??
-                            if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD) &&
-                                    !cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_SURE)) {
+                            if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_CLOUD) &&
+                                    !cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE)) {
                                 if (nnOutput[0] > nnCloudAmbiguousLowerBoundaryValue &&
                                         nnOutput[0] <= nnCloudAmbiguousSureSeparationValue) {
                                     // this would be as 'CLOUD_AMBIGUOUS' in CC and makes many coastlines as cloud...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, true);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
                                 }
                                 if (nnOutput[0] > nnCloudAmbiguousSureSeparationValue &&
                                         nnOutput[0] <= nnCloudSureSnowSeparationValue) {
                                     //   'CLOUD_SURE' as in CC (20140424, OD)
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SURE, true);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, false);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, false);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
                                 }
                             }
                         }
@@ -616,24 +616,24 @@ public class S2IdepixClassificationOp extends Operator {
 
     void setCloudFlag(Tile targetTile, int y, int x, S2IdepixAlgorithm s2Algorithm) {
         // for given instrument, compute boolean pixel properties and write to cloud flag band
-        targetTile.setSample(x, y, S2IdepixConstants.F_INVALID, s2Algorithm.isInvalid());
-        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, s2Algorithm.isCloud());
-        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SURE, s2Algorithm.isCloud());
-        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, s2Algorithm.isCloudAmbiguous());
-        targetTile.setSample(x, y, S2IdepixConstants.F_CIRRUS_SURE, s2Algorithm.isCirrus());
-        targetTile.setSample(x, y, S2IdepixConstants.F_CIRRUS_AMBIGUOUS, s2Algorithm.isCirrusAmbiguous());
-        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SHADOW, false); // not computed here
-        targetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_LAND, s2Algorithm.isClearLand());
-        targetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_WATER, s2Algorithm.isClearWater());
-        targetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_SNOW, s2Algorithm.isClearSnow());
-        targetTile.setSample(x, y, S2IdepixConstants.F_LAND, s2Algorithm.isLand());
-        targetTile.setSample(x, y, S2IdepixConstants.F_WATER, s2Algorithm.isWater());
-        targetTile.setSample(x, y, S2IdepixConstants.F_BRIGHT, s2Algorithm.isBright());
-        targetTile.setSample(x, y, S2IdepixConstants.F_WHITE, s2Algorithm.isWhite());
-        targetTile.setSample(x, y, S2IdepixConstants.F_BRIGHTWHITE, s2Algorithm.isBrightWhite());
-        targetTile.setSample(x, y, S2IdepixConstants.F_HIGH, s2Algorithm.isHigh());
-        targetTile.setSample(x, y, S2IdepixConstants.F_VEG_RISK, s2Algorithm.isVegRisk());
-        targetTile.setSample(x, y, S2IdepixConstants.F_SEAICE, s2Algorithm.isSeaIce());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_INVALID, s2Algorithm.isInvalid());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, s2Algorithm.isCloud());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, s2Algorithm.isCloud());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, s2Algorithm.isCloudAmbiguous());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CIRRUS_SURE, s2Algorithm.isCirrus());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CIRRUS_AMBIGUOUS, s2Algorithm.isCirrusAmbiguous());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, false); // not computed here
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_LAND, s2Algorithm.isClearLand());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_WATER, s2Algorithm.isClearWater());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_SNOW, s2Algorithm.isClearSnow());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_LAND, s2Algorithm.isLand());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_WATER, s2Algorithm.isWater());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_BRIGHT, s2Algorithm.isBright());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_WHITE, s2Algorithm.isWhite());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_BRIGHTWHITE, s2Algorithm.isBrightWhite());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_HIGH, s2Algorithm.isHigh());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_VEG_RISK, s2Algorithm.isVegRisk());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SEAICE, s2Algorithm.isSeaIce());
     }
 
     /**
