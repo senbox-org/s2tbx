@@ -84,7 +84,7 @@ public abstract class AbstractSegmenter {
         while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {
             iterations++;
             if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "Iterations with LMBF. Iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations+".");
+                logger.log(Level.FINEST, "Iterations with LMBF. Iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations);
             }
             merged = perfomOneIterationWithLMBF();
         }
