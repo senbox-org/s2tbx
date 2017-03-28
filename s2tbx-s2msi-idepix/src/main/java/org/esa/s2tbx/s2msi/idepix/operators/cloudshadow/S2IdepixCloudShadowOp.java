@@ -2,7 +2,14 @@ package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.apache.commons.lang.StringUtils;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.ColorPaletteDef;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.ImageInfo;
+import org.esa.snap.core.datamodel.IndexCoding;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.RasterDataNode;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -13,7 +20,8 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 
 import javax.media.jai.BorderExtenderConstant;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Rectangle;
 import java.util.Map;
 
 /**
@@ -199,8 +207,6 @@ public class S2IdepixCloudShadowOp extends Operator {
 
         Tile sourceTileSunZenith = getSourceTile(sourceSunZenith, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
         Tile sourceTileSunAzimuth = getSourceTile(sourceSunAzimuth, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
-        Tile sourceTileLatitude = getSourceTile(sourceLatitude, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
-        Tile sourceTileLongitude = getSourceTile(sourceLongitude, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
         Tile sourceTileAltitude = getSourceTile(sourceAltitude, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
 
         Tile sourceTileFlag1 = getSourceTile(sourceBandFlag1, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
@@ -231,11 +237,31 @@ public class S2IdepixCloudShadowOp extends Operator {
 
         final float[] sourceSunZenith = sourceTileSunZenith.getSamplesFloat();
         final float[] sourceSunAzimuth = sourceTileSunAzimuth.getSamplesFloat();
-        final float[] sourceLatitude = sourceTileLatitude.getSamplesFloat();
-        final float[] sourceLongitude = sourceTileLongitude.getSamplesFloat();
         final float[] sourceAltitude = sourceTileAltitude.getSamplesFloat();
         final float[] sourceClusterA = sourceTileClusterA.getSamplesFloat();
         final float[] sourceClusterB = sourceTileClusterA.getSamplesFloat();
+
+        float[] sourceLatitudes;
+        float[] sourceLongitudes;
+        if (sourceLatitude != null && sourceLongitude != null) {
+            Tile sourceTileLatitude = getSourceTile(sourceLatitude, sourceRectangle,
+                                                    new BorderExtenderConstant(new double[]{Double.NaN}));
+            Tile sourceTileLongitude = getSourceTile(sourceLongitude, sourceRectangle,
+                                                     new BorderExtenderConstant(new double[]{Double.NaN}));
+            sourceLatitudes = sourceTileLatitude.getSamplesFloat();
+            sourceLongitudes = sourceTileLongitude.getSamplesFloat();
+        } else if (getSourceProduct().getSceneGeoCoding() instanceof CrsGeoCoding) {
+            sourceLatitudes = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
+            sourceLongitudes = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
+            ((CrsGeoCoding) getSourceProduct().getSceneGeoCoding()).getPixels((int) sourceRectangle.getMinX(),
+                                                                              (int) sourceRectangle.getMinY(),
+                                                                              (int) sourceRectangle.getWidth(),
+                                                                              (int) sourceRectangle.getHeight(),
+                                                                              sourceLatitudes,
+                                                                              sourceLongitudes);
+        } else {
+            throw new OperatorException("Could not determine geographic position");
+        }
 
         FlagDetector flagDetector = new FlagDetectorSentinel2(sourceTileFlag1, sourceTileFlag2, sourceRectangle);
 
@@ -270,7 +296,7 @@ public class S2IdepixCloudShadowOp extends Operator {
                         PotentialCloudShadowAreasPathCentralPixel.
                                 makedCloudShadowArea(s2ClassifProduct, targetProduct, sourceRectangle,
                                                      targetRectangle, sourceSunZenith, sourceSunAzimuth,
-                                                     sourceLatitude, sourceLongitude, sourceAltitude,
+                                                     sourceLatitudes, sourceLongitudes, sourceAltitude,
                                                      flagArray, cloudShadowArray,
                                                      cloudIDArray, cloudShadowIDArray, counterTable);
             } else {
@@ -278,7 +304,7 @@ public class S2IdepixCloudShadowOp extends Operator {
                         PotentialCloudShadowAreas.
                                 makedCloudShadowArea(s2ClassifProduct, targetProduct, sourceRectangle,
                                                      targetRectangle, sourceSunZenith, sourceSunAzimuth,
-                                                     sourceLatitude, sourceLongitude, sourceAltitude,
+                                                     sourceLatitudes, sourceLongitudes, sourceAltitude,
                                                      flagArray, cloudShadowArray,
                                                      cloudIDArray, cloudShadowIDArray, counterTable);
             }
