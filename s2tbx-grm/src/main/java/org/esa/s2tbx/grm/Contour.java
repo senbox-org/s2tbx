@@ -1,7 +1,5 @@
 package org.esa.s2tbx.grm;
 
-import com.sun.javafx.scene.shape.PathUtils;
-
 /**
  * @author Jean Coravu
  */
