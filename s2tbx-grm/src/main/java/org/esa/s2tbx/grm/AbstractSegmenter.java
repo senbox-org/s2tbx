@@ -96,6 +96,9 @@ public abstract class AbstractSegmenter {
         boolean merged = true;
         while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {
             iterations++;
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, "Iterations with BF. Iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations);
+            }
             merged = perfomOneIterationWithBF();
         }
         return merged;
@@ -182,7 +185,7 @@ public abstract class AbstractSegmenter {
 
         int numberOfComponentsPerPixel = sourceTiles.length;
         int numberOfNodes = this.imageWidth * this.imageHeight;
-        this.graph = new Graph(numberOfNodes);
+        this.graph = new Graph();
 
         for (int i = 0; i < numberOfNodes; i++) {
             int upperLeftX = i % this.imageWidth;

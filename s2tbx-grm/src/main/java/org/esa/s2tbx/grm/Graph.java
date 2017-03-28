@@ -13,8 +13,8 @@ import java.util.List;
 public class Graph {
     private final ArrayListExtended<Node> nodes;
 
-    public Graph(int numberOfNodes) {
-        this.nodes = new ArrayListExtended<Node>(numberOfNodes);
+    public Graph() {
+        this.nodes = new ArrayListExtended<Node>();
     }
 
     public Node getNodeAt(int index) {
@@ -267,8 +267,8 @@ public class Graph {
 
     private static class ArrayListExtended<ItemType> extends ArrayList<ItemType> {
 
-        ArrayListExtended(int initialCapacity) {
-            super(initialCapacity);
+        ArrayListExtended() {
+            super();
         }
 
         void removeItems(int fromIndex, int toIndex) {
