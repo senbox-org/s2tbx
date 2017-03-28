@@ -210,18 +210,30 @@ public class IntToObjectSortedMap<E> extends AbstractIntCollection {
             this.cursor = index + 1;
         }
 
+//        private int computeIndexForNextValue() {
+//            int index = this.cursor;
+//            Object[] elementData = IntToObjectSortedMap.this.values;
+//            Object value = null;
+//            do {
+//                value = elementData[index];
+//                index++;
+//            } while ((value == null || value == IntToObjectSortedMap.DELETED) && index < elementData.length);
+//            if (value == null || value == IntToObjectSortedMap.DELETED) {
+//                return -1; // no such value
+//            }
+//            return (index - 1); // return the index of the next value
+//        }
         private int computeIndexForNextValue() {
             int index = this.cursor;
             Object[] elementData = IntToObjectSortedMap.this.values;
             Object value = null;
-            do {
+            for (int i = this.cursor; i<IntToObjectSortedMap.this.size; i++) {
                 value = elementData[index];
-                index++;
-            } while ((value == null || value == IntToObjectSortedMap.DELETED) && index < elementData.length);
-            if (value == null || value == IntToObjectSortedMap.DELETED) {
-                return -1; // no such value
+                if (value != IntToObjectSortedMap.DELETED) {
+                    return i; // return the index of the next value
+                }
             }
-            return (index - 1); // return the index of the next value
+            return -1; // no such value
         }
     }
 }

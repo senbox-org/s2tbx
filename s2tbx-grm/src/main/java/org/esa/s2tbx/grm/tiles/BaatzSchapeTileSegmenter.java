@@ -4,7 +4,6 @@ import org.esa.s2tbx.grm.*;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 /**
  * @author Jean Coravu
@@ -13,10 +12,12 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     private final float spectralWeight;
     private final float shapeWeight;
 
-    public BaatzSchapeTileSegmenter(Dimension imageSize, Dimension tileSize, int numberOfIterations, int numberOfFirstIterations,
-                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight) throws IOException {
+    public BaatzSchapeTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
+                                    int iterationsForEachFirstSegmentation, float threshold, boolean fastSegmentation,
+                                    float spectralWeight, float shapeWeight)
+                                    throws IOException {
 
-        super(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation);
+        super(imageSize, tileSize, totalIterationsForSecondSegmentation, iterationsForEachFirstSegmentation, threshold, fastSegmentation);
 
         this.spectralWeight = spectralWeight;
         this.shapeWeight = shapeWeight;

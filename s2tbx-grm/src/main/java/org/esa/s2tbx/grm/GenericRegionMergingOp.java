@@ -18,6 +18,8 @@ import javax.media.jai.JAI;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author  Jean Coravu
@@ -30,6 +32,8 @@ import java.util.Date;
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class GenericRegionMergingOp extends Operator {
+    private static final Logger logger = Logger.getLogger(GenericRegionMergingOp.class.getName());
+
     private static final String SPRING_MERGING_COST_CRITERION = "Spring";
     public static final String BAATZ_SCHAPE_MERGING_COST_CRITERION = "Baatz & Schape";
     private static final String FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION = "Full Lamda Schedule";
@@ -46,8 +50,11 @@ public class GenericRegionMergingOp extends Operator {
             valueSet = {BEST_FITTING_REGION_MERGING_CRITERION, LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION})
     private String regionMergingCriterion;
 
-    @Parameter(label = "Number of iterations", description = "The number of iterations.")
-    private int numberOfIterations;
+    @Parameter(label = "Total iterations for second segmentation", description = "The total number of iterations.")
+    private int totalIterationsForSecondSegmentation;
+
+    @Parameter(label = "Iterations for each first segmentation", description = "The number of iterations for each first segmentation.")
+    private int iterationsForEachFirstSegmentation;
 
     @Parameter(label = "Threshold", description = "The threshold.")
     private int threshold;
@@ -74,23 +81,29 @@ public class GenericRegionMergingOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
-//        if (this.mergingCostCriterion == null) {
-//            throw new OperatorException("Please specify the merging cost criterion.");
-//        }
-//        if (this.regionMergingCriterion == null) {
-//            throw new OperatorException("Please specify the region merging criterion.");
-//        }
-//        if (this.threshold == 0.0f) {
-//            throw new OperatorException("Please specify the threshold.");
-//        }
-//        if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-//            if (this.spectralWeight == 0.0f) {
-//                throw new OperatorException("Please specify the spectral weight.");
-//            }
-//            if (this.shapeWeight == 0.0f) {
-//                throw new OperatorException("Please specify the shape weight.");
-//            }
-//        }
+        if (this.mergingCostCriterion == null) {
+            throw new OperatorException("Please specify the merging cost criterion.");
+        }
+        if (this.regionMergingCriterion == null) {
+            throw new OperatorException("Please specify the region merging criterion.");
+        }
+        if (this.totalIterationsForSecondSegmentation == 0.0f) {
+            throw new OperatorException("Please specify the total iterations for second segmentation.");
+        }
+        if (this.iterationsForEachFirstSegmentation == 0.0f) {
+            throw new OperatorException("Please specify the iterations for each first segmentation.");
+        }
+        if (this.threshold == 0.0f) {
+            throw new OperatorException("Please specify the threshold.");
+        }
+        if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
+            if (this.spectralWeight == 0.0f) {
+                throw new OperatorException("Please specify the spectral weight.");
+            }
+            if (this.shapeWeight == 0.0f) {
+                throw new OperatorException("Please specify the shape weight.");
+            }
+        }
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
             throw new OperatorException("Please select at least one band.");
         }
@@ -98,20 +111,14 @@ public class GenericRegionMergingOp extends Operator {
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
+        //TODO Jean remove
+        tileSize = new Dimension(512, 512);
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
-
-        Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), this.targetProduct.getSceneRasterHeight());
-
-        this.threshold = 2000;
-        this.numberOfIterations = 75;
-        this.shapeWeight = 0.5f;
-        this.spectralWeight = 0.5f;
-        int numberOfFirstIterations = 2;
 
         boolean fastSegmentation = false;
         if (BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(this.regionMergingCriterion)) {
@@ -120,54 +127,85 @@ public class GenericRegionMergingOp extends Operator {
             fastSegmentation = false;
         }
 
+        Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), this.targetProduct.getSceneRasterHeight());
+
         try {
-            this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation, spectralWeight, shapeWeight);
-//        if (SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-//            this.tileSegmenter = new SpringTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation);
-//        } else if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-//            this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation, spectralWeight, shapeWeight);
-//        } else if (FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-//            this.tileSegmenter = new FullLambdaScheduleTileSegmenter(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation);
-//        }
+            if (SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
+                this.tileSegmenter = new SpringTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, iterationsForEachFirstSegmentation, threshold, fastSegmentation);
+            } else if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
+                this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, iterationsForEachFirstSegmentation, threshold, fastSegmentation, spectralWeight, shapeWeight);
+            } else if (FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
+                this.tileSegmenter = new FullLambdaScheduleTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, iterationsForEachFirstSegmentation, threshold, fastSegmentation);
+            }
         } catch (Exception ex) {
             throw new OperatorException(ex);
         }
+
+        Logger.getLogger("org.esa.s2tbx.grm").setLevel(Level.FINEST);
     }
 
     public void runSegmentation() throws IOException, IllegalAccessException {
-        System.out.println("  >>>>>>>>>>> start runSegmentation time="+ new Date(System.currentTimeMillis()));
+        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
 
-        OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
-        operatorExecutor.execute(ProgressMonitor.NULL);
+        long startTime = System.currentTimeMillis();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", start time: "+new Date(startTime));
+        }
 
-        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
+//        OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
+//        operatorExecutor.execute(ProgressMonitor.NULL);
+
+//        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
+
+        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+        Rectangle rectangleToRead = new Rectangle(0, 0, sceneWidth, sceneHeight);
+        for (int i=0; i<this.sourceBandNames.length; i++) {
+            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
+            sourceTiles[i] = getSourceTile(band, rectangleToRead);
+        }
+
+        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSegmentation(sourceTiles);
+
         Band oldTargetBand = this.targetProduct.getBandAt(0);
         Band targetBand = segmenter.buildBand();
         this.targetProduct.removeBand(oldTargetBand);
         this.targetProduct.addBand(targetBand);
 
-        System.out.println("  >>>>>>>>>>> finish runSegmentation time="+ new Date(System.currentTimeMillis()));
+        if (logger.isLoggable(Level.FINE)) {
+            long finishTime = System.currentTimeMillis();
+            long totalSeconds = (finishTime - startTime) / 1000;
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+        }
     }
 
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
-        Rectangle targetRectangle = targetTile.getRectangle();
-
-        ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
-        BoundingBox region = currentTile.getRegion();
-
-        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
-        Rectangle imageRectangle = new Rectangle(region.getLeftX(), region.getTopY(), region.getWidth(), region.getHeight());
-        for (int i=0; i<this.sourceBandNames.length; i++) {
-            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            sourceTiles[i] = getSourceTile(band, imageRectangle);
-        }
-
-        try {
-            this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
-        } catch (Exception ex) {
-            throw new OperatorException(ex);
-        }
+//        Rectangle targetRectangle = targetTile.getRectangle();
+//
+//        ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
+//        BoundingBox tileRegion = currentTile.getRegion();
+//        int tileColumnIndex = this.tileSegmenter.computeTileColumnIndex(currentTile);
+//        int tileRowIndex = this.tileSegmenter.computeTileRowIndex(currentTile);
+//        int tileMargin = this.tileSegmenter.computeTileMargin();
+//
+//        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+//        Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
+//
+//        System.out.println("computeTile tileMargin="+tileMargin+" tileRowIndex="+tileRowIndex+" tileColumnIndex="+tileColumnIndex+" targetRectangle="+targetRectangle);
+//
+//        for (int i=0; i<this.sourceBandNames.length; i++) {
+//            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
+//            sourceTiles[i] = getSourceTile(band, rectangleToRead);
+//        }
+//
+//        try {
+//            this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
+//        } catch (Exception ex) {
+//            throw new OperatorException(ex);
+//        }
     }
 
     public static class Spi extends OperatorSpi {

@@ -178,8 +178,6 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
                 boolean incremental = false;
                 GPF.writeProduct(this.targetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
 
-                System.out.println("after operator.execute");
-
                 saveTime = System.currentTimeMillis() - t0;
                 if (model.isOpenInAppSelected()) {
                     File targetFile = model.getProductFile();

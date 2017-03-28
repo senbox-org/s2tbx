@@ -22,12 +22,14 @@ public class TilesBidimensionalArray {
         return this.tilesMap.get(key);
     }
 
-    public void addTile(int rowIndex, int columnIndex, ProcessingTile tileToAdd) {
+    public ProcessingTile addTile(int rowIndex, int columnIndex, ProcessingTile tileToAdd) {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
-        this.tilesMap.put(key, tileToAdd);
+        ProcessingTile oldTile = this.tilesMap.put(key, tileToAdd);
 
         this.tileCountX = Math.max(this.tileCountX, columnIndex+1);
         this.tileCountY = Math.max(this.tileCountY, rowIndex+1);
+
+        return oldTile;
     }
 
     public int getTileCountX() {

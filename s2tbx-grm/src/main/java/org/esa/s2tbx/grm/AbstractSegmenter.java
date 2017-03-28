@@ -1,14 +1,20 @@
 package org.esa.s2tbx.grm;
 
 import it.unimi.dsi.fastutil.ints.*;
+import org.esa.s2tbx.grm.tiles.AbstractTileSegmenter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.Tile;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Jean Coravu
  */
 public abstract class AbstractSegmenter {
+    private static final Logger logger = Logger.getLogger(AbstractSegmenter.class.getName());
+
     protected final float threshold;
 
     private Graph graph;
@@ -28,9 +34,9 @@ public abstract class AbstractSegmenter {
 
         boolean merged = false;
         if (fastSegmentation) {
-            merged = perfomAllIterationsWithBF(numberOfIterations);
+            merged = performAllIterationsWithBF(numberOfIterations);
         } else {
-            merged = perfomAllIterationsWithLMBF(numberOfIterations);
+            merged = performAllIterationsWithLMBF(numberOfIterations);
         }
 
         return !merged;
@@ -72,17 +78,20 @@ public abstract class AbstractSegmenter {
         return graph;
     }
 
-    public boolean perfomAllIterationsWithLMBF(int numberOfIterations) {
+    public boolean performAllIterationsWithLMBF(int numberOfIterations) {
         int iterations = 0;
         boolean merged = true;
         while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, "Iterations with LMBF. Iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations:"+numberOfIterations+".");
+            }
             iterations++;
             merged = perfomOneIterationWithLMBF();
         }
         return merged;
     }
 
-    private boolean perfomAllIterationsWithBF(int numberOfIterations) {
+    private boolean performAllIterationsWithBF(int numberOfIterations) {
         int iterations = 0;
         boolean merged = true;
         while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {

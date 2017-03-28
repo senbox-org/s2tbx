@@ -1,7 +1,5 @@
 package org.esa.s2tbx.grm;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.grm.tiles.IntToObjectSortedMap;
 import org.esa.s2tbx.grm.tiles.ProcessingTile;
 
