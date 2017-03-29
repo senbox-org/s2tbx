@@ -58,22 +58,22 @@ public class GDALInstaller {
      */
     public void install() throws IOException {
         if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-            logger.log(Level.SEVERE, "The GDAL library is available only on Windows operation system.");
+            logger.log(Level.INFO, "The GDAL integration in SNAP is available only on Windows operation system.");
             return;
         }
         OSCategory osCategory = OSCategory.getOSCategory();
         if (osCategory.getDirectory() == null) {
-            logger.log(Level.SEVERE, "No folder found.");
+            logger.log(Level.INFO, "No distribution folder found.");
             return;
         }
         if (osCategory.getZipFileName() == null) {
-            logger.log(Level.SEVERE, "No zip file name found.");
+            logger.log(Level.INFO, "No library zip file name found.");
             return;
         }
 
         Path gdalFolderPath = getGDALFolderPath();
         if (gdalFolderPath == null) {
-            logger.log(Level.SEVERE, "Failed to retrieve the GDAL folder path on the local disk.");
+            logger.log(Level.INFO, "No folder path to install the GDAL integration on the local disk.");
             return;
         }
         if (!Files.exists(gdalFolderPath)) {
@@ -160,7 +160,7 @@ public class GDALInstaller {
                 gdalInstallInfo.setLocations(gdalBinFolderPath, gdalAppsFolderPath, gdalDriverFolderPath, gdalDataFolderPath);
             }
         } else {
-            logger.log(Level.SEVERE, "The GDAL bin folder '"+gdalBinFolderPath.toString()+"' does not contain the library '" + mapLibraryName + "'.");
+            logger.log(Level.INFO, "The GDAL bin folder '"+gdalBinFolderPath.toString()+"' does not contain the library '" + mapLibraryName + "'.");
         }
     }
 
