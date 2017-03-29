@@ -58,22 +58,22 @@ public class GDALInstaller {
      */
     public void install() throws IOException {
         if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-            logger.log(Level.SEVERE, "The GDAL library is available only on Windows operation system.");
+            logger.log(Level.INFO, "The GDAL integration in SNAP is available only on Windows operation system.");
             return;
         }
         OSCategory osCategory = OSCategory.getOSCategory();
         if (osCategory.getDirectory() == null) {
-            logger.log(Level.SEVERE, "No folder found.");
+            logger.log(Level.INFO, "No distribution folder found.");
             return;
         }
         if (osCategory.getZipFileName() == null) {
-            logger.log(Level.SEVERE, "No zip file name found.");
+            logger.log(Level.INFO, "No library zip file name found.");
             return;
         }
 
         Path gdalFolderPath = getGDALFolderPath();
         if (gdalFolderPath == null) {
-            logger.log(Level.SEVERE, "Failed to retrieve the GDAL folder path on the local disk.");
+            logger.log(Level.INFO, "No folder path to install the GDAL integration on the local disk.");
             return;
         }
         if (!Files.exists(gdalFolderPath)) {
@@ -160,7 +160,7 @@ public class GDALInstaller {
                 gdalInstallInfo.setLocations(gdalBinFolderPath, gdalAppsFolderPath, gdalDriverFolderPath, gdalDataFolderPath);
             }
         } else {
-            logger.log(Level.SEVERE, "The GDAL bin folder '"+gdalBinFolderPath.toString()+"' does not contain the library '" + mapLibraryName + "'.");
+            logger.log(Level.INFO, "The GDAL bin folder '"+gdalBinFolderPath.toString()+"' does not contain the library '" + mapLibraryName + "'.");
         }
     }
 
@@ -227,26 +227,19 @@ public class GDALInstaller {
     }
 
     private enum OSCategory {
-        WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip",
-                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
-        WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip",
-                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
-        LINUX_64(null, null,
-                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
-        MAC_OS_X(null, null, null, null, null),
-        UNSUPPORTED(null, null, null, null, null);
+        WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip"),
+        WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip"),
+        LINUX_64(null, null),
+        MAC_OS_X(null, null),
+        UNSUPPORTED(null, null);
 
         String directory;
         String zipFileName;
-        String[] jniFiles;
 
-        OSCategory(String directory, String zipFileName, String... jniFiles) {
+        OSCategory(String directory, String zipFileName) {
             this.directory = directory;
             this.zipFileName = zipFileName;
-            this.jniFiles = jniFiles;
         }
-
-        String[] getJniFiles() { return this.jniFiles; }
 
         String getDirectory() { return this.directory; }
 
