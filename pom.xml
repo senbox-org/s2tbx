@@ -57,6 +57,8 @@
         <module>lib-gdal</module>
         <module>s2tbx-gdal-reader</module>
         <module>s2tbx-gdal-reader-ui</module>
+        <module>s2tbx-mosaic</module>
+        <module>s2tbx-mosaic-ui</module>
     </modules>
 
     <packaging>pom</packaging>
