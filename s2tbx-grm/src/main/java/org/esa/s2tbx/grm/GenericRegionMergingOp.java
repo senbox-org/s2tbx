@@ -174,8 +174,9 @@ public class GenericRegionMergingOp extends Operator {
         if (logger.isLoggable(Level.FINE)) {
             long finishTime = System.currentTimeMillis();
             long totalSeconds = (finishTime - startTime) / 1000;
+            int graphNodeCount = segmenter.getGraph().getNodeCount();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+            logger.log(Level.FINE, "Finish Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
         }
     }
 

@@ -1,10 +1,13 @@
 package org.esa.s2tbx.grm;
 
-import org.esa.s2tbx.grm.tiles.IntToObjectSortedMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.grm.tiles.ProcessingTile;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -88,9 +91,10 @@ public class Graph {
                 continue;
             } else {
                 // the node is on the tile margin or outside the tile
-                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                for (int k=0; k<borderCells.size(); k++) {
-                    int gridIdInImage = borderCells.get(k);
+                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                IntIterator itCells = borderCells.iterator();
+                while (itCells.hasNext()) {
+                    int gridIdInImage = itCells.nextInt();
                     int rowPixelInImage = gridIdInImage / imageWidth;
                     int colPixelInImage = gridIdInImage % imageWidth;
                     if (tile.getImageTopY() > 0 && rowPixelInImage == tile.getImageTopY()) {
@@ -113,8 +117,8 @@ public class Graph {
         return result;
     }
 
-    public IntToObjectSortedMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
-        IntToObjectSortedMap<List<Node>> borderPixelMap = new IntToObjectSortedMap<List<Node>>(); // key = node id
+    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
+        Int2ObjectMap<List<Node>> borderPixelMap = new Int2ObjectLinkedOpenHashMap<List<Node>>(); // key = node id
 
         int rowMin = (tile.getImageTopY() > 0) ? tile.getImageTopY() - 1 : tile.getImageTopY();
         int rowMax = tile.getImageBottomY() + 1;
@@ -128,9 +132,10 @@ public class Graph {
             if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
                 continue;
             } else {
-                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                for (int k=0; k<borderCells.size(); k++) {
-                    int gridId = borderCells.get(k);
+                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                IntIterator itCells = borderCells.iterator();
+                while (itCells.hasNext()) {
+                    int gridId = itCells.nextInt();
                     int rowPixel = gridId / imageWidth;
                     int colPixel = gridId % imageWidth;
                     boolean addNode = false;
@@ -157,10 +162,10 @@ public class Graph {
         return borderPixelMap;
     }
 
-    public void removeDuplicatedNodes(IntToObjectSortedMap<List<Node>> borderPixelMap, int imageWidth) {
-        Iterator<IntToObjectSortedMap.Entry<List<Node>>> itValues = borderPixelMap.entriesIterator();
-        while (itValues.hasNext()) {
-            IntToObjectSortedMap.Entry<List<Node>> entry = itValues.next();
+    public void removeDuplicatedNodes(Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth) {
+        ObjectIterator<Int2ObjectMap.Entry<List<Node>>> it = borderPixelMap.int2ObjectEntrySet().iterator();
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<List<Node>> entry = it.next();
             List<Node> nodes = entry.getValue();
             if (nodes.size() > 1) {
                 Node refNode = nodes.get(0); // refNode
@@ -185,9 +190,10 @@ public class Graph {
                     currentNode.setExpired(true);
                 }
 
-                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(refNode.getContour(), refNode.getId(), imageWidth);
-                for (int k=0; k<borderCells.size(); k++) {
-                    int gridId = borderCells.get(k);
+                IntSet borderCells = AbstractSegmenter.generateBorderCells(refNode.getContour(), refNode.getId(), imageWidth);
+                IntIterator itCells = borderCells.iterator();
+                while (itCells.hasNext()) {
+                    int gridId = itCells.nextInt();
                     List<Node> resultNodes = borderPixelMap.get(gridId);
                     if (resultNodes != null) {
                         resultNodes.clear();
@@ -211,10 +217,11 @@ public class Graph {
                 node.setExpired(true);
                 removeEdgeToUnstableNode(node);
             } else {
-                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
                 boolean stable = false;
-                for (int k=0; k<borderCells.size(); k++) {
-                    int gridIdInImage = borderCells.get(k);
+                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                IntIterator itCells = borderCells.iterator();
+                while (itCells.hasNext()) {
+                    int gridIdInImage = itCells.nextInt();
                     int rowPixelInImage = gridIdInImage / imageWidth;
                     int colPixelInImage = gridIdInImage % imageWidth;
                     if (rowPixelInImage >= tile.getImageTopY() && rowPixelInImage <= tile.getImageBottomY() && colPixelInImage >= tile.getImageLeftX() && colPixelInImage <= tile.getImageRightX()) {

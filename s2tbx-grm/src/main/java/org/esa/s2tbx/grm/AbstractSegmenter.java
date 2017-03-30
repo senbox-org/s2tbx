@@ -230,9 +230,10 @@ public abstract class AbstractSegmenter {
         int nodeCount = this.graph.getNodeCount();
         for (int i = 0; i < nodeCount; i++) {
             Node node = this.graph.getNodeAt(i);
-            org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = generateBorderCells(node.getContour(), node.getId(), this.imageWidth);
-            for (int k=0; k<borderCells.size(); k++) {
-                int gridId = borderCells.get(k);
+            IntSet borderCells = generateBorderCells(node.getContour(), node.getId(), this.imageWidth);
+            IntIterator itCells = borderCells.iterator();
+            while (itCells.hasNext()) {
+                int gridId = itCells.nextInt();
                 int gridX = gridId % this.imageWidth;
                 int gridY = gridId / this.imageWidth;
                 mask[gridY + 1][gridX + 1] = i + 1;
@@ -406,7 +407,7 @@ public abstract class AbstractSegmenter {
         return bbY * bbox.getWidth() + bbX;
     }
 
-    private static Contour createNewContour(int nodeId, org.esa.s2tbx.grm.tiles.IntSortedSet borderCells, int boxWidth, int boxHeight) {
+    private static Contour createNewContour(int nodeId, IntSet borderCells, int boxWidth, int boxHeight) {
         Contour newContour = new Contour();
         // the first move is always to the right
         newContour.pushRight(); //Push1(newContour);
@@ -488,7 +489,7 @@ public abstract class AbstractSegmenter {
 
     public static Contour mergeContour(BoundingBox mergedBox, Contour contour1, Contour contour2, int nodeId1, int nodeId2, int imageWidth) {
         // fill the cell matrix with the cells from both contours
-        org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = new org.esa.s2tbx.grm.tiles.IntSortedSet();
+        IntSet borderCells = new IntOpenHashSet();
         // fill with the cells of contour 1
         generateBorderCellsForContourFusion(borderCells, contour1, nodeId1, imageWidth, mergedBox);
         // fill with the cells of contour 2
@@ -498,7 +499,7 @@ public abstract class AbstractSegmenter {
         return createNewContour(id, borderCells, mergedBox.getWidth(), mergedBox.getHeight());
     }
 
-    private static void generateBorderCellsForContourFusion(org.esa.s2tbx.grm.tiles.IntSortedSet outputBorderCells, Contour contour, int startCellId, int width, BoundingBox mergedBox) {
+    private static void generateBorderCellsForContourFusion(IntSet outputBorderCells, Contour contour, int startCellId, int width, BoundingBox mergedBox) {
         // add the first pixel to the border list
         int id = gridToBBox(startCellId, mergedBox, width);
         outputBorderCells.add(id);
@@ -576,8 +577,8 @@ public abstract class AbstractSegmenter {
         return new BoundingBox(minimumLeftUpperX, minimumLeftUpperY, width, height);
     }
 
-    public static org.esa.s2tbx.grm.tiles.IntSortedSet generateBorderCells(Contour contour, int startCellId, int width) {
-        org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = new org.esa.s2tbx.grm.tiles.IntSortedSet();
+    public static IntSet generateBorderCells(Contour contour, int startCellId, int width) {
+        IntSet borderCells = new IntOpenHashSet();
 
         // add the first pixel to the border list
         borderCells.add(startCellId);

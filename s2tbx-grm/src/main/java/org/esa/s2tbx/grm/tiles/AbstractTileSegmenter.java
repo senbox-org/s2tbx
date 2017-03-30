@@ -1,5 +1,10 @@
 package org.esa.s2tbx.grm.tiles;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.grm.*;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.util.io.FileUtils;
@@ -235,7 +240,7 @@ public abstract class AbstractTileSegmenter {
             logger.log(Level.FINEST, "Run tile first segmentation. after detect border nodes: graph node count: "+graph.getNodeCount()+", boder node count: " + nodesToIterate.size());
         }
 
-        IntToObjectSortedMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
+        Int2ObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "Run tile first segmentation. Node count to write for stability margin: " + borderNodes.size());
@@ -328,10 +333,6 @@ public abstract class AbstractTileSegmenter {
     }
 
     private void runSecondPartialSegmentation(int iteration) throws IllegalAccessException, IOException {
-        resetValues();
-
-        int numberOfNeighborLayers = computeNumberOfNeighborLayers();
-
         int nbTilesX = this.tilesBidimensionalArray.getTileCountX();
         int nbTilesY = this.tilesBidimensionalArray.getTileCountY();
 
@@ -339,6 +340,10 @@ public abstract class AbstractTileSegmenter {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Run second segmentation. Iteration: "+iteration+", tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory: " + this.accumulatedMemory+", fusion: " + this.isFusion);
         }
+
+        resetValues();
+
+        int numberOfNeighborLayers = computeNumberOfNeighborLayers();
 
         for (int row = 0; row < nbTilesY; row++) {
             for (int col = 0; col < nbTilesX; col++) {
@@ -361,7 +366,7 @@ public abstract class AbstractTileSegmenter {
                     logger.log(Level.FINEST, "Run second segmentation. After add stability margin: graph node count: " +graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
-                IntToObjectSortedMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, nbTilesX, nbTilesY, this.imageWidth);
+                Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, nbTilesX, nbTilesY, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Run second segmentation. After building border pixel map: graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
@@ -432,7 +437,7 @@ public abstract class AbstractTileSegmenter {
                     logger.log(Level.FINEST, "Run second segmentation (extract the stability margin). Border node count: " + nodesToIterate.size()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
-                IntToObjectSortedMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
+                Int2ObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Run second segmentation (extract the stability margin). Node count to write for stability margin: " + borderNodes.size()+", tile row index: " + row + ", tile column index: " + col);
@@ -483,7 +488,7 @@ public abstract class AbstractTileSegmenter {
                     logger.log(Level.FINEST, "Merge all graphs (removing duplicated nodes). Number of iterations: "+numberOfIterations+", tile region: " +tileRegionToString(currentTile.getRegion())+", tile row index: "+row+", tile column index: "+col);
                 }
 
-                IntToObjectSortedMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, nbTilesX, nbTilesY, this.imageWidth);
+                Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, nbTilesX, nbTilesY, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Merge all graphs (removing duplicated nodes). After building border pixel map: graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
@@ -511,13 +516,14 @@ public abstract class AbstractTileSegmenter {
         return segmenter;
     }
 
-    private static void updateNeighborsOfNoneDuplicatedNodes(IntToObjectSortedMap<List<Node>> borderPixelMap, int imageWidth, int imageHeight) {
+    private static void updateNeighborsOfNoneDuplicatedNodes(Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth, int imageHeight) {
         int[] neighborhood = new int[4];
         int[] cellNeighborhood = new int[4];
-        Iterator<IntToObjectSortedMap.Entry<List<Node>>> itValues = borderPixelMap.entriesIterator();
-        while (itValues.hasNext()) {
-            IntToObjectSortedMap.Entry<List<Node>> entry = itValues.next();
-            int nodeId = entry.getKey();
+
+        ObjectIterator<Int2ObjectMap.Entry<List<Node>>> it = borderPixelMap.int2ObjectEntrySet().iterator();
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<List<Node>> entry = it.next();
+            int nodeId = entry.getIntKey();
             List<Node> nodes = entry.getValue();
             AbstractSegmenter.generateFourNeighborhood(neighborhood, nodeId, imageWidth, imageHeight);
             for(int j = 0; j < neighborhood.length; j++) {
@@ -530,9 +536,10 @@ public abstract class AbstractTileSegmenter {
                             Edge edge = currentNode.findEdge(firstNeighborNode);
                             if (edge == null) {
                                 int boundary = 0;
-                                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(currentNode.getContour(), currentNode.getId(), imageWidth);
-                                for (int b=0; b<borderCells.size(); b++) {
-                                    int gridId = borderCells.get(b);
+                                IntSet borderCells = AbstractSegmenter.generateBorderCells(currentNode.getContour(), currentNode.getId(), imageWidth);
+                                IntIterator itCells = borderCells.iterator();
+                                while (itCells.hasNext()) {
+                                    int gridId = itCells.nextInt();
                                     List<Node> resultNodes = borderPixelMap.get(gridId);
                                     if (resultNodes != null) {
                                         AbstractSegmenter.generateFourNeighborhood(cellNeighborhood, gridId, imageWidth, imageHeight);
@@ -631,9 +638,10 @@ public abstract class AbstractTileSegmenter {
             } else if (box.getLeftX() > tile.getImageRightX() || box.getTopY() > tile.getImageBottomY() || box.getRightX() - 1 < tile.getImageLeftX() || box.getBottomY() - 1 < tile.getImageTopY()) {
                 continue;
             } else {
-                org.esa.s2tbx.grm.tiles.IntSortedSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                for (int k=0; k<borderCells.size(); k++) {
-                    int gridId = borderCells.get(k);
+                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                IntIterator itCells = borderCells.iterator();
+                while (itCells.hasNext()) {
+                    int gridId = itCells.nextInt();
                     int rowPixel = gridId / imageWidth;
                     int colPixel = gridId % imageWidth;
                     if (rowPixel == tile.getImageTopY() || rowPixel == tile.getImageBottomY()) {
@@ -651,7 +659,7 @@ public abstract class AbstractTileSegmenter {
             }
         }
 
-        IntToObjectSortedMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfLayers);
+        Int2ObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfLayers);
 
         nodeCount = graph.getNodeCount();
         for (int i = 0; i < nodeCount; i++) {
@@ -669,12 +677,12 @@ public abstract class AbstractTileSegmenter {
         graph.removeExpiredNodes();
     }
 
-    private static IntToObjectSortedMap<Node> extractStabilityMargin(List<Node> nodesToIterate, int numberOfLayers) {
-        IntToObjectSortedMap<Integer> borderNodesValues = new IntToObjectSortedMap<>(nodesToIterate.size());
-        IntToObjectSortedMap<Node> borderNodes = new IntToObjectSortedMap<>(nodesToIterate.size());
+    private static Int2ObjectMap<Node> extractStabilityMargin(List<Node> nodesToIterate, int numberOfLayers) {
+        Int2ObjectMap<Integer> borderNodesValues = new Int2ObjectLinkedOpenHashMap<Integer>(nodesToIterate.size());
+        Int2ObjectMap<Node> borderNodes = new Int2ObjectLinkedOpenHashMap<Node>(nodesToIterate.size());
         for (int i=0; i<nodesToIterate.size(); i++) {
             Node node = nodesToIterate.get(i);
-            borderNodesValues.put(node.getId(), 0);
+            borderNodesValues.put(node.getId(), new Integer(0));
             borderNodes.put(node.getId(), node);
         }
         for (int i=0; i<nodesToIterate.size(); i++) {
@@ -683,7 +691,7 @@ public abstract class AbstractTileSegmenter {
         return borderNodes;
     }
 
-    private static void exploreDFS(Node node, int p, IntToObjectSortedMap<Integer> borderNodesValues, IntToObjectSortedMap<Node> borderNodes, int numberOfLayers) {
+    private static void exploreDFS(Node node, int p, Int2ObjectMap<Integer> borderNodesValues, Int2ObjectMap<Node> borderNodes, int numberOfLayers) {
         if (p > numberOfLayers) {
             return;
         } else {
@@ -695,7 +703,7 @@ public abstract class AbstractTileSegmenter {
                 }
             } else {
             }
-            borderNodesValues.put(node.getId(), p);
+            borderNodesValues.put(node.getId(), new Integer(p));
             borderNodes.put(node.getId(), node);
             int edgeCount = node.getEdgeCount();
             for (int i=0; i<edgeCount; i++) {
@@ -763,7 +771,7 @@ public abstract class AbstractTileSegmenter {
             nodesFileStream = new BufferedInputStreamWrapper(nodesFile);
 
             int nodeCount = nodesFileStream.readInt();
-            IntToObjectSortedMap<Node> nodesMap = new IntToObjectSortedMap<Node>(nodeCount);
+            Int2ObjectMap<Node> nodesMap = new Int2ObjectLinkedOpenHashMap<Node>(nodeCount);
             Graph graph = new Graph();
             for (int i=0; i<nodeCount; i++) {
                 Node node = readNode(nodesFileStream);
@@ -807,7 +815,7 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    private void writeStabilityMargin(IntToObjectSortedMap<Node> borderNodes, String nodesPath, String edgesPath) throws IOException {
+    private void writeStabilityMargin(Int2ObjectMap<Node> borderNodes, String nodesPath, String edgesPath) throws IOException {
         BufferedOutputStreamWrapper nodesFileStream = null;
         BufferedOutputStreamWrapper edgesFileStream = null;
         try {
@@ -820,9 +828,10 @@ public abstract class AbstractTileSegmenter {
             // write the number of nodes
             nodesFileStream.writeInt(borderNodes.size());
 
-            Iterator<Node> itValues = borderNodes.valuesIterator();
-            while (itValues.hasNext()) {
-                Node node = itValues.next();
+            ObjectIterator<Int2ObjectMap.Entry<Node>> it = borderNodes.int2ObjectEntrySet().iterator();
+            while (it.hasNext()) {
+                Int2ObjectMap.Entry<Node> entry = it.next();
+                Node node = entry.getValue();
                 writeNode(nodesFileStream, node);
 
                 // write the node id in the edge file
