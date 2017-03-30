@@ -1,9 +1,6 @@
 package org.esa.s2tbx.grm.tiles;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.grm.*;
 import org.esa.snap.core.gpf.Tile;
@@ -678,37 +675,39 @@ public abstract class AbstractTileSegmenter {
     }
 
     private static Int2ObjectMap<Node> extractStabilityMargin(List<Node> nodesToIterate, int numberOfLayers) {
-        Int2ObjectMap<Integer> borderNodesValues = new Int2ObjectLinkedOpenHashMap<Integer>(nodesToIterate.size());
+        int defaultMissingValue = -1;
+        Int2IntMap borderNodesValues = new Int2IntOpenHashMap(nodesToIterate.size());
+        borderNodesValues.defaultReturnValue(defaultMissingValue);
         Int2ObjectMap<Node> borderNodes = new Int2ObjectLinkedOpenHashMap<Node>(nodesToIterate.size());
         for (int i=0; i<nodesToIterate.size(); i++) {
             Node node = nodesToIterate.get(i);
-            borderNodesValues.put(node.getId(), new Integer(0));
+            borderNodesValues.put(node.getId(), 0);
             borderNodes.put(node.getId(), node);
         }
         for (int i=0; i<nodesToIterate.size(); i++) {
-            exploreDFS(nodesToIterate.get(i), 0, borderNodesValues, borderNodes, numberOfLayers);
+            exploreDFS(nodesToIterate.get(i), 0, borderNodesValues, borderNodes, defaultMissingValue, numberOfLayers);
         }
         return borderNodes;
     }
 
-    private static void exploreDFS(Node node, int p, Int2ObjectMap<Integer> borderNodesValues, Int2ObjectMap<Node> borderNodes, int numberOfLayers) {
+    private static void exploreDFS(Node node, int p, Int2IntMap borderNodesValues, Int2ObjectMap<Node> borderNodes, int defaultMissingValue, int numberOfLayers) {
         if (p > numberOfLayers) {
             return;
         } else {
-            Integer value = borderNodesValues.get(node.getId());
-            if (value != null) {
-                if (p <= value.intValue()) {
+            int value = borderNodesValues.get(node.getId());
+            if (value != defaultMissingValue) {
+                if (p <= value) {
                 } else {
                     return;
                 }
             } else {
             }
-            borderNodesValues.put(node.getId(), new Integer(p));
+            borderNodesValues.put(node.getId(), p);
             borderNodes.put(node.getId(), node);
             int edgeCount = node.getEdgeCount();
             for (int i=0; i<edgeCount; i++) {
                 Edge edge = node.getEdgeAt(i);
-                exploreDFS(edge.getTarget(), p + 1, borderNodesValues, borderNodes, numberOfLayers);
+                exploreDFS(edge.getTarget(), p + 1, borderNodesValues, borderNodes, defaultMissingValue, numberOfLayers);
             }
         }
     }
