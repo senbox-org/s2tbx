@@ -95,16 +95,14 @@ class S2tbxMosaicFormModel {
         container.setValue(PROPERTY_SHOW_SOURCE_PRODUCTS, false);
         container.setValue(PROPERTY_NATIVE_RESOLUTION, true);
 
-        container.addPropertyChangeListener(PROPERTY_SHOW_SOURCE_PRODUCTS, new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
+        container.addPropertyChangeListener(PROPERTY_SHOW_SOURCE_PRODUCTS,
+          (PropertyChangeEvent evt)->{
                 if (Boolean.TRUE.equals(evt.getNewValue())) {
                     final Collection<Product> products = sourceProductMap.values();
                     worldMapModel.setProducts(products.toArray(new Product[products.size()]));
                 } else {
                     worldMapModel.setProducts(null);
                 }
-            }
         });
     }
 

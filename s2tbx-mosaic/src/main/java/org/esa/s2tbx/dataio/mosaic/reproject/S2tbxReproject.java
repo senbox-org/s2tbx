@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.mosaic.reproject;
 
 import org.esa.s2tbx.dataio.mosaic.internal.S2tbxImageGeometry;
-import org.esa.snap.core.datamodel.ImageGeometry;
 import org.geotools.factory.Hints;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.ReferencingFactoryFinder;

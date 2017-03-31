@@ -35,6 +35,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.util.Map;
 
+/**
+ * @author Razvan Dumitrascu
+ * @since 5.0.2
+ */
+
 class S2tbxMosaicDialog extends SingleTargetProductDialog {
 
     private final S2tbxMosaicForm form;

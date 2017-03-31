@@ -54,6 +54,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Razvan Dumitrascu
+ * @since 5.0.2
+ */
+
 class S2tbxMosaicExpressionsPanel extends JPanel {
 
     private static final int PREFERRED_TABLE_WIDTH = 520;
@@ -224,53 +229,35 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
     private Component createNewConditionButton() {
         AbstractButton newConditionsButton = createButton("icons/Plus24.gif", "newCondition");
         newConditionsButton.setToolTipText("Add new processing condition"); /*I18N*/
-        newConditionsButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final int rows = conditionsTable.getRowCount();
-                addRow(conditionsTable, new Object[]{"condition_" + rows, "", false}); /*I18N*/
-            }
-        });
+        newConditionsButton.addActionListener(
+                ( ActionEvent e) -> {
+                    final int rows = conditionsTable.getRowCount();
+                    addRow(conditionsTable, new Object[]{"condition_" + rows, "", false}); /*I18N*/
+                });
         return newConditionsButton;
     }
 
     private Component createRemoveConditionButton() {
         AbstractButton removeConditionButton = createButton("icons/Minus24.gif", "removeCondition");
         removeConditionButton.setToolTipText("Remove selected rows."); /*I18N*/
-        removeConditionButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                removeRows(conditionsTable, conditionsTable.getSelectedRows());
-            }
-        });
+        removeConditionButton.addActionListener(
+                (ActionEvent e)->{removeRows(conditionsTable, conditionsTable.getSelectedRows());});
         return removeConditionButton;
     }
 
     private Component createMoveConditionUpButton() {
         AbstractButton moveConditionUpButton = createButton("icons/MoveUp24.gif", "moveConditionUp");
         moveConditionUpButton.setToolTipText("Move up selected rows."); /*I18N*/
-        moveConditionUpButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moveRowsUp(conditionsTable, conditionsTable.getSelectedRows());
-            }
-        });
+        moveConditionUpButton.addActionListener(
+                (ActionEvent e)-> {moveRowsUp(conditionsTable, conditionsTable.getSelectedRows());});
         return moveConditionUpButton;
     }
 
     private Component createMoveConditionDownButton() {
         AbstractButton moveConditionDownButton = createButton("icons/MoveDown24.gif", "moveConditionDown");
         moveConditionDownButton.setToolTipText("Move down selected rows."); /*I18N*/
-        moveConditionDownButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moveRowsDown(conditionsTable, conditionsTable.getSelectedRows());
-            }
-        });
+        moveConditionDownButton.addActionListener(
+                (ActionEvent e)->{moveRowsDown(conditionsTable, conditionsTable.getSelectedRows());});
         return moveConditionDownButton;
     }
 
@@ -337,63 +324,61 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
     private Component createBandFilterButton() {
         AbstractButton variableFilterButton = createButton("icons/Copy16.gif", "bandButton");
         variableFilterButton.setToolTipText("Choose the bands to process"); /*I18N*/
-        variableFilterButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Product product;
-                try {
-                    product = mosaicModel.getReferenceProduct();
-                } catch (IOException ioe) {
-                    appContext.handleError(ioe.getMessage(), ioe);
-                    return;
-                }
-                if (product != null) {
-                    final String[] availableBandNames = product.getBandNames();
-                    final Band[] allBands = product.getBands();
-                    final List dataVector = ((DefaultTableModel) variablesTable.getModel()).getDataVector();
-                    final List<Band> existingBands = new ArrayList<Band>(dataVector.size());
-                    for (Object aDataVector : dataVector) {
-                        List row = (List) aDataVector;
-                        final String name = (String) row.get(0);
-                        final String expression = (String) row.get(1);
-                        if (name == null || expression == null
-                                || !StringUtils.contains(availableBandNames, name.trim())
-                                || !name.trim().equals(expression.trim())) {
-                            continue;
-                        }
-                        existingBands.add(product.getBand(name.trim()));
+        variableFilterButton.addActionListener(
+                (ActionEvent e)-> {
+                    Product product;
+                    try {
+                        product = mosaicModel.getReferenceProduct();
+                    } catch (IOException ioe) {
+                        appContext.handleError(ioe.getMessage(), ioe);
+                        return;
                     }
-                    final BandChooser bandChooser = new BandChooser(appContext.getApplicationWindow(), "Band Chooser",
-                            null,
-                            allBands, /*I18N*/
-                            existingBands.toArray(
-                                    new Band[existingBands.size()]), true
-                    );
-                    if (bandChooser.show() == ModalDialog.ID_OK) {
-                        final Band[] selectedBands = bandChooser.getSelectedBands();
-                        for (Band selectedBand : selectedBands) {
-                            if (!existingBands.contains(selectedBand)) {
-                                final String name = selectedBand.getName();
-                                final String expression = Tokenizer.createExternalName(name);
-                                addRow(variablesTable, new Object[]{name, expression});
-                            } else {
-                                existingBands.remove(selectedBand);
+                    if (product != null) {
+                        final String[] availableBandNames = product.getBandNames();
+                        final Band[] allBands = product.getBands();
+                        final List dataVector = ((DefaultTableModel) variablesTable.getModel()).getDataVector();
+                        final List<Band> existingBands = new ArrayList<Band>(dataVector.size());
+                        for (Object aDataVector : dataVector) {
+                            List row = (List) aDataVector;
+                            final String name = (String) row.get(0);
+                            final String expression = (String) row.get(1);
+                            if (name == null || expression == null
+                                    || !StringUtils.contains(availableBandNames, name.trim())
+                                    || !name.trim().equals(expression.trim())) {
+                                continue;
                             }
+                            existingBands.add(product.getBand(name.trim()));
                         }
-                        final int[] rowsToRemove = new int[0];
-                        final List newDataVector = ((DefaultTableModel) variablesTable.getModel()).getDataVector();
-                        for (Band existingBand : existingBands) {
-                            String bandName = existingBand.getName();
-                            final int rowIndex = getBandRow(newDataVector, bandName);
-                            if (rowIndex > -1) {
-                                ArrayUtils.addToArray(rowsToRemove, rowIndex);
+                        final BandChooser bandChooser = new BandChooser(appContext.getApplicationWindow(), "Band Chooser",
+                                null,
+                                allBands, /*I18N*/
+                                existingBands.toArray(
+                                        new Band[existingBands.size()]), true
+                        );
+                        if (bandChooser.show() == ModalDialog.ID_OK) {
+                            final Band[] selectedBands = bandChooser.getSelectedBands();
+                            for (Band selectedBand : selectedBands) {
+                                if (!existingBands.contains(selectedBand)) {
+                                    final String name = selectedBand.getName();
+                                    final String expression = Tokenizer.createExternalName(name);
+                                    addRow(variablesTable, new Object[]{name, expression});
+                                } else {
+                                    existingBands.remove(selectedBand);
+                                }
                             }
+                            final int[] rowsToRemove = new int[0];
+                            final List newDataVector = ((DefaultTableModel) variablesTable.getModel()).getDataVector();
+                            for (Band existingBand : existingBands) {
+                                String bandName = existingBand.getName();
+                                final int rowIndex = getBandRow(newDataVector, bandName);
+                                if (rowIndex > -1) {
+                                    ArrayUtils.addToArray(rowsToRemove, rowIndex);
+                                }
+                            }
+                            removeRows(variablesTable, rowsToRemove);
                         }
-                        removeRows(variablesTable, rowsToRemove);
                     }
-                }
-            }
-        });
+                });
         return variableFilterButton;
     }
 
@@ -410,53 +395,35 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
     private Component createNewVariableButton() {
         AbstractButton newVariableButton = createButton("icons/Plus24.gif", "newVariable");
         newVariableButton.setToolTipText("Add new processing variable"); /*I18N*/
-        newVariableButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final int rows = variablesTable.getRowCount();
-                addRow(variablesTable, new Object[]{"variable_" + rows, ""}); /*I18N*/
-            }
-        });
+        newVariableButton.addActionListener(
+                (ActionEvent e)-> {
+                    final int rows = variablesTable.getRowCount();
+                    addRow(variablesTable, new Object[]{"variable_" + rows, ""}); /*I18N*/
+                });
         return newVariableButton;
     }
 
     private Component createRemoveVariableButton() {
         AbstractButton removeVariableButton = createButton("icons/Minus24.gif", "removeVariable");
         removeVariableButton.setToolTipText("Remove selected rows."); /*I18N*/
-        removeVariableButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                removeRows(variablesTable, variablesTable.getSelectedRows());
-            }
-        });
+        removeVariableButton.addActionListener(
+                (ActionEvent e)->{removeRows(variablesTable, variablesTable.getSelectedRows());});
         return removeVariableButton;
     }
 
     private Component createMoveVariableUpButton() {
         AbstractButton moveVariableUpButton = createButton("icons/MoveUp24.gif", "moveVariableUp");
         moveVariableUpButton.setToolTipText("Move up selected rows."); /*I18N*/
-        moveVariableUpButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moveRowsUp(variablesTable, variablesTable.getSelectedRows());
-            }
-        });
+        moveVariableUpButton.addActionListener(
+                (ActionEvent e)-> {moveRowsUp(variablesTable, variablesTable.getSelectedRows());});
         return moveVariableUpButton;
     }
 
     private Component createMoveVariableDownButton() {
         AbstractButton moveVariableDownButton = createButton("icons/MoveDown24.gif", "moveVariableDown");
         moveVariableDownButton.setToolTipText("Move down selected rows."); /*I18N*/
-        moveVariableDownButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moveRowsDown(variablesTable, variablesTable.getSelectedRows());
-            }
-        });
+        moveVariableDownButton.addActionListener(
+                (ActionEvent e)->{moveRowsDown(variablesTable, variablesTable.getSelectedRows());});
         return moveVariableDownButton;
     }
 
@@ -485,12 +452,10 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         expressionColumn.setCellRenderer(new TCR());
         final ExprEditor exprEditor = new ExprEditor(false);
         expressionColumn.setCellEditor(exprEditor);
-        bindingCtx.addPropertyChangeListener("updateMode", new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
+        bindingCtx.addPropertyChangeListener("updateMode",
+                (PropertyChangeEvent evt)-> {
                 final boolean enabled = Boolean.FALSE.equals(evt.getNewValue());
                 exprEditor.button.setEnabled(enabled);
-            }
         });
 
         final JScrollPane scrollPane = new JScrollPane(variablesTable);
@@ -567,18 +532,14 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
             preferredSize.setSize(25, preferredSize.getHeight());
             button.setPreferredSize(preferredSize);
             value = new String[1];
-            final ActionListener actionListener = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    final int i = editExpression(value, booleanExpected);
-                    if (i == ModalDialog.ID_OK) {
-                        fireEditingStopped();
-                    } else {
-                        fireEditingCanceled();
-                    }
+            button.addActionListener(e-> {
+                final int i = editExpression(value, booleanExpected);
+                if (i == ModalDialog.ID_OK) {
+                    fireEditingStopped();
+                } else {
+                    fireEditingCanceled();
                 }
-            };
-            button.addActionListener(actionListener);
+            });
         }
 
         /**

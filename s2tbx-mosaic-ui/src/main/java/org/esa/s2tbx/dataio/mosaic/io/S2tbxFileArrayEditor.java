@@ -34,6 +34,9 @@ import java.util.List;
 
 /**
  * An UI-Component which represents a product file list with the ability to add and remove files.
+ *
+ * @author Razvan Dumitrascu
+ * @since 5.0.2
  */
 public class S2tbxFileArrayEditor {
 

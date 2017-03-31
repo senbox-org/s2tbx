@@ -22,6 +22,11 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+/**
+ * @author Razvan Dumitrascu
+ * @since 5.0.2
+ */
+
 class S2tbxConditionsTableAdapter extends S2tbxAbstractTableAdapter {
 
     S2tbxConditionsTableAdapter(JTable table) {

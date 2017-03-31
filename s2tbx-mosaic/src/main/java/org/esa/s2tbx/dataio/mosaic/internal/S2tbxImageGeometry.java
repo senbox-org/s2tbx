@@ -19,6 +19,7 @@ import java.awt.geom.Rectangle2D;
  * @author Razvan Dumitrascu
  * @since 5.0.2
  */
+
 public class S2tbxImageGeometry {
     private double referencePixelX;
     private double referencePixelY;
@@ -132,7 +133,7 @@ public class S2tbxImageGeometry {
 
     private static S2tbxImageGeometry createTargetGeometry(Rectangle2D mapBoundary, int sourceWidth, int sourceHeight,
                                                            CoordinateReferenceSystem targetCrs,
-                                                           Double pixelSizeX, Double pixelSizeY, Integer width,
+                                                           final Double pixelSizeX, final Double pixelSizeY, Integer width,
                                                            Integer height,
                                                            Double orientation, Double easting, Double northing,
                                                            Double referencePixelX, Double referencePixelY) {

@@ -11,7 +11,6 @@ import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.FlagCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
-import org.esa.snap.core.datamodel.ImageGeometry;
 import org.esa.snap.core.datamodel.ImageInfo;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -39,16 +38,11 @@ import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.util.Debug;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.io.FileUtils;
-import org.esa.snap.core.util.jai.JAIUtils;
 import org.geotools.factory.Hints;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.GeneralDirectPosition;
 import org.geotools.referencing.CRS;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.ImageLayout;
@@ -75,7 +69,7 @@ import java.util.HashMap;
         internal = false)
 @SuppressWarnings({"UnusedDeclaration"})
 
-public class S2tbxReprojectionOp extends Operator {
+public final class S2tbxReprojectionOp extends Operator {
     @SourceProduct(alias = "source", description = "The product which will be reprojected.")
     private Product sourceProduct;
     @SourceProduct(alias = "collocateWith", optional = true, label = "Collocation product",
@@ -151,7 +145,6 @@ public class S2tbxReprojectionOp extends Operator {
     private ReprojectionSettingsProvider reprojectionSettingsProvider;
 
     private ElevationModel elevationModel;
-    private CoordinateReferenceSystem targetCrs;
 
     @Override
     public void initialize() throws OperatorException {
@@ -163,7 +156,7 @@ public class S2tbxReprojectionOp extends Operator {
 
         final GeoPos centerGeoPos =
                 getCenterGeoPos(sourceProduct.getSceneGeoCoding(), sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-        targetCrs = createTargetCRS(centerGeoPos);
+        CoordinateReferenceSystem targetCrs = createTargetCRS(centerGeoPos);
         /*
         * 2. Compute the target geometry
         */
@@ -295,18 +288,23 @@ public class S2tbxReprojectionOp extends Operator {
         if (bandGeoCoding != null) {
             targetBand.setGeoCoding(bandGeoCoding);
         }
-        GeoCoding bandGeo = getSourceGeoCoding(sourceRaster);
-        CrsGeoCoding sourceGeoCoding = null;
-        AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
-        try {
-            sourceGeoCoding = new CrsGeoCoding(sourceProduct.getSceneCRS(),
-                    sourceRaster.getRasterWidth(), sourceRaster.getRasterHeight(),
-                    affSourceTransform.getTranslateX(), affSourceTransform.getTranslateY(),
-                    affSourceTransform.getScaleX(), affSourceTransform.getScaleX());
-        } catch (FactoryException e) {
-            e.printStackTrace();
-        } catch (TransformException e) {
-            e.printStackTrace();
+        GeoCoding sourceGeoCoding = null;
+        if (orthorectify && sourceRaster.canBeOrthorectified()) {
+            sourceGeoCoding= createOrthorectifier(sourceRaster);
+        }else {
+            if (this.sourceProduct.isMultiSize()) {
+                AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
+                try {
+                    sourceGeoCoding = new CrsGeoCoding(sourceProduct.getSceneCRS(),
+                            sourceRaster.getRasterWidth(), sourceRaster.getRasterHeight(),
+                            affSourceTransform.getTranslateX(), affSourceTransform.getTranslateY(),
+                            affSourceTransform.getScaleX(), affSourceTransform.getScaleX());
+                } catch (FactoryException | TransformException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                sourceGeoCoding = sourceRaster.getGeoCoding();
+            }
         }
         final String exp = sourceRaster.getValidMaskExpression();
         if (exp != null) {
@@ -626,9 +624,8 @@ public class S2tbxReprojectionOp extends Operator {
     }
 
     private S2tbxImageGeometry createImageGeometry(CoordinateReferenceSystem targetCrs) {
-        S2tbxImageGeometry imageGeometry = null;
+        S2tbxImageGeometry imageGeometry;
         if (collocationProduct != null) {
-            //todo adapt this to multi resolution products
             imageGeometry = S2tbxImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
         } else {
             if(this.reprojectedFirstProduct!=null) {
@@ -805,7 +802,7 @@ public class S2tbxReprojectionOp extends Operator {
                                     rasterDataNode.getRasterWidth(),
                                     rasterDataNode.getRasterHeight());
                     CoordinateReferenceSystem targetCrs = createTargetCRS(centerGeoPos);
-                    S2tbxImageGeometry targetImageGeometry =null;
+                    S2tbxImageGeometry targetImageGeometry;
                     if(reprojectedFirstProductBand!=null){
                         final double pixelSize =  reprojectedFirstProductBand.getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
                         targetImageGeometry = S2tbxImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,

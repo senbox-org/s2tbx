@@ -24,6 +24,11 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import java.lang.reflect.Field;
 
+/**
+ * @author Razvan Dumitrascu
+ * @since 5.0.2
+ */
+
 abstract class S2tbxAbstractTableAdapter extends ComponentAdapter implements TableModelListener {
 
     private final JTable table;

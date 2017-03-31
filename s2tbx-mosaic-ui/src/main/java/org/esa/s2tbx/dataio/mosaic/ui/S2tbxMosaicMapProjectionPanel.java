@@ -83,14 +83,12 @@ class S2tbxMosaicMapProjectionPanel extends JPanel {
             mosaicModel.getPropertySet().setValue(S2tbxMosaicFormModel.PROPERTY_ELEVATION_MODEL_NAME, demValueSet[0]);
         }
 
-        bindingCtx.addPropertyChangeListener(S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE, new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                final Boolean updateMode = (Boolean) evt.getNewValue();
-                Boolean enabled1 = !updateMode;
-                crsSelectionPanel.setEnabled(enabled1);
-            }
-        });
+        bindingCtx.addPropertyChangeListener(S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE,
+                (PropertyChangeEvent evt) ->{
+                    final Boolean updateMode = (Boolean) evt.getNewValue();
+                    Boolean enabled1 = !updateMode;
+                    crsSelectionPanel.setEnabled(enabled1);
+                });
     }
 
     private void createUI() {
@@ -105,12 +103,9 @@ class S2tbxMosaicMapProjectionPanel extends JPanel {
         CrsForm customCrsUI = new CustomCrsForm(appContext);
         CrsForm predefinedCrsUI = new PredefinedCrsForm(appContext);
         crsSelectionPanel = new CrsSelectionPanel(customCrsUI, predefinedCrsUI);
-        crsSelectionPanel.addPropertyChangeListener(S2tbxMosaicFormModel.PROPERTY_CRS, new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateForCrsChanged();
-            }
-        });
+        crsSelectionPanel.addPropertyChangeListener(S2tbxMosaicFormModel.PROPERTY_CRS,
+                (PropertyChangeEvent evt)-> {updateForCrsChanged();});
+
         add(crsSelectionPanel);
         add(createOrthorectifyPanel());
         add(createMosaicBoundsPanel());
@@ -167,10 +162,10 @@ class S2tbxMosaicMapProjectionPanel extends JPanel {
         bindingCtx.bind(S2tbxMosaicFormModel.PROPERTY_OVERLAPPING, overlappingComboBox);
 
         bindingCtx.addPropertyChangeListener(
-                    (PropertyChangeEvent evt) -> { if (S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION.equals(evt.getPropertyName())){
-                        final PropertySet propertySet = bindingCtx.getPropertySet();
-                        boolean useNativeResolution = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION));
-                        overlappingComboBox.setEnabled(useNativeResolution);}});
+                (PropertyChangeEvent evt) -> { if (S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION.equals(evt.getPropertyName())){
+                    final PropertySet propertySet = bindingCtx.getPropertySet();
+                    boolean useNativeResolution = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION));
+                    overlappingComboBox.setEnabled(useNativeResolution);}});
 
         boundsInputPanel = new BoundsInputPanel(bindingCtx, S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE);
         panel.add(boundsInputPanel.createBoundsInputPanel(true));
@@ -241,7 +236,8 @@ class S2tbxMosaicMapProjectionPanel extends JPanel {
 
         private MapBoundsChangeListener() {
             knownProperties = Arrays.asList(
-                    S2tbxMosaicFormModel.PROPERTY_WEST_BOUND, S2tbxMosaicFormModel.PROPERTY_NORTH_BOUND, S2tbxMosaicFormModel.PROPERTY_EAST_BOUND, S2tbxMosaicFormModel.PROPERTY_SOUTH_BOUND, S2tbxMosaicFormModel.PROPERTY_CRS);
+                    S2tbxMosaicFormModel.PROPERTY_WEST_BOUND, S2tbxMosaicFormModel.PROPERTY_NORTH_BOUND,
+                    S2tbxMosaicFormModel.PROPERTY_EAST_BOUND, S2tbxMosaicFormModel.PROPERTY_SOUTH_BOUND, S2tbxMosaicFormModel.PROPERTY_CRS);
         }
 
         @Override
