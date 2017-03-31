@@ -1,9 +1,7 @@
-package org.esa.s2tbx.grm;
+package org.esa.s2tbx.grm.segmentation;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Jean Coravu

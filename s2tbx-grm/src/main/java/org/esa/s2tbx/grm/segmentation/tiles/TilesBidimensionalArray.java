@@ -1,4 +1,4 @@
-package org.esa.s2tbx.grm.tiles;
+package org.esa.s2tbx.grm.segmentation.tiles;
 
 import java.util.HashMap;
 import java.util.Map;

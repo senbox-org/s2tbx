@@ -1,4 +1,4 @@
-package org.esa.s2tbx.grm.tiles;
+package org.esa.snap.utils;
 
 import java.io.*;
 

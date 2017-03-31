@@ -1,4 +1,4 @@
-package org.esa.s2tbx.grm.tiles;
+package org.esa.snap.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -10,7 +10,6 @@ import java.util.Set;
  * @author Kyrylo Holodnov
  */
 public class ObjectSizeCalculator {
-
     private static final int REFERENCE_SIZE;
     private static final int HEADER_SIZE;
     private static final int LONG_SIZE = 8;
@@ -24,18 +23,13 @@ public class ObjectSizeCalculator {
     private static final int ALIGNMENT = 8;
 
     static {
-        try {
-            if (System.getProperties().get("java.vm.name").toString().contains("64")) {
-                // java.vm.name is something like “Java HotSpot(TM) 64-Bit Server VM”
-                REFERENCE_SIZE = 8;
-                HEADER_SIZE = 16;
-            } else {
-                REFERENCE_SIZE = 4;
-                HEADER_SIZE = 8;
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new AssertionError(ex);
+        if (System.getProperties().get("java.vm.name").toString().contains("64")) {
+            // java.vm.name is something like “Java HotSpot(TM) 64-Bit Server VM”
+            REFERENCE_SIZE = 8;
+            HEADER_SIZE = 16;
+        } else {
+            REFERENCE_SIZE = 4;
+            HEADER_SIZE = 8;
         }
     }
 
@@ -132,8 +126,7 @@ public class ObjectSizeCalculator {
     }
 
     private static final class ObjectWrapper {
-
-        private Object object;
+        private final Object object;
 
         public ObjectWrapper(Object object) {
             this.object = object;

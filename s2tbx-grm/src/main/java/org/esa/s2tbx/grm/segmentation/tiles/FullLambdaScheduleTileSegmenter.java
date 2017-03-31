@@ -1,6 +1,8 @@
-package org.esa.s2tbx.grm.tiles;
+package org.esa.s2tbx.grm.segmentation.tiles;
 
-import org.esa.s2tbx.grm.*;
+import org.esa.s2tbx.grm.segmentation.*;
+import org.esa.snap.utils.BufferedInputStreamWrapper;
+import org.esa.snap.utils.BufferedOutputStreamWrapper;
 
 import java.awt.*;
 import java.io.IOException;

@@ -1,7 +1,7 @@
-package org.esa.s2tbx.grm.tiles;
+package org.esa.s2tbx.grm.segmentation.tiles;
 
-import org.esa.s2tbx.grm.BoundingBox;
-import org.esa.s2tbx.grm.Contour;
+import org.esa.s2tbx.grm.segmentation.BoundingBox;
+import org.esa.s2tbx.grm.segmentation.Contour;
 
 /**
  * @author Jean Coravu

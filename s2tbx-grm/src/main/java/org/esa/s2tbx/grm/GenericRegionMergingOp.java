@@ -1,8 +1,9 @@
 package org.esa.s2tbx.grm;
 
 import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
-import org.esa.s2tbx.grm.tiles.*;
+import org.esa.s2tbx.grm.segmentation.AbstractSegmenter;
+import org.esa.s2tbx.grm.segmentation.BoundingBox;
+import org.esa.s2tbx.grm.segmentation.tiles.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -12,7 +13,6 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
-import org.esa.snap.core.util.math.MathUtils;
 
 import javax.media.jai.JAI;
 import java.awt.*;

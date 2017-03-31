@@ -1,11 +1,11 @@
-package org.esa.s2tbx.grm;
+package org.esa.s2tbx.grm.segmentation;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.esa.s2tbx.grm.tiles.ProcessingTile;
+import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
 
 import java.util.ArrayList;
 import java.util.List;

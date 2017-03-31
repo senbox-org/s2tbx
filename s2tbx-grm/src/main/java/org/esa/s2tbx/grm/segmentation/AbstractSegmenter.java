@@ -1,7 +1,6 @@
-package org.esa.s2tbx.grm;
+package org.esa.s2tbx.grm.segmentation;
 
 import it.unimi.dsi.fastutil.ints.*;
-import org.esa.s2tbx.grm.tiles.AbstractTileSegmenter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.Tile;

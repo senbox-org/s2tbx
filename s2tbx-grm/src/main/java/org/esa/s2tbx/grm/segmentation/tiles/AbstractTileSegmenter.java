@@ -1,10 +1,13 @@
-package org.esa.s2tbx.grm.tiles;
+package org.esa.s2tbx.grm.segmentation.tiles;
 
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.esa.s2tbx.grm.*;
+import org.esa.s2tbx.grm.segmentation.*;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.utils.BufferedInputStreamWrapper;
+import org.esa.snap.utils.BufferedOutputStreamWrapper;
+import org.esa.snap.utils.ObjectSizeCalculator;
 
 import java.awt.*;
 import java.io.*;

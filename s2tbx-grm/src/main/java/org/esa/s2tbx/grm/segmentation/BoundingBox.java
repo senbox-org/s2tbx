@@ -1,4 +1,4 @@
-package org.esa.s2tbx.grm;
+package org.esa.s2tbx.grm.segmentation;
 
 /**
  * @author Jean Coravu
