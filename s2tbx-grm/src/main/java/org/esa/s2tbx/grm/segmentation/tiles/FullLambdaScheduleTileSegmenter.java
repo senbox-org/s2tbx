@@ -32,7 +32,7 @@ public class FullLambdaScheduleTileSegmenter extends AbstractTileSegmenter {
     protected void writeNode(BufferedOutputStreamWrapper nodesFileStream, Node nodeToWrite) throws IOException {
         super.writeNode(nodesFileStream, nodeToWrite);
 
-        SpringNode node = (SpringNode)nodeToWrite;
+        FullLambdaScheduleNode node = (FullLambdaScheduleNode)nodeToWrite;
         int count = node.getNumberOfComponentsPerPixel();
         for (int i=0; i<count; i++) {
             nodesFileStream.writeFloat(node.getMeansAt(i));
@@ -41,7 +41,7 @@ public class FullLambdaScheduleTileSegmenter extends AbstractTileSegmenter {
 
     @Override
     protected Node readNode(BufferedInputStreamWrapper nodesFileStream) throws IOException {
-        SpringNode node = (SpringNode)super.readNode(nodesFileStream);
+        FullLambdaScheduleNode node = (FullLambdaScheduleNode)super.readNode(nodesFileStream);
 
         int count = node.getNumberOfComponentsPerPixel();
         for (int i=0; i<count; i++) {

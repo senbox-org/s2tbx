@@ -34,11 +34,11 @@ import java.util.logging.Logger;
 public class GenericRegionMergingOp extends Operator {
     private static final Logger logger = Logger.getLogger(GenericRegionMergingOp.class.getName());
 
-    private static final String SPRING_MERGING_COST_CRITERION = "Spring";
+    public static final String SPRING_MERGING_COST_CRITERION = "Spring";
     public static final String BAATZ_SCHAPE_MERGING_COST_CRITERION = "Baatz & Schape";
-    private static final String FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION = "Full Lamda Schedule";
+    public static final String FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION = "Full Lamda Schedule";
     private static final String BEST_FITTING_REGION_MERGING_CRITERION = "Best Fitting";
-    private static final String LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION = "Local Mutual Best Fitting";
+    public static final String LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION = "Local Mutual Best Fitting";
 
     @Parameter(label = "Merging cost criterion",
             description = "The method to compute the region merging.",
@@ -65,16 +65,16 @@ public class GenericRegionMergingOp extends Operator {
     @Parameter(label = "Shape weight", description = "The shape weight.")
     private float shapeWeight;
 
+    @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
+    private String[] sourceBandNames;
+
     @SourceProduct(alias = "source", description = "The source product.")
     private Product sourceProduct;
 
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
-    private String[] sourceBandNames;
-
-    AbstractTileSegmenter tileSegmenter;
+    private AbstractTileSegmenter tileSegmenter;
 
     public GenericRegionMergingOp() {
     }
@@ -143,16 +143,11 @@ public class GenericRegionMergingOp extends Operator {
         Logger.getLogger("org.esa.s2tbx.grm").setLevel(Level.FINE);
     }
 
-    public void runSegmentation() throws IOException, IllegalAccessException {
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
+    public Class<?> getTileSegmenterClass() {
+        return this.tileSegmenter.getClass();
+    }
 
-        long startTime = System.currentTimeMillis();
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", start time: "+new Date(startTime));
-        }
-
+    public AbstractSegmenter runTileSegmentation() throws IOException, IllegalAccessException {
         OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
         operatorExecutor.execute(ProgressMonitor.NULL);
 
@@ -166,10 +161,29 @@ public class GenericRegionMergingOp extends Operator {
 //        }
 //        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSegmentation(sourceTiles);
 
+        return segmenter;
+    }
+
+    public void addBand(AbstractSegmenter segmenter) {
         Band oldTargetBand = this.targetProduct.getBandAt(0);
         Band targetBand = segmenter.buildBand();
         this.targetProduct.removeBand(oldTargetBand);
         this.targetProduct.addBand(targetBand);
+    }
+
+    public void runSegmentation() throws IOException, IllegalAccessException {
+        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
+
+        long startTime = System.currentTimeMillis();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", start time: "+new Date(startTime));
+        }
+
+        AbstractSegmenter segmenter = runTileSegmentation();
+
+        addBand(segmenter);
 
         if (logger.isLoggable(Level.FINE)) {
             long finishTime = System.currentTimeMillis();
