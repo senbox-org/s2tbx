@@ -47,12 +47,6 @@ public abstract class AbstractSegmenter {
         this.imageHeight = imageHeight;
     }
 
-    public Band buildBand() {
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, this.imageWidth, this.imageHeight);
-        fillBandData(targetBand);
-        return targetBand;
-    }
-
     public final void fillBandData(Band targetBand) {
         if (targetBand.getRasterWidth() != this.imageWidth) {
             throw new IllegalArgumentException("Different band width.");
@@ -64,11 +58,20 @@ public abstract class AbstractSegmenter {
         int heightCount = this.imageHeight + 2;
         int[][] marker = buildMarkerMatrix();
 
+        int dataType = targetBand.getDataType();
         ProductData data = targetBand.createCompatibleRasterData();
         targetBand.setData(data);
         for (int y = 1; y < heightCount - 1; y++) {
             for (int x = 1; x < widthCount - 1; x++) {
-                targetBand.setPixelInt(x - 1, y - 1, marker[y][x]);
+                if (dataType == ProductData.TYPE_INT32) {
+                    targetBand.setPixelInt(x - 1, y - 1, marker[y][x]);
+                } else if (dataType == ProductData.TYPE_FLOAT32) {
+                    targetBand.setPixelFloat(x - 1, y - 1, marker[y][x]);
+                } else if (dataType == ProductData.TYPE_FLOAT64) {
+                    targetBand.setPixelDouble(x - 1, y - 1, marker[y][x]);
+                } else {
+                    throw new IllegalArgumentException("Unknown band data type " + dataType + ".");
+                }
             }
         }
     }

@@ -143,57 +143,6 @@ public class GenericRegionMergingOp extends Operator {
         Logger.getLogger("org.esa.s2tbx.grm").setLevel(Level.FINE);
     }
 
-    public Class<?> getTileSegmenterClass() {
-        return this.tileSegmenter.getClass();
-    }
-
-    public AbstractSegmenter runTileSegmentation() throws IOException, IllegalAccessException {
-        OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
-        operatorExecutor.execute(ProgressMonitor.NULL);
-
-        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
-
-//        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
-//        Rectangle rectangleToRead = new Rectangle(0, 0, sceneWidth, sceneHeight);
-//        for (int i=0; i<this.sourceBandNames.length; i++) {
-//            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-//            sourceTiles[i] = getSourceTile(band, rectangleToRead);
-//        }
-//        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSegmentation(sourceTiles);
-
-        return segmenter;
-    }
-
-    public void addBand(AbstractSegmenter segmenter) {
-        Band oldTargetBand = this.targetProduct.getBandAt(0);
-        Band targetBand = segmenter.buildBand();
-        this.targetProduct.removeBand(oldTargetBand);
-        this.targetProduct.addBand(targetBand);
-    }
-
-    public void runSegmentation() throws IOException, IllegalAccessException {
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
-
-        long startTime = System.currentTimeMillis();
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", start time: "+new Date(startTime));
-        }
-
-        AbstractSegmenter segmenter = runTileSegmentation();
-
-        addBand(segmenter);
-
-        if (logger.isLoggable(Level.FINE)) {
-            long finishTime = System.currentTimeMillis();
-            long totalSeconds = (finishTime - startTime) / 1000;
-            int graphNodeCount = segmenter.getGraph().getNodeCount();
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
-        }
-    }
-
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle targetRectangle = targetTile.getRectangle();
@@ -221,6 +170,56 @@ public class GenericRegionMergingOp extends Operator {
             this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
         } catch (Exception ex) {
             throw new OperatorException(ex);
+        }
+    }
+
+    public Class<?> getTileSegmenterClass() {
+        return this.tileSegmenter.getClass();
+    }
+
+    public AbstractSegmenter runTileSegmentation() throws IOException, IllegalAccessException {
+        OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
+        operatorExecutor.execute(ProgressMonitor.NULL);
+
+        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
+
+//        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+//        Rectangle rectangleToRead = new Rectangle(0, 0, sceneWidth, sceneHeight);
+//        for (int i=0; i<this.sourceBandNames.length; i++) {
+//            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
+//            sourceTiles[i] = getSourceTile(band, rectangleToRead);
+//        }
+//        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSegmentation(sourceTiles);
+
+        return segmenter;
+    }
+
+    private void addBand(AbstractSegmenter segmenter) {
+        Band targetBand = this.targetProduct.getBandAt(0);
+        targetBand.setSourceImage(null); // reset the source image
+        segmenter.fillBandData(targetBand);
+    }
+
+    public void runSegmentation() throws IOException, IllegalAccessException {
+        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
+
+        long startTime = System.currentTimeMillis();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", start time: "+new Date(startTime));
+        }
+
+        AbstractSegmenter segmenter = runTileSegmentation();
+
+        addBand(segmenter);
+
+        if (logger.isLoggable(Level.FINE)) {
+            long finishTime = System.currentTimeMillis();
+            long totalSeconds = (finishTime - startTime) / 1000;
+            int graphNodeCount = segmenter.getGraph().getNodeCount();
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
         }
     }
 
