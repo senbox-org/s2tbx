@@ -144,7 +144,7 @@ public final class S2tbxMosaicOp extends Operator {
         for (Product product : this.sourceProducts) {
             this.generatedSelectedBandsProducts.add(generateSelectedBandsProduct(product));
         }
-        this.sourceProducts =  this.generatedSelectedBandsProducts.toArray(new Product[generatedSelectedBandsProducts::size]);
+        this.sourceProducts =  this.generatedSelectedBandsProducts.toArray(new Product[generatedSelectedBandsProducts.size()]);
 
 
         if(this.nativeResolution){
@@ -238,9 +238,9 @@ public final class S2tbxMosaicOp extends Operator {
         Hints hints = new Hints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
         final List<RenderedImage> mosaicImages = new ArrayList<>(sourceImageList.size());
         for (int i = 0; i < sourceImageList.size(); i++) {
-            final PlanarImage[] sourceAlphas = alphaImageList.get(i).toArray(new PlanarImage[alphaImageList::size]);
+            final PlanarImage[] sourceAlphas = alphaImageList.get(i).toArray(new PlanarImage[alphaImageList.size()]);
             final List<RenderedImage> sourceImages = sourceImageList.get(i);
-            final RenderedImage[] renderedImages = sourceImages.toArray(new RenderedImage[sourceImages::size]);
+            final RenderedImage[] renderedImages = sourceImages.toArray(new RenderedImage[sourceImages.size()]);
             // we don't need ROIs, cause they are not considered by MosaicDescriptor when sourceAlphas are given
             mosaicImages.add(MosaicDescriptor.create(renderedImages, MosaicDescriptor.MOSAIC_TYPE_BLEND,
                     sourceAlphas, null, null, null, hints));
@@ -574,7 +574,7 @@ public final class S2tbxMosaicOp extends Operator {
             }
         }
 
-        String[] BandNamesArray = bandFromExpresion.toArray(new String[bandFromExpresion::size]);
+        String[] BandNamesArray = bandFromExpresion.toArray(new String[bandFromExpresion.size()]);
         localProduct= new Product(product.getName(), product.getProductType(), product.getSceneRasterWidth(), product.getSceneRasterHeight());
         localProduct.setStartTime(product.getStartTime());
         localProduct.setEndTime(product.getEndTime());
@@ -607,7 +607,7 @@ public final class S2tbxMosaicOp extends Operator {
                 projProducts.put("reprojectedFirstProduct", (index==0)?null:reprojProductList.get(0));
                 reprojProductList.add(GPF.createProduct("S2tbx-Reproject", projParameters, projProducts));
         }
-        return reprojProductList.toArray(new Product[reprojProductList::size]);
+        return reprojProductList.toArray(new Product[reprojProductList.size()]);
     }
 
     private Product[] createReprojectedProducts() {
@@ -624,7 +624,7 @@ public final class S2tbxMosaicOp extends Operator {
             projProducts.put("collocateWith", this.targetProduct);
             reprojProductList.add(GPF.createProduct("Reproject", projParameters, projProducts));
         }
-        return reprojProductList.toArray(new Product[reprojProductList::size]);
+        return reprojProductList.toArray(new Product[reprojProductList.size()]);
     }
 
     private HashMap<String, Object> createProjectionParameters() {
@@ -654,7 +654,7 @@ public final class S2tbxMosaicOp extends Operator {
             }
             resampledProductList.add(GPF.createProduct("Resample", parameters, sourceProduct));
         }
-        return resampledProductList.toArray(new Product[resampledProductList::size]);
+        return resampledProductList.toArray(new Product[resampledProductList.size()]);
     }
 
     public static class Variable {
