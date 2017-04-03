@@ -177,7 +177,16 @@ public class GenericRegionMergingOp extends Operator {
         return this.tileSegmenter.getClass();
     }
 
-    public AbstractSegmenter runTileSegmentation() throws IOException, IllegalAccessException {
+    public AbstractSegmenter runSegmentation() throws IOException, IllegalAccessException {
+        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
+
+        long startTime = System.currentTimeMillis();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", start time: "+new Date(startTime));
+        }
+
         OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
         operatorExecutor.execute(ProgressMonitor.NULL);
 
@@ -191,28 +200,9 @@ public class GenericRegionMergingOp extends Operator {
 //        }
 //        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSegmentation(sourceTiles);
 
-        return segmenter;
-    }
-
-    private void addBand(AbstractSegmenter segmenter) {
         Band targetBand = this.targetProduct.getBandAt(0);
         targetBand.setSourceImage(null); // reset the source image
         segmenter.fillBandData(targetBand);
-    }
-
-    public void runSegmentation() throws IOException, IllegalAccessException {
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
-
-        long startTime = System.currentTimeMillis();
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", start time: "+new Date(startTime));
-        }
-
-        AbstractSegmenter segmenter = runTileSegmentation();
-
-        addBand(segmenter);
 
         if (logger.isLoggable(Level.FINE)) {
             long finishTime = System.currentTimeMillis();
@@ -221,6 +211,8 @@ public class GenericRegionMergingOp extends Operator {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Finish Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
         }
+
+        return segmenter;
     }
 
     public static class Spi extends OperatorSpi {

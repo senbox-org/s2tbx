@@ -9,7 +9,9 @@ import org.esa.s2tbx.grm.segmentation.tiles.FullLambdaScheduleTileSegmenter;
 import org.esa.s2tbx.grm.segmentation.tiles.SpringTileSegmenter;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.rgb.ImageProductReaderPlugIn;
+import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
@@ -48,15 +50,15 @@ public class GenericRegionMergingOpTest {
     @Test
     public void testBaatzSchapeTileSegmenter() throws IOException, IllegalAccessException {
         GenericRegionMergingOp operator = buildOperator(GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION,
-                GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION,
-                75, 2, 800, 0.5f, 0.5f);
+                                                        GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION,
+                                                        75, 2, 800, 0.5f, 0.5f);
 
         operator.initialize();
 
         Class<?> tileSegmenterClass = operator.getTileSegmenterClass();
         assertEquals(BaatzSchapeTileSegmenter.class, tileSegmenterClass);
 
-        AbstractSegmenter segmenter = operator.runTileSegmentation();
+        AbstractSegmenter segmenter = operator.runSegmentation();
         assertNotNull(segmenter);
 
         Graph graph = segmenter.getGraph();
@@ -83,20 +85,40 @@ public class GenericRegionMergingOpTest {
         assertEquals(2936, firstNode.getContour().size());
 
         assertEquals(3, firstNode.getEdgeCount());
+
+        Band band = checkTargetBand(operator);
+
+        int bandValue = band.getSampleInt(64, 84);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(164, 184);
+        assertEquals(3, bandValue);
+
+        bandValue = band.getSampleInt(264, 114);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(14, 18);
+        assertEquals(1, bandValue);
+
+        bandValue = band.getSampleInt(123, 321);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(200, 100);
+        assertEquals(2, bandValue);
     }
 
     @Test
     public void testFullLambdaScheduleTileSegmenter() throws IOException, IllegalAccessException {
         GenericRegionMergingOp operator = buildOperator(GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION,
-                GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION,
-                75, 2, 50000, 0.0f, 0.0f);
+                                                        GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION,
+                                                        75, 2, 50000, 0.0f, 0.0f);
 
         operator.initialize();
 
         Class<?> tileSegmenterClass = operator.getTileSegmenterClass();
         assertEquals(FullLambdaScheduleTileSegmenter.class, tileSegmenterClass);
 
-        AbstractSegmenter segmenter = operator.runTileSegmentation();
+        AbstractSegmenter segmenter = operator.runSegmentation();
         assertNotNull(segmenter);
 
         Graph graph = segmenter.getGraph();
@@ -123,20 +145,40 @@ public class GenericRegionMergingOpTest {
         assertEquals(1596, firstNode.getContour().size());
 
         assertEquals(7, firstNode.getEdgeCount());
+
+        Band band = checkTargetBand(operator);
+
+        int bandValue = band.getSampleInt(64, 84);
+        assertEquals(8, bandValue);
+
+        bandValue = band.getSampleInt(164, 184);
+        assertEquals(17, bandValue);
+
+        bandValue = band.getSampleInt(264, 114);
+        assertEquals(6, bandValue);
+
+        bandValue = band.getSampleInt(14, 18);
+        assertEquals(3, bandValue);
+
+        bandValue = band.getSampleInt(123, 321);
+        assertEquals(19, bandValue);
+
+        bandValue = band.getSampleInt(200, 100);
+        assertEquals(7, bandValue);
     }
 
     @Test
     public void testSpringTileSegmenter() throws IOException, IllegalAccessException {
         GenericRegionMergingOp operator = buildOperator(GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION,
-                GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION,
-                75, 2, 1000, 0.0f, 0.0f);
+                                                        GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION,
+                                                        75, 2, 1000, 0.0f, 0.0f);
 
         operator.initialize();
 
         Class<?> tileSegmenterClass = operator.getTileSegmenterClass();
         assertEquals(SpringTileSegmenter.class, tileSegmenterClass);
 
-        AbstractSegmenter segmenter = operator.runTileSegmentation();
+        AbstractSegmenter segmenter = operator.runSegmentation();
         assertNotNull(segmenter);
 
         Graph graph = segmenter.getGraph();
@@ -163,6 +205,26 @@ public class GenericRegionMergingOpTest {
         assertEquals(12, firstNode.getContour().size());
 
         assertEquals(1, firstNode.getEdgeCount());
+
+        Band band = checkTargetBand(operator);
+
+        int bandValue = band.getSampleInt(64, 84);
+        assertEquals(1403, bandValue);
+
+        bandValue = band.getSampleInt(164, 184);
+        assertEquals(3607, bandValue);
+
+        bandValue = band.getSampleInt(264, 114);
+        assertEquals(2400, bandValue);
+
+        bandValue = band.getSampleInt(14, 18);
+        assertEquals(190, bandValue);
+
+        bandValue = band.getSampleInt(123, 321);
+        assertEquals(7118, bandValue);
+
+        bandValue = band.getSampleInt(200, 100);
+        assertEquals(1675, bandValue);
     }
 
     private GenericRegionMergingOp buildOperator(String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
@@ -201,6 +263,21 @@ public class GenericRegionMergingOpTest {
         if (!Files.exists(segmentationTestsFolderPath)) {
             fail("The GDAL test directory path '"+segmentationTestsFolderPath.toString()+"' is not valid.");
         }
+    }
+
+    private Band checkTargetBand(GenericRegionMergingOp operator) {
+        Product targetProduct = operator.getTargetProduct();
+        assertNotNull(targetProduct);
+
+        Band targetBand = targetProduct.getBandAt(0);
+        assertNotNull(targetBand);
+
+        assertEquals(ProductData.TYPE_INT32, targetBand.getDataType());
+
+        long size = targetProduct.getSceneRasterWidth() * targetProduct.getSceneRasterHeight();
+        assertEquals(size, targetBand.getNumDataElems());
+
+        return targetBand;
     }
 
     private static GenericRegionMergingOp buildOperator(Product sourceProduct, Map<String, Object> annotatedFields) {
