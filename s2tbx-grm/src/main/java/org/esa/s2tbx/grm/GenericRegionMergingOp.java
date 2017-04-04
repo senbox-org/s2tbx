@@ -12,9 +12,12 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.gpf.internal.OperatorContext;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
+import org.esa.snap.core.util.math.MathUtils;
 
 import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Date;
@@ -187,10 +190,27 @@ public class GenericRegionMergingOp extends Operator {
             logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", start time: "+new Date(startTime));
         }
 
-        OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
-        operatorExecutor.execute(ProgressMonitor.NULL);
+        Dimension tileSize = targetProduct.getPreferredTileSize();
+        int tileCountX = MathUtils.ceilInt(sceneWidth / (double) tileSize.width);
+        int tileCountY = MathUtils.ceilInt(sceneHeight / (double) tileSize.height);
+        AbstractSegmenter segmenter = null;
+        if (tileCountX > 1 || tileCountY > 1) {
+            OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
+            operatorExecutor.execute(ProgressMonitor.NULL);
 
-        AbstractSegmenter segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
+            segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
+        } else {
+            Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+            Rectangle rectangleToRead = new Rectangle(0, 0, sceneWidth, sceneHeight);
+            for (int i=0; i<this.sourceBandNames.length; i++) {
+                Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
+                sourceTiles[i] = getSourceTile(band, rectangleToRead);
+            }
+            BoundingBox imageRegion = new BoundingBox(0, 0, sceneWidth, sceneHeight);
+            int numberOfIterations = this.tileSegmenter.getIterationsForEachFirstSegmentation() + this.tileSegmenter.getTotalIterationsForSecondSegmentation();
+            segmenter = this.tileSegmenter.buildSegmenter(this.tileSegmenter.getThreshold());
+            segmenter.update(sourceTiles, imageRegion, numberOfIterations, this.tileSegmenter.isFastSegmentation(), this.tileSegmenter.isAddFourNeighbors());
+        }
 
 //        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
 //        Rectangle rectangleToRead = new Rectangle(0, 0, sceneWidth, sceneHeight);
@@ -214,6 +234,22 @@ public class GenericRegionMergingOp extends Operator {
 
         return segmenter;
     }
+
+//    public static OperatorExecutor create(Operator op) {
+//        OperatorContext operatorContext = getOperatorContext(op);
+//        Product targetProduct = op.getTargetProduct();
+//        // todo - [multisize_products] fix: don't rely on tiling is same for all bands (nf)
+//        Dimension tileSize = targetProduct.getPreferredTileSize();
+//
+//        int rasterHeight = targetProduct.getSceneRasterHeight();
+//        int rasterWidth = targetProduct.getSceneRasterWidth();
+//        Rectangle boundary = new Rectangle(rasterWidth, rasterHeight);
+//        int tileCountX = MathUtils.ceilInt(boundary.width / (double) tileSize.width);
+//        int tileCountY = MathUtils.ceilInt(boundary.height / (double) tileSize.height);
+//        Band[] targetBands = targetProduct.getBands();
+//        PlanarImage[] images = createImages(targetBands, operatorContext);
+//        return new OperatorExecutor(images, tileCountX, tileCountY);
+//    }
 
     public static class Spi extends OperatorSpi {
 

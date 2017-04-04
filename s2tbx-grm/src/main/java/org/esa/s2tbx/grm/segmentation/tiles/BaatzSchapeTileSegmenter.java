@@ -31,7 +31,7 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     }
 
     @Override
-    protected AbstractSegmenter buildSegmenter(float threshold) {
+    public AbstractSegmenter buildSegmenter(float threshold) {
         return new BaatzSchapeSegmenter(this.spectralWeight, this.shapeWeight, threshold);
     }
 

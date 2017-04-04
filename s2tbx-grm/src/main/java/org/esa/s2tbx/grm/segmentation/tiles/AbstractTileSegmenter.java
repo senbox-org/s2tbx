@@ -66,7 +66,7 @@ public abstract class AbstractTileSegmenter {
 
     protected abstract Node buildNode(int nodeId, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel);
 
-    protected abstract AbstractSegmenter buildSegmenter(float threshold);
+    public abstract AbstractSegmenter buildSegmenter(float threshold);
 
     public final int computeTileMargin() {
         return (int) (Math.pow(2, this.iterationsForEachFirstSegmentation + 1) - 2);
@@ -247,6 +247,26 @@ public abstract class AbstractTileSegmenter {
         }
 
         writeStabilityMargin(borderNodes, currentTile.getNodeMarginFileName(), currentTile.getEdgeMarginFileName());
+    }
+
+    public int getIterationsForEachFirstSegmentation() {
+        return iterationsForEachFirstSegmentation;
+    }
+
+    public int getTotalIterationsForSecondSegmentation() {
+        return totalIterationsForSecondSegmentation;
+    }
+
+    public float getThreshold() {
+        return threshold;
+    }
+
+    public boolean isFastSegmentation() {
+        return fastSegmentation;
+    }
+
+    public boolean isAddFourNeighbors() {
+        return addFourNeighbors;
     }
 
     protected void writeNode(BufferedOutputStreamWrapper nodesFileStream, Node nodeToWrite) throws IOException {

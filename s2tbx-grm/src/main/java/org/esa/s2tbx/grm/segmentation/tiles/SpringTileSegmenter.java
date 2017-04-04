@@ -24,7 +24,7 @@ public class SpringTileSegmenter extends AbstractTileSegmenter {
     }
 
     @Override
-    protected AbstractSegmenter buildSegmenter(float threshold) {
+    public AbstractSegmenter buildSegmenter(float threshold) {
         return new SpringSegmenter(threshold);
     }
 

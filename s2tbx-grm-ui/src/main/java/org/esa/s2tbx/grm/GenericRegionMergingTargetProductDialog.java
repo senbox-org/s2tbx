@@ -18,6 +18,7 @@ import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
 import org.esa.snap.core.gpf.ui.DefaultSingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelectorModel;
+import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
@@ -27,6 +28,7 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
@@ -87,8 +89,9 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             return;
         }
 
-        String productDir = targetProductSelector.getModel().getProductDir().getAbsolutePath();
-        appContext.getPreferences().setPropertyString(SaveProductAsAction.PREFERENCES_KEY_LAST_PRODUCT_DIR, productDir);
+        TargetProductSelectorModel model = targetProductSelector.getModel();
+        String productDirPath = model.getProductDir().getAbsolutePath();
+        appContext.getPreferences().setPropertyString(SaveProductAsAction.PREFERENCES_KEY_LAST_PRODUCT_DIR, productDirPath);
 
         Product targetProduct = null;
         try {
@@ -104,10 +107,11 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             throw new NullPointerException("The target product is null.");
         }
 
-        targetProduct.setName(targetProductSelector.getModel().getProductName());
-        targetProduct.setFileLocation(targetProductSelector.getModel().getProductFile());
+        targetProduct.setName(model.getProductName());
+        targetProduct.setFileLocation(model.getProductFile());
+
         GRMProductWriterSwingWorker worker = new GRMProductWriterSwingWorker(targetProduct);
-        worker.executeWithBlocking();
+        worker.executeWithBlocking(); // start the thread
     }
     /**
      * Returns the selected product.
@@ -150,12 +154,51 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
         bindingContext.setComponentsEnabled(PROPERTY_SHAPE_WEIGHT, enabled);
     }
 
+    private void showSaveInfo(long saveTime) {
+        File productFile = getTargetProductSelector().getModel().getProductFile();
+        final String message = MessageFormat.format(
+                "<html>The target product has been successfully written to<br>{0}<br>" +
+                        "Total time spend for processing: {1}",
+                formatFile(productFile),
+                formatDuration(saveTime)
+        );
+        showSuppressibleInformationDialog(message, "saveInfo");
+    }
+
+    private String formatFile(File file) {
+        return FileUtils.getDisplayText(file, 54);
+    }
+
+    private String formatDuration(long millis) {
+        long seconds = millis / 1000;
+        millis -= seconds * 1000;
+        long minutes = seconds / 60;
+        seconds -= minutes * 60;
+        long hours = minutes / 60;
+        minutes -= hours * 60;
+        return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+    }
+
+    private void showSaveAndOpenInAppInfo(long saveTime) {
+        File productFile = getTargetProductSelector().getModel().getProductFile();
+        final String message = MessageFormat.format(
+                "<html>The target product has been successfully written to<br>" +
+                        "<p>{0}</p><br>" +
+                        "and has been opened in {1}.<br><br>" +
+                        "Total time spend for processing: {2}<br>",
+                formatFile(productFile),
+                appContext.getApplicationName(),
+                formatDuration(saveTime)
+        );
+        showSuppressibleInformationDialog(message, "saveAndOpenInAppInfo");
+    }
+
     private class GRMProductWriterSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
         private final Product targetProduct;
         private long saveTime;
 
         private GRMProductWriterSwingWorker(Product targetProduct) {
-            super(getJDialog(), "Writing Target Product");
+            super(getJDialog(), "Run Segmentation");
 
             this.targetProduct = targetProduct;
         }
@@ -168,33 +211,37 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             Product product = null;
             try {
                 long t0 = System.currentTimeMillis();
+
                 OperatorProductReader opReader = (OperatorProductReader) this.targetProduct.getProductReader();
                 GenericRegionMergingOp execOp = (GenericRegionMergingOp)opReader.getOperatorContext().getOperator();
                 execOp.runSegmentation();
 
-                File file = model.getProductFile();
-                String formatName = model.getFormatName();
-                boolean clearCacheAfterRowWrite = false;
-                boolean incremental = false;
-                GPF.writeProduct(this.targetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
+                if (model.isSaveToFileSelected()) {
+                    File file = model.getProductFile();
+                    String formatName = model.getFormatName();
+                    boolean clearCacheAfterRowWrite = false;
+                    boolean incremental = false;
+                    GPF.writeProduct(this.targetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
+                }
 
                 saveTime = System.currentTimeMillis() - t0;
                 if (model.isOpenInAppSelected()) {
                     File targetFile = model.getProductFile();
-                    if (!targetFile.exists())
-                        targetFile = targetProduct.getFileLocation();
+                    if (!targetFile.exists()) {
+                        targetFile = this.targetProduct.getFileLocation();
+                    }
                     if (targetFile.exists()) {
                         product = ProductIO.readProduct(targetFile);
-                        if (product == null) {
-                            product = targetProduct; // todo - check - this cannot be ok!!! (nf)
-                        }
+                    }
+                    if (product == null) {
+                        product = this.targetProduct;
                     }
                     pm.worked(5);
                 }
             } finally {
                 pm.done();
-                if (product != targetProduct) {
-                    targetProduct.dispose();
+                if (product != this.targetProduct) {
+                    this.targetProduct.dispose();
                 }
                 Preferences preferences = SnapApp.getDefault().getPreferences();
                 if (preferences.getBoolean(GPF.BEEP_AFTER_PROCESSING_PROPERTY, false)) {
@@ -210,11 +257,14 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             long totalSaveTime = saveTime + createTargetProductTime;
             try {
                 final Product targetProduct = get();
-                if (model.isOpenInAppSelected()) {
+                if (model.isSaveToFileSelected() && model.isOpenInAppSelected()) {
                     appContext.getProductManager().addProduct(targetProduct);
-                    //showSaveAndOpenInAppInfo(totalSaveTime);
+                    showSaveAndOpenInAppInfo(totalSaveTime);
+                } else if (model.isOpenInAppSelected()) {
+                    appContext.getProductManager().addProduct(targetProduct);
+                    showOpenInAppInfo();
                 } else {
-                    //showSaveInfo(totalSaveTime);
+                    showSaveInfo(totalSaveTime);
                 }
             } catch (InterruptedException e) {
                 // ignore
