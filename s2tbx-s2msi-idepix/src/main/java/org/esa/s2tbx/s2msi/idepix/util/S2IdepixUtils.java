@@ -31,7 +31,7 @@ public class S2IdepixUtils {
     public static final String IDEPIX_CIRRUS_AMBIGUOUS_DESCR_TEXT = "Cirrus clouds, or clouds where the detection level is uncertain";
     public static final String IDEPIX_CIRRUS_SURE_DESCR_TEXT = "Cirrus clouds with full confidence of their detection";
     public static final String IDEPIX_COASTLINE_DESCR_TEXT = "Pixels at a coastline";
-    public static final String IDEPIX_CLEAR_SNOW_DESCR_TEXT = "Clear snow/ice pixels";
+    public static final String IDEPIX_SNOW_ICE_DESCR_TEXT = "Clear snow/ice pixels";
     public static final String IDEPIX_CLEAR_LAND_DESCR_TEXT = "Clear land pixels";
     public static final String IDEPIX_CLEAR_WATER_DESCR_TEXT = "Clear water pixels";
     public static final String IDEPIX_LAND_DESCR_TEXT = "Land pixels";
@@ -128,7 +128,7 @@ public class S2IdepixUtils {
         flagCoding.addFlag("IDEPIX_CIRRUS_AMBIGUOUS", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_CIRRUS_AMBIGUOUS), IDEPIX_CIRRUS_AMBIGUOUS_DESCR_TEXT);
         flagCoding.addFlag("IDEPIX_CIRRUS_SURE", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_CIRRUS_SURE), IDEPIX_CIRRUS_SURE_DESCR_TEXT);
         flagCoding.addFlag("IDEPIX_COASTLINE", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_COASTLINE), IDEPIX_COASTLINE_DESCR_TEXT);
-        flagCoding.addFlag("IDEPIX_CLEAR_SNOW", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_CLEAR_SNOW), IDEPIX_CLEAR_SNOW_DESCR_TEXT);
+        flagCoding.addFlag("IDEPIX_SNOW_ICE", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_SNOW_ICE), IDEPIX_SNOW_ICE_DESCR_TEXT);
         flagCoding.addFlag("IDEPIX_CLEAR_LAND", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_CLEAR_LAND), IDEPIX_CLEAR_LAND_DESCR_TEXT);
         flagCoding.addFlag("IDEPIX_CLEAR_WATER", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_CLEAR_WATER), IDEPIX_CLEAR_WATER_DESCR_TEXT);
         flagCoding.addFlag("IDEPIX_LAND", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_LAND), IDEPIX_LAND_DESCR_TEXT);
@@ -196,9 +196,9 @@ public class S2IdepixUtils {
                                          "pixel_classif_flags.IDEPIX_COASTLINE",
                                          getRandomColour(r), 0.5f);
         gaCloudProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("IDEPIX_CLEAR_SNOW",
-                                         IDEPIX_CLEAR_SNOW_DESCR_TEXT, w, h,
-                                         "pixel_classif_flags.IDEPIX_CLEAR_SNOW",
+        mask = Mask.BandMathsType.create("IDEPIX_SNOW_ICE",
+                                         IDEPIX_SNOW_ICE_DESCR_TEXT, w, h,
+                                         "pixel_classif_flags.IDEPIX_SNOW_ICE",
                                          getRandomColour(r), 0.5f);
         gaCloudProduct.getMaskGroup().add(index++, mask);
         mask = Mask.BandMathsType.create("IDEPIX_CLEAR_LAND",

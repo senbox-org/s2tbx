@@ -16,7 +16,7 @@ public class S2IdepixConstants {
     public static final int IDEPIX_CIRRUS_AMBIGUOUS = 6;
     public static final int IDEPIX_CIRRUS_SURE = 7;
     public static final int IDEPIX_COASTLINE = 8;
-    public static final int IDEPIX_CLEAR_SNOW = 9;
+    public static final int IDEPIX_SNOW_ICE = 9;
     public static final int IDEPIX_CLEAR_LAND = 10;
     public static final int IDEPIX_CLEAR_WATER = 11;
     public static final int IDEPIX_LAND = 12;

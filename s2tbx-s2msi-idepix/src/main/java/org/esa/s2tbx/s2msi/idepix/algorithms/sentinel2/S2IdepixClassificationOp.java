@@ -282,7 +282,7 @@ public class S2IdepixClassificationOp extends Operator {
                                 cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, false);
                                 cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, false);
                                 cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, false);
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_SNOW, false);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, false);
                                 if (nnOutput[0] > nnCloudAmbiguousLowerBoundaryValue &&
                                         nnOutput[0] <= nnCloudAmbiguousSureSeparationValue) {
                                     // this would be as 'CLOUD_AMBIGUOUS'...
@@ -297,7 +297,7 @@ public class S2IdepixClassificationOp extends Operator {
                                 }
                                 if (nnOutput[0] > nnCloudSureSnowSeparationValue) {
                                     // this would be as 'SNOW/ICE'...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_SNOW, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, true);
                                 }
                             }
                         } else {
@@ -625,7 +625,7 @@ public class S2IdepixClassificationOp extends Operator {
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, false); // not computed here
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_LAND, s2Algorithm.isClearLand());
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_WATER, s2Algorithm.isClearWater());
-        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_SNOW, s2Algorithm.isClearSnow());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, s2Algorithm.isClearSnow());
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_LAND, s2Algorithm.isLand());
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_WATER, s2Algorithm.isWater());
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_BRIGHT, s2Algorithm.isBright());

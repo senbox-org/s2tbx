@@ -29,14 +29,14 @@ class InstrumentConsts {
 
     public static final String VALID_RETRIEVAL_EXPRESSION =
                         IDEPIX_FLAG_BAND_NAME + ".IDEPIX_LAND "
-            + " && !" + IDEPIX_FLAG_BAND_NAME + ".IDEPIX_CLEAR_SNOW "
+            + " && !" + IDEPIX_FLAG_BAND_NAME + ".IDEPIX_SNOW_ICE "
             + " && !" + IDEPIX_FLAG_BAND_NAME + ".IDEPIX_CLOUD "   // ???
             + " && !" + IDEPIX_FLAG_BAND_NAME + ".IDEPIX_CLOUD_BUFFER "   // ???
             + " && (" + S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0] + "<70)";
 
     public static final String VALID_AOT_OUT_EXPRESSION =
                     IDEPIX_FLAG_BAND_NAME + ".IDEPIX_LAND "
-            + " && !" + IDEPIX_FLAG_BAND_NAME + ".IDEPIX_CLEAR_SNOW "
+            + " && !" + IDEPIX_FLAG_BAND_NAME + ".IDEPIX_SNOW_ICE "
             + " && !" + IDEPIX_FLAG_BAND_NAME + ".IDEPIX_CLOUD "   // ???
             + " && !" + IDEPIX_FLAG_BAND_NAME + ".IDEPIX_CLOUD_BUFFER "   // ???
             + " && (" + S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0] + "<70)";
