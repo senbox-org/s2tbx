@@ -100,6 +100,10 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
         characteristics.setProductStartTime(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, "Unknown"));
         characteristics.setProductStopTime(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, "Unknown"));
         double boaQuantification = Double.valueOf(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_L2A_BOA_QUANTIFICATION_VALUE, String.valueOf(L3PSD13Constants.DEFAULT_BOA_QUANTIFICATION)));
+        if(boaQuantification == 0d) {
+            logger.warning("Invalid BOA quantification value, the default value will be used.");
+            boaQuantification = L3PSD13Constants.DEFAULT_BOA_QUANTIFICATION;
+        }
         characteristics.setQuantificationValue(boaQuantification);
 
         return characteristics;

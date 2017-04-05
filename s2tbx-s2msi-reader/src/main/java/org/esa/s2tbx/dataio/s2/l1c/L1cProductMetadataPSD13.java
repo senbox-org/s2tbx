@@ -107,6 +107,10 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
         characteristics.setMetaDataLevel(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL, "Standard"));
 
         double toaQuantification = Double.valueOf(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_QUANTIFICATION_VALUE, String.valueOf(L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION)));
+        if(toaQuantification == 0d) {
+            logger.warning("Invalid TOA quantification value, the default value will be used.");
+            toaQuantification = L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION;
+        }
         characteristics.setQuantificationValue(toaQuantification);
 
         List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (/*xmlPath*/getFormat(),toaQuantification);
