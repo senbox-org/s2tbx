@@ -106,10 +106,22 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
         characteristics.setMetaDataLevel(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL, "Standard"));
 
         double boaQuantification = Double.valueOf(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_L2A_BOA_QUANTIFICATION_VALUE, String.valueOf(L2aPSD13Constants.DEFAULT_BOA_QUANTIFICATION)));
+        if(boaQuantification == 0d) {
+            logger.warning("Invalid BOA quantification value, the default value will be used.");
+            boaQuantification = L2aPSD13Constants.DEFAULT_BOA_QUANTIFICATION;
+        }
         characteristics.setQuantificationValue(boaQuantification);
 
         double aotQuantification = Double.valueOf(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_L2A_AOT_QUANTIFICATION_VALUE, String.valueOf(L2aPSD13Constants.DEFAULT_AOT_QUANTIFICATION)));
+        if(aotQuantification == 0d) {
+            logger.warning("Invalid AOT quantification value, the default value will be used.");
+            aotQuantification = L2aPSD13Constants.DEFAULT_AOT_QUANTIFICATION;
+        }
         double wvpQuantification = Double.valueOf(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_L2A_WVP_QUANTIFICATION_VALUE, String.valueOf(L2aPSD13Constants.DEFAULT_WVP_QUANTIFICATION)));
+        if(wvpQuantification == 0d) {
+            logger.warning("Invalid WVP quantification value, the default value will be used.");
+            wvpQuantification = L2aPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
+        }
 
         List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification);
         int size = aInfo.size();
