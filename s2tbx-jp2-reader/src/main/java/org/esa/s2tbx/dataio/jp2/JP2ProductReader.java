@@ -24,8 +24,11 @@ import org.esa.s2tbx.dataio.BucketMap;
 import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.s2tbx.dataio.jp2.internal.OpjExecutor;
-import org.esa.s2tbx.dataio.jp2.metadata.*;
+import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
 import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
+import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
+import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadataReader;
+import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
@@ -33,7 +36,14 @@ import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 import org.geotools.referencing.CRS;
@@ -152,7 +162,7 @@ public class JP2ProductReader extends AbstractProductReader {
         Path inputFile = getFileInput(getInput());
         tmpFolder = createCacheDirRoot(inputFile);
 
-        logger.info("Reading product metadata");
+        logger.fine("Reading product metadata");
 
         try {
             OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getOpjDump());
@@ -162,7 +172,10 @@ public class JP2ProductReader extends AbstractProductReader {
                 put("-o", dumpFile.getPath());
             }};
             if (dumper.execute(params) == 0) {
-                logger.info(dumper.getLastOutput());
+                String lastOutput = dumper.getLastOutput();
+                if (lastOutput != null && !lastOutput.isEmpty()) {
+                    logger.info(lastOutput);
+                }
                 dumpFile.parse();
                 ImageInfo imageInfo = dumpFile.getImageInfo();
                 CodeStreamInfo csInfo = dumpFile.getCodeStreamInfo();
