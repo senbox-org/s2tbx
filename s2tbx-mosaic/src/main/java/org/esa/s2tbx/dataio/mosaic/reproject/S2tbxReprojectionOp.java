@@ -293,6 +293,7 @@ public final class S2tbxReprojectionOp extends Operator {
             sourceGeoCoding= createOrthorectifier(sourceRaster);
         }else {
             if (this.sourceProduct.isMultiSize()) {
+
                 AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
                 try {
                     sourceGeoCoding = new CrsGeoCoding(sourceProduct.getSceneCRS(),
@@ -302,7 +303,20 @@ public final class S2tbxReprojectionOp extends Operator {
                 } catch (FactoryException | TransformException e) {
                     e.printStackTrace();
                 }
-            } else {
+            }else  if((this.sourceProduct.getNumBands()<2)&&
+                    (sourceRaster.getRasterWidth()!=this.sourceProduct.getSceneRasterWidth()
+                            ||sourceRaster.getRasterHeight()!=this.sourceProduct.getSceneRasterHeight())){
+                AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
+                try {
+                    sourceGeoCoding = new CrsGeoCoding(sourceProduct.getSceneCRS(),
+                            sourceRaster.getRasterWidth(), sourceRaster.getRasterHeight(),
+                            affSourceTransform.getTranslateX(), affSourceTransform.getTranslateY(),
+                            affSourceTransform.getScaleX(), affSourceTransform.getScaleX());
+                } catch (FactoryException | TransformException e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
                 sourceGeoCoding = sourceRaster.getGeoCoding();
             }
         }
@@ -630,15 +644,15 @@ public final class S2tbxReprojectionOp extends Operator {
         } else {
             if(this.reprojectedFirstProduct!=null) {
                 double pixelSize = getReprojectedProductResolution();
-                    imageGeometry = S2tbxImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
-                            pixelSize, pixelSize,
-                            width, height, orientation,
-                            easting, northing,
-                            referencePixelX, referencePixelY);
-                    final AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
-                    if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
-                        imageGeometry.changeYAxisDirection();
-                    }
+                imageGeometry = S2tbxImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
+                        pixelSize, pixelSize,
+                        width, height, orientation,
+                        easting, northing,
+                        referencePixelX, referencePixelY);
+                final AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
+                if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
+                    imageGeometry.changeYAxisDirection();
+                }
             }
             else{
                 imageGeometry = S2tbxImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
@@ -796,44 +810,44 @@ public final class S2tbxReprojectionOp extends Operator {
 
         private void addReprojectionSettingsIfNecessary(RasterDataNode rasterDataNode, Band reprojectedFirstProductBand) {
             String key = getKey(rasterDataNode);
-                if (!reprojectionSettingsMap.containsKey(key)) {
-                    GeoPos centerGeoPos =
-                            getCenterGeoPos(rasterDataNode.getGeoCoding(),
-                                    rasterDataNode.getRasterWidth(),
-                                    rasterDataNode.getRasterHeight());
-                    CoordinateReferenceSystem targetCrs = createTargetCRS(centerGeoPos);
-                    S2tbxImageGeometry targetImageGeometry;
-                    if(reprojectedFirstProductBand!=null){
-                        final double pixelSize =  reprojectedFirstProductBand.getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
-                        targetImageGeometry = S2tbxImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
-                                pixelSize, pixelSize,
-                                width, height,
-                                orientation, easting,
-                                northing, referencePixelX,
-                                referencePixelY);
-                    }else{
-                        targetImageGeometry = S2tbxImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
-                                pixelSizeX, pixelSizeY,
-                                width, height,
-                                orientation, easting,
-                                northing, referencePixelX,
-                                referencePixelY);
-                    }
-                    AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
-                    if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
-                        targetImageGeometry.changeYAxisDirection();
-                    }
-                    Rectangle targetRect = targetImageGeometry.getImageRect();
-                    try {
-                        CrsGeoCoding geoCoding = new CrsGeoCoding(targetImageGeometry.getMapCrs(),
-                                targetRect,
-                                targetImageGeometry.getImage2MapTransform());
-                        MultiLevelModel sourceModel = rasterDataNode.getMultiLevelModel();
-                        reprojectionSettingsMap.put(key, new ReprojectionSettings(geoCoding, sourceModel, targetImageGeometry));
-                    } catch (FactoryException | TransformException e) {
-                        throw new OperatorException(e);
-                    }
+            if (!reprojectionSettingsMap.containsKey(key)) {
+                GeoPos centerGeoPos =
+                        getCenterGeoPos(rasterDataNode.getGeoCoding(),
+                                rasterDataNode.getRasterWidth(),
+                                rasterDataNode.getRasterHeight());
+                CoordinateReferenceSystem targetCrs = createTargetCRS(centerGeoPos);
+                S2tbxImageGeometry targetImageGeometry;
+                if(reprojectedFirstProductBand!=null){
+                    final double pixelSize =  reprojectedFirstProductBand.getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
+                    targetImageGeometry = S2tbxImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
+                            pixelSize, pixelSize,
+                            width, height,
+                            orientation, easting,
+                            northing, referencePixelX,
+                            referencePixelY);
+                }else{
+                    targetImageGeometry = S2tbxImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
+                            pixelSizeX, pixelSizeY,
+                            width, height,
+                            orientation, easting,
+                            northing, referencePixelX,
+                            referencePixelY);
                 }
+                AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
+                if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
+                    targetImageGeometry.changeYAxisDirection();
+                }
+                Rectangle targetRect = targetImageGeometry.getImageRect();
+                try {
+                    CrsGeoCoding geoCoding = new CrsGeoCoding(targetImageGeometry.getMapCrs(),
+                            targetRect,
+                            targetImageGeometry.getImage2MapTransform());
+                    MultiLevelModel sourceModel = rasterDataNode.getMultiLevelModel();
+                    reprojectionSettingsMap.put(key, new ReprojectionSettings(geoCoding, sourceModel, targetImageGeometry));
+                } catch (FactoryException | TransformException e) {
+                    throw new OperatorException(e);
+                }
+            }
         }
 
         private String getKey(RasterDataNode rasterDataNode) {

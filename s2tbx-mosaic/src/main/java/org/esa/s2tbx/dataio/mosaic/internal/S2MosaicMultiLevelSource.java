@@ -4,6 +4,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.util.SystemUtils;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -13,6 +14,7 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
+import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -75,8 +78,8 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
     @Override
     protected RenderedImage createImage(int level) {
-        double factorX = 1.0 / Math.pow(2, level);
-        double factorY = 1.0 / Math.pow(2, level);
+
+        double scaleFactor = 1.0 /Math.pow(2, level);
         final List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>(this.sourceBands.length));
 
         for (int index = 0; index < this.sourceBands.length; index++) {
@@ -91,8 +94,8 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
                     final double sourceBandOriginY =  affineTransformSourceBand.getTranslateY();
                     final double sourceBandStepSize = affineTransformSourceBand.getScaleX();
                     opImage = TranslateDescriptor.create(opImage,
-                            (float)(Math.abs((sourceBandOriginX - this.originX)/sourceBandStepSize)*factorX),
-                            (float)(Math.abs((sourceBandOriginY - this.originY)/sourceBandStepSize)*factorY),
+                            (float)(Math.abs((sourceBandOriginX - this.originX)/sourceBandStepSize)*scaleFactor),
+                            (float)(Math.abs((sourceBandOriginY - this.originY)/sourceBandStepSize)*scaleFactor),
                             Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                             null);
                 }
@@ -119,32 +122,47 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
             case "MOSAIC_TYPE_BLEND":
                 mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                         MosaicDescriptor.MOSAIC_TYPE_BLEND,
-                        null, null,(this.productType==1)? new double[][]{{-1.0}} : null, new double[] {0.0},
+                        null, null,(this.productType==1)? new double[][]{{0.0}} : null, new double[] {0.0},
                         new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
                 break;
             case "MOSAIC_TYPE_OVERLAY":
                 mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                         MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                        null, null, (this.productType==1)? new double[][]{{-1.0}} : null, new double[] {0.0},
+                        null, null, (this.productType==1)? new double[][]{{0.0}} : null, new double[] {0.0},
                         new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
                 break;
             default:
                 throw new IllegalArgumentException("Mosaic type not accepted");
         }
+
         final int fittingRectWidth = scaleValue(this.imageWidth, level);
         final int fittingRectHeight = scaleValue(this.imageHeight, level);
+        logger.info( "fittingRectWidth " + fittingRectWidth + " fittingRectHeight" + fittingRectHeight );
 
-        Rectangle fitRect = new Rectangle(0, 0, fittingRectWidth, fittingRectHeight);
-        final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
+        Rectangle fitRect = new Rectangle(0, 0, (int)(fittingRectWidth*scaleFactor), (int)(fittingRectHeight*scaleFactor));
+        logger.info( "fitRect " + fitRect);
+
+        final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect,scaleFactor);
+        logger.info( "destBounds.width " + destBounds.getWidth() + " destBounds.height" + destBounds.getHeight() );
 
         BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
 
         if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
+            int topPad = mosaicOp.getMinY();
+            int lepftPad = mosaicOp.getMinX();
             int rightPad = destBounds.width - mosaicOp.getWidth();
             int bottomPad = destBounds.height - mosaicOp.getHeight();
-            mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
+            mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+            logger.info( "mosaicOp.width " + mosaicOp.getWidth() + " mosaicOp.height" + mosaicOp.getHeight());
         }
+            // Crop accordingly
+            mosaicOp = CropDescriptor.create(mosaicOp,
+                    mosaicOp.getMinX()+0.0f, mosaicOp.getMinY() + 0.0f, (float) destBounds.getWidth(), (float) destBounds.getHeight(),
+                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+            logger.info("croppedMosaic.width " + mosaicOp.getWidth() + " croppedMosaic.height" + mosaicOp.getHeight());
+
         return mosaicOp;
+
     }
 
     @Override
