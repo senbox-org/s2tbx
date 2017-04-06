@@ -346,7 +346,9 @@ public class S2IdepixAlgorithm {
     }
 
     public float radiometricLandValue() {
-        if (refl[5] >= refl[3]) {        // todo: what is refl620, refl620thresh ?
+//        if (refl[5] >= refl[3]) {        // todo: what is refl620, refl620thresh ?
+        // JM 20170406:
+        if (refl[7] >= refl[3]) {        // todo: what is refl620, refl620thresh ?
             return 1.0f;
         } else {
             return UNCERTAINTY_VALUE;
@@ -354,7 +356,9 @@ public class S2IdepixAlgorithm {
     }
 
     public float radiometricWaterValue() {
-        if (refl[5] < refl[3]) {        // todo: what is refl620, refl620thresh ?
+//        if (refl[5] < refl[3]) {        // todo: what is refl620, refl620thresh ?
+        // JM 20170406:
+        if (refl[7] < refl[3]) {        // todo: what is refl620, refl620thresh ?
             return 1.0f;
         } else {
             return UNCERTAINTY_VALUE;
