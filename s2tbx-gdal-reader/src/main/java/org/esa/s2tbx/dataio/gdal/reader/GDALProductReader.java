@@ -4,7 +4,13 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.StringUtils;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
@@ -15,7 +21,7 @@ import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.media.jai.JAI;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
@@ -116,6 +122,12 @@ public class GDALProductReader extends AbstractProductReader {
                     tileHeight = imageHeight;
                 }
                 int levels = gdalBand.GetOverviewCount() + 1;
+                if (levels == 1) {
+                    gdalDataset.BuildOverviews("NEAREST", new int[] { 2, 4, 8, 16 });
+                    gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
+                }
+                levels = gdalBand.GetOverviewCount() + 1;
+                product.setNumResolutionsMax(levels);
                 String colorInterpretationName = gdal.GetColorInterpretationName(gdalBand.GetRasterColorInterpretation());
 
                 MetadataElement bandComponentElement = new MetadataElement("Component");
