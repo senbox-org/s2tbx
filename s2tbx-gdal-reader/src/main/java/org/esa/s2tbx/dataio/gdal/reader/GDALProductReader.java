@@ -69,7 +69,7 @@ public class GDALProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         Object input = getInput();
 
-        logger.info("Loading the product using the GDAL reader from file '" + input.toString() + "'.");
+        logger.fine("Loading the product using the GDAL reader from file '" + input.toString() + "'.");
 
         Path inputFile = getFileInput(input);
         if (inputFile == null) {
@@ -123,8 +123,12 @@ public class GDALProductReader extends AbstractProductReader {
                 }
                 int levels = gdalBand.GetOverviewCount() + 1;
                 if (levels == 1) {
-                    gdalDataset.BuildOverviews("NEAREST", new int[] { 2, 4, 8, 16 });
-                    gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
+                    logger.info("Optimizing read by building image pyramids");
+                    if (gdalconst.CE_Failure != gdalDataset.BuildOverviews("NEAREST", new int[] { 2, 4, 8, 16 })) {
+                        gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
+                    } else {
+                        logger.warning("Multiple levels not supported");
+                    }
                 }
                 levels = gdalBand.GetOverviewCount() + 1;
                 product.setNumResolutionsMax(levels);
@@ -138,10 +142,10 @@ public class GDALProductReader extends AbstractProductReader {
                 bandComponentElement.setAttributeInt("precision", dataBufferType.precision);
                 bandComponentElement.setAttributeString("signed", Boolean.toString(dataBufferType.signed));
 
-                int overviewCount = gdalBand.GetOverviewCount();
-                if (overviewCount > 0) {
+                //int overviewCount = gdalBand.GetOverviewCount();
+                if (levels > 1) {
                     StringBuilder str = new StringBuilder();
-                    for (int iOverview = 0; iOverview < overviewCount; iOverview++) {
+                    for (int iOverview = 0; iOverview < levels - 1; iOverview++) {
                         if (iOverview != 0) {
                             str.append(", ");
                         }
@@ -150,7 +154,7 @@ public class GDALProductReader extends AbstractProductReader {
                                 .append("x")
                                 .append(hOverview.getYSize());
                     }
-                    bandComponentElement.setAttributeInt("overview count", overviewCount);
+                    bandComponentElement.setAttributeInt("overview count", levels - 1);
                     if (str.length() > 0) {
                         bandComponentElement.setAttributeString("overviews", str.toString());
                     }

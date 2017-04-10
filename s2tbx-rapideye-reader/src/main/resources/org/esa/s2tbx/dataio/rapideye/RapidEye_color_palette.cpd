@@ -1,9 +1,13 @@
 #BEAM Colour Palette Definition File
 color0=0,0,0
-color1=128,128,128
-color2=255,255,255
-numPoints=3
-sample0=5000
-sample1=7500
-sample2=10000
+color1=64,64,64
+color2=128,128,128
+color3=224,224,224
+color4=255,255,255
+numPoints=5
+sample0=0
+sample1=163.84
+sample2=327.68
+sample3=491.52
+sample4=655.35
 autoDistribute=true
