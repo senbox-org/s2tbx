@@ -25,6 +25,8 @@ import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
+import org.esa.snap.core.dataio.ProductIO;
+import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -54,10 +56,12 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     private final Map<Band, NITFReaderWrapper> readerMap;
     private final Path colorPaletteFilePath;
+    private final ProductReader gdalReader;
+    private String[] nitfFiles;
 
     public RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-
+        this.gdalReader = ProductIO.getProductReader("GDAL-NITF-READER");
         this.colorPaletteFilePath = colorPaletteFilePath;
         this.readerMap = new HashMap<>();
     }
@@ -90,7 +94,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         parseAdditionalMetadataFiles();
 
         try {
-            String[] nitfFiles = getRasterFileNames();
+            nitfFiles = getRasterFileNames();
             for (int i = 0; i < nitfFiles.length; i++) {
                 NITFReaderWrapper reader = new NITFReaderWrapper(productDirectory.getFile(nitfFiles[i]));
                 if (product == null) {
@@ -126,14 +130,16 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        pm.beginTask("Reading band data...", 3);
-        NITFReaderWrapper reader = readerMap.get(destBand);
-        try {
-            reader.readBandData(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, destBuffer, pm);
-        } finally {
-            pm.done();
-        }
+        if (this.gdalReader == null) {
+            pm.beginTask("Reading band data...", 3);
+            NITFReaderWrapper reader = readerMap.get(destBand);
 
+            try {
+                reader.readBandData(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, destBuffer, pm);
+            } finally {
+                pm.done();
+            }
+        }
     }
 
     @Override
@@ -141,6 +147,9 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         if (readerMap != null) {
             readerMap.values().forEach(NITFReaderWrapper::close);
             readerMap.clear();
+        }
+        if (gdalReader != null) {
+            gdalReader.close();
         }
         super.close();
     }
@@ -217,15 +226,48 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     private void addBandToProduct(Product product, NITFReaderWrapper reader, int bandIndex) {
         Assert.notNull(product);
         Assert.notNull(reader);
-        Band band = new ColorPaletteBand(RapidEyeConstants.BAND_NAMES[bandIndex], metadata.getPixelFormat(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
-        band.setSpectralWavelength(RapidEyeConstants.WAVELENGTHS[bandIndex]);
-        band.setUnit("nm");
-        band.setSpectralBandwidth(RapidEyeConstants.BANDWIDTHS[bandIndex]);
-        band.setSpectralBandIndex(bandIndex);
-        band.setScalingFactor(metadata.getScaleFactor(bandIndex));
-
-        product.addBand(band);
-        readerMap.put(band, reader);
+        Band targetBand = null;
+        String bandName = RapidEyeConstants.BAND_NAMES[bandIndex];
+        if (this.gdalReader != null) {
+            try {
+                Product nitfProduct = gdalReader.readProductNodes(productDirectory.getFile(nitfFiles[bandIndex]), null);
+                if (nitfProduct != null) {
+                    product.setNumResolutionsMax(nitfProduct.getNumResolutionsMax());
+                    /*MetadataElement nitfMetadata = nitfProduct.getMetadataRoot();
+                    if (nitfMetadata != null) {
+                        XmlMetadata.CopyChildElements(nitfMetadata, product.getMetadataRoot());
+                    }*/
+                    nitfProduct.transferGeoCodingTo(product, null);
+                    int numBands = nitfProduct.getNumBands();
+                    for (int idx = 0; idx < numBands; idx++) {
+                        Band srcBand = nitfProduct.getBandAt(idx);
+                        targetBand = new ColorPaletteBand(bandName, srcBand.getDataType(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
+                        targetBand.setNoDataValue(srcBand.getNoDataValue());
+                        targetBand.setNoDataValueUsed(srcBand.isNoDataValueUsed());
+                        targetBand.setScalingOffset(srcBand.getScalingOffset());
+                        targetBand.setSolarFlux(srcBand.getSolarFlux());
+                        targetBand.setSampleCoding(srcBand.getSampleCoding());
+                        //targetBand.setImageInfo(srcBand.getImageInfo());
+                        targetBand.setSpectralBandIndex(bandIndex);
+                        targetBand.setDescription(srcBand.getDescription());
+                        targetBand.setSourceImage(srcBand.getSourceImage());
+                    }
+                }
+            } catch (IOException ex) {
+                logger.severe(ex.getMessage());
+            }
+        } else {
+            targetBand = new ColorPaletteBand(bandName, metadata.getPixelFormat(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
+            readerMap.put(targetBand, reader);
+        }
+        if (targetBand != null) {
+            targetBand.setSpectralWavelength(RapidEyeConstants.WAVELENGTHS[bandIndex]);
+            targetBand.setUnit("cW/m\u00B2 sr μm");
+            targetBand.setSpectralBandwidth(RapidEyeConstants.BANDWIDTHS[bandIndex]);
+            targetBand.setSpectralBandIndex(bandIndex);
+            targetBand.setScalingFactor(metadata.getScaleFactor(bandIndex));
+            product.addBand(targetBand);
+        }
     }
 
     private TiePointGrid addTiePointGrid(int width, int height, Product product, String gridName, float[] tiePoints) {
