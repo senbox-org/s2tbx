@@ -69,7 +69,7 @@ public class GDALProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         Object input = getInput();
 
-        logger.info("Loading the product using the GDAL reader from file '" + input.toString() + "'.");
+        logger.info("Loading the product from the file '" + input.toString() + "' using the GDAL plugin reader '"+getReaderPlugIn().getClass().getName()+"'.");
 
         Path inputFile = getFileInput(input);
         if (inputFile == null) {

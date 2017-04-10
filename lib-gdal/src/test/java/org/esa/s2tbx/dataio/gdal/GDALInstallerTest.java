@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import org.apache.commons.lang.SystemUtils;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Test;
 
@@ -24,8 +25,8 @@ public class GDALInstallerTest {
             installer.install();
             if (!GdalInstallInfo.INSTANCE.isPresent()) {
                 // the GDAL library has not been installed
-                if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-                    fail("Failed to install the GDAL library on Windows operating system.");
+                if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_LINUX) {
+                    fail("Failed to install the GDAL library.");
                 }
             }
         } catch (Exception e) {
