@@ -125,7 +125,7 @@ public final class S2tbxMosaicOp extends Operator {
     @Parameter(label = "Overlapping Method",
             description = "The method used for overlapping pixels.",
             valueSet = {"MOSAIC_TYPE_BLEND", "MOSAIC_TYPE_OVERLAY"},
-            defaultValue = "MOSAIC_TYPE_BLEND")
+            defaultValue = "MOSAIC_TYPE_OVERLAY")
     String overlappingMethod;
 
     private static final String LOWER_RESOLUTION = "lower_resolution";
@@ -506,7 +506,7 @@ public final class S2tbxMosaicOp extends Operator {
                 srcBands[index]=this.reprojectedProducts[index].getBand(getSourceBandName(band.getName()));
             }
             final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
-            final int levels = srcBands[0].getSourceImage().getModel().getLevelCount();
+            int levels = srcBands[0].getSourceImage().getModel().getLevelCount();
             final int targetDataType;
             if(srcBands[0].isScalingApplied()){
                 targetDataType=srcBands[0].getGeophysicalDataType();
@@ -582,6 +582,7 @@ public final class S2tbxMosaicOp extends Operator {
         ProductUtils.copyGeoCoding(product, localProduct);
         ProductUtils.copyTiePointGrids(product, localProduct);
         ProductUtils.copyVectorData(product, localProduct);
+        localProduct.setNumResolutionsMax(product.getNumResolutionsMax());
         for (Band band : product.getBands()) {
             for (String bandName : BandNamesArray) {
                 if (band.getName().equals(bandName)){

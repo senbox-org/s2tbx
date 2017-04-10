@@ -50,7 +50,7 @@ import java.util.List;
  */
 class S2tbxMosaicMapProjectionPanel extends JPanel {
 
-    private static final String[] OVERLAPPING_VALUES = new String[] {"MOSAIC_TYPE_BLEND", "MOSAIC_TYPE_OVERLAY"};
+    private static final String[] OVERLAPPING_VALUES = new String[] {"MOSAIC_TYPE_OVERLAY", "MOSAIC_TYPE_BLEND"};
     private static final String OVERLAPPING_LABEL = "Overlapping methods";
 
     private final AppContext appContext;

@@ -4,7 +4,9 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.gpf.common.MosaicOp;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.core.util.math.MathUtils;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -26,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.esa.snap.core.dataop.resamp.Resampling.Index.crop;
 
 /**
  * A single banded multi-level image source for Sentinel2 products
@@ -86,6 +90,7 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
             PlanarImage opImage;
             try {
                 final AffineTransform affineTransformSourceBand =  sourceBands[index].getSourceImage().getModel().getImageToModelTransform(0);
+                sourceBands[index].getGeoCoding().getMapCRS().getDomainOfValidity();
                 opImage = createTileImage(index, level);
                 if (opImage != null) {
                     //compute the origin of the source bands so that it can be determined where
@@ -94,14 +99,32 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
                     final double sourceBandOriginY =  affineTransformSourceBand.getTranslateY();
                     final double sourceBandStepSize = affineTransformSourceBand.getScaleX();
                     opImage = TranslateDescriptor.create(opImage,
-                            (float)(Math.abs((sourceBandOriginX - this.originX)/sourceBandStepSize)*scaleFactor),
-                            (float)(Math.abs((sourceBandOriginY - this.originY)/sourceBandStepSize)*scaleFactor),
+                            (float)((MathUtils.floorInt((sourceBandOriginX - this.originX)/sourceBandStepSize))*scaleFactor),
+                            (float)((MathUtils.floorInt((sourceBandOriginY - this.originY)/sourceBandStepSize))*scaleFactor),
                             Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                             null);
                 }
             } catch (IOException e) {
                 opImage = ConstantDescriptor.create((float) this.tileWidth, (float) this.tileHeight, new Number[]{0}, null);
             }
+            /*if((opImage.getMinX()<0)&&(opImage.getMinY()<= 0)) {
+                opImage = CropDescriptor.create(opImage,
+                        (float) Math.abs(opImage.getMinX()), 0.0f,
+                        (float) (opImage.getWidth() - Math.abs(opImage.getMinX())), (float) opImage.getHeight(),
+                        null);
+            }else if((opImage.getMinX()>=0)&&(opImage.getMinY()>0)){
+                opImage = CropDescriptor.create(opImage,
+                        0.0f, (float) opImage.getMinY(), (float) opImage.getWidth(),
+                        (float) (opImage.getHeight()- Math.abs(opImage.getMinY())),
+                        null);
+            }else if((opImage.getMinX()<0)&&(opImage.getMinY()> 0)){
+                opImage = CropDescriptor.create(opImage,
+                        (float)Math.abs(opImage.getMinX()), (float) opImage.getMinY(),
+                        (float) (opImage.getWidth()- Math.abs(opImage.getMinX())),
+                        (float) (opImage.getHeight() - Math.abs(opImage.getMinY())),
+                        null);
+            }
+*/
             tileImages.add(opImage);
         }
         if (tileImages.isEmpty()) {
@@ -112,8 +135,8 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setMinX(0);
         imageLayout.setMinY(0);
-        imageLayout.setTileWidth(JAI.getDefaultTileSize().width);
-        imageLayout.setTileHeight(JAI.getDefaultTileSize().height);
+        imageLayout.setTileWidth(MathUtils.floorInt(JAI.getDefaultTileSize().width*scaleFactor));
+        imageLayout.setTileHeight(MathUtils.floorInt(JAI.getDefaultTileSize().height*scaleFactor));
         imageLayout.setTileGridXOffset(0);
         imageLayout.setTileGridYOffset(0);
         RenderedOp mosaicOp;
@@ -137,32 +160,30 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
         final int fittingRectWidth = scaleValue(this.imageWidth, level);
         final int fittingRectHeight = scaleValue(this.imageHeight, level);
-        logger.info( "fittingRectWidth " + fittingRectWidth + " fittingRectHeight" + fittingRectHeight );
 
-        Rectangle fitRect = new Rectangle(0, 0, (int)(fittingRectWidth*scaleFactor), (int)(fittingRectHeight*scaleFactor));
-        logger.info( "fitRect " + fitRect);
-
+        Rectangle fitRect = new Rectangle(0, 0, MathUtils.floorInt(fittingRectWidth*scaleFactor), MathUtils.floorInt(fittingRectHeight*scaleFactor));
         final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect,scaleFactor);
-        logger.info( "destBounds.width " + destBounds.getWidth() + " destBounds.height" + destBounds.getHeight() );
 
-        BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
-
-        if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
-            int topPad = mosaicOp.getMinY();
-            int lepftPad = mosaicOp.getMinX();
-            int rightPad = destBounds.width - mosaicOp.getWidth();
-            int bottomPad = destBounds.height - mosaicOp.getHeight();
-            mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-            logger.info( "mosaicOp.width " + mosaicOp.getWidth() + " mosaicOp.height" + mosaicOp.getHeight());
+        BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
+        int rightPad = 0;
+        if(mosaicOp.getWidth()<destBounds.getWidth() && mosaicOp.getMaxX()<destBounds.getWidth() && mosaicOp.getMaxX()>0) {
+            rightPad = (int) destBounds.getMaxX() - mosaicOp.getMaxX();
         }
-            // Crop accordingly
-            mosaicOp = CropDescriptor.create(mosaicOp,
-                    mosaicOp.getMinX()+0.0f, mosaicOp.getMinY() + 0.0f, (float) destBounds.getWidth(), (float) destBounds.getHeight(),
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-            logger.info("croppedMosaic.width " + mosaicOp.getWidth() + " croppedMosaic.height" + mosaicOp.getHeight());
+        int bottomPad =0;
+        if(mosaicOp.getHeight()<destBounds.getHeight() && mosaicOp.getMinY()<destBounds.getHeight() && (Math.abs(mosaicOp.getMinY())+mosaicOp.getHeight())<destBounds.getHeight()) {
+            bottomPad = (int) (destBounds.getMaxY() - mosaicOp.getMaxY() + mosaicOp.getMinY());
+        }
+        int topPad = 0;
+        if((mosaicOp.getMinY()<0) &&(Math.abs(mosaicOp.getMinY())<destBounds.getHeight())){
+            topPad = Math.abs(mosaicOp.getMinY());
+        }
+        int leftPad = 0;
+        if(mosaicOp.getMinX()>0 && mosaicOp.getMinX()<destBounds.getWidth()){
+            leftPad= mosaicOp.getMinX();
+        }
+        mosaicOp = BorderDescriptor.create(mosaicOp, leftPad, rightPad, topPad, bottomPad, borderExtender, null);
 
         return mosaicOp;
-
     }
 
     @Override
