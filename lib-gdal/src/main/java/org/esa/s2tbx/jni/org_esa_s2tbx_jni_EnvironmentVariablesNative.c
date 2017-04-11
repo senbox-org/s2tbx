@@ -17,6 +17,14 @@ JNIEXPORT jint JNICALL Java_org_esa_s2tbx_jni_EnvironmentVariablesNative_chdir(J
     return res;
 }
 
+JNIEXPORT jstring JNICALL Java_org_esa_s2tbx_jni_EnvironmentVariablesNative_getcwd(JNIEnv *env, jclass thisObj) {
+	char *currentDirectory;
+    currentDirectory = getcwd(NULL, 0);
+
+	// convert the C-string (char*) into JNI String (jstring) and return
+   	return (*env)->NewStringUTF(env, currentDirectory);
+}
+
 JNIEXPORT jstring JNICALL Java_org_esa_s2tbx_jni_EnvironmentVariablesNative_getenv(JNIEnv *env, jclass thisObj, jstring inJNIKey) {
 	// convert the JNI String (jstring) into C-String (char*)
    	const char *inCKey = (*env)->GetStringUTFChars(env, inJNIKey, NULL);
@@ -33,7 +41,6 @@ JNIEXPORT jstring JNICALL Java_org_esa_s2tbx_jni_EnvironmentVariablesNative_gete
 	// convert the C-string (char*) into JNI String (jstring) and return
    	return (*env)->NewStringUTF(env, existingValue);
 }
-
 
 JNIEXPORT jint JNICALL Java_org_esa_s2tbx_jni_EnvironmentVariablesNative_putenv(JNIEnv * env, jclass thisObj, jstring inJNIKeyEqualValue) {
 	// convert the JNI String (jstring) into C-String (char*)
@@ -55,4 +62,3 @@ JNIEXPORT jint JNICALL Java_org_esa_s2tbx_jni_EnvironmentVariablesNative_putenv(
 
    	return result;
 }
-

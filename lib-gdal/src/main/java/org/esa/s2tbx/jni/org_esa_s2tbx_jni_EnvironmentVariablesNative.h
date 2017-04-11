@@ -17,6 +17,14 @@ JNIEXPORT jint JNICALL Java_org_esa_s2tbx_jni_EnvironmentVariablesNative_chdir
 
 /*
  * Class:     org_esa_s2tbx_jni_EnvironmentVariablesNative
+ * Method:    getcwd
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_esa_s2tbx_jni_EnvironmentVariablesNative_getcwd
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_esa_s2tbx_jni_EnvironmentVariablesNative
  * Method:    getenv
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
