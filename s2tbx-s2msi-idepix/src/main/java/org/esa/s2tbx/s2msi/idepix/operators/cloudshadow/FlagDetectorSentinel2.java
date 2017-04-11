@@ -14,8 +14,16 @@ public class FlagDetectorSentinel2 implements FlagDetector {
     private int[] classifData;
     private int[] bufferData;
     private int roiWidth;
+    private final int invalid_byte;
+    private final int cloud_byte;
+    private final int cloud_buffer_byte;
+    private final int land_byte;
 
     FlagDetectorSentinel2(Tile classifSourceTile, Tile bufferSourceTile, Rectangle roi) {
+        invalid_byte = (int) Math.pow(2, S2IdepixConstants.F_INVALID);
+        cloud_byte = (int) Math.pow(2, S2IdepixConstants.F_CLOUD);
+        cloud_buffer_byte = (int) Math.pow(2, S2IdepixConstants.F_CLOUD_BUFFER);
+        land_byte = (int) Math.pow(2, S2IdepixConstants.F_LAND);
         classifData = classifSourceTile.getSamplesInt();
         if (bufferSourceTile != null) {
             bufferData = bufferSourceTile.getSamplesInt();
@@ -26,20 +34,20 @@ public class FlagDetectorSentinel2 implements FlagDetector {
     @Override
     public boolean isLand(int x, int y) {
         final int sample = classifData[y * roiWidth + x];
-        return (sample & S2IdepixConstants.F_LAND) != 0;
+        return (sample & land_byte) != 0;
     }
 
     @Override
     public boolean isCloud(int x, int y) {
         final int classifSample = classifData[y * roiWidth + x];
-        return ((classifSample & S2IdepixConstants.F_CLOUD) != 0 || (classifSample & S2IdepixConstants.F_CLOUD_BUFFER) != 0);
+        return ((classifSample & cloud_byte) != 0 || (classifSample & cloud_buffer_byte) != 0);
     }
 
     @Override
     public boolean isCloudBuffer(int x, int y) {
         if (bufferData != null) {
             final int bufferSample = bufferData[y * roiWidth + x];
-            return ((bufferSample & S2IdepixConstants.F_CLOUD_BUFFER) != 0);
+            return ((bufferSample & cloud_buffer_byte) != 0);
         } else {
             return  false;
         }
@@ -48,7 +56,7 @@ public class FlagDetectorSentinel2 implements FlagDetector {
     @Override
     public boolean isInvalid(int x, int y) {
         final int sample = classifData[y * roiWidth + x];
-        return (sample & 1) != 0;
+        return (sample & invalid_byte) != 0;
     }
 }
 
