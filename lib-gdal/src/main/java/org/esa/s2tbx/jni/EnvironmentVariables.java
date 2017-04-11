@@ -11,6 +11,10 @@ public class EnvironmentVariables {
         }
     }
 
+    public static String getCurrentDirectory() {
+        return EnvironmentVariablesNative.getcwd();
+    }
+
     public static String getEnvironmentVariable(String key) {
         return EnvironmentVariablesNative.getenv(key);
     }

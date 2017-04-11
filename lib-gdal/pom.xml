@@ -90,6 +90,7 @@
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.dataio.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.gdal.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.jni.*</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
