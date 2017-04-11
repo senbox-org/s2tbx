@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.ImageInfo;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -18,10 +19,12 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
+import org.opengis.referencing.operation.MathTransform;
 
 import javax.media.jai.BorderExtenderConstant;
 import java.awt.Color;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.util.Map;
 
 /**
@@ -53,7 +56,9 @@ public class S2IdepixCloudShadowOp extends Operator {
     private final static String BAND_NAME_TEST_C = "ShadowID_TestC";
     private final static String BAND_NAME_TEST_D = "LongShadowID_TestC";
 
-    private final static int GRANULE_NINTH = 610; // one ninth of a granule (5490 pixels)
+    private final static int GRANULE_TEN_M = 122; // one ninetieth of a granule (10980 pixels)
+    private final static int GRANULE_TWENTY_M = 610; // one ninth of a granule (5490 pixels)
+    private final static int GRANULE_SIXTY_M = 305; // one sixth of a granule (1830 pixels)
 
     private Band sourceBandClusterA;
 
@@ -129,8 +134,6 @@ public class S2IdepixCloudShadowOp extends Operator {
             scaleAltitude = 0.001; // altitude in[km] required
             mincloudBase = 100; // [m]
             maxcloudTop = 10000; // [m]
-            //todo read from product - RasterDataNode.getImageToModelTransform().getScaleX()
-            spatialResolution = 20.;  //[m]
             SENSOR_BAND_CLUSTERING = 2;
             GROWING_CLOUD = 1;
             clusterCountDefine = clusterCountDefault;
@@ -148,8 +151,6 @@ public class S2IdepixCloudShadowOp extends Operator {
             scaleAltitude = 0.001; // altitude in[km] required
             mincloudBase = 100; // [m]
             maxcloudTop = 10000; // [m]
-            //todo read from product - RasterDataNode.getImageToModelTransform().getScaleX()
-            spatialResolution = 20.;  //[m]
             SENSOR_BAND_CLUSTERING = 2;
             GROWING_CLOUD = 1;
             clusterCountDefine = clusterCountDefault;
@@ -158,23 +159,24 @@ public class S2IdepixCloudShadowOp extends Operator {
         } else {
             throw new OperatorException("Product type not supported!");
         }
+        spatialResolution = determineSourceResolution();
+        final int granuleSize = getGranuleSize(spatialResolution);
+        final int searchBorderRadius = getSearchBorderRadius(spatialResolution);
 
-//        if (sourceProduct.getSceneRasterWidth() > 5000 || sourceProduct.getSceneRasterHeight() > 5000) { //5000
         // todo: discuss
-        if (s2ClassifProduct.getSceneRasterWidth() > GRANULE_NINTH || s2ClassifProduct.getSceneRasterHeight() > GRANULE_NINTH) { //5000
-            final int preferredTileWidth = Math.min(s2ClassifProduct.getSceneRasterWidth(), GRANULE_NINTH);
-            final int preferredTileHeight = Math.min(s2ClassifProduct.getSceneRasterHeight(), GRANULE_NINTH);
+        if (s2ClassifProduct.getSceneRasterWidth() > granuleSize || s2ClassifProduct.getSceneRasterHeight() > granuleSize) {
+            final int preferredTileWidth = Math.min(s2ClassifProduct.getSceneRasterWidth(), granuleSize);
+            final int preferredTileHeight = Math.min(s2ClassifProduct.getSceneRasterHeight(), granuleSize);
             targetProduct.setPreferredTileSize(preferredTileWidth, preferredTileHeight); //1500
-            searchBorderRadius = Math.min(400, preferredTileWidth); //[pixel] 400 - Sentinel 2
-            searchBorderRadius = Math.min(searchBorderRadius, preferredTileHeight); //[pixel] 400 - Sentinel 2
+            S2IdepixCloudShadowOp.searchBorderRadius = searchBorderRadius; //[pixel] 400 - Sentinel 2
             productCentralComputation = true;
         } else {
             targetProduct.setPreferredTileSize(s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
-            searchBorderRadius = 0;
+            S2IdepixCloudShadowOp.searchBorderRadius = 0;
             productCentralComputation = false;
         }
 
-        System.out.printf("searchBorderRadius:  %d  \n", searchBorderRadius);
+        System.out.printf("searchBorderRadius:  %d  \n", S2IdepixCloudShadowOp.searchBorderRadius);
 
         sourceBandClusterA = s2ClassifProduct.getBand(sourceBandNameClusterA);
 
@@ -197,6 +199,37 @@ public class S2IdepixCloudShadowOp extends Operator {
         targetBandTestC = targetProduct.addBand(BAND_NAME_TEST_C, ProductData.TYPE_INT32);
         targetBandTestD = targetProduct.addBand(BAND_NAME_TEST_D, ProductData.TYPE_INT32);
 
+    }
+
+    private double determineSourceResolution() throws OperatorException {
+        final GeoCoding sceneGeoCoding = getSourceProduct().getSceneGeoCoding();
+        if (sceneGeoCoding instanceof CrsGeoCoding) {
+            final MathTransform imageToMapTransform = sceneGeoCoding.getImageToMapTransform();
+            if (imageToMapTransform instanceof AffineTransform) {
+                return ((AffineTransform) imageToMapTransform).getScaleX();
+            }
+        }
+        throw new OperatorException("Invalid product: ");
+    }
+
+    private int getGranuleSize(double spatialResolution) {
+        //todo determine granule size more gracefully
+        if (spatialResolution - 10. < 1e-8) {
+            return GRANULE_TEN_M;
+        } else if (spatialResolution - 20. < 1e-8) {
+            return GRANULE_TWENTY_M;
+        }
+        return GRANULE_SIXTY_M;
+    }
+
+    private int getSearchBorderRadius(double spatialResolution) {
+        //todo determine search border radius more gracefully
+        if (spatialResolution - 10. < 1e-8) {
+            return 900;
+        } else if (spatialResolution - 20. < 1e-8) {
+            return 400;
+        }
+        return 200;
     }
 
     @Override
@@ -225,8 +258,6 @@ public class S2IdepixCloudShadowOp extends Operator {
         int sourceWidth = sourceRectangle.width;
         int sourceHeight = sourceRectangle.height;
         int sourceLength = sourceRectangle.width * sourceRectangle.height;
-
-        System.out.printf("S2IdepixCloudShadow computeTileStack: x = %d y = %d\n", targetRectangle.x, targetRectangle.y);
 
         final int[] flagArray = new int[sourceLength];
         final int[] cloudShadowArray = new int[sourceLength];
