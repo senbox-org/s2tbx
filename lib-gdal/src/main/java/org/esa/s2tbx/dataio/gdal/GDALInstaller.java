@@ -125,12 +125,7 @@ public class GDALInstaller {
         Path nativeFolderPath = gdalDistributionRootFolderPath.resolve("lib/jni");
         NativeLibraryUtils.registerNativePaths(nativeFolderPath);
 
-        Path libraryFolderPath = gdalDistributionRootFolderPath.resolve("lib");
-        StringBuilder newPathValue = new StringBuilder();
-        newPathValue.append("LD_LIBRARY_PATH")
-                .append("=")
-                .append(libraryFolderPath.toString());
-        EnvironmentVariables.setEnvironmentVariable(newPathValue.toString());
+        EnvironmentVariables.changeCurrentDirectory(gdalDistributionRootFolderPath.resolve("lib/").toString());
 
         Path gdalDataFolderPath = gdalDistributionRootFolderPath.resolve("share/gdal");
         StringBuilder gdalDataValue = new StringBuilder();
