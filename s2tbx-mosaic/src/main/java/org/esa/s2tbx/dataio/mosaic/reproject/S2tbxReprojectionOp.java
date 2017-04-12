@@ -222,7 +222,7 @@ public final class S2tbxReprojectionOp extends Operator {
         ProductUtils.copyMasks(sourceProduct, targetProduct);
         ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
         targetProduct.setAutoGrouping(sourceProduct.getAutoGrouping());
-
+        targetProduct.setNumResolutionsMax(sourceProduct.getNumResolutionsMax());
         if (addDeltaBands) {
             addDeltaBands();
         }
