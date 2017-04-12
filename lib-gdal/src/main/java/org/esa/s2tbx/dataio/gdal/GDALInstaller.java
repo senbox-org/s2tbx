@@ -17,9 +17,13 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import org.esa.s2tbx.jni.EnvironmentVariables;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.runtime.Config;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
+import org.openide.modules.Modules;
+import org.openide.modules.SpecificationVersion;
 
 import java.io.*;
 import java.net.URL;
@@ -30,6 +34,8 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang.SystemUtils.*;
@@ -74,12 +80,34 @@ public class GDALInstaller {
             }
         }
 
+        Config config = Config.instance("s2tbx");
+        config.load();
+        Preferences preferences = config.preferences();
+        String preferencesKey = "gdal.installer.environment.variables";
+        SpecificationVersion currentSpecificationVersion = Modules.getDefault().ownerOf(GDALInstaller.class).getSpecificationVersion();
+        boolean canCopyLibraryFile = true;
         String libraryFileName = System.mapLibraryName("environment-variables");
         Path libraryFilePath = gdalApplicationFolderPath.resolve(libraryFileName);
-        if (!Files.exists(libraryFilePath)) {
+        if (Files.exists(libraryFilePath)) {
+            // the library file already exists on the local disk
+            String savedVersion = preferences.get(preferencesKey, null);
+            if (!StringUtils.isNullOrEmpty(savedVersion)) {
+                SpecificationVersion savedSpecificationVersion = new SpecificationVersion(savedVersion);
+                if (savedSpecificationVersion.compareTo(currentSpecificationVersion) >= 0) {
+                    canCopyLibraryFile = false;
+                }
+            }
+        }
+        if (canCopyLibraryFile) {
             String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileName;
             URL libraryFileURLFromSources = getClass().getClassLoader().getResource(libraryFilePathFromSources);
             FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
+            preferences.put(preferencesKey, currentSpecificationVersion.toString());
+            try {
+                preferences.flush();
+            } catch (BackingStoreException exception) {
+                // ignore exception
+            }
         }
         NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
 
