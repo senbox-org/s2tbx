@@ -41,7 +41,6 @@ import org.opengis.referencing.operation.TransformException;
 
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -151,7 +150,7 @@ class S2tbxMosaicFormModel {
         if (changeSourceProducts) updateRegionSelectableMapBounds(files);
     }
 
-    void updateRegionSelectableMapBounds(File[] files){
+    private void updateRegionSelectableMapBounds(File[] files){
 
         /* set default values in case files.length == 0 */
         double southBoundVal = 35.0;
@@ -184,13 +183,13 @@ class S2tbxMosaicFormModel {
 
     }
 
-    double computeLatitude(Product product, String level){
-
+    private double computeLatitude(Product product, String level){
+        final GeoCoding sceneGeoCoding = product.getSceneGeoCoding();
         Double[] latitudePoints = {
-                            product.getSceneGeoCoding().getGeoPos(new PixelPos(0, 0), null).getLat(),
-                            product.getSceneGeoCoding().getGeoPos(new PixelPos(0, product.getSceneRasterHeight()), null).getLat(),
-                            product.getSceneGeoCoding().getGeoPos(new PixelPos(product.getSceneRasterWidth(), 0), null).getLat(),
-                            product.getSceneGeoCoding().getGeoPos(new PixelPos(product.getSceneRasterWidth(), product.getSceneRasterHeight()), null).getLat()
+                            sceneGeoCoding.getGeoPos(new PixelPos(0, 0), null).getLat(),
+                            sceneGeoCoding.getGeoPos(new PixelPos(0, product.getSceneRasterHeight()), null).getLat(),
+                            sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), 0), null).getLat(),
+                            sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), product.getSceneRasterHeight()), null).getLat()
         };
 
         switch(level) {
@@ -204,13 +203,13 @@ class S2tbxMosaicFormModel {
 
     }
 
-    double computeLongitude(Product product, String level){
-
+    private double computeLongitude(Product product, String level){
+        final GeoCoding sceneGeoCoding = product.getSceneGeoCoding();
         Double[] longitudePoints = {
-                product.getSceneGeoCoding().getGeoPos(new PixelPos(0, 0), null).getLon(),
-                product.getSceneGeoCoding().getGeoPos(new PixelPos(0, product.getSceneRasterHeight()), null).getLon(),
-                product.getSceneGeoCoding().getGeoPos(new PixelPos(product.getSceneRasterWidth(), 0), null).getLon(),
-                product.getSceneGeoCoding().getGeoPos(new PixelPos(product.getSceneRasterWidth(), product.getSceneRasterHeight()), null).getLon()
+                sceneGeoCoding.getGeoPos(new PixelPos(0, 0), null).getLon(),
+                sceneGeoCoding.getGeoPos(new PixelPos(0, product.getSceneRasterHeight()), null).getLon(),
+                sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), 0), null).getLon(),
+                sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), product.getSceneRasterHeight()), null).getLon()
         };
 
         switch(level) {

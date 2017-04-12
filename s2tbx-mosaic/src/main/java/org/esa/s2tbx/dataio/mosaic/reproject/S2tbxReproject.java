@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.mosaic.reproject;
 
-import org.esa.s2tbx.dataio.mosaic.internal.S2tbxImageGeometry;
+import org.esa.snap.core.datamodel.ImageGeometry;
 import org.geotools.factory.Hints;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.ReferencingFactoryFinder;
@@ -30,7 +30,9 @@ import javax.media.jai.OpImage;
 import javax.media.jai.Warp;
 import javax.media.jai.WarpAffine;
 import javax.media.jai.operator.MosaicDescriptor;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -81,8 +83,8 @@ public class S2tbxReproject {
      * @throws TransformException if a transformation failed.
      */
     public RenderedImage reproject(RenderedImage sourceImage,
-                                   S2tbxImageGeometry sourceGeometry,
-                                   S2tbxImageGeometry targetGeometry,
+                                   ImageGeometry sourceGeometry,
+                                   ImageGeometry targetGeometry,
                                    double backgroundValue,
                                    final Interpolation interpolation,
                                    final Hints hints, int targetLevel, Dimension tileSize) throws FactoryException,

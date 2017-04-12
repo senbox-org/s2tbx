@@ -4,7 +4,10 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.PixelPos;
+import org.esa.snap.core.datamodel.Product;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -14,17 +17,15 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
-import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -34,33 +35,29 @@ import java.util.logging.Logger;
  * @since 5.0.2
  */
 public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
-    private final Band[]sourceBands;
+    private final Band[] sourceBands;
+    private final GeoCoding targetGeoCoding;
     private final int imageWidth;
     private final int imageHeight;
     private final int tileWidth;
     private final int tileHeight;
-    private final int dataType;
     private final String mosaicType;
     private final Logger logger;
-    private final double originX;
-    private final double originY;
     private final int productType;
 
     public S2MosaicMultiLevelSource(Band[] sourceBands, int imageWidth, int imageHeight,
-                                    int tileWidth, int tileHeight, int levels, int dataType,
-                                    AffineTransform transform, String mosaicType, double originX, double originY, int productType) {
+                                    int tileWidth, int tileHeight, int levels,
+                                    GeoCoding geoCoding, String mosaicType, int productType) {
         super(new DefaultMultiLevelModel(levels,
-                transform,
-                imageWidth, imageHeight));
+                                         Product.findImageToModelTransform(geoCoding),
+                                         imageWidth, imageHeight));
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
         this.sourceBands = sourceBands;
-        this.dataType = dataType;
+        this.targetGeoCoding = geoCoding;
         this.mosaicType = mosaicType;
-        this.originX = originX;
-        this.originY = originY;
         this.productType = productType;
 
         this.logger = Logger.getLogger(S2MosaicMultiLevelSource.class.getName());
@@ -79,25 +76,22 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
     @Override
     protected RenderedImage createImage(int level) {
 
-        double scaleFactor = 1.0 /Math.pow(2, level);
+        double scaleFactor = 1.0 / Math.pow(2, level);
         final List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>(this.sourceBands.length));
 
         for (int index = 0; index < this.sourceBands.length; index++) {
             PlanarImage opImage;
             try {
-                final AffineTransform affineTransformSourceBand =  sourceBands[index].getSourceImage().getModel().getImageToModelTransform(0);
                 opImage = createTileImage(index, level);
                 if (opImage != null) {
                     //compute the origin of the source bands so that it can be determined where
                     // to place them in relation to the target product
-                    final double sourceBandOriginX  = affineTransformSourceBand.getTranslateX();
-                    final double sourceBandOriginY =  affineTransformSourceBand.getTranslateY();
-                    final double sourceBandStepSize = affineTransformSourceBand.getScaleX();
-                    opImage = TranslateDescriptor.create(opImage,
-                            (float)(Math.abs((sourceBandOriginX - this.originX)/sourceBandStepSize)*scaleFactor),
-                            (float)(Math.abs((sourceBandOriginY - this.originY)/sourceBandStepSize)*scaleFactor),
-                            Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                            null);
+                    final PixelPos sourceBandOriginPos = getSourceOriginPixelPosition(sourceBands[index]);
+                    float offsetX = (float) (sourceBandOriginPos.getX() * scaleFactor);
+                    float offsetY = (float) (sourceBandOriginPos.getY() * scaleFactor);
+                    opImage = TranslateDescriptor.create(opImage, offsetX, offsetY,
+                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                                         null);
                 }
             } catch (IOException e) {
                 opImage = ConstantDescriptor.create((float) this.tileWidth, (float) this.tileHeight, new Number[]{0}, null);
@@ -112,24 +106,37 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setMinX(0);
         imageLayout.setMinY(0);
+        imageLayout.setWidth(imageWidth);
+        imageLayout.setHeight(imageHeight);
         imageLayout.setTileWidth(JAI.getDefaultTileSize().width);
         imageLayout.setTileHeight(JAI.getDefaultTileSize().height);
         imageLayout.setTileGridXOffset(0);
         imageLayout.setTileGridYOffset(0);
         RenderedOp mosaicOp;
 
+        final int sourceCount = tileImages.size();
+        double[][] thresholds = new double[sourceCount][1];
+        for (int i = 0; i < sourceCount; i++) {
+            thresholds[i][0] = 0.0;
+        }
         switch(this.mosaicType) {
             case "MOSAIC_TYPE_BLEND":
-                mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                        MosaicDescriptor.MOSAIC_TYPE_BLEND,
-                        null, null,(this.productType==1)? new double[][]{{0.0}} : null, new double[] {0.0},
-                        new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[sourceCount]),
+                                                   MosaicDescriptor.MOSAIC_TYPE_BLEND,
+                                                   null,
+                                                   null,
+                                                   (this.productType == 1) ? thresholds : null,
+                                                   new double[] {0.0},
+                                                   new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
                 break;
             case "MOSAIC_TYPE_OVERLAY":
-                mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                        MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                        null, null, (this.productType==1)? new double[][]{{0.0}} : null, new double[] {0.0},
-                        new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[sourceCount]),
+                                                   MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                   null,
+                                                   null,
+                                                   (this.productType == 1) ? thresholds : null,
+                                                   new double[] {0.0},
+                                                   new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
                 break;
             default:
                 throw new IllegalArgumentException("Mosaic type not accepted");
@@ -139,7 +146,7 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         final int fittingRectHeight = scaleValue(this.imageHeight, level);
         logger.info( "fittingRectWidth " + fittingRectWidth + " fittingRectHeight" + fittingRectHeight );
 
-        Rectangle fitRect = new Rectangle(0, 0, (int)(fittingRectWidth*scaleFactor), (int)(fittingRectHeight*scaleFactor));
+        Rectangle fitRect = new Rectangle(0, 0, fittingRectWidth, fittingRectHeight);
         logger.info( "fitRect " + fitRect);
 
         final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect,scaleFactor);
@@ -155,11 +162,6 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
             logger.info( "mosaicOp.width " + mosaicOp.getWidth() + " mosaicOp.height" + mosaicOp.getHeight());
         }
-            // Crop accordingly
-            mosaicOp = CropDescriptor.create(mosaicOp,
-                    mosaicOp.getMinX()+0.0f, mosaicOp.getMinY() + 0.0f, (float) destBounds.getWidth(), (float) destBounds.getHeight(),
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-            logger.info("croppedMosaic.width " + mosaicOp.getWidth() + " croppedMosaic.height" + mosaicOp.getHeight());
 
         return mosaicOp;
 
@@ -168,6 +170,12 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
     @Override
     public synchronized void reset() {
         super.reset();
+    }
+
+    private PixelPos getSourceOriginPixelPosition(Band sourceBand) {
+        final GeoCoding sourceBandGeoCoding = sourceBand.getGeoCoding();
+        GeoPos sourceBandGeoPos = sourceBandGeoCoding.getGeoPos(new PixelPos(0, 0), null);
+        return this.targetGeoCoding.getPixelPos(sourceBandGeoPos, null);
     }
 
     private int scaleValue(int source, int level) {

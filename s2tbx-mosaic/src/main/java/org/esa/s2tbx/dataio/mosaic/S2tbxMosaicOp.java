@@ -5,7 +5,15 @@ import com.bc.ceres.binding.ConverterRegistry;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.mosaic.internal.S2MosaicMultiLevelSource;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.ColorPaletteDef;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.ImageInfo;
+import org.esa.snap.core.datamodel.MetadataAttribute;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.dataop.barithm.BandArithmetic;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
@@ -21,19 +29,16 @@ import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.VirtualBandOpImage;
 import org.esa.snap.core.jexp.ParseException;
 import org.esa.snap.core.jexp.impl.Tokenizer;
+import org.esa.snap.core.transform.AffineTransform2D;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.core.util.math.MathUtils;
 import org.geotools.factory.Hints;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.GeneralDirectPosition;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.ImageLayout;
@@ -43,7 +48,7 @@ import javax.media.jai.operator.AddCollectionDescriptor;
 import javax.media.jai.operator.AddDescriptor;
 import javax.media.jai.operator.FormatDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
-import java.awt.*;
+import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.DataBuffer;
@@ -51,9 +56,15 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Map;
+import java.util.OptionalDouble;
 
 /**
  * A mosaic operator that performs mosaicing operations on multisize products
@@ -133,8 +144,10 @@ public final class S2tbxMosaicOp extends Operator {
 
     private Product[] reprojectedProducts;
     private List<Product> generatedSelectedBandsProducts = new ArrayList<>();
-    private double productResolution;
+    private double targetStepX;
+    private double targetStepY;
     private ReferencedEnvelope targetEnvelope;
+    private CoordinateReferenceSystem targetCRS;
 
     @Override
     public void initialize() throws OperatorException{
@@ -144,34 +157,46 @@ public final class S2tbxMosaicOp extends Operator {
         for (Product product : this.sourceProducts) {
             this.generatedSelectedBandsProducts.add(generateSelectedBandsProduct(product));
         }
-        this.sourceProducts =  this.generatedSelectedBandsProducts.toArray(new Product[generatedSelectedBandsProducts.size()]);
 
-
-        if(this.nativeResolution){
-            this.reprojectedProducts = createReprojectedProductsNativeResolution();
-            this.productResolution = getTargetProductBandResolution(this.reprojectedProducts[0]);
+        try {
+            targetCRS = CRS.parseWKT(this.crs);
+        } catch (FactoryException e) {
+            try {
+                targetCRS = CRS.decode(this.crs);
+            } catch (FactoryException e1) {
+                throw new OperatorException(e1);
+            }
         }
+        this.sourceProducts = this.generatedSelectedBandsProducts.toArray(new Product[generatedSelectedBandsProducts.size()]);
 
+        if (this.nativeResolution) {
+            this.reprojectedProducts = createReprojectedProducts();// createReprojectedProductsNativeResolution();
+            this.targetStepX = computeTargetStepX(this.reprojectedProducts[0]);
+            this.targetStepY = computeTargetStepY(this.reprojectedProducts[0]);
+        }
         if (isUpdateMode()) {
             initFields();
             this.targetProduct = this.updateProduct;
             updateMetadata(this.targetProduct);
         } else {
             this.targetProduct = createTargetProduct();
+            addTargetBands(this.targetProduct);
         }
-        if(this.nativeResolution) {
+
+        if (this.nativeResolution) {
             try {
                 createSourceImagesNativeResolution();
             } catch (TransformException e) {
                 e.printStackTrace();
             }
-        }else{
-            Product[] resampledProducts=null;
-            this.productResolution = getTargetProductBandResolution(this.sourceProducts[0]);
-            if (this.pixelSizeX>this.productResolution){
+        } else {
+            Product[] resampledProducts;
+            this.targetStepX = computeTargetStepX(this.sourceProducts[0]);
+            this.targetStepY = computeTargetStepY(this.sourceProducts[0]);
+            if (this.pixelSizeX > this.targetStepX) {
                 resampledProducts = resample(this.sourceProducts, this.targetProduct.getSceneRasterWidth(),
                         this.targetProduct.getSceneRasterHeight(),LOWER_RESOLUTION);
-            }else{
+            } else {
                 resampledProducts = resample(this.sourceProducts, this.targetProduct.getSceneRasterWidth(),
                         this.targetProduct.getSceneRasterHeight(),HIGHER_RESOLUTION);
             }
@@ -194,17 +219,8 @@ public final class S2tbxMosaicOp extends Operator {
     }
 
     private Product[] orderSourceProductsAfterRefNo(){
-        Product[] products = new Product[this.sourceProducts.length];
-        int refNum = 1;
-        while(refNum<=this.sourceProducts.length){
-            for (Product sourceProduct : this.sourceProducts) {
-                if (sourceProduct.getRefNo() == refNum) {
-                    products[refNum - 1] = sourceProduct;
-                    refNum++;
-                }
-            }
-        }
-        return products;
+        Arrays.sort(this.sourceProducts, Comparator.comparingInt(Product::getRefNo));
+        return this.sourceProducts;
     }
 
     private boolean isUpdateMode() {
@@ -398,52 +414,58 @@ public final class S2tbxMosaicOp extends Operator {
         }
     }
 
-    private double getTargetProductBandResolution(Product product){
-        double productResolution = product.getBandAt(0).getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
-        for(int index = 0;index<product.getNumBands();index++)
-        {
-            if( product.getBandAt(index).getSourceImage().getModel().getImageToModelTransform(0).getScaleX() < productResolution){
-                productResolution = product.getBandAt(index).getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
-            }
+    private double computeTargetStepX(Product product){
+        OptionalDouble result = Arrays.stream(product.getBands())
+                .mapToDouble(band -> Math.abs(band.getSourceImage().getModel().getImageToModelTransform(0).getScaleX()))
+                .min();
+        if (result.isPresent()) {
+            return result.getAsDouble();
+        } else {
+            return this.pixelSizeX;
         }
-        return productResolution;
+    }
+
+    private double computeTargetStepY(Product product){
+        OptionalDouble result = Arrays.stream(product.getBands())
+                .mapToDouble(band -> Math.abs(band.getSourceImage().getModel().getImageToModelTransform(0).getScaleY()))
+                .min();
+        if (result.isPresent()) {
+            return result.getAsDouble();
+        } else {
+            return this.pixelSizeY;
+        }
     }
 
     private Product createTargetProduct() {
         try {
-            CoordinateReferenceSystem targetCRS;
-            try {
-                targetCRS = CRS.parseWKT(this.crs);
-            } catch (FactoryException e) {
-                targetCRS = CRS.decode(this.crs, true);
-            }
             final Rectangle2D bounds = new Rectangle2D.Double();
-            bounds.setFrameFromDiagonal(this.westBound, this.northBound, this.eastBound, this.southBound);
+            bounds.setFrameFromDiagonal(this.westBound, this.southBound, this.eastBound, this.northBound);
             final ReferencedEnvelope boundsEnvelope = new ReferencedEnvelope(bounds, DefaultGeographicCRS.WGS84);
-            this.targetEnvelope = boundsEnvelope.transform(targetCRS, true);
+            this.targetEnvelope = boundsEnvelope.transform(targetCRS, false);
             int height;
             int width;
             CrsGeoCoding geoCoding;
-            width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / ((this.nativeResolution)?this.productResolution:this.pixelSizeX));
-            height = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / ((this.nativeResolution)?this.productResolution:this.pixelSizeY));
+            width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) /
+                                               ((this.nativeResolution) ? Math.abs(this.targetStepX) : this.pixelSizeX));
+            height = MathUtils.floorInt(this.targetEnvelope.getSpan(1) /
+                                                ((this.nativeResolution) ? Math.abs(this.targetStepY): this.pixelSizeY));
             geoCoding = new CrsGeoCoding(targetCRS,
                     width,
                     height,
-                    this.targetEnvelope.getMinimum(0),
-                    this.targetEnvelope.getMaximum(1),
-                    (this.nativeResolution)?this.productResolution:this.pixelSizeX,
-                    (this.nativeResolution)?this.productResolution:this.pixelSizeY);
+                    targetEnvelope.getLowerCorner().getOrdinate(0),
+                    targetEnvelope.getUpperCorner().getOrdinate(1),
+                    (this.nativeResolution) ? this.targetStepX : this.pixelSizeX,
+                    (this.nativeResolution) ? this.targetStepY : this.pixelSizeY);
             final Product product = new Product("S2mosaic", "BEAM_MOSAIC", width, height);
             product.setSceneGeoCoding(geoCoding);
             final Dimension tileSize = JAIUtils.computePreferredTileSize(width, height, 1);
             product.setPreferredTileSize(tileSize);
-            if(this.nativeResolution){
+            if (this.nativeResolution) {
                 int levels = this.reprojectedProducts[0].getNumResolutionsMax();
                 if (levels > product.getNumResolutionsMax()) {
                     product.setNumResolutionsMax(levels);
                 }
             }
-            addTargetBands(product);
             return product;
         } catch (Exception e) {
             throw new OperatorException(e);
@@ -451,23 +473,59 @@ public final class S2tbxMosaicOp extends Operator {
     }
 
     private void addTargetBands(Product product) {
-        if(this.nativeResolution){
+        if (this.nativeResolution) {
+            int sceneWidth = product.getSceneRasterWidth();
+            int sceneHeight = product.getSceneRasterHeight();
             for (Variable outputVariable : this.variables) {
                 final int targetDataType;
-                if(this.reprojectedProducts[0].getBand(getSourceBandName(outputVariable.getExpression())).isScalingApplied()){
-                    targetDataType=this.reprojectedProducts[0].getBand(getSourceBandName(outputVariable.getExpression())).getGeophysicalDataType();
-                }else{
-                    targetDataType=this.reprojectedProducts[0].getBand(getSourceBandName(outputVariable.getExpression())).getDataType();
+                final Band firstSourceBand = this.reprojectedProducts[0].getBand(getSourceBandName(outputVariable.getExpression()));
+                if (firstSourceBand.isScalingApplied()) {
+                    targetDataType = firstSourceBand.getGeophysicalDataType();
+                } else {
+                    targetDataType = firstSourceBand.getDataType();
                 }
-                final AffineTransform affineTransformSourceBand = this.reprojectedProducts[0].getBand(getSourceBandName(outputVariable.getExpression())).
-                        getSourceImage().getModel().getImageToModelTransform(0);
-                Band targetBand = new Band(outputVariable.getName(),  targetDataType,
-                        MathUtils.floorInt(this.targetEnvelope.getSpan(0) / affineTransformSourceBand.getScaleX()),
-                        MathUtils.floorInt(this.targetEnvelope.getSpan(1) / affineTransformSourceBand.getScaleX()));
-                targetBand.setDescription(outputVariable.getExpression());
+                final AffineTransform affineTransformSourceBand =
+                        firstSourceBand.getSourceImage().getModel().getImageToModelTransform(0);
+                double stepX = Math.abs(affineTransformSourceBand.getScaleX());
+                double stepY = Math.abs(affineTransformSourceBand.getScaleY());
+                int bandWidth = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / Math.abs(stepX));
+                int bandHeight = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / Math.abs(stepY));
+                Band targetBand = new Band(outputVariable.getName(),  targetDataType, bandWidth, bandHeight);
+                targetBand.setDescription(firstSourceBand.getDescription());
+                targetBand.setUnit(firstSourceBand.getUnit());
+                targetBand.setScalingFactor(firstSourceBand.getScalingFactor());
+                targetBand.setScalingOffset(firstSourceBand.getScalingOffset());
+                targetBand.setLog10Scaled(firstSourceBand.isLog10Scaled());
+                targetBand.setNoDataValue(firstSourceBand.getNoDataValue());
+                //targetBand.setNoDataValueUsed(firstSourceBand.isNoDataValueUsed());
+                //targetBand.setValidPixelExpression(firstSourceBand.getValidPixelExpression());
+                targetBand.setSpectralWavelength(firstSourceBand.getSpectralWavelength());
+                targetBand.setSpectralBandwidth(firstSourceBand.getSpectralBandwidth());
+                ImageInfo sourceImageInfo = firstSourceBand.getImageInfo();
+                if (sourceImageInfo != null) {
+                    targetBand.setImageInfo(
+                            new ImageInfo(
+                                    new ColorPaletteDef(
+                                            sourceImageInfo.getColorPaletteDef().getPoints()
+                                    )));
+                }
+                if (sceneWidth != bandWidth) {
+                    AffineTransform2D transform2D =
+                            new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0,
+                                                  (float) sceneHeight / bandHeight, 0.0, 0.0);
+                    targetBand.setImageToModelTransform(transform2D);
+                }
+                try {
+                    CrsGeoCoding geoCoding = new CrsGeoCoding(targetCRS, bandWidth, bandHeight,
+                                                              targetEnvelope.getMinX(), targetEnvelope.getMaxY(),
+                                                              stepX, stepY);
+                    targetBand.setGeoCoding(geoCoding);
+                } catch (FactoryException | TransformException e) {
+                    e.printStackTrace();
+                }
                 product.addBand(targetBand);
             }
-        }else {
+        } else {
             for (Variable outputVariable : this.variables) {
                 Band band = product.addBand(outputVariable.getName(), ProductData.TYPE_FLOAT32);
                 band.setDescription(outputVariable.getExpression());
@@ -489,33 +547,21 @@ public final class S2tbxMosaicOp extends Operator {
     }
 
     private void createSourceImagesNativeResolution() throws TransformException {
-        final DirectPosition2D directPixPos = new DirectPosition2D();
-        final DirectPosition directGeoPos = new GeneralDirectPosition(1,1);
-
-        final MathTransform origin  = this.targetProduct.getSceneGeoCoding().getImageToMapTransform();
-
-        final double originX = origin.transform(directPixPos,directGeoPos).getOrdinate(0);
-        final double originY = origin.transform(directPixPos,directGeoPos).getOrdinate(1);
         int productType = 0;
-        if(this.reprojectedProducts[0].getProductType().contains("S2")){
+        if (this.reprojectedProducts[0].getProductType().contains("S2")) {
             productType = 1;
         }
-        for (Band band: this.targetProduct.getBands()) {
-            Band[]srcBands = new Band[this.reprojectedProducts.length];
-            for(int index = 0;index<this.reprojectedProducts.length;index++){
-                srcBands[index]=this.reprojectedProducts[index].getBand(getSourceBandName(band.getName()));
+        for (Band band : this.targetProduct.getBands()) {
+            Band[] srcBands = new Band[this.reprojectedProducts.length];
+            for (int index = 0; index < this.reprojectedProducts.length; index++){
+                srcBands[index] = this.reprojectedProducts[index].getBand(getSourceBandName(band.getName()));
             }
             final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
             final int levels = srcBands[0].getSourceImage().getModel().getLevelCount();
-            final int targetDataType;
-            if(srcBands[0].isScalingApplied()){
-                targetDataType=srcBands[0].getGeophysicalDataType();
-            }else{
-                targetDataType=srcBands[0].getDataType();
-            }
-            S2MosaicMultiLevelSource bandSource =  new S2MosaicMultiLevelSource(srcBands,band.getRasterWidth(), band.getRasterHeight(),
-                    tileSize.width, tileSize.height,levels, targetDataType,
-                    srcBands[0].getImageToModelTransform(),this.overlappingMethod, originX, originY, productType);
+            S2MosaicMultiLevelSource bandSource = new S2MosaicMultiLevelSource(srcBands, band.getRasterWidth(), band.getRasterHeight(),
+                    tileSize.width, tileSize.height, levels,
+                    band.getGeoCoding(),
+                    this.overlappingMethod, productType);
             band.setSourceImage(new DefaultMultiLevelImage(bandSource));
         }
     }
@@ -542,13 +588,13 @@ public final class S2tbxMosaicOp extends Operator {
     private Product generateSelectedBandsProduct(final Product product) {
         Product localProduct;
         AbstractSet<String> bandFromExpresion = new HashSet<>();
-        if(product == null){
+        if (product == null) {
             String msg = "Source product is null.";
             getLogger().warning(msg);
             throw new OperatorException("received product is null");
         }
-        for(String bandName : product.getBandNames()) {
-            if(this.variables!=null) {
+        for (String bandName : product.getBandNames()) {
+            if (this.variables != null) {
                 for (Variable variable : this.variables) {
                     String variableExpression = variable.getExpression();
                     if (variableExpression.equals(bandName)) {
@@ -560,7 +606,7 @@ public final class S2tbxMosaicOp extends Operator {
                     }
                 }
             }
-            if(this.conditions!=null){
+            if (this.conditions != null){
                 for (Condition condition : this.conditions) {
                     String conditionExpression = condition.getExpression();
                     if (conditionExpression.equals(bandName)) {
@@ -575,9 +621,10 @@ public final class S2tbxMosaicOp extends Operator {
         }
 
         String[] BandNamesArray = bandFromExpresion.toArray(new String[bandFromExpresion.size()]);
-        localProduct= new Product(product.getName(), product.getProductType(), product.getSceneRasterWidth(), product.getSceneRasterHeight());
+        localProduct = new Product(product.getName(), product.getProductType(), product.getSceneRasterWidth(), product.getSceneRasterHeight());
         localProduct.setStartTime(product.getStartTime());
         localProduct.setEndTime(product.getEndTime());
+        localProduct.setNumResolutionsMax(product.getNumResolutionsMax());
         ProductUtils.copyMetadata(product, localProduct);
         ProductUtils.copyGeoCoding(product, localProduct);
         ProductUtils.copyTiePointGrids(product, localProduct);
@@ -586,6 +633,7 @@ public final class S2tbxMosaicOp extends Operator {
             for (String bandName : BandNamesArray) {
                 if (band.getName().equals(bandName)){
                     ProductUtils.copyBand(band.getName(), product, localProduct, true);
+                    ProductUtils.copyGeoCoding(band, localProduct.getBand(bandName));
                 }
             }
         }
@@ -594,18 +642,27 @@ public final class S2tbxMosaicOp extends Operator {
 
     private Product[] createReprojectedProductsNativeResolution() {
         List<Product> reprojProductList = new ArrayList<>(this.sourceProducts.length);
-
-        for(int index = 0;index<this.sourceProducts.length; index++) {
-            if (this.sourceProducts[index].getSceneGeoCoding() == null) {
-                String msg = "Source product: '" + this.sourceProducts[index].getName() + "' contains no geo-coding. Skipped for further processing.";
+        CoordinateReferenceSystem targetCRS = null;
+        try {
+            targetCRS = CRS.parseWKT(this.crs);
+        } catch (FactoryException ignored) {
+        }
+        for (Product sourceProduct : this.sourceProducts) {
+            GeoCoding sceneGeoCoding = sourceProduct.getSceneGeoCoding();
+            if (sceneGeoCoding == null) {
+                String msg = "Source product: '" + sourceProduct.getName() + "' contains no geo-coding. Skipped for further processing.";
                 getLogger().warning(msg);
                 continue;
             }
+            if (!CRS.equalsIgnoreMetadata(sceneGeoCoding.getMapCRS(), targetCRS)) {
                 final HashMap<String, Object> projParameters = createProjectionParameters();
                 HashMap<String, Product> projProducts = new HashMap<>();
-                projProducts.put("source", this.sourceProducts[index]);
-                projProducts.put("reprojectedFirstProduct", (index==0)?null:reprojProductList.get(0));
+                projProducts.put("source", sourceProduct);
+                //projProducts.put("reprojectedFirstProduct", (index == 0) ? null : reprojProductList.get(0));
                 reprojProductList.add(GPF.createProduct("S2tbx-Reproject", projParameters, projProducts));
+            } else {
+                reprojProductList.add(sourceProduct);
+            }
         }
         return reprojProductList.toArray(new Product[reprojProductList.size()]);
     }
@@ -614,15 +671,20 @@ public final class S2tbxMosaicOp extends Operator {
         List<Product> reprojProductList = new ArrayList<>(this.sourceProducts.length);
         final HashMap<String, Object> projParameters = createProjectionParameters();
         for (Product reprojectedProduct : this.sourceProducts) {
-            if (reprojectedProduct.getSceneGeoCoding() == null) {
+            GeoCoding geoCoding = reprojectedProduct.getSceneGeoCoding();
+            if (geoCoding == null) {
                 String msg = "Source product: '" + reprojectedProduct.getName() + "' contains no geo-coding. Skipped for further processing.";
                 getLogger().warning(msg);
                 continue;
             }
-            HashMap<String, Product> projProducts = new HashMap<>();
-            projProducts.put("source", reprojectedProduct);
-            projProducts.put("collocateWith", this.targetProduct);
-            reprojProductList.add(GPF.createProduct("Reproject", projParameters, projProducts));
+            if (!CRS.equalsIgnoreMetadata(geoCoding.getMapCRS(), targetCRS)) {
+                HashMap<String, Product> projProducts = new HashMap<>();
+                projProducts.put("source", reprojectedProduct);
+                //projProducts.put("collocateWith", this.targetProduct);
+                reprojProductList.add(GPF.createProduct("S2tbx-Reproject", projParameters, projProducts));
+            } else {
+                reprojProductList.add(reprojectedProduct);
+            }
         }
         return reprojProductList.toArray(new Product[reprojProductList.size()]);
     }
@@ -631,7 +693,7 @@ public final class S2tbxMosaicOp extends Operator {
         HashMap<String, Object> projParameters = new HashMap<>();
         projParameters.put("resamplingName", this.resamplingName);
         projParameters.put("includeTiePointGrids", true);  // ensure tie-points are reprojected
-        projParameters.put("crs", (this.nativeResolution)?this.crs:null);
+        projParameters.put("crs", this.crs);
         if (this.orthorectify) {
             projParameters.put("orthorectify", true);
             projParameters.put("elevationModelName", this.elevationModelName);

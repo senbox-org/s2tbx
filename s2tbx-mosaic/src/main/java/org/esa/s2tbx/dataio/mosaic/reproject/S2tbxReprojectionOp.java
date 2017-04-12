@@ -4,13 +4,13 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.MultiLevelModel;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import org.esa.s2tbx.dataio.mosaic.internal.S2tbxImageGeometry;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.FlagCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.ImageGeometry;
 import org.esa.snap.core.datamodel.ImageInfo;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -48,13 +48,17 @@ import org.opengis.referencing.operation.TransformException;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.OptionalDouble;
 
 /**
  * @author Razvan Dumitrascu
@@ -160,7 +164,7 @@ public final class S2tbxReprojectionOp extends Operator {
         /*
         * 2. Compute the target geometry
         */
-        S2tbxImageGeometry targetImageGeometry = createImageGeometry(targetCrs);
+        ImageGeometry targetImageGeometry = createImageGeometry(targetCrs);
 //        determineDefaultSourceModel();
         /*
         * 3. Create the target product
@@ -171,6 +175,7 @@ public final class S2tbxReprojectionOp extends Operator {
                 targetRect.width,
                 targetRect.height);
         targetProduct.setDescription(sourceProduct.getDescription());
+        targetProduct.setNumResolutionsMax(sourceProduct.getNumResolutionsMax());
         Dimension tileSize;
         if (tileSizeX != null && tileSizeY != null) {
             tileSize = new Dimension(tileSizeX, tileSizeY);
@@ -291,7 +296,7 @@ public final class S2tbxReprojectionOp extends Operator {
         GeoCoding sourceGeoCoding = null;
         if (orthorectify && sourceRaster.canBeOrthorectified()) {
             sourceGeoCoding= createOrthorectifier(sourceRaster);
-        }else {
+        } else {
             if (this.sourceProduct.isMultiSize()) {
 
                 AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
@@ -303,9 +308,9 @@ public final class S2tbxReprojectionOp extends Operator {
                 } catch (FactoryException | TransformException e) {
                     e.printStackTrace();
                 }
-            }else  if((this.sourceProduct.getNumBands()<2)&&
-                    (sourceRaster.getRasterWidth()!=this.sourceProduct.getSceneRasterWidth()
-                            ||sourceRaster.getRasterHeight()!=this.sourceProduct.getSceneRasterHeight())){
+            }else if ((this.sourceProduct.getNumBands() < 2) &&
+                    (sourceRaster.getRasterWidth() != this.sourceProduct.getSceneRasterWidth() ||
+                            sourceRaster.getRasterHeight() != this.sourceProduct.getSceneRasterHeight())) {
                 AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
                 try {
                     sourceGeoCoding = new CrsGeoCoding(sourceProduct.getSceneCRS(),
@@ -315,8 +320,7 @@ public final class S2tbxReprojectionOp extends Operator {
                 } catch (FactoryException | TransformException e) {
                     e.printStackTrace();
                 }
-            }
-            else {
+            } else {
                 sourceGeoCoding = sourceRaster.getGeoCoding();
             }
         }
@@ -447,7 +451,7 @@ public final class S2tbxReprojectionOp extends Operator {
                 final AffineTransform i2mSource = sourceModel.getImageToModelTransform(sourceLevel);
                 i2mSource.concatenate(sourceModel.getModelToImageTransform(0));
                 i2mSource.concatenate(sourceImageToMapTransform);
-                S2tbxImageGeometry sourceGeometry = new S2tbxImageGeometry(sourceBounds,
+                ImageGeometry sourceGeometry = new ImageGeometry(sourceBounds,
                         sourceModelCrs,
                         i2mSource);
 
@@ -466,7 +470,7 @@ public final class S2tbxReprojectionOp extends Operator {
                 i2mTarget.concatenate(getModel().getModelToImageTransform(0));
                 i2mTarget.concatenate(targetImageToMapTransform);
 
-                S2tbxImageGeometry targetGeometry = new S2tbxImageGeometry(targetBounds,
+                ImageGeometry targetGeometry = new ImageGeometry(targetBounds,
                         targetModelCrs,
                         i2mTarget);
                 Hints hints = new Hints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
@@ -552,7 +556,7 @@ public final class S2tbxReprojectionOp extends Operator {
         throw new OperatorException("Target CRS could not be created.");
     }
 
-    protected void validateCrsParameters() {
+    private void validateCrsParameters() {
         final String msgPattern = "Invalid target CRS specification.\nSpecify {0} one of the " +
                 "''wktFile'', ''crs'' or ''collocationProduct'' parameters.";
 
@@ -600,13 +604,13 @@ public final class S2tbxReprojectionOp extends Operator {
         return resamplingType;
     }
 
-    void validateResamplingParameter() {
+    private void validateResamplingParameter() {
         if (getResampleType() == -1) {
             throw new OperatorException("Invalid resampling method: " + resamplingName);
         }
     }
 
-    void validateReferencingParameters() {
+    private void validateReferencingParameters() {
         if (!((referencePixelX == null && referencePixelY == null && easting == null && northing == null)
                 || (referencePixelX != null && referencePixelY != null && easting != null && northing != null))) {
             throw new OperatorException("Invalid referencing parameters: \n" +
@@ -614,7 +618,7 @@ public final class S2tbxReprojectionOp extends Operator {
         }
     }
 
-    void validateTargetGridParameters() {
+    private void validateTargetGridParameters() {
         if ((pixelSizeX != null && pixelSizeY == null) ||
                 (pixelSizeX == null && pixelSizeY != null)) {
             throw new OperatorException("'pixelSizeX' and 'pixelSizeY' must be specified both or not at all.");
@@ -624,7 +628,7 @@ public final class S2tbxReprojectionOp extends Operator {
     /**
      * For SAR products check that geocoding has been performed
      */
-    void validateSARProduct() {
+    private void validateSARProduct() {
         final MetadataElement root = sourceProduct.getMetadataRoot();
         if(root != null) {
             final MetadataElement absRoot = root.getElement("Abstracted_Metadata");
@@ -637,15 +641,16 @@ public final class S2tbxReprojectionOp extends Operator {
         }
     }
 
-    private S2tbxImageGeometry createImageGeometry(CoordinateReferenceSystem targetCrs) {
-        S2tbxImageGeometry imageGeometry;
+    private ImageGeometry createImageGeometry(CoordinateReferenceSystem targetCrs) {
+        ImageGeometry imageGeometry;
         if (collocationProduct != null) {
-            imageGeometry = S2tbxImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
+            imageGeometry = ImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
         } else {
-            if(this.reprojectedFirstProduct!=null) {
-                double pixelSize = getReprojectedProductResolution();
-                imageGeometry = S2tbxImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
-                        pixelSize, pixelSize,
+            if (this.reprojectedFirstProduct != null) {
+                double pixelSizeX = computeTargetStepX(this.reprojectedFirstProduct);
+                double pixelSizeY = computeTargetStepY(this.reprojectedFirstProduct);
+                imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
+                        pixelSizeX, pixelSizeY,
                         width, height, orientation,
                         easting, northing,
                         referencePixelX, referencePixelY);
@@ -655,7 +660,7 @@ public final class S2tbxReprojectionOp extends Operator {
                 }
             }
             else{
-                imageGeometry = S2tbxImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
+                imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
                         pixelSizeX, pixelSizeY,
                         width, height, orientation,
                         easting, northing,
@@ -669,7 +674,30 @@ public final class S2tbxReprojectionOp extends Operator {
         return imageGeometry;
     }
 
-    private double getReprojectedProductResolution(){
+    private double computeTargetStepX(Product product){
+        OptionalDouble result = Arrays.stream(product.getBands())
+                .mapToDouble(band -> band.getSourceImage().getModel().getImageToModelTransform(0).getScaleX())
+                .min();
+        if (result.isPresent()) {
+            return result.getAsDouble();
+        } else {
+            return this.pixelSizeX;
+        }
+    }
+
+    private double computeTargetStepY(Product product){
+        OptionalDouble result = Arrays.stream(product.getBands())
+                .mapToDouble(band -> band.getSourceImage().getModel().getImageToModelTransform(0).getScaleY())
+                .min();
+        if (result.isPresent()) {
+            double signum = Math.signum(product.getBandAt(0).getSourceImage().getModel().getImageToModelTransform(0).getScaleY());
+            return signum * result.getAsDouble();
+        } else {
+            return this.pixelSizeY;
+        }
+    }
+
+    /*private double getReprojectedProductResolution(){
         double productResolution = this.reprojectedFirstProduct.getBandAt(0).getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
         for(int index = 0;index<this.reprojectedFirstProduct.getNumBands();index++)
         {
@@ -678,7 +706,7 @@ public final class S2tbxReprojectionOp extends Operator {
             }
         }
         return productResolution;
-    }
+    }*/
 
     private void addDeltaBands() {
 
@@ -727,7 +755,7 @@ public final class S2tbxReprojectionOp extends Operator {
         ReprojectionSettingsProvider() {
         }
 
-        ReprojectionSettingsProvider(S2tbxImageGeometry targetImageGeometry) {
+        ReprojectionSettingsProvider(ImageGeometry targetImageGeometry) {
             boolean rastersEqualInSize=true;
             if (ProductUtils.areRastersEqualInSize(sourceProduct.getBands())) {
                 for(Band sourceBand:sourceProduct.getBands()){
@@ -755,7 +783,7 @@ public final class S2tbxReprojectionOp extends Operator {
 
         ReprojectionSettings defaultReprojectionSettings;
 
-        DefaultReprojectionSettingsProvider(S2tbxImageGeometry imageGeometry) {
+        DefaultReprojectionSettingsProvider(ImageGeometry imageGeometry) {
             Band firstBand = sourceProduct.getBandGroup().get(0);
             MultiLevelModel sourceModel = firstBand.getMultiLevelModel();
             MultiLevelModel targetModel = targetProduct.createMultiLevelModel();
@@ -779,22 +807,22 @@ public final class S2tbxReprojectionOp extends Operator {
         MultiResolutionReprojectionSettingsProvider() {
             reprojectionSettingsMap = new HashMap<>();
             final ProductNodeGroup<Band> sourceBands = sourceProduct.getBandGroup();
-            if(reprojectedFirstProduct!=null) {
+            if (reprojectedFirstProduct != null) {
                 for (int i = 0; i < sourceBands.getNodeCount(); i++) {
                     addReprojectionSettingsIfNecessary(sourceBands.get(i), reprojectedFirstProduct.getBandAt(i));
                 }
-            }else{
+            } else {
                 for (int i = 0; i < sourceBands.getNodeCount(); i++) {
                     addReprojectionSettingsIfNecessary(sourceBands.get(i), null);
                 }
             }
             if (includeTiePointGrids) {
-                if(reprojectedFirstProduct!=null){
+                if (reprojectedFirstProduct != null) {
                     final ProductNodeGroup<TiePointGrid> tiePointGridGroup = sourceProduct.getTiePointGridGroup();
                     for (int i = 0; i < tiePointGridGroup.getNodeCount(); i++) {
                         addReprojectionSettingsIfNecessary(tiePointGridGroup.get(i),reprojectedFirstProduct.getBandAt(i));
                     }
-                }else {
+                } else {
                     final ProductNodeGroup<TiePointGrid> tiePointGridGroup = sourceProduct.getTiePointGridGroup();
                     for (int i = 0; i < tiePointGridGroup.getNodeCount(); i++) {
                         addReprojectionSettingsIfNecessary(tiePointGridGroup.get(i),null);
@@ -816,17 +844,17 @@ public final class S2tbxReprojectionOp extends Operator {
                                 rasterDataNode.getRasterWidth(),
                                 rasterDataNode.getRasterHeight());
                 CoordinateReferenceSystem targetCrs = createTargetCRS(centerGeoPos);
-                S2tbxImageGeometry targetImageGeometry;
-                if(reprojectedFirstProductBand!=null){
-                    final double pixelSize =  reprojectedFirstProductBand.getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
-                    targetImageGeometry = S2tbxImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
-                            pixelSize, pixelSize,
-                            width, height,
-                            orientation, easting,
-                            northing, referencePixelX,
-                            referencePixelY);
-                }else{
-                    targetImageGeometry = S2tbxImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
+                ImageGeometry targetImageGeometry;
+                if (reprojectedFirstProductBand != null) {
+                    final double pixelSize = reprojectedFirstProductBand.getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
+                    targetImageGeometry = ImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
+                                                                             pixelSize, pixelSize,
+                                                                             width, height,
+                                                                             orientation, easting,
+                                                                             northing, referencePixelX,
+                                                                             referencePixelY);
+                } else {
+                    targetImageGeometry = ImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
                             pixelSizeX, pixelSizeY,
                             width, height,
                             orientation, easting,
@@ -861,7 +889,7 @@ public final class S2tbxReprojectionOp extends Operator {
 
         private GeoCoding geoCoding;
         private MultiLevelModel sourceModel;
-        private S2tbxImageGeometry imageGeometry;
+        private ImageGeometry imageGeometry;
 
         public void setTargetModel(MultiLevelModel targetModel) {
             this.targetModel = targetModel;
@@ -874,7 +902,7 @@ public final class S2tbxReprojectionOp extends Operator {
         private MultiLevelModel targetModel;
         private S2tbxReproject reprojection;
 
-        ReprojectionSettings(GeoCoding geoCoding, MultiLevelModel sourceModel, S2tbxImageGeometry imageGeometry) {
+        ReprojectionSettings(GeoCoding geoCoding, MultiLevelModel sourceModel, ImageGeometry imageGeometry) {
             this.geoCoding = geoCoding;
             this.sourceModel = sourceModel;
             this.imageGeometry = imageGeometry;
@@ -888,7 +916,7 @@ public final class S2tbxReprojectionOp extends Operator {
             return sourceModel;
         }
 
-        public S2tbxImageGeometry getImageGeometry() {
+        public ImageGeometry getImageGeometry() {
             return imageGeometry;
         }
 
