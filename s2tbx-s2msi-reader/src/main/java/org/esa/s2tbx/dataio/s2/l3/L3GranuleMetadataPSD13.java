@@ -166,7 +166,13 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
 
     @Override
     public int getAnglesResolution() {
-        return Integer.parseInt(getAttributeValue(L3PSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, String.valueOf(L3PSD13Constants.DEFAULT_ANGLES_RESOLUTION)));
+        int anglesResolution = L3PSD13Constants.DEFAULT_ANGLES_RESOLUTION;
+        try {
+            anglesResolution = Integer.parseInt(getAttributeValue(L3PSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, String.valueOf(L3PSD13Constants.DEFAULT_ANGLES_RESOLUTION)));
+        } catch (Exception e) {
+            //do nothing to return default value
+        }
+        return anglesResolution;
     }
 
     @Override
@@ -203,8 +209,25 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
     public int getMaximumMosaicIndex() {
         int maxIndex = 0;
         for (String pviName : getAttributeValues(L3PSD13Constants.PATH_GRANULE_METADATA_PVI_FILENAME)) {
-            int aux = Integer.parseInt(pviName.substring(pviName.lastIndexOf("_") + 1));
-            if (aux > maxIndex) maxIndex = aux;
+            try {
+                int aux = Integer.parseInt(pviName.substring(pviName.lastIndexOf("_") + 1));
+                if (aux > maxIndex) maxIndex = aux;
+            } catch (Exception e) {
+                //do nothing
+            }
+        }
+
+        //check also the tileNumbers in /Level-3_Tile_ID/Quality_Indicators_Info/L3_Mosaic_QI/L3_Mosaic_Content
+        String[] mosaicContentTileNumbers = getAttributeValues(L3PSD13Constants.PATH_GRANULE_METADATA_MOSAIC_CONTENT_TILE_NUMBER);
+        if(mosaicContentTileNumbers != null) {
+            for (String tileNumber : mosaicContentTileNumbers) {
+                try {
+                    int aux = Integer.parseInt(tileNumber);
+                    if (aux > maxIndex) maxIndex = aux;
+                } catch (Exception e) {
+                    //do nothing
+                }
+            }
         }
         return maxIndex;
     }
