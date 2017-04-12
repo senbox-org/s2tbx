@@ -38,9 +38,6 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     public void setUp() throws Exception {
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
             GDALDistributionInstaller.install();
-            if (GdalInstallInfo.INSTANCE.isPresent()) {
-                GDALUtils.initDrivers();
-            }
         }
     }
 

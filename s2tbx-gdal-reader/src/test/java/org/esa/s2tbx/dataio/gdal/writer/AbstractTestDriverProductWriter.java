@@ -79,9 +79,6 @@ public abstract class AbstractTestDriverProductWriter {
 
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
             GDALDistributionInstaller.install();
-            if (GdalInstallInfo.INSTANCE.isPresent()) {
-                GDALUtils.initDrivers();
-            }
         }
     }
     @Test

@@ -33,10 +33,9 @@ public abstract class AbstractTestDriverProductReader {
 
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
             GDALDistributionInstaller.install();
-            if (GdalInstallInfo.INSTANCE.isPresent()) {
-                GDALUtils.initDrivers();
-                checkTestDirectoryExists();
-            }
+        }
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
+            checkTestDirectoryExists();
         }
     }
 
@@ -47,10 +46,9 @@ public abstract class AbstractTestDriverProductReader {
         if (!Files.exists(testFolderPath)) {
             fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
         }
-
         this.gdalTestsFolderPath = testFolderPath.resolve("_gdal");
-        if (!Files.exists(gdalTestsFolderPath)) {
-            fail("The GDAL test directory path '"+gdalTestsFolderPath.toString()+"' is not valid.");
+        if (!Files.exists(this.gdalTestsFolderPath)) {
+            fail("The GDAL test directory path '"+this.gdalTestsFolderPath.toString()+"' is not valid.");
         }
     }
 }
