@@ -479,18 +479,18 @@ public final class S2tbxMosaicOp extends Operator {
             for (Variable outputVariable : this.variables) {
                 final int targetDataType;
                 final Band firstSourceBand = this.reprojectedProducts[0].getBand(getSourceBandName(outputVariable.getExpression()));
-                if (firstSourceBand.isScalingApplied()) {
+                /*if (firstSourceBand.isScalingApplied()) {
                     targetDataType = firstSourceBand.getGeophysicalDataType();
-                } else {
+                } else {*/
                     targetDataType = firstSourceBand.getDataType();
-                }
+                /*}*/
                 final AffineTransform affineTransformSourceBand =
                         firstSourceBand.getSourceImage().getModel().getImageToModelTransform(0);
                 double stepX = Math.abs(affineTransformSourceBand.getScaleX());
                 double stepY = Math.abs(affineTransformSourceBand.getScaleY());
                 int bandWidth = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / Math.abs(stepX));
                 int bandHeight = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / Math.abs(stepY));
-                Band targetBand = new Band(outputVariable.getName(),  targetDataType, bandWidth, bandHeight);
+                Band targetBand = new Band(outputVariable.getName(), targetDataType, bandWidth, bandHeight);
                 targetBand.setDescription(firstSourceBand.getDescription());
                 targetBand.setUnit(firstSourceBand.getUnit());
                 targetBand.setScalingFactor(firstSourceBand.getScalingFactor());
@@ -501,6 +501,7 @@ public final class S2tbxMosaicOp extends Operator {
                 //targetBand.setValidPixelExpression(firstSourceBand.getValidPixelExpression());
                 targetBand.setSpectralWavelength(firstSourceBand.getSpectralWavelength());
                 targetBand.setSpectralBandwidth(firstSourceBand.getSpectralBandwidth());
+
                 ImageInfo sourceImageInfo = firstSourceBand.getImageInfo();
                 if (sourceImageInfo != null) {
                     targetBand.setImageInfo(
@@ -677,7 +678,7 @@ public final class S2tbxMosaicOp extends Operator {
                 getLogger().warning(msg);
                 continue;
             }
-            if (!CRS.equalsIgnoreMetadata(geoCoding.getMapCRS(), targetCRS)) {
+            if (!targetCRS.getName().getCode().equals(geoCoding.getMapCRS().getName().getCode())) {
                 HashMap<String, Product> projProducts = new HashMap<>();
                 projProducts.put("source", reprojectedProduct);
                 //projProducts.put("collocateWith", this.targetProduct);

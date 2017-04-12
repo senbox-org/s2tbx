@@ -117,7 +117,7 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         final int sourceCount = tileImages.size();
         double[][] thresholds = new double[sourceCount][1];
         for (int i = 0; i < sourceCount; i++) {
-            thresholds[i][0] = 0.0;
+            thresholds[i][0] = 0.1;
         }
         switch(this.mosaicType) {
             case "MOSAIC_TYPE_BLEND":
