@@ -8,13 +8,13 @@ import java.util.Map;
  */
 public class TilesBidimensionalArray {
     private final Map<String, ProcessingTile> tilesMap;
-    private int tileCountX;
-    private int tileCountY;
+    private int computedTileCountX;
+    private int computedTileCountY;
 
     public TilesBidimensionalArray() {
         this.tilesMap = new HashMap<String, ProcessingTile>();
-        this.tileCountX = 0;
-        this.tileCountY = 0;
+        this.computedTileCountX = 0;
+        this.computedTileCountY = 0;
     }
 
     public ProcessingTile getTileAt(int rowIndex, int columnIndex) {
@@ -26,17 +26,17 @@ public class TilesBidimensionalArray {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
         ProcessingTile oldTile = this.tilesMap.put(key, tileToAdd);
 
-        this.tileCountX = Math.max(this.tileCountX, columnIndex+1);
-        this.tileCountY = Math.max(this.tileCountY, rowIndex+1);
+        this.computedTileCountX = Math.max(this.computedTileCountX, columnIndex+1);
+        this.computedTileCountY = Math.max(this.computedTileCountY, rowIndex+1);
 
         return oldTile;
     }
 
-    public int getTileCountX() {
-        return tileCountX;
+    public int getComputedTileCountX() {
+        return computedTileCountX;
     }
 
-    public int getTileCountY() {
-        return tileCountY;
+    public int getComputedTileCountY() {
+        return computedTileCountY;
     }
 }

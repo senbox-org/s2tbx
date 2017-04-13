@@ -3,6 +3,8 @@ package org.esa.s2tbx.grm.segmentation.tiles;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.grm.segmentation.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.BufferedInputStreamWrapper;
@@ -51,7 +53,7 @@ public abstract class AbstractTileSegmenter {
         this.tileWidth = tileSize.width;
         this.tileHeight = tileSize.height;
         this.totalIterationsForSecondSegmentation = totalIterationsForSecondSegmentation;
-        this.iterationsForEachFirstSegmentation = iterationsForEachFirstSegmentation;
+        this.iterationsForEachFirstSegmentation = computeNumberOfFirstIterations(this.tileWidth, this.tileHeight);//iterationsForEachFirstSegmentation;
         this.fastSegmentation = fastSegmentation;
         this.threshold = threshold;
 
@@ -70,6 +72,30 @@ public abstract class AbstractTileSegmenter {
 
     public final int computeTileMargin() {
         return (int) (Math.pow(2, this.iterationsForEachFirstSegmentation + 1) - 2);
+    }
+
+    public int getImageHeight() {
+        return imageHeight;
+    }
+
+    public int getImageWidth() {
+        return imageWidth;
+    }
+
+    public int getTileHeight() {
+        return tileHeight;
+    }
+
+    public int getTileWidth() {
+        return tileWidth;
+    }
+
+    public int getComputedTileCountX() {
+        return this.tilesBidimensionalArray.getComputedTileCountX();
+    }
+
+    public int getComputedTileCountY() {
+        return this.tilesBidimensionalArray.getComputedTileCountY();
     }
 
     public final ProcessingTile buildTile(int startX, int startY, int sizeX, int sizeY) {
@@ -138,7 +164,7 @@ public abstract class AbstractTileSegmenter {
     public final AbstractSegmenter runAllTilesSegmentation(Tile[] sourceTiles) throws IllegalAccessException, IOException {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start running segmentation for all tiles: band count: " + sourceTiles.length + ", image width: " +this.imageWidth+", image height: "+this.imageHeight+", tile width: " + this.tileWidth+", tile height: "+this.tileHeight+", margin: "+computeTileMargin());
+            logger.log(Level.FINE, "Start running segmentation for all tiles: band count: " + sourceTiles.length + ", image width: " +this.imageWidth+", image height: "+this.imageHeight+", tile width: " + this.tileWidth+", tile height: "+this.tileHeight+", margin: "+computeTileMargin()+", number of first iterations: "+this.iterationsForEachFirstSegmentation);
         }
 
         // run the first partial segmentation
@@ -149,10 +175,10 @@ public abstract class AbstractTileSegmenter {
 
     public final AbstractSegmenter runAllTilesSecondSegmentation() throws IllegalAccessException, IOException {
         if (logger.isLoggable(Level.FINE)) {
-            int nbTilesX = this.tilesBidimensionalArray.getTileCountX();
-            int nbTilesY = this.tilesBidimensionalArray.getTileCountY();
+            int nbTilesX = this.tilesBidimensionalArray.getComputedTileCountX();
+            int nbTilesY = this.tilesBidimensionalArray.getComputedTileCountY();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Run second segmentation for all tiles. Total iterations: " + this.totalIterationsForSecondSegmentation + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory:" + this.accumulatedMemory+", fusion: " + this.isFusion+", margin: "+computeTileMargin());
+            logger.log(Level.FINE, "Run second segmentation for all tiles. Total iterations: " + this.totalIterationsForSecondSegmentation + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory:" + this.accumulatedMemory+", fusion: " + this.isFusion+", margin: "+computeTileMargin()+", number of second iterations: "+this.iterationsForEachSecondSegmentation);
         }
 
         int numberOfIterationsRemaining = this.totalIterationsForSecondSegmentation;
@@ -186,22 +212,38 @@ public abstract class AbstractTileSegmenter {
         return tile.getImageLeftX() / this.tileWidth;
     }
 
+    public ProcessingTile addTile(int tileRowIndex, int tileColumnIndex, ProcessingTile tileToAdd) {
+        synchronized (this.tilesBidimensionalArray) {
+            return this.tilesBidimensionalArray.addTile(tileRowIndex, tileColumnIndex, tileToAdd);
+        }
+    }
+
+    public boolean canAddTile(int tileRowIndex, int tileColumnIndex) {
+        synchronized (this.tilesBidimensionalArray) {
+            ProcessingTile tile = this.tilesBidimensionalArray.getTileAt(tileRowIndex, tileColumnIndex);
+            return (tile == null);
+        }
+    }
+
     public void runOneTileFirstSegmentation(Tile[] sourceTiles, ProcessingTile currentTile) throws IllegalAccessException, IOException {
         int tileRowIndex = computeTileRowIndex(currentTile);
         int tileColumnIndex = computeTileColumnIndex(currentTile);
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, ""); // add an empty line
-            logger.log(Level.FINEST, "Run tile first segmentation: tile region: " + tileRegionToString(currentTile.getRegion()) + ", tile row index: " +tileRowIndex+", tile column index: " + tileColumnIndex+", number of iterations: "+this.iterationsForEachFirstSegmentation+", margin: "+computeTileMargin());
+            logger.log(Level.FINEST, "Run tile first segmentation: tile region: " + tileRegionToString(currentTile.getRegion()) + ", tile row index: " +tileRowIndex+", tile column index: " + tileColumnIndex+", number of iterations: "+this.iterationsForEachFirstSegmentation+", margin: "+computeTileMargin()+", number of first iterations: "+this.iterationsForEachFirstSegmentation);
         }
 
-        ProcessingTile oldTile = null;
+        ProcessingTile existingTile = null;
         synchronized (this.tilesBidimensionalArray) {
-            oldTile = this.tilesBidimensionalArray.addTile(tileRowIndex, tileColumnIndex, currentTile);
+            existingTile = this.tilesBidimensionalArray.getTileAt(tileRowIndex, tileColumnIndex);
         }
-        if (oldTile != null) {
+        if (existingTile == null) {
+            throw new IllegalArgumentException("The tile with row index "+tileRowIndex+" and column index "+tileColumnIndex+" has not been added.");
+        } else if (existingTile != currentTile) {
             throw new IllegalArgumentException("The tile with row index "+tileRowIndex+" and column index "+tileColumnIndex+" has already been computed.");
         }
+
         int numberOfNeighborLayers = computeNumberOfNeighborLayers();
 
         AbstractSegmenter segmenter = buildSegmenter(this.threshold);
@@ -347,14 +389,25 @@ public abstract class AbstractTileSegmenter {
                 }
 
                 ProcessingTile currentTile = buildTile(startX, startY, sizeX, sizeY);
-                runOneTileFirstSegmentation(sourceTiles, currentTile);
+                int tileColumnIndex = col;//computeTileColumnIndex(currentTile);
+                int tileRowIndex = row;//computeTileRowIndex(currentTile);
+                ProcessingTile oldTile = addTile(tileRowIndex, tileColumnIndex, currentTile);
+                if (oldTile == null) {
+                    runOneTileFirstSegmentation(sourceTiles, currentTile);
+                } else {
+                    if (logger.isLoggable(Level.FINE)) {
+                        int tileMargin = computeTileMargin();
+                        logger.log(Level.FINE, ""); // add an empty line
+                        logger.log(Level.FINE, "Run tile first segmentation: tile already added: tile region: " + tileRegionToString(currentTile.getRegion()) + ", tile row index: " +tileRowIndex+", tile column index: " + tileColumnIndex+", number of iterations: "+this.iterationsForEachFirstSegmentation+", margin: "+computeTileMargin()+", number of first iterations: "+this.iterationsForEachFirstSegmentation);
+                    }
+                }
             }
         }
     }
 
     private void runSecondPartialSegmentation(int iteration) throws IllegalAccessException, IOException {
-        int nbTilesX = this.tilesBidimensionalArray.getTileCountX();
-        int nbTilesY = this.tilesBidimensionalArray.getTileCountY();
+        int nbTilesX = this.tilesBidimensionalArray.getComputedTileCountX();
+        int nbTilesY = this.tilesBidimensionalArray.getComputedTileCountY();
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -470,8 +523,8 @@ public abstract class AbstractTileSegmenter {
 
     private AbstractSegmenter mergeAllGraphsAndAchieveSegmentation(int numberOfIterations) throws IOException {
         Graph graph = new Graph();
-        int nbTilesX = this.tilesBidimensionalArray.getTileCountX();
-        int nbTilesY = this.tilesBidimensionalArray.getTileCountY();
+        int nbTilesX = this.tilesBidimensionalArray.getComputedTileCountX();
+        int nbTilesY = this.tilesBidimensionalArray.getComputedTileCountY();
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -896,5 +949,17 @@ public abstract class AbstractTileSegmenter {
                 }
             }
         }
+    }
+
+    private static int computeNumberOfFirstIterations(int tileWidth, int tileHeight) {
+        int numberOfFirstIterations = 1;
+        int maxMargin = Math.min(tileWidth, tileHeight) / 2;
+        int currMargin = (int) (Math.pow(2, numberOfFirstIterations + 1) - 2);
+        while (currMargin < maxMargin) {
+            numberOfFirstIterations++;
+            currMargin = (int) (Math.pow(2, numberOfFirstIterations + 1) - 2);
+        }
+        numberOfFirstIterations--;
+        return numberOfFirstIterations;
     }
 }
