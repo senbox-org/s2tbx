@@ -138,7 +138,7 @@ public abstract class AbstractTileSegmenter {
     public final AbstractSegmenter runAllTilesSegmentation(Tile[] sourceTiles) throws IllegalAccessException, IOException {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start running segmentation for all tiles: source tile count " + sourceTiles.length + " bands, image width: " +this.imageWidth+", image height: "+this.imageHeight+", tile width: " + this.tileWidth+", tile height: "+this.tileHeight);
+            logger.log(Level.FINE, "Start running segmentation for all tiles: band count: " + sourceTiles.length + ", image width: " +this.imageWidth+", image height: "+this.imageHeight+", tile width: " + this.tileWidth+", tile height: "+this.tileHeight+", margin: "+computeTileMargin());
         }
 
         // run the first partial segmentation
@@ -152,7 +152,7 @@ public abstract class AbstractTileSegmenter {
             int nbTilesX = this.tilesBidimensionalArray.getTileCountX();
             int nbTilesY = this.tilesBidimensionalArray.getTileCountY();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Run second segmentation for all tiles. Total iterations: " + this.totalIterationsForSecondSegmentation + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory:" + this.accumulatedMemory+", fusion: " + this.isFusion);
+            logger.log(Level.FINE, "Run second segmentation for all tiles. Total iterations: " + this.totalIterationsForSecondSegmentation + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory:" + this.accumulatedMemory+", fusion: " + this.isFusion+", margin: "+computeTileMargin());
         }
 
         int numberOfIterationsRemaining = this.totalIterationsForSecondSegmentation;
@@ -192,7 +192,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, ""); // add an empty line
-            logger.log(Level.FINEST, "Run tile first segmentation. Tile region: " + tileRegionToString(currentTile.getRegion()) + ", tile row index: " +tileRowIndex+", tile column index: " + tileColumnIndex+", number of iterations: "+this.iterationsForEachFirstSegmentation);
+            logger.log(Level.FINEST, "Run tile first segmentation: tile region: " + tileRegionToString(currentTile.getRegion()) + ", tile row index: " +tileRowIndex+", tile column index: " + tileColumnIndex+", number of iterations: "+this.iterationsForEachFirstSegmentation+", margin: "+computeTileMargin());
         }
 
         ProcessingTile oldTile = null;
@@ -209,7 +209,7 @@ public abstract class AbstractTileSegmenter {
         Graph graph = segmenter.getGraph();
 
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "Run tile first segmentation. After segmentation: graph node count: " + graph.getNodeCount());
+            logger.log(Level.FINEST, "Run tile first segmentation (after segmentation): graph node count: " + graph.getNodeCount());
         }
 
         // rescale the graph to be in the reference of the image
@@ -219,7 +219,7 @@ public abstract class AbstractTileSegmenter {
         graph.removeUnstableSegments(currentTile, this.imageWidth);
 
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "Run tile first segmentation. After remove unstable nodes: graph node count: " + graph.getNodeCount());
+            logger.log(Level.FINEST, "Run tile first segmentation (after remove unstable nodes): graph node count: " + graph.getNodeCount());
         }
 
         long graphMemory = ObjectSizeCalculator.sizeOf(graph);
@@ -237,13 +237,13 @@ public abstract class AbstractTileSegmenter {
         List<Node> nodesToIterate = graph.detectBorderNodes(currentTile, this.imageWidth, this.imageHeight);
 
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "Run tile first segmentation. after detect border nodes: graph node count: "+graph.getNodeCount()+", boder node count: " + nodesToIterate.size());
+            logger.log(Level.FINEST, "Run tile first segmentation (after detect border nodes): graph node count: "+graph.getNodeCount()+", boder node count: " + nodesToIterate.size());
         }
 
         Int2ObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
 
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "Run tile first segmentation. Node count to write for stability margin: " + borderNodes.size());
+            logger.log(Level.FINEST, "Run tile first segmentation: node count to write for stability margin: " + borderNodes.size());
         }
 
         writeStabilityMargin(borderNodes, currentTile.getNodeMarginFileName(), currentTile.getEdgeMarginFileName());
@@ -328,7 +328,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Run first segmentation for all tiles. Band count: " + sourceTiles.length + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY);
+            logger.log(Level.FINE, "Run first segmentation for all tiles: band count: " + sourceTiles.length + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY+", margin: "+computeTileMargin());
         }
 
         for (int row = 0; row <nbTilesY; row++) {
@@ -358,7 +358,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Run second segmentation. Iteration: "+iteration+", tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory: " + this.accumulatedMemory+", fusion: " + this.isFusion);
+            logger.log(Level.FINE, "Run second segmentation: iteration: "+iteration+", tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory: " + this.accumulatedMemory+", fusion: " + this.isFusion+", margin: "+computeTileMargin());
         }
 
         resetValues();
@@ -371,31 +371,31 @@ public abstract class AbstractTileSegmenter {
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, ""); // add an empty line
-                    logger.log(Level.FINEST, "Run second segmentation. Iteration: "+iteration+", tile region: " +tileRegionToString(currentTile.getRegion())+ ", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: iteration: "+iteration+", tile region: " +tileRegionToString(currentTile.getRegion())+ ", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 Graph graph = readGraph(currentTile.getNodeFileName(), currentTile.getEdgeFileName());
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation. After read graph: graph node count: " +graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (after read graph): graph node count: " +graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 addStabilityMargin(graph, row, col, nbTilesX, nbTilesY);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation. After add stability margin: graph node count: " +graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (after add stability margin): graph node count: " +graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, nbTilesX, nbTilesY, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation. After building border pixel map: graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (after building border pixel map): graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 graph.removeDuplicatedNodes(borderPixelMap, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation. After removing duplicate nodes: graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (after removing duplicate nodes): graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 updateNeighborsOfNoneDuplicatedNodes(borderPixelMap, this.imageWidth, this.imageHeight);
@@ -403,7 +403,7 @@ public abstract class AbstractTileSegmenter {
                 removeUselessNodes(graph, currentTile, this.imageWidth, numberOfNeighborLayers);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation. After removing useless nodes: graph node count: " +graph.getNodeCount()+", numberOfNeighborLayers: "+numberOfNeighborLayers+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (after removing useless nodes): graph node count: " +graph.getNodeCount()+", numberOfNeighborLayers: "+numberOfNeighborLayers+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 // build the segmenter
@@ -412,13 +412,13 @@ public abstract class AbstractTileSegmenter {
                 boolean merged = segmenter.performAllIterationsWithLMBF(this.iterationsForEachSecondSegmentation);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation. After segmentation: graph node count: " +graph.getNodeCount()+", completed="+(!merged)+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (after segmentation): graph node count: " +graph.getNodeCount()+", completed="+(!merged)+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 graph.removeUnstableSegments(currentTile, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation. After removing unstable nodes: graph node count: " +graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (after removing unstable nodes): graph node count: " +graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 this.accumulatedMemory += ObjectSizeCalculator.sizeOf(graph);
@@ -432,7 +432,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Run second segmentation. extract the stability margin for the next round: tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory:" + this.accumulatedMemory+", fusion: " + this.isFusion);
+            logger.log(Level.FINE, "Run second segmentation: (extract the stability margin for the next round): tile column count: " +nbTilesX+", tile row count: " + nbTilesY + ", acumulated memory:" + this.accumulatedMemory+", fusion: " + this.isFusion);
         }
 
         // during this step we extract the stability margin for the next round
@@ -442,25 +442,25 @@ public abstract class AbstractTileSegmenter {
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, ""); // add an empty line
-                    logger.log(Level.FINEST, "Run second segmentation (extract the stability margin). Iteration: "+iteration+", tile region: " +tileRegionToString(currentTile.getRegion())+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): iteration: "+iteration+", tile region: " +tileRegionToString(currentTile.getRegion())+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 Graph graph = readGraph(currentTile.getNodeFileName(), currentTile.getEdgeFileName());
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation (extract the stability margin). After read graph: graph node count: "+graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin - after read graph): graph node count: "+graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 List<Node> nodesToIterate = graph.detectBorderNodes(currentTile, this.imageWidth, this.imageHeight);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation (extract the stability margin). Border node count: " + nodesToIterate.size()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): border node count: " + nodesToIterate.size()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 Int2ObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation (extract the stability margin). Node count to write for stability margin: " + borderNodes.size()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): node count to write for stability margin: " + borderNodes.size()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 writeStabilityMargin(borderNodes, currentTile.getNodeMarginFileName(), currentTile.getEdgeMarginFileName());
@@ -475,7 +475,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Merge all graphs. Number of iterations: "+numberOfIterations+", tile column count: " +nbTilesX+", tile row count: " + nbTilesY);
+            logger.log(Level.FINE, "Merge all graphs: number of iterations: "+numberOfIterations+", tile column count: " +nbTilesX+", tile row count: " + nbTilesY);
         }
 
         for (int row = 0; row < nbTilesY; row++) {
@@ -486,7 +486,7 @@ public abstract class AbstractTileSegmenter {
                     if (row ==0 && col == 0) {
                         logger.log(Level.FINEST, ""); // add an empty line
                     }
-                    logger.log(Level.FINEST, "Merge all graphs. Before insert nodes from tile: number of iterations: "+numberOfIterations+", graph node count: "+graph.getNodeCount()+", tile region: "+tileRegionToString(currentTile.getRegion())+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Merge all graphs: (before insert nodes from tile): number of iterations: "+numberOfIterations+", graph node count: "+graph.getNodeCount()+", tile region: "+tileRegionToString(currentTile.getRegion())+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 insertNodesFromTile(graph, currentTile, false);
@@ -495,7 +495,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Merge all graphs (removing duplicated nodes): number of iterations: "+numberOfIterations+", graph node count: "+graph.getNodeCount() + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY);
+            logger.log(Level.FINE, "Merge all graphs: (removing duplicated nodes): number of iterations: "+numberOfIterations+", graph node count: "+graph.getNodeCount() + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY);
         }
 
         // removing duplicated nodes and updating neighbors
@@ -505,19 +505,19 @@ public abstract class AbstractTileSegmenter {
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, ""); // add an empty line
-                    logger.log(Level.FINEST, "Merge all graphs (removing duplicated nodes). Number of iterations: "+numberOfIterations+", tile region: " +tileRegionToString(currentTile.getRegion())+", tile row index: "+row+", tile column index: "+col);
+                    logger.log(Level.FINEST, "Merge all graphs: (removing duplicated nodes): number of iterations: "+numberOfIterations+", tile region: " +tileRegionToString(currentTile.getRegion())+", tile row index: "+row+", tile column index: "+col);
                 }
 
                 Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, row, col, nbTilesX, nbTilesY, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Merge all graphs (removing duplicated nodes). After building border pixel map: graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Merge all graphs: (removing duplicated nodes - after building border pixel map): graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 graph.removeDuplicatedNodes(borderPixelMap, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Merge all graphs (removing duplicated nodes). After removing duplicate nodes: graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Merge all graphs: (removing duplicated nodes - after removing duplicate nodes): graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size()+", tile row index: " + row + ", tile column index: " + col);
                 }
 
                 updateNeighborsOfNoneDuplicatedNodes(borderPixelMap, this.imageWidth, this.imageHeight);
@@ -526,7 +526,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Merge all graphs. Before segmentation: number of iterations: "+numberOfIterations+", graph node count: "+graph.getNodeCount()+", tile column count: "+nbTilesX+", tile row count: "+nbTilesY);
+            logger.log(Level.FINE, "Merge all graphs: (before segmentation): number of iterations: "+numberOfIterations+", graph node count: "+graph.getNodeCount()+", tile column count: "+nbTilesX+", tile row count: "+nbTilesY);
         }
 
         // segmentation of the graph

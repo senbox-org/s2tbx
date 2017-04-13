@@ -20,7 +20,6 @@ public class FullLambdaScheduleSegmenter extends AbstractSegmenter {
 		float a_sum = a1 + a2;
         int numberOfComponentsPerPixel = n1.getNumberOfComponentsPerPixel();
         for (int b = 0; b < numberOfComponentsPerPixel; b++) {
-            //eucDist += (n1->m_Means[b] - n2->m_Means[b])*(n1->m_Means[b] - n2->m_Means[b]);
             eucDist += (n1.getMeansAt(b) - n2.getMeansAt(b))*(n1.getMeansAt(b) - n2.getMeansAt(b));
         }
 

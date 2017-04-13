@@ -81,27 +81,41 @@ public abstract class AbstractSegmenter {
     }
 
     public boolean performAllIterationsWithLMBF(int numberOfIterations) {
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "");
+            logger.log(Level.FINER, "Perform iterations with LMBF: number of iterations: "+numberOfIterations);
+        }
         int iterations = 0;
         boolean merged = true;
         while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {
             iterations++;
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "Iterations with LMBF. Iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations);
+            if (logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, "Iterations with LMBF: Iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations);
             }
             merged = perfomOneIterationWithLMBF();
+        }
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "Iterations with LMBF: after segmentation graph node count: " +this.graph.getNodeCount());
         }
         return merged;
     }
 
     private boolean performAllIterationsWithBF(int numberOfIterations) {
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "");
+            logger.log(Level.FINER, "Perform iterations with BF: number of iterations: "+numberOfIterations);
+        }
         int iterations = 0;
         boolean merged = true;
         while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {
             iterations++;
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "Iterations with BF. Iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations);
+            if (logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, "Iterations with BF: Iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations);
             }
             merged = perfomOneIterationWithBF();
+        }
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "Iterations with BF: after segmentation graph node count: " +this.graph.getNodeCount());
         }
         return merged;
     }

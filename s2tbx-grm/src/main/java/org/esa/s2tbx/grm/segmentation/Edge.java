@@ -10,6 +10,9 @@ public class Edge {
     private int boundary;
 
     public Edge(Node target, int boundary) {
+        if (target == null) {
+            throw new NullPointerException("The target node cannot be null.");
+        }
         this.target = target;
         this.boundary = boundary;
         this.costUpdated = 0; // false

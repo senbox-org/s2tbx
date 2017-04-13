@@ -56,9 +56,9 @@ public class BaatzSchapeSegmenter extends AbstractSegmenter {
 
             float smooth_f = a_sum*p3/mbb_perimeter - a1*p1/bb1_perimeter - a2*p2/bb2_perimeter;
 
-            double compact_f = a_sum*p3/Math.sqrt(a_sum) - a1*p1/Math.sqrt(a1) - a2*p2/Math.sqrt(a2);
+            float compact_f = (float)(a_sum*p3/Math.sqrt(a_sum) - a1*p1/Math.sqrt(a1) - a2*p2/Math.sqrt(a2));
 
-            double shape_cost = this.shapeWeight * compact_f + (1.0f - this.shapeWeight) * smooth_f;
+            float shape_cost = this.shapeWeight * compact_f + (1.0f - this.shapeWeight) * smooth_f;
 
             spectralCost = (float)(spectralCost + (1.0f - this.spectralWeight) * shape_cost);
         }
