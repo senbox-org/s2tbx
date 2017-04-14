@@ -16,7 +16,6 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
-import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
@@ -128,6 +127,7 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
                 List<RenderedImage> newImages = new ArrayList<>();
                 for (int i = 0; i < sourceCount; i++) {
                     RenderedImage source = tileImages.get(i);
+                    boolean cropped = false;
                     Rectangle sourceRect = new Rectangle(source.getMinX(), source.getMinY(),
                                                          source.getWidth(), source.getHeight());
                     for (int j = i + 1; j < sourceCount; j++) {
@@ -137,10 +137,11 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
                         Rectangle intersection = sourceRect.intersection(nextRect);
                         if (intersection.width > 0 && intersection.height > 0) {
                             Collections.addAll(newImages, cut(source, intersection));
-                            newImages.add(compose(nextSource, crop(source, intersection)));
+                            nextSource = compose(nextSource, crop(source, intersection));
+                            cropped = true;
                         }
                     }
-                    if (!newImages.contains(source)) {
+                    if (!cropped) {
                         newImages.add(source);
                     }
                 }
@@ -191,8 +192,6 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
     }
 
     private RenderedImage makeAlpha(RenderedImage source, float alphaValue) {
-        /*ImageLayout imageLayout = new ImageLayout(source);
-        imageLayout.unsetValid(ImageLayout.COLOR_MODEL_MASK).unsetValid(ImageLayout.SAMPLE_MODEL_MASK);*/
         ImageLayout layout = new ImageLayout(source.getMinX(), source.getMinY(),
                                              source.getWidth(), source.getHeight(),
                                              source.getTileGridXOffset(), source.getTileGridYOffset(),
@@ -219,27 +218,35 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
                 alphaValues = new Float[] { alphaValue };
                 break;
         }
-        return ConstantDescriptor.create((float) source.getWidth(), (float) source.getHeight(),
+        return ConstantDescriptor.create((float) source.getWidth(),
+                                         (float) source.getHeight(),
                                          alphaValues,
                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout)).getRendering();
     }
 
     private RenderedImage compose(RenderedImage source1, RenderedImage source2) {
-        float alpha1 = 0.5f;
-        float alpha2 = 1.0f;
+        float alpha1 = 1.0f;
+        float alpha2 = 0.5f;
         final RenderedImage alphaImage1 = makeAlpha(source1, alpha1);
         final RenderedImage alphaImage2 = makeAlpha(source2, alpha2);
-        return CompositeDescriptor.create(source1, source2,
+        return new CompositeNoDestAlphaOpImage(source1,
+                                               source2,
+                                               null,
+                                               null,
+                                               alphaImage1,
+                                               alphaImage2,
+                                               false);
+        /*return CompositeDescriptor.create(src1, src2,
                                           alphaImage1,
                                           alphaImage2,
                                           Boolean.FALSE,
                                           CompositeDescriptor.NO_DESTINATION_ALPHA,
-                                          null);
+                                          null);*/
     }
 
     private RenderedImage crop(RenderedImage source, Rectangle cropArea) {
         return CropDescriptor.create(source, (float) cropArea.getX(), (float) cropArea.getY(),
-                                     (float) cropArea.getWidth(), (float) cropArea.getHeight(), null);
+                                     (float) cropArea.getWidth(), (float) cropArea.getHeight(), null).getRendering();
     }
 
     private RenderedImage[] cut(RenderedImage source, Rectangle cropArea) {
