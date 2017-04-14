@@ -58,9 +58,6 @@ public class GenericRegionMergingOp extends Operator {
     @Parameter(label = "Total iterations for second segmentation", description = "The total number of iterations.")
     private int totalIterationsForSecondSegmentation;
 
-    @Parameter(label = "Iterations for each first segmentation", description = "The number of iterations for each first segmentation.")
-    private int iterationsForEachFirstSegmentation;
-
     @Parameter(label = "Threshold", description = "The threshold.")
     private int threshold;
 
@@ -95,9 +92,6 @@ public class GenericRegionMergingOp extends Operator {
         if (this.totalIterationsForSecondSegmentation == 0.0f) {
             throw new OperatorException("Please specify the total iterations for second segmentation.");
         }
-        if (this.iterationsForEachFirstSegmentation == 0.0f) {
-            throw new OperatorException("Please specify the iterations for each first segmentation.");
-        }
         if (this.threshold == 0.0f) {
             throw new OperatorException("Please specify the threshold.");
         }
@@ -117,6 +111,9 @@ public class GenericRegionMergingOp extends Operator {
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
 
+        //TODO Jean remove
+//        tileSize = new Dimension(1876, 3567);
+
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
 
@@ -134,11 +131,11 @@ public class GenericRegionMergingOp extends Operator {
 
         try {
             if (SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-                this.tileSegmenter = new SpringTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, iterationsForEachFirstSegmentation, threshold, fastSegmentation);
+                this.tileSegmenter = new SpringTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
             } else if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-                this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, iterationsForEachFirstSegmentation, threshold, fastSegmentation, spectralWeight, shapeWeight);
+                this.tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, spectralWeight, shapeWeight);
             } else if (FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
-                this.tileSegmenter = new FullLambdaScheduleTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, iterationsForEachFirstSegmentation, threshold, fastSegmentation);
+                this.tileSegmenter = new FullLambdaScheduleTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
             }
         } catch (Exception ex) {
             throw new OperatorException(ex);
@@ -156,8 +153,8 @@ public class GenericRegionMergingOp extends Operator {
 
         int tileColumnIndex = this.tileSegmenter.computeTileColumnIndex(currentTile);
         int tileRowIndex = this.tileSegmenter.computeTileRowIndex(currentTile);
+        int tileMargin = this.tileSegmenter.computeTileMargin();
         if (logger.isLoggable(Level.FINE)) {
-            int tileMargin = this.tileSegmenter.computeTileMargin();
             int firstNumberOfIterations = this.tileSegmenter.getIterationsForEachFirstSegmentation();
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Compute tile: row index: "+tileRowIndex+", column index: "+tileColumnIndex+", margin: "+tileMargin+", bounds: [x=" +targetRectangle.x+", y="+targetRectangle.y+", width="+targetRectangle.width+", height="+targetRectangle.height+"], first number of iterations: "+firstNumberOfIterations);
@@ -174,21 +171,10 @@ public class GenericRegionMergingOp extends Operator {
             }
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                int tileMargin = this.tileSegmenter.computeTileMargin();
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Tile already computed: row index: "+tileRowIndex+", column index: "+tileColumnIndex+", margin: "+tileMargin+", bounds: [x=" +targetRectangle.x+", y="+targetRectangle.y+", width="+targetRectangle.width+", height="+targetRectangle.height+"]");
             }
         }
-    }
-
-    private Tile[] getSourceTiles(BoundingBox tileRegion) {
-        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
-        Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
-        for (int i=0; i<this.sourceBandNames.length; i++) {
-            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            sourceTiles[i] = getSourceTile(band, rectangleToRead);
-        }
-        return sourceTiles;
     }
 
     public Class<?> getTileSegmenterClass() {
@@ -196,17 +182,17 @@ public class GenericRegionMergingOp extends Operator {
     }
 
     public AbstractSegmenter runSegmentation() throws IOException, IllegalAccessException {
-        int sceneWidth = this.tileSegmenter.getImageWidth();
-        int sceneHeight = this.tileSegmenter.getImageHeight();
+        int imageWidth = this.tileSegmenter.getImageWidth();
+        int imageHeight = this.tileSegmenter.getImageHeight();
+        int tileWidth = this.tileSegmenter.getTileWidth();
+        int tileHeight = this.tileSegmenter.getTileHeight();
+        int tileMargin = this.tileSegmenter.computeTileMargin();
 
         long startTime = System.currentTimeMillis();
         if (logger.isLoggable(Level.FINE)) {
-            int tileWidth = this.tileSegmenter.getTileWidth();
-            int tileHeight = this.tileSegmenter.getTileHeight();
-            int tileMargin = this.tileSegmenter.computeTileMargin();
             int firstNumberOfIterations = this.tileSegmenter.getIterationsForEachFirstSegmentation();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", first number of iterations: "+firstNumberOfIterations+", start time: "+new Date(startTime));
+            logger.log(Level.FINE, "Start Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", first number of iterations: "+firstNumberOfIterations+", start time: "+new Date(startTime));
         }
 
         AbstractSegmenter segmenter = runTilesSegmentationWithJAI();
@@ -221,7 +207,7 @@ public class GenericRegionMergingOp extends Operator {
             long totalSeconds = (finishTime - startTime) / 1000;
             int graphNodeCount = segmenter.getGraph().getNodeCount();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish Segmentation: image width: " +sceneWidth+", image height: "+sceneHeight+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+            logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
         }
 
         return segmenter;
@@ -240,40 +226,42 @@ public class GenericRegionMergingOp extends Operator {
     }
 
     private AbstractSegmenter runTilesSegmentationWithJAI() throws IOException, IllegalAccessException {
-        int sceneWidth = this.tileSegmenter.getImageWidth();
-        int sceneHeight = this.tileSegmenter.getImageHeight();
+        int imageWidth = this.tileSegmenter.getImageWidth();
+        int imageHeight = this.tileSegmenter.getImageHeight();
         int tileWidth = this.tileSegmenter.getTileWidth();
         int tileHeight = this.tileSegmenter.getTileHeight();
-        int tileCountX = MathUtils.ceilInt(sceneWidth / (double) tileWidth);
-        int tileCountY = MathUtils.ceilInt(sceneHeight / (double) tileHeight);
+        int tileCountX = MathUtils.ceilInt(imageWidth / (double) tileWidth);
+        int tileCountY = MathUtils.ceilInt(imageHeight / (double) tileHeight);
+
         if (tileCountX > 1 || tileCountY > 1) {
             OperatorExecutor operatorExecutor = OperatorExecutor.create(this);
             operatorExecutor.execute(ProgressMonitor.NULL);
 
-            //int computedTileCountX = this.tileSegmenter.getComputedTileCountX();
-            //int computedTileCountY = this.tileSegmenter.getComputedTileCountY();
-            for (int row = 0; row <tileCountY; row++) {
-                for (int col = 0; col < tileCountX; col++) {
-                    if (this.tileSegmenter.canAddTile(row, col)) {
-                        int startX = col * tileWidth;
-                        int startY = row * tileHeight;
-                        int sizeX = tileWidth;
-                        int sizeY = tileHeight;
-                        // current tile size might be different for right and bottom borders
-                        if (col == tileCountX - 1) {
-                            sizeX = sceneWidth % tileWidth;
+            for (int rowIndex = 0; rowIndex <tileCountY; rowIndex++) {
+                for (int columnIndex = 0; columnIndex < tileCountX; columnIndex++) {
+                    int startX = columnIndex * tileWidth;
+                    int startY = rowIndex * tileHeight;
+                    int sizeX = tileWidth;
+                    int sizeY = tileHeight;
+                    // current tile size might be different for right and bottom borders
+                    if (columnIndex == tileCountX - 1) {
+                        sizeX = imageWidth % tileWidth;
+                    }
+                    if (rowIndex == tileCountY - 1) {
+                        sizeY = imageHeight % tileHeight;
+                    }
+
+                    ProcessingTile currentTile = this.tileSegmenter.addMissingTile(rowIndex, columnIndex, startX, startY, sizeX, sizeY);
+                    if (currentTile != null) {
+                        if (logger.isLoggable(Level.FINE)) {
+                            int tileMargin = this.tileSegmenter.computeTileMargin();
+                            int firstNumberOfIterations = this.tileSegmenter.getIterationsForEachFirstSegmentation();
+                            logger.log(Level.FINE, ""); // add an empty line
+                            logger.log(Level.FINE, "Compute missing tile: row index: "+rowIndex+", column index: "+columnIndex+", margin: "+tileMargin+", bounds: [x=" +startX+", y="+startY+", width="+sizeX+", height="+sizeY+"], first number of iterations: "+firstNumberOfIterations);
                         }
-                        if (row == tileCountY - 1) {
-                            sizeY = sceneHeight % tileHeight;
-                        }
-                        ProcessingTile currentTile = this.tileSegmenter.buildTile(startX, startY, sizeX, sizeY);
-                        int tileColumnIndex = col;//computeTileColumnIndex(currentTile);
-                        int tileRowIndex = row;//computeTileRowIndex(currentTile);
-                        ProcessingTile oldTile = this.tileSegmenter.addTile(tileRowIndex, tileColumnIndex, currentTile);
-                        if (oldTile == null) {
-                            Tile[] sourceTiles = getSourceTiles(currentTile.getRegion());
-                            this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
-                        }
+
+                        Tile[] sourceTiles = getSourceTiles(currentTile.getRegion());
+                        this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
                     }
                 }
             }
@@ -282,16 +270,26 @@ public class GenericRegionMergingOp extends Operator {
         }
 
         Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
-        Rectangle rectangleToRead = new Rectangle(0, 0, sceneWidth, sceneHeight);
+        Rectangle rectangleToRead = new Rectangle(0, 0, imageWidth, imageHeight);
         for (int i=0; i<this.sourceBandNames.length; i++) {
             Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
             sourceTiles[i] = getSourceTile(band, rectangleToRead);
         }
-        BoundingBox imageRegion = new BoundingBox(0, 0, sceneWidth, sceneHeight);
-        int numberOfIterations = this.tileSegmenter.getIterationsForEachFirstSegmentation() + this.tileSegmenter.getTotalIterationsForSecondSegmentation();
+        BoundingBox imageRegion = new BoundingBox(0, 0, imageWidth, imageHeight);
+        int numberOfIterations = this.tileSegmenter.getTotalIterationsForSecondSegmentation();
         AbstractSegmenter segmenter = this.tileSegmenter.buildSegmenter(this.tileSegmenter.getThreshold());
         segmenter.update(sourceTiles, imageRegion, numberOfIterations, this.tileSegmenter.isFastSegmentation(), this.tileSegmenter.isAddFourNeighbors());
         return segmenter;
+    }
+
+    private Tile[] getSourceTiles(BoundingBox tileRegion) {
+        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+        Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
+        for (int i=0; i<this.sourceBandNames.length; i++) {
+            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
+            sourceTiles[i] = getSourceTile(band, rectangleToRead);
+        }
+        return sourceTiles;
     }
 
     public static class Spi extends OperatorSpi {

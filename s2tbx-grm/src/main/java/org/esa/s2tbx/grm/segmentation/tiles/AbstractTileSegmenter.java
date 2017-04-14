@@ -45,7 +45,7 @@ public abstract class AbstractTileSegmenter {
     private boolean isFusion;
 
     protected AbstractTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                                    int iterationsForEachFirstSegmentation, float threshold, boolean fastSegmentation)
+                                    float threshold, boolean fastSegmentation)
                                     throws IOException {
 
         this.imageWidth = imageSize.width;
@@ -218,11 +218,17 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    public boolean canAddTile(int tileRowIndex, int tileColumnIndex) {
+    public ProcessingTile addMissingTile(int tileRowIndex, int tileColumnIndex, int startX, int startY, int sizeX, int sizeY) {
         synchronized (this.tilesBidimensionalArray) {
             ProcessingTile tile = this.tilesBidimensionalArray.getTileAt(tileRowIndex, tileColumnIndex);
-            return (tile == null);
+            if (tile == null) {
+                // missing tile
+                tile = buildTile(startX, startY, sizeX, sizeY);
+                this.tilesBidimensionalArray.addTile(tileRowIndex, tileColumnIndex, tile);
+                return tile;
+            }
         }
+        return null;
     }
 
     public void runOneTileFirstSegmentation(Tile[] sourceTiles, ProcessingTile currentTile) throws IllegalAccessException, IOException {

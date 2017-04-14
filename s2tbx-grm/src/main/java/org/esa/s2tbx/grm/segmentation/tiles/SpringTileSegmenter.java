@@ -12,10 +12,10 @@ import java.io.IOException;
  */
 public class SpringTileSegmenter extends AbstractTileSegmenter {
 
-    public SpringTileSegmenter(Dimension imageSize, Dimension tileSize, int numberOfIterations, int numberOfFirstIterations,
+    public SpringTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
                                float threshold, boolean fastSegmentation)throws IOException {
 
-        super(imageSize, tileSize, numberOfIterations, numberOfFirstIterations, threshold, fastSegmentation);
+        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
     }
 
     @Override
