@@ -2,7 +2,7 @@ package org.esa.s2tbx.processor.mci.ui;
 
 enum Presets {
     NONE("None", "", "", "", "", "", ""),
-    S2MSI_L1B_MCI("S2MSI L1b MCI", "B4", "B6", "B5", "MCI", "MCI_slope",
+    S2MSI_L1B_MCI("S2MSI L1c MCI", "B4", "B6", "B5", "MCI", "MCI_slope",
                   "B11<0.01 && B8<B4"),
     S2MSI_L2_MCI("S2MSI L2 MCI", "B4", "B6", "B5", "MCI", "MCI_slope",
                  "scl_water");
