@@ -1,0 +1,16 @@
+-in
+$sourceProductFile
+-channel
+$channel_int
+-parameters.spethre
+$spethre_float
+-parameters.spathre
+$spathre_int
+-parameters.nbdir
+$nbdir_int
+-parameters.alpha
+$alpha_float
+-parameters.maxcons
+$maxcons_int
+-out
+$targetProductFile

@@ -1,0 +1,10 @@
+-out
+$targetProductFile
+-background
+$background_float
+-mode
+$mode_string
+-mode.binary.foreground
+$foreground_float
+-mode.attribute.field
+$field_string

@@ -1,0 +1,12 @@
+-inp
+$sourceProductFile
+-inxs
+$sourceProductFile
+-out
+$targetProductFile
+-method
+$method_string
+-method.lmvm.radiusx
+$radiusx_int
+-method.lmvm.radiusy
+$radiusy_int
