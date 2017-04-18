@@ -23,7 +23,7 @@ import java.beans.PropertyChangeListener;
 public class S2MciAction extends AbstractSnapAction {
 
     private static final String OPERATOR_ALIAS = "Mci.s2";
-    private static final String HELP_ID = "mciScientificTool";
+    private static final String HELP_ID = "s2MciScientificTool";
     private static final String LOWER_BASELINE_BAND_NAME = "lowerBaselineBandName";
     private static final String UPPER_BASE_LINE_BAND_NAME = "upperBaselineBandName";
     private static final String SIGNAL_BAND_NAME = "signalBandName";
