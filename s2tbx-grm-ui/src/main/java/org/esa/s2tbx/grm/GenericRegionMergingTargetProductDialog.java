@@ -83,36 +83,36 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
         return result;
     }
 
-    @Override
-    protected void onApply() {
-        if (!canApply()) {
-            return;
-        }
-
-        TargetProductSelectorModel model = targetProductSelector.getModel();
-        String productDirPath = model.getProductDir().getAbsolutePath();
-        appContext.getPreferences().setPropertyString(SaveProductAsAction.PREFERENCES_KEY_LAST_PRODUCT_DIR, productDirPath);
-
-        Product targetProduct = null;
-        try {
-            long t0 = System.currentTimeMillis();
-            targetProduct = createTargetProduct();
-            createTargetProductTime = System.currentTimeMillis() - t0;
-
-        } catch (Throwable t) {
-            handleInitialisationError(t);
-            return;
-        }
-        if (targetProduct == null) {
-            throw new NullPointerException("The target product is null.");
-        }
-
-        targetProduct.setName(model.getProductName());
-        targetProduct.setFileLocation(model.getProductFile());
-
-        GRMProductWriterSwingWorker worker = new GRMProductWriterSwingWorker(targetProduct);
-        worker.executeWithBlocking(); // start the thread
-    }
+//    @Override
+//    protected void onApply() {
+//        if (!canApply()) {
+//            return;
+//        }
+//
+//        TargetProductSelectorModel model = targetProductSelector.getModel();
+//        String productDirPath = model.getProductDir().getAbsolutePath();
+//        appContext.getPreferences().setPropertyString(SaveProductAsAction.PREFERENCES_KEY_LAST_PRODUCT_DIR, productDirPath);
+//
+//        Product targetProduct = null;
+//        try {
+//            long t0 = System.currentTimeMillis();
+//            targetProduct = createTargetProduct();
+//            createTargetProductTime = System.currentTimeMillis() - t0;
+//
+//        } catch (Throwable t) {
+//            handleInitialisationError(t);
+//            return;
+//        }
+//        if (targetProduct == null) {
+//            throw new NullPointerException("The target product is null.");
+//        }
+//
+//        targetProduct.setName(model.getProductName());
+//        targetProduct.setFileLocation(model.getProductFile());
+//
+//        GRMProductWriterSwingWorker worker = new GRMProductWriterSwingWorker(targetProduct);
+//        worker.executeWithBlocking(); // start the thread
+//    }
     /**
      * Returns the selected product.
      *
