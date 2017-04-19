@@ -2,8 +2,8 @@ package org.esa.s2tbx.dataio.mosaic;
 
 import com.bc.ceres.binding.Converter;
 import com.bc.ceres.binding.ConverterRegistry;
-import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.vividsolutions.jts.geom.Coordinate;
 import org.esa.s2tbx.dataio.mosaic.internal.S2MosaicMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
@@ -14,7 +14,6 @@ import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.dataop.barithm.BandArithmetic;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -24,35 +23,24 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.image.ImageManager;
-import org.esa.snap.core.image.ResolutionLevel;
-import org.esa.snap.core.image.VirtualBandOpImage;
-import org.esa.snap.core.jexp.ParseException;
-import org.esa.snap.core.jexp.impl.Tokenizer;
 import org.esa.snap.core.transform.AffineTransform2D;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.core.util.math.MathUtils;
-import org.geotools.factory.Hints;
+import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.ImageLayout;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.operator.AddCollectionDescriptor;
-import javax.media.jai.operator.AddDescriptor;
-import javax.media.jai.operator.FormatDescriptor;
-import javax.media.jai.operator.MosaicDescriptor;
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.DataBuffer;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -144,13 +132,11 @@ public final class S2tbxMosaicOp extends Operator {
 
     private Product[] reprojectedProducts;
     private List<Product> generatedSelectedBandsProducts = new ArrayList<>();
-    private double targetStepX;
-    private double targetStepY;
     private ReferencedEnvelope targetEnvelope;
     private CoordinateReferenceSystem targetCRS;
 
     @Override
-    public void initialize() throws OperatorException{
+    public void initialize() throws OperatorException {
         //order the products so that they match the order in which the user selected them to be
         this.sourceProducts = orderSourceProductsAfterRefNo();
         //recreate source products so that they contain only the bands used in mosaicing
@@ -169,52 +155,19 @@ public final class S2tbxMosaicOp extends Operator {
         }
         this.sourceProducts = this.generatedSelectedBandsProducts.toArray(new Product[generatedSelectedBandsProducts.size()]);
 
-        if (this.nativeResolution) {
-            this.reprojectedProducts = createReprojectedProducts();// createReprojectedProductsNativeResolution();
-            this.targetStepX = computeTargetStepX(this.reprojectedProducts[0]);
-            this.targetStepY = computeTargetStepY(this.reprojectedProducts[0]);
-        }
         if (isUpdateMode()) {
             initFields();
             this.targetProduct = this.updateProduct;
             updateMetadata(this.targetProduct);
         } else {
             this.targetProduct = createTargetProduct();
-            addTargetBands(this.targetProduct);
         }
-
-        if (this.nativeResolution) {
-            try {
-                createSourceImagesNativeResolution();
-            } catch (TransformException e) {
-                e.printStackTrace();
-            }
-        } else {
-            Product[] resampledProducts;
-            this.targetStepX = computeTargetStepX(this.sourceProducts[0]);
-            this.targetStepY = computeTargetStepY(this.sourceProducts[0]);
-            if (this.pixelSizeX > this.targetStepX) {
-                resampledProducts = resample(this.sourceProducts, this.targetProduct.getSceneRasterWidth(),
-                        this.targetProduct.getSceneRasterHeight(),LOWER_RESOLUTION);
-            } else {
-                resampledProducts = resample(this.sourceProducts, this.targetProduct.getSceneRasterWidth(),
-                        this.targetProduct.getSceneRasterHeight(),HIGHER_RESOLUTION);
-            }
-            this.sourceProducts = resampledProducts;
-            this.reprojectedProducts = createReprojectedProducts();
-
-            // for each variable and each product one 'alpha' image is created.
-            // the alpha value for a pixel is either 0.0 or 1.0
-            List<List<PlanarImage>> alphaImageList = createAlphaImages();
-
-            // for each variable and each product one 'source' image is created.
-            List<List<RenderedImage>> sourceImageList = createSourceImages();
-
-            List<RenderedImage> mosaicImageList = createMosaicImages(sourceImageList, alphaImageList);
-
-            final List<RenderedImage> variableCountImageList = createVariableCountImages(alphaImageList);
-            setTargetBandImages(this.targetProduct, mosaicImageList, variableCountImageList);
-            this.reprojectedProducts = null;
+        this.reprojectedProducts = createReprojectedProducts();
+        addTargetBands(this.targetProduct);
+        try {
+            createSourceImagesNativeResolution();
+        } catch (TransformException e) {
+            e.printStackTrace();
         }
     }
 
@@ -231,163 +184,6 @@ public final class S2tbxMosaicOp extends Operator {
     private void initFields() {
         final Map<String, Object> params = getOperatorParameters(this.updateProduct);
         initObject(params, this);
-    }
-
-    private List<RenderedImage> createVariableCountImages(List<List<PlanarImage>> alphaImageList) {
-        List<RenderedImage> variableCountImageList = new ArrayList<>(this.variables.length);
-        for (List<PlanarImage> variableAlphaImageList : alphaImageList) {
-            final RenderedImage countFloatImage = createImageSum(variableAlphaImageList);
-            variableCountImageList.add(FormatDescriptor.create(countFloatImage, DataBuffer.TYPE_INT, null));
-        }
-        return variableCountImageList;
-    }
-
-    private List<RenderedImage> createMosaicImages(List<List<RenderedImage>> sourceImageList,
-                                                   List<List<PlanarImage>> alphaImageList) {
-
-        ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(
-                ImageManager.getDataBufferType(ProductData.TYPE_FLOAT32),
-                this.targetProduct.getSceneRasterWidth(),
-                this.targetProduct.getSceneRasterHeight(),
-                ImageManager.getPreferredTileSize(this.targetProduct),
-                ResolutionLevel.MAXRES);
-        Hints hints = new Hints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-        final List<RenderedImage> mosaicImages = new ArrayList<>(sourceImageList.size());
-        for (int i = 0; i < sourceImageList.size(); i++) {
-            final PlanarImage[] sourceAlphas = alphaImageList.get(i).toArray(new PlanarImage[alphaImageList.size()]);
-            final List<RenderedImage> sourceImages = sourceImageList.get(i);
-            final RenderedImage[] renderedImages = sourceImages.toArray(new RenderedImage[sourceImages.size()]);
-            // we don't need ROIs, cause they are not considered by MosaicDescriptor when sourceAlphas are given
-            mosaicImages.add(MosaicDescriptor.create(renderedImages, MosaicDescriptor.MOSAIC_TYPE_BLEND,
-                    sourceAlphas, null, null, null, hints));
-        }
-
-        return mosaicImages;
-    }
-
-    private void setTargetBandImages(Product product, List<RenderedImage> bandImages,
-                                     List<RenderedImage> variableCountImageList) {
-        for (int i = 0; i < this.variables.length; i++) {
-            Variable outputVariable = this.variables[i];
-            product.getBand(outputVariable.getName()).setSourceImage(bandImages.get(i));
-
-            final String countBandName = getCountBandName(outputVariable);
-            product.getBand(countBandName).setSourceImage(variableCountImageList.get(i));
-        }
-
-        if (this.conditions != null) {
-            for (Condition condition : this.conditions) {
-                if (condition.isOutput()) {
-                    // The sum of all conditions of all sources is created.
-                    // 1.0 indicates condition is true and 0.0 indicates false.
-                    final RenderedImage sumImage = createConditionSumImage(condition);
-                    final RenderedImage reformattedImage = FormatDescriptor.create(sumImage, DataBuffer.TYPE_INT, null);
-                    RenderedImage condImage = reformattedImage;
-                    if (isUpdateMode()) {
-                        final RenderedImage updateImage = this.updateProduct.getBand(condition.getName()).getSourceImage();
-                        condImage = AddDescriptor.create(reformattedImage, updateImage, null);
-                    }
-                    Band band = product.getBand(condition.getName());
-                    band.setSourceImage(condImage);
-                }
-            }
-        }
-    }
-
-    private RenderedImage createConditionSumImage(Condition condition) {
-        final List<RenderedImage> renderedImageList = new ArrayList<>(this.reprojectedProducts.length);
-        for (Product reprojectedProduct : this.reprojectedProducts) {
-            renderedImageList.add(createConditionImage(condition, reprojectedProduct));
-        }
-        return createImageSum(renderedImageList);
-    }
-
-    private PlanarImage createConditionImage(Condition condition, Product reprojectedProduct) {
-        String validMaskExpression;
-        try {
-            validMaskExpression = createValidMaskExpression(reprojectedProduct, condition.getExpression());
-        } catch (ParseException e) {
-            throw new OperatorException(e);
-        }
-        String expression = validMaskExpression + " && (" + condition.getExpression() + ")";
-        // the condition images are used as sourceAlpha parameter for MosaicOpImage, they have to have the same
-        // data type as the source images. That's why we use normal expression images with data type FLOAT32.
-        return createExpressionImage(expression, reprojectedProduct);
-    }
-
-    private RenderedImage createImageSum(List<? extends RenderedImage> renderedImageList) {
-        if (renderedImageList.size() >= 2) {
-            return AddCollectionDescriptor.create(renderedImageList, null);
-        } else {
-            return renderedImageList.get(0);
-        }
-    }
-
-    private List<List<RenderedImage>> createSourceImages() {
-        final List<List<RenderedImage>> sourceImageList = new ArrayList<>(this.variables.length);
-        for (final Variable variable : this.variables) {
-            final List<RenderedImage> renderedImageList = new ArrayList<>(this.reprojectedProducts.length);
-            sourceImageList.add(renderedImageList);
-            for (final Product product : this.reprojectedProducts) {
-                renderedImageList.add(createExpressionImage(variable.getExpression(), product));
-            }
-            if (isUpdateMode()) {
-                renderedImageList.add(this.updateProduct.getBand(variable.getName()).getSourceImage());
-            }
-        }
-        return sourceImageList;
-    }
-
-    private PlanarImage createExpressionImage(final String expression, Product product) {
-        MultiLevelImage sourceImage = product.getBandAt(0).getSourceImage();
-        ResolutionLevel resolutionLevel = ResolutionLevel.create(sourceImage.getModel(), 0);
-        float fillValue = 0.0f;
-        Dimension tileSize = new Dimension(sourceImage.getTileWidth(), sourceImage.getTileHeight());
-        return VirtualBandOpImage.builder(expression, product)
-                .dataType(ProductData.TYPE_FLOAT32)
-                .fillValue(fillValue)
-                .tileSize(tileSize)
-                .mask(false)
-                .level(resolutionLevel)
-                .create();
-    }
-
-    private List<List<PlanarImage>> createAlphaImages() {
-        final List<List<PlanarImage>> alphaImageList = new ArrayList<>(this.variables.length);
-        for (final Variable variable : this.variables) {
-            final ArrayList<PlanarImage> list = new ArrayList<>(this.reprojectedProducts.length);
-            alphaImageList.add(list);
-            for (final Product product : this.reprojectedProducts) {
-                final String validMaskExpression;
-                try {
-                    validMaskExpression = createValidMaskExpression(product, variable.getExpression());
-                } catch (ParseException e) {
-                    throw new OperatorException(e);
-                }
-                final StringBuilder combinedExpression = new StringBuilder(validMaskExpression);
-                if (this.conditions != null && this.conditions.length > 0) {
-                    combinedExpression.append(" && (");
-                    for (int i = 0; i < this.conditions.length; i++) {
-                        Condition condition = this.conditions[i];
-                        if (i != 0) {
-                            combinedExpression.append(" ").append(this.combine).append(" ");
-                        }
-                        combinedExpression.append(condition.getExpression());
-                    }
-                    combinedExpression.append(")");
-                }
-                list.add(createExpressionImage(combinedExpression.toString(), product));
-            }
-            if (isUpdateMode()) {
-                final RenderedImage updateImage = this.updateProduct.getBand(getCountBandName(variable)).getSourceImage();
-                list.add(FormatDescriptor.create(updateImage, DataBuffer.TYPE_FLOAT, null));
-            }
-        }
-        return alphaImageList;
-    }
-
-    private static String createValidMaskExpression(Product product, final String expression) throws ParseException {
-        return BandArithmetic.getValidMaskExpression(expression, product, null);
     }
 
     private void updateMetadata(Product product) {
@@ -414,7 +210,7 @@ public final class S2tbxMosaicOp extends Operator {
         }
     }
 
-    private double computeTargetStepX(Product product){
+    private double computeStepX(Product product){
         OptionalDouble result = Arrays.stream(product.getBands())
                 .mapToDouble(band -> Math.abs(band.getSourceImage().getModel().getImageToModelTransform(0).getScaleX()))
                 .min();
@@ -425,7 +221,7 @@ public final class S2tbxMosaicOp extends Operator {
         }
     }
 
-    private double computeTargetStepY(Product product){
+    private double computeStepY(Product product){
         OptionalDouble result = Arrays.stream(product.getBands())
                 .mapToDouble(band -> Math.abs(band.getSourceImage().getModel().getImageToModelTransform(0).getScaleY()))
                 .min();
@@ -441,27 +237,26 @@ public final class S2tbxMosaicOp extends Operator {
             final Rectangle2D bounds = new Rectangle2D.Double();
             bounds.setFrameFromDiagonal(this.westBound, this.southBound, this.eastBound, this.northBound);
             final ReferencedEnvelope boundsEnvelope = new ReferencedEnvelope(bounds, DefaultGeographicCRS.WGS84);
-            this.targetEnvelope = boundsEnvelope.transform(targetCRS, false);
+            this.targetEnvelope = boundsEnvelope.transform(targetCRS, true);
+            final double[] pixelSize = getPixelSize(this.sourceProducts[0].getSceneGeoCoding(), targetCRS);
+            this.pixelSizeX = pixelSize[0];
+            this.pixelSizeY = pixelSize[1];
             int height;
             int width;
             CrsGeoCoding geoCoding;
-            width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) /
-                                               ((this.nativeResolution) ? Math.abs(this.targetStepX) : this.pixelSizeX));
-            height = MathUtils.floorInt(this.targetEnvelope.getSpan(1) /
-                                                ((this.nativeResolution) ? Math.abs(this.targetStepY): this.pixelSizeY));
+            width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / this.pixelSizeX);
+            height = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / this.pixelSizeY);
             geoCoding = new CrsGeoCoding(targetCRS,
-                    width,
-                    height,
-                    targetEnvelope.getLowerCorner().getOrdinate(0),
-                    targetEnvelope.getUpperCorner().getOrdinate(1),
-                    (this.nativeResolution) ? this.targetStepX : this.pixelSizeX,
-                    (this.nativeResolution) ? this.targetStepY : this.pixelSizeY);
+                                         width, height,
+                                         targetEnvelope.getLowerCorner().getOrdinate(0),
+                                         targetEnvelope.getUpperCorner().getOrdinate(1),
+                                         this.pixelSizeX, this.pixelSizeY);
             final Product product = new Product("S2mosaic", "BEAM_MOSAIC", width, height);
             product.setSceneGeoCoding(geoCoding);
             final Dimension tileSize = JAIUtils.computePreferredTileSize(width, height, 1);
             product.setPreferredTileSize(tileSize);
             if (this.nativeResolution) {
-                int levels = this.reprojectedProducts[0].getNumResolutionsMax();
+                int levels = this.sourceProducts[0].getNumResolutionsMax();
                 if (levels > product.getNumResolutionsMax()) {
                     product.setNumResolutionsMax(levels);
                 }
@@ -473,77 +268,57 @@ public final class S2tbxMosaicOp extends Operator {
     }
 
     private void addTargetBands(Product product) {
-        if (this.nativeResolution) {
-            int sceneWidth = product.getSceneRasterWidth();
-            int sceneHeight = product.getSceneRasterHeight();
-            for (Variable outputVariable : this.variables) {
-                final int targetDataType;
-                final Band firstSourceBand = this.reprojectedProducts[0].getBand(getSourceBandName(outputVariable.getExpression()));
-                /*if (firstSourceBand.isScalingApplied()) {
-                    targetDataType = firstSourceBand.getGeophysicalDataType();
-                } else {*/
-                    targetDataType = firstSourceBand.getDataType();
-                /*}*/
-                final AffineTransform affineTransformSourceBand =
-                        firstSourceBand.getSourceImage().getModel().getImageToModelTransform(0);
-                double stepX = Math.abs(affineTransformSourceBand.getScaleX());
-                double stepY = Math.abs(affineTransformSourceBand.getScaleY());
-                int bandWidth = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / Math.abs(stepX));
-                int bandHeight = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / Math.abs(stepY));
-                Band targetBand = new Band(outputVariable.getName(), targetDataType, bandWidth, bandHeight);
-                targetBand.setDescription(firstSourceBand.getDescription());
-                targetBand.setUnit(firstSourceBand.getUnit());
-                targetBand.setScalingFactor(firstSourceBand.getScalingFactor());
-                targetBand.setScalingOffset(firstSourceBand.getScalingOffset());
-                targetBand.setLog10Scaled(firstSourceBand.isLog10Scaled());
-                targetBand.setNoDataValue(firstSourceBand.getNoDataValue());
-                //targetBand.setNoDataValueUsed(firstSourceBand.isNoDataValueUsed());
-                //targetBand.setValidPixelExpression(firstSourceBand.getValidPixelExpression());
-                targetBand.setSpectralWavelength(firstSourceBand.getSpectralWavelength());
-                targetBand.setSpectralBandwidth(firstSourceBand.getSpectralBandwidth());
+        int sceneWidth = product.getSceneRasterWidth();
+        int sceneHeight = product.getSceneRasterHeight();
+        for (Variable outputVariable : this.variables) {
+            final int targetDataType;
+            final Band firstSourceBand = this.reprojectedProducts[0].getBand(getSourceBandName(outputVariable.getExpression()));
+            /*if (firstSourceBand.isScalingApplied()) {
+                targetDataType = firstSourceBand.getGeophysicalDataType();
+            } else {*/
+                targetDataType = firstSourceBand.getDataType();
+            /*}*/
+            final AffineTransform affineTransformSourceBand =
+                    firstSourceBand.getSourceImage().getModel().getImageToModelTransform(0);
+            double stepX = Math.abs(affineTransformSourceBand.getScaleX());
+            double stepY = Math.abs(affineTransformSourceBand.getScaleY());
+            int bandWidth = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / Math.abs(stepX));
+            int bandHeight = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / Math.abs(stepY));
+            Band targetBand = new Band(outputVariable.getName(), targetDataType, bandWidth, bandHeight);
+            targetBand.setDescription(firstSourceBand.getDescription());
+            targetBand.setUnit(firstSourceBand.getUnit());
+            targetBand.setScalingFactor(firstSourceBand.getScalingFactor());
+            targetBand.setScalingOffset(firstSourceBand.getScalingOffset());
+            targetBand.setLog10Scaled(firstSourceBand.isLog10Scaled());
+            targetBand.setNoDataValue(firstSourceBand.getNoDataValue());
+            //targetBand.setNoDataValueUsed(firstSourceBand.isNoDataValueUsed());
+            //targetBand.setValidPixelExpression(firstSourceBand.getValidPixelExpression());
+            targetBand.setSpectralWavelength(firstSourceBand.getSpectralWavelength());
+            targetBand.setSpectralBandwidth(firstSourceBand.getSpectralBandwidth());
 
-                ImageInfo sourceImageInfo = firstSourceBand.getImageInfo();
-                if (sourceImageInfo != null) {
-                    targetBand.setImageInfo(
-                            new ImageInfo(
-                                    new ColorPaletteDef(
-                                            sourceImageInfo.getColorPaletteDef().getPoints()
-                                    )));
-                }
-                if (sceneWidth != bandWidth) {
-                    AffineTransform2D transform2D =
-                            new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0,
-                                                  (float) sceneHeight / bandHeight, 0.0, 0.0);
-                    targetBand.setImageToModelTransform(transform2D);
-                }
-                try {
-                    CrsGeoCoding geoCoding = new CrsGeoCoding(targetCRS, bandWidth, bandHeight,
-                                                              targetEnvelope.getMinX(), targetEnvelope.getMaxY(),
-                                                              stepX, stepY);
-                    targetBand.setGeoCoding(geoCoding);
-                } catch (FactoryException | TransformException e) {
-                    e.printStackTrace();
-                }
-                product.addBand(targetBand);
+            ImageInfo sourceImageInfo = firstSourceBand.getImageInfo();
+            if (sourceImageInfo != null) {
+                targetBand.setImageInfo(
+                        new ImageInfo(
+                                new ColorPaletteDef(
+                                        sourceImageInfo.getColorPaletteDef().getPoints()
+                                )));
             }
-        } else {
-            for (Variable outputVariable : this.variables) {
-                Band band = product.addBand(outputVariable.getName(), ProductData.TYPE_FLOAT32);
-                band.setDescription(outputVariable.getExpression());
-                final String countBandName = getCountBandName(outputVariable);
-                band.setValidPixelExpression(String.format("%s > 0", Tokenizer.createExternalName(countBandName)));
-
-                Band countBand = product.addBand(countBandName, ProductData.TYPE_INT32);
-                countBand.setDescription(String.format("Count of %s", outputVariable.getName()));
+            if (sceneWidth != bandWidth) {
+                AffineTransform2D transform2D =
+                        new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0,
+                                              (float) sceneHeight / bandHeight, 0.0, 0.0);
+                targetBand.setImageToModelTransform(transform2D);
             }
-            if (this.conditions != null) {
-                for (Condition condition : this.conditions) {
-                    if (condition.isOutput()) {
-                        Band band = product.addBand(condition.getName(), ProductData.TYPE_INT32);
-                        band.setDescription(condition.getExpression());
-                    }
-                }
+            try {
+                CrsGeoCoding geoCoding = new CrsGeoCoding(targetCRS, bandWidth, bandHeight,
+                                                          targetEnvelope.getMinX(), targetEnvelope.getMaxY(),
+                                                          stepX, stepY);
+                targetBand.setGeoCoding(geoCoding);
+            } catch (FactoryException | TransformException e) {
+                e.printStackTrace();
             }
+            product.addBand(targetBand);
         }
     }
 
@@ -559,14 +334,55 @@ public final class S2tbxMosaicOp extends Operator {
             }
             final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
             final int levels = srcBands[0].getSourceImage().getModel().getLevelCount();
-            S2MosaicMultiLevelSource bandSource = new S2MosaicMultiLevelSource(srcBands, band.getRasterWidth(), band.getRasterHeight(),
-                    tileSize.width, tileSize.height, levels,
-                    band.getGeoCoding(),
-                    this.overlappingMethod, productType);
+            MathTransform mapTransform = band.getGeoCoding().getImageToMapTransform();
+            DirectPosition bandOrigin = mapTransform.transform(new DirectPosition2D(0, 0), null);
+            S2MosaicMultiLevelSource bandSource =
+                    new S2MosaicMultiLevelSource(srcBands,
+                                                 bandOrigin.getOrdinate(0),
+                                                 bandOrigin.getOrdinate(1),
+                                                 band.getRasterWidth(), band.getRasterHeight(),
+                                                 tileSize.width, tileSize.height, levels,
+                                                 band.getGeoCoding(),
+                                                 this.overlappingMethod, productType);
             band.setSourceImage(new DefaultMultiLevelImage(bandSource));
         }
     }
 
+    private double[] getPixelSize(GeoCoding sourceGeoCoding, CoordinateReferenceSystem targetCRS) {
+        double[] size = null;
+        try {
+            size = new double[2];
+            DirectPosition geoPos1 = sourceGeoCoding.getImageToMapTransform()
+                                                    .transform(new DirectPosition2D(0, 0), null);
+            Coordinate c1 = new Coordinate(geoPos1.getOrdinate(0), geoPos1.getOrdinate(1));
+            DirectPosition geoPos2 = sourceGeoCoding.getImageToMapTransform()
+                                                    .transform(new DirectPosition2D(0, 1), null);
+            Coordinate c2 = new Coordinate(geoPos2.getOrdinate(0), geoPos2.getOrdinate(1));
+            DirectPosition geoPos3 = sourceGeoCoding.getImageToMapTransform()
+                                                    .transform(new DirectPosition2D(1, 0), null);
+            Coordinate c3 = new Coordinate(geoPos3.getOrdinate(0), geoPos3.getOrdinate(1));
+            final CoordinateReferenceSystem sourceCRS = sourceGeoCoding.getMapCRS();
+            size[0] = distance(sourceCRS, targetCRS, c3, c1);
+            size[1] = distance(sourceCRS, targetCRS, c2, c1);
+        } catch (TransformException tex) {
+            tex.printStackTrace();
+        }
+        return size;
+    }
+
+    private double distance(CoordinateReferenceSystem fromCRS,
+                                      CoordinateReferenceSystem toCRS,
+                                      Coordinate point1, Coordinate point2) {
+        try {
+            MathTransform transform = CRS.findMathTransform(fromCRS, toCRS);
+            Coordinate tPoint1 = JTS.transform(point1, null, transform);
+            Coordinate tPoint2 = JTS.transform(point2, null, transform);
+            return tPoint1.distance(tPoint2);
+        } catch (FactoryException | TransformException e) {
+            e.printStackTrace();
+            return Double.NaN;
+        }
+    }
 
     private String getCountBandName(Variable outputVariable) {
         return String.format("%s_count", outputVariable.getName());
@@ -641,33 +457,6 @@ public final class S2tbxMosaicOp extends Operator {
         return localProduct;
     }
 
-    private Product[] createReprojectedProductsNativeResolution() {
-        List<Product> reprojProductList = new ArrayList<>(this.sourceProducts.length);
-        CoordinateReferenceSystem targetCRS = null;
-        try {
-            targetCRS = CRS.parseWKT(this.crs);
-        } catch (FactoryException ignored) {
-        }
-        for (Product sourceProduct : this.sourceProducts) {
-            GeoCoding sceneGeoCoding = sourceProduct.getSceneGeoCoding();
-            if (sceneGeoCoding == null) {
-                String msg = "Source product: '" + sourceProduct.getName() + "' contains no geo-coding. Skipped for further processing.";
-                getLogger().warning(msg);
-                continue;
-            }
-            if (!CRS.equalsIgnoreMetadata(sceneGeoCoding.getMapCRS(), targetCRS)) {
-                final HashMap<String, Object> projParameters = createProjectionParameters();
-                HashMap<String, Product> projProducts = new HashMap<>();
-                projProducts.put("source", sourceProduct);
-                //projProducts.put("reprojectedFirstProduct", (index == 0) ? null : reprojProductList.get(0));
-                reprojProductList.add(GPF.createProduct("S2tbx-Reproject", projParameters, projProducts));
-            } else {
-                reprojProductList.add(sourceProduct);
-            }
-        }
-        return reprojProductList.toArray(new Product[reprojProductList.size()]);
-    }
-
     private Product[] createReprojectedProducts() {
         List<Product> reprojProductList = new ArrayList<>(this.sourceProducts.length);
         final HashMap<String, Object> projParameters = createProjectionParameters();
@@ -678,14 +467,11 @@ public final class S2tbxMosaicOp extends Operator {
                 getLogger().warning(msg);
                 continue;
             }
-            if (!targetCRS.getName().getCode().equals(geoCoding.getMapCRS().getName().getCode())) {
-                HashMap<String, Product> projProducts = new HashMap<>();
-                projProducts.put("source", reprojectedProduct);
-                //projProducts.put("collocateWith", this.targetProduct);
-                reprojProductList.add(GPF.createProduct("S2tbx-Reproject", projParameters, projProducts));
-            } else {
-                reprojProductList.add(reprojectedProduct);
-            }
+            HashMap<String, Product> projProducts = new HashMap<>();
+            projProducts.put("source", reprojectedProduct);
+            projParameters.put("crs", this.crs);
+            projParameters.put("collocateWith", targetProduct);
+            reprojProductList.add(GPF.createProduct("S2tbx-Reproject", projParameters, projProducts));
         }
         return reprojProductList.toArray(new Product[reprojProductList.size()]);
     }
@@ -694,7 +480,6 @@ public final class S2tbxMosaicOp extends Operator {
         HashMap<String, Object> projParameters = new HashMap<>();
         projParameters.put("resamplingName", this.resamplingName);
         projParameters.put("includeTiePointGrids", true);  // ensure tie-points are reprojected
-        projParameters.put("crs", this.crs);
         if (this.orthorectify) {
             projParameters.put("orthorectify", true);
             projParameters.put("elevationModelName", this.elevationModelName);

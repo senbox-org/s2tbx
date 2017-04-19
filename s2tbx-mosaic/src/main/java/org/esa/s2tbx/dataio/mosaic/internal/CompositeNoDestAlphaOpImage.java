@@ -926,15 +926,22 @@ final class CompositeNoDestAlphaOpImage extends PointOpImage {
                     a1LineOffset += a1LineStride;
                     dLineOffset += dLineStride;
 
+                    int offset1, offset2;
+                    float value1, value2, expr;
                     for (int w = 0; w < dwidth; w++) {
                         float t1 = a1Data[a1PixelOffset];
                         float t2 = 1.0F - t1;
 
                         /* Destination color channels. */
                         for (int b = 0; b < dbands; b++) {
-                            dData[b][dPixelOffset+dBandOffsets[b]] =
-                                    s1Data[b][s1PixelOffset+s1BandOffsets[b]] * t1 +
-                                            s2Data[b][s2PixelOffset+s2BandOffsets[b]] * t2;
+                            offset1 = s1PixelOffset+s1BandOffsets[b];
+                            offset2 = s2PixelOffset+s2BandOffsets[b];
+                            value1 = s1Data[b][offset1];
+                            value2 = s2Data[b][offset2];
+                            expr = Float.isNaN(value1) ? value2 :
+                                    Float.isNaN(value2) ? value1 :
+                                            value1 * t1 + value2 * t2;
+                            dData[b][dPixelOffset+dBandOffsets[b]] = expr;
                         }
 
                         s1PixelOffset += s1PixelStride;
@@ -962,6 +969,8 @@ final class CompositeNoDestAlphaOpImage extends PointOpImage {
                     a2LineOffset += a2LineStride;
                     dLineOffset += dLineStride;
 
+                    int offset1, offset2;
+                    float value1, value2, expr;
                     for (int w = 0; w < dwidth; w++) {
                         float t1 = a1Data[a1PixelOffset];
                         float t2 = a2Data[a2PixelOffset] * (1.0F - t1);
@@ -975,8 +984,6 @@ final class CompositeNoDestAlphaOpImage extends PointOpImage {
                             t5 = t2 / t3;
                         }
 
-                        int offset1, offset2;
-                        float value1, value2, expr;
                         /* Destination color channels. */
                         for (int b = 0; b < dbands; b++) {
                             offset1 = s1PixelOffset+s1BandOffsets[b];

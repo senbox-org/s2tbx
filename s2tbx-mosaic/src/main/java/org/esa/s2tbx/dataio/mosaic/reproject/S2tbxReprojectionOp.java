@@ -295,10 +295,9 @@ public final class S2tbxReprojectionOp extends Operator {
         }
         GeoCoding sourceGeoCoding = null;
         if (orthorectify && sourceRaster.canBeOrthorectified()) {
-            sourceGeoCoding= createOrthorectifier(sourceRaster);
+            sourceGeoCoding = createOrthorectifier(sourceRaster);
         } else {
-            if (this.sourceProduct.isMultiSize()) {
-
+            /*if (this.sourceProduct.isMultiSize()) {
                 AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
                 try {
                     sourceGeoCoding = new CrsGeoCoding(sourceProduct.getSceneCRS(),
@@ -308,7 +307,7 @@ public final class S2tbxReprojectionOp extends Operator {
                 } catch (FactoryException | TransformException e) {
                     e.printStackTrace();
                 }
-            }else if ((this.sourceProduct.getNumBands() < 2) &&
+            } else if ((this.sourceProduct.getNumBands() < 2) &&
                     (sourceRaster.getRasterWidth() != this.sourceProduct.getSceneRasterWidth() ||
                             sourceRaster.getRasterHeight() != this.sourceProduct.getSceneRasterHeight())) {
                 AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
@@ -320,9 +319,9 @@ public final class S2tbxReprojectionOp extends Operator {
                 } catch (FactoryException | TransformException e) {
                     e.printStackTrace();
                 }
-            } else {
+            } else {*/
                 sourceGeoCoding = sourceRaster.getGeoCoding();
-            }
+            //}
         }
         final String exp = sourceRaster.getValidMaskExpression();
         if (exp != null) {
@@ -654,21 +653,16 @@ public final class S2tbxReprojectionOp extends Operator {
                         width, height, orientation,
                         easting, northing,
                         referencePixelX, referencePixelY);
-                final AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
-                if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
-                    imageGeometry.changeYAxisDirection();
-                }
-            }
-            else{
+            } else {
                 imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
                         pixelSizeX, pixelSizeY,
                         width, height, orientation,
                         easting, northing,
                         referencePixelX, referencePixelY);
-                final AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
-                if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
-                    imageGeometry.changeYAxisDirection();
-                }
+            }
+            final AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
+            if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
+                imageGeometry.changeYAxisDirection();
             }
         }
         return imageGeometry;
@@ -854,7 +848,8 @@ public final class S2tbxReprojectionOp extends Operator {
                                                                              northing, referencePixelX,
                                                                              referencePixelY);
                 } else {
-                    targetImageGeometry = ImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
+                    targetImageGeometry = ImageGeometry.createTargetGeometry(
+                            rasterDataNode, targetCrs,
                             pixelSizeX, pixelSizeY,
                             width, height,
                             orientation, easting,
