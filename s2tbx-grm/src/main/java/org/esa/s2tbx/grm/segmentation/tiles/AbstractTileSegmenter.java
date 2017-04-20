@@ -2,6 +2,7 @@ package org.esa.s2tbx.grm.segmentation.tiles;
 
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.grm.segmentation.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.gpf.OperatorException;
@@ -26,7 +27,7 @@ import java.util.logging.Logger;
 public abstract class AbstractTileSegmenter {
     private static final Logger logger = Logger.getLogger(AbstractTileSegmenter.class.getName());
 
-    private final Path temporaryFolderPath;
+    public Path temporaryFolderPath;
     private final float threshold;
     private final boolean addFourNeighbors;
     private final boolean fastSegmentation;
@@ -38,11 +39,13 @@ public abstract class AbstractTileSegmenter {
     private final int tileWidth;
     private final int tileHeight;
     private final int iterationsForEachSecondSegmentation;
-    private final TilesBidimensionalArray tilesBidimensionalArray;
-    private final long availableMemory;
 
-    private long accumulatedMemory;
-    private boolean isFusion;
+
+    public TilesBidimensionalArray tilesBidimensionalArray;
+    public long availableMemory;
+
+    public long accumulatedMemory;
+    public boolean isFusion;
 
     protected AbstractTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
                                     float threshold, boolean fastSegmentation)
@@ -62,6 +65,12 @@ public abstract class AbstractTileSegmenter {
         this.tilesBidimensionalArray = new TilesBidimensionalArray();
         this.availableMemory = Runtime.getRuntime().totalMemory();
         this.temporaryFolderPath = Files.createTempDirectory("_temp");
+
+        if (GenericRegionMergingOp.temporaryFolderPath == null) {
+            GenericRegionMergingOp.availableMemory = this.availableMemory;
+            GenericRegionMergingOp.temporaryFolderPath = this.temporaryFolderPath;
+            GenericRegionMergingOp.tilesBidimensionalArray = this.tilesBidimensionalArray;
+        }
 
         resetValues();
     }
@@ -274,8 +283,10 @@ public abstract class AbstractTileSegmenter {
 
         synchronized (this.tilesBidimensionalArray) {
             this.accumulatedMemory += graphMemory;
+            GenericRegionMergingOp.accumulatedMemory = this.accumulatedMemory;
             if (!complete) {
                 this.isFusion = true;
+                GenericRegionMergingOp.isFusion = this.isFusion;
             }
         }
 
@@ -362,6 +373,9 @@ public abstract class AbstractTileSegmenter {
     private void resetValues() {
         this.accumulatedMemory = 0;
         this.isFusion = false;
+
+//        GenericRegionMergingOp.accumulatedMemory = this.accumulatedMemory;
+//        GenericRegionMergingOp.isFusion = this.isFusion;
     }
 
     private int computeNumberOfNeighborLayers() {
@@ -481,8 +495,10 @@ public abstract class AbstractTileSegmenter {
                 }
 
                 this.accumulatedMemory += ObjectSizeCalculator.sizeOf(graph);
+                GenericRegionMergingOp.accumulatedMemory = this.accumulatedMemory;
                 if (merged) {
                     this.isFusion = true;
+                    GenericRegionMergingOp.isFusion = this.isFusion;
                 }
 
                 writeGraph(graph, currentTile.getNodeFileName(), currentTile.getEdgeFileName(), rowIndex, columnIndex);
