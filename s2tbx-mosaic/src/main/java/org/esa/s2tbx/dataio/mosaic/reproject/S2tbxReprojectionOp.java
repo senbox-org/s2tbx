@@ -80,9 +80,9 @@ public final class S2tbxReprojectionOp extends Operator {
             description = "The source product will be collocated with this product.")
     private Product collocationProduct;
 
-    @SourceProduct(alias = "reprojectedFirstProduct", optional = true,
+    @SourceProduct(alias = "reference", optional = true,
             description = "The source product will be reprojected with this product.")
-    private Product reprojectedFirstProduct;
+    private Product referenceProduct;
 
     @TargetProduct
     private Product targetProduct;
@@ -645,7 +645,7 @@ public final class S2tbxReprojectionOp extends Operator {
         if (collocationProduct != null) {
             imageGeometry = ImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
         } else {
-            if (this.reprojectedFirstProduct != null) {
+            /*if (this.reprojectedFirstProduct != null) {
                 double pixelSizeX = computeTargetStepX(this.reprojectedFirstProduct);
                 double pixelSizeY = computeTargetStepY(this.reprojectedFirstProduct);
                 imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
@@ -653,13 +653,13 @@ public final class S2tbxReprojectionOp extends Operator {
                         width, height, orientation,
                         easting, northing,
                         referencePixelX, referencePixelY);
-            } else {
+            } else {*/
                 imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
                         pixelSizeX, pixelSizeY,
                         width, height, orientation,
                         easting, northing,
                         referencePixelX, referencePixelY);
-            }
+            //}
             final AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
             if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
                 imageGeometry.changeYAxisDirection();
@@ -753,8 +753,8 @@ public final class S2tbxReprojectionOp extends Operator {
             boolean rastersEqualInSize=true;
             if (ProductUtils.areRastersEqualInSize(sourceProduct.getBands())) {
                 for(Band sourceBand:sourceProduct.getBands()){
-                    if(sourceBand.getRasterHeight()!=sourceProduct.getSceneRasterHeight()||
-                            sourceBand.getRasterWidth()!=sourceProduct.getSceneRasterWidth() ){
+                    if(sourceBand.getRasterHeight() != sourceProduct.getSceneRasterHeight()||
+                            sourceBand.getRasterWidth() != sourceProduct.getSceneRasterWidth() ){
                         rastersEqualInSize = false;
                     }
                 }
@@ -801,9 +801,9 @@ public final class S2tbxReprojectionOp extends Operator {
         MultiResolutionReprojectionSettingsProvider() {
             reprojectionSettingsMap = new HashMap<>();
             final ProductNodeGroup<Band> sourceBands = sourceProduct.getBandGroup();
-            if (reprojectedFirstProduct != null) {
+            if (referenceProduct != null) {
                 for (int i = 0; i < sourceBands.getNodeCount(); i++) {
-                    addReprojectionSettingsIfNecessary(sourceBands.get(i), reprojectedFirstProduct.getBandAt(i));
+                    addReprojectionSettingsIfNecessary(sourceBands.get(i), referenceProduct.getBandAt(i));
                 }
             } else {
                 for (int i = 0; i < sourceBands.getNodeCount(); i++) {
@@ -811,10 +811,10 @@ public final class S2tbxReprojectionOp extends Operator {
                 }
             }
             if (includeTiePointGrids) {
-                if (reprojectedFirstProduct != null) {
+                if (referenceProduct != null) {
                     final ProductNodeGroup<TiePointGrid> tiePointGridGroup = sourceProduct.getTiePointGridGroup();
                     for (int i = 0; i < tiePointGridGroup.getNodeCount(); i++) {
-                        addReprojectionSettingsIfNecessary(tiePointGridGroup.get(i),reprojectedFirstProduct.getBandAt(i));
+                        addReprojectionSettingsIfNecessary(tiePointGridGroup.get(i),referenceProduct.getBandAt(i));
                     }
                 } else {
                     final ProductNodeGroup<TiePointGrid> tiePointGridGroup = sourceProduct.getTiePointGridGroup();

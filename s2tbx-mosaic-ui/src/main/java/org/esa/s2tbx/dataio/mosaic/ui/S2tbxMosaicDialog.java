@@ -101,7 +101,12 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
     @Override
     protected Product createTargetProduct() throws Exception {
         final S2tbxMosaicFormModel formModel = form.getFormModel();
-        return GPF.createProduct("S2tbx-Mosaic", formModel.getParameterMap(), formModel.getSourceProductMap());
+        final Map<String, Object> parameterMap = formModel.getParameterMap();
+        if (((Boolean) parameterMap.get(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION))) {
+            return GPF.createProduct("S2tbx-Mosaic", parameterMap, formModel.getSourceProductMap());
+        } else {
+            return GPF.createProduct("Mosaic", parameterMap, formModel.getSourceProductMap());
+        }
     }
 
     @Override

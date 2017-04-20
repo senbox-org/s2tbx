@@ -938,9 +938,10 @@ final class CompositeNoDestAlphaOpImage extends PointOpImage {
                             offset2 = s2PixelOffset+s2BandOffsets[b];
                             value1 = s1Data[b][offset1];
                             value2 = s2Data[b][offset2];
-                            expr = Float.isNaN(value1) ? value2 :
-                                    Float.isNaN(value2) ? value1 :
-                                            value1 * t1 + value2 * t2;
+                            expr = Float.isNaN(value1) ?
+                                    (Float.isNaN(value2) ? Float.NaN : value2) :
+                                    (Float.isNaN(value2) ? value1 :
+                                            value1 * t1 + value2 * t2);
                             dData[b][dPixelOffset+dBandOffsets[b]] = expr;
                         }
 
@@ -990,9 +991,10 @@ final class CompositeNoDestAlphaOpImage extends PointOpImage {
                             offset2 = s2PixelOffset+s2BandOffsets[b];
                             value1 = s1Data[b][offset1];
                             value2 = s2Data[b][offset2];
-                            expr = Float.isNaN(value1) ? value2 :
-                                    Float.isNaN(value2) ? value1 :
-                                        value1 * t4 + value2 * t5;
+                            expr = Float.isNaN(value1) ?
+                                    (Float.isNaN(value2) ? 0.0f : value2) :
+                                    (Float.isNaN(value2) ? value1 :
+                                        value1 * t4 + value2 * t5);
                             dData[b][dPixelOffset+dBandOffsets[b]] = expr;
                         }
 
