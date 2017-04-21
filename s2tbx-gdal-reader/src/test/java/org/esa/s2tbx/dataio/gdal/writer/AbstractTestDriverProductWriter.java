@@ -4,6 +4,7 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.gdal.GDALInstaller;
 import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.AbstractDriverProductReaderPlugIn;
@@ -77,11 +78,7 @@ public abstract class AbstractTestDriverProductWriter {
         assumeTrue(TestUtil.testdataAvailable());
 
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALInstaller installer = new GDALInstaller();
-            installer.install();
-            if (GdalInstallInfo.INSTANCE.isPresent()) {
-                GDALUtils.initDrivers();
-            }
+            GDALDistributionInstaller.install();
         }
     }
     @Test

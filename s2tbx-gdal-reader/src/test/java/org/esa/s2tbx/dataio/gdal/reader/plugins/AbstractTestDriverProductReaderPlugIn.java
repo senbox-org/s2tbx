@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.gdal.reader.plugins;
 import org.esa.s2tbx.dataio.gdal.GDALInstaller;
 import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
@@ -39,8 +40,7 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
     @Before
     public final void setUp() throws Exception {
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALInstaller installer = new GDALInstaller();
-            installer.install();
+            GDALDistributionInstaller.install();
             if (GdalInstallInfo.INSTANCE.isPresent()) {
                 GDALUtils.initDrivers();
             }

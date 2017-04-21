@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.gdal.writer.plugins;
 import org.esa.s2tbx.dataio.gdal.GDALInstaller;
 import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
@@ -36,11 +37,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     @Before
     public void setUp() throws Exception {
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALInstaller installer = new GDALInstaller();
-            installer.install();
-            if (GdalInstallInfo.INSTANCE.isPresent()) {
-                GDALUtils.initDrivers();
-            }
+            GDALDistributionInstaller.install();
         }
     }
 

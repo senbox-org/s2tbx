@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.gdal.reader;
 import org.esa.s2tbx.dataio.gdal.GDALInstaller;
 import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 
@@ -31,12 +32,10 @@ public abstract class AbstractTestDriverProductReader {
         assumeTrue(TestUtil.testdataAvailable());
 
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALInstaller installer = new GDALInstaller();
-            installer.install();
-            if (GdalInstallInfo.INSTANCE.isPresent()) {
-                GDALUtils.initDrivers();
-                checkTestDirectoryExists();
-            }
+            GDALDistributionInstaller.install();
+        }
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
+            checkTestDirectoryExists();
         }
     }
 
@@ -47,10 +46,9 @@ public abstract class AbstractTestDriverProductReader {
         if (!Files.exists(testFolderPath)) {
             fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
         }
-
         this.gdalTestsFolderPath = testFolderPath.resolve("_gdal");
-        if (!Files.exists(gdalTestsFolderPath)) {
-            fail("The GDAL test directory path '"+gdalTestsFolderPath.toString()+"' is not valid.");
+        if (!Files.exists(this.gdalTestsFolderPath)) {
+            fail("The GDAL test directory path '"+this.gdalTestsFolderPath.toString()+"' is not valid.");
         }
     }
 }

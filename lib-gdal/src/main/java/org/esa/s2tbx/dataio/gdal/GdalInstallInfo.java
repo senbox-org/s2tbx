@@ -12,7 +12,7 @@ public enum GdalInstallInfo {
     private Path binLocation;
     private GDALWriterPlugInListener listener;
 
-    synchronized void setLocations(Path binLocation, Path appsLocation, Path driversLocation, Path dataLocation) {
+    public synchronized void setLocations(Path binLocation) {
         this.binLocation = binLocation;
         fireListener();
     }
