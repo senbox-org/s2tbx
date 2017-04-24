@@ -38,6 +38,9 @@ import java.util.logging.Logger;
 public class SecondTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
     private static final Logger logger = Logger.getLogger(SecondTileSegmentationGRMOp.class.getName());
 
+    @Parameter(label = "Folder path", description = "The temporary folder path to load the data.")
+    private File temporaryFolder;
+
     public SecondTileSegmentationGRMOp() {
     }
 
@@ -45,10 +48,13 @@ public class SecondTileSegmentationGRMOp extends AbstractGenericRegionMergingOp 
     public void initialize() throws OperatorException {
         super.initialize();
 
+        if (this.temporaryFolder == null) {
+            throw new OperatorException("Please specify the temporary folder path.");
+        }
+
         this.targetProduct = this.sourceProduct;
 
         try {
-            File temporaryFolder = this.targetProduct.getFileLocation();
             TileSegmenterMetadata tileSegmenterMetadata = TileSegmenterMetadata.readMetadata(temporaryFolder);
             AbstractTileSegmenter tileSegmenter = buildTileSegmenter(temporaryFolder, tileSegmenterMetadata);
 

@@ -107,8 +107,9 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
         }
 
         targetProduct.setName(model.getProductName());
+        targetProduct.setFileLocation(model.getProductFile());
 
-        GRMProductWriterSwingWorker worker = new GRMProductWriterSwingWorker(targetProduct, model.getProductFile());
+        GRMProductWriterSwingWorker worker = new GRMProductWriterSwingWorker(targetProduct);
         worker.executeWithBlocking(); // start the thread
     }
 
@@ -194,14 +195,12 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
 
     private class GRMProductWriterSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
         private final Product targetProduct;
-        private final File fileLocation;
         private long saveTime;
 
-        private GRMProductWriterSwingWorker(Product targetProduct, File fileLocation) {
+        private GRMProductWriterSwingWorker(Product targetProduct) {
             super(getJDialog(), "Run Segmentation");
 
             this.targetProduct = targetProduct;
-            this.fileLocation = fileLocation;
         }
 
         @Override
@@ -227,13 +226,12 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
                 parameters.put("regionMergingCriterion", execOp.getRegionMergingCriterion());
                 parameters.put("totalIterationsForSecondSegmentation", execOp.getTotalIterationsForSecondSegmentation());
                 parameters.put("threshold", execOp.getThreshold());
+                parameters.put("temporaryFolder", execOp.getTemporaryFolder());
 
                 Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
                 sourceProducts.put("source", this.targetProduct);
 
                 product = GPF.createProduct(operatorName, parameters, sourceProducts);
-
-                product.setFileLocation(this.fileLocation);
 
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();

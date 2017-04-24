@@ -41,6 +41,7 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
     private String[] sourceBandNames;
 
     private AbstractTileSegmenter tileSegmenter;
+    private File temporaryFolder;
 
     public FirstTileSegmentationGRMOp() {
     }
@@ -53,16 +54,15 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
             throw new OperatorException("Please select at least one band.");
         }
 
-        File temporaryFolder = null;
         try {
-            temporaryFolder = Files.createTempDirectory("_temp").toFile();
+            this.temporaryFolder = Files.createTempDirectory("_temp").toFile();
         } catch (IOException e) {
             throw new OperatorException(e);
         }
 
-        createTargetProduct(temporaryFolder);
+        createTargetProduct();
 
-        this.tileSegmenter = buildTileSegmenter(temporaryFolder, new TileSegmenterMetadata());
+        this.tileSegmenter = buildTileSegmenter(this.temporaryFolder, new TileSegmenterMetadata());
 
         //TODO Jean remove
         Logger.getLogger("org.esa.s2tbx.grm").setLevel(Level.FINE);
@@ -92,6 +92,10 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
         }
     }
 
+    public File getTemporaryFolder() {
+        return temporaryFolder;
+    }
+
     public String getMergingCostCriterion() {
         return mergingCostCriterion;
     }
@@ -116,21 +120,19 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
         return spectralWeight;
     }
 
-    private void createTargetProduct(File temporaryFolder) {
+    private void createTargetProduct() {
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
 
         //TODO Jean remove
-        tileSize = new Dimension(1876, 3567);
+        //tileSize = new Dimension(1876, 3567);
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
-
-        this.targetProduct.setFileLocation(temporaryFolder);
     }
 
     private Tile[] getSourceTiles(BoundingBox tileRegion) {
