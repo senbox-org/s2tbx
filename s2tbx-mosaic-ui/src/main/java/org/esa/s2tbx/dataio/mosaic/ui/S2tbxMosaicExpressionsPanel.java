@@ -123,7 +123,6 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
 
         final Component newVariableButton = createNewVariableButton();
         newVariableButton.setName(labelName + "_newVariable");
-        newVariableButton.setEnabled(false);
         variableButtonsPanel.add(newVariableButton);
 
         final Component removeVariableButton = createRemoveVariableButton();
@@ -140,12 +139,11 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
 
         bindingCtx.addPropertyChangeListener(
                 (PropertyChangeEvent evt) -> {
-                    if (S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION.equals(evt.getPropertyName())||S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE.equals(evt.getPropertyName())){
+                    if (S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE.equals(evt.getPropertyName())){
                         final PropertySet propertySet = bindingCtx.getPropertySet();
-                        boolean useNativeResolution = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION));
                         boolean updateMode = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE));
                         bandFilterButton.setEnabled(!updateMode);
-                        newVariableButton.setEnabled(!updateMode && !useNativeResolution);
+                        newVariableButton.setEnabled(!updateMode);
                         removeVariableButton.setEnabled(!updateMode);
                         moveVariableUpButton.setEnabled(!updateMode);
                         moveVariableDownButton.setEnabled(!updateMode);

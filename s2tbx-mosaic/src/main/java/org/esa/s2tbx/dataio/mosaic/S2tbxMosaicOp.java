@@ -127,11 +127,9 @@ public final class S2tbxMosaicOp extends Operator {
     @Parameter(label = "Overlapping Method",
             description = "The method used for overlapping pixels.",
             valueSet = {"MOSAIC_TYPE_BLEND", "MOSAIC_TYPE_OVERLAY"},
-            defaultValue = "MOSAIC_TYPE_BLEND")
+            defaultValue = "MOSAIC_TYPE_OVERLAY")
     private String overlappingMethod;
 
-    private static final String LOWER_RESOLUTION = "lower_resolution";
-    private static final String HIGHER_RESOLUTION = "higher_resolution";
 
     private ReferencedEnvelope targetEnvelope;
     private CoordinateReferenceSystem targetCRS;
@@ -156,6 +154,12 @@ public final class S2tbxMosaicOp extends Operator {
         }
 
         // STEP 2: reproject the source products
+        if(!nativeResolution){
+            this.targetEnvelope = computeReprojectedBounds();
+            final int width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / this.pixelSizeX);
+            final int height = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / this.pixelSizeY);
+            this.sourceProducts = resample(this.sourceProducts, width, height);
+        }
         for (int i = 0; i < this.sourceProducts.length; i++) {
             this.sourceProducts[i] = reproject(this.sourceProducts[i],
                                                i > 0 ? this.sourceProducts[0] : null);
@@ -163,8 +167,8 @@ public final class S2tbxMosaicOp extends Operator {
 
         // STEP 3: subset, if needed, the reprojected products
         this.targetEnvelope = computeReprojectedBounds();// computeMosaicBounds();
-        //this.reprojectedProducts = createSubsetProducts();
 
+        //this.reprojectedProducts = createSubsetProducts();
         // STEP 4: initialize the target product
         if (isUpdateMode()) {
             initFields();
@@ -190,6 +194,17 @@ public final class S2tbxMosaicOp extends Operator {
     private Product[] orderSourceProductsAfterRefNo(){
         Arrays.sort(this.sourceProducts, Comparator.comparingInt(Product::getRefNo));
         return this.sourceProducts;
+    }
+
+    private Product[] resample(Product[] source, int targetWidth, int targetHeight) {
+        List<Product> resampledProductList = new ArrayList<>(source.length);
+        for (Product sourceProduct : source) {
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("targetWidth", targetWidth);
+            parameters.put("targetHeight", targetHeight);
+            resampledProductList.add(GPF.createProduct("Resample", parameters, sourceProduct));
+        }
+        return resampledProductList.toArray(new Product[resampledProductList.size()]);
     }
 
     private Product generateSelectedBandsProduct(final Product product) {
@@ -262,6 +277,10 @@ public final class S2tbxMosaicOp extends Operator {
             HashMap<String, Product> projProducts = new HashMap<>();
             projProducts.put("source", product);
             projParameters.put("crs", this.crs);
+            if(!this.nativeResolution){
+                projParameters.put("pixelSizeX", this.pixelSizeX);
+                projParameters.put("pixelSizeY", this.pixelSizeY);
+            }
             if (referenceProduct != null) {
                 projParameters.put("pixelSizeX", computeStepX(referenceProduct));
                 projParameters.put("pixelSizeY", computeStepY(referenceProduct));
@@ -394,9 +413,11 @@ public final class S2tbxMosaicOp extends Operator {
 
     private Product createTargetProduct() {
         try {
-            final double[] pixelSize = getPixelSize(this.sourceProducts[0].getSceneGeoCoding(), targetCRS);
-            this.pixelSizeX = pixelSize[0];
-            this.pixelSizeY = pixelSize[1];
+            if(nativeResolution) {
+                final double[] pixelSize = getPixelSize(this.sourceProducts[0].getSceneGeoCoding(), targetCRS);
+                this.pixelSizeX = pixelSize[0];
+                this.pixelSizeY = pixelSize[1];
+            }
             final int width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / this.pixelSizeX);
             final int height = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / this.pixelSizeY);
             final CrsGeoCoding geoCoding = new CrsGeoCoding(targetCRS,
@@ -408,12 +429,6 @@ public final class S2tbxMosaicOp extends Operator {
             product.setSceneGeoCoding(geoCoding);
             final Dimension tileSize = JAIUtils.computePreferredTileSize(width, height, 1);
             product.setPreferredTileSize(tileSize);
-            /*if (this.nativeResolution) {
-                int levels = this.sourceProducts[0].getNumResolutionsMax();
-                if (levels > product.getNumResolutionsMax()) {
-                    product.setNumResolutionsMax(levels);
-                }
-            }*/
             return product;
         } catch (Exception e) {
             throw new OperatorException(e);

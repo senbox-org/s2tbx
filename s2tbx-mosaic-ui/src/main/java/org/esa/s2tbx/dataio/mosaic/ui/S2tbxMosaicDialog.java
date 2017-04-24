@@ -56,14 +56,14 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
 
         S2tbxMosaicFormModel formModel = form.getFormModel();
         OperatorParameterSupport parameterSupport = new OperatorParameterSupport(operatorSpi.getOperatorDescriptor(),
-                                                                                 formModel.getPropertySet(),
-                                                                                 formModel.getParameterMap(),
-                                                                                 null);
+                formModel.getPropertySet(),
+                formModel.getParameterMap(),
+                null);
         OperatorMenu operatorMenu = new OperatorMenu(this.getJDialog(),
-                                                     operatorSpi.getOperatorDescriptor(),
-                                                     parameterSupport,
-                                                     appContext,
-                                                     helpID);
+                operatorSpi.getOperatorDescriptor(),
+                parameterSupport,
+                appContext,
+                helpID);
         getJDialog().setJMenuBar(operatorMenu.createDefaultMenu());
     }
 
@@ -102,7 +102,13 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
     protected Product createTargetProduct() throws Exception {
         final S2tbxMosaicFormModel formModel = form.getFormModel();
         final Map<String, Object> parameterMap = formModel.getParameterMap();
-        if (((Boolean) parameterMap.get(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION))) {
+        boolean multiSize=false;
+        for(Product product:formModel.getSourceProductMap().values() )
+            if(product.isMultiSize()){
+                multiSize = true;
+                break;
+            }
+        if(multiSize){
             return GPF.createProduct("S2tbx-Mosaic", parameterMap, formModel.getSourceProductMap());
         } else {
             return GPF.createProduct("Mosaic", parameterMap, formModel.getSourceProductMap());
@@ -154,9 +160,9 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
             return true;
         } catch (ParseException e) {
             final String msg = String.format("Expression '%s' is invalid for product '%s'.\n%s",
-                                             expressionName,
-                                             productIdentifier,
-                                             e.getMessage());
+                    expressionName,
+                    productIdentifier,
+                    e.getMessage());
             showErrorDialog(msg);
             e.printStackTrace();
             return false;

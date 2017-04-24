@@ -118,8 +118,8 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setMinX(0);
         imageLayout.setMinY(0);
-        imageLayout.setWidth(imageWidth);
-        imageLayout.setHeight(imageHeight);
+        imageLayout.setWidth((int)(imageWidth*scaleFactor));
+        imageLayout.setHeight((int)(imageHeight*scaleFactor));
         imageLayout.setTileWidth(JAI.getDefaultTileSize().width);
         imageLayout.setTileHeight(JAI.getDefaultTileSize().height);
         imageLayout.setTileGridXOffset(0);
@@ -181,8 +181,8 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         final int fittingRectHeight = scaleValue(this.imageHeight, level);
         Rectangle fitRect = new Rectangle(0, 0, fittingRectWidth, fittingRectHeight);
 
-        final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect,scaleFactor);
-        BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
+        final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect,Math.pow(2, level));
+        BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
 
         if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
             int rightPad = destBounds.width - mosaicOp.getWidth();
