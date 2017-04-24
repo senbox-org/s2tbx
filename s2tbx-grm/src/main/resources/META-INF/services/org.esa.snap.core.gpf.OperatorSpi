@@ -1,2 +1,2 @@
-org.esa.s2tbx.grm.GenericRegionMergingOp$Spi
+org.esa.s2tbx.grm.FirstTileSegmentationGRMOp$Spi
 org.esa.s2tbx.grm.SecondTileSegmentationGRMOp$Spi

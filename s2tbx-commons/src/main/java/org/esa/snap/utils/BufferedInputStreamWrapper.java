@@ -17,6 +17,19 @@ public class BufferedInputStreamWrapper {
         this.inputStream.close();
     }
 
+    public final boolean readBoolean() throws IOException {
+        int ch = this.inputStream.read();
+        if (ch < 0) {
+            throw new EOFException();
+        }
+        return (ch != 0);
+    }
+
+    public final long readLong() throws IOException {
+//        return ((long)(readInt()) << 32) + (readInt() & 0xFFFFFFFFL);
+        return ((long)(readInt()) << 32) | (readInt() & 0xFFFFFFFFL);
+    }
+
     public final int readInt() throws IOException {
         int ch1 = this.inputStream.read();
         int ch2 = this.inputStream.read();

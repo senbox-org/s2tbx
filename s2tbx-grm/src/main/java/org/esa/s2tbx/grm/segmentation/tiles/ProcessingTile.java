@@ -126,4 +126,12 @@ public class ProcessingTile {
     public BoundingBox getRegion() {
         return region;
     }
+
+    public int getImageWidth() {
+        return getImageRightX() - getImageLeftX() + 1;
+    }
+
+    public int getImageHeight() {
+        return getImageBottomY() - getImageTopY() + 1;
+    }
 }

@@ -17,6 +17,21 @@ public class BufferedOutputStreamWrapper {
         this.inputStream.close();
     }
 
+    public final void writeBoolean(boolean v) throws IOException {
+        this.inputStream.write(v ? 1 : 0);
+    }
+
+    public final void writeLong(long v) throws IOException {
+        this.inputStream.write((int)(v >>> 56) & 0xFF);
+        this.inputStream.write((int)(v >>> 48) & 0xFF);
+        this.inputStream.write((int)(v >>> 40) & 0xFF);
+        this.inputStream.write((int)(v >>> 32) & 0xFF);
+        this.inputStream.write((int)(v >>> 24) & 0xFF);
+        this.inputStream.write((int)(v >>> 16) & 0xFF);
+        this.inputStream.write((int)(v >>>  8) & 0xFF);
+        this.inputStream.write((int)(v >>>  0) & 0xFF);
+    }
+
     public final void writeInt(int v) throws IOException {
         this.inputStream.write((v >>> 24) & 0xFF);
         this.inputStream.write((v >>> 16) & 0xFF);

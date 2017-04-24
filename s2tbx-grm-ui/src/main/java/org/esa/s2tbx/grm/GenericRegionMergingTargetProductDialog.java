@@ -7,12 +7,9 @@ import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import com.bc.ceres.swing.selection.SelectionChangeListener;
-import org.apache.commons.collections.map.HashedMap;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
-import org.esa.snap.core.gpf.Operator;
-import org.esa.snap.core.gpf.common.WriteOp;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.gpf.internal.OperatorProductReader;
 import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
@@ -23,7 +20,6 @@ import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
-import org.esa.snap.utils.StringHelper;
 
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -111,9 +107,8 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
         }
 
         targetProduct.setName(model.getProductName());
-        targetProduct.setFileLocation(model.getProductFile());
 
-        GRMProductWriterSwingWorker worker = new GRMProductWriterSwingWorker(targetProduct);
+        GRMProductWriterSwingWorker worker = new GRMProductWriterSwingWorker(targetProduct, model.getProductFile());
         worker.executeWithBlocking(); // start the thread
     }
 
@@ -144,7 +139,7 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
                 propertySet.setValue(PROPERTY_SHAPE_WEIGHT, 0.0f);
             }
             if (bindingContext.getBinding(PROPERTY_THRESHOLD) != null) {
-                propertySet.setValue(PROPERTY_THRESHOLD, 0);
+                propertySet.setValue(PROPERTY_THRESHOLD, 0.0f);
             }
         }
     }
@@ -153,7 +148,7 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
         BindingContext bindingContext = getBindingContext();
         PropertySet propertySet = bindingContext.getPropertySet();
         String newValue = propertySet.getProperty(PROPERTY_MEGING_COST_CRITERION).getValue();
-        boolean enabled = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(newValue);
+        boolean enabled = AbstractGenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(newValue);
         bindingContext.setComponentsEnabled(PROPERTY_SPECTRAL_WEIGHT, enabled);
         bindingContext.setComponentsEnabled(PROPERTY_SHAPE_WEIGHT, enabled);
     }
@@ -199,12 +194,14 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
 
     private class GRMProductWriterSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
         private final Product targetProduct;
+        private final File fileLocation;
         private long saveTime;
 
-        private GRMProductWriterSwingWorker(Product targetProduct) {
+        private GRMProductWriterSwingWorker(Product targetProduct, File fileLocation) {
             super(getJDialog(), "Run Segmentation");
 
             this.targetProduct = targetProduct;
+            this.fileLocation = fileLocation;
         }
 
         @Override
@@ -216,33 +213,27 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             try {
                 long t0 = System.currentTimeMillis();
                 OperatorProductReader opReader = (OperatorProductReader) this.targetProduct.getProductReader();
-                GenericRegionMergingOp execOp = (GenericRegionMergingOp)opReader.getOperatorContext().getOperator();
+                FirstTileSegmentationGRMOp execOp = (FirstTileSegmentationGRMOp)opReader.getOperatorContext().getOperator();
 
-//                Operator execOp = null;
-//                if (targetProduct.getProductReader() instanceof OperatorProductReader) {
-//                    final OperatorProductReader opReader = (OperatorProductReader) targetProduct.getProductReader();
-//                    Operator operator = opReader.getOperatorContext().getOperator();
-//                    if (operator.getSpi().getOperatorDescriptor().isAutoWriteDisabled()) {
-//                        execOp = operator;
-//                    }
-//                }
-
-//                if (execOp == null) {
-//                    WriteOp writeOp = new WriteOp(targetProduct, model.getProductFile(), model.getFormatName());
-//                    writeOp.setDeleteOutputOnFailure(true);
-//                    writeOp.setWriteEntireTileRows(true);
-//                    writeOp.setClearCacheAfterRowWrite(false);
-//                    execOp = writeOp;
-//                }
-
-                final OperatorExecutor executor = OperatorExecutor.create(execOp);
+                OperatorExecutor executor = OperatorExecutor.create(execOp);
                 executor.execute(SubProgressMonitor.create(pm, 95));
 
                 String operatorName = "SecondTileSegmentationGRMOp";
+
                 Map<String, Object> parameters = new java.util.HashMap<String, Object>();
-                Map<String, Product> sourceProducts = new HashMap<String, Product>();
+                parameters.put("shapeWeight", execOp.getShapeWeight());
+                parameters.put("spectralWeight", execOp.getSpectralWeight());
+                parameters.put("mergingCostCriterion", execOp.getMergingCostCriterion());
+                parameters.put("regionMergingCriterion", execOp.getRegionMergingCriterion());
+                parameters.put("totalIterationsForSecondSegmentation", execOp.getTotalIterationsForSecondSegmentation());
+                parameters.put("threshold", execOp.getThreshold());
+
+                Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
                 sourceProducts.put("source", this.targetProduct);
+
                 product = GPF.createProduct(operatorName, parameters, sourceProducts);
+
+                product.setFileLocation(this.fileLocation);
 
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();
@@ -277,64 +268,6 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             }
             return product;
         }
-
-        //TODO Jean old code
-//        @Override
-//        protected Product doInBackground(ProgressMonitor pm) throws Exception {
-//            TargetProductSelectorModel model = getTargetProductSelector().getModel();
-//            pm.beginTask("Writing...", model.isOpenInAppSelected() ? 100 : 95);
-//            saveTime = 0L;
-//            Product product = null;
-//            try {
-//                long t0 = System.currentTimeMillis();
-//
-//                OperatorProductReader opReader = (OperatorProductReader) this.targetProduct.getProductReader();
-//                GenericRegionMergingOp execOp = (GenericRegionMergingOp)opReader.getOperatorContext().getOperator();
-//
-//                OperatorExecutor operatorExecutor = OperatorExecutor.create(execOp);
-//                operatorExecutor.execute(ProgressMonitor.NULL);
-//
-//                String operatorName = "SecondTileSegmentationGRMOp";
-//                Map<String, Object> parameters = new java.util.HashMap<String, Object>();
-//                Map<String, Product> sourceProducts = new HashMap<String, Product>();
-//                sourceProducts.put("source", this.targetProduct);
-//                product = GPF.createProduct(operatorName, parameters, sourceProducts);
-//
-////                if (model.isSaveToFileSelected()) {
-////                    File file = model.getProductFile();
-////                    String formatName = model.getFormatName();
-////                    boolean clearCacheAfterRowWrite = false;
-////                    boolean incremental = false;
-////                    GPF.writeProduct(this.targetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
-////                }
-//
-////                product = this.targetProduct;
-//                saveTime = System.currentTimeMillis() - t0;
-////                if (model.isOpenInAppSelected()) {
-////                    File targetFile = model.getProductFile();
-////                    if (!targetFile.exists()) {
-////                        targetFile = this.targetProduct.getFileLocation();
-////                    }
-////                    if (targetFile.exists()) {
-////                        product = ProductIO.readProduct(targetFile);
-////                    }
-////                    if (product == null) {
-////                        product = this.targetProduct;
-////                    }
-////                    pm.worked(5);
-////                }
-//            } finally {
-//                pm.done();
-////                if (product != this.targetProduct) {
-////                    this.targetProduct.dispose();
-////                }
-//                Preferences preferences = SnapApp.getDefault().getPreferences();
-//                if (preferences.getBoolean(GPF.BEEP_AFTER_PROCESSING_PROPERTY, false)) {
-//                    Toolkit.getDefaultToolkit().beep();
-//                }
-//            }
-//            return product;
-//        }
 
         @Override
         protected void done() {

@@ -5,6 +5,7 @@ import org.esa.snap.utils.BufferedInputStreamWrapper;
 import org.esa.snap.utils.BufferedOutputStreamWrapper;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -13,9 +14,10 @@ import java.io.IOException;
 public class SpringTileSegmenter extends AbstractTileSegmenter {
 
     public SpringTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                               float threshold, boolean fastSegmentation)throws IOException {
+                               float threshold, boolean fastSegmentation, File temporaryFolder)
+                               throws IOException {
 
-        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, temporaryFolder);
     }
 
     @Override

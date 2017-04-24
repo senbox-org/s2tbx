@@ -5,6 +5,7 @@ import org.esa.snap.utils.BufferedInputStreamWrapper;
 import org.esa.snap.utils.BufferedOutputStreamWrapper;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -15,10 +16,10 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     private final float shapeWeight;
 
     public BaatzSchapeTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight)
+                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight, File temporaryFolder)
                                     throws IOException {
 
-        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, temporaryFolder);
 
         this.spectralWeight = spectralWeight;
         this.shapeWeight = shapeWeight;
