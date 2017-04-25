@@ -57,6 +57,44 @@ public abstract class AbstractTileSegmenter {
 
     public abstract AbstractSegmenter buildSegmenter(float threshold);
 
+    public final void runAllTilesSegmentationNew(Tile[] sourceTiles) throws IllegalAccessException, IOException {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start running segmentation for all tiles: band count: " + sourceTiles.length + ", image width: " +this.imageWidth+", image height: "+this.imageHeight+", tile width: " + this.tileWidth+", tile height: "+this.tileHeight+", margin: "+computeTileMargin()+", number of first iterations: "+this.iterationsForEachFirstSegmentation);
+        }
+
+        // run the first partial segmentation
+        this.tileSegmenterMetadata.resetValues();
+
+        int nbTilesX = this.imageWidth / this.tileWidth;
+        int nbTilesY = this.imageHeight / this.tileHeight;
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Run first segmentation for all tiles: band count: " + sourceTiles.length + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY+", margin: "+computeTileMargin());
+        }
+
+        for (int row = 0; row <nbTilesY; row++) {
+            for (int col = 0; col<nbTilesX ; col++) {
+                // compute current tile start and size
+                int startX = col * this.tileWidth;
+                int startY = row * this.tileHeight;
+                int sizeX = this.tileWidth;
+                int sizeY = this.tileHeight;
+                // current tile size might be different for right and bottom borders
+                if (col == nbTilesX - 1) {
+                    sizeX += this.imageWidth % this.tileWidth;
+                }
+                if (row == nbTilesY - 1) {
+                    sizeY += this.imageHeight % this.tileHeight;
+                }
+
+                ProcessingTile currentTile = buildTile(startX, startY, sizeX, sizeY);
+                runOneTileFirstSegmentation(sourceTiles, currentTile);
+            }
+        }
+    }
+
     public void setTileSegmenterMetadata(TileSegmenterMetadata tileSegmenterMetadata) {
         this.tileSegmenterMetadata = tileSegmenterMetadata;
     }

@@ -41,6 +41,9 @@ public class SecondTileSegmentationGRMOp extends AbstractGenericRegionMergingOp 
     @Parameter(label = "Folder path", description = "The temporary folder path to load the data.")
     private File temporaryFolder;
 
+    @Parameter(label = "Start time", description = "The start time in milliseconds.")
+    private long startTime;
+
     public SecondTileSegmentationGRMOp() {
     }
 
@@ -73,7 +76,7 @@ public class SecondTileSegmentationGRMOp extends AbstractGenericRegionMergingOp 
                 int tileMargin = tileSegmenter.computeTileMargin();
 
                 long finishTime = System.currentTimeMillis();
-                long totalSeconds = 0;//(finishTime - startTime) / 1000;
+                long totalSeconds =(finishTime - this.startTime) / 1000;
                 int graphNodeCount = segmenter.getGraph().getNodeCount();
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));

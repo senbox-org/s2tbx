@@ -42,6 +42,7 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
 
     private AbstractTileSegmenter tileSegmenter;
     private File temporaryFolder;
+    private long startTime;
 
     public FirstTileSegmentationGRMOp() {
     }
@@ -67,8 +68,9 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
         //TODO Jean remove
         Logger.getLogger("org.esa.s2tbx.grm").setLevel(Level.FINE);
 
+        this.startTime = System.currentTimeMillis();
+
         if (logger.isLoggable(Level.FINE)) {
-            long startTime = System.currentTimeMillis();
             int imageWidth = this.tileSegmenter.getImageWidth();
             int imageHeight = this.tileSegmenter.getImageHeight();
             int tileWidth = this.tileSegmenter.getTileWidth();
@@ -80,6 +82,19 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
         }
     }
 
+//    @Override
+//    public void doExecute(ProgressMonitor pm) throws OperatorException {
+//        int imageWidth = this.tileSegmenter.getImageWidth();
+//        int imageHeight = this.tileSegmenter.getImageHeight();
+//        BoundingBox tileRegion = new BoundingBox(0, 0, imageWidth, imageHeight);
+//        Tile[] sourceTiles = getSourceTiles(tileRegion);
+//        try {
+//            this.tileSegmenter.runAllTilesSegmentationNew(sourceTiles);
+//        } catch (Exception ex) {
+//            throw new OperatorException(ex);
+//        }
+//    }
+
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle targetRectangle = targetTile.getRectangle();
@@ -90,6 +105,10 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
         } catch (Exception ex) {
             throw new OperatorException(ex);
         }
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 
     public File getTemporaryFolder() {
@@ -124,9 +143,6 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
-
-        //TODO Jean remove
-        //tileSize = new Dimension(1876, 3567);
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);

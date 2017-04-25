@@ -227,6 +227,7 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
                 parameters.put("totalIterationsForSecondSegmentation", execOp.getTotalIterationsForSecondSegmentation());
                 parameters.put("threshold", execOp.getThreshold());
                 parameters.put("temporaryFolder", execOp.getTemporaryFolder());
+                parameters.put("startTime", execOp.getStartTime());
 
                 Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
                 sourceProducts.put("source", this.targetProduct);
