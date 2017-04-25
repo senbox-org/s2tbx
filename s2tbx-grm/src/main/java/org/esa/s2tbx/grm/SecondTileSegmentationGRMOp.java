@@ -44,6 +44,8 @@ public class SecondTileSegmentationGRMOp extends AbstractGenericRegionMergingOp 
     @Parameter(label = "Start time", description = "The start time in milliseconds.")
     private long startTime;
 
+    private AbstractSegmenter segmenter;
+
     public SecondTileSegmentationGRMOp() {
     }
 
@@ -61,11 +63,11 @@ public class SecondTileSegmentationGRMOp extends AbstractGenericRegionMergingOp 
             TileSegmenterMetadata tileSegmenterMetadata = TileSegmenterMetadata.readMetadata(temporaryFolder);
             AbstractTileSegmenter tileSegmenter = buildTileSegmenter(temporaryFolder, tileSegmenterMetadata);
 
-            AbstractSegmenter segmenter = tileSegmenter.runAllTilesSecondSegmentation();
+            this.segmenter = tileSegmenter.runAllTilesSecondSegmentation();
 
             Band targetBand = this.targetProduct.getBandAt(0);
             targetBand.setSourceImage(null); // reset the source image
-            segmenter.fillBandData(targetBand);
+            this.segmenter.fillBandData(targetBand);
             targetBand.getSourceImage();
 
             if (logger.isLoggable(Level.FINE)) {
@@ -84,6 +86,10 @@ public class SecondTileSegmentationGRMOp extends AbstractGenericRegionMergingOp 
         } catch (Exception ex) {
             throw new OperatorException(ex);
         }
+    }
+
+    public AbstractSegmenter getSegmenter() {
+        return segmenter;
     }
 
     public static class Spi extends OperatorSpi {

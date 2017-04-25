@@ -115,28 +115,8 @@ public class FirstTileSegmentationGRMOp extends AbstractGenericRegionMergingOp {
         return temporaryFolder;
     }
 
-    public String getMergingCostCriterion() {
-        return mergingCostCriterion;
-    }
-
-    public String getRegionMergingCriterion() {
-        return regionMergingCriterion;
-    }
-
-    public int getTotalIterationsForSecondSegmentation() {
-        return totalIterationsForSecondSegmentation;
-    }
-
-    public float getThreshold() {
-        return threshold;
-    }
-
-    public float getShapeWeight() {
-        return shapeWeight;
-    }
-
-    public float getSpectralWeight() {
-        return spectralWeight;
+    public String[] getSourceBandNames() {
+        return sourceBandNames;
     }
 
     private void createTargetProduct() {

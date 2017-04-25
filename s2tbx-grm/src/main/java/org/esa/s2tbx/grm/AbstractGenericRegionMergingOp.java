@@ -100,4 +100,29 @@ public abstract class AbstractGenericRegionMergingOp extends Operator {
             throw new OperatorException(ex);
         }
     }
+
+    public String getMergingCostCriterion() {
+        return mergingCostCriterion;
+    }
+
+    public String getRegionMergingCriterion() {
+        return regionMergingCriterion;
+    }
+
+    public int getTotalIterationsForSecondSegmentation() {
+        return totalIterationsForSecondSegmentation;
+    }
+
+    public float getThreshold() {
+        return threshold;
+    }
+
+    public float getShapeWeight() {
+        return shapeWeight;
+    }
+
+    public float getSpectralWeight() {
+        return spectralWeight;
+    }
+
 }
