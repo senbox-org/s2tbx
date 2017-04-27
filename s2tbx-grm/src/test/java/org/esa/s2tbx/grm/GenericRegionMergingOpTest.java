@@ -45,22 +45,10 @@ public class GenericRegionMergingOpTest {
 
     @Test
     public void testBaatzSchapeTileSegmenter() throws IOException, IllegalAccessException {
-        FirstTileSegmentationGRMOp firstOperator = executeFirstOperatorForBaatzSchapeTileSegmenter();
+        GenericRegionMergingOp firstOperator = executeFirstOperatorForBaatzSchapeTileSegmenter();
 
-        String operatorName = "SecondTileSegmentationGRMOp";
-
-        Map<String, Object> parameters = buildOperatorParameters(firstOperator.getMergingCostCriterion(), firstOperator.getRegionMergingCriterion(),
-                                                                 firstOperator.getTotalIterationsForSecondSegmentation(), firstOperator.getThreshold(),
-                                                                 firstOperator.getSpectralWeight(), firstOperator.getShapeWeight());
-        parameters.put("temporaryFolder", firstOperator.getTemporaryFolder());
-        parameters.put("startTime", firstOperator.getStartTime());
-
-        Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
-        sourceProducts.put("source", firstOperator.getTargetProduct());
-
-        SecondTileSegmentationGRMOp secondOperator = (SecondTileSegmentationGRMOp)GPF.getDefaultInstance().createOperator(operatorName, parameters, sourceProducts, null);
-        Product targetProduct = secondOperator.getTargetProduct();
-        AbstractSegmenter segmenter = secondOperator.getSegmenter();
+        Product targetProduct = firstOperator.getTargetProduct();
+        AbstractSegmenter segmenter = firstOperator.getSegmenter();
 
         assertNotNull(segmenter);
 
@@ -110,7 +98,7 @@ public class GenericRegionMergingOpTest {
         assertEquals(1, bandValue);
     }
 
-    private FirstTileSegmentationGRMOp executeFirstOperatorForBaatzSchapeTileSegmenter() throws IOException {
+    private GenericRegionMergingOp executeFirstOperatorForBaatzSchapeTileSegmenter() throws IOException {
         File file = this.segmentationTestsFolderPath.resolve("picture-334x400.png").toFile();
 
         ImageProductReaderPlugIn readerPlugIn = new ImageProductReaderPlugIn();
@@ -118,15 +106,15 @@ public class GenericRegionMergingOpTest {
 
         Product sourceProduct = reader.readProductNodes(file, null);
 
-        String mergingCostCriterion = FirstTileSegmentationGRMOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
-        String regionMergingCriterion = FirstTileSegmentationGRMOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
+        String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
+        String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
         int totalIterationsForSecondSegmentation = 75;
         float threshold = 800.0f;
         float spectralWeight = 0.5f;
         float shapeWeight = 0.5f;
         String[] sourceBandNames = new String[]{"red", "blue", "green"};
 
-        String operatorName = "FirstTileSegmentationGRMOp";
+        String operatorName = "GenericRegionMergingOp";
 
         Map<String, Object> firstOperatorParameters = buildOperatorParameters(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
                                                                               threshold, spectralWeight, shapeWeight);
@@ -135,7 +123,7 @@ public class GenericRegionMergingOpTest {
         Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
         sourceProducts.put("source", sourceProduct);
 
-        FirstTileSegmentationGRMOp execOp = (FirstTileSegmentationGRMOp)GPF.getDefaultInstance().createOperator(operatorName, firstOperatorParameters, sourceProducts, null);
+        GenericRegionMergingOp execOp = (GenericRegionMergingOp)GPF.getDefaultInstance().createOperator(operatorName, firstOperatorParameters, sourceProducts, null);
         execOp.getTargetProduct();
 
         assertEquals(mergingCostCriterion, execOp.getMergingCostCriterion());

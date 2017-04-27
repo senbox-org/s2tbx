@@ -14,10 +14,10 @@ import java.io.IOException;
 public class FullLambdaScheduleTileSegmenter extends AbstractTileSegmenter {
 
     public FullLambdaScheduleTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                                           float threshold, boolean fastSegmentation, File temporaryFolder)
+                                           float threshold, boolean fastSegmentation)
                                            throws IOException {
 
-        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, temporaryFolder);
+        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.esa.snap.utils.ObjectSizeCalculator;
 
 import java.awt.*;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,10 +35,10 @@ public abstract class AbstractTileSegmenter {
     private final int tileHeight;
     private final int iterationsForEachSecondSegmentation;
 
-    private TileSegmenterMetadata tileSegmenterMetadata;
+    private final TileSegmenterMetadata tileSegmenterMetadata;
 
     protected AbstractTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                                    float threshold, boolean fastSegmentation, File temporaryFolder) {
+                                    float threshold, boolean fastSegmentation) throws IOException {
 
         this.imageWidth = imageSize.width;
         this.imageHeight = imageSize.height;
@@ -47,10 +48,12 @@ public abstract class AbstractTileSegmenter {
         this.iterationsForEachFirstSegmentation = computeNumberOfFirstIterations(this.tileWidth, this.tileHeight);
         this.fastSegmentation = fastSegmentation;
         this.threshold = threshold;
-        this.temporaryFolder = temporaryFolder;
+//        this.temporaryFolder = temporaryFolder;
+        this.temporaryFolder = Files.createTempDirectory("_temp").toFile();
 
         this.addFourNeighbors = true;
         this.iterationsForEachSecondSegmentation = 3; // TODO: find a smart value
+        this.tileSegmenterMetadata = new TileSegmenterMetadata();
     }
 
     protected abstract Node buildNode(int nodeId, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel);
@@ -93,10 +96,6 @@ public abstract class AbstractTileSegmenter {
                 runOneTileFirstSegmentation(sourceTiles, currentTile);
             }
         }
-    }
-
-    public void setTileSegmenterMetadata(TileSegmenterMetadata tileSegmenterMetadata) {
-        this.tileSegmenterMetadata = tileSegmenterMetadata;
     }
 
     public final int computeTileMargin() {
@@ -282,7 +281,6 @@ public abstract class AbstractTileSegmenter {
             if (!complete) {
                 this.tileSegmenterMetadata.setFusion(true);
             }
-            this.tileSegmenterMetadata.writeMetadata(this.temporaryFolder);
         }
     }
 

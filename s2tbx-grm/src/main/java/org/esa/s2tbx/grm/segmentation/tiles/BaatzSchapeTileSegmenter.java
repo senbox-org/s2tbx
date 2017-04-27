@@ -16,10 +16,10 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     private final float shapeWeight;
 
     public BaatzSchapeTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight, File temporaryFolder)
+                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight)
                                     throws IOException {
 
-        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, temporaryFolder);
+        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
 
         this.spectralWeight = spectralWeight;
         this.shapeWeight = shapeWeight;

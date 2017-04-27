@@ -26,9 +26,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
@@ -149,7 +147,7 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
         BindingContext bindingContext = getBindingContext();
         PropertySet propertySet = bindingContext.getPropertySet();
         String newValue = propertySet.getProperty(PROPERTY_MEGING_COST_CRITERION).getValue();
-        boolean enabled = AbstractGenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(newValue);
+        boolean enabled = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(newValue);
         bindingContext.setComponentsEnabled(PROPERTY_SPECTRAL_WEIGHT, enabled);
         bindingContext.setComponentsEnabled(PROPERTY_SHAPE_WEIGHT, enabled);
     }
@@ -212,53 +210,39 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             try {
                 long t0 = System.currentTimeMillis();
                 OperatorProductReader opReader = (OperatorProductReader) this.targetProduct.getProductReader();
-                FirstTileSegmentationGRMOp execOp = (FirstTileSegmentationGRMOp)opReader.getOperatorContext().getOperator();
+                GenericRegionMergingOp execOp = (GenericRegionMergingOp)opReader.getOperatorContext().getOperator();
 
                 OperatorExecutor executor = OperatorExecutor.create(execOp);
                 executor.execute(SubProgressMonitor.create(pm, 95));
-
-                String operatorName = "SecondTileSegmentationGRMOp";
-
-                Map<String, Object> parameters = new java.util.HashMap<String, Object>();
-                parameters.put("shapeWeight", execOp.getShapeWeight());
-                parameters.put("spectralWeight", execOp.getSpectralWeight());
-                parameters.put("mergingCostCriterion", execOp.getMergingCostCriterion());
-                parameters.put("regionMergingCriterion", execOp.getRegionMergingCriterion());
-                parameters.put("totalIterationsForSecondSegmentation", execOp.getTotalIterationsForSecondSegmentation());
-                parameters.put("threshold", execOp.getThreshold());
-                parameters.put("temporaryFolder", execOp.getTemporaryFolder());
-                parameters.put("startTime", execOp.getStartTime());
-
-                Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
-                sourceProducts.put("source", this.targetProduct);
-
-                product = GPF.createProduct(operatorName, parameters, sourceProducts);
 
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();
                     String formatName = model.getFormatName();
                     boolean clearCacheAfterRowWrite = false;
                     boolean incremental = false;
-                    GPF.writeProduct(product, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
+                    GPF.writeProduct(this.targetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
                 }
+
+                product = this.targetProduct;
 
                 saveTime = System.currentTimeMillis() - t0;
                 if (model.isOpenInAppSelected()) {
                     File targetFile = model.getProductFile();
-                    if (!targetFile.exists())
-                        targetFile = targetProduct.getFileLocation();
+                    if (!targetFile.exists()) {
+                        targetFile = this.targetProduct.getFileLocation();
+                    }
                     if (targetFile.exists()) {
                         product = ProductIO.readProduct(targetFile);
                         if (product == null) {
-                            product = targetProduct; // todo - check - this cannot be ok!!! (nf)
+                            product = this.targetProduct; // todo - check - this cannot be ok!!! (nf)
                         }
                     }
                     pm.worked(5);
                 }
             } finally {
                 pm.done();
-                if (product != targetProduct) {
-                    targetProduct.dispose();
+                if (product != this.targetProduct) {
+                    this.targetProduct.dispose();
                 }
                 Preferences preferences = SnapApp.getDefault().getPreferences();
                 if (preferences.getBoolean(GPF.BEEP_AFTER_PROCESSING_PROPERTY, false)) {

@@ -12,7 +12,7 @@
                 <attr name="dialogTitle"
                       stringvalue="Generic region merging"/>
                 <attr name="operatorName"
-                      stringvalue="FirstTileSegmentationGRMOp"/>
+                      stringvalue="GenericRegionMergingOp"/>
                 <attr name="targetProductNameSuffix"
                       stringvalue="_grm"/>
             </file>
