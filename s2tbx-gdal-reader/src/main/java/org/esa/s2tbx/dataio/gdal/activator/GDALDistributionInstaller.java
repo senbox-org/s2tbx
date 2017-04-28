@@ -84,10 +84,12 @@ public class GDALDistributionInstaller {
 
     private static void processInstalledLinuxDistribution(Path gdalDistributionRootFolderPath) throws IOException {
 
-        Path nativeFolderPath = gdalDistributionRootFolderPath.resolve("lib/jni");
+        Path libPath = gdalDistributionRootFolderPath.resolve("lib");
+        logger.log(Level.INFO, "Register native lib paths on Linux for folder '"+ libPath.toString()+"'.");
+        NativeLibraryUtils.registerNativePaths(libPath);
 
-        logger.log(Level.INFO, "Register native paths on Linux for folder '"+ nativeFolderPath.toString()+"'.");
-
+        Path nativeFolderPath = libPath.resolve("jni");
+        logger.log(Level.INFO, "Register jni paths on Linux for folder '"+ nativeFolderPath.toString()+"'.");
         NativeLibraryUtils.registerNativePaths(nativeFolderPath);
 
         logger.log(Level.INFO, "The current directory on Linux with folder '"+ gdalDistributionRootFolderPath.resolve("lib/").toString() +"'.");
