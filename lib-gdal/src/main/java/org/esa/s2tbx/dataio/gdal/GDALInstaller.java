@@ -52,9 +52,14 @@ public class GDALInstaller {
     }
 
     public final Path copyDistribution(Path gdalApplicationFolderPath, OSCategory osCategory) throws IOException {
+        StringBuilder logMessage = new StringBuilder();
+        logMessage.append("Copy the GDAL distribution to folder " + gdalApplicationFolderPath + ".");
         if (!Files.exists(gdalApplicationFolderPath)) {
+            logMessage.append(" The folder does not exists.");
             Files.createDirectories(gdalApplicationFolderPath);
         }
+
+        logger.log(Level.INFO, logMessage.toString());
 
         String zipArchivePath = osCategory.getDirectory() + "/" + osCategory.getZipFileName();
         Path zipFilePathOnLocalDisk = gdalApplicationFolderPath.resolve(zipArchivePath);
@@ -62,7 +67,11 @@ public class GDALInstaller {
 
         fixUpPermissions(gdalApplicationFolderPath);
 
+        logger.log(Level.INFO, "Fixed permissions for folder '" + gdalApplicationFolderPath+"'.");
+
         if (!Files.exists(gdalDistributionRootFolderPath)) {
+            logger.log(Level.INFO, "Create folder '" + gdalDistributionRootFolderPath+"' and copy the zip archive.");
+
             Files.createDirectories(gdalDistributionRootFolderPath);
             try {
                 String zipFilePathFromSources = SRC_PATH + "/" + zipArchivePath;
@@ -78,18 +87,29 @@ public class GDALInstaller {
             }
         }
 
+        logger.log(Level.INFO, "Check the library version used to set the environment variables.");
+
         Config config = Config.instance("s2tbx");
         config.load();
         Preferences preferences = config.preferences();
         String preferencesKey = "gdal.installer.environment.variables";
         String moduleVersion = getModuleSpecificationVersion();
+
+        logger.log(Level.INFO, "The module version is '" + moduleVersion + "'.");
+
         SpecificationVersion currentSpecificationVersion = new SpecificationVersion(moduleVersion);
         boolean canCopyLibraryFile = true;
         String libraryFileName = System.mapLibraryName("environment-variables");
         Path libraryFilePath = gdalApplicationFolderPath.resolve(libraryFileName);
+
+        logger.log(Level.INFO, "The library file path is '" + libraryFilePath.toString() + "'.");
+
         if (Files.exists(libraryFilePath)) {
             // the library file already exists on the local disk
             String savedVersion = preferences.get(preferencesKey, null);
+
+            logger.log(Level.INFO, "The saved library version is '" + savedVersion + "'.");
+
             if (!StringUtils.isNullOrEmpty(savedVersion)) {
                 SpecificationVersion savedSpecificationVersion = new SpecificationVersion(savedVersion);
                 if (savedSpecificationVersion.compareTo(currentSpecificationVersion) >= 0) {
@@ -97,6 +117,9 @@ public class GDALInstaller {
                 }
             }
         }
+
+        logger.log(Level.INFO, "Can copy the library file: " + canCopyLibraryFile+".");
+
         if (canCopyLibraryFile) {
             String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileName;
             URL libraryFileURLFromSources = getClass().getClassLoader().getResource(libraryFilePathFromSources);
@@ -108,6 +131,9 @@ public class GDALInstaller {
                 // ignore exception
             }
         }
+
+        logger.log(Level.INFO, "Register the native paths for folder '" + libraryFilePath.getParent()+"'.");
+
         NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
 
         return gdalDistributionRootFolderPath;

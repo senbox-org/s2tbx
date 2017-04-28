@@ -52,25 +52,45 @@ public class GDALDistributionInstaller {
         GDALInstaller installer = new GDALInstaller();
         Path gdalDistributionRootFolderPath = installer.copyDistribution(gdalApplicationFolderPath, osCategory);
 
+        logger.log(Level.INFO, "The GDAL library has been copied.");
+
         if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            logger.log(Level.INFO, "Process the GDAL library on Windows.");
+
             processInstalledWindowsDistribution(gdalDistributionRootFolderPath);
             GdalInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
+
+            logger.log(Level.INFO, "Init the GDAL drivers on Windows.");
+
             GDALUtils.initDrivers();
         } else if (org.apache.commons.lang.SystemUtils.IS_OS_LINUX) {
             String currentDirectoryNative = EnvironmentVariables.getCurrentDirectory();
             try {
+                logger.log(Level.INFO, "Process the GDAL library on Linux. The current folder is '"+currentDirectoryNative+"'.");
+
                 processInstalledLinuxDistribution(gdalDistributionRootFolderPath);
                 GdalInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
+
+                logger.log(Level.INFO, "Init the GDAL drivers on Linux.");
+
                 GDALUtils.initDrivers();
             } finally {
                 EnvironmentVariables.changeCurrentDirectory(currentDirectoryNative);
             }
         }
+
+        logger.log(Level.INFO, "The GDAL library has been successfully installed.");
     }
 
     private static void processInstalledLinuxDistribution(Path gdalDistributionRootFolderPath) throws IOException {
+
         Path nativeFolderPath = gdalDistributionRootFolderPath.resolve("lib/jni");
+
+        logger.log(Level.INFO, "Register native paths on Linux for folder '"+ nativeFolderPath.toString()+"'.");
+
         NativeLibraryUtils.registerNativePaths(nativeFolderPath);
+
+        logger.log(Level.INFO, "The current directory on Linux with folder '"+ gdalDistributionRootFolderPath.resolve("lib/").toString() +"'.");
 
         EnvironmentVariables.changeCurrentDirectory(gdalDistributionRootFolderPath.resolve("lib/").toString());
 
@@ -79,6 +99,9 @@ public class GDALDistributionInstaller {
         gdalDataValue.append("GDAL_DATA")
                 .append("=")
                 .append(gdalDataFolderPath.toString());
+
+        logger.log(Level.INFO, "Set the GDAL_DATA environment on Linux with folder '"+ gdalDataValue.toString() +"'.");
+
         EnvironmentVariables.setEnvironmentVariable(gdalDataValue.toString());
     }
 
