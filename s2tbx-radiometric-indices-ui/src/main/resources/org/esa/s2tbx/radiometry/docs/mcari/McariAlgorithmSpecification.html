@@ -48,14 +48,14 @@
 </p>
 
 <p>
-    <b>MCARI = ((red_factor2 * red2 - red_factor1 * red1) - 0.2 * (red_factor2 * red2 - green_factor * green)) * (red_factor2 * red2 - red_factor1 * red1)</b> <br><br>
+    <b>MCARI = ((red_factor2 * red2 - red_factor1 * red1) - 0.2 * (red_factor2 * red2 - green_factor * green)) * (red_factor2 * red2 / red_factor1 * red1)</b> <br><br>
 
 </p>
 
 
 <p>
     For <b>Sentinel-2</b> the formula is: <br><br>
-    <b>[(B5 - B4) - 0.2 * (B5 - B3)] * (B5 - B4)</b>, where (Central wavelength/Bandwidth): B5 = 705 nm (15 nm), B4 = 665 nm (30 nm), B3 = 560 nm (35 nm)
+    <b>[(B5 - B4) - 0.2 * (B5 - B3)] * (B5 / B4)</b>, where (Central wavelength/Bandwidth): B5 = 705 nm (15 nm), B4 = 665 nm (30 nm), B3 = 560 nm (35 nm)
 </p>
 
 <h3>MCARI-Flags</h3>
