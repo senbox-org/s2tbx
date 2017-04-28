@@ -20,7 +20,6 @@ import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.runtime.Config;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
-import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
 
 import java.io.*;
@@ -29,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -81,7 +82,8 @@ public class GDALInstaller {
         config.load();
         Preferences preferences = config.preferences();
         String preferencesKey = "gdal.installer.environment.variables";
-        SpecificationVersion currentSpecificationVersion = Modules.getDefault().ownerOf(GDALInstaller.class).getSpecificationVersion();
+        String moduleVersion = getModuleSpecificationVersion();
+        SpecificationVersion currentSpecificationVersion = new SpecificationVersion(moduleVersion);
         boolean canCopyLibraryFile = true;
         String libraryFileName = System.mapLibraryName("environment-variables");
         Path libraryFilePath = gdalApplicationFolderPath.resolve(libraryFileName);
@@ -109,6 +111,25 @@ public class GDALInstaller {
         NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
 
         return gdalDistributionRootFolderPath;
+    }
+
+    private String getModuleSpecificationVersion() throws IOException {
+        String manifestFilePath = "/META-INF/MANIFEST.MF";
+        Class<?> clazz = getClass();
+        String className = clazz.getSimpleName() + ".class";
+        String classPath = clazz.getResource(className).toString();
+        String manifestPath = null;
+        if (classPath.startsWith("jar")) {
+            manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + manifestFilePath;
+        } else {
+            // class not from jar archive
+            String relativePath = clazz.getName().replace('.', File.separatorChar) + ".class";
+            String classFolder = classPath.substring(0, classPath.length() - relativePath.length() - 1);
+            manifestPath = classFolder + manifestFilePath;
+        }
+        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+        Attributes attributes = manifest.getMainAttributes();
+        return attributes.getValue("OpenIDE-Module-Specification-Version");
     }
 
     private static void fixUpPermissions(Path destPath) throws IOException {

@@ -110,13 +110,6 @@ public class GDALDistributionInstaller {
                 .append("=")
                 .append(gdalDataFolderPath.toString());
         EnvironmentVariables.setEnvironmentVariable(gdalDataValue.toString());
-
-        Path gdalDriverFolderPath = gdalBinFolderPath.resolve("gdal/plugins");
-        StringBuilder gdalDriverValue = new StringBuilder();
-        gdalDriverValue.append("GDAL_DRIVER_PATH")
-                .append("=")
-                .append(gdalDriverFolderPath.toString());
-        EnvironmentVariables.setEnvironmentVariable(gdalDriverValue.toString());
     }
 
     private static boolean findFolderInPathEnvironment(Path folderPathToCheck, String pathEnvironment) throws IOException {
