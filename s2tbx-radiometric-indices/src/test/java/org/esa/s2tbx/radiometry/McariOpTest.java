@@ -35,9 +35,9 @@ public class McariOpTest extends BaseIndexOpTest<McariOp> {
             put("red2Factor", 1.0f);
         }});
         setTargetValues(new float[] {
-                0.6f, 0.6f, 0.6f,
-                0.6f, 0.6f, 0.6f,
-                0.6f, 0.6f, 0.6f } );
+                0.9f, 0.8f, 0.75f,
+                0.72f, 0.7f, 0.685714f,
+                0.675f, 0.666666f, 0.66f} );
         super.setUp();
     }
 }
