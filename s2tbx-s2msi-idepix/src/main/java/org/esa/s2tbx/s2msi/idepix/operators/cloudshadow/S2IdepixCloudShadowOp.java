@@ -48,7 +48,6 @@ public class S2IdepixCloudShadowOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-
     public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
 
     private final static String BAND_NAME_TEST_A = "ShadowMask_TestA";
@@ -56,9 +55,8 @@ public class S2IdepixCloudShadowOp extends Operator {
     private final static String BAND_NAME_TEST_C = "ShadowID_TestC";
     private final static String BAND_NAME_TEST_D = "LongShadowID_TestC";
 
-    private final static int GRANULE_TEN_M = 122; // one ninetieth of a granule (10980 pixels)
-    private final static int GRANULE_TWENTY_M = 610; // one ninth of a granule (5490 pixels)
-    private final static int GRANULE_SIXTY_M = 305; // one sixth of a granule (1830 pixels)
+    private final static double MAX_CLOUD_HEIGHT = 8000.;
+    private final static int MAX_TILE_DIMENSION = 1400;
 
     private Band sourceBandClusterA;
 
@@ -71,20 +69,17 @@ public class S2IdepixCloudShadowOp extends Operator {
     private RasterDataNode sourceLatitude;
     private RasterDataNode sourceAltitude;
 
-
     private Band targetBandCloudShadow;
     private Band targetBandTestA;
     private Band targetBandTestB;
     private Band targetBandTestC;
     private Band targetBandTestD;
 
-
     static String productType;
     static String productName;
     static boolean productNameContainIdepix;
     static boolean productCentralComputation;
 
-    static int searchBorderRadius;
     static int mincloudBase;
     static int maxcloudTop;
     static double scaleAltitude = 1.;
@@ -96,7 +91,9 @@ public class S2IdepixCloudShadowOp extends Operator {
     static double Threshold_Whiteness_Darkness;
     static int CloudShadowFragmentationThreshold;
     static int GROWING_CLOUD;
-
+    static int searchBorderRadius;
+    private int sceneRasterHeight;
+    private int sceneRasterWidth;
 
     @Override
     public void initialize() throws OperatorException {
@@ -110,9 +107,9 @@ public class S2IdepixCloudShadowOp extends Operator {
         System.out.println("Product_Name:  " + productName);
         System.out.println("productNameContainIdepix:  " + productNameContainIdepix);
 
-        targetProduct = new Product(productName, productType,
-                                    s2ClassifProduct.getSceneRasterWidth(),
-                                    s2ClassifProduct.getSceneRasterHeight());
+        sceneRasterWidth = s2ClassifProduct.getSceneRasterWidth();
+        sceneRasterHeight = s2ClassifProduct.getSceneRasterHeight();
+        targetProduct = new Product(productName, productType, sceneRasterWidth, sceneRasterHeight);
 
         ProductUtils.copyGeoCoding(s2ClassifProduct, targetProduct);
 
@@ -159,28 +156,15 @@ public class S2IdepixCloudShadowOp extends Operator {
         } else {
             throw new OperatorException("Product type not supported!");
         }
-        spatialResolution = determineSourceResolution();
-        final int granuleSize = getGranuleSize(spatialResolution);
-        final int searchBorderRadius = getSearchBorderRadius(spatialResolution);
-
-        // todo: discuss
-        if (s2ClassifProduct.getSceneRasterWidth() > granuleSize || s2ClassifProduct.getSceneRasterHeight() > granuleSize) {
-            final int preferredTileWidth = Math.min(s2ClassifProduct.getSceneRasterWidth(), granuleSize);
-            final int preferredTileHeight = Math.min(s2ClassifProduct.getSceneRasterHeight(), granuleSize);
-            targetProduct.setPreferredTileSize(preferredTileWidth, preferredTileHeight); //1500
-            S2IdepixCloudShadowOp.searchBorderRadius = searchBorderRadius; //[pixel] 400 - Sentinel 2
-            productCentralComputation = true;
-        } else {
-            targetProduct.setPreferredTileSize(s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
-            S2IdepixCloudShadowOp.searchBorderRadius = 0;
-            productCentralComputation = false;
-        }
-
-        System.out.printf("searchBorderRadius:  %d  \n", S2IdepixCloudShadowOp.searchBorderRadius);
 
         sourceBandClusterA = s2ClassifProduct.getBand(sourceBandNameClusterA);
 
         sourceSunZenith = s2ClassifProduct.getBand(sourceSunZenithName);
+        // take these. They're as good as the tile dimensions from any other band and DEFINITELY more reliable than
+        // the preferred tile size of the s2ClassifProduct
+        final int sourceTileWidth = sourceSunZenith.getSourceImage().getTileWidth();
+        final int sourceTileHeight = sourceSunZenith.getSourceImage().getTileHeight();
+        final double maximumSunZenith = sourceSunZenith.getStx().getMaximum();
         sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
         sourceLatitude = s2ClassifProduct.getBand(sourceLatitudeName);
         sourceLongitude = s2ClassifProduct.getBand(sourceLongitudeName);
@@ -191,7 +175,6 @@ public class S2IdepixCloudShadowOp extends Operator {
             sourceBandFlag2 = s2CloudBufferProduct.getBand(sourceFlagName1);
         }
 
-
         targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
         attachIndexCoding(targetBandCloudShadow);
         targetBandTestA = targetProduct.addBand(BAND_NAME_TEST_A, ProductData.TYPE_INT32);
@@ -199,6 +182,24 @@ public class S2IdepixCloudShadowOp extends Operator {
         targetBandTestC = targetProduct.addBand(BAND_NAME_TEST_C, ProductData.TYPE_INT32);
         targetBandTestD = targetProduct.addBand(BAND_NAME_TEST_D, ProductData.TYPE_INT32);
 
+        spatialResolution = determineSourceResolution();
+        searchBorderRadius = (int) determineSearchBorderRadius(S2IdepixCloudShadowOp.spatialResolution, maximumSunZenith);
+        final int tileWidth = determineSourceTileWidth(sceneRasterWidth, sourceTileWidth,
+                                                       searchBorderRadius, searchBorderRadius);
+        final int tileHeight = determineSourceTileHeight(sceneRasterHeight, sourceTileHeight,
+                                                         searchBorderRadius, searchBorderRadius);
+
+        // todo: discuss
+        if (sceneRasterWidth > tileWidth || s2ClassifProduct.getSceneRasterHeight() > tileHeight) {
+            final int preferredTileWidth = Math.min(sceneRasterWidth, tileWidth);
+            final int preferredTileHeight = Math.min(s2ClassifProduct.getSceneRasterHeight(), tileHeight);
+            targetProduct.setPreferredTileSize(preferredTileWidth, preferredTileHeight); //1500
+            productCentralComputation = true;
+        } else {
+            targetProduct.setPreferredTileSize(sceneRasterWidth, s2ClassifProduct.getSceneRasterHeight());
+            searchBorderRadius = 0;
+            productCentralComputation = false;
+        }
     }
 
     private double determineSourceResolution() throws OperatorException {
@@ -212,24 +213,60 @@ public class S2IdepixCloudShadowOp extends Operator {
         throw new OperatorException("Invalid product: ");
     }
 
-    private int getGranuleSize(double spatialResolution) {
-        //todo determine granule size more gracefully
-        if (spatialResolution - 10. < 1e-8) {
-            return GRANULE_TEN_M;
-        } else if (spatialResolution - 20. < 1e-8) {
-            return GRANULE_TWENTY_M;
-        }
-        return GRANULE_SIXTY_M;
+    private int determineSourceTileWidth(int rasterWidth, int tileWidth,
+                                         int rightBorderExtension, int leftBorderExtension) {
+        return determineSourceTileSize(rasterWidth, tileWidth, rightBorderExtension, leftBorderExtension);
     }
 
-    private int getSearchBorderRadius(double spatialResolution) {
-        //todo determine search border radius more gracefully
-        if (spatialResolution - 10. < 1e-8) {
-            return 900;
-        } else if (spatialResolution - 20. < 1e-8) {
-            return 400;
+    private int determineSourceTileHeight(int rasterHeight, int tileHeight,
+                                          int topBorderExtension, int bottomBorderExtension) {
+        return determineSourceTileSize(rasterHeight, tileHeight, topBorderExtension, bottomBorderExtension);
+    }
+
+    int determineSourceTileSize(int rasterSize, int tileSize, int borderExtension1, int borderExtension2) {
+        int maxTileSize = Math.min(MAX_TILE_DIMENSION - borderExtension1 - borderExtension2, 2 * tileSize);
+        final int minNumTiles = (int) Math.floor(rasterSize / maxTileSize * 1.);
+        int bestTileSize = Integer.MIN_VALUE;
+        int smallestDiff = Integer.MAX_VALUE;
+        for (int i = minNumTiles; i >= 1; i++) {
+            if (rasterSize % i == 0) {
+                final int candidateDiff = Math.abs(tileSize - rasterSize / i);
+                if (candidateDiff > smallestDiff) {
+                    break;
+                }
+                bestTileSize = rasterSize / i;
+                smallestDiff = Math.abs(tileSize - bestTileSize);
+            }
         }
-        return 200;
+        if (smallestDiff < Integer.MAX_VALUE) {
+            return bestTileSize;
+        }
+        return maxTileSize;
+    }
+
+    double determineSearchBorderRadius(double spatialResolution, double maxSunZenith) {
+        final double maxCloudDistance = MAX_CLOUD_HEIGHT / Math.tan(Math.toRadians(90. - maxSunZenith));
+        return maxCloudDistance / spatialResolution;
+    }
+
+    int getRightBorderExtension(double searchBorderRadius, double minSunAzimuth, double maxSunAzimuth) {
+        return (int) Math.ceil(searchBorderRadius * Math.max(0, Math.max(Math.sin(Math.toRadians(minSunAzimuth)),
+                                                                         Math.sin(Math.toRadians(maxSunAzimuth)))));
+    }
+
+    int getLeftBorderExtension(double searchBorderRadius, double minSunAzimuth, double maxSunAzimuth) {
+        return (int) Math.ceil(searchBorderRadius * Math.max(0, Math.max(Math.sin(Math.toRadians(minSunAzimuth)) * -1,
+                                                                         Math.sin(Math.toRadians(maxSunAzimuth)) * -1)));
+    }
+
+    int getTopBorderExtension(double searchBorderRadius, double minSunAzimuth, double maxSunAzimuth) {
+        return (int) Math.ceil(searchBorderRadius *
+                                       Math.max(0, Math.max(Math.cos(Math.toRadians(minSunAzimuth)), Math.cos(Math.toRadians(maxSunAzimuth)))));
+    }
+
+    int getBottomBorderExtension(double searchBorderRadius, double minSunAzimuth, double maxSunAzimuth) {
+        return (int) Math.ceil(searchBorderRadius * Math.max(0, Math.max(Math.cos(Math.toRadians(minSunAzimuth)) * -1,
+                                                                         Math.cos(Math.toRadians(maxSunAzimuth)) * -1)));
     }
 
     @Override
@@ -400,7 +437,6 @@ public class S2IdepixCloudShadowOp extends Operator {
         int inputDataWidth = targetRectangle.width + 2 * mkr;
         int inputDataHeight = targetRectangle.height + 2 * mkr;
 
-        //System.out.printf("rectangle_target_input_data:  %d  %d  \n", inputDataWidth, inputDataHeight);
 
         for (int y = mkr; y < inputDataHeight - mkr; y++) {
             for (int x = mkr; x < inputDataWidth - mkr; x++) {
