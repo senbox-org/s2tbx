@@ -1,21 +1,25 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
-import org.esa.s2tbx.dataio.gdal.GDALInstaller;
 import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
-import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jean Coravu
@@ -40,7 +44,7 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
     @Before
     public final void setUp() throws Exception {
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALDistributionInstaller.install();
+            //GDALDistributionInstaller.install();
             if (GdalInstallInfo.INSTANCE.isPresent()) {
                 GDALUtils.initDrivers();
             }

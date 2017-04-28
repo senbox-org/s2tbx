@@ -1,15 +1,11 @@
 package org.esa.s2tbx.dataio.gdal.writer.plugins;
 
-import org.esa.s2tbx.dataio.gdal.GDALInstaller;
-import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
-import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,8 +15,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jean Coravu
@@ -37,7 +35,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     @Before
     public void setUp() throws Exception {
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALDistributionInstaller.install();
+            //GDALDistributionInstaller.install();
         }
     }
 
