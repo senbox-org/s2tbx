@@ -28,6 +28,7 @@ import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.annotations.ParameterDescriptorFactory;
+import org.esa.snap.core.gpf.common.MosaicOp;
 import org.esa.snap.core.util.math.MathUtils;
 import org.esa.snap.ui.BoundsInputPanel;
 import org.esa.snap.ui.WorldMapPaneDataModel;
@@ -260,12 +261,12 @@ class S2tbxMosaicFormModel {
         }
     }
 
-    S2tbxMosaicOp.Variable[] getVariables() {
-        return (S2tbxMosaicOp.Variable[]) getPropertyValue("variables");
+    MosaicOp.Variable[] getVariables() {
+        return (MosaicOp.Variable[]) getPropertyValue("variables");
     }
 
-    S2tbxMosaicOp.Condition[] getConditions() {
-        return (S2tbxMosaicOp.Condition[]) getPropertyValue("conditions");
+    MosaicOp.Condition[] getConditions() {
+        return (MosaicOp.Condition[]) getPropertyValue("conditions");
     }
 
     PropertySet getPropertySet() {

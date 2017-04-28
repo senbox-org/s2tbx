@@ -26,6 +26,7 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.gpf.common.MosaicOp;
 import org.esa.snap.core.transform.AffineTransform2D;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
@@ -56,6 +57,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * A mosaic operator that performs mosaicing operations on multisize products
@@ -84,10 +87,10 @@ public final class S2tbxMosaicOp extends Operator {
     private Product targetProduct;
 
     @Parameter(itemAlias = "variable", description = "Specifies the bands in the target product.")
-    Variable[] variables;
+    MosaicOp.Variable[] variables;
 
     @Parameter(itemAlias = "condition", description = "Specifies valid pixels considered in the target product.")
-    Condition[] conditions;
+    MosaicOp.Condition[] conditions;
 
     @Parameter(description = "Specifies the way how conditions are combined.", defaultValue = "OR",
             valueSet = {"OR", "AND"})
@@ -112,9 +115,9 @@ public final class S2tbxMosaicOp extends Operator {
     @Parameter(description = "The southern latitude.", interval = "[-90,90]", defaultValue = "35.0")
     double southBound;
 
-    @Parameter(description = "Size of a pixel in X-direction in map units.", defaultValue = "0.05")
+    @Parameter(description = "Size of a pixel in X-direction in map units.", defaultValue = "0.005")
     double pixelSizeX;
-    @Parameter(description = "Size of a pixel in Y-direction in map units.", defaultValue = "0.05")
+    @Parameter(description = "Size of a pixel in Y-direction in map units.", defaultValue = "0.005")
     double pixelSizeY;
 
     @Parameter(alias = "resampling", label = "Resampling Method", description = "The method used for resampling.",
@@ -128,7 +131,7 @@ public final class S2tbxMosaicOp extends Operator {
             description = "The method used for overlapping pixels.",
             valueSet = {"MOSAIC_TYPE_BLEND", "MOSAIC_TYPE_OVERLAY"},
             defaultValue = "MOSAIC_TYPE_OVERLAY")
-    private String overlappingMethod;
+    String overlappingMethod;
 
 
     private ReferencedEnvelope targetEnvelope;
@@ -162,7 +165,7 @@ public final class S2tbxMosaicOp extends Operator {
         }
         for (int i = 0; i < this.sourceProducts.length; i++) {
             this.sourceProducts[i] = reproject(this.sourceProducts[i],
-                                               i > 0 ? this.sourceProducts[0] : null);
+                    i > 0 ? this.sourceProducts[0] : null);
         }
 
         // STEP 3: subset, if needed, the reprojected products
@@ -202,6 +205,7 @@ public final class S2tbxMosaicOp extends Operator {
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("targetWidth", targetWidth);
             parameters.put("targetHeight", targetHeight);
+            parameters.put("resampleOnPyramidLevels", true);
             resampledProductList.add(GPF.createProduct("Resample", parameters, sourceProduct));
         }
         return resampledProductList.toArray(new Product[resampledProductList.size()]);
@@ -217,7 +221,7 @@ public final class S2tbxMosaicOp extends Operator {
         }
         for (String bandName : product.getBandNames()) {
             if (this.variables != null) {
-                for (Variable variable : this.variables) {
+                for (MosaicOp.Variable variable : this.variables) {
                     String variableExpression = variable.getExpression();
                     if (variableExpression.equals(bandName)) {
                         bandFromExpresion.add(bandName);
@@ -229,7 +233,7 @@ public final class S2tbxMosaicOp extends Operator {
                 }
             }
             if (this.conditions != null){
-                for (Condition condition : this.conditions) {
+                for (MosaicOp.Condition condition : this.conditions) {
                     String conditionExpression = condition.getExpression();
                     if (conditionExpression.equals(bandName)) {
                         bandFromExpresion.add(bandName);
@@ -313,10 +317,10 @@ public final class S2tbxMosaicOp extends Operator {
             final GeoCoding geoCoding = product.getSceneGeoCoding();
             GeoPos minPoint = geoCoding.getGeoPos(new PixelPos(0, 0), null);
             GeoPos maxPoint = geoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(),
-                                                               product.getSceneRasterHeight()), null);
+                    product.getSceneRasterHeight()), null);
 
             productArea.setFrameFromDiagonal(minPoint.getLon(), minPoint.getLat(),
-                                             maxPoint.getLon(), maxPoint.getLat());
+                    maxPoint.getLon(), maxPoint.getLat());
             ReferencedEnvelope productEnvelope = new ReferencedEnvelope(productArea, this.targetCRS);
             final DirectPosition targetLower = this.targetEnvelope.getLowerCorner();
             final DirectPosition targetUpper = this.targetEnvelope.getUpperCorner();
@@ -394,10 +398,10 @@ public final class S2tbxMosaicOp extends Operator {
             final GeoCoding geoCoding = product.getSceneGeoCoding();
             GeoPos minPoint = geoCoding.getGeoPos(new PixelPos(0, 0), null);
             GeoPos maxPoint = geoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(),
-                                                               product.getSceneRasterHeight()), null);
+                    product.getSceneRasterHeight()), null);
 
             piece.setFrameFromDiagonal(minPoint.getLon(), minPoint.getLat(),
-                                       maxPoint.getLon(), maxPoint.getLat());
+                    maxPoint.getLon(), maxPoint.getLat());
             if (bounds == null) {
                 bounds = piece;
             } else {
@@ -421,10 +425,10 @@ public final class S2tbxMosaicOp extends Operator {
             final int width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / this.pixelSizeX);
             final int height = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / this.pixelSizeY);
             final CrsGeoCoding geoCoding = new CrsGeoCoding(targetCRS,
-                                                            width, height,
-                                                            targetEnvelope.getLowerCorner().getOrdinate(0),
-                                                            targetEnvelope.getUpperCorner().getOrdinate(1),
-                                                            this.pixelSizeX, this.pixelSizeY);
+                    width, height,
+                    targetEnvelope.getLowerCorner().getOrdinate(0),
+                    targetEnvelope.getUpperCorner().getOrdinate(1),
+                    this.pixelSizeX, this.pixelSizeY);
             final Product product = new Product("S2mosaic", "BEAM_MOSAIC", width, height);
             product.setSceneGeoCoding(geoCoding);
             final Dimension tileSize = JAIUtils.computePreferredTileSize(width, height, 1);
@@ -438,7 +442,7 @@ public final class S2tbxMosaicOp extends Operator {
     private void addTargetBands(Product product) {
         int sceneWidth = product.getSceneRasterWidth();
         int sceneHeight = product.getSceneRasterHeight();
-        for (Variable outputVariable : this.variables) {
+        for (MosaicOp.Variable outputVariable : this.variables) {
             final int targetDataType;
             final Band firstSourceBand = this.sourceProducts[0].getBand(getSourceBandName(outputVariable.getExpression()));
             if (firstSourceBand.isScalingApplied()) {
@@ -453,13 +457,12 @@ public final class S2tbxMosaicOp extends Operator {
             int bandWidth = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / Math.abs(stepX));
             int bandHeight = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / Math.abs(stepY));
             Band targetBand = new Band(outputVariable.getName(), targetDataType, bandWidth, bandHeight);
-            targetBand.setDescription(firstSourceBand.getDescription());
+            targetBand.setDescription(outputVariable.getExpression());
             targetBand.setUnit(firstSourceBand.getUnit());
             targetBand.setScalingFactor(firstSourceBand.getScalingFactor());
             targetBand.setScalingOffset(firstSourceBand.getScalingOffset());
             targetBand.setLog10Scaled(firstSourceBand.isLog10Scaled());
             targetBand.setNoDataValue(firstSourceBand.getNoDataValue());
-            //targetBand.setNoDataValueUsed(firstSourceBand.isNoDataValueUsed());
             targetBand.setValidPixelExpression(firstSourceBand.getValidPixelExpression());
             targetBand.setSpectralWavelength(firstSourceBand.getSpectralWavelength());
             targetBand.setSpectralBandwidth(firstSourceBand.getSpectralBandwidth());
@@ -471,13 +474,13 @@ public final class S2tbxMosaicOp extends Operator {
             if (sceneWidth != bandWidth) {
                 AffineTransform2D transform2D =
                         new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0,
-                                              (float) sceneHeight / bandHeight, 0.0, 0.0);
+                                (float) sceneHeight / bandHeight, 0.0, 0.0);
                 targetBand.setImageToModelTransform(transform2D);
             }
             try {
                 CrsGeoCoding geoCoding = new CrsGeoCoding(targetCRS, bandWidth, bandHeight,
-                                                          targetEnvelope.getMinX(), targetEnvelope.getMaxY(),
-                                                          stepX, stepY);
+                        targetEnvelope.getMinX(), targetEnvelope.getMaxY(),
+                        stepX, stepY);
                 targetBand.setGeoCoding(geoCoding);
             } catch (FactoryException | TransformException e) {
                 e.printStackTrace();
@@ -494,7 +497,11 @@ public final class S2tbxMosaicOp extends Operator {
         for (Band band : this.targetProduct.getBands()) {
             Band[] srcBands = new Band[this.sourceProducts.length];
             for (int index = 0; index < this.sourceProducts.length; index++){
-                srcBands[index] = this.sourceProducts[index].getBand(getSourceBandName(band.getName()));
+                for(MosaicOp.Variable outputVariable : this.variables) {
+                    if(outputVariable.getName().equals(band.getName())) {
+                        srcBands[index] = this.sourceProducts[index].getBand(getSourceBandName(outputVariable.getExpression()));
+                    }
+                }
             }
             final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
             final int levels = srcBands[0].getSourceImage().getModel().getLevelCount();
@@ -502,12 +509,12 @@ public final class S2tbxMosaicOp extends Operator {
             DirectPosition bandOrigin = mapTransform.transform(new DirectPosition2D(0, 0), null);
             S2MosaicMultiLevelSource bandSource =
                     new S2MosaicMultiLevelSource(srcBands,
-                                                 bandOrigin.getOrdinate(0),
-                                                 bandOrigin.getOrdinate(1),
-                                                 band.getRasterWidth(), band.getRasterHeight(),
-                                                 tileSize.width, tileSize.height, levels,
-                                                 band.getGeoCoding(),
-                                                 this.overlappingMethod);
+                            bandOrigin.getOrdinate(0),
+                            bandOrigin.getOrdinate(1),
+                            band.getRasterWidth(), band.getRasterHeight(),
+                            tileSize.width, tileSize.height, levels,
+                            band.getGeoCoding(),
+                            this.overlappingMethod);
             band.setSourceImage(new DefaultMultiLevelImage(bandSource));
         }
     }
@@ -521,13 +528,13 @@ public final class S2tbxMosaicOp extends Operator {
         try {
             size = new double[2];
             DirectPosition geoPos1 = sourceGeoCoding.getImageToMapTransform()
-                                                    .transform(new DirectPosition2D(0, 0), null);
+                    .transform(new DirectPosition2D(0, 0), null);
             Coordinate c1 = new Coordinate(geoPos1.getOrdinate(0), geoPos1.getOrdinate(1));
             DirectPosition geoPos2 = sourceGeoCoding.getImageToMapTransform()
-                                                    .transform(new DirectPosition2D(0, 1), null);
+                    .transform(new DirectPosition2D(0, 1), null);
             Coordinate c2 = new Coordinate(geoPos2.getOrdinate(0), geoPos2.getOrdinate(1));
             DirectPosition geoPos3 = sourceGeoCoding.getImageToMapTransform()
-                                                    .transform(new DirectPosition2D(1, 0), null);
+                    .transform(new DirectPosition2D(1, 0), null);
             Coordinate c3 = new Coordinate(geoPos3.getOrdinate(0), geoPos3.getOrdinate(1));
             final CoordinateReferenceSystem sourceCRS = sourceGeoCoding.getMapCRS();
             size[0] = distance(sourceCRS, targetCRS, c3, c1);
@@ -558,11 +565,11 @@ public final class S2tbxMosaicOp extends Operator {
         try {
             MathTransform transform = CRS.findMathTransform(fromCRS, toCRS);
             Envelope sourceEnvelope = new Envelope(bounds.getMinX(), bounds.getMaxX(),
-                                                   bounds.getMinY(), bounds.getMaxY());
+                    bounds.getMinY(), bounds.getMaxY());
             final Envelope envelope = JTS.transform(sourceEnvelope, transform);
             return new ReferencedEnvelope(envelope.getMinX(), envelope.getMaxX(),
-                                          envelope.getMinY(), envelope.getMaxY(),
-                                          toCRS);
+                    envelope.getMinY(), envelope.getMaxY(),
+                    toCRS);
         } catch (FactoryException | TransformException e) {
             e.printStackTrace();
             return null;
@@ -575,9 +582,6 @@ public final class S2tbxMosaicOp extends Operator {
             if (variable.equals(Band.getName())) {
                 bandName = Band.getName();
                 break;
-            } else if (variable.contains(Band.getName())) {
-                bandName = Band.getName();
-                break;
             }
         }
         return bandName;
@@ -585,7 +589,9 @@ public final class S2tbxMosaicOp extends Operator {
 
     private HashMap<String, Object> createProjectionParameters() {
         HashMap<String, Object> projParameters = new HashMap<>();
-        projParameters.put("resamplingName", this.resamplingName);
+        if(this.nativeResolution) {
+            projParameters.put("resamplingName", this.resamplingName);
+        }
         projParameters.put("includeTiePointGrids", true);  // ensure tie-points are reprojected
         if (this.orthorectify) {
             projParameters.put("orthorectify", true);
@@ -616,80 +622,7 @@ public final class S2tbxMosaicOp extends Operator {
         }
     }
 
-    public static class Variable {
 
-        @Parameter(description = "The name of the variable.")
-        String name;
-        @Parameter(description = "The expression of the variable.")
-        String expression;
-
-        public Variable() {
-        }
-
-        public Variable(String name, String expression) {
-            this.name = name;
-            this.expression = expression;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getExpression() {
-            return this.expression;
-        }
-
-        public void setExpression(String expression) {
-            this.expression = expression;
-        }
-    }
-
-    public static class Condition {
-
-        @Parameter(description = "The name of the condition.")
-        String name;
-        @Parameter(description = "The expression of the condition.")
-        String expression;
-        @Parameter(description = "Whether the result of the condition shall be written.")
-        boolean output;
-
-        public Condition() {
-        }
-
-        public Condition(String name, String expression, boolean output) {
-            this.name = name;
-            this.expression = expression;
-            this.output = output;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getExpression() {
-            return this.expression;
-        }
-
-        public void setExpression(String expression) {
-            this.expression = expression;
-        }
-
-        public boolean isOutput() {
-            return this.output;
-        }
-
-        public void setOutput(boolean output) {
-            this.output = output;
-        }
-    }
     public static Map<String, Object> getOperatorParameters(Product product) throws OperatorException {
         final MetadataElement graphElement = product.getMetadataRoot().getElement("Processing_Graph");
         if (graphElement == null) {

@@ -36,18 +36,24 @@ import static org.junit.Assume.assumeTrue;
  */
 public class S2tbxMosaicOpImageTest {
 
-    private RenderedImage[] sourceImages;
+    private RenderedImage[] sourceImages1;
+    private RenderedImage[] sourceImages2;
     private PlanarImage[] alphaImages;
 
     @Before
     public void setup() {
 
-        assumeTrue(false);
-        sourceImages = new RenderedImage[]{
+        sourceImages1 = new RenderedImage[]{
                 ConstantDescriptor.create(10.0f, 10.0f, new Float[]{2.0f}, null),
                 ConstantDescriptor.create(10.0f, 10.0f, new Float[]{3.0f}, null),
                 ConstantDescriptor.create(10.0f, 10.0f, new Float[]{5.0f}, null),
                 ConstantDescriptor.create(10.0f, 10.0f, new Float[]{7.0f}, null)
+        };
+        sourceImages2 = new RenderedImage[]{
+                ConstantDescriptor.create(10.0f, 10.0f, new Float[]{7.0f}, null),
+                ConstantDescriptor.create(10.0f, 10.0f, new Float[]{5.0f}, null),
+                ConstantDescriptor.create(10.0f, 10.0f, new Float[]{3.0f}, null),
+                ConstantDescriptor.create(10.0f, 10.0f, new Float[]{2.0f}, null)
         };
 
         alphaImages = new PlanarImage[]{
@@ -63,7 +69,7 @@ public class S2tbxMosaicOpImageTest {
     @Test
     public void testAveraging() {
 
-        final RenderedOp mosaicImage = MosaicDescriptor.create(sourceImages, MosaicDescriptor.MOSAIC_TYPE_BLEND,
+        final RenderedOp mosaicImage = MosaicDescriptor.create(sourceImages1, MosaicDescriptor.MOSAIC_TYPE_BLEND,
                                                                alphaImages, null, null, null, null);
         final Raster data = mosaicImage.getData();
         float sample = data.getSampleFloat(0, 0, 0);
@@ -74,22 +80,42 @@ public class S2tbxMosaicOpImageTest {
 
     @Test
     public void testMosaicUpdate() {
-        final RenderedOp firstImage = MosaicDescriptor.create(Arrays.copyOf(sourceImages, 3),
-                                                              MosaicDescriptor.MOSAIC_TYPE_BLEND,
+        final RenderedOp firstImage = MosaicDescriptor.create(Arrays.copyOf(sourceImages1, 3),
+                                                              MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                               Arrays.copyOf(alphaImages, 3), null, null, null, null);
         final PlanarImage[] alphaUpdateImages = {
                 PlanarImage.wrapRenderedImage(ConstantDescriptor.create(10.0f, 10.0f, new Float[]{6.0f}, null)),
                 PlanarImage.wrapRenderedImage(ConstantDescriptor.create(10.0f, 10.0f, new Float[]{4.0f}, null))
         };
-        final RenderedImage[] sourceUpdateImages = {firstImage, sourceImages[3]};
+        final RenderedImage[] sourceUpdateImages = {firstImage, sourceImages1[3]};
         final RenderedOp updatedImage = MosaicDescriptor.create(sourceUpdateImages,
-                                                                MosaicDescriptor.MOSAIC_TYPE_BLEND,
+                                                                MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                                 alphaUpdateImages, null, null, null, null);
 
         final Raster data = updatedImage.getData();
         float sample = data.getSampleFloat(0, 0, 0);
-        assertEquals(5.1f, sample, 0.0f);
+        assertEquals(2.0f, sample, 0.0f);
         sample = data.getSampleFloat(5, 5, 0);
-        assertEquals(5.1f, sample, 0.0f);
+        assertEquals(2.0f, sample, 0.0f);
+    }
+    @Test
+    public void testMosaicUpdateWithNewSourceImages() {
+        final RenderedOp firstImage = MosaicDescriptor.create(Arrays.copyOf(sourceImages2, 3),
+                MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                Arrays.copyOf(alphaImages, 3), null, null, null, null);
+        final PlanarImage[] alphaUpdateImages = {
+                PlanarImage.wrapRenderedImage(ConstantDescriptor.create(10.0f, 10.0f, new Float[]{6.0f}, null)),
+                PlanarImage.wrapRenderedImage(ConstantDescriptor.create(10.0f, 10.0f, new Float[]{4.0f}, null))
+        };
+        final RenderedImage[] sourceUpdateImages = {firstImage, sourceImages2[3]};
+        final RenderedOp updatedImage = MosaicDescriptor.create(sourceUpdateImages,
+                MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                alphaUpdateImages, null, null, null, null);
+
+        final Raster data = updatedImage.getData();
+        float sample = data.getSampleFloat(0, 0, 0);
+        assertEquals(7.0f, sample, 0.0f);
+        sample = data.getSampleFloat(5, 5, 0);
+        assertEquals(7.0f, sample, 0.0f);
     }
 }

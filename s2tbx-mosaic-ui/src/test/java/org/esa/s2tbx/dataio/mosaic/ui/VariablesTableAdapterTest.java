@@ -20,6 +20,7 @@ import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.s2tbx.dataio.mosaic.S2tbxMosaicOp;
 import org.esa.snap.core.gpf.annotations.ParameterDescriptorFactory;
+import org.esa.snap.core.gpf.common.MosaicOp;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,8 +67,8 @@ public class VariablesTableAdapterTest {
         table.setValueAt("B", 1, 1);
         assertEquals("B", table.getValueAt(1, 1));
 
-        bindingContext.getPropertySet().setValue("variables", new S2tbxMosaicOp.Variable[]{
-                new S2tbxMosaicOp.Variable("d", "D")
+        bindingContext.getPropertySet().setValue("variables", new MosaicOp.Variable[]{
+                new MosaicOp.Variable("d", "D")
         });
 
         assertEquals(1, table.getRowCount());

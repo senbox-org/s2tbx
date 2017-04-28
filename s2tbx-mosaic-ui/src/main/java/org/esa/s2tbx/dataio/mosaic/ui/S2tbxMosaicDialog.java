@@ -23,6 +23,7 @@ import org.esa.snap.core.dataop.dem.ElevationModelDescriptor;
 import org.esa.snap.core.dataop.dem.ElevationModelRegistry;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.OperatorSpi;
+import org.esa.snap.core.gpf.common.MosaicOp;
 import org.esa.snap.core.gpf.ui.OperatorMenu;
 import org.esa.snap.core.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.core.gpf.ui.SingleTargetProductDialog;
@@ -33,6 +34,9 @@ import org.esa.snap.ui.AppContext;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -108,11 +112,10 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
                 multiSize = true;
                 break;
             }
-        if(multiSize){
-            return GPF.createProduct("S2tbx-Mosaic", parameterMap, formModel.getSourceProductMap());
-        } else {
+        if(!multiSize){
             return GPF.createProduct("Mosaic", parameterMap, formModel.getSourceProductMap());
         }
+        return GPF.createProduct("S2tbx-Mosaic", parameterMap, formModel.getSourceProductMap());
     }
 
     @Override
@@ -131,20 +134,20 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
 
     private boolean verifyVariablesAndConditions(S2tbxMosaicFormModel mosaicModel) {
         final Map<String, Product> sourceProductMap = mosaicModel.getSourceProductMap();
-        final S2tbxMosaicOp.Variable[] variables = mosaicModel.getVariables();
-        final S2tbxMosaicOp.Condition[] conditions = mosaicModel.getConditions();
+        final MosaicOp.Variable[] variables = mosaicModel.getVariables();
+        final MosaicOp.Condition[] conditions = mosaicModel.getConditions();
         for (Map.Entry<String, Product> entry : sourceProductMap.entrySet()) {
             final String productIdentifier = entry.getKey();
             final Product product = entry.getValue();
             if (variables != null) {
-                for (S2tbxMosaicOp.Variable variable : variables) {
+                for (MosaicOp.Variable variable : variables) {
                     if (!isExpressionValidForProduct(variable.getName(), variable.getExpression(), productIdentifier, product)) {
                         return false;
                     }
                 }
             }
             if (conditions != null) {
-                for (S2tbxMosaicOp.Condition condition : conditions) {
+                for (MosaicOp.Condition condition : conditions) {
                     if (!isExpressionValidForProduct(condition.getName(), condition.getExpression(), productIdentifier, product)) {
                         return false;
                     }

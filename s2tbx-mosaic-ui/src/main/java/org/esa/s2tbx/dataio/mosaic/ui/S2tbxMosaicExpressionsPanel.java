@@ -88,7 +88,6 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         setLayout(tableLayout);
 
         add(createVariablesPanel());
-        add(createConditionsPanel());
     }
 
     private Component createVariablesPanel() {
@@ -121,10 +120,6 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         bandFilterButton.setName(labelName + "_bandFilter");
         variableButtonsPanel.add(bandFilterButton);
 
-        final Component newVariableButton = createNewVariableButton();
-        newVariableButton.setName(labelName + "_newVariable");
-        variableButtonsPanel.add(newVariableButton);
-
         final Component removeVariableButton = createRemoveVariableButton();
         removeVariableButton.setName(labelName + "_removeVariable");
         variableButtonsPanel.add(removeVariableButton);
@@ -137,187 +132,9 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         moveVariableDownButton.setName(labelName + "moveVariableDown");
         variableButtonsPanel.add(moveVariableDownButton);
 
-        bindingCtx.addPropertyChangeListener(
-                (PropertyChangeEvent evt) -> {
-                    if (S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE.equals(evt.getPropertyName())){
-                        final PropertySet propertySet = bindingCtx.getPropertySet();
-                        boolean updateMode = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE));
-                        bandFilterButton.setEnabled(!updateMode);
-                        newVariableButton.setEnabled(!updateMode);
-                        removeVariableButton.setEnabled(!updateMode);
-                        moveVariableUpButton.setEnabled(!updateMode);
-                        moveVariableDownButton.setEnabled(!updateMode);
-                    }});
-
         return variableButtonsPanel;
     }
 
-    private Component createConditionsPanel() {
-        final String labelName = "Conditions";
-        final TableLayout layout = new TableLayout(1);
-        layout.setTableAnchor(TableLayout.Anchor.WEST);
-        layout.setTableFill(TableLayout.Fill.BOTH);
-        layout.setTablePadding(3, 3);
-        layout.setTableWeightX(1.0);
-        layout.setTableWeightY(0.0);
-        layout.setRowWeightY(1, 1.0);
-        final JPanel panel = new JPanel(layout);
-        panel.setToolTipText("Not active when Mosaicing is done at native resolution");
-        panel.setName(labelName);
-        panel.setBorder(BorderFactory.createTitledBorder(labelName));
-        final JPanel conditionsButtonsPanel = createConditionsButtonPanel(labelName);
-
-
-        panel.add(conditionsButtonsPanel);
-        panel.add(createConditionsTable(labelName));
-        panel.add(createCombinePanel());
-        return panel;
-    }
-
-    private JPanel createConditionsButtonPanel(String labelName) {
-        final JPanel conditionButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        conditionButtonsPanel.setName(labelName);
-
-        final Component newConditionButton = createNewConditionButton();
-        newConditionButton.setName(labelName + "_newCondition");
-        newConditionButton.setEnabled(false);
-        conditionButtonsPanel.add(newConditionButton);
-
-        final Component removeConditionButton = createRemoveConditionButton();
-        removeConditionButton.setName(labelName + "_removeCondition");
-        removeConditionButton.setEnabled(false);
-        conditionButtonsPanel.add(removeConditionButton);
-
-        final Component moveConditionUpButton = createMoveConditionUpButton();
-        moveConditionUpButton.setName(labelName + "moveConditionUp");
-        moveConditionUpButton.setEnabled(false);
-        conditionButtonsPanel.add(moveConditionUpButton);
-
-        final Component moveConditionDownButton = createMoveConditionDownButton();
-        moveConditionDownButton.setName(labelName + "moveConditionDown");
-        moveConditionDownButton.setEnabled(false);
-        conditionButtonsPanel.add(moveConditionDownButton);
-
-        bindingCtx.addPropertyChangeListener(
-                (PropertyChangeEvent evt) -> {
-                    if (S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION.equals(evt.getPropertyName())||S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE.equals(evt.getPropertyName())){
-                        final PropertySet propertySet = bindingCtx.getPropertySet();
-                        boolean useNativeResolution = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION));
-                        boolean updateMode = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE));
-                        newConditionButton.setEnabled(!useNativeResolution && !updateMode);
-                        removeConditionButton.setEnabled(!useNativeResolution && !updateMode);
-                        moveConditionUpButton.setEnabled(!useNativeResolution && !updateMode);
-                        moveConditionDownButton.setEnabled(!useNativeResolution && !updateMode);
-                    }});
-
-        return conditionButtonsPanel;
-    }
-
-    private JPanel createCombinePanel() {
-        final JPanel combinePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        final JComboBox combineComboBox = new JComboBox();
-        bindingCtx.bind("combine", combineComboBox);
-        bindingCtx.bindEnabledState("combine", false, "updateMode", true);
-        final String displayName = bindingCtx.getPropertySet().getDescriptor("combine").getDisplayName();
-        combinePanel.add(new JLabel(displayName + ":"));
-        combinePanel.add(combineComboBox);
-        return combinePanel;
-    }
-
-    private Component createNewConditionButton() {
-        AbstractButton newConditionsButton = createButton("icons/Plus24.gif", "newCondition");
-        newConditionsButton.setToolTipText("Add new processing condition"); /*I18N*/
-        newConditionsButton.addActionListener(
-                ( ActionEvent e) -> {
-                    final int rows = conditionsTable.getRowCount();
-                    addRow(conditionsTable, new Object[]{"condition_" + rows, "", false}); /*I18N*/
-                });
-        return newConditionsButton;
-    }
-
-    private Component createRemoveConditionButton() {
-        AbstractButton removeConditionButton = createButton("icons/Minus24.gif", "removeCondition");
-        removeConditionButton.setToolTipText("Remove selected rows."); /*I18N*/
-        removeConditionButton.addActionListener(
-                (ActionEvent e)->{removeRows(conditionsTable, conditionsTable.getSelectedRows());});
-        return removeConditionButton;
-    }
-
-    private Component createMoveConditionUpButton() {
-        AbstractButton moveConditionUpButton = createButton("icons/MoveUp24.gif", "moveConditionUp");
-        moveConditionUpButton.setToolTipText("Move up selected rows."); /*I18N*/
-        moveConditionUpButton.addActionListener(
-                (ActionEvent e)-> {moveRowsUp(conditionsTable, conditionsTable.getSelectedRows());});
-        return moveConditionUpButton;
-    }
-
-    private Component createMoveConditionDownButton() {
-        AbstractButton moveConditionDownButton = createButton("icons/MoveDown24.gif", "moveConditionDown");
-        moveConditionDownButton.setToolTipText("Move down selected rows."); /*I18N*/
-        moveConditionDownButton.addActionListener(
-                (ActionEvent e)->{moveRowsDown(conditionsTable, conditionsTable.getSelectedRows());});
-        return moveConditionDownButton;
-    }
-
-    private JScrollPane createConditionsTable(final String labelName) {
-        conditionsTable = new JTable() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Class getColumnClass(int column) {
-                if (column == 2) {
-                    return Boolean.class;
-                } else {
-                    return super.getColumnClass(column);
-                }
-            }
-        };
-        conditionsTable.setName(labelName);
-        conditionsTable.setRowSelectionAllowed(true);
-        bindingCtx.bind("conditions", new S2tbxConditionsTableAdapter(conditionsTable));
-        bindingCtx.bindEnabledState("conditions", false, "updateMode", true);
-        bindingCtx.bindEnabledState("conditions", false, S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION, true);
-
-        conditionsTable.addMouseListener(createExpressionEditorMouseListener(conditionsTable, true));
-        conditionsTable.setEnabled(false);
-        final JTableHeader tableHeader = conditionsTable.getTableHeader();
-        tableHeader.setName(labelName);
-        tableHeader.setReorderingAllowed(false);
-        tableHeader.setResizingAllowed(true);
-
-        final TableColumnModel columnModel = conditionsTable.getColumnModel();
-        columnModel.setColumnSelectionAllowed(false);
-
-        final TableColumn nameColumn = columnModel.getColumn(0);
-        nameColumn.setPreferredWidth(100);
-        nameColumn.setCellRenderer(new TCR());
-
-        final TableColumn expressionColumn = columnModel.getColumn(1);
-        expressionColumn.setPreferredWidth(360);
-        expressionColumn.setCellRenderer(new TCR());
-        final ExprEditor cellEditor = new ExprEditor(true);
-        expressionColumn.setCellEditor(cellEditor);
-        cellEditor.button.setEnabled(false);
-        bindingCtx.addPropertyChangeListener(
-                (PropertyChangeEvent evt)-> {
-                    if (S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION.equals(evt.getPropertyName())||S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE.equals(evt.getPropertyName())){
-                        final PropertySet propertySet = bindingCtx.getPropertySet();
-                        boolean useNativeResolution = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION));
-                        boolean updateMode = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE));
-                        cellEditor.button.setEnabled(!useNativeResolution && !updateMode);
-                        conditionsTable.setEnabled(!useNativeResolution);
-                    }});
-
-
-        final TableColumn outputColumn = columnModel.getColumn(2);
-        outputColumn.setPreferredWidth(40);
-
-        final JScrollPane pane = new JScrollPane(conditionsTable);
-        pane.setName(labelName);
-        pane.setPreferredSize(new Dimension(PREFERRED_TABLE_WIDTH, 80));
-
-        return pane;
-    }
 
     private Component createBandFilterButton() {
         AbstractButton variableFilterButton = createButton("icons/Copy16.gif", "bandButton");
@@ -390,16 +207,6 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         return -1;
     }
 
-    private Component createNewVariableButton() {
-        AbstractButton newVariableButton = createButton("icons/Plus24.gif", "newVariable");
-        newVariableButton.setToolTipText("Add new processing variable"); /*I18N*/
-        newVariableButton.addActionListener(
-                (ActionEvent e)-> {
-                    final int rows = variablesTable.getRowCount();
-                    addRow(variablesTable, new Object[]{"variable_" + rows, ""}); /*I18N*/
-                });
-        return newVariableButton;
-    }
 
     private Component createRemoveVariableButton() {
         AbstractButton removeVariableButton = createButton("icons/Minus24.gif", "removeVariable");
@@ -448,14 +255,6 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         final TableColumn expressionColumn = columnModel.getColumn(1);
         expressionColumn.setPreferredWidth(400);
         expressionColumn.setCellRenderer(new TCR());
-        final ExprEditor exprEditor = new ExprEditor(false);
-        expressionColumn.setCellEditor(exprEditor);
-        bindingCtx.addPropertyChangeListener("updateMode",
-                (PropertyChangeEvent evt)-> {
-                final boolean enabled = Boolean.FALSE.equals(evt.getNewValue());
-                exprEditor.button.setEnabled(enabled);
-        });
-
         final JScrollPane scrollPane = new JScrollPane(variablesTable);
         scrollPane.setName(labelName);
         scrollPane.setPreferredSize(new Dimension(PREFERRED_TABLE_WIDTH, 150));

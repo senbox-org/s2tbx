@@ -18,6 +18,7 @@ package org.esa.s2tbx.dataio.mosaic.ui;
 
 
 import org.esa.s2tbx.dataio.mosaic.S2tbxMosaicOp;
+import org.esa.snap.core.gpf.common.MosaicOp;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -38,9 +39,9 @@ class S2tbxVariablesTableAdapter extends S2tbxAbstractTableAdapter {
     @Override
     public void tableChanged(TableModelEvent e) {
         final TableModel tableModel = (TableModel) e.getSource();
-        final S2tbxMosaicOp.Variable[] variables = new S2tbxMosaicOp.Variable[tableModel.getRowCount()];
+        final MosaicOp.Variable[] variables = new MosaicOp.Variable[tableModel.getRowCount()];
         for (int i = 0; i < variables.length; i++) {
-            variables[i] = new S2tbxMosaicOp.Variable((String) tableModel.getValueAt(i, 0),
+            variables[i] = new MosaicOp.Variable((String) tableModel.getValueAt(i, 0),
                                                  (String) tableModel.getValueAt(i, 1));
         }
         getBinding().setPropertyValue(variables);
