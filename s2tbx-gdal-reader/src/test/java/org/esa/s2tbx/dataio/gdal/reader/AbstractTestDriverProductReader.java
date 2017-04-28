@@ -1,9 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.GDALInstaller;
-import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 
@@ -31,9 +28,9 @@ public abstract class AbstractTestDriverProductReader {
     public void setUp() throws Exception {
         assumeTrue(TestUtil.testdataAvailable());
 
-        if (!GdalInstallInfo.INSTANCE.isPresent()) {
+        /*if (!GdalInstallInfo.INSTANCE.isPresent()) {
             GDALDistributionInstaller.install();
-        }
+        }*/
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             checkTestDirectoryExists();
         }
