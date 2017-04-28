@@ -89,7 +89,7 @@ public class PotentialCloudShadowAreasPathCentralPixel {
         }
 
             X0TargetCenter = (int) (targetRectangle.width / 2.);
-            Y0TargetCenter = (int) (targetRectangle.width / 2.);
+            Y0TargetCenter = (int) (targetRectangle.height / 2.);
             X0SourceCenter = X0TargetCenter + S2IdepixCloudShadowOp.searchBorderRadius;
             Y0SourceCenter = Y0TargetCenter + S2IdepixCloudShadowOp.searchBorderRadius;
 
