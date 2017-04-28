@@ -34,11 +34,10 @@ public abstract class AbstractTileSegmenter {
     private final int tileWidth;
     private final int tileHeight;
     private final int iterationsForEachSecondSegmentation;
-
     private final TileSegmenterMetadata tileSegmenterMetadata;
 
-    protected AbstractTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                                    float threshold, boolean fastSegmentation) throws IOException {
+    protected AbstractTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation, float threshold, boolean fastSegmentation)
+                                    throws IOException {
 
         this.imageWidth = imageSize.width;
         this.imageHeight = imageSize.height;
@@ -48,7 +47,6 @@ public abstract class AbstractTileSegmenter {
         this.iterationsForEachFirstSegmentation = computeNumberOfFirstIterations(this.tileWidth, this.tileHeight);
         this.fastSegmentation = fastSegmentation;
         this.threshold = threshold;
-//        this.temporaryFolder = temporaryFolder;
         this.temporaryFolder = Files.createTempDirectory("_temp").toFile();
 
         this.addFourNeighbors = true;
@@ -60,7 +58,7 @@ public abstract class AbstractTileSegmenter {
 
     public abstract AbstractSegmenter buildSegmenter(float threshold);
 
-    public final void runAllTilesSegmentationNew(Tile[] sourceTiles) throws IllegalAccessException, IOException {
+    public final void runAllTilesSegmentation(Tile[] sourceTiles) throws IllegalAccessException, IOException {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start running segmentation for all tiles: band count: " + sourceTiles.length + ", image width: " +this.imageWidth+", image height: "+this.imageHeight+", tile width: " + this.tileWidth+", tile height: "+this.tileHeight+", margin: "+computeTileMargin()+", number of first iterations: "+this.iterationsForEachFirstSegmentation);
@@ -69,26 +67,26 @@ public abstract class AbstractTileSegmenter {
         // run the first partial segmentation
         this.tileSegmenterMetadata.resetValues();
 
-        int nbTilesX = this.imageWidth / this.tileWidth;
-        int nbTilesY = this.imageHeight / this.tileHeight;
+        int tileCountX = this.imageWidth / this.tileWidth;
+        int tileCountY = this.imageHeight / this.tileHeight;
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Run first segmentation for all tiles: band count: " + sourceTiles.length + ", tile column count: " +nbTilesX+", tile row count: " + nbTilesY+", margin: "+computeTileMargin());
+            logger.log(Level.FINE, "Run first segmentation for all tiles: band count: " + sourceTiles.length + ", tile column count: " +tileCountX+", tile row count: " + tileCountY+", margin: "+computeTileMargin());
         }
 
-        for (int row = 0; row <nbTilesY; row++) {
-            for (int col = 0; col<nbTilesX ; col++) {
+        for (int row = 0; row <tileCountY; row++) {
+            for (int col = 0; col<tileCountX ; col++) {
                 // compute current tile start and size
                 int startX = col * this.tileWidth;
                 int startY = row * this.tileHeight;
                 int sizeX = this.tileWidth;
                 int sizeY = this.tileHeight;
                 // current tile size might be different for right and bottom borders
-                if (col == nbTilesX - 1) {
+                if (col == tileCountX - 1) {
                     sizeX += this.imageWidth % this.tileWidth;
                 }
-                if (row == nbTilesY - 1) {
+                if (row == tileCountY - 1) {
                     sizeY += this.imageHeight % this.tileHeight;
                 }
 
@@ -522,67 +520,6 @@ public abstract class AbstractTileSegmenter {
         return segmenter;
     }
 
-    private static void updateNeighborsOfNoneDuplicatedNodes(Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth, int imageHeight) {
-        int[] neighborhood = new int[4];
-        int[] cellNeighborhood = new int[4];
-
-        ObjectIterator<Int2ObjectMap.Entry<List<Node>>> it = borderPixelMap.int2ObjectEntrySet().iterator();
-        while (it.hasNext()) {
-            Int2ObjectMap.Entry<List<Node>> entry = it.next();
-            int nodeId = entry.getIntKey();
-            List<Node> nodes = entry.getValue();
-            AbstractSegmenter.generateFourNeighborhood(neighborhood, nodeId, imageWidth, imageHeight);
-            for(int j = 0; j < neighborhood.length; j++) {
-                if (neighborhood[j] > -1) {
-                    List<Node> neighborNodes = borderPixelMap.get(neighborhood[j]);
-                    if (neighborNodes != null) {
-                        Node currentNode = nodes.get(0); // currNode
-                        Node firstNeighborNode = neighborNodes.get(0); // neigh
-                        if (currentNode != firstNeighborNode) {
-                            Edge edge = currentNode.findEdge(firstNeighborNode);
-                            if (edge == null) {
-                                int boundary = 0;
-                                IntSet borderCells = AbstractSegmenter.generateBorderCells(currentNode.getContour(), currentNode.getId(), imageWidth);
-                                IntIterator itCells = borderCells.iterator();
-                                while (itCells.hasNext()) {
-                                    int gridId = itCells.nextInt();
-                                    List<Node> resultNodes = borderPixelMap.get(gridId);
-                                    if (resultNodes != null) {
-                                        AbstractSegmenter.generateFourNeighborhood(cellNeighborhood, gridId, imageWidth, imageHeight);
-                                        for(int k = 0; k < cellNeighborhood.length; k++) {
-                                            if (cellNeighborhood[k] > -1) {
-                                                List<Node> cellNeighborNodes = borderPixelMap.get(cellNeighborhood[k]);
-                                                if (cellNeighborNodes != null && cellNeighborNodes.get(0) == firstNeighborNode) {
-                                                    boundary++;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                currentNode.addEdge(firstNeighborNode, boundary);
-                                firstNeighborNode.addEdge(currentNode, boundary);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static String tileRegionToString(BoundingBox region) {
-        StringBuilder str = new StringBuilder();
-        str.append("[x=")
-                .append(region.getLeftX())
-                .append(", y=")
-                .append(region.getTopY())
-                .append(", width=")
-                .append(region.getWidth())
-                .append(", height=")
-                .append(region.getHeight())
-                .append("]");
-        return str.toString();
-    }
-
     private void insertNodesFromTile(Graph graph, BoundingBox tileRectangle, boolean margin) throws IOException {
         ProcessingTile tile = buildTile(tileRectangle.getLeftX(), tileRectangle.getTopY(), tileRectangle.getWidth(), tileRectangle.getHeight());
         insertNodesFromTile(graph, tile, margin);
@@ -686,44 +623,6 @@ public abstract class AbstractTileSegmenter {
         }
 
         graph.removeExpiredNodes();
-    }
-
-    private static Int2ObjectMap<Node> extractStabilityMargin(List<Node> nodesToIterate, int numberOfLayers) {
-        int defaultMissingValue = -1;
-        Int2IntMap borderNodesValues = new Int2IntOpenHashMap(nodesToIterate.size());
-        borderNodesValues.defaultReturnValue(defaultMissingValue);
-        Int2ObjectMap<Node> borderNodes = new Int2ObjectLinkedOpenHashMap<Node>(nodesToIterate.size());
-        for (int i=0; i<nodesToIterate.size(); i++) {
-            Node node = nodesToIterate.get(i);
-            borderNodesValues.put(node.getId(), 0);
-            borderNodes.put(node.getId(), node);
-        }
-        for (int i=0; i<nodesToIterate.size(); i++) {
-            exploreDFS(nodesToIterate.get(i), 0, borderNodesValues, borderNodes, defaultMissingValue, numberOfLayers);
-        }
-        return borderNodes;
-    }
-
-    private static void exploreDFS(Node node, int p, Int2IntMap borderNodesValues, Int2ObjectMap<Node> borderNodes, int defaultMissingValue, int numberOfLayers) {
-        if (p > numberOfLayers) {
-            return;
-        } else {
-            int value = borderNodesValues.get(node.getId());
-            if (value != defaultMissingValue) {
-                if (p <= value) {
-                } else {
-                    return;
-                }
-            } else {
-            }
-            borderNodesValues.put(node.getId(), p);
-            borderNodes.put(node.getId(), node);
-            int edgeCount = node.getEdgeCount();
-            for (int i=0; i<edgeCount; i++) {
-                Edge edge = node.getEdgeAt(i);
-                exploreDFS(edge.getTarget(), p + 1, borderNodesValues, borderNodes, defaultMissingValue, numberOfLayers);
-            }
-        }
     }
 
     private void writeGraph(Graph graph, String nodesPath, String edgesPath) throws IOException {
@@ -885,6 +784,105 @@ public abstract class AbstractTileSegmenter {
                 } catch (IOException exception) {
                     // ignore exception
                 }
+            }
+        }
+    }
+
+    private static void updateNeighborsOfNoneDuplicatedNodes(Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth, int imageHeight) {
+        int[] neighborhood = new int[4];
+        int[] cellNeighborhood = new int[4];
+
+        ObjectIterator<Int2ObjectMap.Entry<List<Node>>> it = borderPixelMap.int2ObjectEntrySet().iterator();
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<List<Node>> entry = it.next();
+            int nodeId = entry.getIntKey();
+            List<Node> nodes = entry.getValue();
+            AbstractSegmenter.generateFourNeighborhood(neighborhood, nodeId, imageWidth, imageHeight);
+            for(int j = 0; j < neighborhood.length; j++) {
+                if (neighborhood[j] > -1) {
+                    List<Node> neighborNodes = borderPixelMap.get(neighborhood[j]);
+                    if (neighborNodes != null) {
+                        Node currentNode = nodes.get(0); // currNode
+                        Node firstNeighborNode = neighborNodes.get(0); // neigh
+                        if (currentNode != firstNeighborNode) {
+                            Edge edge = currentNode.findEdge(firstNeighborNode);
+                            if (edge == null) {
+                                int boundary = 0;
+                                IntSet borderCells = AbstractSegmenter.generateBorderCells(currentNode.getContour(), currentNode.getId(), imageWidth);
+                                IntIterator itCells = borderCells.iterator();
+                                while (itCells.hasNext()) {
+                                    int gridId = itCells.nextInt();
+                                    List<Node> resultNodes = borderPixelMap.get(gridId);
+                                    if (resultNodes != null) {
+                                        AbstractSegmenter.generateFourNeighborhood(cellNeighborhood, gridId, imageWidth, imageHeight);
+                                        for(int k = 0; k < cellNeighborhood.length; k++) {
+                                            if (cellNeighborhood[k] > -1) {
+                                                List<Node> cellNeighborNodes = borderPixelMap.get(cellNeighborhood[k]);
+                                                if (cellNeighborNodes != null && cellNeighborNodes.get(0) == firstNeighborNode) {
+                                                    boundary++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                currentNode.addEdge(firstNeighborNode, boundary);
+                                firstNeighborNode.addEdge(currentNode, boundary);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static String tileRegionToString(BoundingBox region) {
+        StringBuilder str = new StringBuilder();
+        str.append("[x=")
+                .append(region.getLeftX())
+                .append(", y=")
+                .append(region.getTopY())
+                .append(", width=")
+                .append(region.getWidth())
+                .append(", height=")
+                .append(region.getHeight())
+                .append("]");
+        return str.toString();
+    }
+
+    private static Int2ObjectMap<Node> extractStabilityMargin(List<Node> nodesToIterate, int numberOfLayers) {
+        int defaultMissingValue = -1;
+        Int2IntMap borderNodesValues = new Int2IntOpenHashMap(nodesToIterate.size());
+        borderNodesValues.defaultReturnValue(defaultMissingValue);
+        Int2ObjectMap<Node> borderNodes = new Int2ObjectLinkedOpenHashMap<Node>(nodesToIterate.size());
+        for (int i=0; i<nodesToIterate.size(); i++) {
+            Node node = nodesToIterate.get(i);
+            borderNodesValues.put(node.getId(), 0);
+            borderNodes.put(node.getId(), node);
+        }
+        for (int i=0; i<nodesToIterate.size(); i++) {
+            exploreDFS(nodesToIterate.get(i), 0, borderNodesValues, borderNodes, defaultMissingValue, numberOfLayers);
+        }
+        return borderNodes;
+    }
+
+    private static void exploreDFS(Node node, int p, Int2IntMap borderNodesValues, Int2ObjectMap<Node> borderNodes, int defaultMissingValue, int numberOfLayers) {
+        if (p > numberOfLayers) {
+            return;
+        } else {
+            int value = borderNodesValues.get(node.getId());
+            if (value != defaultMissingValue) {
+                if (p <= value) {
+                } else {
+                    return;
+                }
+            } else {
+            }
+            borderNodesValues.put(node.getId(), p);
+            borderNodes.put(node.getId(), node);
+            int edgeCount = node.getEdgeCount();
+            for (int i=0; i<edgeCount; i++) {
+                Edge edge = node.getEdgeAt(i);
+                exploreDFS(edge.getTarget(), p + 1, borderNodesValues, borderNodes, defaultMissingValue, numberOfLayers);
             }
         }
     }

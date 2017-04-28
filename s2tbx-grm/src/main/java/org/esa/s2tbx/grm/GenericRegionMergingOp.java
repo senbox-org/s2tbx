@@ -79,8 +79,7 @@ public class GenericRegionMergingOp extends Operator {
     private long startTime;
     private AtomicInteger processingTiles;
     private AtomicInteger processedTiles;
-    private int tileCountX;
-    private int tileCountY;
+    private int totalTileCount;
     private AbstractSegmenter segmenter;
 
     public GenericRegionMergingOp() {
@@ -121,8 +120,9 @@ public class GenericRegionMergingOp extends Operator {
         int sceneHeight = this.targetProduct.getSceneRasterHeight();
         Dimension tileSize = this.targetProduct.getPreferredTileSize();
 
-        this.tileCountX = MathUtils.ceilInt(sceneWidth / (double) tileSize.width);
-        this.tileCountY = MathUtils.ceilInt(sceneHeight / (double) tileSize.height);
+        int tileCountX = MathUtils.ceilInt(sceneWidth / (double) tileSize.width);
+        int tileCountY = MathUtils.ceilInt(sceneHeight / (double) tileSize.height);
+        this.totalTileCount = tileCountX * tileCountY;
 
         try {
             createTileSegmenter();
@@ -136,7 +136,6 @@ public class GenericRegionMergingOp extends Operator {
 
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
-        int totalTileCount = this.tileCountX * this.tileCountY;
         int startProcessingTileCount = this.processingTiles.incrementAndGet();
         if (startProcessingTileCount == 1) {
             this.startTime = System.currentTimeMillis();
@@ -152,11 +151,11 @@ public class GenericRegionMergingOp extends Operator {
             }
         }
 
-        executeFirstTileSegmentation(targetTile.getRectangle(), totalTileCount);
+        executeFirstTileSegmentation(targetTile.getRectangle(), this.totalTileCount);
 
-        if (startProcessingTileCount == totalTileCount) {
+        if (startProcessingTileCount == this.totalTileCount) {
             synchronized (this.processedTiles) {
-                if (this.processedTiles.get() < totalTileCount) {
+                if (this.processedTiles.get() < this.totalTileCount) {
                     try {
                         this.processedTiles.wait();
                     } catch (InterruptedException e) {
