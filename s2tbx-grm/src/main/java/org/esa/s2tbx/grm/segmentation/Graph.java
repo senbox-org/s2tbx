@@ -238,13 +238,21 @@ public class Graph {
         removeExpiredNodes();
     }
 
-    public void removeEdgeToUnstableNode(Node node) {
+    private void removeEdgeToUnstableNode(Node node) {
         int edgeCount = node.getEdgeCount();
         for (int j=0; j<edgeCount; j++) {
             Edge edge = node.getEdgeAt(j);
             Node nodeNeighbor = edge.getTarget();
             int removedEdgeIndex = nodeNeighbor.removeEdge(node);
             assert(removedEdgeIndex >= 0);
+        }
+    }
+
+    public void addNodes(Graph subgraph) {
+        int nodeCount = subgraph.getNodeCount();
+        for (int i=0; i<nodeCount; i++) {
+            Node node = subgraph.getNodeAt(i);
+            addNode(node);
         }
     }
 
@@ -270,6 +278,58 @@ public class Graph {
             box.setLeftX(region.getLeftX() + box.getLeftX());// - tile.getLeftMargin());
             box.setTopY(region.getTopY() + box.getTopY());// - tile.getTopMargin());
         }
+    }
+
+    public List<Node> findUselessNodes(ProcessingTile tile, int imageWidth) {
+        List<Node> nodesToIterate = new ArrayList<Node>();
+        int nodeCount = this.nodes.size();
+        for (int i=0; i<nodeCount; i++) {
+            Node node = this.nodes.get(i);
+            BoundingBox box = node.getBox();
+
+            if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
+                continue;
+            } else if (box.getLeftX() > tile.getImageRightX() || box.getTopY() > tile.getImageBottomY() || box.getRightX() - 1 < tile.getImageLeftX() || box.getBottomY() - 1 < tile.getImageTopY()) {
+                continue;
+            } else {
+                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
+                IntIterator itCells = borderCells.iterator();
+                while (itCells.hasNext()) {
+                    int gridId = itCells.nextInt();
+                    int rowPixel = gridId / imageWidth;
+                    int colPixel = gridId % imageWidth;
+                    if (rowPixel == tile.getImageTopY() || rowPixel == tile.getImageBottomY()) {
+                        if (colPixel >= tile.getImageLeftX() && colPixel <= tile.getImageRightX()) {
+                            nodesToIterate.add(node);
+                            break;
+                        }
+                    } else if (colPixel == tile.getImageLeftX() || colPixel == tile.getImageRightX()) {
+                        if (rowPixel >= tile.getImageTopY() && rowPixel <= tile.getImageBottomY()) {
+                            nodesToIterate.add(node);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return nodesToIterate;
+    }
+
+    public void removeUselessNodes(Int2ObjectMap<Node> borderNodes, ProcessingTile tile) {
+        int nodeCount = this.nodes.size();
+        for (int i=0; i<nodeCount; i++) {
+            Node node = this.nodes.get(i);
+            BoundingBox box = node.getBox();
+
+            if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
+                continue;
+            } else if (!borderNodes.containsKey(node.getId())) {
+                removeEdgeToUnstableNode(node);
+                node.setExpired(true);
+            }
+        }
+
+        removeExpiredNodes();
     }
 
     private static class ArrayListExtended<ItemType> extends ArrayList<ItemType> {

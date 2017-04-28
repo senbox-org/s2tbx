@@ -9,12 +9,13 @@ import java.util.Map;
  * @author Jean Coravu
  */
 public class TileSegmenterMetadata {
-    public long availableMemory;
-    public long accumulatedMemory;
-    public boolean isFusion;
+    private final long availableMemory;
+    private final Map<String, BoundingBox> tilesMap;
+
+    private long accumulatedMemory;
+    private boolean isFusion;
     private int computedTileCountX;
     private int computedTileCountY;
-    private final Map<String, BoundingBox> tilesMap;
 
     public TileSegmenterMetadata() {
         this.tilesMap = new HashMap<String, BoundingBox>();
