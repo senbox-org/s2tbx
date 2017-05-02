@@ -20,7 +20,6 @@ import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.runtime.Config;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
-import org.openide.modules.SpecificationVersion;
 
 import java.io.*;
 import java.net.URL;
@@ -97,7 +96,6 @@ public class GDALInstaller {
 
         logger.log(Level.INFO, "The module version is '" + moduleVersion + "'.");
 
-        SpecificationVersion currentSpecificationVersion = new SpecificationVersion(moduleVersion);
         boolean canCopyLibraryFile = true;
         String libraryFileName = System.mapLibraryName("environment-variables");
         Path libraryFilePath = gdalApplicationFolderPath.resolve(libraryFileName);
@@ -111,8 +109,7 @@ public class GDALInstaller {
             logger.log(Level.INFO, "The saved library version is '" + savedVersion + "'.");
 
             if (!StringUtils.isNullOrEmpty(savedVersion)) {
-                SpecificationVersion savedSpecificationVersion = new SpecificationVersion(savedVersion);
-                if (savedSpecificationVersion.compareTo(currentSpecificationVersion) >= 0) {
+                if (compareVersions(savedVersion, moduleVersion) >= 0) {
                     canCopyLibraryFile = false;
                 }
             }
@@ -124,7 +121,7 @@ public class GDALInstaller {
             String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileName;
             URL libraryFileURLFromSources = getClass().getClassLoader().getResource(libraryFilePathFromSources);
             FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
-            preferences.put(preferencesKey, currentSpecificationVersion.toString());
+            preferences.put(preferencesKey, moduleVersion);
             try {
                 preferences.flush();
             } catch (BackingStoreException exception) {
@@ -192,6 +189,51 @@ public class GDALInstaller {
                 logger.log(Level.SEVERE, "Can't set execution permissions for executable " + executablePathName.toString() +
                         ". If required, please ask an authorised user to make the file executable.", e);
             }
+        }
+    }
+
+    private static int compareVersions(String currentModuleVersion, String savedModuleVersion) {
+        int[] moduleVersionFragments = parseVersion(currentModuleVersion);
+        int[] savedVersionFragments = parseVersion(savedModuleVersion);
+
+        int max = Math.max(moduleVersionFragments.length, savedVersionFragments.length);
+        for(int i = 0; i < max; ++i) {
+            int d1 = (i < moduleVersionFragments.length) ? moduleVersionFragments[i] : 0;
+            int d2 = (i < savedVersionFragments.length) ? savedVersionFragments[i] : 0;
+            if (d1 != d2) {
+                return d1 - d2;
+            }
+        }
+        return 0;
+    }
+
+    private static int[] parseVersion(String version) throws NumberFormatException {
+        StringTokenizer tok = new StringTokenizer(version, ".", true);
+        int len = tok.countTokens();
+        if (len % 2 == 0) {
+            throw new NumberFormatException("Even number of pieces in a spec version: `" + version + "\'");
+        } else {
+            int[] digits = new int[len / 2 + 1];
+            int index = 0;
+            boolean expectingNumber = true;
+            while (tok.hasMoreTokens()) {
+                String fragment = tok.nextToken();
+                if (expectingNumber) {
+                    expectingNumber = false;
+                    int piece = Integer.parseInt(fragment);
+                    if (piece < 0) {
+                        throw new NumberFormatException("Spec version component '" + piece + "' is negative.");
+                    }
+                    digits[index++] = piece;
+                } else {
+                    if(!".".equals(fragment)) {
+                        throw new NumberFormatException("Expected dot in version '" + version + "'.");
+                    }
+                    expectingNumber = true;
+                }
+            }
+
+            return digits;
         }
     }
 
