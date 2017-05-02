@@ -61,14 +61,73 @@ import java.util.HashMap;
 import java.util.OptionalDouble;
 
 /**
+ * <p>
+ * The reprojection operator is used to geo-reference data products.
+ * Beside plain reprojection it is able to use a Digital Elevation Model (DEM) to orthorectify a data product and
+ * to collocate one product with another.
+ * <p>
+ * The following XML sample shows how to integrate the <code>Reproject</code> operator in a processing graph (an
+ * Lambert_Azimuthal_Equal_Area projection using the WGS-84 datum):
+ * <pre>
+ *    &lt;node id="reprojectNode"&gt;
+ *        &lt;operator&gt;Reproject&lt;/operator&gt;
+ *        &lt;sources&gt;
+ *            &lt;sourceProducts&gt;readNode&lt;/sourceProducts&gt;
+ *        &lt;/sources&gt;
+ *        &lt;parameters&gt;
+ *            &lt;wktFile/&gt;
+ *            &lt;crs&gt;
+ *              PROJCS["Lambert_Azimuthal_Equal_Area / World Geodetic System 1984",
+ *                GEOGCS["World Geodetic System 1984",
+ *                   DATUM["World Geodetic System 1984",
+ *                      SPHEROID["WGS 84", 6378137.0, 298.257223563, AUTHORITY["EPSG","7030"]],
+ *                   AUTHORITY["EPSG","6326"]],
+ *                   PRIMEM["Greenwich", 0.0, AUTHORITY["EPSG","8901"]],
+ *                   UNIT["degree", 0.017453292519943295],
+ *                   AXIS["Geodetic longitude", EAST],
+ *                   AXIS["Geodetic latitude", NORTH]],
+ *                PROJECTION["Lambert_Azimuthal_Equal_Area"],
+ *                PARAMETER["latitude_of_center", 0.0],
+ *                PARAMETER["longitude_of_center", 0.0],
+ *                PARAMETER["false_easting", 0.0],
+ *                PARAMETER["false_northing", 0.0],
+ *                UNIT["m", 1.0],
+ *                AXIS["Easting", EAST],
+ *                AXIS["Northing", NORTH]]
+ *            &lt;/crs&gt;
+ *            &lt;resampling&gt;Nearest&lt;/resampling&gt;
+ *            &lt;referencePixelX&gt;0.5&lt;/referencePixelX&gt;
+ *            &lt;referencePixelY&gt;0.5&lt;/referencePixelY&gt;
+ *            &lt;easting&gt;9.5&lt;/easting&gt;
+ *            &lt;northing&gt;56.84&lt;/northing&gt;
+ *            &lt;orientation&gt;0.0&lt;/orientation&gt;
+ *            &lt;pixelSizeX&gt;0.012&lt;/pixelSizeX&gt;
+ *            &lt;pixelSizeY&gt;0.012&lt;/pixelSizeY&gt;
+ *            &lt;width&gt;135010246&lt;/width&gt;
+ *            &lt;height&gt;116629771&lt;/height&gt;
+ *            &lt;orthorectify&gt;false&lt;/orthorectify&gt;
+ *            &lt;elevationModelName/&gt;
+ *            &lt;noDataValue&gt;NaN&lt;/noDataValue&gt;
+ *            &lt;includeTiePointGrids&gt;true&lt;/includeTiePointGrids&gt;
+ *            &lt;addDeltaBands&gt;false&lt;/addDeltaBands&gt;
+ *        &lt;/parameters&gt;
+ *    &lt;/node&gt;
+ * </pre>
+ *
+ *  New futures added:
+ *  - referenceProduct to which the source product will be reprojected whether it is multiSize or singleSize
+ *  - deleted multiSize product checking
+ *
+ * @author Marco Zuehlke
+ * @author Marco Peters
  * @author Razvan Dumitrascu
  * @since 5.0.2
  */
 @OperatorMetadata(alias = "S2tbx-Reproject",
         category = "Raster/Geometric",
         version = "1.0",
-        authors = "Razvan Dumitrascu",
-        copyright = "(c) 2017 by CS Romania",
+        authors = "Marco Zühlke, Marco Peters, Ralf Quast, Norman Fomferra, Razvan Dumitrascu",
+        copyright = "(c) 2009 by Brockmann Consult, 2017 by CS Romania",
         description = "Reprojection of a source product to a target Coordinate Reference System.",
         internal = false)
 @SuppressWarnings({"UnusedDeclaration"})
@@ -158,6 +217,9 @@ public final class S2tbxReprojectionOp extends Operator {
         validateTargetGridParameters();
         validateSARProduct();
 
+        /*
+        * 1. Compute the target CRS
+        */
         final GeoPos centerGeoPos =
                 getCenterGeoPos(sourceProduct.getSceneGeoCoding(), sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
         CoordinateReferenceSystem targetCrs = createTargetCRS(centerGeoPos);
@@ -297,31 +359,7 @@ public final class S2tbxReprojectionOp extends Operator {
         if (orthorectify && sourceRaster.canBeOrthorectified()) {
             sourceGeoCoding = createOrthorectifier(sourceRaster);
         } else {
-            /*if (this.sourceProduct.isMultiSize()) {
-                AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
-                try {
-                    sourceGeoCoding = new CrsGeoCoding(sourceProduct.getSceneCRS(),
-                            sourceRaster.getRasterWidth(), sourceRaster.getRasterHeight(),
-                            affSourceTransform.getTranslateX(), affSourceTransform.getTranslateY(),
-                            affSourceTransform.getScaleX(), affSourceTransform.getScaleX());
-                } catch (FactoryException | TransformException e) {
-                    e.printStackTrace();
-                }
-            } else if ((this.sourceProduct.getNumBands() < 2) &&
-                    (sourceRaster.getRasterWidth() != this.sourceProduct.getSceneRasterWidth() ||
-                            sourceRaster.getRasterHeight() != this.sourceProduct.getSceneRasterHeight())) {
-                AffineTransform affSourceTransform = sourceRaster.getSourceImage().getModel().getImageToModelTransform(0);
-                try {
-                    sourceGeoCoding = new CrsGeoCoding(sourceProduct.getSceneCRS(),
-                            sourceRaster.getRasterWidth(), sourceRaster.getRasterHeight(),
-                            affSourceTransform.getTranslateX(), affSourceTransform.getTranslateY(),
-                            affSourceTransform.getScaleX(), affSourceTransform.getScaleX());
-                } catch (FactoryException | TransformException e) {
-                    e.printStackTrace();
-                }
-            } else {*/
-                sourceGeoCoding = sourceRaster.getGeoCoding();
-            //}
+            sourceGeoCoding = sourceRaster.getGeoCoding();
         }
         final String exp = sourceRaster.getValidMaskExpression();
         if (exp != null) {
@@ -334,9 +372,9 @@ public final class S2tbxReprojectionOp extends Operator {
             targetModel = targetBand.getMultiLevelModel();
             reprojectionSettings.setTargetModel(targetModel);
         }
-        S2tbxReproject reprojection = reprojectionSettings.getReprojection();
+        Reproject reprojection = reprojectionSettings.getReprojection();
         if (reprojection == null) {
-            reprojection = new S2tbxReproject(targetModel.getLevelCount());
+            reprojection = new Reproject(targetModel.getLevelCount());
             reprojectionSettings.setReprojection(reprojection);
         }
         MultiLevelImage projectedImage = createProjectedImage(sourceGeoCoding, sourceImage, reprojectionSettings.getSourceModel(),
@@ -373,7 +411,7 @@ public final class S2tbxReprojectionOp extends Operator {
         return new DefaultMultiLevelImage(new AbstractMultiLevelSource(projectedImage.getModel()) {
             @Override
             public RenderedImage createImage(int level) {
-                return new S2tbxLog10OpImage(projectedImage.getImage(level));
+                return new Log10OpImage(projectedImage.getImage(level));
             }
         });
     }
@@ -415,7 +453,7 @@ public final class S2tbxReprojectionOp extends Operator {
 
             @Override
             public RenderedImage createImage(int targetLevel) {
-                return new S2tbxReplaceNaNOpImage(projectedImage.getImage(targetLevel), value);
+                return new ReplaceNaNOpImage(projectedImage.getImage(targetLevel), value);
             }
         });
     }
@@ -426,7 +464,7 @@ public final class S2tbxReprojectionOp extends Operator {
 
     private MultiLevelImage createProjectedImage(final GeoCoding sourceGeoCoding, final MultiLevelImage sourceImage,
                                                  MultiLevelModel sourceModel, final Band targetBand, final Interpolation resampling,
-                                                 MultiLevelModel targetModel, S2tbxReproject reprojection) {
+                                                 MultiLevelModel targetModel, Reproject reprojection) {
         final CoordinateReferenceSystem sourceModelCrs = Product.findModelCRS(sourceGeoCoding);
         final CoordinateReferenceSystem targetModelCrs = Product.findModelCRS(targetBand.getGeoCoding());
         final AffineTransform sourceImageToMapTransform = Product.findImageToModelTransform(sourceGeoCoding);
@@ -654,11 +692,11 @@ public final class S2tbxReprojectionOp extends Operator {
                         easting, northing,
                         referencePixelX, referencePixelY);
             } else {*/
-                imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
-                        pixelSizeX, pixelSizeY,
-                        width, height, orientation,
-                        easting, northing,
-                        referencePixelX, referencePixelY);
+            imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, targetCrs,
+                    pixelSizeX, pixelSizeY,
+                    width, height, orientation,
+                    easting, northing,
+                    referencePixelX, referencePixelY);
             //}
             final AxisDirection targetAxisDirection = targetCrs.getCoordinateSystem().getAxis(1).getDirection();
             if (!AxisDirection.DISPLAY_DOWN.equals(targetAxisDirection)) {
@@ -781,7 +819,7 @@ public final class S2tbxReprojectionOp extends Operator {
             Band firstBand = sourceProduct.getBandGroup().get(0);
             MultiLevelModel sourceModel = firstBand.getMultiLevelModel();
             MultiLevelModel targetModel = targetProduct.createMultiLevelModel();
-            S2tbxReproject reprojection = new S2tbxReproject(targetModel.getLevelCount());
+            Reproject reprojection = new Reproject(targetModel.getLevelCount());
             defaultReprojectionSettings = new ReprojectionSettings(null, sourceModel, imageGeometry);
             defaultReprojectionSettings.setTargetModel(targetModel);
             defaultReprojectionSettings.setReprojection(reprojection);
@@ -842,11 +880,11 @@ public final class S2tbxReprojectionOp extends Operator {
                 if (reprojectedFirstProductBand != null) {
                     final double pixelSize = reprojectedFirstProductBand.getSourceImage().getModel().getImageToModelTransform(0).getScaleX();
                     targetImageGeometry = ImageGeometry.createTargetGeometry(rasterDataNode, targetCrs,
-                                                                             pixelSize, pixelSize,
-                                                                             width, height,
-                                                                             orientation, easting,
-                                                                             northing, referencePixelX,
-                                                                             referencePixelY);
+                            pixelSize, pixelSize,
+                            width, height,
+                            orientation, easting,
+                            northing, referencePixelX,
+                            referencePixelY);
                 } else {
                     targetImageGeometry = ImageGeometry.createTargetGeometry(
                             rasterDataNode, targetCrs,
@@ -890,12 +928,12 @@ public final class S2tbxReprojectionOp extends Operator {
             this.targetModel = targetModel;
         }
 
-        public void setReprojection(S2tbxReproject reprojection) {
+        public void setReprojection(Reproject reprojection) {
             this.reprojection = reprojection;
         }
 
         private MultiLevelModel targetModel;
-        private S2tbxReproject reprojection;
+        private Reproject reprojection;
 
         ReprojectionSettings(GeoCoding geoCoding, MultiLevelModel sourceModel, ImageGeometry imageGeometry) {
             this.geoCoding = geoCoding;
@@ -919,7 +957,7 @@ public final class S2tbxReprojectionOp extends Operator {
             return targetModel;
         }
 
-        public S2tbxReproject getReprojection() {
+        public Reproject getReprojection() {
             return reprojection;
         }
 

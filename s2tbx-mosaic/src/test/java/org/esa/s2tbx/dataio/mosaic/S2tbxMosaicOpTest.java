@@ -27,20 +27,16 @@ import org.esa.snap.core.gpf.common.MosaicOp;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import javax.media.jai.operator.ConstantDescriptor;
-import java.awt.*;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.Raster;
-
 import java.io.IOException;
-
-
 import static org.junit.Assert.assertEquals;
+
 
 
 /**
@@ -135,7 +131,6 @@ public class S2tbxMosaicOpTest {
         op.overlappingMethod = "MOSAIC_TYPE_OVERLAY";
 
         final Product product = op.getTargetProduct();
-
         final GeoPos[] geoPositions = {
                 new GeoPos(-5, 3), new GeoPos(4, -4), new GeoPos(0, 0), new GeoPos(-4, 4), new GeoPos(5,3)
         };
@@ -170,7 +165,6 @@ public class S2tbxMosaicOpTest {
         op.overlappingMethod = "MOSAIC_TYPE_OVERLAY";
 
         final Product product = op.getTargetProduct();
-
         final GeoPos[] geoPositions = {
                 new GeoPos(-5, 3), new GeoPos(4, -4), new GeoPos(0, 0), new GeoPos(-4, 4), new GeoPos(5,3)
         };

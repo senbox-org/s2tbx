@@ -1,24 +1,27 @@
-package org.esa.s2tbx.dataio.mosaic.reproject;
 
+package org.esa.s2tbx.dataio.mosaic.reproject;
 
 import javax.media.jai.OpImage;
 import javax.media.jai.PixelAccessor;
 import javax.media.jai.UnpackedImageData;
 import javax.media.jai.Warp;
-import java.awt.*;
+import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 
 /**
- * @author Razvan Dumitrascu
- * @since 5.0.2
+ * Gives the warp coordinates using the data from the given image.
+ *
+ * @author Marco Zuehlke
+ * @since BEAM 4.7
  */
 
-public class S2tbxWarpFromSourceCoordinates extends Warp {
+
+class WarpFromSourceCoordinates extends Warp {
 
     private final OpImage opImage;
 
-    public S2tbxWarpFromSourceCoordinates(OpImage opImage) {
+    WarpFromSourceCoordinates(OpImage opImage) {
         this.opImage = opImage;
     }
 

@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2010 Brockmann Consult GmbH (info@brockmann-consult.de)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see http://www.gnu.org/licenses/
+ */
+
 package org.esa.s2tbx.dataio.mosaic.reproject;
 
 import org.esa.snap.core.datamodel.ImageGeometry;
@@ -37,12 +53,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 
-/**
- * @author Razvan Dumitrascu
- * @since 5.0.2
- */
-
-public class S2tbxReproject {
+final class Reproject {
     private static final int DIMENSION_X_INDEX = 0;
     private static final int DIMENSION_Y_INDEX = 1;
     /**
@@ -52,15 +63,15 @@ public class S2tbxReproject {
 
     private OpImage[] leveledWarpImages;
 
-    S2tbxReproject(int numLevels) {
+    Reproject(int numLevels) {
         leveledWarpImages = new OpImage[numLevels];
     }
 
     private synchronized Warp getCachingWarp(Warp warp, int width, int height, Dimension tileSize, int level) {
         if (leveledWarpImages[level] == null) {
-            leveledWarpImages[level] = new S2tbxWarpSourceCoordinatesOpImage(warp, width, height, tileSize, null);
+            leveledWarpImages[level] = new WarpSourceCoordinatesOpImage(warp, width, height, tileSize, null);
         }
-        return new S2tbxWarpFromSourceCoordinates(leveledWarpImages[level]);
+        return new WarpFromSourceCoordinates(leveledWarpImages[level]);
     }
 
 

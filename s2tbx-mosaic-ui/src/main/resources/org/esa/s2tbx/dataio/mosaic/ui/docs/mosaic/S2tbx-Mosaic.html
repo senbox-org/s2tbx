@@ -24,15 +24,15 @@
 <body>
 <table class="header">
     <tr class="header">
-        <td class="header">&nbsp;S2-Mosaic</td>
+        <td class="header">&nbsp;S2tbx-Mosaic</td>
         <td class="header" align="right">
             <a href="../general/overview/SnapOverview.html">             <img src="images/snap_header.jpg" border="0"/></a>
         </td>
     </tr>
 </table>
 
-<h3>S2-Mosaic Dialog</h3>
-
+<h3>S2tbx-Mosaic Dialog</h3>
+<b>Note</b> The S2tbx-Mosaic operator is called when at least one of the input products is Multi Size otherwise the original mosaic operator is called
 <h4>I/O Parameters</h4>
 <table border="0">
     <tr>
@@ -159,9 +159,10 @@
                 The world map in which the geographical boundary of the resulting output product is displayed.
             </p>
             <p class="i1">
-                <b>Create mosaic at native resolution:</b>
+                <b>Perform mosaic at native resolution:</b>
                 If selected the created mosaic image is at the native resolution of the source products, no resample
-                is produced on the source products.
+                is produced on the source products. When "Perform mosaic at native resolution" check box is unselected the Mosaic is performed
+                at the resolution given by Pixel size X and Pixel size Y.
             </p>
             <p class="i1">
                 <b>Overlapping Methods:</b>

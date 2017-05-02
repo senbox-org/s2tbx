@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2010 Brockmann Consult GmbH (info@brockmann-consult.de)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see http://www.gnu.org/licenses/
+ */
 package org.esa.s2tbx.dataio.mosaic.reproject;
 
 import org.esa.snap.core.gpf.internal.OperatorContext;
@@ -9,7 +24,9 @@ import javax.media.jai.RasterFactory;
 import javax.media.jai.RasterFormatTag;
 import javax.media.jai.SourcelessOpImage;
 import javax.media.jai.Warp;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
@@ -19,10 +36,13 @@ import java.awt.image.WritableRaster;
 import java.util.Map;
 
 /**
- * @author Razvan Dumitrascu
- * @since 5.0.2
+ * todo - add API doc
+ *
+ * @author Marco Zuehlke
+ * @since BEAM 4.7
  */
-public class S2tbxWarpSourceCoordinatesOpImage extends SourcelessOpImage {
+
+class WarpSourceCoordinatesOpImage extends SourcelessOpImage {
 
     private final Warp warp;
     private final RasterFormatTag rasterFormatTag;
@@ -58,12 +78,12 @@ public class S2tbxWarpSourceCoordinatesOpImage extends SourcelessOpImage {
      * @param tileSize
      * @param configuration
      */
-    S2tbxWarpSourceCoordinatesOpImage(Warp warp, int width, int height, Dimension tileSize,
+    WarpSourceCoordinatesOpImage(Warp warp, int width, int height, Dimension tileSize,
                                  Map configuration) {
         this(warp, createTwoBandedImageLayout(width, height, tileSize), configuration);
     }
 
-    private S2tbxWarpSourceCoordinatesOpImage(Warp warp, ImageLayout layout, Map configuration) {
+    private WarpSourceCoordinatesOpImage(Warp warp, ImageLayout layout, Map configuration) {
         super(layout, configuration, layout.getSampleModel(null), layout.getMinX(null), layout.getMinY(null),
                 layout.getWidth(null), layout.getHeight(null));
         this.warp = warp;

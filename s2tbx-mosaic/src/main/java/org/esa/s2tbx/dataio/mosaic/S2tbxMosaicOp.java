@@ -57,8 +57,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * A mosaic operator that performs mosaicing operations on multisize products
@@ -213,7 +211,7 @@ public final class S2tbxMosaicOp extends Operator {
 
     private Product generateSelectedBandsProduct(final Product product) {
         Product localProduct;
-        AbstractSet<String> bandFromExpresion = new HashSet<>();
+        AbstractSet<String> bandFromExpression = new HashSet<>();
         if (product == null) {
             String msg = "Source product is null.";
             getLogger().warning(msg);
@@ -224,10 +222,10 @@ public final class S2tbxMosaicOp extends Operator {
                 for (MosaicOp.Variable variable : this.variables) {
                     String variableExpression = variable.getExpression();
                     if (variableExpression.equals(bandName)) {
-                        bandFromExpresion.add(bandName);
+                        bandFromExpression.add(bandName);
                         break;
                     } else if (variableExpression.contains(bandName)) {
-                        bandFromExpresion.add(bandName);
+                        bandFromExpression.add(bandName);
                         break;
                     }
                 }
@@ -236,17 +234,17 @@ public final class S2tbxMosaicOp extends Operator {
                 for (MosaicOp.Condition condition : this.conditions) {
                     String conditionExpression = condition.getExpression();
                     if (conditionExpression.equals(bandName)) {
-                        bandFromExpresion.add(bandName);
+                        bandFromExpression.add(bandName);
                         break;
                     } else if (conditionExpression.contains(bandName)) {
-                        bandFromExpresion.add(bandName);
+                        bandFromExpression.add(bandName);
                         break;
                     }
                 }
             }
         }
 
-        String[] BandNamesArray = bandFromExpresion.toArray(new String[bandFromExpresion.size()]);
+        String[] BandNamesArray = bandFromExpression.toArray(new String[bandFromExpression.size()]);
         localProduct = new Product(product.getName(), product.getProductType(), product.getSceneRasterWidth(), product.getSceneRasterHeight());
         localProduct.setStartTime(product.getStartTime());
         localProduct.setEndTime(product.getEndTime());
