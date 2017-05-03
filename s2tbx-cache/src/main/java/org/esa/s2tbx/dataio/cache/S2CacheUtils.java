@@ -42,6 +42,11 @@ public class S2CacheUtils {
                 deleteFile(new File(file, aChild));
             }
         }
+        try {
+            file.delete();
+        } catch (Exception e) {
+            // do not report anything
+        }
     }
 
     public static void deleteFiles(final ArrayList<File> files) {

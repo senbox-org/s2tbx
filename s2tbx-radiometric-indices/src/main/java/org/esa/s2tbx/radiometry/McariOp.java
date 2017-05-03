@@ -103,7 +103,7 @@ public class McariOp extends BaseIndexOp{
                     final float redB5 = red2Factor * red2Tile.getSampleFloat(x, y);
                     final float green = greenFactor * greenTile.getSampleFloat(x, y);
 
-                    mcariValue = ( (redB5 - redB4) - 0.2f*(redB5 - green) ) * (redB5 - redB4);
+                    mcariValue = ( (redB5 - redB4) - 0.2f*(redB5 - green) ) * (redB5 / redB4);
 
                     mcari.setSample(x, y, computeFlag(x, y, mcariValue, mcariFlags));
                 }

@@ -6,7 +6,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>5.0.4-SNAPSHOT</version>
+        <version>5.0.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-gdal-reader</artifactId>
@@ -105,6 +105,8 @@
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.dataio.gdal</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.gdal.activator</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.gdal.reader.plugins</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.gdal.writer.plugins</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

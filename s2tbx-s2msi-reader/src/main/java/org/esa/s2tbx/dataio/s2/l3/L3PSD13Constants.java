@@ -114,4 +114,6 @@ public class L3PSD13Constants {
     public static final String PATH_GRANULE_METADATA_CLASIF_MASK = "/Level-3_Tile_ID/Quality_Indicators_Info/L3_Pixel_Level_QI/L3_TILE_CLASSIFICATION_MASK";
     public static final String PATH_GRANULE_METADATA_MOSAIC_MASK = "/Level-3_Tile_ID/Quality_Indicators_Info/L3_Pixel_Level_QI/L3_TILE_MOSAIC_MASK";
 
+    public static final String PATH_GRANULE_METADATA_MOSAIC_CONTENT_TILE_NUMBER = "/Level-3_Tile_ID/Quality_Indicators_Info/L3_Mosaic_QI/L3_Mosaic_Content/tileNumber";
+
 }

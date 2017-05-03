@@ -3,4 +3,4 @@ OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Specification-Version: ${project.nbmSpecVersion}
 AutoUpdate-Show-In-Client: false
-AutoUpdate-Essential-Module: true
+AutoUpdate-Essential-Module: false
