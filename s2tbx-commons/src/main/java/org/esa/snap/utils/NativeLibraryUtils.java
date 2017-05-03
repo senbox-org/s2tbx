@@ -53,7 +53,7 @@ public class NativeLibraryUtils {
         }
         System.setProperty(ENV_LIB_PATH, propertyValue);
         try {
-            PrivilegedAccessor.setStaticValue(ClassLoader.class, "sys_paths", null);
+            ClassAccessor.setStaticValue(ClassLoader.class, "sys_paths", null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

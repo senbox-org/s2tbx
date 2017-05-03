@@ -34,14 +34,14 @@ import java.lang.reflect.Method;
  *
  * <pre>
  * Class c = Class.class;
- * System.out.println(PrivilegedAccessor.invokeMethod(c, "resolveName","/ise/library/PrivilegedAccessor"));
+ * System.out.println(ClassAccessor.invokeMethod(c, "resolveName","/ise/library/ClassAccessor"));
  * </pre>
  *
  * @author Charlie Hubbard (chubbard@iss.net)
  * @author Prashant Dhokte (pdhokte@iss.net)
  * @author Dale Anson (danson@germane-software.com)
  */
-public class PrivilegedAccessor {
+public class ClassAccessor {
     /**
      * Gets the value of the named field and returns it as an object.
      *
@@ -96,7 +96,7 @@ public class PrivilegedAccessor {
      * @param instance      the object instance
      * @param methodName    the name of the method to invoke
      * @param arg           the argument to pass to the method
-     * @see PrivilegedAccessor#invokeMethod(Object,String,Object[])
+     * @see ClassAccessor#invokeMethod(Object,String,Object[])
      */
     public static Object invokeMethod(Object instance, String methodName, Object arg)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -111,7 +111,7 @@ public class PrivilegedAccessor {
      * @param instance      the object instance
      * @param methodName    the name of the method to invoke
      * @param args          an array of objects to pass as arguments
-     * @see PrivilegedAccessor#invokeMethod(Object,String,Object)
+     * @see ClassAccessor#invokeMethod(Object,String,Object)
      */
     public static Object invokeMethod(Object instance, String methodName, Object[] args)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
