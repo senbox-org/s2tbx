@@ -19,7 +19,11 @@
 package org.esa.s2tbx.radiometry;
 
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.FlagCoding;
+import org.esa.snap.core.datamodel.MetadataAttribute;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -27,12 +31,14 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.util.ProductUtils;
 
-import java.awt.*;
+import java.awt.Color;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -138,7 +144,8 @@ public abstract class BaseIndexOp extends Operator {
         String name = getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
-        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+        targetProduct.setSceneGeoCoding(sourceProduct.getBand(this.sourceBandNames[0]).getGeoCoding());
+        //ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
 
         Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sceneWidth, sceneHeight);
         targetProduct.addBand(outputBand);
