@@ -146,7 +146,7 @@ public abstract class AbstractTileSegmenter {
             int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
             int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Run second segmentation for all tiles. Total iterations: " + this.totalIterationsForSecondSegmentation + ", tile column count: " +tileCountX+", tile row count: " + tileCountY + ", acumulated memory:" + this.tileSegmenterMetadata.getAccumulatedMemory()+", fusion: " + this.tileSegmenterMetadata.isFusion()+", margin: "+computeTileMargin()+", number of second iterations: "+this.iterationsForEachSecondSegmentation);
+            logger.log(Level.FINE, "Run second segmentation for all tiles. Total iterations: " + this.totalIterationsForSecondSegmentation + ", tile column count: " +tileCountX+", tile row count: " + tileCountY + ", acumulated memory: " + this.tileSegmenterMetadata.getAccumulatedMemory()+", fusion: " + this.tileSegmenterMetadata.isFusion()+", margin: "+computeTileMargin()+", number of second iterations: "+this.iterationsForEachSecondSegmentation);
         }
 
         int numberOfIterationsRemaining = this.totalIterationsForSecondSegmentation;
@@ -368,36 +368,36 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Run second segmentation: (extract the stability margin for the next round): tile column count: " +tileCountX+", tile row count: " + tileCountY + ", acumulated memory:" + this.tileSegmenterMetadata.getAccumulatedMemory()+", fusion: " + this.tileSegmenterMetadata.isFusion());
+            logger.log(Level.FINE, "Run second segmentation: (extract the stability margin for the next round): tile column count: " +tileCountX+", tile row count: " + tileCountY + ", acumulated memory: " + this.tileSegmenterMetadata.getAccumulatedMemory()+", fusion: " + this.tileSegmenterMetadata.isFusion());
         }
 
         // during this step we extract the stability margin for the next round
-        for(int row = 0; row < tileCountY; row++) {
-            for (int col = 0; col<tileCountX; col++) {
-                BoundingBox rectangle = this.tileSegmenterMetadata.getTileAt(row, col);
+        for(int rowIndex = 0; rowIndex < tileCountY; rowIndex++) {
+            for (int columnIndex = 0; columnIndex<tileCountX; columnIndex++) {
+                BoundingBox rectangle = this.tileSegmenterMetadata.getTileAt(rowIndex, columnIndex);
                 ProcessingTile currentTile = buildTile(rectangle.getLeftX(), rectangle.getTopY(), rectangle.getWidth(), rectangle.getHeight());
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, ""); // add an empty line
-                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): iteration: "+iteration+", tile region: " +tileRegionToString(currentTile.getRegion())+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): iteration: "+iteration+", tile region: " +tileRegionToString(currentTile.getRegion())+", tile row index: " + rowIndex + ", tile column index: " + columnIndex);
                 }
 
                 Graph graph = readGraph(currentTile.getNodeFileName(), currentTile.getEdgeFileName());
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin - after read graph): graph node count: "+graph.getNodeCount()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin - after read graph): graph node count: "+graph.getNodeCount()+", tile row index: " + rowIndex + ", tile column index: " + columnIndex);
                 }
 
                 List<Node> nodesToIterate = graph.detectBorderNodes(currentTile, this.imageWidth, this.imageHeight);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): border node count: " + nodesToIterate.size()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): border node count: " + nodesToIterate.size()+", tile row index: " + rowIndex + ", tile column index: " + columnIndex);
                 }
 
                 Int2ObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
 
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): node count to write for stability margin: " + borderNodes.size()+", tile row index: " + row + ", tile column index: " + col);
+                    logger.log(Level.FINEST, "Run second segmentation: (extract the stability margin): node count to write for stability margin: " + borderNodes.size()+", tile row index: " + rowIndex + ", tile column index: " + columnIndex);
                 }
 
                 writeStabilityMargin(borderNodes, currentTile.getNodeMarginFileName(), currentTile.getEdgeMarginFileName());

@@ -25,7 +25,7 @@ public class Contour {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
-        for (int i=0; i<size; i+=2) {
+        for (int i=0; i<this.size; i+=2) {
             if (getBitAt(i) == 1) {
                 str.append("1");
             } else {
@@ -36,7 +36,7 @@ public class Contour {
             } else {
                 str.append("0");
             }
-            if (i < size-2) {
+            if (i < this.size-2) {
                 str.append(" "); // add an empty space
             }
         }
@@ -59,13 +59,6 @@ public class Contour {
         pushTwoBits(LEFT_MOVE_INDEX);
     }
 
-    public byte getBitAt(int index) {
-        int arrayIndex = index / 8;
-        int positionsToMove = 7 - (index % 8);
-        int value = (this.bits[arrayIndex] >> positionsToMove) & 0x01;
-        return (byte)value;
-    }
-
     public int getMove(int index) {
         int bitIndex = 2 * index;
         return (2 * getBitAt(bitIndex)) + getBitAt(bitIndex + 1);
@@ -76,7 +69,14 @@ public class Contour {
     }
 
     public byte[] getBits() {
-        return bits;
+        return this.bits;
+    }
+
+    private byte getBitAt(int index) {
+        int arrayIndex = index / 8;
+        int positionsToMove = 7 - (index % 8);
+        int value = (this.bits[arrayIndex] >> positionsToMove) & 0x01;
+        return (byte)value;
     }
 
     private void pushTwoBits(byte bitValue) {

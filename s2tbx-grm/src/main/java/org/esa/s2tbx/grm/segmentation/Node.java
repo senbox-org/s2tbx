@@ -1,5 +1,8 @@
 package org.esa.s2tbx.grm.segmentation;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -264,7 +267,7 @@ public abstract class Node {
         // first step consists of building the bounding box resulting from the fusion of the bounding boxes bbox1 and bbox2
         BoundingBox mergedBox = AbstractSegmenter.mergeBoundingBoxes(getBox(), targetNode.getBox());
 
-        Contour mergedContour = AbstractSegmenter.mergeContour(mergedBox, getContour(), targetNode.getContour(), getId(), targetNode.getId(), imageWidth);
+        Contour mergedContour = mergeContour(mergedBox, getContour(), targetNode.getContour(), getId(), targetNode.getId(), imageWidth);
 
         // step 1: update the bounding box
         this.box = mergedBox;
@@ -286,5 +289,174 @@ public abstract class Node {
 
         targetNode.setValid(false);
         targetNode.setExpired(true);
+    }
+
+    private static Contour createNewContour(int nodeId, IntSet borderCells, int boxWidth, int boxHeight) {
+        Contour newContour = new Contour();
+        // the first move is always to the right
+        newContour.pushRight(); //Push1(newContour);
+
+        // previous move is to the right
+        int currentMoveId = Contour.RIGHT_MOVE_INDEX;
+
+        // local pixel id
+        int currentNodeId = nodeId;
+
+        // table containing id neighbors
+        int[] neighbors = new int[8];
+        for (; ;) {
+            // compute neighbor' ids
+            AbstractSegmenter.generateEightNeighborhood(neighbors, currentNodeId, boxWidth, boxHeight);
+
+            if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // 1 => move to the right
+                if (neighbors[1] != -1 && borderCells.contains(neighbors[1])) { // array index = 1 => top right
+                    newContour.pushTop(); //Push0(newContour);
+                    currentNodeId = currentNodeId - boxWidth + 1;
+                    currentMoveId = Contour.TOP_MOVE_INDEX; // 0 => move to the top
+                } else if (neighbors[2] != -1 && borderCells.contains(neighbors[2])) { // array index = 2 => right
+                    newContour.pushRight(); //Push1(newContour);
+                    currentNodeId++;
+                    currentMoveId = Contour.RIGHT_MOVE_INDEX; // 1 => move to the right
+                } else {
+                    newContour.pushBottom(); //Push2(newContour);
+                    currentMoveId = Contour.BOTTOM_MOVE_INDEX; // 2 => move to the bottom
+                }
+            } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // 2 => move to the bottom
+                if (neighbors[3] != -1 && borderCells.contains(neighbors[3])) { // array index = 3 => bottom right
+                    newContour.pushRight(); //Push1(newContour);
+                    currentNodeId = currentNodeId + boxWidth + 1;
+                    currentMoveId = Contour.RIGHT_MOVE_INDEX; // 1 => move to the right
+                } else if (neighbors[4] != -1 && borderCells.contains(neighbors[4])) { // array index = 4 => right
+                    newContour.pushBottom(); //Push2(newContour);
+                    currentNodeId += boxWidth;
+                    currentMoveId = Contour.BOTTOM_MOVE_INDEX; // 2 => move to the bottom
+                } else {
+                    newContour.pushLeft(); //Push3(newContour);
+                    currentMoveId = Contour.LEFT_MOVE_INDEX; // 3 => move to the left
+                }
+            } else if (currentMoveId == Contour.LEFT_MOVE_INDEX) { // 3 => move to the left
+                if (neighbors[5] != -1 && borderCells.contains(neighbors[5])) { // array index = 5 => bottom left
+                    newContour.pushBottom(); //Push2(newContour);
+                    currentNodeId = currentNodeId + boxWidth - 1;
+                    currentMoveId = Contour.BOTTOM_MOVE_INDEX; // 2 => move to the bottom
+                } else if (neighbors[6] != -1 && borderCells.contains(neighbors[6])) { // array index = 6 => left
+                    newContour.pushLeft(); //Push3(newContour);
+                    currentNodeId--;
+                    currentMoveId = Contour.LEFT_MOVE_INDEX; // 3 => move to the left
+                } else {
+                    newContour.pushTop(); //Push0(newContour);
+                    currentMoveId = Contour.TOP_MOVE_INDEX; // 0 => move to the top
+                }
+            } else { // previous move = 0 => move to the top
+                assert (currentMoveId == Contour.TOP_MOVE_INDEX);
+
+                if (neighbors[7] != -1 && borderCells.contains(neighbors[7])) { // array index = 7 => top left
+                    newContour.pushLeft(); //Push3(newContour);
+                    currentNodeId = currentNodeId - boxWidth - 1;
+                    currentMoveId = Contour.LEFT_MOVE_INDEX; // 3 => move to the left
+                } else if (neighbors[0] != -1 && borderCells.contains(neighbors[0])) { // array index = 0 => top
+                    newContour.pushTop(); //Push0(newContour);
+                    currentNodeId -= boxWidth;
+                    currentMoveId = Contour.TOP_MOVE_INDEX; // 0 => move to the top
+                } else {
+                    if (currentNodeId == nodeId) {
+                        break; // exit the loop
+                    } else {
+                        newContour.pushRight(); //Push1(newContour);
+                        currentMoveId = Contour.RIGHT_MOVE_INDEX; // 1 => move to the right
+                    }
+                }
+            }
+        }
+        return newContour;
+    }
+
+    private static Contour mergeContour(BoundingBox mergedBox, Contour contour1, Contour contour2, int nodeId1, int nodeId2, int imageWidth) {
+        // fill the cell matrix with the cells from both contours
+        IntSet borderCells = new IntOpenHashSet();
+        // fill with the cells of contour 1
+        generateBorderCellsForContourFusion(borderCells, contour1, nodeId1, imageWidth, mergedBox);
+        // fill with the cells of contour 2
+        generateBorderCellsForContourFusion(borderCells, contour2, nodeId2, imageWidth, mergedBox);
+        // create the new contour
+        int id = gridToBBox(nodeId1, mergedBox, imageWidth);
+        return createNewContour(id, borderCells, mergedBox.getWidth(), mergedBox.getHeight());
+    }
+
+    private static void generateBorderCellsForContourFusion(IntSet outputBorderCells, Contour contour, int startCellId, int width, BoundingBox mergedBox) {
+        // add the first pixel to the border list
+        int id = gridToBBox(startCellId, mergedBox, width);
+        outputBorderCells.add(id);
+
+        if (contour.size() > 8) { // contour size > 8 => more then 4 moves
+            // initialize the first move at previous index
+            int previousMoveId = contour.getMove(0);
+
+            // declare the current pixel index
+            int currentCellId = startCellId;
+
+            // explore the contour
+            for (int contourIndex = 1; contourIndex < contour.size() / 2; contourIndex++) {
+                int currentMoveId = contour.getMove(contourIndex);
+                assert (currentMoveId >= 0 && currentMoveId <= 3);
+
+                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
+                    // impossible case is previous index = 2 (bottom)
+                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
+
+                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+                        currentCellId -= width; // go to the top
+                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+                        currentCellId = currentCellId - width + 1; // go to the top right
+                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+                    }
+                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
+                    // impossible case is previous index = 3 (left)
+                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
+
+                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+                        currentCellId++; // go to the right
+                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+                        currentCellId = currentCellId + width + 1; // go to the bottom right
+                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+                    }
+                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
+                    // impossible case is previous index = 0 (top)
+                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
+
+                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+                        currentCellId += width;
+                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+                        currentCellId = currentCellId + width - 1; // go to the bottom left
+                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+                    }
+                } else { // current index = 3 (left)
+                    // impossible case is previous index = 1 (right)
+                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
+
+                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+                        currentCellId = currentCellId - width - 1; // go to the top left
+                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+                        currentCellId--; // go the to left
+                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+                    }
+                }
+                previousMoveId = currentMoveId;
+            }
+        }
+    }
+
+    private static int gridToBBox(int gridId, BoundingBox bbox, int gridWidth) {
+        int gridX = gridId % gridWidth;
+        int gridY = gridId / gridWidth;
+
+        int bbX = gridX - bbox.getLeftX();
+        int bbY = gridY - bbox.getTopY();
+
+        return bbY * bbox.getWidth() + bbX;
     }
 }

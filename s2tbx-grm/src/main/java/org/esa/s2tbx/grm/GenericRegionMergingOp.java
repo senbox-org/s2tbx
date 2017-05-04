@@ -41,7 +41,7 @@ public class GenericRegionMergingOp extends Operator {
     public static final String SPRING_MERGING_COST_CRITERION = "Spring";
     public static final String BAATZ_SCHAPE_MERGING_COST_CRITERION = "Baatz & Schape";
     public static final String FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION = "Full Lamda Schedule";
-    private static final String BEST_FITTING_REGION_MERGING_CRITERION = "Best Fitting";
+    public static final String BEST_FITTING_REGION_MERGING_CRITERION = "Best Fitting";
     public static final String LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION = "Local Mutual Best Fitting";
 
     @Parameter(label = "Merging cost criterion",

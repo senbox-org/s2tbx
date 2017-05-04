@@ -16,6 +16,7 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,7 +33,8 @@ import static org.junit.Assume.assumeTrue;
  */
 public class GenericRegionMergingOpTest {
     private Path segmentationTestsFolderPath;
-    private Product sourceProduct;
+    private Product smallSourceProduct;
+    private Product largeSourceProduct;
 
     public GenericRegionMergingOpTest() {
     }
@@ -43,20 +45,25 @@ public class GenericRegionMergingOpTest {
 
         checkTestDirectoryExists();
 
-        File file = this.segmentationTestsFolderPath.resolve("picture-334x400.png").toFile();
         ImageProductReaderPlugIn readerPlugIn = new ImageProductReaderPlugIn();
         ProductReader reader = readerPlugIn.createReaderInstance();
-        this.sourceProduct = reader.readProductNodes(file, null);
+
+        File smallProductFile = this.segmentationTestsFolderPath.resolve("picture-334x400.png").toFile();
+        this.smallSourceProduct = reader.readProductNodes(smallProductFile, null);
+
+        File largeProductFile = this.segmentationTestsFolderPath.resolve("picture-750x898.png").toFile();
+        this.largeSourceProduct = reader.readProductNodes(largeProductFile, null);
     }
 
     @Test
-    public void testFullLambdaScheduleTileSegmenter() throws IOException, IllegalAccessException {
+    public void testFullLambdaScheduleTileSmallSegmenter() throws IOException, IllegalAccessException {
         String mergingCostCriterion = GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION;
         String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
         int totalIterationsForSecondSegmentation = 250;
         float threshold = 8600.0f;
 
-        GenericRegionMergingOp operator = executeOperator(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, null, null);
+        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
+                                                          totalIterationsForSecondSegmentation, threshold, null, null);
 
         Product targetProduct = operator.getTargetProduct();
         AbstractSegmenter segmenter = operator.getSegmenter();
@@ -88,13 +95,14 @@ public class GenericRegionMergingOpTest {
     }
 
     @Test
-    public void testSpringTileSegmenter() throws IOException, IllegalAccessException {
+    public void testSpringTileSmallSegmenter() throws IOException, IllegalAccessException {
         String mergingCostCriterion = GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION;
         String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
         int totalIterationsForSecondSegmentation = 1750;
         float threshold = 8650.0f;
 
-        GenericRegionMergingOp operator = executeOperator(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, null, null);
+        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
+                                                          totalIterationsForSecondSegmentation, threshold, null, null);
 
         Product targetProduct = operator.getTargetProduct();
         AbstractSegmenter segmenter = operator.getSegmenter();
@@ -126,7 +134,7 @@ public class GenericRegionMergingOpTest {
     }
 
     @Test
-    public void testBaatzSchapeTileSegmenter() throws IOException, IllegalAccessException {
+    public void testBaatzSchapeSmallTileSegmenter() throws IOException, IllegalAccessException {
         String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
         String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
         int totalIterationsForSecondSegmentation = 50;
@@ -134,7 +142,7 @@ public class GenericRegionMergingOpTest {
         float spectralWeight = 0.5f;
         float shapeWeight = 0.3f;
 
-        GenericRegionMergingOp operator = executeOperator(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
         Product targetProduct = operator.getTargetProduct();
         AbstractSegmenter segmenter = operator.getSegmenter();
@@ -166,10 +174,114 @@ public class GenericRegionMergingOpTest {
         nodeExpectedMeansValues = new float[] {29.810776f, 78.85059f, 107.02629f};
         checkGraphNode(node, nodeExpectedMeansValues, 36, 192, 268, 189, 2292, 1);
 
+        checkTargetBandForBaatzSchapeSmallSegmenter(targetProduct);
+    }
+
+    @Test
+    public void testBaatzSchapeLargeTileSegmenter() throws IOException, IllegalAccessException {
+        String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
+        String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
+        int totalIterationsForSecondSegmentation = 60;
+        float threshold = 1000.0f;
+        float spectralWeight = 0.5f;
+        float shapeWeight = 0.3f;
+
+        GenericRegionMergingOp operator = executeOperator(this.largeSourceProduct, mergingCostCriterion, regionMergingCriterion,
+                                                          totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+
+        Product targetProduct = operator.getTargetProduct();
+        AbstractSegmenter segmenter = operator.getSegmenter();
+
+        assertNotNull(segmenter);
+
+        Graph graph = segmenter.getGraph();
+        assertNotNull(graph);
+
+        assertEquals(4, graph.getNodeCount());
+
+        // test the first node
+        Node node = graph.getNodeAt(0);
+        float[] nodeExpectedMeansValues = new float[] {51.66685f, 104.76079f, 90.67668f};
+        checkGraphNode(node, nodeExpectedMeansValues, 0, 0, 750, 898, 6592, 3);
+
+        // test the second node
+        node = graph.getNodeAt(1);
+        nodeExpectedMeansValues = new float[] {5.248829f, 209.01393f, 82.01373f};
+        checkGraphNode(node, nodeExpectedMeansValues, 82, 357, 579, 66, 2932, 1);
+
+        // test the third node
+        node = graph.getNodeAt(2);
+        nodeExpectedMeansValues = new float[] {29.568516f, 74.19531f, 105.85714f};
+        checkGraphNode(node, nodeExpectedMeansValues, 102, 435, 558, 419, 7556, 1);
+
+        // test the forth node
+        node = graph.getNodeAt(3);
+        nodeExpectedMeansValues = new float[] {27.908916f, 75.81499f, 105.56643f};
+        checkGraphNode(node, nodeExpectedMeansValues, 72, 45, 570, 303, 5428, 1);
+
         checkTargetBandForBaatzSchapeSegmenter(targetProduct);
     }
 
-    private GenericRegionMergingOp executeOperator(String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
+    @Test
+    public void testFastBaatzSchapeLargeTileSegmenter() throws IOException, IllegalAccessException {
+        String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
+        String regionMergingCriterion = GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION; // => fast segmentation
+        int totalIterationsForSecondSegmentation = 60;
+        float threshold = 1000.0f;
+        float spectralWeight = 0.5f;
+        float shapeWeight = 0.3f;
+
+        GenericRegionMergingOp operator = executeOperator(this.largeSourceProduct, mergingCostCriterion, regionMergingCriterion,
+                                                          totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+
+        Product targetProduct = operator.getTargetProduct();
+        AbstractSegmenter segmenter = operator.getSegmenter();
+
+        assertNotNull(segmenter);
+
+        Graph graph = segmenter.getGraph();
+        assertNotNull(graph);
+
+        assertEquals(4, graph.getNodeCount());
+
+        // test the first node
+        Node node = graph.getNodeAt(0);
+        float[] nodeExpectedMeansValues = new float[] {55.079082f, 104.811226f, 85.818596f};
+        checkGraphNode(node, nodeExpectedMeansValues, 0, 0, 750, 898, 6592, 3);
+
+        // test the second node
+        node = graph.getNodeAt(1);
+        nodeExpectedMeansValues = new float[] {28.557613f, 78.30157f, 106.95757f};
+        checkGraphNode(node, nodeExpectedMeansValues, 74, 48, 601, 301, 5412, 1);
+
+        // test the third node
+        node = graph.getNodeAt(2);
+        nodeExpectedMeansValues = new float[] {29.72f, 77.462265f, 107.269226f};
+        checkGraphNode(node, nodeExpectedMeansValues, 101, 436, 581, 426, 6080, 1);
+
+        // test the forth node
+        node = graph.getNodeAt(3);
+        nodeExpectedMeansValues = new float[] {5.579265f, 209.00505f, 82.32177f};
+        checkGraphNode(node, nodeExpectedMeansValues, 81, 353, 586, 70, 2860, 1);
+
+        checkTargetBandForFastBaatzSchapeSegmenter(targetProduct);
+    }
+
+    private void checkTestDirectoryExists() {
+        String testDirectoryPathProperty = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
+        assertNotNull("The system property '" + TestUtil.PROPERTYNAME_DATA_DIR + "' representing the test directory is not set.", testDirectoryPathProperty);
+        Path testFolderPath = Paths.get(testDirectoryPathProperty);
+        if (!Files.exists(testFolderPath)) {
+            fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
+        }
+
+        this.segmentationTestsFolderPath = testFolderPath.resolve("_segmentation");
+        if (!Files.exists(segmentationTestsFolderPath)) {
+            fail("The GDAL test directory path '"+segmentationTestsFolderPath.toString()+"' is not valid.");
+        }
+    }
+
+    private static GenericRegionMergingOp executeOperator(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
                                                    float threshold, Float spectralWeight, Float shapeWeight )
                                                    throws IOException {
 
@@ -191,10 +303,16 @@ public class GenericRegionMergingOpTest {
         parameters.put("sourceBandNames", sourceBandNames);
 
         Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
-        sourceProducts.put("source", this.sourceProduct);
+        sourceProducts.put("source", sourceProduct);
 
         GenericRegionMergingOp operator = (GenericRegionMergingOp)GPF.getDefaultInstance().createOperator(operatorName, parameters, sourceProducts, null);
-        operator.getTargetProduct(); // initialize the operator
+        Product targetProduct = operator.getTargetProduct(); // initialize the operator
+
+        Dimension preferredTileSize = targetProduct.getPreferredTileSize();
+        assertNotNull(preferredTileSize);
+
+        Dimension newPreferredTileSize = new Dimension(preferredTileSize.width/2, preferredTileSize.height/2);
+        targetProduct.setPreferredTileSize(newPreferredTileSize);
 
         assertEquals(mergingCostCriterion, operator.getMergingCostCriterion());
         assertEquals(regionMergingCriterion, operator.getRegionMergingCriterion());
@@ -214,21 +332,7 @@ public class GenericRegionMergingOpTest {
         return operator;
     }
 
-    private void checkTestDirectoryExists() {
-        String testDirectoryPathProperty = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
-        assertNotNull("The system property '" + TestUtil.PROPERTYNAME_DATA_DIR + "' representing the test directory is not set.", testDirectoryPathProperty);
-        Path testFolderPath = Paths.get(testDirectoryPathProperty);
-        if (!Files.exists(testFolderPath)) {
-            fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
-        }
-
-        this.segmentationTestsFolderPath = testFolderPath.resolve("_segmentation");
-        if (!Files.exists(segmentationTestsFolderPath)) {
-            fail("The GDAL test directory path '"+segmentationTestsFolderPath.toString()+"' is not valid.");
-        }
-    }
-
-    private static void checkGraphNode(Node node, float[] nodeExpectedMeansValues, int regionLeftX, int regionLeftY,
+    public static void checkGraphNode(Node node, float[] nodeExpectedMeansValues, int regionLeftX, int regionLeftY,
                                        int regionWidth, int regionHeight, int nodeContourSize, int nodeEdgeCount) {
 
         int length = node.getNumberOfComponentsPerPixel();
@@ -292,7 +396,7 @@ public class GenericRegionMergingOpTest {
         assertEquals(4, bandValue);
     }
 
-    private static void checkTargetBandForBaatzSchapeSegmenter(Product targetProduct) {
+    private static void checkTargetBandForBaatzSchapeSmallSegmenter(Product targetProduct) {
         Band band = checkTargetBand(targetProduct);
 
         int bandValue = band.getSampleInt(64, 84);
@@ -312,6 +416,86 @@ public class GenericRegionMergingOpTest {
 
         bandValue = band.getSampleInt(200, 100);
         assertEquals(2, bandValue);
+    }
+
+    private static void checkTargetBandForBaatzSchapeSegmenter(Product targetProduct) {
+        Band band = checkTargetBand(targetProduct);
+
+        int bandValue = band.getSampleInt(64, 84);
+        assertEquals(1, bandValue);
+
+        bandValue = band.getSampleInt(164, 184);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(264, 114);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(14, 18);
+        assertEquals(1, bandValue);
+
+        bandValue = band.getSampleInt(123, 321);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(200, 100);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(332, 178);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(614, 400);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(240, 510);
+        assertEquals(3, bandValue);
+
+        bandValue = band.getSampleInt(340, 410);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(164, 121);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(700, 868);
+        assertEquals(1, bandValue);
+    }
+
+    private static void checkTargetBandForFastBaatzSchapeSegmenter(Product targetProduct) {
+        Band band = checkTargetBand(targetProduct);
+
+        int bandValue = band.getSampleInt(64, 84);
+        assertEquals(1, bandValue);
+
+        bandValue = band.getSampleInt(164, 184);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(264, 114);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(14, 18);
+        assertEquals(1, bandValue);
+
+        bandValue = band.getSampleInt(123, 321);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(200, 100);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(332, 178);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(614, 400);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(240, 510);
+        assertEquals(3, bandValue);
+
+        bandValue = band.getSampleInt(340, 410);
+        assertEquals(4, bandValue);
+
+        bandValue = band.getSampleInt(164, 121);
+        assertEquals(2, bandValue);
+
+        bandValue = band.getSampleInt(700, 868);
+        assertEquals(1, bandValue);
     }
 
     private static Band checkTargetBand(Product targetProduct) {

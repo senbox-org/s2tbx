@@ -32,7 +32,7 @@ public class Graph {
         return this.nodes.size();
     }
 
-    public int removeExpiredNodes() {
+    int removeExpiredNodes() {
         int nodeCount = this.nodes.size();
         int lastIndexToCopy = -1;
         for (int i=0; i<nodeCount; i++) {
@@ -52,7 +52,7 @@ public class Graph {
         return this.nodes.size();
     }
 
-    public void setValidFlagToAllNodes() {
+    void setValidFlagToAllNodes() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
             Node n = this.nodes.get(i);
@@ -60,7 +60,7 @@ public class Graph {
         }
     }
 
-    public void resetMergedFlagToAllNodes() {
+    void resetMergedFlagToAllNodes() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
             Node n = this.nodes.get(i);
@@ -68,7 +68,7 @@ public class Graph {
         }
     }
 
-    public void resetCostUpdatedFlagToAllEdges() {
+    void resetCostUpdatedFlagToAllEdges() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
             Node n = this.nodes.get(i);
