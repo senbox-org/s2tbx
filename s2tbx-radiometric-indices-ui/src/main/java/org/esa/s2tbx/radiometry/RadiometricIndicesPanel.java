@@ -18,7 +18,11 @@
 
 package org.esa.s2tbx.radiometry;
 
-import com.bc.ceres.binding.*;
+import com.bc.ceres.binding.Property;
+import com.bc.ceres.binding.PropertyDescriptor;
+import com.bc.ceres.binding.PropertySet;
+import com.bc.ceres.binding.ValidationException;
+import com.bc.ceres.binding.ValueSet;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyPane;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
@@ -32,11 +36,20 @@ import org.esa.snap.core.gpf.internal.RasterDataNodeValues;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.tango.TangoIcons;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -77,6 +90,9 @@ class RadiometricIndicesPanel {
 
     JComponent createPanel() {
         this.bindingContext = new BindingContext(propertySet);
+        PropertyPane parametersPane = new PropertyPane(bindingContext);
+        JScrollPane operatorPanel = new JScrollPane(parametersPane.createPanel());
+        insertMessageLabel(operatorPanel);
         this.bandFields = Arrays.stream(operatorDescriptor.getOperatorClass().getDeclaredFields())
                 .filter(f -> f.getAnnotation(BandParameter.class) != null)
                 .collect(Collectors.toList());
@@ -95,10 +111,6 @@ class RadiometricIndicesPanel {
                     }
                 });
         this.propertySet.getProperty(PROPERTY_RESAMPLE).addPropertyChangeListener(evt -> checkResampling(getSourceProduct()));
-
-        PropertyPane parametersPane = new PropertyPane(bindingContext);
-        JScrollPane operatorPanel = new JScrollPane(parametersPane.createPanel());
-        insertMessageLabel(operatorPanel);
 
         return operatorPanel;
     }
