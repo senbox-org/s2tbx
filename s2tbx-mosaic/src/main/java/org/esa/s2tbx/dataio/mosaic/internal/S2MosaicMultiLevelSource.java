@@ -6,6 +6,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.util.math.Array;
 import org.geotools.geometry.DirectPosition2D;
 
 import javax.media.jai.BorderExtender;
@@ -27,10 +28,17 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -56,8 +64,8 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
                                     int tileWidth, int tileHeight, int levels,
                                     GeoCoding geoCoding, String mosaicType) {
         super(new DefaultMultiLevelModel(levels,
-                                         Product.findImageToModelTransform(geoCoding),
-                                         imageWidth, imageHeight));
+                Product.findImageToModelTransform(geoCoding),
+                imageWidth, imageHeight));
         this.originX = originX;
         this.originY = originY;
         this.imageWidth = imageWidth;
@@ -100,8 +108,8 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
                         float offsetY = (float) ((bandOrigin.getY() - this.originY) /
                                 sourceBands[index].getImageToModelTransform().getScaleY() * scaleFactor);
                         opImage = TranslateDescriptor.create(opImage, offsetX, offsetY,
-                                                             Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
-                                                             null);
+                                Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
+                                null);
                     }
                 }
             } catch (IOException e) {
@@ -134,44 +142,78 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         List<PlanarImage> images = tileImages.get(level);
         switch(this.mosaicType) {
             case "MOSAIC_TYPE_BLEND":
+                List<Rectangle> rectangles = new ArrayList<>();
                 List<RenderedImage> newTiles = new ArrayList<>();
-                // extract differences
-                for (int i = 0; i < sourceCount; i++) {
-                    RenderedImage source = images.get(i);
-                    Rectangle sourceRect = new Rectangle(source.getMinX(), source.getMinY(),
-                                                         source.getWidth(), source.getHeight());
-                    boolean intersected = false;
-                    for (int j = i + 1; j < sourceCount; j++) {
-                        RenderedImage nextSource = images.get(j);
-                        Rectangle nextRect = new Rectangle(nextSource.getMinX(), nextSource.getMinY(),
-                                                           nextSource.getWidth(), nextSource.getHeight());
-                        Rectangle intersection = sourceRect.intersection(nextRect);
-                        if (intersection.width > 0 && intersection.height > 0) {
-                            Collections.addAll(newTiles, difference(source, intersection));
-                            newTiles.add(compose(crop(source, intersection), crop(nextSource, intersection)));
-                            intersected = true;
+                rectangles =  computeRectangles(images);
+                HashMap<Rectangle, List<PlanarImage>> map = new HashMap<>();
+                //compose a Hash Map of rectangles and their respective source images that overlap the regions
+                for(int index =0; index<rectangles.size();index++){
+                    List<PlanarImage> imagesInRectangle = new ArrayList<>();
+                    Rectangle rect = rectangles.get(index);
+                    for(int imageIndex = 0;imageIndex<images.size();imageIndex++){
+                        PlanarImage image = images.get(imageIndex);
+                        int imageminX = (int)rect.getMinX();
+                        int rectminX = image.getMinX();
+                        int width =  image.getMinX() + image.getWidth();
+                        int height = image.getMinY() + image.getHeight();
+
+                        if(((int)rect.getMinX() >= image.getMinX()) &&
+                           ((int)rect.getMinX() < image.getMinX() + image.getWidth()) &&
+                           ((int)rect.getMinY() >= image.getMinY()) &&
+                           ((int)rect.getMinY() < image.getMinY() + image.getHeight())){
+                            //for every rectangle there must be at least one source image  or fragment of a source image to overlap
+                                imagesInRectangle.add(image);
                         }
                     }
-                    if (!intersected) {
-                        newTiles.add(source);
+                    map.put(rect,imagesInRectangle);
+                }
+                int maximumNumberOfOverlaps = 1;
+                Iterator<Map.Entry<Rectangle, List<PlanarImage>>> iterator = map.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<Rectangle, List<PlanarImage>> pair = iterator.next();
+                    if(pair.getValue().size()>maximumNumberOfOverlaps){
+                        maximumNumberOfOverlaps = pair.getValue().size();
                     }
                 }
+                int numberOfOverlaps = 1;
+                while(numberOfOverlaps<=maximumNumberOfOverlaps) {
+                    Iterator<Map.Entry<Rectangle, List<PlanarImage>>> it = map.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry<Rectangle, List<PlanarImage>> pair = it.next();
+                        List<PlanarImage> list = pair.getValue();
+                        Rectangle reg = (Rectangle) pair.getKey();
+                        if ((list.size() == numberOfOverlaps)&&(numberOfOverlaps == 1)) {
+                            Collections.addAll(newTiles, crop(list.get(0), reg));
+                        } else if ((list.size() > 1) &&(list.size()==numberOfOverlaps)) {
+                            RenderedImage rendered = compose(crop(list.get(0), reg), crop(list.get(1), reg));
+                            if (list.size() > 2) {
+                                int index = 2;
+                                while (index < list.size()) {
+                                    rendered = compose(crop(rendered, reg), crop(list.get(index), reg));
+                                    index++;
+                                }
+                            }
+                            newTiles.add(rendered);
+                        }
+                    }
+                    numberOfOverlaps++;
+                }
                 mosaicOp = MosaicDescriptor.create(newTiles.toArray(new RenderedImage[newTiles.size()]),
-                                                   MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                   null,
-                                                   null,
-                                                   thresholds,
-                                                   new double[] { Float.NaN },
-                                                   new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                        MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                        null,
+                        null,
+                        thresholds,
+                        new double[] { Float.NaN },
+                        new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
                 break;
             case "MOSAIC_TYPE_OVERLAY":
                 mosaicOp = MosaicDescriptor.create(images.toArray(new RenderedImage[sourceCount]),
-                                                   MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                   null,
-                                                   null,
-                                                   thresholds,
-                                                   new double[] { Float.NaN },
-                                                   new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                        MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                        null,
+                        null,
+                        thresholds,
+                        new double[] { Float.NaN },
+                        new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
                 break;
             default:
                 throw new IllegalArgumentException("Mosaic type not accepted");
@@ -195,6 +237,26 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
     }
 
+    private List<Rectangle> computeRectangles(List<PlanarImage> images) {
+        List<Rectangle> reg = new ArrayList<>();
+        Set<Integer> xSet= new TreeSet<Integer>();
+        Set<Integer> ySet = new TreeSet<Integer>();
+        for(PlanarImage image: images){
+            xSet.add(image.getMinX());
+            xSet.add(image.getMinX() + image.getWidth());
+            ySet.add(image.getMinY());
+            ySet.add(image.getMinY() + image.getHeight());
+        }
+        Integer[] xArray = xSet.toArray(new Integer[0]);
+        Integer[] yArray = ySet.toArray(new Integer[0]);
+        for(int x = 0; x < xArray.length - 1; x++){
+            for(int y = 0; y < yArray.length - 1; y++ ){
+                reg.add(new Rectangle(xArray[x],yArray[y], xArray[x+1]-xArray[x], yArray[y+1]-yArray[y]));
+            }
+        }
+        return reg;
+    }
+
     @Override
     public synchronized void reset() {
         super.reset();
@@ -202,10 +264,10 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
     private RenderedImage makeAlpha(RenderedImage source, float alphaValue) {
         ImageLayout layout = new ImageLayout(source.getMinX(), source.getMinY(),
-                                             source.getWidth(), source.getHeight(),
-                                             source.getTileGridXOffset(), source.getTileGridYOffset(),
-                                             source.getTileWidth(), source.getTileHeight(),
-                                             source.getSampleModel(), null);
+                source.getWidth(), source.getHeight(),
+                source.getTileGridXOffset(), source.getTileGridYOffset(),
+                source.getTileWidth(), source.getTileHeight(),
+                source.getSampleModel(), null);
         final int dataType = source.getSampleModel().getDataType();
         Number[] alphaValues;
         switch (dataType) {
@@ -228,9 +290,9 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
                 break;
         }
         return ConstantDescriptor.create((float) source.getWidth(),
-                                         (float) source.getHeight(),
-                                         alphaValues,
-                                         new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout)).getRendering();
+                (float) source.getHeight(),
+                alphaValues,
+                new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout)).getRendering();
     }
 
     private RenderedImage compose(RenderedImage source1, RenderedImage source2) {
@@ -240,12 +302,12 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         final RenderedImage alphaImage1 = makeAlpha(source1, alpha1);
         final RenderedImage alphaImage2 = makeAlpha(source2, alpha2);
         return new CompositeNoDestAlphaOpImage(source2,
-                                               source1,
-                                               null,
-                                               layout,
-                                               alphaImage2,
-                                               alphaImage1,
-                                               false);
+                source1,
+                null,
+                layout,
+                alphaImage2,
+                alphaImage1,
+                false);
     }
 
     private RenderedImage crop(RenderedImage source, Rectangle cropArea) {
@@ -255,41 +317,8 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         layout.setWidth(cropArea.width);
         layout.setHeight(cropArea.height);
         return CropDescriptor.create(source, (float) cropArea.getX(), (float) cropArea.getY(),
-                                     (float) cropArea.getWidth(), (float) cropArea.getHeight(),
-                                     new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout)).getRendering();
-    }
-
-    private RenderedImage[] difference(RenderedImage source, Rectangle cropArea) {
-        List<Rectangle> smallerCrops = new ArrayList<>();
-        Rectangle sourceArea = new Rectangle(source.getMinX(), source.getMinY(),
-                                             source.getWidth(), source.getHeight());
-        int topHeight = cropArea.y - sourceArea.y;
-        if (topHeight > 0) {
-            smallerCrops.add(new Rectangle(sourceArea.x, sourceArea.y, sourceArea.width, topHeight));
-        }
-        //compute the bottom rectangle
-        int bottomY = cropArea.y + cropArea.height;
-        int bottomHeight = sourceArea.height - (bottomY - sourceArea.y);
-        if (bottomHeight > 0 && bottomY < sourceArea.y + sourceArea.height ) {
-            smallerCrops.add(new Rectangle(sourceArea.x, bottomY, sourceArea.width, bottomHeight));
-        }
-        int rectAYH = sourceArea.y + sourceArea.height;
-        int y1 = cropArea.y > sourceArea.y ? cropArea.y : sourceArea.y;
-        int y2 = bottomY < rectAYH ? bottomY : rectAYH;
-        int leftHeight = y2 - y1;
-        //compute the left rectangle
-        int leftWidth = cropArea.x - sourceArea.x;
-        if (leftWidth > 0 && leftHeight > 0 ) {
-            smallerCrops.add(new Rectangle(sourceArea.x, y1, leftWidth, leftHeight));
-        }
-        //compute the right rectangle
-        int rbX = cropArea.x + cropArea.width;
-        int rightWIdth = sourceArea.width - (rbX - sourceArea.x);
-        if (rightWIdth > 0) {
-            smallerCrops.add(new Rectangle(rbX, y1, rightWIdth, leftHeight));
-        }
-        List<RenderedImage> images = smallerCrops.stream().map(r -> crop(source, r)).collect(Collectors.toList());
-        return images.toArray(new RenderedImage[images.size()]);
+                (float) cropArea.getWidth(), (float) cropArea.getHeight(),
+                new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout)).getRendering();
     }
 
     private Point2D getSourceOriginPixelPosition(Band sourceBand) {
