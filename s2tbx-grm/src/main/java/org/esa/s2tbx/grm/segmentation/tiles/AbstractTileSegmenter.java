@@ -7,7 +7,7 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.BufferedInputStreamWrapper;
 import org.esa.snap.utils.BufferedOutputStreamWrapper;
-import org.esa.snap.utils.ObjectSizeCalculator;
+import org.esa.snap.utils.ObjectMemory;
 
 import java.awt.*;
 import java.io.*;
@@ -78,67 +78,9 @@ public abstract class AbstractTileSegmenter {
         return tileWidth;
     }
 
-    public final ProcessingTile buildTile(int startX, int startY, int sizeX, int sizeY) {
+    public final ProcessingTile buildTile(int tileLeftX, int tileTopY, int tileSizeX, int tileSizeY) {
         int margin = computeTileMargin();
-        // compute current tile start and size
-        ProcessingTile tile = new ProcessingTile();
-        int finishX = startX + sizeX;
-        int finishY = startY + sizeY;
-        // margin at the top
-        if (startY > 0) { //(row > 0) {
-            tile.setTopMargin(margin);
-            tile.setImageTopY(startY); // tile.rows[0] = startY;//row * tileHeight;
-        } else {
-            // the tile is on the top row --> no top margin
-            tile.setTopMargin(0);
-            tile.setImageTopY(0); // tile.rows[0] = 0;
-        }
-
-        // margin at the right
-        if (finishX < this.imageWidth) { //(col < nbTilesX - 1) {
-            tile.setRightMargin(margin);
-            tile.setImageRightX(startX + sizeX - 1); // tile.columns[1] = startX + sizeX - 1; //sizeX
-        } else {
-            // the tile is on the right column --> no right margin
-            tile.setRightMargin(0);
-            tile.setImageRightX(this.imageWidth - 1); // tile.columns[1] = imageWidth - 1;
-        }
-
-        // margin at the bottom
-        if (finishY < this.imageHeight) { // (row < nbTilesY - 1) {
-            tile.setBottomMargin(margin);
-            tile.setImageBottomY(startY + sizeY - 1); // tile.rows[1] = startY + sizeY - 1; // sizeY
-        } else {
-            // the tile is on the bottom --> no bottom margin
-            tile.setBottomMargin(0);
-            tile.setImageBottomY(this.imageHeight - 1); // tile.rows[1] = imageHeight - 1;
-        }
-
-        // margin at the left
-        if (startX > 0) { //(col > 0) {
-            tile.setLeftMargin(margin);
-            tile.setImageLeftX(startX); // tile.columns[0] = startX;//col * tileWidth;
-        } else {
-            // the tile is on the left --> no left margin
-            tile.setLeftMargin(0);
-            tile.setImageLeftX(0); // tile.columns[0] = 0;
-        }
-
-        // store the tile region
-        int regionLeftX = startX - tile.getLeftMargin();
-        int regionTopY = startY - tile.getTopMargin();
-        int regionWidth = sizeX + tile.getLeftMargin() + tile.getRightMargin();
-        int regionHeight = sizeY + tile.getTopMargin() + tile.getBottomMargin();
-        tile.setRegion(new BoundingBox(regionLeftX, regionTopY, regionWidth, regionHeight));
-
-        String temporaryFilesPrefix = "";
-        String suffix = Integer.toString(startX) + "_" + Integer.toString(startY) + ".bin";
-        tile.setNodeFileName(temporaryFilesPrefix + "_node_" + suffix);
-        tile.setEdgeFileName(temporaryFilesPrefix + "_edge_" + suffix);
-        tile.setNodeMarginFileName(temporaryFilesPrefix + "_nodeMargin_" + suffix);
-        tile.setEdgeMarginFileName(temporaryFilesPrefix + "_edgeMargin_" + suffix);
-
-        return tile;
+        return AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, margin, this.imageWidth, this.imageHeight);
     }
 
     public final AbstractSegmenter runAllTilesSecondSegmentation() throws IllegalAccessException, IOException {
@@ -216,7 +158,7 @@ public abstract class AbstractTileSegmenter {
             logger.log(Level.FINEST, "Run tile first segmentation (after remove unstable nodes): graph node count: " + graph.getNodeCount());
         }
 
-        long graphMemory = ObjectSizeCalculator.sizeOf(graph);
+        long graphMemory = ObjectMemory.computeSizeOf(graph);
 
         writeGraph(graph, tileToProcess.getNodeFileName(), tileToProcess.getEdgeFileName());
 
@@ -357,7 +299,7 @@ public abstract class AbstractTileSegmenter {
                     logger.log(Level.FINEST, "Run second segmentation: (after removing unstable nodes): graph node count: " +graph.getNodeCount()+", tile row index: " + rowIndex + ", tile column index: " + columnIndex);
                 }
 
-                this.tileSegmenterMetadata.addAccumulatedMemory(ObjectSizeCalculator.sizeOf(graph));
+                this.tileSegmenterMetadata.addAccumulatedMemory(ObjectMemory.computeSizeOf(graph));
                 if (merged) {
                     this.tileSegmenterMetadata.setFusion(true);
                 }
@@ -697,6 +639,68 @@ public abstract class AbstractTileSegmenter {
                 }
             }
         }
+    }
+
+    public static ProcessingTile buildTile(int tileLeftX, int tileTopY, int tileSizeX, int tileSizeY, int tileMargin, int imageWidth, int imageHeight) {
+        // compute current tile start and size
+        ProcessingTile tile = new ProcessingTile();
+        int finishX = tileLeftX + tileSizeX;
+        int finishY = tileTopY + tileSizeY;
+        // margin at the top
+        if (tileTopY > 0) { //(row > 0) {
+            tile.setTopMargin(tileMargin);
+            tile.setImageTopY(tileTopY); // tile.rows[0] = startY;//row * tileHeight;
+        } else {
+            // the tile is on the top row --> no top margin
+            tile.setTopMargin(0);
+            tile.setImageTopY(0); // tile.rows[0] = 0;
+        }
+
+        // margin at the right
+        if (finishX < imageWidth) { //(col < nbTilesX - 1) {
+            tile.setRightMargin(tileMargin);
+            tile.setImageRightX(tileLeftX + tileSizeX - 1); // tile.columns[1] = startX + sizeX - 1; //sizeX
+        } else {
+            // the tile is on the right column --> no right margin
+            tile.setRightMargin(0);
+            tile.setImageRightX(imageWidth - 1); // tile.columns[1] = imageWidth - 1;
+        }
+
+        // margin at the bottom
+        if (finishY < imageHeight) { // (row < nbTilesY - 1) {
+            tile.setBottomMargin(tileMargin);
+            tile.setImageBottomY(tileTopY + tileSizeY - 1); // tile.rows[1] = startY + sizeY - 1; // sizeY
+        } else {
+            // the tile is on the bottom --> no bottom margin
+            tile.setBottomMargin(0);
+            tile.setImageBottomY(imageHeight - 1); // tile.rows[1] = imageHeight - 1;
+        }
+
+        // margin at the left
+        if (tileLeftX > 0) { //(col > 0) {
+            tile.setLeftMargin(tileMargin);
+            tile.setImageLeftX(tileLeftX); // tile.columns[0] = startX;//col * tileWidth;
+        } else {
+            // the tile is on the left --> no left margin
+            tile.setLeftMargin(0);
+            tile.setImageLeftX(0); // tile.columns[0] = 0;
+        }
+
+        // store the tile region
+        int regionLeftX = tileLeftX - tile.getLeftMargin();
+        int regionTopY = tileTopY - tile.getTopMargin();
+        int regionWidth = tileSizeX + tile.getLeftMargin() + tile.getRightMargin();
+        int regionHeight = tileSizeY + tile.getTopMargin() + tile.getBottomMargin();
+        tile.setRegion(new BoundingBox(regionLeftX, regionTopY, regionWidth, regionHeight));
+
+        String temporaryFilesPrefix = "";
+        String suffix = Integer.toString(tileLeftX) + "_" + Integer.toString(tileTopY) + ".bin";
+        tile.setNodeFileName(temporaryFilesPrefix + "_node_" + suffix);
+        tile.setEdgeFileName(temporaryFilesPrefix + "_edge_" + suffix);
+        tile.setNodeMarginFileName(temporaryFilesPrefix + "_nodeMargin_" + suffix);
+        tile.setEdgeMarginFileName(temporaryFilesPrefix + "_edgeMargin_" + suffix);
+
+        return tile;
     }
 
     private static void updateNeighborsOfNoneDuplicatedNodes(Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth, int imageHeight) {

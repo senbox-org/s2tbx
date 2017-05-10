@@ -1,4 +1,5 @@
 package org.esa.snap.utils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -6,25 +7,25 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- *
- * @author Kyrylo Holodnov
+ * @author Jean Coravu.
  */
-public class ObjectSizeCalculator {
+public class ObjectMemory {
     private static final int REFERENCE_SIZE;
     private static final int HEADER_SIZE;
-    private static final int LONG_SIZE = 8;
-    private static final int INT_SIZE = 4;
+
     private static final int BYTE_SIZE = 1;
     private static final int BOOLEAN_SIZE = 1;
     private static final int CHAR_SIZE = 2;
     private static final int SHORT_SIZE = 2;
+    private static final int INT_SIZE = 4;
     private static final int FLOAT_SIZE = 4;
+    private static final int LONG_SIZE = 8;
     private static final int DOUBLE_SIZE = 8;
+
     private static final int ALIGNMENT = 8;
 
     static {
         if (System.getProperties().get("java.vm.name").toString().contains("64")) {
-            // java.vm.name is something like “Java HotSpot(TM) 64-Bit Server VM”
             REFERENCE_SIZE = 8;
             HEADER_SIZE = 16;
         } else {
@@ -33,51 +34,53 @@ public class ObjectSizeCalculator {
         }
     }
 
-    public static long sizeOf(Object objectToComputeSizeOf) throws IllegalAccessException {
-        return sizeOf(objectToComputeSizeOf, new HashSet());
+    private ObjectMemory() {
     }
 
-    private static long sizeOf(Object objectToComputeSizeOf, Set visited) throws IllegalAccessException {
+    public static long computeSizeOf(Object objectToComputeSizeOf) throws IllegalAccessException {
+        return computeSizeOf(objectToComputeSizeOf, new HashSet<Object>());
+    }
+
+    private static long computeSizeOf(Object objectToComputeSizeOf, Set<Object> visited) throws IllegalAccessException {
         if (objectToComputeSizeOf == null) {
             return 0;
         }
-        ObjectWrapper objectWrapper = new ObjectWrapper(objectToComputeSizeOf);
+        ItemWrapper objectWrapper = new ItemWrapper(objectToComputeSizeOf);
         if (visited.contains(objectWrapper)) {
-            // we have reference graph with cycles.
-            return 0;
+            return 0; // the item already exists
         }
         visited.add(objectWrapper);
         long size = HEADER_SIZE;
-        Class clazz = objectToComputeSizeOf.getClass();
-        if (clazz.isArray()) {
-            if (clazz == long[].class) {
+        Class objectClass = objectToComputeSizeOf.getClass();
+        if (objectClass.isArray()) {
+            if (objectClass == long[].class) {
                 long[] objs = (long[]) objectToComputeSizeOf;
                 size += objs.length * LONG_SIZE;
-            } else if (clazz == int[].class) {
+            } else if (objectClass == int[].class) {
                 int[] objs = (int[]) objectToComputeSizeOf;
                 size += objs.length * INT_SIZE;
-            } else if (clazz == byte[].class) {
+            } else if (objectClass == byte[].class) {
                 byte[] objs = (byte[]) objectToComputeSizeOf;
                 size += objs.length * BYTE_SIZE;
-            } else if (clazz == boolean[].class) {
+            } else if (objectClass == boolean[].class) {
                 boolean[] objs = (boolean[]) objectToComputeSizeOf;
                 size += objs.length * BOOLEAN_SIZE;
-            } else if (clazz == char[].class) {
+            } else if (objectClass == char[].class) {
                 char[] objs = (char[]) objectToComputeSizeOf;
                 size += objs.length * CHAR_SIZE;
-            } else if (clazz == short[].class) {
+            } else if (objectClass == short[].class) {
                 short[] objs = (short[]) objectToComputeSizeOf;
                 size += objs.length * SHORT_SIZE;
-            } else if (clazz == float[].class) {
+            } else if (objectClass == float[].class) {
                 float[] objs = (float[]) objectToComputeSizeOf;
                 size += objs.length * FLOAT_SIZE;
-            } else if (clazz == double[].class) {
+            } else if (objectClass == double[].class) {
                 double[] objs = (double[]) objectToComputeSizeOf;
                 size += objs.length * DOUBLE_SIZE;
             } else {
                 Object[] objs = (Object[]) objectToComputeSizeOf;
                 for (int i = 0; i < objs.length; i++) {
-                    size += sizeOf(objs[i], visited) + REFERENCE_SIZE;
+                    size += computeSizeOf(objs[i], visited) + REFERENCE_SIZE;
                 }
             }
             size += INT_SIZE;
@@ -110,10 +113,10 @@ public class ObjectSizeCalculator {
                     if (item instanceof Iterable<?>) {
                         Iterator<?> it = ((Iterable<?>)item).iterator();
                         while (it.hasNext()) {
-                            size += sizeOf(it.next(), visited) + REFERENCE_SIZE;
+                            size += computeSizeOf(it.next(), visited) + REFERENCE_SIZE;
                         }
                     } else {
-                        size += sizeOf(item, visited) + REFERENCE_SIZE;
+                        size += computeSizeOf(item, visited) + REFERENCE_SIZE;
                     }
                 }
             }
@@ -125,29 +128,28 @@ public class ObjectSizeCalculator {
         return size;
     }
 
-    private static final class ObjectWrapper {
-        private final Object object;
+    private static final class ItemWrapper {
+        private final Object item;
 
-        public ObjectWrapper(Object object) {
-            this.object = object;
+        ItemWrapper(Object item) {
+            this.item = item;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
+        public boolean equals(Object inputItem) {
+            if (inputItem == this) {
                 return true;
             }
-            if ((obj == null) || (obj.getClass() != ObjectWrapper.class)) {
+            if ((inputItem == null) || (!(inputItem instanceof ItemWrapper))) {
                 return false;
             }
-            return object == ((ObjectWrapper) obj).object;
+            ItemWrapper item = (ItemWrapper) inputItem;
+            return this.item == item.item;
         }
 
         @Override
         public int hashCode() {
-            int hash = 3;
-            hash = 47 * hash + System.identityHashCode(object);
-            return hash;
+            return 47 + System.identityHashCode(this.item);
         }
     }
 }

@@ -32,7 +32,7 @@ public class Graph {
         return this.nodes.size();
     }
 
-    int removeExpiredNodes() {
+    public int removeExpiredNodes() {
         int nodeCount = this.nodes.size();
         int lastIndexToCopy = -1;
         for (int i=0; i<nodeCount; i++) {
@@ -117,7 +117,7 @@ public class Graph {
         return result;
     }
 
-    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
+    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int tileCountX, int tileCountY, int imageWidth) {
         Int2ObjectMap<List<Node>> borderPixelMap = new Int2ObjectLinkedOpenHashMap<List<Node>>(); // key = node id
 
         int rowMin = (tile.getImageTopY() > 0) ? tile.getImageTopY() - 1 : tile.getImageTopY();
@@ -141,9 +141,9 @@ public class Graph {
                     boolean addNode = false;
                     if (rowTileIndex > 0 && (rowPixel == tile.getImageTopY() || rowPixel == rowMin)) {
                         addNode = true;
-                    } else if (colTileIndex < nbTilesX - 1 && (colPixel == tile.getImageRightX() || colPixel == colMax)) {
+                    } else if (colTileIndex < tileCountX - 1 && (colPixel == tile.getImageRightX() || colPixel == colMax)) {
                         addNode = true;
-                    } else if (rowTileIndex < nbTilesY - 1 && (rowPixel == tile.getImageBottomY() || rowPixel == rowMax)) {
+                    } else if (rowTileIndex < tileCountY - 1 && (rowPixel == tile.getImageBottomY() || rowPixel == rowMax)) {
                         addNode = true;
                     } else if (colTileIndex > 0 && (colPixel == tile.getImageLeftX() || colPixel == colMin)) {
                         addNode = true;

@@ -39,29 +39,13 @@ public class ContourTest {
         contour.pushTop();
 
         assertEquals(32, contour.size());
-
-        int bit = contour.getMove(0);
-        assertEquals(bit, Contour.TOP_MOVE_INDEX);
-
-        bit = contour.getMove(2);
-        assertEquals(bit, Contour.TOP_MOVE_INDEX);
-
-        bit = contour.getMove(5);
-        assertEquals(bit, Contour.RIGHT_MOVE_INDEX);
-
-        bit = contour.getMove(8);
-        assertEquals(bit, Contour.BOTTOM_MOVE_INDEX);
-
-        bit = contour.getMove(9);
-        assertEquals(bit, Contour.BOTTOM_MOVE_INDEX);
-
-        bit = contour.getMove(12);
-        assertEquals(bit, Contour.LEFT_MOVE_INDEX);
-
-        bit = contour.getMove(14);
-        assertEquals(bit, Contour.LEFT_MOVE_INDEX);
-
-        bit = contour.getMove(15);
-        assertEquals(bit, Contour.TOP_MOVE_INDEX);
+        assertEquals(Contour.TOP_MOVE_INDEX, contour.getMove(0));
+        assertEquals(Contour.TOP_MOVE_INDEX, contour.getMove(2));
+        assertEquals(Contour.RIGHT_MOVE_INDEX,contour.getMove(5));
+        assertEquals(Contour.BOTTOM_MOVE_INDEX, contour.getMove(8));
+        assertEquals(Contour.BOTTOM_MOVE_INDEX, contour.getMove(9));
+        assertEquals(Contour.LEFT_MOVE_INDEX, contour.getMove(12));
+        assertEquals(Contour.LEFT_MOVE_INDEX, contour.getMove(14));
+        assertEquals(Contour.TOP_MOVE_INDEX, contour.getMove(15));
     }
 }
