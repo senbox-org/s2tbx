@@ -6,9 +6,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.util.math.Array;
 import org.geotools.geometry.DirectPosition2D;
-
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
@@ -28,19 +26,13 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * A single banded multi-level image source for Sentinel2 products
@@ -142,49 +134,37 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
         List<PlanarImage> images = tileImages.get(level);
         switch(this.mosaicType) {
             case "MOSAIC_TYPE_BLEND":
-                List<Rectangle> rectangles = new ArrayList<>();
                 List<RenderedImage> newTiles = new ArrayList<>();
-                rectangles =  computeRectangles(images);
+                List<Rectangle> rectangles =  computeRectangles(images);
                 HashMap<Rectangle, List<PlanarImage>> map = new HashMap<>();
                 //compose a Hash Map of rectangles and their respective source images that overlap the regions
-                for(int index =0; index<rectangles.size();index++){
+                for(Rectangle rectangle : rectangles) {
                     List<PlanarImage> imagesInRectangle = new ArrayList<>();
-                    Rectangle rect = rectangles.get(index);
-                    for(int imageIndex = 0;imageIndex<images.size();imageIndex++){
-                        PlanarImage image = images.get(imageIndex);
-                        int imageminX = (int)rect.getMinX();
-                        int rectminX = image.getMinX();
-                        int width =  image.getMinX() + image.getWidth();
-                        int height = image.getMinY() + image.getHeight();
-
-                        if(((int)rect.getMinX() >= image.getMinX()) &&
-                           ((int)rect.getMinX() < image.getMinX() + image.getWidth()) &&
-                           ((int)rect.getMinY() >= image.getMinY()) &&
-                           ((int)rect.getMinY() < image.getMinY() + image.getHeight())){
+                    for(PlanarImage pImage: images){
+                        if(((int)rectangle.getMinX() >= pImage.getMinX()) &&
+                           ((int)rectangle.getMinX() < pImage.getMinX() + pImage.getWidth()) &&
+                           ((int)rectangle.getMinY() >= pImage.getMinY()) &&
+                           ((int)rectangle.getMinY() < pImage.getMinY() + pImage.getHeight())){
                             //for every rectangle there must be at least one source image  or fragment of a source image to overlap
-                                imagesInRectangle.add(image);
+                                imagesInRectangle.add(pImage);
                         }
                     }
-                    map.put(rect,imagesInRectangle);
+                    map.put(rectangle,imagesInRectangle);
                 }
                 int maximumNumberOfOverlaps = 1;
-                Iterator<Map.Entry<Rectangle, List<PlanarImage>>> iterator = map.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry<Rectangle, List<PlanarImage>> pair = iterator.next();
-                    if(pair.getValue().size()>maximumNumberOfOverlaps){
+                for (Map.Entry<Rectangle, List<PlanarImage>> pair : map.entrySet()) {
+                    if (pair.getValue().size() > maximumNumberOfOverlaps) {
                         maximumNumberOfOverlaps = pair.getValue().size();
                     }
                 }
                 int numberOfOverlaps = 1;
                 while(numberOfOverlaps<=maximumNumberOfOverlaps) {
-                    Iterator<Map.Entry<Rectangle, List<PlanarImage>>> it = map.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry<Rectangle, List<PlanarImage>> pair = it.next();
+                    for (Map.Entry<Rectangle, List<PlanarImage>> pair : map.entrySet()) {
                         List<PlanarImage> list = pair.getValue();
-                        Rectangle reg = (Rectangle) pair.getKey();
-                        if ((list.size() == numberOfOverlaps)&&(numberOfOverlaps == 1)) {
+                        Rectangle reg = pair.getKey();
+                        if ((list.size() == numberOfOverlaps) && (numberOfOverlaps == 1)) {
                             Collections.addAll(newTiles, crop(list.get(0), reg));
-                        } else if ((list.size() > 1) &&(list.size()==numberOfOverlaps)) {
+                        } else if ((list.size() > 1) && (list.size() == numberOfOverlaps)) {
                             RenderedImage rendered = compose(crop(list.get(0), reg), crop(list.get(1), reg));
                             if (list.size() > 2) {
                                 int index = 2;
@@ -230,7 +210,6 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
             int rightPad = destBounds.width - mosaicOp.getWidth();
             int bottomPad = destBounds.height - mosaicOp.getHeight();
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-            logger.info( "mosaicOp.width " + mosaicOp.getWidth() + " mosaicOp.height" + mosaicOp.getHeight());
         }
 
         return mosaicOp;
@@ -239,16 +218,16 @@ public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
     private List<Rectangle> computeRectangles(List<PlanarImage> images) {
         List<Rectangle> reg = new ArrayList<>();
-        Set<Integer> xSet= new TreeSet<Integer>();
-        Set<Integer> ySet = new TreeSet<Integer>();
+        Set<Integer> xSet= new TreeSet<>();
+        Set<Integer> ySet = new TreeSet<>();
         for(PlanarImage image: images){
             xSet.add(image.getMinX());
             xSet.add(image.getMinX() + image.getWidth());
             ySet.add(image.getMinY());
             ySet.add(image.getMinY() + image.getHeight());
         }
-        Integer[] xArray = xSet.toArray(new Integer[0]);
-        Integer[] yArray = ySet.toArray(new Integer[0]);
+        Integer[] xArray = xSet.toArray(new Integer[xSet.size()]);
+        Integer[] yArray = ySet.toArray(new Integer[ySet.size()]);
         for(int x = 0; x < xArray.length - 1; x++){
             for(int y = 0; y < yArray.length - 1; y++ ){
                 reg.add(new Rectangle(xArray[x],yArray[y], xArray[x+1]-xArray[x], yArray[y+1]-yArray[y]));
