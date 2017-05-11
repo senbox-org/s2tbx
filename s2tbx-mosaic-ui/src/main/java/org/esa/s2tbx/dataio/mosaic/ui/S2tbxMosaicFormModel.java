@@ -20,7 +20,6 @@ import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.binding.accessors.MapEntryAccessor;
-import org.esa.s2tbx.dataio.mosaic.S2tbxMosaicOp;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -39,7 +38,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -54,7 +52,7 @@ import java.util.Map;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 class S2tbxMosaicFormModel {
 
@@ -77,7 +75,7 @@ class S2tbxMosaicFormModel {
 
     private final PropertySet container;
     private final Map<String, Object> parameterMap = new HashMap<>();
-    private final Map<File, Product> sourceProductMap = Collections.synchronizedMap(new HashMap<File, Product>());
+    private final Map<File, Product> sourceProductMap = Collections.synchronizedMap(new HashMap<>());
     private final WorldMapPaneDataModel worldMapModel = new WorldMapPaneDataModel();
     private S2tbxMosaicForm parentForm;
 
@@ -195,9 +193,9 @@ class S2tbxMosaicFormModel {
 
         switch(level) {
             case PROPERTY_MIN_VALUE :
-                return (double) Collections.min(Arrays.asList(latitudePoints));
+                return Collections.min(Arrays.asList(latitudePoints));
             case PROPERTY_MAX_VALUE :
-                return (double) Collections.max(Arrays.asList(latitudePoints));
+                return Collections.max(Arrays.asList(latitudePoints));
             default :
                 return Double.MAX_VALUE;
         }
@@ -215,9 +213,9 @@ class S2tbxMosaicFormModel {
 
         switch(level) {
             case PROPERTY_MIN_VALUE :
-                return (double) Collections.min(Arrays.asList(longitudePoints));
+                return Collections.min(Arrays.asList(longitudePoints));
             case PROPERTY_MAX_VALUE :
-                return (double) Collections.max(Arrays.asList(longitudePoints));
+                return Collections.max(Arrays.asList(longitudePoints));
             default :
                 return Double.MAX_VALUE;
         }
@@ -252,13 +250,6 @@ class S2tbxMosaicFormModel {
         }
 
         return null;
-    }
-
-    void setUpdateProduct(Product product) {
-        setPropertyValue(PROPERTY_UPDATE_PRODUCT, product);
-        if (product != null && product.getSceneGeoCoding() != null && product.getSceneGeoCoding().getMapCRS() != null) {
-            setTargetCRS(product.getSceneGeoCoding().getMapCRS().toWKT());
-        }
     }
 
     MosaicOp.Variable[] getVariables() {

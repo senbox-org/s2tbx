@@ -19,7 +19,13 @@ package org.esa.s2tbx.dataio.mosaic.ui;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
-import com.bc.ceres.swing.binding.PropertyEditor;
+import java.awt.Dimension;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.dataop.dem.ElevationModelDescriptor;
@@ -35,10 +41,7 @@ import org.esa.snap.ui.crs.PredefinedCrsForm;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -46,7 +49,7 @@ import java.util.List;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 class S2tbxMosaicMapProjectionPanel extends JPanel {
 
@@ -104,7 +107,7 @@ class S2tbxMosaicMapProjectionPanel extends JPanel {
         CrsForm predefinedCrsUI = new PredefinedCrsForm(appContext);
         crsSelectionPanel = new CrsSelectionPanel(customCrsUI, predefinedCrsUI);
         crsSelectionPanel.addPropertyChangeListener(S2tbxMosaicFormModel.PROPERTY_CRS,
-                (PropertyChangeEvent evt)-> {updateForCrsChanged();});
+                (PropertyChangeEvent evt)-> updateForCrsChanged());
 
         add(crsSelectionPanel);
         add(createOrthorectifyPanel());

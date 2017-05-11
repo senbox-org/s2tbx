@@ -30,12 +30,12 @@ import java.awt.event.ActionEvent;
  * Mosaicing action for Sentinel2 products.
  *
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 @ActionID(category = "Operators", id = "org.esa.s2tbx.dataio.mosaic.ui.S2tbxMosaicAction")
 @ActionRegistration(displayName = "#CTL_S2MosaicAction_Name")
 @ActionReference(path = "Menu/Raster/Geometric Operations", position = 351)
-@NbBundle.Messages({"CTL_S2MosaicAction_Name=S2tbx-Mosaic"})
+@NbBundle.Messages({"CTL_S2MosaicAction_Name=Sentinel-2-Mosaic"})
 public class S2tbxMosaicAction extends AbstractSnapAction {
 
     public S2tbxMosaicAction(){

@@ -19,11 +19,11 @@ package org.esa.s2tbx.dataio.mosaic.ui;
 import org.esa.snap.core.gpf.ui.TargetProductSelector;
 import org.esa.snap.ui.AppContext;
 
-import javax.swing.*;
+import javax.swing.JTabbedPane;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 public class S2tbxMosaicForm extends JTabbedPane {
 
@@ -44,7 +44,7 @@ public class S2tbxMosaicForm extends JTabbedPane {
         S2tbxMosaicExpressionsPanel expressionsPanel = new S2tbxMosaicExpressionsPanel(appContext, mosaicModel);
         addTab("I/O Parameters", ioPanel); /*I18N*/
         addTab("Map Projection Definition", mapProjectionPanel); /*I18N*/
-        addTab("Variables & Conditions", expressionsPanel);  /*I18N*/
+        addTab("Variables", expressionsPanel);  /*I18N*/
     }
 
 

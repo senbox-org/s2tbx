@@ -121,7 +121,7 @@ import java.util.OptionalDouble;
  * @author Marco Zuehlke
  * @author Marco Peters
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 @OperatorMetadata(alias = "S2tbx-Reproject",
         category = "Raster/Geometric",

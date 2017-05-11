@@ -15,6 +15,16 @@
  */
 package org.esa.s2tbx.dataio.mosaic.io;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.Guardian;
@@ -24,8 +34,6 @@ import org.esa.snap.ui.SnapFileChooser;
 import org.esa.snap.ui.UIUtils;
 import org.esa.snap.ui.tool.ToolButtonFactory;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +44,7 @@ import java.util.List;
  * An UI-Component which represents a product file list with the ability to add and remove files.
  *
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 public class S2tbxFileArrayEditor {
 

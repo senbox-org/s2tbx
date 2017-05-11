@@ -16,7 +16,6 @@
 
 package org.esa.s2tbx.dataio.mosaic.ui;
 
-import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.snap.core.datamodel.Band;
@@ -31,32 +30,35 @@ import org.esa.snap.ui.UIUtils;
 import org.esa.snap.ui.product.BandChooser;
 import org.esa.snap.ui.product.ProductExpressionPane;
 import org.esa.snap.ui.tool.ToolButtonFactory;
-
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.AbstractButton;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.BorderFactory;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 
 class S2tbxMosaicExpressionsPanel extends JPanel {
@@ -68,7 +70,6 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
     private final BindingContext bindingCtx;
 
     private JTable variablesTable;
-    private JTable conditionsTable;
     private S2tbxMosaicFormModel mosaicModel;
 
     S2tbxMosaicExpressionsPanel(AppContext appContext, S2tbxMosaicFormModel model) {
@@ -152,7 +153,7 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
                         final String[] availableBandNames = product.getBandNames();
                         final Band[] allBands = product.getBands();
                         final List dataVector = ((DefaultTableModel) variablesTable.getModel()).getDataVector();
-                        final List<Band> existingBands = new ArrayList<Band>(dataVector.size());
+                        final List<Band> existingBands = new ArrayList<>(dataVector.size());
                         for (Object aDataVector : dataVector) {
                             List row = (List) aDataVector;
                             final String name = (String) row.get(0);
@@ -212,7 +213,7 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         AbstractButton removeVariableButton = createButton("icons/Minus24.gif", "removeVariable");
         removeVariableButton.setToolTipText("Remove selected rows."); /*I18N*/
         removeVariableButton.addActionListener(
-                (ActionEvent e)->{removeRows(variablesTable, variablesTable.getSelectedRows());});
+                (ActionEvent e)-> removeRows(variablesTable, variablesTable.getSelectedRows()));
         return removeVariableButton;
     }
 
@@ -220,7 +221,7 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         AbstractButton moveVariableUpButton = createButton("icons/MoveUp24.gif", "moveVariableUp");
         moveVariableUpButton.setToolTipText("Move up selected rows."); /*I18N*/
         moveVariableUpButton.addActionListener(
-                (ActionEvent e)-> {moveRowsUp(variablesTable, variablesTable.getSelectedRows());});
+                (ActionEvent e)-> moveRowsUp(variablesTable, variablesTable.getSelectedRows()));
         return moveVariableUpButton;
     }
 
@@ -228,7 +229,7 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
         AbstractButton moveVariableDownButton = createButton("icons/MoveDown24.gif", "moveVariableDown");
         moveVariableDownButton.setToolTipText("Move down selected rows."); /*I18N*/
         moveVariableDownButton.addActionListener(
-                (ActionEvent e)->{moveRowsDown(variablesTable, variablesTable.getSelectedRows());});
+                (ActionEvent e)->moveRowsDown(variablesTable, variablesTable.getSelectedRows()));
         return moveVariableDownButton;
     }
 
@@ -316,67 +317,6 @@ class S2tbxMosaicExpressionsPanel extends JPanel {
             value[0] = pep.getCode();
         }
         return i;
-    }
-
-    private class ExprEditor extends AbstractCellEditor implements TableCellEditor {
-
-        private final JButton button;
-        private String[] value;
-
-        private ExprEditor(final boolean booleanExpected) {
-            button = new JButton("...");
-            final Dimension preferredSize = button.getPreferredSize();
-            preferredSize.setSize(25, preferredSize.getHeight());
-            button.setPreferredSize(preferredSize);
-            value = new String[1];
-            button.addActionListener(e-> {
-                final int i = editExpression(value, booleanExpected);
-                if (i == ModalDialog.ID_OK) {
-                    fireEditingStopped();
-                } else {
-                    fireEditingCanceled();
-                }
-            });
-        }
-
-        /**
-         * Returns the value contained in the editor.
-         *
-         * @return the value contained in the editor
-         */
-        @Override
-        public Object getCellEditorValue() {
-            return value[0];
-        }
-
-        /**
-         * Sets an initial <code>value</code> for the editor.  This will cause the editor to <code>stopEditing</code>
-         * and lose any partially edited value if the editor is editing when this method is called. <p>
-         * <p>
-         * Returns the component that should be added to the client's <code>Component</code> hierarchy.  Once installed
-         * in the client's hierarchy this component will then be able to draw and receive user input.
-         *
-         * @param table      the <code>JTable</code> that is asking the editor to edit; can be <code>null</code>
-         * @param value      the value of the cell to be edited; it is up to the specific editor to interpret and draw the
-         *                   value.  For example, if value is the string "true", it could be rendered as a string or it could be rendered
-         *                   as a check box that is checked.  <code>null</code> is a valid value
-         * @param isSelected true if the cell is to be rendered with highlighting
-         * @param row        the row of the cell being edited
-         * @param column     the column of the cell being edited
-         * @return the component for editing
-         */
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
-                                                     int column) {
-            final JPanel renderPanel = new JPanel(new BorderLayout());
-            final DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
-            final Component label = defaultRenderer.getTableCellRendererComponent(table, value, isSelected,
-                    false, row, column);
-            renderPanel.add(label);
-            renderPanel.add(button, BorderLayout.EAST);
-            this.value[0] = (String) value;
-            return renderPanel;
-        }
     }
 
     private static void addRow(final JTable table, final Object[] rowData) {

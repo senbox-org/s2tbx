@@ -41,7 +41,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -62,7 +61,7 @@ import java.util.OptionalDouble;
  * A mosaic operator that performs mosaicing operations on multisize products
  *
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 @OperatorMetadata(alias = "S2tbx-Mosaic",
         category = "Raster/Geometric",
@@ -431,6 +430,10 @@ public final class S2tbxMosaicOp extends Operator {
             product.setSceneGeoCoding(geoCoding);
             final Dimension tileSize = JAIUtils.computePreferredTileSize(width, height, 1);
             product.setPreferredTileSize(tileSize);
+            product.setNumResolutionsMax(sourceProducts[0].getNumResolutionsMax());
+            if(sourceProducts[0].getNumBands()==1){
+                product.setNumResolutionsMax(sourceProducts[0].getBandAt(0).getSourceImage().getModel().getLevelCount());
+            }
             return product;
         } catch (Exception e) {
             throw new OperatorException(e);

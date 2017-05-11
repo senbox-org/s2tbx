@@ -18,7 +18,9 @@ package org.esa.s2tbx.dataio.mosaic.ui;
 
 import com.bc.ceres.swing.binding.ComponentAdapter;
 
-import javax.swing.*;
+import javax.swing.JTable;
+import javax.swing.JComponent;
+
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -26,7 +28,7 @@ import java.lang.reflect.Field;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 
 abstract class S2tbxAbstractTableAdapter extends ComponentAdapter implements TableModelListener {

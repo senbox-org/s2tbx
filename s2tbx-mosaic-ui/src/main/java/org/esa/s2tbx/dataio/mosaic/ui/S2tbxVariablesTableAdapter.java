@@ -16,18 +16,16 @@
 
 package org.esa.s2tbx.dataio.mosaic.ui;
 
-
-import org.esa.s2tbx.dataio.mosaic.S2tbxMosaicOp;
+import javax.swing.JTable;
 import org.esa.snap.core.gpf.common.MosaicOp;
 
-import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 
 class S2tbxVariablesTableAdapter extends S2tbxAbstractTableAdapter {

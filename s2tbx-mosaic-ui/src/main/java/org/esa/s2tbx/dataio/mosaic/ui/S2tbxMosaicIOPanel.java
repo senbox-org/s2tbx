@@ -38,10 +38,17 @@ import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
-import org.esa.snap.ui.io.FileArrayEditor;
-
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JPanel;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.SwingWorker;
+import javax.swing.JFileChooser;
+import javax.swing.JComponent;
+import javax.swing.JCheckBox;
+import java.awt.FlowLayout;
+import java.awt.Insets;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -53,7 +60,7 @@ import java.util.stream.Stream;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 class S2tbxMosaicIOPanel extends JPanel {
 

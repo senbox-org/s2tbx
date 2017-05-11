@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  * A single banded multi-level image source for Sentinel2 products
  *
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 public final class S2MosaicMultiLevelSource extends AbstractMultiLevelSource {
     private final Band[] sourceBands;

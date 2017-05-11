@@ -16,7 +16,6 @@
 
 package org.esa.s2tbx.dataio.mosaic.ui;
 
-import org.esa.s2tbx.dataio.mosaic.S2tbxMosaicOp;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.dataop.barithm.BandArithmetic;
 import org.esa.snap.core.dataop.dem.ElevationModelDescriptor;
@@ -33,15 +32,11 @@ import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.ui.AppContext;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 
 class S2tbxMosaicDialog extends SingleTargetProductDialog {
@@ -96,7 +91,7 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
         final boolean condsNotSpecified =
                 mosaicModel.getConditions() == null || mosaicModel.getConditions().length == 0;
         if (varsNotSpecified && condsNotSpecified) {
-            showErrorDialog("No variables or conditions specified.");
+            showErrorDialog("No variables specified.");
             return false;
         }
         return verifyDEM(mosaicModel);

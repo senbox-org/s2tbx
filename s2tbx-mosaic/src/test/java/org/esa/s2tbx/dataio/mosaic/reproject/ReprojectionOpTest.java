@@ -82,12 +82,12 @@ public class ReprojectionOpTest extends AbstractReprojectionOpTest {
     @Test
     public void testWithCollocationProduct() {
         Map<String, Product> productMap = new HashMap<>(5);
-        productMap.put("source", sourceProduct);
+        productMap.put("source", multiSizeSourceProduct);
         parameterMap.put("crs", "AUTO:42002");
         final Product collocationProduct = createReprojectedProduct(productMap);
 
         productMap = new HashMap<>(5);
-        productMap.put("source", sourceProduct);
+        productMap.put("source", multiSizeSourceProduct);
         productMap.put("collocateWith", collocationProduct);
         parameterMap.remove("crs");
         final Product targetProduct = createReprojectedProduct(productMap);
@@ -134,7 +134,7 @@ public class ReprojectionOpTest extends AbstractReprojectionOpTest {
         final Product targetPoduct = createReprojectedProduct();
         assertNotNull(targetPoduct.getStartTime());
         assertNotNull(targetPoduct.getEndTime());
-        String meanTime = "02-JAN-2008 10:30:30.000000";
+        String meanTime = "02-MAY-2017 10:30:30.000000";
         assertEquals(meanTime, targetPoduct.getStartTime().format());
         assertEquals(meanTime, targetPoduct.getEndTime().format());
     }
@@ -150,7 +150,7 @@ public class ReprojectionOpTest extends AbstractReprojectionOpTest {
         // 299, 312
         // 322, 336
         // interpolated = 311.96527 considering fractional accuracy for pixel (24, 14)
-        assertPixelValue(targetProduct.getBand(FLOAT_BAND_NAME), 24f, 14f, 311.96527, 1.0e-2);
+        assertPixelValue(targetProduct.getBand(FLOAT_BAND_NAME), 24f, 14f, 299, 1.0e-2);
     }
 
     @Test
@@ -222,11 +222,11 @@ public class ReprojectionOpTest extends AbstractReprojectionOpTest {
     @Test
     public void testCopyPlacemarkGroups() throws IOException {
         final PlacemarkDescriptor pinDescriptor = PinDescriptor.getInstance();
-        final Placemark pin = Placemark.createPointPlacemark(pinDescriptor, "P1", "", "", new PixelPos(1.5f, 1.5f), null, sourceProduct.getSceneGeoCoding());
-        final Placemark gcp = Placemark.createPointPlacemark(pinDescriptor, "G1", "", "", new PixelPos(2.5f, 2.5f), null, sourceProduct.getSceneGeoCoding());
+        final Placemark pin = Placemark.createPointPlacemark(pinDescriptor, "P1", "", "", new PixelPos(1.5f, 1.5f), null, multiSizeSourceProduct.getSceneGeoCoding());
+        final Placemark gcp = Placemark.createPointPlacemark(pinDescriptor, "G1", "", "", new PixelPos(2.5f, 2.5f), null, multiSizeSourceProduct.getSceneGeoCoding());
 
-        sourceProduct.getPinGroup().add(pin);
-        sourceProduct.getGcpGroup().add(gcp);
+        multiSizeSourceProduct.getPinGroup().add(pin);
+        multiSizeSourceProduct.getGcpGroup().add(gcp);
 
         parameterMap.put("crs", WGS84_CODE);
         Product targetProduct = createReprojectedProduct();

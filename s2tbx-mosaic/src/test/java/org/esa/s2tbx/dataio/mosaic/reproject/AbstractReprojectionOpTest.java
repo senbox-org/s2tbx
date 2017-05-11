@@ -86,7 +86,6 @@ public abstract class AbstractReprojectionOpTest {
     protected static final String FLOAT_BAND_NAME = "floatData";
     protected static final String INT_BAND_NAME = "intData";
 
-    protected Product sourceProduct;
     protected Product referenceProduct;
     protected Product multiSizeSourceProduct;
     protected Map<String, Object> parameterMap;
@@ -97,22 +96,6 @@ public abstract class AbstractReprojectionOpTest {
         wktFile = new File(AbstractReprojectionOpTest.class.getResource("test.wkt").toURI());
     }
 
-    private void createSourceProduct() throws Exception {
-        sourceProduct = new Product("source", "t", 50, 50);
-        final TiePointGrid latGrid = new TiePointGrid("latGrid", 2, 2, 0.5f, 0.5f, 49, 49, LATS);
-        final TiePointGrid lonGrid = new TiePointGrid("lonGrid", 2, 2, 0.5f, 0.5f, 49, 49, LONS);
-        sourceProduct.addTiePointGrid(latGrid);
-        sourceProduct.addTiePointGrid(lonGrid);
-        sourceProduct.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
-        sourceProduct.setStartTime(ProductData.UTC.parse("02-Jan-2008 10:15:10"));
-        sourceProduct.setEndTime(ProductData.UTC.parse("02-Jan-2008 10:45:50"));
-        Band floatDataBand = sourceProduct.addBand(FLOAT_BAND_NAME, ProductData.TYPE_FLOAT32);
-        floatDataBand.setRasterData(createDataFor(floatDataBand));
-        floatDataBand.setSynthetic(true);
-        Band intDataBand = sourceProduct.addBand(INT_BAND_NAME, ProductData.TYPE_INT16);
-        intDataBand.setRasterData(createDataFor(intDataBand));
-        intDataBand.setSynthetic(true);
-    }
 
     private void createReferenceProduct() throws Exception {
         referenceProduct = new Product("reference", "t", 50, 50);
@@ -124,20 +107,11 @@ public abstract class AbstractReprojectionOpTest {
         referenceProduct.setStartTime(ProductData.UTC.parse("02-May-2017 10:15:10"));
         referenceProduct.setEndTime(ProductData.UTC.parse("02-May-2017 10:45:50"));
         Band databand1 = new Band(FLOAT_BAND_NAME, ProductData.TYPE_FLOAT32, 50,50);
-        databand1.setSourceImage(ConstantDescriptor.create((float) 50, (float) 50, new Float[]{ 2.0f}, null));
+        databand1.setSourceImage(ConstantDescriptor.create((float) 50, (float) 50, new Float[]{ 299.0f}, null));
         databand1.setRasterData(createDataFor(databand1));
         databand1.setSynthetic(true);
         Band databand2 = new Band(INT_BAND_NAME, ProductData.TYPE_INT16, 28,28);
-        final AffineTransform imageToModelTransform = new AffineTransform(referenceProduct.getSceneRasterWidth()/databand2.getRasterWidth(),
-                0, 0, referenceProduct.getSceneRasterHeight()/databand2.getRasterHeight(), 0, 0);
-        final DefaultMultiLevelModel referenceModel = new DefaultMultiLevelModel(2, imageToModelTransform,
-                databand2.getRasterWidth(), databand2.getRasterHeight());
-        databand2.setSourceImage(new DefaultMultiLevelImage(new AbstractMultiLevelSource(referenceModel) {
-            @Override
-            protected RenderedImage createImage(int level) {
-                return new BufferedImage(databand2.getRasterWidth() / (1 + level), databand2.getRasterHeight()/ (1 + level), ProductData.TYPE_INT16);
-            }
-        }));
+        databand2.setSourceImage(ConstantDescriptor.create((float) 28, (float) 28, new Float[]{ 199.0f}, null));
         databand2.setRasterData(createDataFor(databand2));
         databand2.setSynthetic(true);
         referenceProduct.addBand(databand1);
@@ -154,20 +128,11 @@ public abstract class AbstractReprojectionOpTest {
         multiSizeSourceProduct.setStartTime(ProductData.UTC.parse("02-May-2017 10:15:10"));
         multiSizeSourceProduct.setEndTime(ProductData.UTC.parse("02-May-2017 10:45:50"));
         Band databand1 = new Band(FLOAT_BAND_NAME, ProductData.TYPE_FLOAT32, 50,50);
-        databand1.setSourceImage(ConstantDescriptor.create((float) 50, (float) 50, new Float[]{ 2.0f}, null));
+        databand1.setSourceImage(ConstantDescriptor.create((float) 50, (float) 50, new Float[]{ 299.0f}, null));
         databand1.setRasterData(createDataFor(databand1));
         databand1.setSynthetic(true);
         Band databand2 = new Band(INT_BAND_NAME, ProductData.TYPE_INT16, 25,25);
-        final AffineTransform imageToModelTransform = new AffineTransform(multiSizeSourceProduct.getSceneRasterWidth()/databand2.getRasterWidth(),
-                0, 0, multiSizeSourceProduct.getSceneRasterHeight()/databand2.getRasterHeight(), 0, 0);
-        final DefaultMultiLevelModel referenceModel = new DefaultMultiLevelModel(2, imageToModelTransform,
-                databand2.getRasterWidth(), databand2.getRasterHeight());
-        databand2.setSourceImage(new DefaultMultiLevelImage(new AbstractMultiLevelSource(referenceModel) {
-            @Override
-            protected RenderedImage createImage(int level) {
-                return new BufferedImage(databand2.getRasterWidth() / (1 + level), databand2.getRasterHeight()/ (1 + level), ProductData.TYPE_INT16);
-            }
-        }));
+        databand2.setSourceImage(ConstantDescriptor.create((float) 25, (float) 25, new Float[]{ 199.0f}, null));
         databand2.setRasterData(createDataFor(databand2));
         databand2.setSynthetic(true);
         multiSizeSourceProduct.addBand(databand1);
@@ -177,7 +142,6 @@ public abstract class AbstractReprojectionOpTest {
     @Before
     public void setupTestMethod() throws Exception {
         parameterMap = new HashMap<>(5);
-        createSourceProduct();
         createReferenceProduct();
         createMultiSizeSourceProduct();
     }
@@ -190,7 +154,7 @@ public abstract class AbstractReprojectionOpTest {
 
     protected Product createReprojectedProduct() {
         String operatorName = OperatorSpi.getOperatorAlias(S2tbxReprojectionOp.class);
-        return GPF.createProduct(operatorName, parameterMap, sourceProduct);
+        return GPF.createProduct(operatorName, parameterMap, multiSizeSourceProduct);
     }
 
     protected void assertPixelValidState(Band targetBand, double sourceX, double sourceY,
@@ -217,7 +181,7 @@ public abstract class AbstractReprojectionOpTest {
     }
 
     protected PixelPos computeTargetPP(Band targetBand, double sourceX, double sourceY) {
-        final Band sourceBand = sourceProduct.getBand(targetBand.getName());
+        final Band sourceBand = multiSizeSourceProduct.getBand(targetBand.getName());
         final PixelPos sourcePP = new PixelPos(sourceX, sourceY);
         final GeoPos geoPos = sourceBand.getGeoCoding().getGeoPos(sourcePP, null);
         return targetBand.getGeoCoding().getPixelPos(geoPos, null);
