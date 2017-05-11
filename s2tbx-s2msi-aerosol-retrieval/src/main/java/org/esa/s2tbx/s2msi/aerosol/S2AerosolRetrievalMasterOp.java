@@ -36,6 +36,7 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
+import org.esa.snap.core.util.StringUtils;
 
 import java.util.Map;
 
@@ -99,6 +100,10 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             defaultValue = "20")
     private int scale;
 
+    @Parameter(description = "If given, AOD default values will be taken from the source products's raster data node " +
+            "with this name.", defaultValue = "")
+    private String nameOfAODDefault;
+
     @Override
     public void initialize() throws OperatorException {
         final boolean inputProductIsValid = S2IdepixUtils.validateInputProduct(sourceProduct, AlgorithmSelector.MSI);
@@ -154,6 +159,10 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             s2AerosolOp.setParameter("pathToLut", pathToLut);
             s2AerosolOp.setParameter("scale", scale);
             s2AerosolOp.setParameter("reflectanceBandNames", reflectanceBandNames);
+            if (StringUtils.isNotNullAndNotEmpty(nameOfAODDefault) &&
+                    sourceProduct.containsRasterDataNode(nameOfAODDefault)) {
+                s2AerosolOp.setParameter("aodDefault", sourceProduct.getRasterDataNode(nameOfAODDefault));
+            }
             aotDownscaledProduct = s2AerosolOp.getTargetProduct();
         }
 

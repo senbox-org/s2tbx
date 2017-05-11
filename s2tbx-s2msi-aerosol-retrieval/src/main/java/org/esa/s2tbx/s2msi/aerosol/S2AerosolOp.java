@@ -72,6 +72,10 @@ public class S2AerosolOp extends Operator {
             defaultValue = "B1,B2,B3,B4,B5,B6,B7,B8,B8A,B11,B12")
     private String[] reflectanceBandNames;
 
+    @Parameter(description = "If given, AOD default values will be taken from this raster data node ",
+            defaultValue = "")
+    private RasterDataNode aodDefault;
+
     // todo: define what we need from this
     private String surfaceSpecName = "surface_reflectance_spec.asc";
 
@@ -416,6 +420,14 @@ public class S2AerosolOp extends Operator {
                 targetTiles.get(targetProduct.getBand("latitude")).setSample(x, y, latLon[0]);
             } else if (t.getRasterDataNode() == lonBand) {
                 targetTiles.get(targetProduct.getBand("longitude")).setSample(x, y, latLon[1]);
+            } else if (t.getRasterDataNode() == aotBand) {
+                if (aodDefault != null && aodDefault.getGeoCoding() != null) {
+                    final PixelPos pixelPos =
+                            aodDefault.getGeoCoding().getPixelPos(new GeoPos(latLon[0], latLon[1]), new PixelPos());
+                    t.setSample(x, y, aodDefault.getSampleFloat((int) pixelPos.getX(), (int) pixelPos.getY()));
+                } else {
+                    t.setSample(x, y, t.getRasterDataNode().getNoDataValue());
+                }
             } else {
                 t.setSample(x, y, t.getRasterDataNode().getNoDataValue());
             }
