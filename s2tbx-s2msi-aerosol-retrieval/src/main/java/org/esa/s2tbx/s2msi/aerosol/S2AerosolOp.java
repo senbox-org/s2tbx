@@ -11,6 +11,7 @@ import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
@@ -38,6 +39,7 @@ import java.util.logging.Logger;
  *
  * @author olafd
  */
+@OperatorMetadata(alias = "S2AerosolOp", internal = true)
 public class S2AerosolOp extends Operator {
 
     @SourceProduct
@@ -48,16 +50,16 @@ public class S2AerosolOp extends Operator {
     // todo: define what we need from this
     private String surfaceSpecName = "surface_reflectance_spec.asc";
     @Parameter(defaultValue = "2")
-    private int vegSpecId;
+    private int vegSpecId = 2;
 
     @Parameter(defaultValue = "1")
-    private int soilSpecId;
+    private int soilSpecId = 1;
 
     @Parameter(defaultValue = "9")
-    private int scale;
+    private int scale = 9;
 
     @Parameter(defaultValue = "0.2")
-    private float ndviThreshold;
+    private float ndviThreshold = 0.2f;
 
 
     private String productName;
@@ -96,7 +98,7 @@ public class S2AerosolOp extends Operator {
         productName = sourceProduct.getName() + "_AOT";
         productType = sourceProduct.getProductType() + "_AOT";
 
-        initRasterDimensions(sourceProduct, scale);
+        initRasterDimensions(sourceProduct, 9);
 
         final String validExpression = InstrumentConsts.VALID_RETRIEVAL_EXPRESSION;
         validBand = AerosolUtils.createBooleanExpressionBand(validExpression, sourceProduct);

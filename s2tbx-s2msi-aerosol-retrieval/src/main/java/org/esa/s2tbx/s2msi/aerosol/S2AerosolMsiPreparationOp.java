@@ -10,6 +10,7 @@ import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.ProductUtils;
@@ -22,6 +23,7 @@ import org.esa.snap.core.util.ProductUtils;
  *
  * @author olafd
  */
+@OperatorMetadata(alias = "S2AerosolMsiPreparationOp", internal = true)
 public class S2AerosolMsiPreparationOp extends Operator {
 
     @SourceProduct

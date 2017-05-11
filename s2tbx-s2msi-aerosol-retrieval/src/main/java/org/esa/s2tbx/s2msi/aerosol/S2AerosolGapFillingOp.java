@@ -9,6 +9,7 @@ import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.BitSetter;
@@ -26,6 +27,7 @@ import java.util.Map;
  *
  * @author olafd
  */
+@OperatorMetadata(alias = "S2AerosolGapFillingOp", internal = true)
 public class S2AerosolGapFillingOp extends Operator {
 
     private static final int F_INTERP = 1;
