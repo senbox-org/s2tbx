@@ -25,5 +25,4 @@ public class EnvironmentVariables {
             throw new RuntimeException("Unable to set environment variable: " + String.valueOf(result));
         }
     }
-
 }

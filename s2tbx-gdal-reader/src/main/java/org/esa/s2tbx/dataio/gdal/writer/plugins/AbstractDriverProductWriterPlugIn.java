@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.writer.plugins;
 
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.writer.GDALProductWriter;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.core.dataio.EncodeQualification;
@@ -46,7 +46,7 @@ public abstract class AbstractDriverProductWriterPlugIn implements ProductWriter
 
     @Override
     public final EncodeQualification getEncodeQualification(Product product) {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             return new EncodeQualification(EncodeQualification.Preservation.FULL);
         }
         return new EncodeQualification(EncodeQualification.Preservation.UNABLE);
