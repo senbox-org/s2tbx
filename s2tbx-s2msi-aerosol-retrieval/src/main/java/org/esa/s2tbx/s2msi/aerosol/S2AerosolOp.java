@@ -74,7 +74,7 @@ public class S2AerosolOp extends Operator {
 
     @Parameter(description = "If given, AOD default values will be taken from this raster data node ",
             defaultValue = "")
-    private RasterDataNode aodDefault;
+    private Band aodDefault;
 
     // todo: define what we need from this
     private String surfaceSpecName = "surface_reflectance_spec.asc";
