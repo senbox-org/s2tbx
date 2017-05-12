@@ -1,0 +1,19 @@
+{
+  "testProducts": [
+    {
+      "id": "Spot6_OP12b_Short",
+      "relativePath": "_spot6_7\\SPOT6_1.5m_short",
+      "description": "Spot 6 shorted product"
+    },
+    {
+      "id": "Spot6_Archive",
+      "relativePath": "_spot6_7\\SPOT6_1.5m_short",
+      "description": "Spot 6 archived shorted product"
+    },
+    {
+      "id": "Spot7_Spain",
+      "relativePath": "_spot6_7\\Sevilla_Spain_SPOT7",
+      "description": "Spot 7 Spain product"
+    }
+  ]
+}

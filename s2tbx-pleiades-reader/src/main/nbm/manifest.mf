@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: ${project.nbmSpecVersion}
+AutoUpdate-Show-In-Client: false
+AutoUpdate-Essential-Module: false
+OpenIDE-Module-Layer: org/esa/s2tbx/dataio/pleiades/layer.xml
+OpenIDE-Module-Java-Dependencies: Java > 1.8
+OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
+OpenIDE-Module-Long-Description: <p>This module enables the Sentinel Toolbox to read Pleiades products
+ </p><p><b>Vendor:</b> CS SI</p><
+ p><b>Contact address:</b> 22 Avenue Galilee, 92350 Le Plessis Robinson
+ (France)</p><p><b>Copyright:</b> (C) 2015 by CS SI</p><p><
+ b>Vendor:</b> CS SI</p><p><b>License:</b> http://www
+ .gnu.org/licenses/gpl.html</p><p><b>Changelog:</b> <b>Changes in 2.0.
+ 0</b><br/>
+
