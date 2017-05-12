@@ -54,7 +54,7 @@ public class GenericRegionMergingOp extends Operator {
             valueSet = {BEST_FITTING_REGION_MERGING_CRITERION, LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION})
     private String regionMergingCriterion;
 
-    @Parameter(label = "Total iterations for second segmentation", description = "The total number of iterations.")
+    @Parameter(label = "Total iterations", description = "The total number of iterations.")
     private int totalIterationsForSecondSegmentation;
 
     @Parameter(label = "Threshold", description = "The threshold.")
@@ -109,6 +109,14 @@ public class GenericRegionMergingOp extends Operator {
         }
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
             throw new OperatorException("Please select at least one band.");
+        }
+
+        Band firstSelectedSourceBand = this.sourceProduct.getBand(this.sourceBandNames[0]);
+        for (int i=1; i<this.sourceBandNames.length; i++) {
+            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
+            if (firstSelectedSourceBand.getRasterWidth() != band.getRasterWidth() || firstSelectedSourceBand.getRasterHeight() != band.getRasterHeight()) {
+                throw new OperatorException("Please select the bands with the same resolution.");
+            }
         }
 
         createTargetProduct();

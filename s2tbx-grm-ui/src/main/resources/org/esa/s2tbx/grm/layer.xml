@@ -8,9 +8,9 @@
                 <attr name="delegate"
                       methodvalue="org.esa.s2tbx.grm.GenericRegionMergingOperatorAction.create"/>
                 <attr name="displayName"
-                      stringvalue="Generic region merging"/>
+                      stringvalue="Generic region merging processor"/>
                 <attr name="dialogTitle"
-                      stringvalue="Generic region merging"/>
+                      stringvalue="Generic region merging processor"/>
                 <attr name="operatorName"
                       stringvalue="GenericRegionMergingOp"/>
                 <attr name="targetProductNameSuffix"
@@ -20,8 +20,8 @@
     </folder>
 
     <folder name="Menu">
-        <folder name="Optical">
-            <folder name="Thematic Land Processing">
+        <folder name="Raster">
+            <folder name="Segmentation">
                 <file name="org-esa-s2tbx-grm-Action.shadow">
                     <attr name="originalFile"
                           stringvalue="Actions/Operators/org-esa-s2tbx-grm-Action.instance"/>
