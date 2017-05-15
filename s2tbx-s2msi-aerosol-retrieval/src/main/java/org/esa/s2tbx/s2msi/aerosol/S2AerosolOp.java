@@ -122,6 +122,7 @@ public class S2AerosolOp extends Operator {
     private double julianDay;
     private double distanceCorrection;
     private int[] bandIndexes;
+    private int NUMBER_OF_DARKEST_PIXELS = 30;
 
     @Override
     public void initialize() throws OperatorException {
@@ -252,7 +253,7 @@ public class S2AerosolOp extends Operator {
         double surfP = Math.min(tileValues[skip++], 101325.0);
         double elevation = tileValues[skip++];
         double wvCol = tileValues[skip++];
-        wvCol /= 0.00803751;
+        wvCol /= 0.00803751;    // kg / m^2 to atm-cm
         final double aerosolType = tileValues[skip];
 
         final double[][][] lutSubset = S2LutUtils.getLutSubset(s2Lut, bandIndexes, wvCol, geom.sza, geom.vza,
@@ -288,7 +289,8 @@ public class S2AerosolOp extends Operator {
             lToa[iWvl] = S2LutUtils.convertReflToRad(toaRefl[iWvl], iWvl, geom.sza, julianDay) /
                     distanceCorrection;
 //           # part of eq. 6-13
-            toaIrradianceToPathToaTosa[iWvl] = (kRay * mCorrRay * tauRaySun[iWvl] * rayPhaseFunc) /
+            //todo add stratospheric aerosol tauStratoAeroSun in eq. 6-13
+            toaIrradianceToPathToaTosa[iWvl] = (kRay * mCorrRay * tauOzoneSun[iWvl] * rayPhaseFunc) /
                     (4.0 * Math.PI * cosineOfSZA * cosineOfVZA);
 //           # parts of eq. 6-15
             tauOzoneStratAeroView[iWvl] = tauOzoneView * tauStratAeroView;
@@ -344,12 +346,9 @@ public class S2AerosolOp extends Operator {
     }
 
     private InputPixelData[] readDarkestNPixels(Map<String, Tile> sourceTiles, int iX, int iY, Rectangle pixelWindow) {
-        boolean valid = uniformityTest(sourceTiles, iX, iY);
-        if (!valid) {
+        if (!uniformityTest(sourceTiles, iX, iY)) {
             return null;
         }
-
-        int NPixel = 30;  // we want to find the 30 darkest pixels
         ArrayList<InputPixelData> inPixelList = new ArrayList<>(pixelWindow.height * pixelWindow.width);
         InputPixelData[] inPixField = null;
 
@@ -363,7 +362,7 @@ public class S2AerosolOp extends Operator {
         int yOffset = iY * pixelWindow.height + pixelWindow.y;
         for (int y = yOffset; y < yOffset + pixelWindow.height; y++) {
             for (int x = xOffset; x < xOffset + pixelWindow.width; x++) {
-                valid = sourceTiles.get(validName).getSampleBoolean(x, y);
+                boolean valid = sourceTiles.get(validName).getSampleBoolean(x, y);
                 final int b3ArrIndex = (y - yOffset) * pixelWindow.width + (x - xOffset);
                 b3Arr[b3ArrIndex] = (valid) ?
                         sourceTiles.get(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[2]).getSampleFloat(x, y) : -1;
@@ -374,24 +373,21 @@ public class S2AerosolOp extends Operator {
         }
 
         // return null if not enough valid pixels
-        if (nValid < 0.25 * pixelWindow.width * pixelWindow.height) {
+        if (nValid < NUMBER_OF_DARKEST_PIXELS) {
             return null;
         }
 
         Arrays.sort(b3Arr);
-        double b3Threshold = 0.0; // todo: define. Do we need this??
-        if (b3Arr[b3Arr.length - NPixel] > b3Threshold) {
-            for (int y = yOffset; y < yOffset + pixelWindow.height; y++) {
-                for (int x = xOffset; x < xOffset + pixelWindow.width; x++) {
-                    valid = sourceTiles.get(validName).getSampleBoolean(x, y);
-                    b3Refl = sourceTiles.get(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[2]).getSampleFloat(x, y);
-                    if (valid && (b3Refl >= b3Arr[b3Arr.length - 2 * NPixel])
-                            && (b3Refl <= b3Arr[b3Arr.length - NPixel - 1])) {
-                        valid = readAllValues(x, y, sourceTiles, tileValues);
-                        InputPixelData ipd = createInPixelData(tileValues);
-                        if (valid && S2LutUtils.isInsideLut(ipd, s2Lut)) {
-                            inPixelList.add(ipd);
-                        }
+        final float brightestAllowedValue = b3Arr[NUMBER_OF_DARKEST_PIXELS - 1];
+        for (int y = yOffset; y < yOffset + pixelWindow.height; y++) {
+            for (int x = xOffset; x < xOffset + pixelWindow.width; x++) {
+                boolean valid = sourceTiles.get(validName).getSampleBoolean(x, y);
+                b3Refl = sourceTiles.get(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[2]).getSampleFloat(x, y);
+                if (valid && b3Refl <= brightestAllowedValue) {
+                    valid = readAllValues(x, y, sourceTiles, tileValues);
+                    InputPixelData ipd = createInPixelData(tileValues);
+                    if (valid && S2LutUtils.isInsideLut(ipd, s2Lut)) {
+                        inPixelList.add(ipd);
                     }
                 }
             }

@@ -29,24 +29,23 @@ public class S2LutUtils {
     }
 
     public static double getMaxAOT(InputPixelData ipd, double[] aot) {
-        // todo: what to set here?? An initial value? AOD is what we want to retrieve?!?!??
-        double lPath = getAtmosphericParameter(ipd, 4, 0, 0); // starting with aod=0.15
+        double lPath = getAtmosphericParameter(ipd, 0, 0, 0);
         double lPath0 = lPath;
-        int iAot = -1;
+        int aotIndex = -1;
         final double toaIrradiance = getAtmosphericParameter(ipd, 4, 0, 6);
         final double lToaTosa = getLToaTosa(toaIrradiance, ipd, 0);
-        while (iAot < aot.length - 1 && lPath < lToaTosa) {
+        while (aotIndex < aot.length - 1 && lPath < lToaTosa) {
             lPath0 = lPath;
-            iAot++;
-            lPath = getAtmosphericParameter(ipd, iAot, 0, 0);
+            aotIndex++;
+            lPath = getAtmosphericParameter(ipd, aotIndex, 0, 0);
         }
-        if (iAot <= 0) {
+        if (aotIndex <= 0) {
             return 0.05;
         }
         if (lPath < lToaTosa) {
             return 1.2;
         }
-        return aot[iAot - 1] + (aot[iAot] - aot[iAot - 1]) * (lToaTosa - lPath0) / (lPath - lPath0);
+        return aot[aotIndex - 1] + (aot[aotIndex] - aot[aotIndex - 1]) * (lToaTosa - lPath0) / (lPath - lPath0);
     }
 
     private static double getAtmosphericParameter(InputPixelData ipd, int aotIndex, int wavelengthIndex, int paramIndex) {
@@ -128,10 +127,11 @@ public class S2LutUtils {
             final double tauRaySun = ipd.tauRaySun[iWvl];
             final double tauOzoneSun = ipd.tauOzoneSun[iWvl];
 //           # eq. 6-14
-            final double tosaIrradiance = toaIrradiance * tauRaySun * tauOzoneSun * tauStratAeroSun;
+            double tosaIrradiance = toaIrradiance * tauRaySun * tauOzoneSun * tauStratAeroSun;
 
             final double lToaTosa = getLToaTosa(toaIrradiance, ipd, iWvl);
 
+            tosaIrradiance /= Math.cos(Math.toRadians(sza));
 //            # eq. 6-17
 //            # first line
 //            # just the terms of E_g
