@@ -82,7 +82,7 @@ class S2tbxMosaicFormModel {
     S2tbxMosaicFormModel(S2tbxMosaicForm parentForm) {
         this.parentForm = parentForm;
 
-        container = ParameterDescriptorFactory.createMapBackedOperatorPropertyContainer("S2tbx-Mosaic", parameterMap);
+        container = ParameterDescriptorFactory.createMapBackedOperatorPropertyContainer("Multi-size Mosaic", parameterMap);
         addTransientProperty(PROPERTY_UPDATE_PRODUCT, Product.class);
         addTransientProperty(PROPERTY_UPDATE_MODE, Boolean.class);
         addTransientProperty(PROPERTY_SHOW_SOURCE_PRODUCTS, Boolean.class);
@@ -292,7 +292,7 @@ class S2tbxMosaicFormModel {
             final int w = MathUtils.floorInt(mapEnvelope.getSpan(0) / pixelSizeX);
             final int h = MathUtils.floorInt(mapEnvelope.getSpan(1) / pixelSizeY);
 
-            final Product product = new Product("S2mosaic", "MosaicBounds", w, h);
+            final Product product = new Product("Multi-seize Mosaic", "MosaicBounds", w, h);
             final GeoCoding geoCoding = new CrsGeoCoding(mapCRS,
                                                          w, h,
                                                          mapEnvelope.getMinimum(0),

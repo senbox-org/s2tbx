@@ -41,7 +41,7 @@ public class VariablesTableAdapterTest {
 
     @Before
     public void before() {
-        final PropertyContainer pc = ParameterDescriptorFactory.createMapBackedOperatorPropertyContainer("S2tbx-Mosaic");
+        final PropertyContainer pc = ParameterDescriptorFactory.createMapBackedOperatorPropertyContainer("Multisize-Mosaic");
         bindingContext = new BindingContext(pc);
     }
 

@@ -9,7 +9,7 @@
     <tocitem text="Sentinel Toolbox Application">
         <tocitem text="Raster">
             <tocitem text="Geometric Operations">
-                <tocitem text="Sentinel-2-Mosaic" target="mosaicAction"/>
+                <tocitem text="Multi-size Mosaic" target="mosaicAction"/>
             </tocitem>
         </tocitem>
     </tocitem>
