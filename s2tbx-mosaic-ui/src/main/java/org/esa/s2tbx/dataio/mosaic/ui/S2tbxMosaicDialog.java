@@ -47,11 +47,11 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
         final TargetProductSelector selector = getTargetProductSelector();
         selector.getModel().setSaveToFileSelected(false);
-        selector.getModel().setProductName("S2-Mosaic");
+        selector.getModel().setProductName("Multi-size Mosaic");
         selector.getSaveToFileCheckBox().setEnabled(true);
         form = new S2tbxMosaicForm(selector, appContext);
 
-        final OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi("S2tbx-Mosaic");
+        final OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi("Multi-size Mosaic");
 
         S2tbxMosaicFormModel formModel = form.getFormModel();
         OperatorParameterSupport parameterSupport = new OperatorParameterSupport(operatorSpi.getOperatorDescriptor(),
@@ -110,7 +110,7 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
         if(!multiSize){
             return GPF.createProduct("Mosaic", parameterMap, formModel.getSourceProductMap());
         }
-        return GPF.createProduct("S2tbx-Mosaic", parameterMap, formModel.getSourceProductMap());
+        return GPF.createProduct("Multi-size Mosaic", parameterMap, formModel.getSourceProductMap());
     }
 
     @Override

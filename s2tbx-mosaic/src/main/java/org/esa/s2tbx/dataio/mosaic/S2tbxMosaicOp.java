@@ -63,12 +63,12 @@ import java.util.OptionalDouble;
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
-@OperatorMetadata(alias = "S2tbx-Mosaic",
+@OperatorMetadata(alias = "Multi-size Mosaic",
         category = "Raster/Geometric",
         version = "1.0",
         authors = "Razvan Dumitrascu",
         copyright = "(c) 2017 by CS Romania",
-        description = "Creates a Sentinel2 mosaic out of a set of source products.",
+        description = "Creates a multi-size mosaic out of a set of source products.",
         internal = false)
 
 public final class S2tbxMosaicOp extends Operator {
@@ -426,7 +426,7 @@ public final class S2tbxMosaicOp extends Operator {
                     targetEnvelope.getLowerCorner().getOrdinate(0),
                     targetEnvelope.getUpperCorner().getOrdinate(1),
                     this.pixelSizeX, this.pixelSizeY);
-            final Product product = new Product("S2mosaic", "BEAM_MOSAIC", width, height);
+            final Product product = new Product("Multi-size Mosaic", "BEAM_MOSAIC", width, height);
             product.setSceneGeoCoding(geoCoding);
             final Dimension tileSize = JAIUtils.computePreferredTileSize(width, height, 1);
             product.setPreferredTileSize(tileSize);
@@ -629,7 +629,7 @@ public final class S2tbxMosaicOp extends Operator {
         if (graphElement == null) {
             throw new OperatorException("Product has no metadata element named 'Processing_Graph'");
         }
-        final String operatorAlias = "S2tbx-Mosaic";
+        final String operatorAlias = "Multi-size Mosaic";
         final Map<String, Object> parameters = new HashMap<>();
         boolean operatorFound = false;
         for (MetadataElement nodeElement : graphElement.getElements()) {
