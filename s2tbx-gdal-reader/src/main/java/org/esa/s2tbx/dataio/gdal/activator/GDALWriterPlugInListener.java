@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.gdal;
+package org.esa.s2tbx.dataio.gdal.activator;
 
 /**
  * @author Jean Coravu

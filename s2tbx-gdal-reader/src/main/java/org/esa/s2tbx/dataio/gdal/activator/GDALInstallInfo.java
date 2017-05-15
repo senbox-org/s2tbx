@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.gdal;
+package org.esa.s2tbx.dataio.gdal.activator;
 
 import org.esa.snap.runtime.Config;
 
@@ -10,7 +10,7 @@ import java.util.prefs.Preferences;
 /**
  * Created by kraftek on 11/15/2016.
  */
-public enum GdalInstallInfo {
+public enum GDALInstallInfo {
     INSTANCE;
 
     private Path binLocation;
@@ -23,10 +23,10 @@ public enum GdalInstallInfo {
             config.load();
             Preferences preferences = config.preferences();
             preferences.put("gdal.apps.path",
-                            this.binLocation.resolve("bin")
-                                            .resolve("gdal")
-                                            .resolve("apps")
-                                            .toString());
+                    this.binLocation.resolve("bin")
+                            .resolve("gdal")
+                            .resolve("apps")
+                            .toString());
             preferences.flush();
         } catch (BackingStoreException exception) {
             // ignore exception
@@ -49,6 +49,6 @@ public enum GdalInstallInfo {
     public boolean isPresent() {
         return this.binLocation != null && Files.exists(this.binLocation);
     }
-
-    public Path getLocation() { return this.binLocation; }
 }
+
+

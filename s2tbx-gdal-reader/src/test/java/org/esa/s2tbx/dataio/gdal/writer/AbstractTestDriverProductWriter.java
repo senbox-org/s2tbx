@@ -2,8 +2,9 @@ package org.esa.s2tbx.dataio.gdal.writer;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.gdal.GDALUtils;
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.AbstractDriverProductReaderPlugIn;
 import org.esa.s2tbx.dataio.gdal.writer.plugins.AbstractDriverProductWriterPlugIn;
@@ -54,7 +55,9 @@ public abstract class AbstractTestDriverProductWriter {
     private final AbstractDriverProductReaderPlugIn readerPlugIn;
     private final AbstractDriverProductWriterPlugIn writerPlugIn;
 
-    protected AbstractTestDriverProductWriter(String driverName, String fileExtension, String driverCreationTypes, AbstractDriverProductReaderPlugIn readerPlugIn, AbstractDriverProductWriterPlugIn writerPlugIn) {
+    protected AbstractTestDriverProductWriter(String driverName, String fileExtension, String driverCreationTypes,
+                                              AbstractDriverProductReaderPlugIn readerPlugIn, AbstractDriverProductWriterPlugIn writerPlugIn) {
+
         this.driverName = driverName;
         this.fileExtension = fileExtension;
         this.driverCreationTypes = driverCreationTypes;
@@ -81,13 +84,14 @@ public abstract class AbstractTestDriverProductWriter {
     public final void setUp() throws Exception {
         assumeTrue(TestUtil.testdataAvailable());
 
-        /*if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALDistributionInstaller.install();
-        }*/
+//        if (!GDALInstallInfo.INSTANCE.isPresent()) {
+//            GDALDistributionInstaller.install();
+//        }
     }
+
     @Test
     public final void testWriteFileOnDisk() throws IOException, FactoryException, TransformException {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             int sceneRasterWidth = 20;
             int sceneRasterHeight = 30;
             double originX = 0.0d;
@@ -137,8 +141,6 @@ public abstract class AbstractTestDriverProductWriter {
                 checkSaveProductToFile(file, this.writerPlugIn, product);
 
                 checkReadProductFromFile(file, this.readerPlugIn, product, canIgnore);
-            } catch (Exception ex) {
-                ex.printStackTrace();
             } finally {
                 file.delete();
             }

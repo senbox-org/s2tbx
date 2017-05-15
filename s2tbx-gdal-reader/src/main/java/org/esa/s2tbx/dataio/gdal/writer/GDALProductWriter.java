@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -51,11 +52,13 @@ public class GDALProductWriter extends AbstractProductWriter {
     protected void writeProductNodesImpl() throws IOException {
         Object output = getOutput();
 
-        logger.info("Saving the product using the GDAL writer into the file '" + output.toString() + "'.");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Saving the product into the file '" + output.toString() + "' using the GDAL plugin writer '" + getWriterPlugIn().getClass().getName() + "'.");
+        }
 
         Path outputFile = getFileInput(output);
         if (outputFile == null) {
-            throw new IOException("The file '"+ output.toString() + "' to save the product is invalid.");
+            throw new IllegalArgumentException("The file '"+ output.toString() + "' to save the product is invalid.");
         }
 
         Product sourceProduct = getSourceProduct();
@@ -80,18 +83,23 @@ public class GDALProductWriter extends AbstractProductWriter {
         if (!this.writerDriver.canExportProduct(this.gdalDataType)) {
             String gdalDataTypeName = gdal.GetDataTypeName(this.gdalDataType);
             String message = MessageFormat.format("The GDAL driver ''{0}'' does not support the data type ''{1}'' to create a new product." +
-                            " The available types are ''{2}''." ,
+                            " The available types are ''{2}''.",
                     this.writerDriver.getDriverDisplayName(), gdalDataTypeName, this.writerDriver.getCreationDataTypes());
             throw new IllegalArgumentException(message);
         }
 
         this.gdalDriver = gdal.GetDriverByName(this.writerDriver.getDriverName());
+        if (this.gdalDriver == null) {
+            throw new NullPointerException("The GDAL driver '" + this.writerDriver.getDriverDisplayName() + "' ("+this.writerDriver.getDriverName()+") used to write the product does not exist.");
+        }
 
-        logger.info("Using the GDAL driver '" + this.gdalDriver.getLongName() + "' ("+this.gdalDriver.getShortName()+") to save the product.");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE,"Using the GDAL driver '" + this.gdalDriver.getLongName() + "' ("+this.gdalDriver.getShortName()+") to save the product.");
+        }
 
         this.gdalDataset = this.gdalDriver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
         if (this.gdalDataset == null) {
-            throw new IOException("Failed creating the file to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
+            throw new NullPointerException("Failed creating the file to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
         }
         this.bandsMap = new HashMap<Band, org.gdal.gdal.Band>(bandCount);
 

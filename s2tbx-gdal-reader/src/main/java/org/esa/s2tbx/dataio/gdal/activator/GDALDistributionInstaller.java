@@ -2,8 +2,9 @@ package org.esa.s2tbx.dataio.gdal.activator;
 
 import org.esa.s2tbx.dataio.gdal.GDALInstaller;
 import org.esa.s2tbx.dataio.gdal.GDALUtils;
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.OSCategory;
 import org.esa.s2tbx.jni.EnvironmentVariables;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.utils.NativeLibraryUtils;
 
@@ -31,17 +32,15 @@ public class GDALDistributionInstaller {
      */
     public static void install() throws IOException {
         // install the GDAL library from the distribution
-        GDALInstaller.OSCategory osCategory = GDALInstaller.OSCategory.getOSCategory();
+        OSCategory osCategory = OSCategory.getOSCategory();
         if (osCategory.getDirectory() == null) {
-            logger.log(Level.INFO, "No distribution folder found on " + osCategory.getOperatingSystemName() + " operation system.");
+            logger.log(Level.INFO, "No distribution folder found on " + osCategory.getOperatingSystemName() + ".");
             return;
         }
         if (osCategory.getZipFileName() == null) {
-            logger.log(Level.INFO, "No library zip file name found on " + osCategory.getOperatingSystemName() + " operation system.");
+            logger.log(Level.INFO, "No library zip file name found on " + osCategory.getOperatingSystemName() + ".");
             return;
         }
-
-        logger.log(Level.INFO, "Install the GDAL library from the distribution on " + osCategory.getOperatingSystemName() + " operation system.");
 
         Path gdalApplicationFolderPath = SystemUtils.getAuxDataPath().resolve("gdal");
         if (gdalApplicationFolderPath == null) {
@@ -49,61 +48,115 @@ public class GDALDistributionInstaller {
             return;
         }
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Install the GDAL library from the distribution on " + osCategory.getOperatingSystemName() + ".");
+        }
+
         GDALInstaller installer = new GDALInstaller();
         Path gdalDistributionRootFolderPath = installer.copyDistribution(gdalApplicationFolderPath, osCategory);
 
-        logger.log(Level.INFO, "The GDAL library has been copied.");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.INFO, "The GDAL library has been copied on the local disk.");
+        }
 
         if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-            logger.log(Level.INFO, "Process the GDAL library on Windows.");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Process the GDAL library on Windows.");
+            }
 
             processInstalledWindowsDistribution(gdalDistributionRootFolderPath);
-            GdalInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
+            GDALInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
 
-            logger.log(Level.INFO, "Init the GDAL drivers on Windows.");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Init the GDAL drivers on Windows.");
+            }
 
             GDALUtils.initDrivers();
         } else if (org.apache.commons.lang.SystemUtils.IS_OS_LINUX) {
-            String currentDirectoryNative = EnvironmentVariables.getCurrentDirectory();
+            String currentFolderPath = EnvironmentVariables.getCurrentDirectory();
             try {
-                logger.log(Level.INFO, "Process the GDAL library on Linux. The current folder is '"+currentDirectoryNative+"'.");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Process the GDAL library on Linux. The current folder is '"+currentFolderPath+"'.");
+                }
 
                 processInstalledLinuxDistribution(gdalDistributionRootFolderPath);
-                GdalInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
+                GDALInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
 
-                logger.log(Level.INFO, "Init the GDAL drivers on Linux.");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.INFO, "Init the GDAL drivers on Linux.");
+                }
 
                 GDALUtils.initDrivers();
             } finally {
-                EnvironmentVariables.changeCurrentDirectory(currentDirectoryNative);
+                EnvironmentVariables.changeCurrentDirectory(currentFolderPath);
             }
         }
 
-        logger.log(Level.INFO, "The GDAL library has been successfully installed.");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "The GDAL library has been successfully installed.");
+        }
     }
 
     private static void processInstalledLinuxDistribution(Path gdalDistributionRootFolderPath) throws IOException {
+        // check if the LD_LIBRARY_PATH contains the current folder '.'
+        String libraryPathEnvironmentKey = "LD_LIBRARY_PATH";
+        String libraryPathEnvironmentValue = EnvironmentVariables.getEnvironmentVariable(libraryPathEnvironmentKey);
+        if (StringUtils.isNullOrEmpty(libraryPathEnvironmentValue)) {
+            StringBuilder exceptionMessage = new StringBuilder();
+            exceptionMessage.append("The environment variable ")
+                    .append(libraryPathEnvironmentKey)
+                    .append(" is not set. It must contain the current folder '.'.");
+            throw new IllegalArgumentException(exceptionMessage.toString());
 
-        Path libPath = gdalDistributionRootFolderPath.resolve("lib");
-        logger.log(Level.INFO, "Register native lib paths on Linux for folder '"+ libPath.toString()+"'.");
-        NativeLibraryUtils.registerNativePaths(libPath);
+        } else {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "The value of the environment variable " + libraryPathEnvironmentKey+" is '" + libraryPathEnvironmentValue+"'.");
+            }
 
-        Path nativeFolderPath = libPath.resolve("jni");
-        logger.log(Level.INFO, "Register jni paths on Linux for folder '"+ nativeFolderPath.toString()+"'.");
+            StringTokenizer str = new StringTokenizer(libraryPathEnvironmentValue, File.pathSeparator);
+            boolean hasCurrentFolder = false;
+            while (!hasCurrentFolder && str.hasMoreTokens()) {
+                String folderPath = str.nextToken();
+                if (".".equals(folderPath)) {
+                    hasCurrentFolder = true;
+                }
+            }
+            if (!hasCurrentFolder) {
+                StringBuilder exceptionMessage = new StringBuilder();
+                exceptionMessage.append("The environment variable ")
+                        .append(libraryPathEnvironmentKey)
+                        .append(" does not contain the current folder '.'. Its value is '")
+                        .append(libraryPathEnvironmentValue)
+                        .append("'.");
+                throw new IllegalArgumentException(exceptionMessage.toString());
+            }
+        }
+
+        Path libFolderPath = gdalDistributionRootFolderPath.resolve("lib");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Register native lib paths on Linux for folder '"+ libFolderPath.toString()+"'.");
+        }
+        NativeLibraryUtils.registerNativePaths(libFolderPath);
+
+        Path nativeFolderPath = libFolderPath.resolve("jni");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Register jni paths on Linux for folder '"+ nativeFolderPath.toString()+"'.");
+        }
         NativeLibraryUtils.registerNativePaths(nativeFolderPath);
 
-        logger.log(Level.INFO, "The current directory on Linux with folder '"+ gdalDistributionRootFolderPath.resolve("lib/").toString() +"'.");
-
-        EnvironmentVariables.changeCurrentDirectory(gdalDistributionRootFolderPath.resolve("lib/").toString());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Change the current directory on Linux with folder '"+ libFolderPath.toString() +"'.");
+        }
+        EnvironmentVariables.changeCurrentDirectory(libFolderPath.toString());
 
         Path gdalDataFolderPath = gdalDistributionRootFolderPath.resolve("share/gdal");
         StringBuilder gdalDataValue = new StringBuilder();
         gdalDataValue.append("GDAL_DATA")
                 .append("=")
                 .append(gdalDataFolderPath.toString());
-
-        logger.log(Level.INFO, "Set the GDAL_DATA environment on Linux with folder '"+ gdalDataValue.toString() +"'.");
-
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Set the GDAL_DATA environment variable on Linux with '"+ gdalDataValue.toString() +"'.");
+        }
         EnvironmentVariables.setEnvironmentVariable(gdalDataValue.toString());
     }
 
@@ -111,13 +164,15 @@ public class GDALDistributionInstaller {
         Path gdalBinFolderPath = gdalDistributionRootFolderPath.resolve("bin");
 
         Path nativeFolderPath = gdalBinFolderPath.resolve("gdal/java");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Register native lib paths on Windows for folder '"+ nativeFolderPath.toString()+"'.");
+        }
         NativeLibraryUtils.registerNativePaths(nativeFolderPath);
-
-        Path gdalAppsFolderPath = gdalBinFolderPath.resolve("gdal/apps");
 
         String pathEnvironment = EnvironmentVariables.getEnvironmentVariable("PATH");
         boolean foundBinFolderInPath = findFolderInPathEnvironment(gdalBinFolderPath, pathEnvironment);
         if (!foundBinFolderInPath) {
+            Path gdalAppsFolderPath = gdalBinFolderPath.resolve("gdal/apps");
             StringBuilder newPathValue = new StringBuilder();
             newPathValue.append("PATH")
                     .append("=")
@@ -126,6 +181,9 @@ public class GDALDistributionInstaller {
                     .append(gdalAppsFolderPath.toString())
                     .append(File.pathSeparator)
                     .append(pathEnvironment);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Set the PATH environment variable on Windows with '"+ newPathValue.toString() +"'.");
+            }
             EnvironmentVariables.setEnvironmentVariable(newPathValue.toString());
         }
 
@@ -134,6 +192,9 @@ public class GDALDistributionInstaller {
         gdalDataValue.append("GDAL_DATA")
                 .append("=")
                 .append(gdalDataFolderPath.toString());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Set the GDAL_DATA environment variable on Windows with '"+ gdalDataValue.toString() +"'.");
+        }
         EnvironmentVariables.setEnvironmentVariable(gdalDataValue.toString());
     }
 

@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
-import org.esa.s2tbx.dataio.gdal.GDALUtils;
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
@@ -43,17 +43,14 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
 
     @Before
     public final void setUp() throws Exception {
-        if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            //GDALDistributionInstaller.install();
-            if (GdalInstallInfo.INSTANCE.isPresent()) {
-                GDALUtils.initDrivers();
-            }
-        }
+//        if (!GDALInstallInfo.INSTANCE.isPresent()) {
+//            GDALDistributionInstaller.install();
+//        }
     }
 
     @Test
     public final void testPluginIsLoaded() {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             String formatName = getFormatNameToCheck();
             Iterator<ProductReaderPlugIn> iterator = ProductIOPlugInManager.getInstance().getReaderPlugIns(formatName);
             assertTrue(iterator.hasNext());
@@ -67,7 +64,7 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
 
     @Test
     public final void testFormatNames() {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             String[] formatNames = this.readerPlugIn.getFormatNames();
             assertNotNull(formatNames);
 
@@ -80,7 +77,7 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
 
     @Test
     public final void testInputTypes() {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             Class[] classes = this.readerPlugIn.getInputTypes();
             assertNotNull(classes);
 
@@ -94,7 +91,7 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
 
     @Test
     public void testProductFileFilter() {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             SnapFileFilter snapFileFilter = this.readerPlugIn.getProductFileFilter();
             assertNotNull(snapFileFilter);
 

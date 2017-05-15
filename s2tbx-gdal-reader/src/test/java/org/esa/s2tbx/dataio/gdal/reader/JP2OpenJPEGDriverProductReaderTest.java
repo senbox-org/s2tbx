@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.JP2OpenJPEGDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -22,7 +22,7 @@ public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProduc
 
     @Test
     public void testJP2ReadProductNodes() throws IOException {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("JP2OpenJPEG-driver.jp2").toFile();
 
             JP2OpenJPEGDriverProductReaderPlugIn readerPlugin = new JP2OpenJPEGDriverProductReaderPlugIn();

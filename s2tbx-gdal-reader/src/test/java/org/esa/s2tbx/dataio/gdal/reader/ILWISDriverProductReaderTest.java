@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.ILWISDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -22,7 +22,7 @@ public class ILWISDriverProductReaderTest extends AbstractTestDriverProductReade
 
     @Test
     public void testILWISReadProductNodes() throws IOException {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("ILWIS-driver.mpr").toFile();
 
             ILWISDriverProductReaderPlugIn readerPlugin = new ILWISDriverProductReaderPlugIn();

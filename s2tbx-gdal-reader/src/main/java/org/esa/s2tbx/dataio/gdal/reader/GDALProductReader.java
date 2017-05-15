@@ -69,17 +69,19 @@ public class GDALProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         Object input = getInput();
 
-        logger.fine("Loading the product from the file '" + input.toString() + "' using the GDAL plugin reader '" + getReaderPlugIn().getClass().getName() + "'.");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Loading the product from the file '" + input.toString() + "' using the GDAL plugin reader '" + getReaderPlugIn().getClass().getName() + "'.");
+        }
 
         Path inputFile = getFileInput(input);
         if (inputFile == null) {
-            throw new IOException("The file '"+ input + "' to load the product is invalid.");
+            throw new IllegalArgumentException("The file '"+ input.toString() + "' to load the product is invalid.");
         }
 
         Dataset gdalDataset = gdal.Open(inputFile.toString(), gdalconst.GA_ReadOnly);
         if (gdalDataset == null) {
             // unknown file format
-            throw new IOException("The file '"+ inputFile.toString()+"' to load the product can not be opened.");
+            throw new NullPointerException("Failed opening a dataset from the file '" + inputFile.toString() + "' to load the product.");
         }
 
         try {
@@ -142,7 +144,6 @@ public class GDALProductReader extends AbstractProductReader {
                 bandComponentElement.setAttributeInt("precision", dataBufferType.precision);
                 bandComponentElement.setAttributeString("signed", Boolean.toString(dataBufferType.signed));
 
-                //int overviewCount = gdalBand.GetOverviewCount();
                 if (levels > 1) {
                     StringBuilder str = new StringBuilder();
                     for (int iOverview = 0; iOverview < levels - 1; iOverview++) {

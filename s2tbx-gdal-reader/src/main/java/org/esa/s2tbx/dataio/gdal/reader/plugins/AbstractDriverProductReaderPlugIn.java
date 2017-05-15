@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -51,7 +51,7 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             String filePath = null;
             if (input instanceof String) {
                 filePath = (String)input;

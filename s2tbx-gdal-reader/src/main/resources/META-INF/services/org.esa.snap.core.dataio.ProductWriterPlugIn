@@ -6,10 +6,8 @@ org.esa.s2tbx.dataio.gdal.writer.plugins.GTiffDriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.GTXDriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.HFADriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.ILWISDriverProductWriterPlugIn
-org.esa.s2tbx.dataio.gdal.writer.plugins.KEADriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.KRODriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.MFFDriverProductWriterPlugIn
-org.esa.s2tbx.dataio.gdal.writer.plugins.NetCDFDriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.NITFDriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.PCIDSKDriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.PNMDriverProductWriterPlugIn

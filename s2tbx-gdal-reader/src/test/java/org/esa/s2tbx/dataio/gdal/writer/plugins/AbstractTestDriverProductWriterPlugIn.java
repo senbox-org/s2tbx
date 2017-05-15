@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.writer.plugins;
 
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
@@ -33,15 +34,15 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     }
 
     @Before
-    public void setUp() throws Exception {
-        if (!GdalInstallInfo.INSTANCE.isPresent()) {
-            //GDALDistributionInstaller.install();
-        }
+    public final void setUp() throws Exception {
+//        if (!GDALInstallInfo.INSTANCE.isPresent()) {
+//            GDALDistributionInstaller.install();
+//        }
     }
 
     @Test
     public void testPluginIsLoaded() {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             String formatNamesToCheck = getFormatNameToCheck();
             Iterator<ProductWriterPlugIn> iterator = ProductIOPlugInManager.getInstance().getWriterPlugIns(formatNamesToCheck);
             assertTrue(iterator.hasNext());
@@ -55,7 +56,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
 
     @Test
     public void testFormatNames() {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             String[] formatNames = this.writerPlugIn.getFormatNames();
             assertNotNull(formatNames);
             assertEquals(1, formatNames.length);
@@ -67,7 +68,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
 
     @Test
     public void testOutputTypes() {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             Class[] classes = this.writerPlugIn.getOutputTypes();
             assertNotNull(classes);
             assertEquals(2, classes.length);
@@ -80,7 +81,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
 
     @Test
     public void testProductFileFilter() {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             SnapFileFilter snapFileFilter = this.writerPlugIn.getProductFileFilter();
             assertNull(snapFileFilter);
         }
@@ -88,7 +89,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
 
     @Test
     public void testEncodingQualificationWithNullProduct() throws Exception {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             EncodeQualification encodeQualification = this.writerPlugIn.getEncodeQualification(null);
             assertNotNull(encodeQualification);
             assertEquals(EncodeQualification.Preservation.FULL, encodeQualification.getPreservation());
@@ -97,7 +98,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
 
     @Test
     public void testEncodingQualificationWithNonNullProduct() throws Exception {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             Product product = new Product("tempProduct", getFormatNameToCheck(), 20, 30);
             product.setPreferredTileSize(JAI.getDefaultTileSize());
             EncodeQualification encodeQualification = this.writerPlugIn.getEncodeQualification(product);
