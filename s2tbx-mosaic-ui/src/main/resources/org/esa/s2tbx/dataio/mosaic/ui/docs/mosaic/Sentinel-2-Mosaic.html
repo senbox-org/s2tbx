@@ -32,7 +32,8 @@
 </table>
 
 <h3>Sentinel-2 Mosaic Dialog</h3>
-<b>Note</b> The Sentinel-2 Mosaic operator is called when at least one of the input products is multisize, otherwise the original mosaic operator is called
+<b>Note</b> The Sentinel-2 Mosaic operator is called when at least one of the input products is multisize, otherwise the original mosaic operator is called. This is fully operational
+for single granule Sentinel-2 products. In case of old products (multi granule) localisation issues may appear.
 <h4>I/O Parameters</h4>
 <table border="0">
     <tr>
@@ -53,14 +54,6 @@
 
             <h5>Target Product</h5>
 
-            <p class="i1">
-                <b>Update target product:</b>
-                If selected, all processing parameters are taken from the output product which must
-                already exists. Modification of all parameters is disabled in this mode. If 'Run' is pressed, the output
-                product is updated with the given input files. If not selected, a new
-                mosaic output product will be created.<br>
-                <b>NOTE</b> This functionality is not implemented yet
-            </p>
 
             <p class="i1">
                 <b>Name:</b>
@@ -190,7 +183,7 @@
         <td style="border-width:0;" valign="top">
 
             <p class="i1">Defines the list of output variables. <br>
-                A variable is composed of a name and a data source band.
+                A variable is composed of a name and a data source band.<br>
                 <img src="images/icons/Copy24.gif"> Add a band directly as variable.<br>
                 <img src="images/icons/Minus24.gif"> Removes the currently selected variable from the list.<br>
                 <img src="images/icons/MoveUp24.gif"> Moves the currently selected variable one line up.<br>
