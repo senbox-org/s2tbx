@@ -35,6 +35,7 @@ class InstrumentConsts {
                     + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_CLOUD_BUFFER "   // ???
                     + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_CIRRUS_SURE "   // ???
                     + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_CIRRUS_AMBIGUOUS "   // ???
+                    + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_BRIGHTWHITE "   // ???
                     + " && (" + S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0] + "<70)";
 
     public static final String VALID_AOT_OUT_EXPRESSION =
