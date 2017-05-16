@@ -4,18 +4,36 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.StringUtils;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
+import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.ReferencingFactoryFinder;
+import org.geotools.referencing.cs.DefaultCartesianCS;
+import org.geotools.referencing.cs.DefaultEllipsoidalCS;
+import org.geotools.referencing.operation.DefaultOperationMethod;
+import org.geotools.referencing.operation.DefiningConversion;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.MathTransform;
 
 import javax.media.jai.JAI;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
@@ -158,11 +176,23 @@ public class GDALProductReader extends AbstractProductReader {
                     bandComponentElement.setAttributeString("unit type", gdalBand.GetUnitType());
                 }
 
-                String bandName = String.format("band_%s", bandIndex + 1);
+                String bandName;
+                if (StringUtils.isNullOrEmpty(bandName = gdalBand.GetDescription())) {
+                    bandName = String.format("band_%s", bandIndex + 1);
+                } else {
+                    bandName = bandName.replace(' ', '_');
+                }
                 Band productBand = new Band(bandName, dataBufferType.bandDataType, imageWidth, imageHeight);
-
-                GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount, imageWidth, imageHeight, tileWidth,
-                                                                       tileHeight, levels, dataBufferType.dataBufferType, geoCoding);
+                Double[] noData = new Double[1];
+                gdalBand.GetNoDataValue(noData);
+                if (noData[0] != null) {
+                    productBand.setNoDataValue(noData[0]);
+                    productBand.setNoDataValueUsed(true);
+                }
+                GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount,
+                                                                       imageWidth, imageHeight, tileWidth,
+                                                                       tileHeight, levels,
+                                                                       dataBufferType.dataBufferType, geoCoding);
 
                 productBand.setSourceImage(new DefaultMultiLevelImage(source));
 
@@ -171,9 +201,21 @@ public class GDALProductReader extends AbstractProductReader {
                 // add the mask
                 org.gdal.gdal.Band maskBand = gdalBand.GetMaskBand();
                 if (maskBand != null) {
-                    String maskName = "mask_" + String.valueOf(bandIndex + 1);
-                    Mask mask = Mask.BandMathsType.create(maskName, null, imageWidth, imageHeight, bandName, Color.white, 0.5);
-                    product.addMask(mask);
+                    String maskName = null;
+                    final int maskFlags = gdalBand.GetMaskFlags();
+                    if ((maskFlags & (gdalconstConstants.GMF_NODATA | gdalconstConstants.GMF_PER_DATASET)) != 0) {
+                        maskName = "nodata_";
+                    } else if ((maskFlags & (gdalconstConstants.GMF_PER_DATASET | gdalconstConstants.GMF_ALPHA)) != 0) {
+                        maskName = "alpha_";
+                    } else if ((maskFlags & (gdalconstConstants.GMF_NODATA | gdalconstConstants.GMF_PER_DATASET |
+                            gdalconstConstants.GMF_ALPHA | gdalconstConstants.GMF_ALL_VALID)) != 0) {
+                        maskName = "mask_";
+                    }
+                    if (maskName != null) {
+                        Mask mask = Mask.BandMathsType.create(maskName + bandName, null, imageWidth, imageHeight,
+                                                              bandName, Color.white, 0.5);
+                        product.addMask(mask);
+                    }
                 }
             }
             product.setModified(false);
@@ -219,6 +261,29 @@ public class GDALProductReader extends AbstractProductReader {
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
+        }
+        return null;
+    }
+
+    private static CoordinateReferenceSystem getCRS(MathTransform transform, GeodeticDatum datum) {
+        try {
+            final CRSFactory crsFactory = ReferencingFactoryFinder.getCRSFactory(null);
+            final DefaultOperationMethod operationMethod = new DefaultOperationMethod(transform);
+
+            final Conversion conversion = new DefiningConversion(AbstractIdentifiedObject.getProperties(operationMethod),
+                                                                 operationMethod, transform);
+
+            final HashMap<String, Object> baseCrsProperties = new HashMap<>();
+            baseCrsProperties.put("name", datum.getName().getCode());
+            GeographicCRS baseCrs = crsFactory.createGeographicCRS(baseCrsProperties,
+                                                                   datum,
+                                                                   DefaultEllipsoidalCS.GEODETIC_2D);
+
+            final HashMap<String, Object> projProperties = new HashMap<>();
+            projProperties.put("name", conversion.getName().getCode() + " / " + datum.getName().getCode());
+            return crsFactory.createProjectedCRS(projProperties, baseCrs, conversion, DefaultCartesianCS.PROJECTED);
+        } catch (FactoryException ex) {
+            logger.warning(ex.getMessage());
         }
         return null;
     }
