@@ -365,7 +365,7 @@ public class S2AerosolOp extends Operator {
                 boolean valid = sourceTiles.get(validName).getSampleBoolean(x, y);
                 final int b3ArrIndex = (y - yOffset) * pixelWindow.width + (x - xOffset);
                 b3Arr[b3ArrIndex] = (valid) ?
-                        sourceTiles.get(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[2]).getSampleFloat(x, y) : -1;
+                        sourceTiles.get(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[2]).getSampleFloat(x, y) : 9999f;
                 if (valid) {
                     nValid++;
                 }
@@ -391,12 +391,11 @@ public class S2AerosolOp extends Operator {
                     }
                 }
             }
-            if (inPixelList.size() > 3) {
-                inPixField = new InputPixelData[inPixelList.size()];
-                inPixelList.toArray(inPixField);
-            }
         }
-        return inPixField;
+        if (inPixelList.size() > 3) {
+            return inPixelList.toArray(new InputPixelData[0]);
+        }
+        return null;
     }
 
     private void setTargetSamples(Map<Band, Tile> targetTiles, int x, int y, RetrievalResults result) {
