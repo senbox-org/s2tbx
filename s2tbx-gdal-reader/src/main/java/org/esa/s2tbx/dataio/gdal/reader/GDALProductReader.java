@@ -117,6 +117,8 @@ public class GDALProductReader extends AbstractProductReader {
 
             Double[] pass1 = new Double[1];
 
+            int numResolutions = 1;
+
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // bands are not 0-base indexed, so we must add 1
                 org.gdal.gdal.Band gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
@@ -134,6 +136,9 @@ public class GDALProductReader extends AbstractProductReader {
                     tileHeight = imageHeight;
                 }
                 int levels = gdalBand.GetOverviewCount() + 1;
+                if (numResolutions >= levels) {
+                    numResolutions = levels;
+                }
                 String colorInterpretationName = gdal.GetColorInterpretationName(gdalBand.GetRasterColorInterpretation());
 
                 MetadataElement bandComponentElement = new MetadataElement("Component");
@@ -143,6 +148,15 @@ public class GDALProductReader extends AbstractProductReader {
                 bandComponentElement.setAttributeString("block size", tileWidth + "x" + tileHeight);
                 bandComponentElement.setAttributeInt("precision", dataBufferType.precision);
                 bandComponentElement.setAttributeString("signed", Boolean.toString(dataBufferType.signed));
+
+                String bandName;
+                if (StringUtils.isNullOrEmpty(bandName = gdalBand.GetDescription())) {
+                    bandName = String.format("band_%s", bandIndex + 1);
+                } else {
+                    bandName = bandName.replace(' ', '_');
+                }
+
+                Band productBand = new Band(bandName, dataBufferType.bandDataType, imageWidth, imageHeight);
 
                 int overviewCount = gdalBand.GetOverviewCount();
                 if (overviewCount > 0) {
@@ -163,26 +177,23 @@ public class GDALProductReader extends AbstractProductReader {
                 }
 
                 gdalBand.GetOffset(pass1);
-                if (pass1[0] != null && pass1[0] != 0) {
+                if (pass1[0] != null) {
                     bandComponentElement.setAttributeDouble("offset", pass1[0]);
+                    productBand.setScalingOffset(pass1[0]);
                 }
 
                 gdalBand.GetScale(pass1);
-                if (pass1[0] != null && pass1[0] != 1) {
+                if (pass1[0] != null) {
                     bandComponentElement.setAttributeDouble("scale", pass1[0]);
+                    productBand.setScalingFactor(pass1[0]);
                 }
 
-                if (gdalBand.GetUnitType() != null && gdalBand.GetUnitType().length() > 0) {
-                    bandComponentElement.setAttributeString("unit type", gdalBand.GetUnitType());
+                final String unitType = gdalBand.GetUnitType();
+                if (unitType != null && unitType.length() > 0) {
+                    bandComponentElement.setAttributeString("unit type", unitType);
+                    productBand.setUnit(unitType);
                 }
 
-                String bandName;
-                if (StringUtils.isNullOrEmpty(bandName = gdalBand.GetDescription())) {
-                    bandName = String.format("band_%s", bandIndex + 1);
-                } else {
-                    bandName = bandName.replace(' ', '_');
-                }
-                Band productBand = new Band(bandName, dataBufferType.bandDataType, imageWidth, imageHeight);
                 Double[] noData = new Double[1];
                 gdalBand.GetNoDataValue(noData);
                 if (noData[0] != null) {
@@ -218,6 +229,7 @@ public class GDALProductReader extends AbstractProductReader {
                     }
                 }
             }
+            product.setNumResolutionsMax(numResolutions);
             product.setModified(false);
             return product;
         } catch (Exception ex) {
