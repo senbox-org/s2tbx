@@ -213,7 +213,7 @@ public class GDALProductReader extends AbstractProductReader {
                     }
                     if (maskName != null) {
                         Mask mask = Mask.BandMathsType.create(maskName + bandName, null, imageWidth, imageHeight,
-                                                              bandName, Color.white, 0.5);
+                                                              "'" + bandName + "'", Color.white, 0.5);
                         product.addMask(mask);
                     }
                 }
