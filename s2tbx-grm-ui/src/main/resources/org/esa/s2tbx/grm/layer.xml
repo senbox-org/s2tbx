@@ -22,6 +22,7 @@
     <folder name="Menu">
         <folder name="Raster">
             <folder name="Segmentation">
+                <attr name="position" intvalue="460"/>
                 <file name="org-esa-s2tbx-grm-Action.shadow">
                     <attr name="originalFile"
                           stringvalue="Actions/Operators/org-esa-s2tbx-grm-Action.instance"/>
