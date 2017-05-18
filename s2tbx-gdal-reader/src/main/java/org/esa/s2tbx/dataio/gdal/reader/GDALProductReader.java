@@ -17,20 +17,8 @@ import org.gdal.gdal.Driver;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
-import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.ReferencingFactoryFinder;
-import org.geotools.referencing.cs.DefaultCartesianCS;
-import org.geotools.referencing.cs.DefaultEllipsoidalCS;
-import org.geotools.referencing.operation.DefaultOperationMethod;
-import org.geotools.referencing.operation.DefiningConversion;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.datum.GeodeticDatum;
-import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.MathTransform;
 
 import javax.media.jai.JAI;
 import java.awt.Color;
@@ -81,17 +69,19 @@ public class GDALProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         Object input = getInput();
 
-        logger.info("Loading the product using the GDAL plugin reader '"+getReaderPlugIn().getClass().getName()+"' from file '" + input.toString() + "'.");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Loading the product from the file '" + input.toString() + "' using the GDAL plugin reader '" + getReaderPlugIn().getClass().getName() + "'.");
+        }
 
         Path inputFile = getFileInput(input);
         if (inputFile == null) {
-            throw new IOException("The file '"+ input + "' to load the product is invalid.");
+            throw new IllegalArgumentException("The file '"+ input.toString() + "' to load the product is invalid.");
         }
 
         Dataset gdalDataset = gdal.Open(inputFile.toString(), gdalconst.GA_ReadOnly);
         if (gdalDataset == null) {
             // unknown file format
-            throw new IOException("The file '"+ inputFile.toString()+"' to load the product can not be opened.");
+            throw new NullPointerException("Failed opening a dataset from the file '" + inputFile.toString() + "' to load the product.");
         }
 
         try {
@@ -116,7 +106,6 @@ public class GDALProductReader extends AbstractProductReader {
             }
 
             Double[] pass1 = new Double[1];
-
             int numResolutions = 1;
 
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
@@ -139,6 +128,16 @@ public class GDALProductReader extends AbstractProductReader {
                 if (numResolutions >= levels) {
                     numResolutions = levels;
                 }
+                if (levels == 1) {
+                    logger.info("Optimizing read by building image pyramids");
+                    if (gdalconst.CE_Failure != gdalDataset.BuildOverviews("NEAREST", new int[] { 2, 4, 8, 16 })) {
+                        gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
+                    } else {
+                        logger.warning("Multiple levels not supported");
+                    }
+                }
+                levels = gdalBand.GetOverviewCount() + 1;
+                product.setNumResolutionsMax(levels);
                 String colorInterpretationName = gdal.GetColorInterpretationName(gdalBand.GetRasterColorInterpretation());
 
                 MetadataElement bandComponentElement = new MetadataElement("Component");
@@ -155,13 +154,11 @@ public class GDALProductReader extends AbstractProductReader {
                 } else {
                     bandName = bandName.replace(' ', '_');
                 }
-
                 Band productBand = new Band(bandName, dataBufferType.bandDataType, imageWidth, imageHeight);
 
-                int overviewCount = gdalBand.GetOverviewCount();
-                if (overviewCount > 0) {
+                if (levels > 1) {
                     StringBuilder str = new StringBuilder();
-                    for (int iOverview = 0; iOverview < overviewCount; iOverview++) {
+                    for (int iOverview = 0; iOverview < levels - 1; iOverview++) {
                         if (iOverview != 0) {
                             str.append(", ");
                         }
@@ -170,25 +167,25 @@ public class GDALProductReader extends AbstractProductReader {
                                 .append("x")
                                 .append(hOverview.getYSize());
                     }
-                    bandComponentElement.setAttributeInt("overview count", overviewCount);
+                    bandComponentElement.setAttributeInt("overview count", levels - 1);
                     if (str.length() > 0) {
                         bandComponentElement.setAttributeString("overviews", str.toString());
                     }
                 }
 
                 gdalBand.GetOffset(pass1);
-                if (pass1[0] != null) {
+                if (pass1[0] != null && pass1[0] != 0) {
                     bandComponentElement.setAttributeDouble("offset", pass1[0]);
                     productBand.setScalingOffset(pass1[0]);
                 }
 
                 gdalBand.GetScale(pass1);
-                if (pass1[0] != null) {
+                if (pass1[0] != null && pass1[0] != 1) {
                     bandComponentElement.setAttributeDouble("scale", pass1[0]);
                     productBand.setScalingFactor(pass1[0]);
                 }
 
-                final String unitType = gdalBand.GetUnitType();
+                String unitType = gdalBand.GetUnitType();
                 if (unitType != null && unitType.length() > 0) {
                     bandComponentElement.setAttributeString("unit type", unitType);
                     productBand.setUnit(unitType);
@@ -200,10 +197,8 @@ public class GDALProductReader extends AbstractProductReader {
                     productBand.setNoDataValue(noData[0]);
                     productBand.setNoDataValueUsed(true);
                 }
-                GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount,
-                                                                       imageWidth, imageHeight, tileWidth,
-                                                                       tileHeight, levels,
-                                                                       dataBufferType.dataBufferType, geoCoding);
+                GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount, imageWidth, imageHeight, tileWidth,
+                                                                       tileHeight, levels, dataBufferType.dataBufferType, geoCoding);
 
                 productBand.setSourceImage(new DefaultMultiLevelImage(source));
 
@@ -223,8 +218,7 @@ public class GDALProductReader extends AbstractProductReader {
                         maskName = "mask_";
                     }
                     if (maskName != null) {
-                        Mask mask = Mask.BandMathsType.create(maskName + bandName, null, imageWidth, imageHeight,
-                                                              "'" + bandName + "'", Color.white, 0.5);
+                        Mask mask = Mask.BandMathsType.create(maskName + bandName, null, imageWidth, imageHeight, "'" + bandName + "'", Color.white, 0.5);
                         product.addMask(mask);
                     }
                 }
@@ -273,29 +267,6 @@ public class GDALProductReader extends AbstractProductReader {
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
-        }
-        return null;
-    }
-
-    private static CoordinateReferenceSystem getCRS(MathTransform transform, GeodeticDatum datum) {
-        try {
-            final CRSFactory crsFactory = ReferencingFactoryFinder.getCRSFactory(null);
-            final DefaultOperationMethod operationMethod = new DefaultOperationMethod(transform);
-
-            final Conversion conversion = new DefiningConversion(AbstractIdentifiedObject.getProperties(operationMethod),
-                                                                 operationMethod, transform);
-
-            final HashMap<String, Object> baseCrsProperties = new HashMap<>();
-            baseCrsProperties.put("name", datum.getName().getCode());
-            GeographicCRS baseCrs = crsFactory.createGeographicCRS(baseCrsProperties,
-                                                                   datum,
-                                                                   DefaultEllipsoidalCS.GEODETIC_2D);
-
-            final HashMap<String, Object> projProperties = new HashMap<>();
-            projProperties.put("name", conversion.getName().getCode() + " / " + datum.getName().getCode());
-            return crsFactory.createProjectedCRS(projProperties, baseCrs, conversion, DefaultCartesianCS.PROJECTED);
-        } catch (FactoryException ex) {
-            logger.warning(ex.getMessage());
         }
         return null;
     }

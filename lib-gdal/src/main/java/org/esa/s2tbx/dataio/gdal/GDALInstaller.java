@@ -16,8 +16,8 @@
 
 package org.esa.s2tbx.dataio.gdal;
 
-import org.esa.s2tbx.jni.EnvironmentVariables;
-import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.runtime.Config;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
 
@@ -25,11 +25,14 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang.SystemUtils.*;
@@ -43,150 +46,138 @@ public class GDALInstaller {
     private static final Logger logger = Logger.getLogger(GDALInstaller.class.getName());
 
     private static final String SRC_PATH = "auxdata/gdal";
-    private static final String BIN_PATH = "bin";
-    private static final String APPS_PATH = "gdal/apps";
-    private static final String PLUGINS_PATH = "gdal/plugins";
-    private static final String DATA_PATH = "gdal-data";
 
     public GDALInstaller() {
     }
 
-    /**
-     * Install the GDAL library if missing.
-     *
-     * @throws IOException
-     */
-    public void install() throws IOException {
-        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-            logger.log(Level.INFO, "The GDAL integration in SNAP is available only on Windows operation system.");
-            return;
-        }
-        OSCategory osCategory = OSCategory.getOSCategory();
-        if (osCategory.getDirectory() == null) {
-            logger.log(Level.INFO, "No distribution folder found.");
-            return;
-        }
-        if (osCategory.getZipFileName() == null) {
-            logger.log(Level.INFO, "No library zip file name found.");
-            return;
+    public final Path copyDistribution(Path gdalApplicationFolderPath, OSCategory osCategory) throws IOException {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Copy the GDAL distribution to folder '" + gdalApplicationFolderPath.toString() + "'.");
         }
 
-        Path gdalFolderPath = getGDALFolderPath();
-        if (gdalFolderPath == null) {
-            logger.log(Level.INFO, "No folder path to install the GDAL integration on the local disk.");
-            return;
-        }
-        if (!Files.exists(gdalFolderPath)) {
-            Files.createDirectories(gdalFolderPath);
+        if (!Files.exists(gdalApplicationFolderPath)) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Create the folder '" + gdalApplicationFolderPath.toString() + "' to copy the GDAL distribution.");
+            }
+
+            Files.createDirectories(gdalApplicationFolderPath);
         }
 
-        String mapLibraryName = System.mapLibraryName("gdal201");
-        installDistribution(gdalFolderPath, osCategory, mapLibraryName);
-    }
-
-    private void installDistribution(Path gdalFolderPath, OSCategory osCategory, String mapLibraryName) throws IOException {
-        // the library file does not exist on  the local disk among the folders from path environment
         String zipArchivePath = osCategory.getDirectory() + "/" + osCategory.getZipFileName();
-        Path zipFilePathOnLocalDisk = gdalFolderPath.resolve(zipArchivePath);
+        Path zipFilePathOnLocalDisk = gdalApplicationFolderPath.resolve(zipArchivePath);
         Path gdalDistributionRootFolderPath = zipFilePathOnLocalDisk.getParent();
 
-        fixUpPermissions(gdalFolderPath);
+        fixUpPermissions(gdalApplicationFolderPath);
 
-        if (!Files.exists(gdalDistributionRootFolderPath)) {
+        if (Files.exists(gdalDistributionRootFolderPath)) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "The distribution root folder '" + gdalDistributionRootFolderPath.toString() + "' exists on the local disk.");
+            }
+        } else {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Create the distribution root folder '" + gdalDistributionRootFolderPath.toString() + "'.");
+            }
+
             Files.createDirectories(gdalDistributionRootFolderPath);
             try {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Copy the zip archive to folder '" + zipFilePathOnLocalDisk.toString() + "'.");
+                }
                 String zipFilePathFromSources = SRC_PATH + "/" + zipArchivePath;
                 URL zipFileURLFromSources = getClass().getClassLoader().getResource(zipFilePathFromSources);
                 FileHelper.copyFile(zipFileURLFromSources, zipFilePathOnLocalDisk);
+
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Decompress the zip archive to folder '" + gdalDistributionRootFolderPath.toString() + "'.");
+                }
                 FileHelper.unzip(zipFilePathOnLocalDisk, gdalDistributionRootFolderPath, true);
             } finally {
                 try {
                     Files.deleteIfExists(zipFilePathOnLocalDisk);
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, "GDAL configuration error: failed to delete zip after decompression.", e);
+                    logger.log(Level.SEVERE, "GDAL configuration error: failed to delete the zip archive after decompression.", e);
                 }
             }
         }
 
-        Path gdalBinFolderPath = gdalDistributionRootFolderPath.resolve(BIN_PATH);
-        processInstalledDistribution(gdalFolderPath, gdalBinFolderPath, osCategory, mapLibraryName);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Check the library version used to set the environment variables.");
+        }
+
+        Config config = Config.instance("s2tbx");
+        config.load();
+        Preferences preferences = config.preferences();
+        String preferencesKey = "gdal.installer.environment.variables";
+        String moduleVersion = getModuleSpecificationVersion();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "The module version is '" + moduleVersion + "'.");
+        }
+
+        boolean canCopyLibraryFile = true;
+        String libraryFileName = System.mapLibraryName("environment-variables");
+        Path libraryFilePath = gdalApplicationFolderPath.resolve(libraryFileName);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "The library file path is '" + libraryFilePath.toString() + "'.");
+        }
+
+        if (Files.exists(libraryFilePath)) {
+            // the library file already exists on the local disk
+            String savedVersion = preferences.get(preferencesKey, null);
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "The saved library version is '" + savedVersion + "'.");
+            }
+
+            if (!StringUtils.isNullOrEmpty(savedVersion)) {
+                if (compareVersions(savedVersion, moduleVersion) >= 0) {
+                    canCopyLibraryFile = false;
+                }
+            }
+        }
+
+        if (canCopyLibraryFile) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Copy the library file.");
+            }
+
+            String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileName;
+            URL libraryFileURLFromSources = getClass().getClassLoader().getResource(libraryFilePathFromSources);
+            FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
+            preferences.put(preferencesKey, moduleVersion);
+            try {
+                preferences.flush();
+            } catch (BackingStoreException exception) {
+                // ignore exception
+            }
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Register the native paths for folder '" + libraryFilePath.getParent()+"'.");
+        }
+        NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
+
+        return gdalDistributionRootFolderPath;
     }
 
-    private void processInstalledDistribution(Path gdalFolderPath, Path gdalBinFolderPath, OSCategory osCategory, String mapLibraryName) throws IOException {
-        Path pathItem = gdalBinFolderPath.resolve(mapLibraryName);
-        if (Files.exists(pathItem)) {
-            // the library file exists on the local disk
-            String libraryFileName = System.mapLibraryName("environment-variables");
-            Path libraryFilePath = gdalFolderPath.resolve(libraryFileName);
-            if (!Files.exists(libraryFilePath)) {
-                String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileName;
-                URL libraryFileURLFromSources = getClass().getClassLoader().getResource(libraryFilePathFromSources);
-                FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
-            }
-            NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
-
-            if (registerNativePaths(gdalBinFolderPath, osCategory)) {
-                Path gdalAppsFolderPath = gdalBinFolderPath.resolve(APPS_PATH);
-
-                String pathEnvironment = EnvironmentVariables.getEnvironmentVariable("PATH");
-                boolean foundBinFolderInPath = findFolderInPathEnvironment(gdalBinFolderPath, pathEnvironment);
-                if (!foundBinFolderInPath) {
-                    StringBuilder newPathValue = new StringBuilder();
-                    newPathValue.append("PATH")
-                            .append("=")
-                            .append(gdalBinFolderPath.toString())
-                            .append(File.pathSeparator)
-                            .append(gdalAppsFolderPath.toString())
-                            .append(File.pathSeparator)
-                            .append(pathEnvironment);
-                    EnvironmentVariables.setEnvironmentVariable(newPathValue.toString());
-                }
-
-                Path gdalDataFolderPath = gdalBinFolderPath.resolve(DATA_PATH);
-                StringBuilder gdalDataValue = new StringBuilder();
-                gdalDataValue.append("GDAL_DATA")
-                        .append("=")
-                        .append(gdalDataFolderPath.toString());
-                EnvironmentVariables.setEnvironmentVariable(gdalDataValue.toString());
-
-                Path gdalDriverFolderPath = gdalBinFolderPath.resolve(PLUGINS_PATH);
-                StringBuilder gdalDriverValue = new StringBuilder();
-                gdalDriverValue.append("GDAL_DRIVER_PATH")
-                        .append("=")
-                        .append(gdalDriverFolderPath.toString());
-                EnvironmentVariables.setEnvironmentVariable(gdalDriverValue.toString());
-
-                GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
-                gdalInstallInfo.setLocations(gdalBinFolderPath, gdalAppsFolderPath, gdalDriverFolderPath, gdalDataFolderPath);
-            }
+    private String getModuleSpecificationVersion() throws IOException {
+        String manifestFilePath = "/META-INF/MANIFEST.MF";
+        Class<?> clazz = getClass();
+        String className = clazz.getSimpleName() + ".class";
+        String classPath = clazz.getResource(className).toString();
+        String manifestPath = null;
+        if (classPath.startsWith("jar")) {
+            manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + manifestFilePath;
         } else {
-            logger.log(Level.INFO, "The GDAL bin folder '"+gdalBinFolderPath.toString()+"' does not contain the library '" + mapLibraryName + "'.");
+            // class not from jar archive
+            String relativePath = clazz.getName().replace('.', File.separatorChar) + ".class";
+            String classFolder = classPath.substring(0, classPath.length() - relativePath.length() - 1);
+            manifestPath = classFolder + manifestFilePath;
         }
-    }
-
-    private static boolean registerNativePaths(Path gdalBinFolderPath, OSCategory osCategory) throws IOException {
-        Path nativeFolderPath = gdalBinFolderPath.resolve("gdal/java");
-        NativeLibraryUtils.registerNativePaths(nativeFolderPath);
-        return true;
-    }
-
-    private static Path getGDALFolderPath() {
-        return SystemUtils.getAuxDataPath().resolve("gdal");
-    }
-
-    private static boolean findFolderInPathEnvironment(Path folderPathToCheck, String pathEnvironment) throws IOException {
-        String fullFolderPath = folderPathToCheck.toFile().getCanonicalPath();
-        boolean foundFolderInPath = false;
-        StringTokenizer str = new StringTokenizer(pathEnvironment, File.pathSeparator);
-        while (str.hasMoreTokens() && !foundFolderInPath) {
-            String currentFolderPathAsString = str.nextToken();
-            Path currentFolderPath = Paths.get(currentFolderPathAsString);
-            String currentFullFolderPath = currentFolderPath.toFile().getCanonicalPath();
-            if (currentFullFolderPath.equals(fullFolderPath)) {
-                foundFolderInPath = true;
-            }
-        }
-        return foundFolderInPath;
+        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+        Attributes attributes = manifest.getMainAttributes();
+        return attributes.getValue("OpenIDE-Module-Specification-Version");
     }
 
     private static void fixUpPermissions(Path destPath) throws IOException {
@@ -226,50 +217,48 @@ public class GDALInstaller {
         }
     }
 
-    private enum OSCategory {
-        WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip",
-                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
-        WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip",
-                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
-        LINUX_64(null, null,
-                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
-        MAC_OS_X(null, null, null, null, null),
-        UNSUPPORTED(null, null, null, null, null);
+    private static int compareVersions(String currentModuleVersion, String savedModuleVersion) {
+        int[] moduleVersionFragments = parseVersion(currentModuleVersion);
+        int[] savedVersionFragments = parseVersion(savedModuleVersion);
 
-        String directory;
-        String zipFileName;
-        String[] jniFiles;
-
-        OSCategory(String directory, String zipFileName, String... jniFiles) {
-            this.directory = directory;
-            this.zipFileName = zipFileName;
-            this.jniFiles = jniFiles;
-        }
-
-        String[] getJniFiles() { return this.jniFiles; }
-
-        String getDirectory() { return this.directory; }
-
-        String getZipFileName() { return this.zipFileName; }
-
-        static OSCategory getOSCategory() {
-            OSCategory category;
-            if (IS_OS_LINUX) {
-                category = OSCategory.LINUX_64;
-            } else if (IS_OS_MAC_OSX) {
-                category = OSCategory.MAC_OS_X;
-            } else if (IS_OS_WINDOWS) {
-                String sysArch = System.getProperty("os.arch").toLowerCase();
-                if (sysArch.contains("amd64") || sysArch.contains("x86_x64")) {
-                    category = OSCategory.WIN_64;
-                } else {
-                    category = OSCategory.WIN_32;
-                }
-            } else {
-                // we should never be here since we do not release installers for other systems.
-                category = OSCategory.UNSUPPORTED;
+        int max = Math.max(moduleVersionFragments.length, savedVersionFragments.length);
+        for(int i = 0; i < max; ++i) {
+            int d1 = (i < moduleVersionFragments.length) ? moduleVersionFragments[i] : 0;
+            int d2 = (i < savedVersionFragments.length) ? savedVersionFragments[i] : 0;
+            if (d1 != d2) {
+                return d1 - d2;
             }
-            return category;
+        }
+        return 0;
+    }
+
+    private static int[] parseVersion(String version) throws NumberFormatException {
+        StringTokenizer tok = new StringTokenizer(version, ".", true);
+        int len = tok.countTokens();
+        if (len % 2 == 0) {
+            throw new NumberFormatException("Even number of pieces in a spec version: `" + version + "\'");
+        } else {
+            int[] digits = new int[len / 2 + 1];
+            int index = 0;
+            boolean expectingNumber = true;
+            while (tok.hasMoreTokens()) {
+                String fragment = tok.nextToken();
+                if (expectingNumber) {
+                    expectingNumber = false;
+                    int piece = Integer.parseInt(fragment);
+                    if (piece < 0) {
+                        throw new NumberFormatException("Spec version component '" + piece + "' is negative.");
+                    }
+                    digits[index++] = piece;
+                } else {
+                    if(!".".equals(fragment)) {
+                        throw new NumberFormatException("Expected dot in version '" + version + "'.");
+                    }
+                    expectingNumber = true;
+                }
+            }
+
+            return digits;
         }
     }
 }

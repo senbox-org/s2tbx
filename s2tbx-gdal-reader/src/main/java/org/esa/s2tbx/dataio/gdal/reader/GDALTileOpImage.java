@@ -16,9 +16,26 @@ import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferDouble;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -61,7 +78,7 @@ class GDALTileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
         int fileTileX = destRect.x / this.tileLayout.tileWidth;
         int fileTileY = destRect.y / this.tileLayout.tileHeight;
         int fileTileOriginX = destRect.x - (fileTileX * this.tileLayout.tileWidth);
@@ -170,7 +187,7 @@ class GDALTileOpImage extends SingleBandedOpImage {
 
     private static class ImageReader {
         private Dataset gdalDataset;
-        private final Band band;
+        private final org.gdal.gdal.Band band;
         private final int dataBufferType;
         private final int level;
         private final int offsetX;

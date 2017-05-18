@@ -1,7 +1,7 @@
 package org.esa.s2tbx.gdal;
 
-import org.esa.s2tbx.dataio.gdal.GDALWriterPlugInListener;
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALWriterPlugInListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.OnStart;
@@ -24,7 +24,7 @@ public class GDALMenuActionRegistrar implements Runnable, GDALWriterPlugInListen
 
     @Override
     public void run() {
-        GdalInstallInfo.INSTANCE.setListener(this);
+        GDALInstallInfo.INSTANCE.setListener(this);
     }
 
     @Override

@@ -1,8 +1,5 @@
 package org.esa.s2tbx.dataio.gdal.activator;
 
-import org.esa.s2tbx.dataio.gdal.GDALInstaller;
-import org.esa.s2tbx.dataio.gdal.GDALUtils;
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
 import org.esa.snap.runtime.Activator;
 
 import java.util.logging.Level;
@@ -22,11 +19,7 @@ public class GDALPlugInActivator implements Activator {
     @Override
     public void start() {
         try {
-            GDALInstaller installer = new GDALInstaller();
-            installer.install();
-            if (GdalInstallInfo.INSTANCE.isPresent()) {
-                GDALUtils.initDrivers();
-            }
+            GDALDistributionInstaller.install();
         } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
         }

@@ -24,16 +24,6 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-reader-tests</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-reader-tests</artifactId>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
             <artifactId>ceres-core</artifactId>
         </dependency>
         <dependency>
@@ -57,10 +47,6 @@
             <artifactId>snap-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-rcp</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>lib-gdal</artifactId>
             <version>${project.version}</version>
@@ -77,11 +63,6 @@
             <type>test-jar</type>
             <scope>test</scope>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-ui</artifactId>
         </dependency>
 
         <!-- JUnit -->
