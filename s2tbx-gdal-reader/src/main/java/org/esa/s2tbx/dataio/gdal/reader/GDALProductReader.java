@@ -106,6 +106,7 @@ public class GDALProductReader extends AbstractProductReader {
             }
 
             Double[] pass1 = new Double[1];
+            int numResolutions = 1;
 
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // bands are not 0-base indexed, so we must add 1
@@ -124,6 +125,9 @@ public class GDALProductReader extends AbstractProductReader {
                     tileHeight = imageHeight;
                 }
                 int levels = gdalBand.GetOverviewCount() + 1;
+                if (numResolutions >= levels) {
+                    numResolutions = levels;
+                }
                 if (levels == 1) {
                     logger.info("Optimizing read by building image pyramids");
                     if (gdalconst.CE_Failure != gdalDataset.BuildOverviews("NEAREST", new int[] { 2, 4, 8, 16 })) {
@@ -143,6 +147,14 @@ public class GDALProductReader extends AbstractProductReader {
                 bandComponentElement.setAttributeString("block size", tileWidth + "x" + tileHeight);
                 bandComponentElement.setAttributeInt("precision", dataBufferType.precision);
                 bandComponentElement.setAttributeString("signed", Boolean.toString(dataBufferType.signed));
+
+                String bandName;
+                if (StringUtils.isNullOrEmpty(bandName = gdalBand.GetDescription())) {
+                    bandName = String.format("band_%s", bandIndex + 1);
+                } else {
+                    bandName = bandName.replace(' ', '_');
+                }
+                Band productBand = new Band(bandName, dataBufferType.bandDataType, imageWidth, imageHeight);
 
                 if (levels > 1) {
                     StringBuilder str = new StringBuilder();
@@ -164,20 +176,27 @@ public class GDALProductReader extends AbstractProductReader {
                 gdalBand.GetOffset(pass1);
                 if (pass1[0] != null && pass1[0] != 0) {
                     bandComponentElement.setAttributeDouble("offset", pass1[0]);
+                    productBand.setScalingOffset(pass1[0]);
                 }
 
                 gdalBand.GetScale(pass1);
                 if (pass1[0] != null && pass1[0] != 1) {
                     bandComponentElement.setAttributeDouble("scale", pass1[0]);
+                    productBand.setScalingFactor(pass1[0]);
                 }
 
-                if (gdalBand.GetUnitType() != null && gdalBand.GetUnitType().length() > 0) {
-                    bandComponentElement.setAttributeString("unit type", gdalBand.GetUnitType());
+                String unitType = gdalBand.GetUnitType();
+                if (unitType != null && unitType.length() > 0) {
+                    bandComponentElement.setAttributeString("unit type", unitType);
+                    productBand.setUnit(unitType);
                 }
 
-                String bandName = String.format("band_%s", bandIndex + 1);
-                Band productBand = new Band(bandName, dataBufferType.bandDataType, imageWidth, imageHeight);
-
+                Double[] noData = new Double[1];
+                gdalBand.GetNoDataValue(noData);
+                if (noData[0] != null) {
+                    productBand.setNoDataValue(noData[0]);
+                    productBand.setNoDataValueUsed(true);
+                }
                 GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount, imageWidth, imageHeight, tileWidth,
                                                                        tileHeight, levels, dataBufferType.dataBufferType, geoCoding);
 
@@ -188,11 +207,23 @@ public class GDALProductReader extends AbstractProductReader {
                 // add the mask
                 org.gdal.gdal.Band maskBand = gdalBand.GetMaskBand();
                 if (maskBand != null) {
-                    String maskName = "mask_" + String.valueOf(bandIndex + 1);
-                    Mask mask = Mask.BandMathsType.create(maskName, null, imageWidth, imageHeight, bandName, Color.white, 0.5);
-                    product.addMask(mask);
+                    String maskName = null;
+                    final int maskFlags = gdalBand.GetMaskFlags();
+                    if ((maskFlags & (gdalconstConstants.GMF_NODATA | gdalconstConstants.GMF_PER_DATASET)) != 0) {
+                        maskName = "nodata_";
+                    } else if ((maskFlags & (gdalconstConstants.GMF_PER_DATASET | gdalconstConstants.GMF_ALPHA)) != 0) {
+                        maskName = "alpha_";
+                    } else if ((maskFlags & (gdalconstConstants.GMF_NODATA | gdalconstConstants.GMF_PER_DATASET |
+                            gdalconstConstants.GMF_ALPHA | gdalconstConstants.GMF_ALL_VALID)) != 0) {
+                        maskName = "mask_";
+                    }
+                    if (maskName != null) {
+                        Mask mask = Mask.BandMathsType.create(maskName + bandName, null, imageWidth, imageHeight, "'" + bandName + "'", Color.white, 0.5);
+                        product.addMask(mask);
+                    }
                 }
             }
+            product.setNumResolutionsMax(numResolutions);
             product.setModified(false);
             return product;
         } catch (Exception ex) {
