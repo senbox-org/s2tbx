@@ -8,9 +8,9 @@ import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
  * @author Cosmin Cara
  */
 public enum OSCategory {
-    WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip", "Windows"),
-    WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip", "Windows"),
-    LINUX_64("gdal-2.1.3-linux", "gdal-2.1.3-linux-bin.zip", "Linux"),
+    WIN_32("gdal-2.1.3-win32", "release-1500-gdal-2-1-3-mapserver-7-0-4.zip", "Windows"),
+    WIN_64("gdal-2.1.3-win64", "release-1500-x64-gdal-2-1-3-mapserver-7-0-4.zip", "Windows"),
+    LINUX_64("gdal-2.2.0-linux", "gdal-2.2.0-linux-bin.zip", "Linux"),
     MAC_OS_X(null, null, "Macintosh"),
     UNSUPPORTED(null, null, "");
 

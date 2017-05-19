@@ -107,7 +107,6 @@ public class GDALDistributionInstaller {
                     .append(libraryPathEnvironmentKey)
                     .append(" is not set. It must contain the current folder '.'.");
             throw new IllegalArgumentException(exceptionMessage.toString());
-
         } else {
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "The value of the environment variable " + libraryPathEnvironmentKey+" is '" + libraryPathEnvironmentValue+"'.");

@@ -17,6 +17,7 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.runtime.Config;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
@@ -55,7 +56,45 @@ public class GDALInstaller {
             logger.log(Level.FINE, "Copy the GDAL distribution to folder '" + gdalApplicationFolderPath.toString() + "'.");
         }
 
-        if (!Files.exists(gdalApplicationFolderPath)) {
+        Config config = Config.instance("s2tbx");
+        config.load();
+        Preferences preferences = config.preferences();
+        String preferencesKey = "gdal.installer";
+        String moduleVersion = getModuleSpecificationVersion();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Check the GDAL distribution folder from the local disk.");
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "The module version is '" + moduleVersion + "'.");
+        }
+
+        boolean canCopyGDALDistribution = true;
+        if (Files.exists(gdalApplicationFolderPath)) {
+            // the the GDAL distribution folder already exists on the local disk
+            String savedVersion = preferences.get(preferencesKey, null);
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "The saved GDAL distribution folder version is '" + savedVersion + "'.");
+            }
+
+            if (!StringUtils.isNullOrEmpty(savedVersion)) {
+                if (compareVersions(savedVersion, moduleVersion) >= 0) {
+                    canCopyGDALDistribution = false;
+                }
+            }
+
+            if (canCopyGDALDistribution) {
+                // different module versions and delete the library saved on the local disk
+                boolean deleted = FileUtils.deleteTree(gdalApplicationFolderPath.toFile());
+                if (!deleted) {
+                    throw new IllegalArgumentException("Failed to delete the GDAL distribution folder '" + gdalApplicationFolderPath.toString() + "'.");
+                }
+            }
+        }
+
+        if (canCopyGDALDistribution) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "Create the folder '" + gdalApplicationFolderPath.toString() + "' to copy the GDAL distribution.");
             }
@@ -100,21 +139,6 @@ public class GDALInstaller {
             }
         }
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Check the library version used to set the environment variables.");
-        }
-
-        Config config = Config.instance("s2tbx");
-        config.load();
-        Preferences preferences = config.preferences();
-        String preferencesKey = "gdal.installer.environment.variables";
-        String moduleVersion = getModuleSpecificationVersion();
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "The module version is '" + moduleVersion + "'.");
-        }
-
-        boolean canCopyLibraryFile = true;
         String libraryFileName = System.mapLibraryName("environment-variables");
         Path libraryFilePath = gdalApplicationFolderPath.resolve(libraryFileName);
 
@@ -122,22 +146,7 @@ public class GDALInstaller {
             logger.log(Level.FINE, "The library file path is '" + libraryFilePath.toString() + "'.");
         }
 
-        if (Files.exists(libraryFilePath)) {
-            // the library file already exists on the local disk
-            String savedVersion = preferences.get(preferencesKey, null);
-
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "The saved library version is '" + savedVersion + "'.");
-            }
-
-            if (!StringUtils.isNullOrEmpty(savedVersion)) {
-                if (compareVersions(savedVersion, moduleVersion) >= 0) {
-                    canCopyLibraryFile = false;
-                }
-            }
-        }
-
-        if (canCopyLibraryFile) {
+        if (canCopyGDALDistribution) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "Copy the library file.");
             }
@@ -145,6 +154,14 @@ public class GDALInstaller {
             String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileName;
             URL libraryFileURLFromSources = getClass().getClassLoader().getResource(libraryFilePathFromSources);
             FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Register the native paths for folder '" + libraryFilePath.getParent()+"'.");
+        }
+        NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
+
+        if (canCopyGDALDistribution) {
             preferences.put(preferencesKey, moduleVersion);
             try {
                 preferences.flush();
@@ -152,11 +169,6 @@ public class GDALInstaller {
                 // ignore exception
             }
         }
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Register the native paths for folder '" + libraryFilePath.getParent()+"'.");
-        }
-        NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
 
         return gdalDistributionRootFolderPath;
     }
