@@ -27,20 +27,20 @@ public class GDALDistributionInstallerTest {
 
     @Test
     public void testInstall() {
-//        try {
-//            if (!GDALInstallInfo.INSTANCE.isPresent()) {
-//                GDALDistributionInstaller.install();
-//            }
-//        } catch (Throwable e) {
-//            // the GDAL library has not been installed
-//            StringWriter stringWriter = new StringWriter();
-//            PrintWriter printWriter = new PrintWriter(stringWriter);
-//            e.printStackTrace(printWriter);
-//            printWriter.close();
-//            String exceptionStackTrace = stringWriter.getBuffer().toString();
-//            if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_LINUX) {
-//                fail("Failed to install the GDAL library. The exception stack trace is: " + exceptionStackTrace);
-//            }
-//        }
+        try {
+            if (!GDALInstallInfo.INSTANCE.isPresent()) {
+                GDALDistributionInstaller.install();
+            }
+        } catch (Throwable e) {
+            // the GDAL library has not been installed
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(stringWriter);
+            e.printStackTrace(printWriter);
+            printWriter.close();
+            String exceptionStackTrace = stringWriter.getBuffer().toString();
+            if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_LINUX) {
+                fail("Failed to install the GDAL library. The exception stack trace is: " + exceptionStackTrace);
+            }
+        }
     }
 }

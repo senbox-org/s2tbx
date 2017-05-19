@@ -29,9 +29,9 @@ public abstract class AbstractTestDriverProductReader {
     public final void setUp() throws Exception {
         assumeTrue(TestUtil.testdataAvailable());
 
-//        if (!GDALInstallInfo.INSTANCE.isPresent()) {
-//            GDALDistributionInstaller.install();
-//        }
+        if (!GDALInstallInfo.INSTANCE.isPresent()) {
+            GDALDistributionInstaller.install();
+        }
         if (GDALInstallInfo.INSTANCE.isPresent()) {
             checkTestDirectoryExists();
         }
