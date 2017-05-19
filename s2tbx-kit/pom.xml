@@ -5,7 +5,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>5.0.5-SNAPSHOT</version>
+        <version>5.0.5</version>
     </parent>
 
     <artifactId>s2tbx-kit</artifactId>
@@ -207,6 +207,7 @@
             <artifactId>s2tbx-s2msi-mci</artifactId>
             <version>${project.version}</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
