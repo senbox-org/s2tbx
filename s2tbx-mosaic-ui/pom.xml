@@ -26,6 +26,7 @@
     </parent>
 
     <artifactId>s2tbx-mosaic-ui</artifactId>
+    <packaging>nbm</packaging>
 
     <name>Sentinel-2 Toolbox Mosaic GUI</name>
     <description>Basic framework for processing using Mosaic Operator.</description>
@@ -36,6 +37,16 @@
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-binding</artifactId>
             <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-glayer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-jai</artifactId>
         </dependency>
 
         <dependency>
@@ -130,7 +141,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-mosaic</artifactId>
-            <version>6.0.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -158,7 +169,8 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <configuration>
                     <publicPackages>
-                        <publicPackage>org.esa.s2tbx.ui.tooladapter.actions.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.mosaic.io</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.mosaic.ui</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
