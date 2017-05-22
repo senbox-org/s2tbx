@@ -241,6 +241,18 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-grm</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-grm-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-radiometric-indices</artifactId>
             <version>${project.version}</version>
         </dependency>
