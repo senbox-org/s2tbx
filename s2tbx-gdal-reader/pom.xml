@@ -94,9 +94,9 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <systemPropertyVariables>
-                        <LD_LIBRARY_PATH>.</LD_LIBRARY_PATH>
-                    </systemPropertyVariables>
+                    <properties>
+                        <customArg>-Djava.library.path=.</customArg>
+                    </properties>
                 </configuration>
 
             </plugin>

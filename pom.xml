@@ -69,6 +69,7 @@
         <netbeans.version>RELEASE82</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
         <brandingToken>s2tbx</brandingToken>
+        <customArg/>
     </properties>
 
     <repositories>
@@ -490,7 +491,8 @@
                             <snap.reader.tests.data.dir>${snap.reader.tests.data.dir}</snap.reader.tests.data.dir>
                             <snap.reader.tests.class.name>${snap.reader.tests.class.name}</snap.reader.tests.class.name>
                         </systemPropertyVariables>
-                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8 -da:org.geotools.referencing.operation.projection.MapProjection</argLine>
+
+                        <argLine>@{customArg} -Xmx1024M -Dfile.encoding=UTF-8 -da:org.geotools.referencing.operation.projection.MapProjection</argLine>
                     </configuration>
                 </plugin>
 
