@@ -1,17 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.activator;
 
-import org.esa.s2tbx.dataio.gdal.GDALInstaller;
-import org.esa.s2tbx.dataio.gdal.GDALUtils;
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.jni.EnvironmentVariables;
-import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.runtime.Activator;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

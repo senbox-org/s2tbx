@@ -82,7 +82,7 @@ class S2tbxMosaicIOPanel extends JPanel {
             @Override
             protected JFileChooser createFileChooserDialog() {
                 final JFileChooser fileChooser = super.createFileChooserDialog();
-                fileChooser.setDialogTitle("S2-Mosaic - Open Source Product(s)");
+                fileChooser.setDialogTitle("Multi-size Mosaic - Open Source Product(s)");
                 return fileChooser;
             }
         };
@@ -379,7 +379,7 @@ class S2tbxMosaicIOPanel extends JPanel {
                 selectorModel.setProductDir(fileDir);
             } else {
                 selectorModel.setFormatName(ProductIO.DEFAULT_FORMAT_NAME);
-                selectorModel.setProductName("S2-Mosaic");
+                selectorModel.setProductName("Multi-size Mosaic");
                 String homeDirPath = SystemUtils.getUserHomeDir().getPath();
                 final PropertyMap prefs = appContext.getPreferences();
                 String saveDir = prefs.getPropertyString(SaveProductAsAction.PREFERENCES_KEY_LAST_PRODUCT_DIR, homeDirPath);

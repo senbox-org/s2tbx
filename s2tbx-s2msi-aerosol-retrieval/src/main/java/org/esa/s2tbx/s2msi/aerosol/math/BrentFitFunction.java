@@ -55,7 +55,7 @@ public class BrentFitFunction implements Function {
 
     public double getMaxAOT() {
         int min = 0;
-        for (int i = 0; i < inPixField.length; i++) {
+        for (int i = 1; i < inPixField.length; i++) {
             if (inPixField[i].getToaReflec()[0] < inPixField[min].getToaReflec()[0]) {
                 min = i;
             }
@@ -65,7 +65,7 @@ public class BrentFitFunction implements Function {
 
     //private methods
     private double fPix(double tau, InputPixelData inPixData){
-        S2LutUtils.getSdrAndDiffuseFrac(inPixData, s2Lut, tau);    // todo
+        S2LutUtils.getSdrAndDiffuseFrac(inPixData, s2Lut, tau);
         double fmin = isSdrNegativ(inPixData.getSurfReflec());
 
         if ( !(fmin > 0) ) {

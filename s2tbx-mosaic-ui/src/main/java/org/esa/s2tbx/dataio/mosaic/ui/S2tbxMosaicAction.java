@@ -32,14 +32,14 @@ import java.awt.event.ActionEvent;
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
-@ActionID(category = "Operators", id = "org.esa.s2tbx.dataio.mosaic.ui.S2tbxMosaicAction")
+@ActionID(category = "Operators", id = "org.esa.s2tbx.dataio.mosaic.ui.MultisizeMosaicAction")
 @ActionRegistration(displayName = "#CTL_S2MosaicAction_Name")
 @ActionReference(path = "Menu/Raster/Geometric Operations", position = 351)
-@NbBundle.Messages({"CTL_S2MosaicAction_Name=Sentinel-2-Mosaic"})
+@NbBundle.Messages({"CTL_S2MosaicAction_Name=Multi-size Mosaic"})
 public class S2tbxMosaicAction extends AbstractSnapAction {
 
     public S2tbxMosaicAction(){
-        putValue(SHORT_DESCRIPTION, "Generates Mosaic Image for Sentinel2 Products.");
+        putValue(SHORT_DESCRIPTION, "Generates Mosaic Image for Multi-size Products.");
     }
     private ModelessDialog dialog;
 
@@ -47,7 +47,7 @@ public class S2tbxMosaicAction extends AbstractSnapAction {
     public void actionPerformed(ActionEvent e) {
         if (dialog == null) {
             dialog = new S2tbxMosaicDialog(Bundle.CTL_S2MosaicAction_Name(),
-                                      "Sentinel2MosaicAction", getAppContext());
+                                      "MultisizeMosaicAction", getAppContext());
 
         }
         dialog.show();
@@ -55,6 +55,6 @@ public class S2tbxMosaicAction extends AbstractSnapAction {
 
     @Override
     public boolean isEnabled() {
-        return GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi("S2tbx-Mosaic") != null;
+        return GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi("Multi-size Mosaic") != null;
     }
 }

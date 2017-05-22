@@ -1,0 +1,35 @@
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Operators">
+            <file name="org-esa-s2tbx-grm-Action.instance">
+                <attr name="instanceCreate"
+                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate"
+                      methodvalue="org.esa.s2tbx.grm.GenericRegionMergingOperatorAction.create"/>
+                <attr name="displayName"
+                      stringvalue="Generic region merging processor"/>
+                <attr name="dialogTitle"
+                      stringvalue="Generic region merging processor"/>
+                <attr name="operatorName"
+                      stringvalue="GenericRegionMergingOp"/>
+                <attr name="targetProductNameSuffix"
+                      stringvalue="_grm"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="Raster">
+            <folder name="Segmentation">
+                <attr name="position" intvalue="460"/>
+                <file name="org-esa-s2tbx-grm-Action.shadow">
+                    <attr name="originalFile"
+                          stringvalue="Actions/Operators/org-esa-s2tbx-grm-Action.instance"/>
+                    <attr name="position" intvalue="10003"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>

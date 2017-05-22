@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.GTXDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -23,7 +23,7 @@ public class GTXDriverProductReaderTest extends AbstractTestDriverProductReader 
 
     @Test
     public void testGTXReadProductNodes() throws IOException {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("GTX-driver.gtx").toFile();
 
             GTXDriverProductReaderPlugIn readerPlugin = new GTXDriverProductReaderPlugIn();

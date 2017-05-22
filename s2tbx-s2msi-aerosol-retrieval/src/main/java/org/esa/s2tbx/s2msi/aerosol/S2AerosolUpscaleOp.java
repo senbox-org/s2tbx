@@ -178,7 +178,8 @@ public class S2AerosolUpscaleOp extends Operator {
             if (iSrcY >= srcTile.getMaxY()) {
                 iSrcY = srcTile.getMaxY() - 1;
             }
-            float yFac = (float) (iTarY - offset) / scale - iSrcY;
+            float yFrac = (float) (iTarY - offset) / scale - iSrcY;
+            yFrac = Math.min(1f, Math.max(0f, yFrac));
             for (int iTarX = tarX; iTarX < tarX + tarWidth; iTarX++) {
                 checkForCancellation();
                 int iSrcX = (iTarX - offset) / scale;
@@ -186,48 +187,49 @@ public class S2AerosolUpscaleOp extends Operator {
                     iSrcX = srcTile.getMaxX() - 1;
                 }
                 float xFrac = (float) (iTarX - offset) / scale - iSrcX;
+                xFrac = Math.min(1f, Math.max(0f, xFrac));
 
-                float erg = noData;
+                float result = noData;
                 try {
                     if (validTile.getSampleBoolean(iTarX, iTarY)) {
-                        erg = interpolatBilinear(srcTile, noData, xFrac, yFac, iSrcX, iSrcY);
+                        result = interpolateBilinear(srcTile, noData, xFrac, yFrac, iSrcX, iSrcY);
                     }
                 } catch (Exception ex) {
                     System.err.println(iTarX + " / " + iTarY);
                     System.err.println(ex.getMessage());
                 } finally {
-                    tarTile.setSample(iTarX, iTarY, erg);
+                    tarTile.setSample(iTarX, iTarY, result);
                 }
             }
         }
     }
 
-    private float interpolatBilinear(Tile srcTile, float nodataValue, float xFrac, float yFac, int x, int y) {
+    private float interpolateBilinear(Tile srcTile, float nodataValue, float xFrac, float yFrac, int x, int y) {
         float value = srcTile.getSampleFloat(x, y);
         if (Double.compare(nodataValue, value) == 0) {
             return nodataValue;
         }
-        float erg = (1.0f - xFrac) * (1.0f - yFac) * value;
+        float result = (1.0f - xFrac) * (1.0f - yFrac) * value;
 
         value = srcTile.getSampleFloat(x + 1, y);
         if (Double.compare(nodataValue, value) == 0) {
             return nodataValue;
         }
-        erg += (xFrac) * (1.0f - yFac) * value;
+        result += (xFrac) * (1.0f - yFrac) * value;
 
         value = srcTile.getSampleFloat(x, y + 1);
         if (Double.compare(nodataValue, value) == 0) {
             return nodataValue;
         }
-        erg += (1.0f - xFrac) * (yFac) * value;
+        result += (1.0f - xFrac) * (yFrac) * value;
 
         value = srcTile.getSampleFloat(x + 1, y + 1);
         if (Double.compare(nodataValue, value) == 0) {
             return nodataValue;
         }
-        erg += (xFrac) * (yFac) * value;
+        result += (xFrac) * (yFrac) * value;
 
-        return erg;
+        return result;
     }
 
     private void upscaleFlagCopy(Tile srcTile, Tile tarTile, Rectangle tarRec) {
