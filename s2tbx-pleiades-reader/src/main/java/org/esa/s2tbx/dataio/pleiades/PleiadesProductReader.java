@@ -20,7 +20,6 @@ import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.Stx;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
@@ -185,7 +184,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                 if (levels > product.getNumResolutionsMax()) {
                     product.setNumResolutionsMax(levels);
                 }
-                final Stx[] statistics = imageMetadata.getBandsStatistics();
+                //final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
                     Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, Math.round(width / factorX),
                                                            Math.round(height / factorY), colorPaletteFilePath);
@@ -217,16 +216,16 @@ public class PleiadesProductReader extends AbstractProductReader {
                                                     Product.findImageToModelTransform(product.getSceneGeoCoding()) :
                                             targetBand.getImageToModelTransform());
                     targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-                    if (statistics[i] != null) {
-                        //targetBand.setStx(statistics[i]);
-                        /*targetBand.setImageInfo(
+                    /*if (statistics[i] != null) {
+                        targetBand.setStx(statistics[i]);
+                        targetBand.setImageInfo(
                                 new ImageInfo(
                                         new ColorPaletteDef(new ColorPaletteDef.Point[] {
                                                 new ColorPaletteDef.Point(statistics[i].getMinimum(), Color.BLACK),
                                                 new ColorPaletteDef.Point(statistics[i].getMean(), Color.GRAY),
                                                 new ColorPaletteDef.Point(statistics[i].getMaximum(), Color.WHITE)
-                                        })));//, (int) Math.pow(2, imageMetadata.getPixelNBits()))));*/
-                    }
+                                        })));
+                    }*/
                     product.addBand(targetBand);
                 }
                 addMasks(product, imageMetadata);
