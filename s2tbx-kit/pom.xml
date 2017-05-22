@@ -290,7 +290,13 @@
             <artifactId>s2tbx-grm-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
-		
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-forest-cover-change</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-mosaic-ui</artifactId>

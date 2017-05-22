@@ -61,6 +61,7 @@
         <module>s2tbx-gdal-reader-ui</module>
         <module>s2tbx-grm</module>
         <module>s2tbx-grm-ui</module>
+        <module>s2tbx-forest-cover-change</module>
     </modules>
 
     <packaging>pom</packaging>
