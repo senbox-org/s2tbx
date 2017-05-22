@@ -13,8 +13,18 @@ import org.esa.s2tbx.dataio.openjp2.struct.ImageComponent;
 import org.esa.snap.core.util.SystemUtils;
 import sun.awt.image.SunWritableRaster;
 
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -245,13 +255,10 @@ public class OpenJP2Decoder implements AutoCloseable {
         int width;
         int height;
         int[] pixels;
+        // Maybe this tile file is written by other thread, so let's wait if so
         while (this.pendingWrites.contains(this.tileFile)) {
             Thread.yield();
         }
-        /*int bands = 1; // always the cached (uncompressed) info has 1 band
-        int[] bandOffsets = new int[bands];
-        for (int i = 0; i < bands; i++)
-            bandOffsets[i] = i;*/
         int[] bandOffsets = new int[] { 0 };
         DataBuffer buffer;
         if (!Files.exists(this.tileFile)) {
@@ -339,7 +346,10 @@ public class OpenJP2Decoder implements AutoCloseable {
                     throw new UnsupportedOperationException("Source buffer type not supported");
             }
         }
-
+        // Maybe the write operation has not finished
+        while (this.pendingWrites.contains(this.tileFile)) {
+            Thread.yield();
+        }
         SampleModel sampleModel = new PixelInterleavedSampleModel(this.dataType, width, height, 1, width, bandOffsets);
         WritableRaster raster = null;
         try {
