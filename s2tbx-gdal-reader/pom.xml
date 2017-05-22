@@ -92,6 +92,15 @@
                 </configuration>
             </plugin>
             <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <LD_LIBRARY_PATH>.</LD_LIBRARY_PATH>
+                    </systemPropertyVariables>
+                </configuration>
+
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
             </plugin>
