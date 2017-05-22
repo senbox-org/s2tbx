@@ -14,42 +14,32 @@ import org.esa.snap.core.util.ProductUtils;
  * @since 5.0.6
  */
 public class BandsExtractor {
-    private Product sourceProduct;
-    private Product targetProduct;
-    public BandsExtractor(Product sourceProduct){
-        this.sourceProduct = sourceProduct;
-        generateTargetProduct();
-    }
-    private void generateTargetProduct(){
-        this.targetProduct = new Product(this.sourceProduct.getName(),
-                this.sourceProduct.getProductType(),
-                this.sourceProduct.getSceneRasterWidth(),
-                this.sourceProduct.getSceneRasterHeight());
-        this.targetProduct.setStartTime(this.sourceProduct.getStartTime());
-        this.targetProduct.setEndTime(this.sourceProduct.getEndTime());
-        this.targetProduct.setNumResolutionsMax(this.sourceProduct.getNumResolutionsMax());
-        ProductUtils.copyMetadata(this.sourceProduct, this.targetProduct);
-        ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
-        ProductUtils.copyTiePointGrids(this.sourceProduct, this.targetProduct);
-        ProductUtils.copyVectorData(this.sourceProduct, this.targetProduct);
-        int[] indexes = new int[]{2,3,7,11};
+
+    public static Product generateTargetProduct(Product sourceProduct, int[] indexes){
+        Product targetProduct = new Product(sourceProduct.getName(),
+                sourceProduct.getProductType(),
+                sourceProduct.getSceneRasterWidth(),
+                sourceProduct.getSceneRasterHeight());
+        targetProduct.setStartTime(sourceProduct.getStartTime());
+        targetProduct.setEndTime(sourceProduct.getEndTime());
+        targetProduct.setNumResolutionsMax(sourceProduct.getNumResolutionsMax());
+        ProductUtils.copyMetadata(sourceProduct, targetProduct);
+        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+        ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
+        ProductUtils.copyVectorData(sourceProduct, targetProduct);
         for(int index:indexes){
-            ProductUtils.copyBand(this.sourceProduct.getBandAt(index).getName(), this.sourceProduct,  this.targetProduct, true);
-            ProductUtils.copyGeoCoding(this.sourceProduct.getBandAt(index),  this.targetProduct.getBand(this.sourceProduct.getBandAt(index).getName()));
+            ProductUtils.copyBand(sourceProduct.getBandAt(index).getName(), sourceProduct,  targetProduct, true);
+            ProductUtils.copyGeoCoding(sourceProduct.getBandAt(index),  targetProduct.getBand(sourceProduct.getBandAt(index).getName()));
         }
-        this.targetProduct = resample(this.targetProduct, this.targetProduct.getSceneRasterWidth(), this.targetProduct.getSceneRasterHeight());
-        this.targetProduct.setName(this.sourceProduct.getName());
+        targetProduct = resample(targetProduct, targetProduct.getSceneRasterWidth(),targetProduct.getSceneRasterHeight());
+        targetProduct.setName(sourceProduct.getName());
+        return targetProduct;
     }
 
-    private Product resample(Product source, int targetWidth, int targetHeight) {
+    private static Product resample(Product source, int targetWidth, int targetHeight) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("targetWidth", targetWidth);
         parameters.put("targetHeight", targetHeight);
         return GPF.createProduct("Resample", parameters, source);
-    }
-
-    public Product getTargetProduct(){
-
-        return this.targetProduct;
     }
 }

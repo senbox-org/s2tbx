@@ -13,7 +13,7 @@ public class RunForestCoverChange {
 
     public static void main(String arg[]) {
         System.out.println("RunForestCoverChange");
-        File file = new File("Z:\\Sen2Three_Testdata_L2A\\S2A_USER_PRD_MSIL2A_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.SAFE\\S2A_USER_MTD_SAFL2A_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.xml");
+        File file = new File("D:\\S2A_USER_PRD_MSIL2A_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.SAFE\\S2A_USER_MTD_SAFL2A_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.xml");
         try {
             Sentinel2L1CProduct_Multi_UTM32N_ReaderPlugIn readerPlugIn = new Sentinel2L1CProduct_Multi_UTM32N_ReaderPlugIn();
             Product product = readerPlugIn.createReaderInstance().readProductNodes(file, null);
