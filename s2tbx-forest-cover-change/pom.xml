@@ -42,8 +42,22 @@
             <artifactId>snap-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-gpf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-ndvi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-s2msi-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-radiometric-indices</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
