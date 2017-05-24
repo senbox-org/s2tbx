@@ -3,43 +3,15 @@ package org.esa.s2tbx.fcc.intern;
 import java.util.*;
 
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.util.ProductUtils;
-import org.esa.snap.utils.StringHelper;
 
 /**
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
 public class BandsExtractor {
-
-    public static Product generateBandsExtractor(Product sourceProduct, int[] indexes) {
-        Product targetProduct = new Product(sourceProduct.getName(), sourceProduct.getProductType(),
-                                            sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-        targetProduct.setStartTime(sourceProduct.getStartTime());
-        targetProduct.setEndTime(sourceProduct.getEndTime());
-        targetProduct.setNumResolutionsMax(sourceProduct.getNumResolutionsMax());
-
-        ProductUtils.copyMetadata(sourceProduct, targetProduct);
-        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
-        ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
-        ProductUtils.copyVectorData(sourceProduct, targetProduct);
-
-        for (int index:indexes) {
-            Band sourceBand = sourceProduct.getBandAt(index);
-            String sourceBandName = sourceBand.getName();
-            String targetBandName = sourceBandName;
-            ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName, targetProduct, true);
-
-            Band targetBand = targetProduct.getBand(targetBandName);
-            ProductUtils.copyGeoCoding(sourceBand, targetBand);
-        }
-
-        return targetProduct;
-    }
 
     public static Product resampleAllBands(Product sourceProduct) {
         Map<String, Object> parameters = new HashMap<>();
@@ -52,12 +24,19 @@ public class BandsExtractor {
 
     public static Product generateBandsDifference(Product firstSourceProduct, Product secondSourceProduct) {
         Map<String, Object> parameters = new HashMap<>();
-        Map<String, Product> sourceProducts = new HashMap<String, Product>();
+        Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("firstSourceProduct", firstSourceProduct);
         sourceProducts.put("secondSourceProduct", secondSourceProduct);
         return GPF.createProduct("BandsDifferenceOp", parameters, sourceProducts, null);
     }
 
+    public static Product generateBandsExtractor(Product firstSourceProduct, int[] indexes) {
+        Map<String, Object> parameters = new HashMap<>();
+        Map<String, Product> sourceProducts = new HashMap<>();
+        sourceProducts.put("sourceProduct", firstSourceProduct);
+        parameters.put("indexes", indexes);
+        return GPF.createProduct("BandsExtractorOp", parameters, sourceProducts, null);
+    }
     public static Product generateBandsCompositing(Product firstSourceProduct, Product secondSourceProduct, Product thirdSourceProduct) {
         Product targetProduct = new Product("BandsCompositing", firstSourceProduct.getProductType(),
                                             firstSourceProduct.getSceneRasterWidth(), firstSourceProduct.getSceneRasterHeight());
