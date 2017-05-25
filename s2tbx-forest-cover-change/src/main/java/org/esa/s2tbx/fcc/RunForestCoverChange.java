@@ -1,10 +1,12 @@
 package org.esa.s2tbx.fcc;
 
 import org.esa.s2tbx.fcc.intern.BandsExtractor;
+import org.esa.s2tbx.landcover.dataio.CCILandCoverModelDescriptor;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Product;
 
 import java.io.File;
+import org.esa.snap.landcover.dataio.LandCoverModelRegistry;
 
 /**
  * @author Jean Coravu
@@ -21,6 +23,9 @@ public class RunForestCoverChange {
 
             File file2 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Sen2Three_Testdata_L2A\\S2A_USER_PRD_MSIL2A_PDMC_20150812T211918_R065_V20150812T102902_20150806T102902.SAFE\\S2A_USER_MTD_SAFL2A_PDMC_20150812T211918_R065_V20150806T102902_20150806T102902.xml");
             Product secondInputProduct = productReaderPlugIn.createReaderInstance().readProductNodes(file2, null);
+
+            LandCoverModelRegistry landCoverModelRegistry = LandCoverModelRegistry.getInstance();
+            landCoverModelRegistry.addDescriptor(new CCILandCoverModelDescriptor());
 
             System.out.println("firstInputProduct="+firstInputProduct);
             System.out.println("secondInputProduct="+secondInputProduct);
@@ -47,6 +52,8 @@ public class RunForestCoverChange {
 
             Product ndwiFirstProduct = BandsExtractor.computeNDWIBands(firstProduct, "B3", 1.0f, "B4", 1.0f);
             Product ndwiSecondProduct = BandsExtractor.computeNDWIBands(secondProduct, "B3", 1.0f, "B4", 1.0f);
+
+            Product landCoverProduct = BandsExtractor.computeObjectSelection(firstProduct);
 
             System.out.println("ndviFirstProduct="+ndviFirstProduct);
             System.out.println("ndviSecondProduct="+ndviSecondProduct);

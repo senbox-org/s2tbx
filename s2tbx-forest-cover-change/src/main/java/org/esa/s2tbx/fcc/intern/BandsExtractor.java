@@ -60,4 +60,9 @@ public class BandsExtractor {
         parameters.put("nirSourceBand", nirSourceBand);
         return GPF.createProduct("NdwiOp", parameters, sourceProduct);
     }
+    public static Product computeObjectSelection(Product sourceProduct) {
+        Map<String, Object> parameters = new HashMap<>();
+        return GPF.createProduct("ObjectsSelectionOp", parameters, sourceProduct);
+
+    }
 }
