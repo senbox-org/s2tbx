@@ -23,11 +23,9 @@ public class BandsExtractor {
     }
 
     public static Product generateBandsDifference(Product firstSourceProduct, Product secondSourceProduct) {
+        Product[] products = new Product[] {firstSourceProduct, secondSourceProduct};
         Map<String, Object> parameters = new HashMap<>();
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("firstSourceProduct", firstSourceProduct);
-        sourceProducts.put("secondSourceProduct", secondSourceProduct);
-        return GPF.createProduct("BandsDifferenceOp", parameters, sourceProducts, null);
+        return GPF.createProduct("BandsDifferenceOp", parameters, products, null);
     }
 
     public static Product generateBandsExtractor(Product firstSourceProduct, int[] indexes) {
@@ -37,6 +35,7 @@ public class BandsExtractor {
         parameters.put("indexes", indexes);
         return GPF.createProduct("BandsExtractorOp", parameters, sourceProducts, null);
     }
+
     public static Product generateBandsCompositing(Product firstSourceProduct, Product secondSourceProduct, Product thirdSourceProduct) {
         Product targetProduct = new Product("BandsCompositing", firstSourceProduct.getProductType(),
                                             firstSourceProduct.getSceneRasterWidth(), firstSourceProduct.getSceneRasterHeight());

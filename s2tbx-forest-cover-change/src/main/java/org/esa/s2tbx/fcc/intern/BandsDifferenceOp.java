@@ -9,10 +9,13 @@ import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
+import org.esa.snap.core.gpf.annotations.SourceProducts;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 
 import javax.media.jai.JAI;
+import javax.sound.midi.SysexMessage;
 import java.awt.*;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -26,10 +29,8 @@ import java.util.Map;
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class BandsDifferenceOp extends Operator {
-    @SourceProduct(alias = "source", description = "The first source product.")
-    private Product firstSourceProduct;
-    @SourceProduct(alias = "source", description = "The second source product.")
-    private Product secondSourceProduct;
+    @SourceProducts(alias = "source", description = "The first source product.")
+    private Product[] sourceProducts;
     @TargetProduct
     private Product targetProduct;
 
@@ -38,40 +39,49 @@ public class BandsDifferenceOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
-        int firstProductWidth = this.firstSourceProduct.getSceneRasterWidth();
-        int firstProductHeight = this.firstSourceProduct.getSceneRasterHeight();
-        int secondProductWidth = this.secondSourceProduct.getSceneRasterWidth();
-        int secondProductHeight = this.secondSourceProduct.getSceneRasterHeight();
-        if (firstProductWidth != secondProductWidth || firstProductHeight != secondProductHeight) {
-            throw new OperatorException("Different product sizes.");
+        Product firstSourceProduct = this.sourceProducts[0];
+
+        int firstProductWidth = firstSourceProduct.getSceneRasterWidth();
+        int firstProductHeight = firstSourceProduct.getSceneRasterHeight();
+        for (int i=1; i<this.sourceProducts.length; i++) {
+            int productWidth = this.sourceProducts[i].getSceneRasterWidth();
+            int productHeight = this.sourceProducts[i].getSceneRasterHeight();
+            if (firstProductWidth != productWidth || firstProductHeight != productHeight) {
+                throw new OperatorException("Different product sizes.");
+            }
         }
 
-        int firstBandCount = this.firstSourceProduct.getBandGroup().getNodeCount();
-        int secondBandCount = this.secondSourceProduct.getBandGroup().getNodeCount();
-        if (firstBandCount != secondBandCount) {
-            throw new OperatorException("Different band count.");
+        int firstBandCount = firstSourceProduct.getBandGroup().getNodeCount();
+        for (int i=1; i<this.sourceProducts.length; i++) {
+            int bandCount = this.sourceProducts[i].getBandGroup().getNodeCount();
+            if (firstBandCount != bandCount) {
+                throw new OperatorException("Different band count.");
+            }
         }
 
-        this.targetProduct = new Product("BandsDifference", "difference", firstProductWidth, secondProductHeight);
+        this.targetProduct = new Product("BandsDifference", "difference", firstProductWidth, firstProductHeight);
         Dimension tileSize = JAI.getDefaultTileSize();
         this.targetProduct.setPreferredTileSize(tileSize);
 
         for (int i=0; i<firstBandCount; i++) {
-            Band firstBand = this.firstSourceProduct.getBandAt(i);
-            Band secondBand = this.secondSourceProduct.getBandAt(i);
-            if (firstBand.getDataType() != secondBand.getDataType()) {
-                throw new OperatorException("Different band type.");
+            Band firstProductBand = firstSourceProduct.getBandAt(i);
+            int firstBandWidth = firstProductBand.getRasterWidth();
+            int firstBandHeight = firstProductBand.getRasterHeight();
+
+            for (int k=1; k<this.sourceProducts.length; k++) {
+                Band band = this.sourceProducts[k].getBandAt(i);
+                if (firstProductBand.getDataType() != band.getDataType()) {
+                    throw new OperatorException("Different band type.");
+                }
+
+                int bandWidth = band.getRasterWidth();
+                int bandHeight = band.getRasterHeight();
+                if (firstBandWidth != bandWidth || firstBandHeight != bandHeight) {
+                    throw new OperatorException("Different band sizes.");
+                }
             }
 
-            int firstBandWidth = firstBand.getRasterWidth();
-            int firstBandHeight = firstBand.getRasterHeight();
-            int secondBandWidth = secondBand.getRasterWidth();
-            int secondBandHeight = secondBand.getRasterHeight();
-            if (firstBandWidth != secondBandWidth || firstBandHeight != secondBandHeight) {
-                throw new OperatorException("Different band sizes.");
-            }
-
-            Band targetBand = new Band("band_" + (i+1), firstBand.getDataType(), firstBandWidth, firstBandHeight);
+            Band targetBand = new Band("band_" + (i+1), firstProductBand.getDataType(), firstBandWidth, firstBandHeight);
             this.targetProduct.addBand(targetBand);
         }
     }
@@ -79,20 +89,26 @@ public class BandsDifferenceOp extends Operator {
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
         try {
-            int firstBandCount = this.firstSourceProduct.getBandGroup().getNodeCount();
-            for (int i=0; i<firstBandCount; i++) {
-                Band firstSourceBand = this.firstSourceProduct.getBandAt(i);
-                Tile firstSourceTile = getSourceTile(firstSourceBand, rectangle);
+            Iterator<Map.Entry<Band, Tile>> it = targetTiles.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<Band, Tile> entry = it.next();
+                Band targetBand = entry.getKey();
+                Tile targetTile = entry.getValue();
+                int targetBandIndex = this.targetProduct.getBandIndex(targetBand.getName());
 
-                Band secondSourceBand = this.secondSourceProduct.getBandAt(i);
-                Tile secondSourceTile = getSourceTile(secondSourceBand, rectangle);
-
-                Band targetBand = this.targetProduct.getBandAt(i);
-                Tile targetTile = targetTiles.get(targetBand);
+                Tile[] sourceTiles = new Tile[this.sourceProducts.length];
+                for (int i=0; i<this.sourceProducts.length; i++) {
+                    Product sourceProduct = this.sourceProducts[i];
+                    Band sourceBand = sourceProduct.getBandAt(targetBandIndex);
+                    sourceTiles[i] = getSourceTile(sourceBand, rectangle);
+                }
 
                 for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                     for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
-                        float value = firstSourceTile.getSampleFloat(x, y) - secondSourceTile.getSampleFloat(x, y);
+                        float value = sourceTiles[0].getSampleFloat(x, y);
+                        for (int i=1; i<sourceTiles.length; i++) {
+                            value -= sourceTiles[i].getSampleFloat(x, y);
+                        }
                         targetTile.setSample(x, y, value);
                     }
                 }
