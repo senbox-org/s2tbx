@@ -79,14 +79,15 @@ public class GDALDistributionInstaller {
                     logger.log(Level.FINE, "Process the GDAL library on Linux. The current folder is '"+currentFolderPath+"'.");
                 }
 
-                processInstalledLinuxDistribution(gdalDistributionRootFolderPath);
-                GDALInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
+                if (processInstalledLinuxDistribution(gdalDistributionRootFolderPath)) {
+                    GDALInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
 
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.INFO, "Init the GDAL drivers on Linux.");
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.INFO, "Init the GDAL drivers on Linux.");
+                    }
+
+                    GDALUtils.initDrivers();
                 }
-
-                GDALUtils.initDrivers();
             } finally {
                 EnvironmentVariables.changeCurrentDirectory(currentFolderPath);
             }
@@ -97,7 +98,7 @@ public class GDALDistributionInstaller {
         }
     }
 
-    private static void processInstalledLinuxDistribution(Path gdalDistributionRootFolderPath) throws IOException {
+    private static boolean processInstalledLinuxDistribution(Path gdalDistributionRootFolderPath) throws IOException {
         // check if the LD_LIBRARY_PATH contains the current folder '.'
         String libraryPathEnvironmentKey = "LD_LIBRARY_PATH";
         String libraryPathEnvironmentValue = EnvironmentVariables.getEnvironmentVariable(libraryPathEnvironmentKey);
@@ -106,7 +107,9 @@ public class GDALDistributionInstaller {
             exceptionMessage.append("The environment variable ")
                     .append(libraryPathEnvironmentKey)
                     .append(" is not set. It must contain the current folder '.'.");
-            throw new IllegalArgumentException(exceptionMessage.toString());
+            //throw new IllegalArgumentException(exceptionMessage.toString());
+            logger.log(Level.SEVERE, exceptionMessage.toString());
+            return false;
         } else {
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "The value of the environment variable " + libraryPathEnvironmentKey+" is '" + libraryPathEnvironmentValue+"'.");
@@ -127,7 +130,9 @@ public class GDALDistributionInstaller {
                         .append(" does not contain the current folder '.'. Its value is '")
                         .append(libraryPathEnvironmentValue)
                         .append("'.");
-                throw new IllegalArgumentException(exceptionMessage.toString());
+                //throw new IllegalArgumentException(exceptionMessage.toString());
+                logger.log(Level.SEVERE, exceptionMessage.toString());
+                return false;
             }
         }
 
@@ -157,6 +162,8 @@ public class GDALDistributionInstaller {
             logger.log(Level.FINE, "Set the GDAL_DATA environment variable on Linux with '"+ gdalDataValue.toString() +"'.");
         }
         EnvironmentVariables.setEnvironmentVariable(gdalDataValue.toString());
+
+        return true;
     }
 
     private static void processInstalledWindowsDistribution(Path gdalDistributionRootFolderPath) throws IOException {
