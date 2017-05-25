@@ -15,13 +15,13 @@ public class RunForestCoverChange {
 
     public static void main(String arg[]) {
         try {
-            Class<?> sentinelReaderPlugInClass = Class.forName("org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM32N_ReaderPlugIn");
+            Class<?> sentinelReaderPlugInClass = Class.forName("org.esa.snap.core.dataio.dimap.DimapProductReaderPlugIn");
             ProductReaderPlugIn productReaderPlugIn = (ProductReaderPlugIn)sentinelReaderPlugInClass.newInstance();
 
-            File file1 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Sen2Three_Testdata_L2A\\S2A_USER_PRD_MSIL2A_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.SAFE\\S2A_USER_MTD_SAFL2A_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.xml");
+            File file1 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Forest_Mapping\\S2A_USER_MTD_SAFL2A_PDMC_20151207T180211_R108_V20151207T103733_20151207T103733_resampled.dim");
             Product firstInputProduct = productReaderPlugIn.createReaderInstance().readProductNodes(file1, null);
 
-            File file2 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Sen2Three_Testdata_L2A\\S2A_USER_PRD_MSIL2A_PDMC_20150812T211918_R065_V20150812T102902_20150806T102902.SAFE\\S2A_USER_MTD_SAFL2A_PDMC_20150812T211918_R065_V20150806T102902_20150806T102902.xml");
+            File file2 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Forest_Mapping\\S2A_USER_MTD_SAFL2A_PDMC_20160408T183838_R108_V20150829T103028_20150829T103028_resampled.dim");
             Product secondInputProduct = productReaderPlugIn.createReaderInstance().readProductNodes(file2, null);
 
             LandCoverModelRegistry landCoverModelRegistry = LandCoverModelRegistry.getInstance();

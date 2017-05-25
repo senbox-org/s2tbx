@@ -43,21 +43,17 @@ public class ObjectsSelectionOp extends Operator {
     @Parameter(itemAlias = "percentage", description = "The percentage of forrest coverage per object")
     private float percentage;
     private Product landCoverProduct;
-    private String LAND_COVER_NAME = "CCILandCover-2015";
+
     @Override
     public void initialize() throws OperatorException {
         validateSourceProduct();
         try{
             createLandCoverProduct();
             this.landCoverProduct = addLandCoverBand();
-
         }catch (Throwable e) {
             OperatorUtils.catchOperatorException(getId(), e);
         }
         this.targetProduct = this.landCoverProduct;
-        File file = new File("D:\\");
-        String formatName = "BEAM-DIMAP";
-        GPF.writeProduct(this.targetProduct, file, formatName, false, false, ProgressMonitor.NULL);
     }
 
     @Override
@@ -88,7 +84,7 @@ public class ObjectsSelectionOp extends Operator {
 
     private Product addLandCoverBand() {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("landCoverNames", LAND_COVER_NAME);
+        parameters.put("landCoverNames", ForestCoverChangeConstans.LAND_COVER_NAME);
         return GPF.createProduct("AddLandCover", parameters, this.landCoverProduct);
     }
 
