@@ -37,28 +37,11 @@ public class BandsExtractor {
     }
 
     public static Product generateBandsCompositing(Product firstSourceProduct, Product secondSourceProduct, Product thirdSourceProduct) {
-        Product targetProduct = new Product("BandsCompositing", firstSourceProduct.getProductType(),
-                                            firstSourceProduct.getSceneRasterWidth(), firstSourceProduct.getSceneRasterHeight());
-
-        copyBands(firstSourceProduct, targetProduct, "first");
-        copyBands(secondSourceProduct, targetProduct, "second");
-        copyBands(thirdSourceProduct, targetProduct, "third");
-
-        return targetProduct;
+        Product[] products = new Product[]{firstSourceProduct, secondSourceProduct, thirdSourceProduct};
+        Map<String, Object> parameters = new HashMap<>();
+        return GPF.createProduct("BandsCompositingOp", parameters, products, null);
     }
 
-    private static void copyBands(Product sourceProduct, Product targetProduct, String prefixTargetBandNames) {
-        int bandCount = sourceProduct.getBandGroup().getNodeCount();
-        for (int i=0; i<bandCount; i++) {
-            Band sourceBand = sourceProduct.getBandAt(i);
-            String sourceBandName = sourceBand.getName();
-            String targetBandName = prefixTargetBandNames + sourceBandName;
-            ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName, targetProduct, true);
-
-            Band targetBand = targetProduct.getBand(sourceBandName);
-            ProductUtils.copyGeoCoding(sourceBand, targetBand);
-        }
-    }
 
     public static Product computeNDVIBands(Product sourceProduct, String redSourceBand, float redFactor, String nirSourceBand, float nirFactor) {
         Map<String, Object> parameters = new HashMap<>();
