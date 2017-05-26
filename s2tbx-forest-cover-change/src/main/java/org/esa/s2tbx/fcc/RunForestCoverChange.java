@@ -1,23 +1,17 @@
 package org.esa.s2tbx.fcc;
 
-import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
+
 import org.esa.s2tbx.fcc.intern.BandsExtractor;
-import org.esa.s2tbx.grm.GenericRegionMergingOp;
+import org.esa.s2tbx.fcc.intern.ObjectsSelectionOp;
 import org.esa.s2tbx.landcover.dataio.CCILandCoverModelDescriptor;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.*;
-
-import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.gpf.GPF;
-import org.esa.snap.core.gpf.Operator;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.landcover.dataio.LandCoverModelRegistry;
 
 /**
@@ -76,6 +70,16 @@ public class RunForestCoverChange {
             System.out.println("ndviSecondProduct="+ndviSecondProduct);
             System.out.println("ndwiFirstProduct="+ndwiFirstProduct);
             System.out.println("ndwiSecondProduct="+ndwiSecondProduct);
+            Map<String, Object> parameters = new HashMap<>();
+            Map<String, Product> sourceProducts = new HashMap<>();
+            sourceProducts.put("sourceProduct", firstProduct);
+            ObjectsSelectionOp objSelOp =(ObjectsSelectionOp) GPF.getDefaultInstance().createOperator("ObjectsSelectionOp",parameters, sourceProducts, null);
+            Product targetProductSelection = objSelOp.getTargetProduct();
+            targetProductSelection.getBandAt(0).getSampleFloat(0, 0);
+            Map<Integer, ObjectsSelectionOp.PixelStatistic> statistics = objSelOp.getStatistics();
+            for (Map.Entry<Integer, ObjectsSelectionOp.PixelStatistic> pair : statistics.entrySet()) {
+              System.out.println(pair.getKey() + " " + pair.getValue().getTotalNumberPixels() + " " + pair.getValue().getPixelsInRange() );
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
