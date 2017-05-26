@@ -70,16 +70,8 @@ public class RunForestCoverChange {
             System.out.println("ndviSecondProduct="+ndviSecondProduct);
             System.out.println("ndwiFirstProduct="+ndwiFirstProduct);
             System.out.println("ndwiSecondProduct="+ndwiSecondProduct);
-            Map<String, Object> parameters = new HashMap<>();
-            Map<String, Product> sourceProducts = new HashMap<>();
-            sourceProducts.put("sourceProduct", firstProduct);
-            ObjectsSelectionOp objSelOp =(ObjectsSelectionOp) GPF.getDefaultInstance().createOperator("ObjectsSelectionOp",parameters, sourceProducts, null);
-            Product targetProductSelection = objSelOp.getTargetProduct();
-            targetProductSelection.getBandAt(0).getSampleFloat(0, 0);
-            Map<Integer, ObjectsSelectionOp.PixelStatistic> statistics = objSelOp.getStatistics();
-            for (Map.Entry<Integer, ObjectsSelectionOp.PixelStatistic> pair : statistics.entrySet()) {
-              System.out.println(pair.getKey() + " " + pair.getValue().getTotalNumberPixels() + " " + pair.getValue().getPixelsInRange() );
-            }
+
+            BandsExtractor.runObjectsSelectionOp(firstProduct);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -72,6 +72,20 @@ public class BandsExtractor {
 
     }
 
+    public static void runObjectsSelectionOp(Product firstProduct) {
+        Map<String, Object> parameters = new HashMap<>();
+        Map<String, Product> sourceProducts = new HashMap<>();
+        sourceProducts.put("sourceProduct", firstProduct);
+        ObjectsSelectionOp objSelOp = (ObjectsSelectionOp) GPF.getDefaultInstance().createOperator("ObjectsSelectionOp", parameters, sourceProducts, null);
+        Product targetProductSelection = objSelOp.getTargetProduct();
+        OperatorExecutor executor = OperatorExecutor.create(objSelOp);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+        Map<Integer, ObjectsSelectionOp.PixelStatistic> statistics = objSelOp.getStatistics();
+        for (Map.Entry<Integer, ObjectsSelectionOp.PixelStatistic> pair : statistics.entrySet()) {
+            System.out.println(pair.getKey() + " " + pair.getValue().getTotalNumberPixels() + " " + pair.getValue().getPixelsInRange());
+        }
+    }
+
     public static Product runSegmentation(Product sourceProduct) {
         ProductNodeGroup<Band> bandGroup = sourceProduct.getBandGroup();
         int bandCount = bandGroup.getNodeCount();
