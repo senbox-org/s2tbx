@@ -2,9 +2,15 @@ package org.esa.s2tbx.fcc.intern;
 
 import java.util.*;
 
+import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.core.SubProgressMonitor;
+import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.gpf.GPF;
+import org.esa.snap.core.gpf.Operator;
+import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.util.ProductUtils;
 
 /**
@@ -64,5 +70,33 @@ public class BandsExtractor {
         Map<String, Object> parameters = new HashMap<>();
         return GPF.createProduct("ObjectsSelectionOp", parameters, sourceProduct);
 
+    }
+
+    public static Product runSegmentation(Product sourceProduct) {
+        ProductNodeGroup<Band> bandGroup = sourceProduct.getBandGroup();
+        int bandCount = bandGroup.getNodeCount();
+        String[] sourceBandNames = new String[bandCount];
+        for (int i=0; i<bandCount; i++) {
+            sourceBandNames[i] = bandGroup.get(i).getName();
+        }
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("mergingCostCriterion", GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION);
+        parameters.put("regionMergingCriterion", GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION);
+        parameters.put("totalIterationsForSecondSegmentation", 75);
+        parameters.put("threshold", 100.0f);
+        parameters.put("spectralWeight", 0.5f);
+        parameters.put("shapeWeight", 0.5f);
+        parameters.put("sourceBandNames", sourceBandNames);
+
+        Map<String, Product> sourceProducts = new HashMap<String, Product>();
+        sourceProducts.put("sourceProduct", sourceProduct);
+
+        Operator operator = GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
+        Product targetProduct = operator.getTargetProduct();
+
+        OperatorExecutor executor = OperatorExecutor.create(operator);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        return targetProduct;
     }
 }
