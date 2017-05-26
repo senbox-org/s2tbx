@@ -50,7 +50,7 @@ public class BandsCompositingOp extends Operator {
                 this.sourceProducts[0].getSceneRasterWidth(), this.sourceProducts[0].getSceneRasterHeight());
 
         for(int index = 0; index < this.sourceProducts.length; index++) {
-            copyBands(this.sourceProducts[index], product, index + 1 + "_");
+            copyBands(this.sourceProducts[index], product,index + 1 + "_");
         }
         return product;
     }
@@ -61,10 +61,13 @@ public class BandsCompositingOp extends Operator {
             Band sourceBand = sourceProduct.getBandAt(i);
             String sourceBandName = sourceBand.getName();
             String targetBandName = prefixTargetBandNames + sourceBandName;
+
             ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName, targetProduct, true);
 
-            Band targetBand = targetProduct.getBand(sourceBandName);
+            Band targetBand = targetProduct.getBand(targetBandName);
             ProductUtils.copyGeoCoding(sourceBand, targetBand);
+            //targetBand.setValidPixelExpression(prefixTargetBandNames+sourceBand.getValidPixelExpression());
+            targetBand.setValidPixelExpression(null);
         }
     }
 

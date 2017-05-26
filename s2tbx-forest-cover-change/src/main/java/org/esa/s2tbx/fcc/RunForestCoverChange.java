@@ -54,9 +54,11 @@ public class RunForestCoverChange {
 
             Product bandsCompositingProduct = BandsExtractor.generateBandsCompositing(firstProduct, secondProduct, bandsDifferenceProduct);
             System.out.println("bandsCompositingProduct="+bandsCompositingProduct);
+            BandsExtractor.writeProduct(bandsCompositingProduct);
 
             Product targetProduct = BandsExtractor.runSegmentation(bandsCompositingProduct);
             System.out.println("segmentation targetProduct="+targetProduct);
+            BandsExtractor.writeProduct(targetProduct);
 
             Product ndviFirstProduct = BandsExtractor.computeNDVIBands(firstProduct, "B3", 1.0f, "B4", 1.0f);
             Product ndviSecondProduct = BandsExtractor.computeNDVIBands(secondProduct, "B3", 1.0f, "B4", 1.0f);
@@ -64,14 +66,12 @@ public class RunForestCoverChange {
             Product ndwiFirstProduct = BandsExtractor.computeNDWIBands(firstProduct, "B3", 1.0f, "B4", 1.0f);
             Product ndwiSecondProduct = BandsExtractor.computeNDWIBands(secondProduct, "B3", 1.0f, "B4", 1.0f);
 
-            Product landCoverProduct = BandsExtractor.computeObjectSelection(firstProduct);
-
             System.out.println("ndviFirstProduct="+ndviFirstProduct);
             System.out.println("ndviSecondProduct="+ndviSecondProduct);
             System.out.println("ndwiFirstProduct="+ndwiFirstProduct);
             System.out.println("ndwiSecondProduct="+ndwiSecondProduct);
-
-            BandsExtractor.runObjectsSelectionOp(firstProduct);
+           // targetProduct.setSceneGeoCoding(firstProduct.getSceneGeoCoding());
+           // BandsExtractor.runObjectsSelectionOp(targetProduct);
         } catch (Exception e) {
             e.printStackTrace();
         }

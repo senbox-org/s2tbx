@@ -1,17 +1,19 @@
 package org.esa.s2tbx.fcc.intern;
 
-import java.util.*;
+        import java.io.File;
+        import java.io.IOException;
+        import java.util.*;
 
-import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
-import org.esa.s2tbx.grm.GenericRegionMergingOp;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.gpf.GPF;
-import org.esa.snap.core.gpf.Operator;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
-import org.esa.snap.core.util.ProductUtils;
+        import com.bc.ceres.core.ProgressMonitor;
+        import com.bc.ceres.core.SubProgressMonitor;
+        import org.esa.s2tbx.grm.GenericRegionMergingOp;
+        import org.esa.snap.core.datamodel.Band;
+        import org.esa.snap.core.datamodel.Product;
+        import org.esa.snap.core.datamodel.ProductNodeGroup;
+        import org.esa.snap.core.gpf.GPF;
+        import org.esa.snap.core.gpf.Operator;
+        import org.esa.snap.core.gpf.internal.OperatorExecutor;
+        import org.esa.snap.core.util.ProductUtils;
 
 /**
  * @author Razvan Dumitrascu
@@ -48,7 +50,19 @@ public class BandsExtractor {
         return GPF.createProduct("BandsCompositingOp", parameters, products, null);
     }
 
-
+    public static void writeProduct(Product outputProduct){
+        File file = new File("D:\\Forest_cover_changes\\"+ outputProduct.getName());
+        if(!file.exists()){
+            try {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        String formatName = "BEAM-DIMAP";
+        GPF.writeProduct(outputProduct, file, formatName, false, false, ProgressMonitor.NULL);
+    }
     public static Product computeNDVIBands(Product sourceProduct, String redSourceBand, float redFactor, String nirSourceBand, float nirFactor) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("redFactor", redFactor);
@@ -96,8 +110,8 @@ public class BandsExtractor {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("mergingCostCriterion", GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION);
         parameters.put("regionMergingCriterion", GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION);
-        parameters.put("totalIterationsForSecondSegmentation", 75);
-        parameters.put("threshold", 100.0f);
+        parameters.put("totalIterationsForSecondSegmentation", 50);
+        parameters.put("threshold", 40.0f);
         parameters.put("spectralWeight", 0.5f);
         parameters.put("shapeWeight", 0.5f);
         parameters.put("sourceBandNames", sourceBandNames);
@@ -107,7 +121,7 @@ public class BandsExtractor {
 
         Operator operator = GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
         Product targetProduct = operator.getTargetProduct();
-
+        targetProduct.setSceneGeoCoding(sourceProduct.getSceneGeoCoding());
         OperatorExecutor executor = OperatorExecutor.create(operator);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 
