@@ -86,18 +86,16 @@ public class BandsExtractor {
 
     }
 
-    public static void runObjectsSelectionOp(Product firstProduct) {
+    public static void runColorFillerOp(Product firstProduct) {
         Map<String, Object> parameters = new HashMap<>();
+        parameters.put("percentagePixels", 95f);
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("sourceProduct", firstProduct);
-        ObjectsSelectionOp objSelOp = (ObjectsSelectionOp) GPF.getDefaultInstance().createOperator("ObjectsSelectionOp", parameters, sourceProducts, null);
-        Product targetProductSelection = objSelOp.getTargetProduct();
-        OperatorExecutor executor = OperatorExecutor.create(objSelOp);
+        ColorFillerOp colFillOp = (ColorFillerOp) GPF.getDefaultInstance().createOperator("ColorFillerOp", parameters, sourceProducts, null);
+        Product targetProductSelection = colFillOp.getTargetProduct();
+        OperatorExecutor executor = OperatorExecutor.create(colFillOp);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-        Map<Integer, ObjectsSelectionOp.PixelStatistic> statistics = objSelOp.getStatistics();
-        for (Map.Entry<Integer, ObjectsSelectionOp.PixelStatistic> pair : statistics.entrySet()) {
-            System.out.println(pair.getKey() + " " + pair.getValue().getTotalNumberPixels() + " " + pair.getValue().getPixelsInRange());
-        }
+        writeProduct(targetProductSelection);
     }
 
     public static Product runSegmentation(Product sourceProduct) {
@@ -110,8 +108,8 @@ public class BandsExtractor {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("mergingCostCriterion", GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION);
         parameters.put("regionMergingCriterion", GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION);
-        parameters.put("totalIterationsForSecondSegmentation", 50);
-        parameters.put("threshold", 40.0f);
+        parameters.put("totalIterationsForSecondSegmentation", 10);
+        parameters.put("threshold", 5.0f);
         parameters.put("spectralWeight", 0.5f);
         parameters.put("shapeWeight", 0.5f);
         parameters.put("sourceBandNames", sourceBandNames);

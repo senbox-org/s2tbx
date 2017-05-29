@@ -70,8 +70,7 @@ public class RunForestCoverChange {
             System.out.println("ndviSecondProduct="+ndviSecondProduct);
             System.out.println("ndwiFirstProduct="+ndwiFirstProduct);
             System.out.println("ndwiSecondProduct="+ndwiSecondProduct);
-           // targetProduct.setSceneGeoCoding(firstProduct.getSceneGeoCoding());
-           // BandsExtractor.runObjectsSelectionOp(targetProduct);
+            BandsExtractor.runColorFillerOp(targetProduct);
         } catch (Exception e) {
             e.printStackTrace();
         }

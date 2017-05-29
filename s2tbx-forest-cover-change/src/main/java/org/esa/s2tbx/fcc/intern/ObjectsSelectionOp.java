@@ -3,14 +3,9 @@ package org.esa.s2tbx.fcc.intern;
 import com.bc.ceres.core.ProgressMonitor;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -25,7 +20,6 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
-import org.esa.snap.engine_utilities.gpf.OperatorUtils;
 
 /**
  * @author Razvan Dumitrascu
@@ -67,17 +61,17 @@ public class ObjectsSelectionOp extends Operator {
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_CCI", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
-
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
     }
 
+
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle region  = targetTile.getRectangle();
+        Band segmentationBand = sourceProduct.getBandAt(0);
         for (int y = region.y; y < region.y + region.height; y++) {
             for (int x = region.x; x < region.x + region.width; x++) {
-                Band segmentationBand = sourceProduct.getBandAt(0);
                 int segmentationPixelValue = segmentationBand.getSampleInt(x,y);
                 PixelStatistic pixel = this.statistic.get(segmentationPixelValue);
                 if (pixel==null) {
@@ -96,6 +90,8 @@ public class ObjectsSelectionOp extends Operator {
     public Map<Integer,PixelStatistic> getStatistics(){
         return this.statistic;
     }
+
+    public Product getLandCoverProduct(){ return this.landCoverProduct; }
 
     private void validateSourceProduct() {
         GeoCoding geo = this.sourceProduct.getSceneGeoCoding();

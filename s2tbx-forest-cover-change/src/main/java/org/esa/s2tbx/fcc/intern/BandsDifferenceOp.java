@@ -62,6 +62,7 @@ public class BandsDifferenceOp extends Operator {
         this.targetProduct = new Product("BandsDifference", "difference", firstProductWidth, firstProductHeight);
         Dimension tileSize = JAI.getDefaultTileSize();
         this.targetProduct.setPreferredTileSize(tileSize);
+        this.targetProduct.setSceneGeoCoding(firstSourceProduct.getSceneGeoCoding());
 
         for (int i=0; i<firstBandCount; i++) {
             Band firstProductBand = firstSourceProduct.getBandAt(i);
