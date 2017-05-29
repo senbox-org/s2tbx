@@ -86,7 +86,7 @@ public class RunForestCoverChange {
         }
         ConsoleHandler rootHandler = new ConsoleHandler();
         rootHandler.setFormatter(new SimpleFormatter());
-        rootHandler.setLevel(Level.FINE);
+        rootHandler.setLevel(rootLogger.getLevel());
         rootLogger.addHandler(rootHandler);
     }
 }

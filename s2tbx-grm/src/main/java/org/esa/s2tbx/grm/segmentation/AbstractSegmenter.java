@@ -166,6 +166,7 @@ public abstract class AbstractSegmenter {
     private void updateMergingCostsUsingBF(Node node) {
         float minimumCost = Float.MAX_VALUE;
         int minimumIndex = -1;
+        float maximumMergingCost = Float.NaN;
         for (int i = 0; i < node.getEdgeCount(); i++) {
             Edge edge = node.getEdgeAt(i);
             // compute the cost if the neighbor is not expired and the cost has to be updated
@@ -175,6 +176,12 @@ public abstract class AbstractSegmenter {
                 // compute the cost if necessary
                 if (!edge.isCostUpdated()) {
                     float mergingCost = computeMergingCost(node, neighborR);
+
+                    if (Float.isNaN(maximumMergingCost) || Float.compare(maximumMergingCost, mergingCost) < 0) {
+                        maximumMergingCost = mergingCost;
+                    }
+
+
                     edge.setCost(mergingCost);
                     edge.setCostUpdated(true);
 
@@ -192,6 +199,10 @@ public abstract class AbstractSegmenter {
         }
         if (minimumIndex > 0) {
             node.swapEdges(0, minimumIndex);
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "The maximum merging cost using BF is " +maximumMergingCost+" and the threshold is " + this.threshold);
         }
     }
 
@@ -336,6 +347,7 @@ public abstract class AbstractSegmenter {
 
         int nodeCount = this.graph.getNodeCount();
         int minimumId = 0;
+        float maximumMergingCost = Float.NaN;
         for (int k = 0; k < nodeCount; k++) {
             Node node = this.graph.getNodeAt(k);
             float minimumCost = Float.MAX_VALUE;
@@ -350,12 +362,17 @@ public abstract class AbstractSegmenter {
 
                 // compute the cost if necessary
                 if (!edge.isCostUpdated() && (neighborNode.isMerged() || node.isMerged())) {
-                    float merginCost = computeMergingCost(node, neighborNode);
-                    edge.setCost(merginCost);
+                    float mergingCost = computeMergingCost(node, neighborNode);
+
+                    if (Float.isNaN(maximumMergingCost) || Float.compare(maximumMergingCost, mergingCost) < 0) {
+                        maximumMergingCost = mergingCost;
+                    }
+
+                    edge.setCost(mergingCost);
                     edge.setCostUpdated(true);
 
                     Edge edgeFromNeighborToR = neighborNode.findEdge(node);
-                    edgeFromNeighborToR.setCost(merginCost);
+                    edgeFromNeighborToR.setCost(mergingCost);
                     edgeFromNeighborToR.setCostUpdated(true);
                 }
 
@@ -374,6 +391,10 @@ public abstract class AbstractSegmenter {
             if (minimumIndex > 0) {
                 node.swapEdges(0, minimumIndex);
             }
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "The maximum merging cost using LMBF is " +maximumMergingCost+" and the threshold is " + this.threshold);
         }
 
         this.graph.resetMergedFlagToAllNodes(); // reset the merge flag for all the regions.
