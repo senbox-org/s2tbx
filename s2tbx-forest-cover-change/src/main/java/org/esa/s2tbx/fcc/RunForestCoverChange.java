@@ -1,17 +1,16 @@
 package org.esa.s2tbx.fcc;
 
 
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import org.esa.s2tbx.fcc.intern.BandsExtractor;
-import org.esa.s2tbx.fcc.intern.ObjectsSelectionOp;
 import org.esa.s2tbx.landcover.dataio.CCILandCoverModelDescriptor;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Product;
-
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.*;
-import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.landcover.dataio.LandCoverModelRegistry;
 
 /**

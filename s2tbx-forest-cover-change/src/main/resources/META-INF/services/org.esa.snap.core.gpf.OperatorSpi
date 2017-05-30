@@ -3,3 +3,4 @@ org.esa.s2tbx.fcc.intern.BandsExtractorOp$Spi
 org.esa.s2tbx.fcc.intern.BandsCompositingOp$Spi
 org.esa.s2tbx.fcc.intern.ObjectsSelectionOp$Spi
 org.esa.s2tbx.fcc.intern.ColorFillerOp$Spi
+org.esa.s2tbx.fcc.ForestCoverChangeOp$Spi

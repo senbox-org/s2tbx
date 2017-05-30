@@ -1,0 +1,34 @@
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Operators">
+            <file name="org-esa-s2tbx-fcc-Action.instance">
+                <attr name="instanceCreate"
+                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate"
+                      methodvalue="org.esa.s2tbx.fcc.FccAction.create"/>
+                <attr name="displayName"
+                      stringvalue="Forest Cover Change"/>
+                <attr name="dialogTitle"
+                      stringvalue="Forest Cover Change"/>
+                <attr name="operatorName"
+                      stringvalue="ForestCoverChangeOp"/>
+                <attr name="targetProductNameSuffix"
+                      stringvalue="_fcc"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="Raster">
+                <file name="org-esa-s2tbx-fcc-Action.shadow">
+                    <attr name="originalFile"
+                          stringvalue="Actions/Operators/org-esa-s2tbx-fcc-Action.instance"/>
+                    <attr name="position"
+                          intvalue="10010"/>
+                </file>
+        </folder>
+    </folder>
+
+
+</filesystem>

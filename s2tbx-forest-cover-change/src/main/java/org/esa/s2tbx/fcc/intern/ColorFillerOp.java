@@ -29,14 +29,14 @@ import org.esa.snap.core.util.ProductUtils;
 
 /**
  * @author Razvan Dumitrascu
- * @since 5.0.2
+ * @since 5.0.6
  */
 
 @OperatorMetadata(
         alias = "ColorFillerOp",
         version="1.0",
         category = "",
-        description = "Operaotr that fills the source product band's color with color from the Land COver Product band",
+        description = "Operaotr that fills the source product band's color with color from the Land Cover Product band",
         authors = "Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 

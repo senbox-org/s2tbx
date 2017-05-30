@@ -16,7 +16,6 @@ import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
-import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
@@ -79,7 +78,7 @@ public class ObjectsSelectionOp extends Operator {
                     this.statistic.put(segmentationPixelValue, pixel);
                 }
                 pixel.incrementTotalNumberPixels();
-                for(int index : ForestCoverChangeConstans.COVER_LABES)
+                for(int index : ForestCoverChangeConstans.COVER_LABElS)
                 if (index ==landCoverProduct.getBandAt(0).getSampleInt(x,y)) {
                     pixel.incrementPixelsInRange();
                 }
