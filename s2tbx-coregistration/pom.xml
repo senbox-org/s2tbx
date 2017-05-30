@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>s2tbx</artifactId>
+        <groupId>org.esa.s2tbx</groupId>
+        <version>6.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>s2tbx-coregistration</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Sentinel-2 Coregistration</name>
+    <description>Sentinel-2 Coregistration</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-rcp</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.googlecode.matrix-toolkits-java/mtj -->
+        <dependency>
+            <groupId>com.googlecode.matrix-toolkits-java</groupId>
+            <artifactId>mtj</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-commons</artifactId>
+            <version>6.0.0-SNAPSHOT</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+            <version>3.2.0-1</version>
+        </dependency>
+
+        <!-- JUnit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+                <version>4.1</version>
+                <extensions>true</extensions>
+                <configuration combine.self="override">
+                    <moduleType>normal</moduleType>
+                    <licenseName>GPL 3</licenseName>
+                    <licenseFile>${project.basedir}/../../../LICENSE.html</licenseFile>
+                    <useOSGiDependencies>false</useOSGiDependencies>
+                    <requiresRestart>false</requiresRestart>
+                    <keystore>${project.basedir}/../../../keystore/s2tbx.ks</keystore>
+                    <keystorealias>snap</keystorealias>
+                    <keystorepassword>snap-123</keystorepassword>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
