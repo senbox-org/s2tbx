@@ -114,6 +114,9 @@ public class L1bProductMetadataPSD13 extends GenericXmlMetadata implements IL1bP
     public Collection<String> getTiles() {
         String[] granuleList = getAttributeValues(L1bPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
         if(granuleList == null) {
+            granuleList = getAttributeValues(L1bPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
+        }
+        if(granuleList == null) {
             return null;
         }
         return new ArrayList<>(Arrays.asList(granuleList));
@@ -122,6 +125,9 @@ public class L1bProductMetadataPSD13 extends GenericXmlMetadata implements IL1bP
     @Override
     public S2DatastripFilename getDatastrip() {
         String[] datastripList = getAttributeValues(L1bPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
+        if(datastripList == null) {
+            datastripList = getAttributeValues(L1bPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
+        }
         if(datastripList == null) {
             return null;
         }
@@ -144,7 +150,13 @@ public class L1bProductMetadataPSD13 extends GenericXmlMetadata implements IL1bP
     public S2DatastripDirFilename getDatastripDir() {
 
         String[] granuleList = getAttributeValues(L1bPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
+        if(granuleList == null) {
+            granuleList = getAttributeValues(L1bPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
+        }
         String[] datastripList = getAttributeValues(L1bPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
+        if(datastripList == null) {
+            datastripList = getAttributeValues(L1bPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
+        }
         if(granuleList == null || datastripList == null) {
             return null;
         }
