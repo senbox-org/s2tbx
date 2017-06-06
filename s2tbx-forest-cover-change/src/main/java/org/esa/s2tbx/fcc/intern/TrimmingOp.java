@@ -33,14 +33,14 @@ public class TrimmingOp extends Operator{
     @TargetProduct
     private Product targetProduct;
 
-    private Map<Integer, PixelsSourceBands> statstics;
+    private Map<Integer, PixelSourceBands> statstics;
 
     @Override
     public void initialize() throws OperatorException {
 
     }
 
-    public Map<Integer, PixelsSourceBands> getStatistics(){
+    public Map<Integer, PixelSourceBands> getStatistics(){
         return this.statstics;
     }
     public static class Spi extends OperatorSpi {

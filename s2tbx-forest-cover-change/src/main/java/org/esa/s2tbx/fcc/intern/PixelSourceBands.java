@@ -4,16 +4,16 @@ package org.esa.s2tbx.fcc.intern;
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
-public class PixelsSourceBands {
+public class PixelSourceBands {
     private float valueB4Band;
     private float valueB8Band;
     private float valueB11Band;
     private float valueB12Band;
 
-    public PixelsSourceBands(){
+    public PixelSourceBands(){
 
     }
-    public PixelsSourceBands(float valueB4Band, float valueB8Band, float valueB11Band, float valueB12Band){
+    public PixelSourceBands(float valueB4Band, float valueB8Band, float valueB11Band, float valueB12Band){
         this.valueB4Band = valueB4Band;
         this.valueB8Band = valueB8Band;
         this.valueB11Band = valueB11Band;

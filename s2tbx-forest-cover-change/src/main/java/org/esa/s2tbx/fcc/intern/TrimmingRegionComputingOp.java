@@ -14,7 +14,6 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
 
 /**
  * @author Razvan Dumitrascu
@@ -42,7 +41,7 @@ public class TrimmingRegionComputingOp extends Operator {
     @Parameter(itemAlias = "bandsUsed", description = "the index from the sourceCompositionProduct to be used")
     int[] bandsUsed;
 
-    private Map<Integer, List<PixelsSourceBands>> statistics;
+    private Map<Integer, List<PixelSourceBands>> statistics;
 
     @Override
     public void initialize() throws OperatorException {
@@ -50,14 +49,18 @@ public class TrimmingRegionComputingOp extends Operator {
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle region = targetTile.getRectangle();
+        for (int y = region.y; y < region.y + region.height; y++) {
+            for (int x = region.x; x < region.x + region.width; x++) {
 
+            }
+        }
     }
 
     /**
      *
      * @return returns the HashMap containing the pixels values from the 4 bands selected per region
      */
-    public Map<Integer, List<PixelsSourceBands>> getPixelsStatistics(){
+    public Map<Integer, List<PixelSourceBands>> getPixelsStatistics(){
         return this.statistics;
     }
 
