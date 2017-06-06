@@ -127,14 +127,13 @@ public class ColorFillerOp extends Operator {
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle region  = targetTile.getRectangle();
         Band segmentationBand = sourceProduct.getBandAt(0);
-        Band landCoverBand = this.CCILandCoverProduct.getBandAt(0);
         for (int y = region.y; y < region.y + region.height; y++) {
             for (int x = region.x; x < region.x + region.width; x++) {
                 int sgmentationValue = segmentationBand.getSampleInt(x,y);
                 if(this.validRegions.contains(sgmentationValue)){
                     targetTile.setSample(x, y, sgmentationValue);
                 } else {
-                    targetTile.setSample(x, y, 0);
+                    targetTile.setSample(x, y, ForestCoverChangeConstans.NO_DATA_VALUE);
                 }
             }
         }
