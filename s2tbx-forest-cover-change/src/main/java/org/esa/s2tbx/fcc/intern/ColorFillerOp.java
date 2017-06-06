@@ -109,7 +109,7 @@ public class ColorFillerOp extends Operator {
         this.targetProduct.setSceneGeoCoding(this.sourceProduct.getSceneGeoCoding());
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
-        final ProductNodeGroup<IndexCoding> indexCodingGroup = this.CCILandCoverProduct.getIndexCodingGroup();
+       /* final ProductNodeGroup<IndexCoding> indexCodingGroup = this.CCILandCoverProduct.getIndexCodingGroup();
         for (int i = 0; i < indexCodingGroup.getNodeCount(); i++) {
             IndexCoding sourceIndexCoding = indexCodingGroup.get(i);
             ProductUtils.copyIndexCoding(sourceIndexCoding, this.targetProduct);
@@ -120,7 +120,7 @@ public class ColorFillerOp extends Operator {
             final IndexCoding destIndexCoding = this.targetProduct.getIndexCodingGroup().get(indexCodingName);
             this.targetProduct.getBandAt(0).setSampleCoding(destIndexCoding);
             this.targetProduct.getBandAt(0).setImageInfo(this.CCILandCoverProduct.getBandAt(0).getImageInfo());
-        }
+        }*/
     }
 
     @Override
@@ -130,10 +130,9 @@ public class ColorFillerOp extends Operator {
         Band landCoverBand = this.CCILandCoverProduct.getBandAt(0);
         for (int y = region.y; y < region.y + region.height; y++) {
             for (int x = region.x; x < region.x + region.width; x++) {
-
-                if(this.validRegions.contains(segmentationBand.getSampleInt(x,y))){
-                    int value = landCoverBand.getSampleInt(x,y);
-                    targetTile.setSample(x, y, value);
+                int sgmentationValue = segmentationBand.getSampleInt(x,y);
+                if(this.validRegions.contains(sgmentationValue)){
+                    targetTile.setSample(x, y, sgmentationValue);
                 } else {
                     targetTile.setSample(x, y, 0);
                 }
