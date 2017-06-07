@@ -33,13 +33,5 @@
             </folder>
         </folder>
     </folder>
-
-    <folder name="Services">
-        <folder name="JavaHelp">
-            <file name="org-esa-snap-s2tbx-reflectance2radiance-helpset.xml" url="helpset.xml">
-                <attr name="position" intvalue="2360"/>
-            </file>
-        </folder>
-    </folder>
-
+    
 </filesystem>
