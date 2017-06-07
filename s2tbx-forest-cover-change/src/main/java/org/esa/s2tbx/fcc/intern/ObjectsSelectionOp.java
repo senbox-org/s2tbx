@@ -78,9 +78,11 @@ public class ObjectsSelectionOp extends Operator {
                     this.statistic.put(segmentationPixelValue, pixel);
                 }
                 pixel.incrementTotalNumberPixels();
-                for(int index : ForestCoverChangeConstans.COVER_LABElS)
-                if (index ==landCoverProduct.getBandAt(0).getSampleInt(x,y)) {
-                    pixel.incrementPixelsInRange();
+                int landCoverPixelValue = landCoverProduct.getBandAt(0).getSampleInt(x, y);
+                for(int index : ForestCoverChangeConstans.COVER_LABElS) {
+                    if (index == landCoverPixelValue) {
+                        pixel.incrementPixelsInRange();
+                    }
                 }
             }
         }

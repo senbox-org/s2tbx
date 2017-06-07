@@ -36,7 +36,7 @@ public class TrimmingRegionComputingOp extends Operator {
 
     @SuppressWarnings({"PackageVisibleField"})
     @SourceProducts(alias = "source", description = "The source products to be used for trimming.")
-    private Product sourceProduct;
+    private Product segmentationSourceProduct;
 
     @SourceProducts(alias = "sourceCompositionProduct", description = "The source products to be used for trimming.")
     private Product sourceCompositionProduct;
@@ -59,11 +59,11 @@ public class TrimmingRegionComputingOp extends Operator {
     }
 
     private void createTargetProduct() {
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
+        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
 
-        this.targetProduct = new Product(this.sourceProduct.getName() + "_trim", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
+        this.targetProduct = new Product(this.segmentationSourceProduct.getName() + "_trim", this.segmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
@@ -82,11 +82,11 @@ public class TrimmingRegionComputingOp extends Operator {
                     this.sourceCompositionProduct.getName());
             throw new OperatorException(message);
         }
-        if(this.sourceCompositionProduct.getSceneRasterHeight() != this.sourceProduct.getSceneRasterHeight()||
-                this.sourceCompositionProduct.getSceneRasterWidth() != this.sourceProduct.getSceneRasterWidth()){
+        if(this.sourceCompositionProduct.getSceneRasterHeight() != this.segmentationSourceProduct.getSceneRasterHeight()||
+                this.sourceCompositionProduct.getSceneRasterWidth() != this.segmentationSourceProduct.getSceneRasterWidth()){
             String message = String.format("Source product '%s' must have the same scene raster size as the source Composition Product '%s'.\n" +
                             "Please consider resampling it so that the 2 products have the same size.",
-                    this.sourceProduct.getName(),this.sourceCompositionProduct.getName() );
+                    this.segmentationSourceProduct.getName(),this.sourceCompositionProduct.getName() );
             throw new OperatorException(message);
         }
 
@@ -102,7 +102,7 @@ public class TrimmingRegionComputingOp extends Operator {
 
         for (int y = region.y; y < region.y + region.height; y++) {
             for (int x = region.x; x < region.x + region.width; x++) {
-                int sourceProductPixelValue = this.sourceProduct.getBandAt(0).getSampleInt(x,y);
+                int sourceProductPixelValue = this.segmentationSourceProduct.getBandAt(0).getSampleInt(x,y);
                 if(sourceProductPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE){
                     List<PixelSourceBands> value =  this.statistics.get(sourceProductPixelValue);
                     PixelSourceBands pixels = new PixelSourceBands(firstBand.getSampleFloat(x,y),

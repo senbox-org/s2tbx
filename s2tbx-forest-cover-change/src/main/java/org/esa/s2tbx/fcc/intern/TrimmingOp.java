@@ -93,7 +93,7 @@ public class TrimmingOp extends Operator{
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("bandsUsed", this.bandsUsed);
         Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("sourceProduct", this.sourceProduct);
+        sourceProducts.put("segmentationSourceProduct", this.sourceProduct);
         sourceProducts.put("sourceCompositionProduct", this.sourceCompositionProduct);
         TrimmingRegionComputingOp trimRegOp = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
         Product targetProductSelection = trimRegOp.getTargetProduct();
