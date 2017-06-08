@@ -5,34 +5,34 @@ package org.esa.s2tbx.fcc.intern;
  * @since 5.0.6
  */
 public class PixelSourceBands {
-    private float valueB4Band;
-    private float valueB8Band;
-    private float valueB11Band;
-    private float valueB12Band;
+    private double meanValueB4Band;
+    private double meanvalueB8Band;
+    private double meanValueB11Band;
+    private double standardDeviationValueB8Band;
 
     public PixelSourceBands(){
 
     }
-    public PixelSourceBands(float valueB4Band, float valueB8Band, float valueB11Band, float valueB12Band){
-        this.valueB4Band = valueB4Band;
-        this.valueB8Band = valueB8Band;
-        this.valueB11Band = valueB11Band;
-        this.valueB12Band = valueB12Band;
+    public PixelSourceBands(double valueB4Band, double valueB8Band, double valueB11Band, double valueB12Band){
+        this.meanValueB4Band = valueB4Band;
+        this.meanvalueB8Band = valueB8Band;
+        this.meanValueB11Band = valueB11Band;
+        this.standardDeviationValueB8Band = valueB12Band;
     }
 
-    public float getValueB4Band(){
-        return this.valueB4Band;
+    public double getMeanValueB4Band(){
+        return this.meanValueB4Band;
     }
 
-    public float getValueB8Band(){
-        return this.valueB8Band;
+    public double getMeanValueB8Band(){
+        return this.meanvalueB8Band;
     }
 
-    public float getValueB11Band(){
-        return this.valueB11Band;
+    public double getMeanValueB11Band(){
+        return this.meanValueB11Band;
     }
 
-    public float getValueB12Band(){
-        return this.valueB12Band;
+    public double getStandardDeviationValueB8Band(){
+        return this.standardDeviationValueB8Band;
     }
 }

@@ -21,16 +21,16 @@ public class MahalanobisDistance {
 
     public void computerCenterPoint() {
         int numberOfPoints = this.points.size();
-        float meanValueB4Band = 0.0f;
-        float meanValueB8Band = 0.0f;
-        float meanValueB11Band = 0.0f;
-        float meanValueB12Band = 0.0f;
+        double meanValueB4Band = 0.0f;
+        double meanValueB8Band = 0.0f;
+        double meanValueB11Band = 0.0f;
+        double meanValueB12Band = 0.0f;
         for (int i=0; i<numberOfPoints; i++) {
             PixelSourceBands point = this.points.get(i);
-            meanValueB4Band += point.getValueB4Band();
-            meanValueB8Band += point.getValueB8Band();
-            meanValueB11Band += point.getValueB11Band();
-            meanValueB12Band += point.getValueB12Band();
+            meanValueB4Band += point.getMeanValueB4Band();
+            meanValueB8Band += point.getMeanValueB8Band();
+            meanValueB11Band += point.getMeanValueB11Band();
+            meanValueB12Band += point.getStandardDeviationValueB8Band();
         }
         meanValueB4Band = meanValueB4Band / numberOfPoints;
         meanValueB8Band = meanValueB8Band / numberOfPoints;
@@ -42,8 +42,8 @@ public class MahalanobisDistance {
         Matrix matrix = new Matrix(numberOfPoints, 2);
         for (int i=0; i<numberOfPoints; i++) {
             PixelSourceBands point = this.points.get(i);
-            matrix.setValueAt(i, 0, (point.getValueB4Band() - meanValueB4Band));
-            matrix.setValueAt(i, 1, (point.getValueB8Band() - meanValueB8Band));
+            matrix.setValueAt(i, 0, (float)(point.getMeanValueB4Band() - meanValueB4Band));
+            matrix.setValueAt(i, 1, (float)(point.getMeanValueB8Band() - meanValueB8Band));
 //            matrix.setValueAt(i, 2, (point.getValueB11Band() - meanValueB11Band));
 //            matrix.setValueAt(i, 3, (point.getValueB12Band() - meanValueB12Band));
         }

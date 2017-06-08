@@ -35,7 +35,7 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 public class TrimmingRegionComputingOp extends Operator {
 
     @SuppressWarnings({"PackageVisibleField"})
-    @SourceProducts(alias = "source", description = "The source products to be used for trimming.")
+    @SourceProducts(alias = "source", description = "The segmentation source product with segments that have more than 95% forest cover")
     private Product segmentationSourceProduct;
 
     @SourceProducts(alias = "sourceCompositionProduct", description = "The source products to be used for trimming.")
@@ -70,7 +70,7 @@ public class TrimmingRegionComputingOp extends Operator {
     }
 
     private void validateParametersInput() {
-        if(this.bandsUsed.length!=4){
+        if(this.bandsUsed.length!=3){
             throw new OperatorException("the number of bands must be equal to 4");
         }
     }
@@ -98,7 +98,7 @@ public class TrimmingRegionComputingOp extends Operator {
         Band firstBand  =  this.sourceCompositionProduct.getBandAt(bandsUsed[0]);
         Band secondBand =  this.sourceCompositionProduct.getBandAt(bandsUsed[1]);
         Band thirdBand  =  this.sourceCompositionProduct.getBandAt(bandsUsed[2]);
-        Band fourthBand =  this.sourceCompositionProduct.getBandAt(bandsUsed[3]);
+        Band fourthBand =  this.sourceCompositionProduct.getBandAt(bandsUsed[1]);
 
         for (int y = region.y; y < region.y + region.height; y++) {
             for (int x = region.x; x < region.x + region.width; x++) {
