@@ -4,21 +4,21 @@ package org.esa.s2tbx.fcc.mahalanobis;
  * Created by jcoravu on 6/6/2017.
  */
 public class Matrix {
-    private float data[][];
+    private double data[][];
 
     public Matrix(int rowCount, int columnCount) {
-        this.data = new float[rowCount][columnCount];
+        this.data = new double[rowCount][columnCount];
 
         for (int i=0; i<rowCount; i++) {
-            this.data[i] = new float[columnCount];
+            this.data[i] = new double[columnCount];
         }
     }
 
-    public void setValueAt(int rowIndex, int columnIndex, float cellValue) {
+    public void setValueAt(int rowIndex, int columnIndex, double cellValue) {
         this.data[rowIndex][columnIndex] = cellValue;
     }
 
-    public float getValueAt(int rowIndex, int columnIndex) {
+    public double getValueAt(int rowIndex, int columnIndex) {
         return this.data[rowIndex][columnIndex];
     }
 

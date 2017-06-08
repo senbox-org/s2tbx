@@ -69,7 +69,10 @@ public class RunForestCoverChange {
             System.out.println("ndviSecondProduct="+ndviSecondProduct);
             System.out.println("ndwiFirstProduct="+ndwiFirstProduct);
             System.out.println("ndwiSecondProduct="+ndwiSecondProduct);
-            BandsExtractor.runColorFillerOp(targetProduct);
+            Product targetProductColorFill = BandsExtractor.runColorFillerOp(targetProduct);
+
+            BandsExtractor.runTrimmingOp(bandsCompositingProduct, targetProductColorFill);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

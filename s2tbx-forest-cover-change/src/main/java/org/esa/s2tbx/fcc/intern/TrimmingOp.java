@@ -6,6 +6,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
+import org.esa.s2tbx.grm.segmentation.Node;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
@@ -13,7 +21,7 @@ import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
-import org.esa.snap.core.gpf.annotations.SourceProducts;
+import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 
@@ -32,72 +40,98 @@ import org.esa.snap.core.gpf.internal.OperatorExecutor;
 public class TrimmingOp extends Operator{
 
     @SuppressWarnings({"PackageVisibleField"})
-    @SourceProducts(alias = "source", description = "The segmentation source product with segments that have more than 95% forest cover")
+    @SourceProduct(alias = "source", description = "The segmentation source product with segments that have more than 95% forest cover")
     private Product sourceProduct;
 
-    @SourceProducts(alias = "sourceCompositionProduct ", description = "The source products to be used for trimming.")
+    @SourceProduct(alias = "sourceCompositionProduct ", description = "The source products to be used for trimming.")
     private Product sourceCompositionProduct;
 
     @TargetProduct
     private Product targetProduct;
 
     @Parameter(itemAlias = "bandsUsed", description = "the index from the sourceCompositionProduct to be used")
-    int[] bandsUsed;
+    private int[] bandsUsed;
 
-    private Map<Integer, PixelSourceBands> statistics;
-    private Map<Integer, List<PixelSourceBands>> trimmingStatistics;
+    private Int2ObjectMap<PixelSourceBands> statistics;
+    private Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics;
 
     @Override
     public void initialize() throws OperatorException {
         this.trimmingStatistics = computeTrimmingStatistics();
-        this.statistics = new HashMap<>();
         this.statistics = computeStatistics();
+
+        Object2DoubleMap<PixelSourceBands> result = MahalanobisDistance.computeMahalanobisSquareMatrix(this.statistics.values());
+
+//        Int2ObjectMap<PixelSourceBands> statistic = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
+        ObjectIterator<Int2ObjectMap.Entry<PixelSourceBands>> it = this.statistics.int2ObjectEntrySet().iterator();
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<PixelSourceBands> entry = it.next();
+        }
     }
 
-    public Map<Integer, PixelSourceBands> computeStatistics() {
-        Map<Integer, PixelSourceBands> statistic = new HashMap<>();
-        for(Map.Entry<Integer, List<PixelSourceBands>> pair: trimmingStatistics.entrySet()){
-            List<Double> meanBand4PixelValues = new ArrayList<>();
-            List<Double> meanBand8PixelValues = new ArrayList<>();
-            List<Double> meanBand11PixelValues = new ArrayList<>();
-            List<Double> standardDevationBand8PixelValues = new ArrayList<>();
-            for(PixelSourceBands pixelValues: pair.getValue()){
-                meanBand4PixelValues.add(pixelValues.getMeanValueB4Band());
-                meanBand8PixelValues.add(pixelValues.getMeanValueB8Band());
-                meanBand11PixelValues.add(pixelValues.getMeanValueB11Band());
-                standardDevationBand8PixelValues.add(pixelValues.getStandardDeviationValueB8Band());
+    public Int2ObjectMap<PixelSourceBands> computeStatistics() {
+        Int2ObjectMap<PixelSourceBands> statistics = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
+        ObjectIterator<Int2ObjectMap.Entry<List<PixelSourceBands>>> it = this.trimmingStatistics.int2ObjectEntrySet().iterator();
+
+//        double averageSumB4PixelValue = 0.0d;
+//        double averageSumB8PixelValue = 0.0d;
+//        double averageSumB11PixelValue = 0.0d;
+//        double averageSumStandardDeviationB8PixelValue = 0.0d;
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<List<PixelSourceBands>> entry = it.next();
+            List<PixelSourceBands> pixelsList = entry.getValue();
+
+            double sumB4PixelValue = 0.0d;
+            double sumB8PixelValue = 0.0d;
+            double sumB11PixelValue = 0.0d;
+            double sumStandardDeviationB8PixelValue = 0.0d;
+            for (PixelSourceBands pixelValues: pixelsList) {
+                sumB4PixelValue += pixelValues.getMeanValueB4Band();
+                sumB8PixelValue += pixelValues.getMeanValueB8Band();
+                sumB11PixelValue += pixelValues.getMeanValueB11Band();
+                sumStandardDeviationB8PixelValue += pixelValues.getStandardDeviationValueB8Band();
             }
-            double averageB4PixelValue = computeAveragePixel(meanBand4PixelValues);
-            double averageB8PixelValue = computeAveragePixel(meanBand8PixelValues);
-            double averageB11PixelValue = computeAveragePixel(meanBand11PixelValues);
-            double averageB12PixelValue = ComputeStandardDeviation(standardDevationBand8PixelValues);
-            PixelSourceBands averagePerBand = new PixelSourceBands(averageB4PixelValue,
-                                                                   averageB8PixelValue,
-                                                                   averageB11PixelValue,
-                                                                   averageB12PixelValue);
-            statistic.put(pair.getKey(), averagePerBand);
+
+            double averageB4PixelValue = sumB4PixelValue / pixelsList.size();
+            double averageB8PixelValue = sumB8PixelValue / pixelsList.size();
+            double averageB11PixelValue = sumB11PixelValue / pixelsList.size();
+            // compute the standard deviation
+            double averageStandardDeviationB8PixelValue = sumStandardDeviationB8PixelValue / pixelsList.size();
+            double sum = 0.0d;
+            for (PixelSourceBands pixelValues: pixelsList) {
+                double value = pixelValues.getStandardDeviationValueB8Band() - averageStandardDeviationB8PixelValue;
+                sum += Math.pow((value), 2);
+            }
+            double average = sum / (double)pixelsList.size();
+            averageStandardDeviationB8PixelValue = Math.sqrt(average);
+
+//            averageSumB4PixelValue += averageB4PixelValue;
+//            averageSumB8PixelValue += averageB8PixelValue;
+//            averageSumB11PixelValue += averageB11PixelValue;
+//            averageSumStandardDeviationB8PixelValue += averageStandardDeviationB8PixelValue;
+
+            PixelSourceBands averagePerBand = new PixelSourceBands(averageB4PixelValue, averageB8PixelValue, averageB11PixelValue, averageStandardDeviationB8PixelValue);
+            statistics.put(entry.getIntKey(), averagePerBand);
         }
-        return statistic;
+
+//        double centeredAverageB4PixelValue = averageSumB4PixelValue / (double) statistics.size();
+//        double centeredAverageB8PixelValue = averageSumB8PixelValue / (double) statistics.size();
+//        double centeredAverageB11PixelValue = averageSumB11PixelValue / (double) statistics.size();
+//        double centeredAverageStandardDeviationB8PixelValue = averageSumStandardDeviationB8PixelValue / (double) statistics.size();
+
+        return statistics;
     }
 
-    private double ComputeStandardDeviation(List<Double> standardDevationBand8PixelValues) {
-       double mean  = computeAveragePixel(standardDevationBand8PixelValues);
-        List<Double> l = new ArrayList<>();
-        for(double stdDevBand11PixelValues : standardDevationBand8PixelValues){
-            l.add(Math.pow((stdDevBand11PixelValues-mean),2));
+    private static void computeDistance(Int2ObjectMap<PixelSourceBands> statistics, double centeredAverageB4PixelValue, double centeredAverageB8PixelValue,
+                                 double centeredAverageB11PixelValue, double centeredAverageStandardDeviationB8PixelValue) {
+
+        ObjectIterator<Int2ObjectMap.Entry<PixelSourceBands>> it = statistics.int2ObjectEntrySet().iterator();
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<PixelSourceBands> entry = it.next();
         }
-        return Math.sqrt(computeAveragePixel(l));
     }
 
-    private static double computeAveragePixel(List<Double> pixelValues) {
-        float sum = 0;
-        for (int i=0; i< pixelValues.size(); i++) {
-            sum += i;
-        }
-        return sum / pixelValues.size();
-    }
-
-    private Map<Integer,List<PixelSourceBands>> computeTrimmingStatistics() {
+    private Int2ObjectMap<List<PixelSourceBands>> computeTrimmingStatistics() {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("bandsUsed", this.bandsUsed);
         Map<String, Product> sourceProducts = new HashMap<>();
@@ -110,7 +144,7 @@ public class TrimmingOp extends Operator{
         return trimRegOp.getPixelsStatistics();
     }
 
-    public Map<Integer, PixelSourceBands> getStatistics(){
+    public Map<Integer, PixelSourceBands> getStatistics() {
         return this.statistics;
     }
 

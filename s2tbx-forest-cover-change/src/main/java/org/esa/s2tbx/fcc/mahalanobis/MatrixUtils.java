@@ -18,7 +18,7 @@ public class MatrixUtils {
         return transposedMatrix;
     }
 
-    public static Matrix multiplyByConstant(Matrix matrix, float constant) {
+    public static Matrix multiplyByConstant(Matrix matrix, double constant) {
         Matrix mat = new Matrix(matrix.getRowCount(), matrix.getColumnCount());
         for (int i = 0; i < matrix.getRowCount(); i++) {
             for (int j = 0; j < matrix.getColumnCount(); j++) {
@@ -51,7 +51,7 @@ public class MatrixUtils {
         return mat;
     }
 
-    private static float determinant(Matrix matrix) {
+    private static double determinant(Matrix matrix) {
         if (!matrix.isSquare()) {
             throw new IllegalArgumentException("The matrix must be square.");
         }
@@ -61,7 +61,7 @@ public class MatrixUtils {
         if (matrix.getColumnCount() == 2) {
             return (matrix.getValueAt(0, 0) * matrix.getValueAt(1, 1)) - (matrix.getValueAt(0, 1) * matrix.getValueAt(1, 0));
         }
-        float sum = 0.0f;
+        double sum = 0.0f;
         for (int i=0; i<matrix.getColumnCount(); i++) {
             sum += changeSign(i) * matrix.getValueAt(0, i) * determinant(createSubMatrix(matrix, 0, i));
         }
@@ -70,7 +70,7 @@ public class MatrixUtils {
 
     public static Matrix inverse(Matrix matrix) {
         Matrix tempMatrix = transpose(cofactor(matrix));
-        float matrixDeterminat = determinant(matrix);
+        double matrixDeterminat = determinant(matrix);
         return multiplyByConstant(tempMatrix, 1.0f/matrixDeterminat);
     }
 
@@ -107,7 +107,7 @@ public class MatrixUtils {
 
         for (int i=0;i<multipliedMatrix.getRowCount();i++) {
             for (int j=0;j<multipliedMatrix.getColumnCount();j++) {
-                float sum = 0.0f;
+                double sum = 0.0f;
                 for (int k=0;k<matrix1.getColumnCount();k++) {
                     sum += matrix1.getValueAt(i, k) * matrix2.getValueAt(k, j);
                 }

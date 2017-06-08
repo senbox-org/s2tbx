@@ -86,7 +86,23 @@ public class BandsExtractor {
 
     }
 
-    public static void runColorFillerOp(Product firstProduct) {
+    public static Product runTrimmingOp(Product sourceCompositionProduct, Product targetProductSelection) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("bandsUsed", new int[]{8, 9, 10});
+        Map<String, Product> sourceProducts = new HashMap<>();
+        sourceProducts.put("sourceProduct", targetProductSelection);
+        sourceProducts.put("sourceCompositionProduct", sourceCompositionProduct);
+        TrimmingOp colFillOp = (TrimmingOp) GPF.getDefaultInstance().createOperator("TrimmingOp", parameters, sourceProducts, null);
+        Product targetProductSelection11 = colFillOp.getTargetProduct();
+        OperatorExecutor executor = OperatorExecutor.create(colFillOp);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        //writeProduct(targetProductSelection11);
+
+        return targetProductSelection11;
+    }
+
+    public static Product runColorFillerOp(Product firstProduct) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("percentagePixels", 95f);
         Map<String, Product> sourceProducts = new HashMap<>();
@@ -95,7 +111,10 @@ public class BandsExtractor {
         Product targetProductSelection = colFillOp.getTargetProduct();
         OperatorExecutor executor = OperatorExecutor.create(colFillOp);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
         writeProduct(targetProductSelection);
+
+        return targetProductSelection;
     }
 
     public static Product runSegmentation(Product sourceProduct) {

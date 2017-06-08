@@ -1,8 +1,15 @@
 package org.esa.s2tbx.fcc.mahalanobis;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -19,33 +26,37 @@ public class MahalanobisDistance {
         this.points.add(pointToAdd);
     }
 
-    public void computerCenterPoint() {
-        int numberOfPoints = this.points.size();
-        double meanValueB4Band = 0.0f;
-        double meanValueB8Band = 0.0f;
-        double meanValueB11Band = 0.0f;
-        double meanValueB12Band = 0.0f;
-        for (int i=0; i<numberOfPoints; i++) {
-            PixelSourceBands point = this.points.get(i);
+    public static Object2DoubleMap<PixelSourceBands> computeMahalanobisSquareMatrix(Collection<PixelSourceBands> points) {
+        double meanValueB4Band = 0.0d;
+        double meanValueB8Band = 0.0d;
+        double meanValueB11Band = 0.0d;
+        double standardDeviationValueB11Band = 0.0d;
+        for (PixelSourceBands point : points) {
             meanValueB4Band += point.getMeanValueB4Band();
             meanValueB8Band += point.getMeanValueB8Band();
             meanValueB11Band += point.getMeanValueB11Band();
-            meanValueB12Band += point.getStandardDeviationValueB8Band();
+            standardDeviationValueB11Band += point.getStandardDeviationValueB8Band();
         }
-        meanValueB4Band = meanValueB4Band / numberOfPoints;
-        meanValueB8Band = meanValueB8Band / numberOfPoints;
-        meanValueB11Band = meanValueB11Band / numberOfPoints;
-        meanValueB12Band = meanValueB12Band / numberOfPoints;
+
+        int numberOfPoints = points.size();
+
+        meanValueB4Band = meanValueB4Band / (double)numberOfPoints;
+        meanValueB8Band = meanValueB8Band / (double)numberOfPoints;
+        meanValueB11Band = meanValueB11Band / (double)numberOfPoints;
+        standardDeviationValueB11Band = standardDeviationValueB11Band / (double)numberOfPoints;
 
         System.out.println("meanValueB4Band="+meanValueB4Band+"  meanValueB8Band="+meanValueB8Band);
 
-        Matrix matrix = new Matrix(numberOfPoints, 2);
-        for (int i=0; i<numberOfPoints; i++) {
-            PixelSourceBands point = this.points.get(i);
-            matrix.setValueAt(i, 0, (float)(point.getMeanValueB4Band() - meanValueB4Band));
-            matrix.setValueAt(i, 1, (float)(point.getMeanValueB8Band() - meanValueB8Band));
-//            matrix.setValueAt(i, 2, (point.getValueB11Band() - meanValueB11Band));
-//            matrix.setValueAt(i, 3, (point.getValueB12Band() - meanValueB12Band));
+        Matrix matrix = new Matrix(numberOfPoints, 4);
+        Int2ObjectMap<PixelSourceBands> map = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
+        int index = -1;
+        for (PixelSourceBands point : points) {
+            index++;
+            map.put(index, point);
+            matrix.setValueAt(index, 0, (point.getMeanValueB4Band() - meanValueB4Band));
+            matrix.setValueAt(index, 1, (point.getMeanValueB8Band() - meanValueB8Band));
+            matrix.setValueAt(index, 2, (point.getMeanValueB11Band() - meanValueB11Band));
+            matrix.setValueAt(index, 3, (point.getStandardDeviationValueB8Band() - standardDeviationValueB11Band));
         }
         Matrix transposeMatrix = MatrixUtils.transpose(matrix);
 
@@ -54,9 +65,21 @@ public class MahalanobisDistance {
         Matrix inverseMatrix = MatrixUtils.inverse(covarianceMatrix);
         Matrix resultMatrix = MatrixUtils.multiply(matrix, inverseMatrix);
         Matrix squaredMahalanobisMatrix = MatrixUtils.multiply(resultMatrix, transposeMatrix);
+        Object2DoubleMap<PixelSourceBands> result = new Object2DoubleOpenHashMap<PixelSourceBands>();
+        int matrixSize = squaredMahalanobisMatrix.getColumnCount();
+        for (int i=0; i<matrixSize; i++) {
+            double value = squaredMahalanobisMatrix.getValueAt(i, i);
+            PixelSourceBands point = map.get(i);
+            result.put(point, Math.sqrt(value));
+        }
+        return result;
     }
 
-    private Matrix computeCovariance(Matrix matrix, int inputRowCount) {
+    public void computerCenterPoint() {
+        computeMahalanobisSquareMatrix(this.points);
+    }
+
+    private static Matrix computeCovariance(Matrix matrix, int inputRowCount) {
         float value = 1.0f / (float)(inputRowCount-1);
         int rowCount = matrix.getRowCount();
         int columnCount = matrix.getColumnCount();
