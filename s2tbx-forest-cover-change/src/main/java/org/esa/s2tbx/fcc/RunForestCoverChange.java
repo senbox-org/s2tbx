@@ -25,10 +25,10 @@ public class RunForestCoverChange {
             Class<?> sentinelReaderPlugInClass = Class.forName("org.esa.snap.core.dataio.dimap.DimapProductReaderPlugIn");
             ProductReaderPlugIn productReaderPlugIn = (ProductReaderPlugIn)sentinelReaderPlugInClass.newInstance();
 
-            File file1 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Forest_Mapping\\S2A_USER_MTD_SAFL2A_PDMC_20151207T180211_R108_V20151207T103733_20151207T103733_resampled.dim");
+            File file1 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Forest_Mapping\\S2A_OPER_MTD_L1C_TL_SGS__20160404T132741_A004094_T34TFQ_resampled.dim");
             Product firstInputProduct = productReaderPlugIn.createReaderInstance().readProductNodes(file1, null);
 
-            File file2 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Forest_Mapping\\S2A_USER_MTD_SAFL2A_PDMC_20160408T183838_R108_V20150829T103028_20150829T103028_resampled.dim");
+            File file2 = new File("\\\\cv-dev-srv01\\Satellite_Imagery\\Forest_Mapping\\S2A_MSIL1C_20170409T092031_N0204_R093_T34TFQ_20170409T092026_resampled.dim");
             Product secondInputProduct = productReaderPlugIn.createReaderInstance().readProductNodes(file2, null);
 
             LandCoverModelRegistry landCoverModelRegistry = LandCoverModelRegistry.getInstance();
