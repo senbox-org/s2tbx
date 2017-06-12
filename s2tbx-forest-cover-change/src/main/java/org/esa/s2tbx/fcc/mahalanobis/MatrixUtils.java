@@ -52,26 +52,16 @@ public class MatrixUtils {
     }
 
     private static double determinant(Matrix matrix) {
-        if (!matrix.isSquare()) {
-            throw new IllegalArgumentException("The matrix must be square.");
-        }
-        if (matrix.getColumnCount() == 1) {
-            return matrix.getValueAt(0, 0);
-        }
-        if (matrix.getColumnCount() == 2) {
-            return (matrix.getValueAt(0, 0) * matrix.getValueAt(1, 1)) - (matrix.getValueAt(0, 1) * matrix.getValueAt(1, 0));
-        }
-        double sum = 0.0f;
-        for (int i=0; i<matrix.getColumnCount(); i++) {
-            sum += changeSign(i) * matrix.getValueAt(0, i) * determinant(createSubMatrix(matrix, 0, i));
-        }
-        return sum;
+        return matrix.computeDeterminant();
     }
 
     public static Matrix inverse(Matrix matrix) {
         Matrix tempMatrix = transpose(cofactor(matrix));
-        double matrixDeterminat = determinant(matrix);
-        return multiplyByConstant(tempMatrix, 1.0f/matrixDeterminat);
+        double matrixDeterminant = determinant(matrix);
+        if (matrixDeterminant == 0.0d) {
+            return null;
+        }
+        return multiplyByConstant(tempMatrix, 1.0d/matrixDeterminant);
     }
 
     public static Matrix subtract(Matrix matrix1, Matrix matrix2) {

@@ -8,7 +8,7 @@ public class ChiSquareDistribution {
     private ChiSquareDistribution() {
     }
 
-    public double computeChiSquare(int degreesOfFreedom, double criticalValue) {
+    public static double computeChiSquare(int degreesOfFreedom, double criticalValue) {
         if (criticalValue < 0 || degreesOfFreedom < 1) {
             return 0.0;
         }

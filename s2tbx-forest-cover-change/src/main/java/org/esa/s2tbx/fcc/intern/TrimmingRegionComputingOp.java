@@ -36,7 +36,6 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
         authors = "Razvan Dumitrascu, Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class TrimmingRegionComputingOp extends Operator {
-
     @SuppressWarnings({"PackageVisibleField"})
     @SourceProduct(alias = "source", description = "The segmentation source product with segments that have more than 95% forest cover")
     private Product segmentationSourceProduct;
@@ -52,13 +51,15 @@ public class TrimmingRegionComputingOp extends Operator {
 
     private Int2ObjectMap<List<PixelSourceBands>> statistics;
 
+    public TrimmingRegionComputingOp() {
+    }
+
     @Override
     public void initialize() throws OperatorException {
         validateSourceProducts();
         validateParametersInput();
         this.statistics = new Int2ObjectLinkedOpenHashMap<List<PixelSourceBands>>();
         createTargetProduct();
-        this.targetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
     }
 
     private void createTargetProduct() {
@@ -70,11 +71,12 @@ public class TrimmingRegionComputingOp extends Operator {
         this.targetProduct.setPreferredTileSize(tileSize);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
+        this.targetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
     }
 
     private void validateParametersInput() {
-        if(this.bandsUsed.length!=3){
-            throw new OperatorException("the number of bands must be equal to 4");
+        if (this.bandsUsed.length != 3) {
+            throw new OperatorException("The number of bands must be equal to 3.");
         }
     }
 
@@ -92,35 +94,30 @@ public class TrimmingRegionComputingOp extends Operator {
                     this.segmentationSourceProduct.getName(),this.sourceCompositionProduct.getName() );
             throw new OperatorException(message);
         }
-
     }
 
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
-        Rectangle region = targetTile.getRectangle();
+        Rectangle tileRegion = targetTile.getRectangle();
         Band firstBand = this.sourceCompositionProduct.getBandAt(bandsUsed[0]);
         Band secondBand = this.sourceCompositionProduct.getBandAt(bandsUsed[1]);
         Band thirdBand = this.sourceCompositionProduct.getBandAt(bandsUsed[2]);
+        Band segmentationBand = this.segmentationSourceProduct.getBandAt(0);
 
-        for (int y = region.y; y < region.y + region.height; y++) {
-            for (int x = region.x; x < region.x + region.width; x++) {
-                int sourceProductPixelValue = this.segmentationSourceProduct.getBandAt(0).getSampleInt(x,y);
-                if(sourceProductPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE){
-                    List<PixelSourceBands> value =  this.statistics.get(sourceProductPixelValue);
-                    PixelSourceBands pixels = new PixelSourceBands(firstBand.getSampleFloat(x,y),
-                                                                   secondBand.getSampleFloat(x,y),
-                                                                   thirdBand.getSampleFloat(x,y),
-                                                                   secondBand.getSampleFloat(x,y));
-
-                    if (pixels.getMeanValueB4Band() != 0.0d || pixels.getMeanValueB8Band() != 0.0d || pixels.getMeanValueB11Band() != 0.0d || pixels.getStandardDeviationValueB8Band() != 0.0d) {
-                        System.out.println("!= zero");
+        for (int y = tileRegion.y; y < tileRegion.y + tileRegion.height; y++) {
+            for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
+                int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
+                if (segmentationPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE) {
+                    synchronized (this.statistics) {
+                        List<PixelSourceBands> value = this.statistics.get(segmentationPixelValue);
+                        if (value == null) {
+                            value = new ArrayList<>();
+                            this.statistics.put(segmentationPixelValue, value);
+                        }
+                        PixelSourceBands pixels = new PixelSourceBands(firstBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y),
+                                                                       thirdBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y));
+                        value.add(pixels);
                     }
-
-                    if (value == null) {
-                        value = new ArrayList<>();
-                        statistics.put(sourceProductPixelValue, value);
-                    }
-                    value.add(pixels);
                 }
             }
         }

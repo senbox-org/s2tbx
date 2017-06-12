@@ -31,7 +31,7 @@ public class BandsExtractorOp extends Operator {
     private Product targetProduct;
 
     @Parameter(itemAlias = "indexes", description = "Specifies the bands in the target product to be maintained.")
-    int[] indexes;
+    private int[] indexes;
 
     @Override
     public void initialize() throws OperatorException {

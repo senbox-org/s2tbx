@@ -6,7 +6,12 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.fcc.intern.BandsExtractor;
+import org.esa.s2tbx.fcc.intern.PixelSourceBands;
+import org.esa.s2tbx.fcc.intern.TrimmingHelper;
 import org.esa.s2tbx.landcover.dataio.CCILandCoverModelDescriptor;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Product;
@@ -34,9 +39,6 @@ public class RunForestCoverChange {
             LandCoverModelRegistry landCoverModelRegistry = LandCoverModelRegistry.getInstance();
             landCoverModelRegistry.addDescriptor(new CCILandCoverModelDescriptor());
 
-            System.out.println("firstInputProduct="+firstInputProduct);
-            System.out.println("secondInputProduct="+secondInputProduct);
-
             int[] indexes = new int[] {2, 3, 7, 11};
 
             Product firstProduct = BandsExtractor.generateBandsExtractor(firstInputProduct, indexes);
@@ -47,32 +49,44 @@ public class RunForestCoverChange {
 
             Product bandsDifferenceProduct = BandsExtractor.generateBandsDifference(firstProduct, secondProduct);
 
-            System.out.println("firstProduct="+firstProduct);
-            System.out.println("secondProduct="+secondProduct);
-            System.out.println("bandsDifferenceProduct="+bandsDifferenceProduct);
+            Product segmentationAllBandsTargetProduct = BandsExtractor.runSegmentation(firstProduct, secondProduct, bandsDifferenceProduct);
+            BandsExtractor.writeProduct(segmentationAllBandsTargetProduct, "severalSourcesGenericRegionMergingOp");
 
-            Product bandsCompositingProduct = BandsExtractor.generateBandsCompositing(firstProduct, secondProduct, bandsDifferenceProduct);
-            System.out.println("bandsCompositingProduct="+bandsCompositingProduct);
-            BandsExtractor.writeProduct(bandsCompositingProduct);
+            Product firstSegmentationProduct = BandsExtractor.runSegmentation(firstProduct);
+            System.out.println("segmentation segmentationFirstBandsTargetProduct="+firstSegmentationProduct);
+            BandsExtractor.writeProduct(firstSegmentationProduct, "firstSegmentation");
 
-            Product targetProduct = BandsExtractor.runSegmentation(bandsCompositingProduct);
-            System.out.println("segmentation targetProduct="+targetProduct);
-            BandsExtractor.writeProduct(targetProduct);
+            Product secondSegmentationProduct = BandsExtractor.runSegmentation(secondProduct);
+            System.out.println("segmentation segmentationSecondBandsTargetProduct="+secondSegmentationProduct);
+            BandsExtractor.writeProduct(secondSegmentationProduct, "secondSegmentation");
 
-            Product ndviFirstProduct = BandsExtractor.computeNDVIBands(firstProduct, "B3", 1.0f, "B4", 1.0f);
-            Product ndviSecondProduct = BandsExtractor.computeNDVIBands(secondProduct, "B3", 1.0f, "B4", 1.0f);
+            Product firstProductColorFill = BandsExtractor.runColorFillerOp(firstSegmentationProduct);
+            BandsExtractor.writeProduct(firstProductColorFill, "firstProductColorFill");
 
-            Product ndwiFirstProduct = BandsExtractor.computeNDWIBands(firstProduct, "B3", 1.0f, "B4", 1.0f);
-            Product ndwiSecondProduct = BandsExtractor.computeNDWIBands(secondProduct, "B3", 1.0f, "B4", 1.0f);
+            Product secondProductColorFill = BandsExtractor.runColorFillerOp(secondSegmentationProduct);
+            BandsExtractor.writeProduct(secondProductColorFill, "firstProductColorFill");
 
-            System.out.println("ndviFirstProduct="+ndviFirstProduct);
-            System.out.println("ndviSecondProduct="+ndviSecondProduct);
-            System.out.println("ndwiFirstProduct="+ndwiFirstProduct);
-            System.out.println("ndwiSecondProduct="+ndwiSecondProduct);
-            Product targetProductColorFill = BandsExtractor.runColorFillerOp(targetProduct);
+//            Product targetProductColorFill = BandsExtractor.runColorFillerOp(segmentationAllBandsTargetProduct);
 
-            BandsExtractor.runTrimmingOp(bandsCompositingProduct, targetProductColorFill);
+            int[] bandsUsed = new int[] {0, 1, 2};
 
+            Int2ObjectMap<PixelSourceBands> firstTrimmingStatistics = TrimmingHelper.doTrimming(firstProductColorFill, firstProduct, bandsUsed);
+//            Int2ObjectMap<PixelSourceBands> firstTrimmingStatistics = TrimmingHelper.doTrimming(targetProductColorFill, firstProduct, bandsUsed);
+            IntSet firstSegmentationTrimmingRegionKeys = firstTrimmingStatistics.keySet();
+            System.out.print("firstSegmentationTrimmingRegionKeys.size="+firstSegmentationTrimmingRegionKeys.size());
+
+            Int2ObjectMap<PixelSourceBands> secondTrimmingStatistics = TrimmingHelper.doTrimming(secondProductColorFill, secondProduct, bandsUsed);
+//            Int2ObjectMap<PixelSourceBands> secondTrimmingStatistics = TrimmingHelper.doTrimming(targetProductColorFill, secondProduct, bandsUsed);
+            IntSet secondSegmentationTrimmingRegionKeys = secondTrimmingStatistics.keySet();
+            System.out.print("secondSegmentationTrimmingRegionKeys.size="+secondSegmentationTrimmingRegionKeys.size());
+
+
+
+
+            Product unionMasksProduct = BandsExtractor.runUnionMasksOp(firstSegmentationTrimmingRegionKeys, firstProductColorFill,
+                                                                       secondSegmentationTrimmingRegionKeys, secondProductColorFill);
+
+            BandsExtractor.writeProduct(unionMasksProduct, "unionMasksProduct");
         } catch (Exception e) {
             e.printStackTrace();
         }

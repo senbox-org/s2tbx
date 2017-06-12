@@ -16,17 +16,8 @@ import java.util.List;
  * Created by jcoravu on 6/6/2017.
  */
 public class MahalanobisDistance {
-    private List<PixelSourceBands> points;
 
-    public MahalanobisDistance() {
-        this.points = new ArrayList<PixelSourceBands>();
-    }
-
-    public void addPoint(PixelSourceBands pointToAdd) {
-        this.points.add(pointToAdd);
-    }
-
-    public static Object2DoubleMap<PixelSourceBands> computeMahalanobisSquareMatrix(Collection<PixelSourceBands> points) {
+    public static Object2DoubleOpenHashMap<PixelSourceBands> computeMahalanobisSquareMatrix(Collection<PixelSourceBands> points) {
         double meanValueB4Band = 0.0d;
         double meanValueB8Band = 0.0d;
         double meanValueB11Band = 0.0d;
@@ -45,8 +36,6 @@ public class MahalanobisDistance {
         meanValueB11Band = meanValueB11Band / (double)numberOfPoints;
         standardDeviationValueB11Band = standardDeviationValueB11Band / (double)numberOfPoints;
 
-        System.out.println("meanValueB4Band="+meanValueB4Band+"  meanValueB8Band="+meanValueB8Band);
-
         Matrix matrix = new Matrix(numberOfPoints, 4);
         Int2ObjectMap<PixelSourceBands> map = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
         int index = -1;
@@ -63,20 +52,19 @@ public class MahalanobisDistance {
         Matrix quadraticMatrix = MatrixUtils.multiply(transposeMatrix, matrix);
         Matrix covarianceMatrix = computeCovariance(quadraticMatrix, matrix.getRowCount());
         Matrix inverseMatrix = MatrixUtils.inverse(covarianceMatrix);
-        Matrix resultMatrix = MatrixUtils.multiply(matrix, inverseMatrix);
-        Matrix squaredMahalanobisMatrix = MatrixUtils.multiply(resultMatrix, transposeMatrix);
-        Object2DoubleMap<PixelSourceBands> result = new Object2DoubleOpenHashMap<PixelSourceBands>();
-        int matrixSize = squaredMahalanobisMatrix.getColumnCount();
-        for (int i=0; i<matrixSize; i++) {
-            double value = squaredMahalanobisMatrix.getValueAt(i, i);
-            PixelSourceBands point = map.get(i);
-            result.put(point, Math.sqrt(value));
+        if (inverseMatrix != null) {
+            Matrix resultMatrix = MatrixUtils.multiply(matrix, inverseMatrix);
+            Matrix squaredMahalanobisMatrix = MatrixUtils.multiply(resultMatrix, transposeMatrix);
+            Object2DoubleOpenHashMap<PixelSourceBands> result = new Object2DoubleOpenHashMap<PixelSourceBands>();
+            int matrixSize = squaredMahalanobisMatrix.getColumnCount();
+            for (int i=0; i<matrixSize; i++) {
+                double value = squaredMahalanobisMatrix.getValueAt(i, i);
+                PixelSourceBands point = map.get(i);
+                result.put(point, Math.sqrt(value));
+            }
+            return result;
         }
-        return result;
-    }
-
-    public void computerCenterPoint() {
-        computeMahalanobisSquareMatrix(this.points);
+        return null;
     }
 
     private static Matrix computeCovariance(Matrix matrix, int inputRowCount) {
@@ -97,6 +85,7 @@ public class MahalanobisDistance {
 //        COMPUTE X=t({1,2,3,4,5,6,7,8,9,10}).
 //        COMPUTE Y=t({1,2,2,3,3,3,4,4,4,4}).
 
+        List<PixelSourceBands> points = new ArrayList<PixelSourceBands>();
         PixelSourceBands p1 = new PixelSourceBands(1, 1, 0, 0);
         PixelSourceBands p2 = new PixelSourceBands(2, 2, 0, 0);
         PixelSourceBands p3 = new PixelSourceBands(3, 2, 0, 0);
@@ -108,18 +97,17 @@ public class MahalanobisDistance {
         PixelSourceBands p9 = new PixelSourceBands(9, 4, 0, 0);
         PixelSourceBands p10 = new PixelSourceBands(10, 4, 0, 0);
 
-        MahalanobisDistance mahalanobisDistance = new MahalanobisDistance();
-        mahalanobisDistance.addPoint(p1);
-        mahalanobisDistance.addPoint(p2);
-        mahalanobisDistance.addPoint(p3);
-        mahalanobisDistance.addPoint(p4);
-        mahalanobisDistance.addPoint(p5);
-        mahalanobisDistance.addPoint(p6);
-        mahalanobisDistance.addPoint(p7);
-        mahalanobisDistance.addPoint(p8);
-        mahalanobisDistance.addPoint(p9);
-        mahalanobisDistance.addPoint(p10);
+        points.add(p1);
+        points.add(p2);
+        points.add(p3);
+        points.add(p4);
+        points.add(p5);
+        points.add(p6);
+        points.add(p7);
+        points.add(p8);
+        points.add(p9);
+        points.add(p10);
 
-        mahalanobisDistance.computerCenterPoint();
+        computeMahalanobisSquareMatrix(points);
     }
 }
