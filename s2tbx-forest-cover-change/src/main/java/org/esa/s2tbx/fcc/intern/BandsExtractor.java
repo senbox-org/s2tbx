@@ -54,7 +54,7 @@ public class BandsExtractor {
         return GPF.createProduct("BandsExtractorOp", parameters, sourceProducts, null);
     }
 
-    public static void writeProduct(Product outputProduct, String fileName){
+    public static void writeProduct(Product outputProduct, File parentFolder, String fileName){
         File file = new File("D:\\Forest_cover_changes\\"+ fileName);
         if(!file.exists()){
             try {
@@ -85,9 +85,9 @@ public class BandsExtractor {
         return targetProductSelection;
     }
 
-    public static Product runColorFillerOp(Product firstProduct) {
+    public static Product runColorFillerOp(Product firstProduct, float percentagePixels) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("percentagePixels", 95f);
+        parameters.put("percentagePixels", percentagePixels);
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("sourceProduct", firstProduct);
         ColorFillerOp colFillOp = (ColorFillerOp) GPF.getDefaultInstance().createOperator("ColorFillerOp", parameters, sourceProducts, null);
@@ -95,24 +95,24 @@ public class BandsExtractor {
         OperatorExecutor executor = OperatorExecutor.create(colFillOp);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 
-        writeProduct(targetProductSelection, "colorFillerOp");
-
         return targetProductSelection;
     }
 
-    public static Product runSegmentation(Product firstSourceProduct, Product secondSourceProduct, Product bandsDifferenceProduct) {
+    public static Product runSegmentation(Product firstSourceProduct, Product secondSourceProduct, Product bandsDifferenceProduct,
+                                          String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
+                                          float threshold, float spectralWeight, float shapeWeight) {
         String[][] sourceBandNames = new String[3][];
         sourceBandNames[0] = buildBandNamesArray(firstSourceProduct);
         sourceBandNames[1] = buildBandNamesArray(secondSourceProduct);
         sourceBandNames[2] = buildBandNamesArray(bandsDifferenceProduct);
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("mergingCostCriterion", GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION);
-        parameters.put("regionMergingCriterion", GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION);
-        parameters.put("totalIterationsForSecondSegmentation", 10);
-        parameters.put("threshold", 5.0f);
-        parameters.put("spectralWeight", 0.5f);
-        parameters.put("shapeWeight", 0.5f);
+        parameters.put("mergingCostCriterion", mergingCostCriterion);
+        parameters.put("regionMergingCriterion", regionMergingCriterion);
+        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
+        parameters.put("threshold", threshold);
+        parameters.put("spectralWeight", spectralWeight);
+        parameters.put("shapeWeight", shapeWeight);
         parameters.put("sourceBandNames", sourceBandNames);
 
         Product[] sourceProducts = new Product[] {firstSourceProduct, secondSourceProduct, bandsDifferenceProduct};
@@ -154,16 +154,17 @@ public class BandsExtractor {
         return targetProduct;
     }
 
-    public static Product runSegmentation(Product sourceProduct) {
-        ProductNodeGroup<Band> bandGroup = sourceProduct.getBandGroup();
+    public static Product runSegmentation(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion,
+                                          int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
+                                          float shapeWeight) {
         String[] sourceBandNames = buildBandNamesArray(sourceProduct);
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("mergingCostCriterion", GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION);
-        parameters.put("regionMergingCriterion", GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION);
-        parameters.put("totalIterationsForSecondSegmentation", 10);
-        parameters.put("threshold", 5.0f);
-        parameters.put("spectralWeight", 0.5f);
-        parameters.put("shapeWeight", 0.5f);
+        parameters.put("mergingCostCriterion", mergingCostCriterion);
+        parameters.put("regionMergingCriterion", regionMergingCriterion);
+        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
+        parameters.put("threshold", threshold);
+        parameters.put("spectralWeight", spectralWeight);
+        parameters.put("shapeWeight", shapeWeight);
         parameters.put("sourceBandNames", sourceBandNames);
 
         Map<String, Product> sourceProducts = new HashMap<String, Product>();
@@ -176,12 +177,6 @@ public class BandsExtractor {
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 
         return targetProduct;
-    }
-
-    public static void runProductTrimmingAndMahalanobis(Product segmentationSourceProduct, Product sourceProduct, int[] bandsUsed) {
-        Int2ObjectMap<PixelSourceBands> statistics = TrimmingHelper.doTrimming(segmentationSourceProduct, sourceProduct, bandsUsed);
-
-        TrimmingHelper.doMahalanobis(segmentationSourceProduct, sourceProduct, bandsUsed, statistics);
     }
 
     private static String[] buildBandNamesArray(Product sourceProduct) {

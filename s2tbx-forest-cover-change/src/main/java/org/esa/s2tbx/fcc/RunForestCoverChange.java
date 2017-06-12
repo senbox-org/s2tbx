@@ -1,6 +1,8 @@
 package org.esa.s2tbx.fcc;
 
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -12,6 +14,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.fcc.intern.BandsExtractor;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
 import org.esa.s2tbx.fcc.intern.TrimmingHelper;
+import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.landcover.dataio.CCILandCoverModelDescriptor;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Product;
@@ -47,42 +50,48 @@ public class RunForestCoverChange {
             Product secondProduct = BandsExtractor.generateBandsExtractor(secondInputProduct, indexes);
             secondProduct = BandsExtractor.resampleAllBands(secondProduct);
 
-            Product bandsDifferenceProduct = BandsExtractor.generateBandsDifference(firstProduct, secondProduct);
+            String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
+            String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
+            int totalIterationsForSecondSegmentation = 10;
+            float threshold = 5.0f;
+            float spectralWeight = 0.5f;
+            float shapeWeight = 0.5f;
 
-            Product segmentationAllBandsTargetProduct = BandsExtractor.runSegmentation(firstProduct, secondProduct, bandsDifferenceProduct);
-            BandsExtractor.writeProduct(segmentationAllBandsTargetProduct, "severalSourcesGenericRegionMergingOp");
+            File parentFolder = new File("D:\\Forest_cover_changes");
 
-            Product firstSegmentationProduct = BandsExtractor.runSegmentation(firstProduct);
-            System.out.println("segmentation segmentationFirstBandsTargetProduct="+firstSegmentationProduct);
-            BandsExtractor.writeProduct(firstSegmentationProduct, "firstSegmentation");
+//            Product bandsDifferenceProduct = BandsExtractor.generateBandsDifference(firstProduct, secondProduct);
+//
+//            Product segmentationAllBandsTargetProduct = BandsExtractor.runSegmentation(firstProduct, secondProduct, bandsDifferenceProduct,
+//                                                                            mergingCostCriterion, regionMergingCriterion,
+//                                                                            totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+//            BandsExtractor.writeProduct(segmentationAllBandsTargetProduct, "severalSourcesGenericRegionMergingOp");
 
-            Product secondSegmentationProduct = BandsExtractor.runSegmentation(secondProduct);
-            System.out.println("segmentation segmentationSecondBandsTargetProduct="+secondSegmentationProduct);
-            BandsExtractor.writeProduct(secondSegmentationProduct, "secondSegmentation");
+            Product firstSegmentationProduct = BandsExtractor.runSegmentation(firstProduct, mergingCostCriterion, regionMergingCriterion,
+                                                                              totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+            BandsExtractor.writeProduct(firstSegmentationProduct, parentFolder, "firstSegmentation");
 
-            Product firstProductColorFill = BandsExtractor.runColorFillerOp(firstSegmentationProduct);
-            BandsExtractor.writeProduct(firstProductColorFill, "firstProductColorFill");
+            Product secondSegmentationProduct = BandsExtractor.runSegmentation(secondProduct, mergingCostCriterion, regionMergingCriterion,
+                                                                               totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+            BandsExtractor.writeProduct(secondSegmentationProduct, parentFolder, "secondSegmentation");
 
-            Product secondProductColorFill = BandsExtractor.runColorFillerOp(secondSegmentationProduct);
-            BandsExtractor.writeProduct(secondProductColorFill, "secondProductColorFill");
+            float percentagePixels = 95.0f;
+            Product firstProductColorFill = BandsExtractor.runColorFillerOp(firstSegmentationProduct, percentagePixels);
+            BandsExtractor.writeProduct(firstProductColorFill, parentFolder, "firstProductColorFill");
+
+            Product secondProductColorFill = BandsExtractor.runColorFillerOp(secondSegmentationProduct, percentagePixels);
+            BandsExtractor.writeProduct(secondProductColorFill, parentFolder, "secondProductColorFill");
 
             int[] bandsUsed = new int[] {0, 1, 2};
 
             Int2ObjectMap<PixelSourceBands> firstTrimmingStatistics = TrimmingHelper.doTrimming(firstProductColorFill, firstProduct, bandsUsed);
             IntSet firstSegmentationTrimmingRegionKeys = firstTrimmingStatistics.keySet();
-            System.out.print("firstSegmentationTrimmingRegionKeys.size="+firstSegmentationTrimmingRegionKeys.size());
 
             Int2ObjectMap<PixelSourceBands> secondTrimmingStatistics = TrimmingHelper.doTrimming(secondProductColorFill, secondProduct, bandsUsed);
             IntSet secondSegmentationTrimmingRegionKeys = secondTrimmingStatistics.keySet();
-            System.out.print("secondSegmentationTrimmingRegionKeys.size="+secondSegmentationTrimmingRegionKeys.size());
-
-
-
 
             Product unionMasksProduct = BandsExtractor.runUnionMasksOp(firstSegmentationTrimmingRegionKeys, firstProductColorFill,
                                                                        secondSegmentationTrimmingRegionKeys, secondProductColorFill);
-
-            BandsExtractor.writeProduct(unionMasksProduct, "unionMasksProduct");
+            BandsExtractor.writeProduct(unionMasksProduct, parentFolder, "unionMasksProduct");
         } catch (Exception e) {
             e.printStackTrace();
         }

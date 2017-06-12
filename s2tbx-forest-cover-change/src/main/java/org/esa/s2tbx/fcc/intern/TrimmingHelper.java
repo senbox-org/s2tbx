@@ -23,11 +23,7 @@ public class TrimmingHelper {
 
     private static double computeChiDistribution(int numberOfComponentsPerPixel) {
         double result = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 12.5916d);
-        System.out.println("\ncomputeChiDistribution result="+result);
-
         double value = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 16.8119d);
-        System.out.println("computeChiDistribution value1="+value);
-
         if (result < value) {
             result = value;
         }
@@ -35,17 +31,7 @@ public class TrimmingHelper {
         if (result < value) {
             result = value;
         }
-        System.out.println("computeChiDistribution value1="+value+" value2="+value+"  => result="+result);
         return result;
-    }
-
-    public static Int2ObjectMap<PixelSourceBands> doMahalanobis(Product initialSegmentationProduct, Product sourceCompositionProduct,
-                                                                int[] bandsUsed, Int2ObjectMap<PixelSourceBands> trimmingStatistics) {
-
-        Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics11 = computeTrimmingStatistics(initialSegmentationProduct, sourceCompositionProduct, bandsUsed);
-        Int2ObjectMap<PixelSourceBands> statistics = computeStatistics(trimmingStatistics11);
-
-        return null;
     }
 
     public static Int2ObjectMap<PixelSourceBands> doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] bandsUsed) {
