@@ -68,12 +68,17 @@ public class UnionMasksOp extends Operator {
             for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
                 int segmentationPixelValue = previousSegmentationBand.getSampleInt(x, y);
                 if (this.previousSegmentationTrimmingRegionKeys.contains(segmentationPixelValue)) {
-                    segmentationPixelValue = 1;
+                    int currentSegmentationPixelValue = currentSegmentationBand.getSampleInt(x, y);
+                    if (this.currentSegmentationTrimmingRegionKeys.contains(currentSegmentationPixelValue)) {
+                        segmentationPixelValue = 255;
+                    } else {
+                        segmentationPixelValue = 50;
+                    }
                 }
                 else  {
                     segmentationPixelValue = currentSegmentationBand.getSampleInt(x, y);
                     if (this.currentSegmentationTrimmingRegionKeys.contains(segmentationPixelValue)) {
-                        segmentationPixelValue = 1;
+                        segmentationPixelValue = 100;
                     } else {
                         segmentationPixelValue = ForestCoverChangeConstans.NO_DATA_VALUE;
                     }

@@ -39,7 +39,7 @@ public class RunForestCoverChange {
             LandCoverModelRegistry landCoverModelRegistry = LandCoverModelRegistry.getInstance();
             landCoverModelRegistry.addDescriptor(new CCILandCoverModelDescriptor());
 
-            int[] indexes = new int[] {2, 3, 7, 11};
+            int[] indexes = new int[] {3, 4, 10, 11};
 
             Product firstProduct = BandsExtractor.generateBandsExtractor(firstInputProduct, indexes);
             firstProduct = BandsExtractor.resampleAllBands(firstProduct);
@@ -64,19 +64,15 @@ public class RunForestCoverChange {
             BandsExtractor.writeProduct(firstProductColorFill, "firstProductColorFill");
 
             Product secondProductColorFill = BandsExtractor.runColorFillerOp(secondSegmentationProduct);
-            BandsExtractor.writeProduct(secondProductColorFill, "firstProductColorFill");
-
-//            Product targetProductColorFill = BandsExtractor.runColorFillerOp(segmentationAllBandsTargetProduct);
+            BandsExtractor.writeProduct(secondProductColorFill, "secondProductColorFill");
 
             int[] bandsUsed = new int[] {0, 1, 2};
 
             Int2ObjectMap<PixelSourceBands> firstTrimmingStatistics = TrimmingHelper.doTrimming(firstProductColorFill, firstProduct, bandsUsed);
-//            Int2ObjectMap<PixelSourceBands> firstTrimmingStatistics = TrimmingHelper.doTrimming(targetProductColorFill, firstProduct, bandsUsed);
             IntSet firstSegmentationTrimmingRegionKeys = firstTrimmingStatistics.keySet();
             System.out.print("firstSegmentationTrimmingRegionKeys.size="+firstSegmentationTrimmingRegionKeys.size());
 
             Int2ObjectMap<PixelSourceBands> secondTrimmingStatistics = TrimmingHelper.doTrimming(secondProductColorFill, secondProduct, bandsUsed);
-//            Int2ObjectMap<PixelSourceBands> secondTrimmingStatistics = TrimmingHelper.doTrimming(targetProductColorFill, secondProduct, bandsUsed);
             IntSet secondSegmentationTrimmingRegionKeys = secondTrimmingStatistics.keySet();
             System.out.print("secondSegmentationTrimmingRegionKeys.size="+secondSegmentationTrimmingRegionKeys.size());
 

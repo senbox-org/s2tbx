@@ -22,16 +22,16 @@ public class TrimmingHelper {
     }
 
     private static double computeChiDistribution(int numberOfComponentsPerPixel) {
-        double result = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 10.60d);
+        double result = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 12.5916d);
         System.out.println("\ncomputeChiDistribution result="+result);
 
-        double value = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 10.65d);
+        double value = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 16.8119d);
         System.out.println("computeChiDistribution value1="+value);
 
         if (result < value) {
             result = value;
         }
-        value = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 10.69d);
+        value = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 22.4577d);
         if (result < value) {
             result = value;
         }
