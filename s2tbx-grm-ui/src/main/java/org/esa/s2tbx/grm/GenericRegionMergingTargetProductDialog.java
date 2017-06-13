@@ -132,13 +132,13 @@ public class GenericRegionMergingTargetProductDialog extends DefaultSingleTarget
             PropertySet propertySet = bindingContext.getPropertySet();
             propertySet.setDefaultValues();
             if (bindingContext.getBinding(PROPERTY_SPECTRAL_WEIGHT) != null) {
-                propertySet.setValue(PROPERTY_SPECTRAL_WEIGHT, 0.0f);
+                propertySet.setValue(PROPERTY_SPECTRAL_WEIGHT, Float.parseFloat(GenericRegionMergingOp.DEFAULT_SPECTRAL_WEIGHT));
             }
             if (bindingContext.getBinding(PROPERTY_SHAPE_WEIGHT) != null) {
-                propertySet.setValue(PROPERTY_SHAPE_WEIGHT, 0.0f);
+                propertySet.setValue(PROPERTY_SHAPE_WEIGHT, Float.parseFloat(GenericRegionMergingOp.DEFAULT_SHAPE_WEIGHT));
             }
             if (bindingContext.getBinding(PROPERTY_THRESHOLD) != null) {
-                propertySet.setValue(PROPERTY_THRESHOLD, 0.0f);
+                propertySet.setValue(PROPERTY_THRESHOLD, Float.parseFloat(GenericRegionMergingOp.DEFAULT_THRESHOLD));
             }
         }
     }
