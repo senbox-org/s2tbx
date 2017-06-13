@@ -34,8 +34,8 @@ public class TrimmingHelper {
         return result;
     }
 
-    public static Int2ObjectMap<PixelSourceBands> doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] bandsUsed) {
-        Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, bandsUsed);
+    public static Int2ObjectMap<PixelSourceBands> doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices) {
+        Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
         Int2ObjectMap<PixelSourceBands> statistics = computeStatistics(trimmingStatistics);
 
         double chi = computeChiDistribution(4);
@@ -61,7 +61,6 @@ public class TrimmingHelper {
                     break;
                 } else {
                     statistics = validStatistics;
-                    validStatistics = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
                 }
             }
         }
@@ -107,12 +106,12 @@ public class TrimmingHelper {
         return statistics;
     }
 
-    private static Int2ObjectMap<List<PixelSourceBands>> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] bandsUsed) {
+    private static Int2ObjectMap<List<PixelSourceBands>> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("bandsUsed", bandsUsed);
+        parameters.put("sourceBandIndices", sourceBandIndices);
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("segmentationSourceProduct", segmentationSourceProduct);
-        sourceProducts.put("sourceCompositionProduct", sourceCompositionProduct);
+        sourceProducts.put("sourceProduct", sourceProduct);
         TrimmingRegionComputingOp trimRegOp = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
         trimRegOp.getTargetProduct();
         OperatorExecutor executor = OperatorExecutor.create(trimRegOp);

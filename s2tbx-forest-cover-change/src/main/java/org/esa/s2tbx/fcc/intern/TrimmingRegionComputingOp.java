@@ -41,13 +41,13 @@ public class TrimmingRegionComputingOp extends Operator {
     private Product segmentationSourceProduct;
 
     @SourceProduct(alias = "sourceCompositionProduct", description = "The source products to be used for trimming.")
-    private Product sourceCompositionProduct;
+    private Product sourceProduct;
 
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(itemAlias = "bandsUsed", description = "the index from the sourceCompositionProduct to be used")
-    private int[] bandsUsed;
+    @Parameter(itemAlias = "sourceBandIndices", description = "The index from the source product to be used.")
+    private int[] sourceBandIndices;
 
     private Int2ObjectMap<List<PixelSourceBands>> statistics;
 
@@ -62,46 +62,12 @@ public class TrimmingRegionComputingOp extends Operator {
         createTargetProduct();
     }
 
-    private void createTargetProduct() {
-        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
-        Dimension tileSize = JAI.getDefaultTileSize();
-
-        this.targetProduct = new Product(this.segmentationSourceProduct.getName() + "_trim", this.segmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
-        this.targetProduct.setPreferredTileSize(tileSize);
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        this.targetProduct.addBand(targetBand);
-        this.targetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
-    }
-
-    private void validateParametersInput() {
-        if (this.bandsUsed.length != 3) {
-            throw new OperatorException("The number of bands must be equal to 3.");
-        }
-    }
-
-    private void validateSourceProducts() {
-        if(this.sourceCompositionProduct.isMultiSize()){
-            String message = String.format("Source product '%s' contains rasters of different sizes and can not be processed.\n" +
-                            "Please consider resampling it so that all rasters have the same size.",
-                    this.sourceCompositionProduct.getName());
-            throw new OperatorException(message);
-        }
-        if(this.sourceCompositionProduct.getSceneRasterHeight() != this.segmentationSourceProduct.getSceneRasterHeight()||
-                this.sourceCompositionProduct.getSceneRasterWidth() != this.segmentationSourceProduct.getSceneRasterWidth()){
-            String message = String.format("Source product '%s' must have the same scene raster size as the source Composition Product '%s'.\n" +
-                            "Please consider resampling it so that the 2 products have the same size.",
-                    this.segmentationSourceProduct.getName(),this.sourceCompositionProduct.getName() );
-            throw new OperatorException(message);
-        }
-    }
-
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle tileRegion = targetTile.getRectangle();
-        Band firstBand = this.sourceCompositionProduct.getBandAt(bandsUsed[0]);
-        Band secondBand = this.sourceCompositionProduct.getBandAt(bandsUsed[1]);
-        Band thirdBand = this.sourceCompositionProduct.getBandAt(bandsUsed[2]);
+        Band firstBand = this.sourceProduct.getBandAt(sourceBandIndices[0]);
+        Band secondBand = this.sourceProduct.getBandAt(sourceBandIndices[1]);
+        Band thirdBand = this.sourceProduct.getBandAt(sourceBandIndices[2]);
         Band segmentationBand = this.segmentationSourceProduct.getBandAt(0);
 
         for (int y = tileRegion.y; y < tileRegion.y + tileRegion.height; y++) {
@@ -129,6 +95,40 @@ public class TrimmingRegionComputingOp extends Operator {
      */
     public Int2ObjectMap<List<PixelSourceBands>> getPixelsStatistics() {
         return this.statistics;
+    }
+
+    private void createTargetProduct() {
+        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
+        Dimension tileSize = JAI.getDefaultTileSize();
+
+        this.targetProduct = new Product(this.segmentationSourceProduct.getName() + "_trim", this.segmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
+        this.targetProduct.setPreferredTileSize(tileSize);
+        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
+        this.targetProduct.addBand(targetBand);
+        this.targetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
+    }
+
+    private void validateParametersInput() {
+        if (this.sourceBandIndices.length != 3) {
+            throw new OperatorException("The number of bands must be equal to 3.");
+        }
+    }
+
+    private void validateSourceProducts() {
+        if (this.sourceProduct.isMultiSize()) {
+            String message = String.format("Source product '%s' contains rasters of different sizes and can not be processed.\n" +
+                            "Please consider resampling it so that all rasters have the same size.",
+                    this.sourceProduct.getName());
+            throw new OperatorException(message);
+        }
+        if ((this.sourceProduct.getSceneRasterHeight() != this.segmentationSourceProduct.getSceneRasterHeight()) ||
+                (this.sourceProduct.getSceneRasterWidth() != this.segmentationSourceProduct.getSceneRasterWidth())) {
+            String message = String.format("Source product '%s' must have the same scene raster size as the source Composition Product '%s'.\n" +
+                            "Please consider resampling it so that the 2 products have the same size.",
+                    this.segmentationSourceProduct.getName(), this.sourceProduct.getName());
+            throw new OperatorException(message);
+        }
     }
 
     public static class Spi extends OperatorSpi {

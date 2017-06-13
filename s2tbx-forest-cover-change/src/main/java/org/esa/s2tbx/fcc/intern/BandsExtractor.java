@@ -55,7 +55,7 @@ public class BandsExtractor {
     }
 
     public static void writeProduct(Product outputProduct, File parentFolder, String fileName){
-        File file = new File("D:\\Forest_cover_changes\\"+ fileName);
+        File file = new File(parentFolder, fileName);
         if(!file.exists()){
             try {
                 file.getParentFile().mkdirs();

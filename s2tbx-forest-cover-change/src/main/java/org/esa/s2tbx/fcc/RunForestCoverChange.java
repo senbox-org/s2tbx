@@ -59,12 +59,12 @@ public class RunForestCoverChange {
 
             File parentFolder = new File("D:\\Forest_cover_changes");
 
-//            Product bandsDifferenceProduct = BandsExtractor.generateBandsDifference(firstProduct, secondProduct);
-//
-//            Product segmentationAllBandsTargetProduct = BandsExtractor.runSegmentation(firstProduct, secondProduct, bandsDifferenceProduct,
-//                                                                            mergingCostCriterion, regionMergingCriterion,
-//                                                                            totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
-//            BandsExtractor.writeProduct(segmentationAllBandsTargetProduct, "severalSourcesGenericRegionMergingOp");
+            Product bandsDifferenceProduct = BandsExtractor.generateBandsDifference(firstProduct, secondProduct);
+
+            Product segmentationAllBandsProduct = BandsExtractor.runSegmentation(firstProduct, secondProduct, bandsDifferenceProduct,
+                                                                            mergingCostCriterion, regionMergingCriterion,
+                                                                            totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+            BandsExtractor.writeProduct(segmentationAllBandsProduct, parentFolder, "severalSourcesGenericRegionMergingOp");
 
             Product firstSegmentationProduct = BandsExtractor.runSegmentation(firstProduct, mergingCostCriterion, regionMergingCriterion,
                                                                               totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
@@ -74,19 +74,19 @@ public class RunForestCoverChange {
                                                                                totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
             BandsExtractor.writeProduct(secondSegmentationProduct, parentFolder, "secondSegmentation");
 
-            float percentagePixels = 95.0f;
-            Product firstProductColorFill = BandsExtractor.runColorFillerOp(firstSegmentationProduct, percentagePixels);
+            float treeCoverPercentagePixels = 95.0f;
+            Product firstProductColorFill = BandsExtractor.runColorFillerOp(firstSegmentationProduct, treeCoverPercentagePixels);
             BandsExtractor.writeProduct(firstProductColorFill, parentFolder, "firstProductColorFill");
 
-            Product secondProductColorFill = BandsExtractor.runColorFillerOp(secondSegmentationProduct, percentagePixels);
+            Product secondProductColorFill = BandsExtractor.runColorFillerOp(secondSegmentationProduct, treeCoverPercentagePixels);
             BandsExtractor.writeProduct(secondProductColorFill, parentFolder, "secondProductColorFill");
 
-            int[] bandsUsed = new int[] {0, 1, 2};
+            int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
 
-            Int2ObjectMap<PixelSourceBands> firstTrimmingStatistics = TrimmingHelper.doTrimming(firstProductColorFill, firstProduct, bandsUsed);
+            Int2ObjectMap<PixelSourceBands> firstTrimmingStatistics = TrimmingHelper.doTrimming(segmentationAllBandsProduct, firstProduct, trimmingSourceProductBandIndices);
             IntSet firstSegmentationTrimmingRegionKeys = firstTrimmingStatistics.keySet();
 
-            Int2ObjectMap<PixelSourceBands> secondTrimmingStatistics = TrimmingHelper.doTrimming(secondProductColorFill, secondProduct, bandsUsed);
+            Int2ObjectMap<PixelSourceBands> secondTrimmingStatistics = TrimmingHelper.doTrimming(segmentationAllBandsProduct, secondProduct, trimmingSourceProductBandIndices);
             IntSet secondSegmentationTrimmingRegionKeys = secondTrimmingStatistics.keySet();
 
             Product unionMasksProduct = BandsExtractor.runUnionMasksOp(firstSegmentationTrimmingRegionKeys, firstProductColorFill,
