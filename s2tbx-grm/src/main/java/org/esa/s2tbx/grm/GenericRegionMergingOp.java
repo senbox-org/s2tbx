@@ -242,6 +242,7 @@ public class GenericRegionMergingOp extends Operator {
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
+        this.targetProduct.setSceneGeoCoding(this.sourceProduct.getSceneGeoCoding());
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
