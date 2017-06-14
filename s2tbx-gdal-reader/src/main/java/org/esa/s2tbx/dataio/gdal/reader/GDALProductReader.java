@@ -129,11 +129,11 @@ public class GDALProductReader extends AbstractProductReader {
                     numResolutions = levels;
                 }
                 if (levels == 1) {
-                    logger.info("Optimizing read by building image pyramids");
+                    logger.fine("Optimizing read by building image pyramids");
                     if (gdalconst.CE_Failure != gdalDataset.BuildOverviews("NEAREST", new int[] { 2, 4, 8, 16 })) {
                         gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
                     } else {
-                        logger.warning("Multiple levels not supported");
+                        logger.fine("Multiple levels not supported");
                     }
                 }
                 levels = gdalBand.GetOverviewCount() + 1;

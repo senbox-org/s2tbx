@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>SFSTextureExtraction</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -13,7 +14,7 @@
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINS_F_S_TEXTURE_EXTRACTION_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
   <templateType>VELOCITY</templateType>
-  <template>
+  <template type="file">
     <file>s-f-s-texture-extraction-template.vm</file>
   </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
@@ -21,16 +22,16 @@
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <windows></windows>
+      <value/>
+      <windows/>
       <linux>/usr/bin</linux>
-      <macosx></macosx>
+      <macosx/>
       <isTransient>false</isTransient>
       <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINS_F_S_TEXTURE_EXTRACTION_EXEC</key>
-      <value></value>
+      <value/>
       <windows>otbcli_SFSTextureExtraction.bat</windows>
       <linux>otbcli_SFSTextureExtraction</linux>
       <macosx>otbcli_SFSTextureExtraction</macosx>
@@ -41,7 +42,6 @@
   <parameters>
     <parameter>
       <name>channel_int</name>
-      <alias>Selected Channel</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1</defaultValue>
       <description>The selected channel index</description>
@@ -52,7 +52,6 @@
     </parameter>
     <parameter>
       <name>spethre_float</name>
-      <alias>Spectral Threshold</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>50</defaultValue>
       <description>Spectral Threshold</description>
@@ -63,7 +62,6 @@
     </parameter>
     <parameter>
       <name>spathre_int</name>
-      <alias>Spatial Threshold</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>100</defaultValue>
       <description>Spatial Threshold</description>
@@ -74,7 +72,6 @@
     </parameter>
     <parameter>
       <name>nbdir_int</name>
-      <alias>Number of Direction</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>20</defaultValue>
       <description>Number of Direction</description>
@@ -85,7 +82,6 @@
     </parameter>
     <parameter>
       <name>alpha_float</name>
-      <alias>Alpha</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>1</defaultValue>
       <description>Alpha</description>
@@ -96,7 +92,6 @@
     </parameter>
     <parameter>
       <name>maxcons_int</name>
-      <alias>Ratio Maximum Consideration Number</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>5</defaultValue>
       <description>Ratio Maximum Consideration Number</description>
@@ -107,7 +102,6 @@
     </parameter>
     <parameter>
       <name>targetProductFile</name>
-      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description>Output image containing the SFS texture features.</description>
       <valueSet/>
@@ -120,9 +114,9 @@
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
   <sourceProductDescriptors>
-    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+    <org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
       <name>Input Image</name>
-    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+    </org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
   </sourceProductDescriptors>
   <targetPropertyDescriptors/>
   <numSourceProducts>1</numSourceProducts>
