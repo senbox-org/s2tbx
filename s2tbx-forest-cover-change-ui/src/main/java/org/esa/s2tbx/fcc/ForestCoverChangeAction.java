@@ -12,15 +12,15 @@ import org.esa.snap.ui.ModelessDialog;
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
-public class FccAction  extends DefaultOperatorAction {
+public class ForestCoverChangeAction extends DefaultOperatorAction {
     private static final Set<String> KNOWN_KEYS = new HashSet<>(Arrays.asList("displayName", "operatorName", "dialogTitle", "helpId", "targetProductNameSuffix"));
 
-    public FccAction() {
+    public ForestCoverChangeAction() {
         super();
     }
 
-    public static FccAction create(Map<String, Object> properties) {
-        FccAction action = new FccAction();
+    public static ForestCoverChangeAction create(Map<String, Object> properties) {
+        ForestCoverChangeAction action = new ForestCoverChangeAction();
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             if (KNOWN_KEYS.contains(entry.getKey())) {
                 action.putValue(entry.getKey(), entry.getValue());
@@ -37,7 +37,7 @@ public class FccAction  extends DefaultOperatorAction {
 
     @Override
     protected ModelessDialog createOperatorDialog() {
-        FccDialog productDialog = new FccDialog(getOperatorName(), getAppContext(), getDialogTitle(), getHelpId());
+        ForestCoverChangeTargetProductDialog productDialog = new ForestCoverChangeTargetProductDialog(getOperatorName(), getAppContext(), getDialogTitle(), getHelpId());
         if (getTargetProductNameSuffix() != null) {
             productDialog.setTargetProductNameSuffix(getTargetProductNameSuffix());
         }

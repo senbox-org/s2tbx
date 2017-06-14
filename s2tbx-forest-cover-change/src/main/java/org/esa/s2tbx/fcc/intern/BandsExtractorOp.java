@@ -23,38 +23,26 @@ import org.esa.snap.core.util.ProductUtils;
         authors = "Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class BandsExtractorOp extends Operator {
-    @SuppressWarnings({"PackageVisibleField"})
-    @SourceProduct(alias = "source", description = "The source product to be modified.")
+    @SourceProduct(alias = "Source", description = "The source product to be modified.")
     private Product sourceProduct;
 
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(itemAlias = "indexes", description = "Specifies the bands in the target product to be maintained.")
-    private int[] indexes;
+    @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
+    private String[] sourceBandNames;
 
     @Override
     public void initialize() throws OperatorException {
-
-        validateInputIndexes();
+        if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
+            throw new OperatorException("Please select at least one band.");
+        }
         this.targetProduct = generateBandsExtractor();
-    }
-
-    private void validateInputIndexes() {
-        if(this.indexes.length==0){
-            throw new OperatorException("Invalid number of indexes given");
-        }
-
-        for(int i: this.indexes){
-            if(i>this.sourceProduct.getNumBands() || i<0 ){
-                throw new OperatorException("Band index can not be computed" + i);
-            }
-        }
     }
 
     private Product generateBandsExtractor() {
         Product product = new Product(this.sourceProduct.getName(), this.sourceProduct.getProductType(),
-                this.sourceProduct.getSceneRasterWidth(), this.sourceProduct.getSceneRasterHeight());
+                                      this.sourceProduct.getSceneRasterWidth(), this.sourceProduct.getSceneRasterHeight());
         product.setStartTime(this.sourceProduct.getStartTime());
         product.setEndTime(this.sourceProduct.getEndTime());
         product.setNumResolutionsMax(this.sourceProduct.getNumResolutionsMax());
@@ -64,8 +52,8 @@ public class BandsExtractorOp extends Operator {
         ProductUtils.copyTiePointGrids(this.sourceProduct, product);
         ProductUtils.copyVectorData(this.sourceProduct, product);
 
-        for (int index:this.indexes) {
-            Band sourceBand = this.sourceProduct.getBandAt(index);
+        for (int i=0; i<this.sourceBandNames.length; i++) {
+            Band sourceBand = this.sourceProduct.getBand(this.sourceBandNames[i]);
             String sourceBandName = sourceBand.getName();
             String targetBandName = sourceBandName;
             ProductUtils.copyBand(sourceBandName, this.sourceProduct, targetBandName, product, true);

@@ -9,6 +9,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.fcc.intern.BandsExtractor;
@@ -19,6 +21,9 @@ import org.esa.s2tbx.landcover.dataio.CCILandCoverModelDescriptor;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import java.io.File;
+
+import org.esa.snap.core.gpf.GPF;
+import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.landcover.dataio.LandCoverModelRegistry;
 
 /**
@@ -42,60 +47,47 @@ public class RunForestCoverChange {
             LandCoverModelRegistry landCoverModelRegistry = LandCoverModelRegistry.getInstance();
             landCoverModelRegistry.addDescriptor(new CCILandCoverModelDescriptor());
 
-            int[] indexes = new int[] {3, 4, 10, 11};
-
-            Product firstProduct = BandsExtractor.generateBandsExtractor(firstInputProduct, indexes);
-            firstProduct = BandsExtractor.resampleAllBands(firstProduct);
-
-            Product secondProduct = BandsExtractor.generateBandsExtractor(secondInputProduct, indexes);
-            secondProduct = BandsExtractor.resampleAllBands(secondProduct);
-
             String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
             String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
             int totalIterationsForSecondSegmentation = 10;
             float threshold = 5.0f;
             float spectralWeight = 0.5f;
             float shapeWeight = 0.5f;
-
+            float treeCoverPercentagePixels = 95.0f;
             File parentFolder = new File("D:\\Forest_cover_changes");
 
-            Product bandsDifferenceProduct = BandsExtractor.generateBandsDifference(firstProduct, secondProduct);
-
-            Product segmentationAllBandsProduct = BandsExtractor.runSegmentation(firstProduct, secondProduct, bandsDifferenceProduct,
-                                                                            mergingCostCriterion, regionMergingCriterion,
-                                                                            totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
-            BandsExtractor.writeProduct(segmentationAllBandsProduct, parentFolder, "severalSourcesGenericRegionMergingOp");
-
-            Product firstSegmentationProduct = BandsExtractor.runSegmentation(firstProduct, mergingCostCriterion, regionMergingCriterion,
-                                                                              totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
-            BandsExtractor.writeProduct(firstSegmentationProduct, parentFolder, "firstSegmentation");
-
-            Product secondSegmentationProduct = BandsExtractor.runSegmentation(secondProduct, mergingCostCriterion, regionMergingCriterion,
-                                                                               totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
-            BandsExtractor.writeProduct(secondSegmentationProduct, parentFolder, "secondSegmentation");
-
-            float treeCoverPercentagePixels = 95.0f;
-            Product firstProductColorFill = BandsExtractor.runColorFillerOp(firstSegmentationProduct, treeCoverPercentagePixels);
-            BandsExtractor.writeProduct(firstProductColorFill, parentFolder, "firstProductColorFill");
-
-            Product secondProductColorFill = BandsExtractor.runColorFillerOp(secondSegmentationProduct, treeCoverPercentagePixels);
-            BandsExtractor.writeProduct(secondProductColorFill, parentFolder, "secondProductColorFill");
-
-            int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
-
-            Int2ObjectMap<PixelSourceBands> firstTrimmingStatistics = TrimmingHelper.doTrimming(segmentationAllBandsProduct, firstProduct, trimmingSourceProductBandIndices);
-            IntSet firstSegmentationTrimmingRegionKeys = firstTrimmingStatistics.keySet();
-
-            Int2ObjectMap<PixelSourceBands> secondTrimmingStatistics = TrimmingHelper.doTrimming(segmentationAllBandsProduct, secondProduct, trimmingSourceProductBandIndices);
-            IntSet secondSegmentationTrimmingRegionKeys = secondTrimmingStatistics.keySet();
-
-            Product unionMasksProduct = BandsExtractor.runUnionMasksOp(firstSegmentationTrimmingRegionKeys, firstProductColorFill,
-                                                                       secondSegmentationTrimmingRegionKeys, secondProductColorFill);
-            BandsExtractor.writeProduct(unionMasksProduct, parentFolder, "unionMasksProduct");
+            Product targetProduct = runForestCoverChange(firstInputProduct, secondInputProduct, mergingCostCriterion, regionMergingCriterion,
+                                                totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight, treeCoverPercentagePixels);
+            BandsExtractor.writeProduct(targetProduct, parentFolder, "unionMasksProduct");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public static Product runForestCoverChange(Product firstSourceProduct, Product secondSourceProduct,
+                                               String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
+                                               float threshold, float spectralWeight, float shapeWeight, float percentage) {
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("mergingCostCriterion", mergingCostCriterion);
+        parameters.put("regionMergingCriterion", regionMergingCriterion);
+        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
+        parameters.put("threshold", threshold);
+        parameters.put("spectralWeight", spectralWeight);
+        parameters.put("shapeWeight", shapeWeight);
+        parameters.put("forestCoverPercentage", percentage);
+
+        Map<String, Product> sourceProducts = new HashMap<>();
+        sourceProducts.put("currentSourceProduct", firstSourceProduct);
+        sourceProducts.put("previousSourceProduct", secondSourceProduct);
+
+        Operator operator = GPF.getDefaultInstance().createOperator("ForestCoverChangeOp", parameters, sourceProducts, null);
+        Product targetProduct = operator.getTargetProduct();
+        operator.doExecute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        return targetProduct;
+    }
+
 
     private static void initLogging() {
         Logger rootLogger = Logger.getLogger("");

@@ -29,7 +29,7 @@ import java.util.Map;
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class BandsDifferenceOp extends Operator {
-    @SourceProducts(alias = "source", description = "The first source product.")
+    @SourceProducts(alias = "Source", description = "The first source product.")
     private Product[] sourceProducts;
     @TargetProduct
     private Product targetProduct;

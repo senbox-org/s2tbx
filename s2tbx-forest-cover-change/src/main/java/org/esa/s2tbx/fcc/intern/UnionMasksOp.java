@@ -39,6 +39,9 @@ public class UnionMasksOp extends Operator {
     @Parameter(itemAlias = "segmentationRegionKeys", description = "Specifies the segmentation keys after trimming.")
     private IntSet previousSegmentationTrimmingRegionKeys;
 
+    @SourceProduct(alias = "source", description = "The second source product")
+    private Product inputTargetProduct;
+
     @TargetProduct
     private Product targetProduct;
 
@@ -47,15 +50,7 @@ public class UnionMasksOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
-        int sceneWidth = this.currentSegmentationSourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.currentSegmentationSourceProduct.getSceneRasterHeight();
-        Dimension tileSize = JAI.getDefaultTileSize();
-
-        this.targetProduct = new Product(this.currentSegmentationSourceProduct.getName() + "_union", this.currentSegmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
-        this.targetProduct.setPreferredTileSize(tileSize);
-        this.targetProduct.setSceneGeoCoding(this.currentSegmentationSourceProduct.getSceneGeoCoding());
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        this.targetProduct.addBand(targetBand);
+        this.targetProduct = this.inputTargetProduct;
     }
 
     @Override

@@ -46,11 +46,11 @@ public class BandsExtractor {
         return GPF.createProduct("BandsDifferenceOp", parameters, products, null);
     }
 
-    public static Product generateBandsExtractor(Product firstSourceProduct, int[] indexes) {
+    public static Product generateBandsExtractor(Product firstSourceProduct, String[] sourceBandNames) {
         Map<String, Object> parameters = new HashMap<>();
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("sourceProduct", firstSourceProduct);
-        parameters.put("indexes", indexes);
+        parameters.put("sourceBandNames", sourceBandNames);
         return GPF.createProduct("BandsExtractorOp", parameters, sourceProducts, null);
     }
 
@@ -69,7 +69,8 @@ public class BandsExtractor {
     }
 
     public static Product runUnionMasksOp(IntSet currentSegmentationTrimmingRegionKeys, Product currentSegmentationSourceProduct,
-                                          IntSet previousSegmentationTrimmingRegionKeys, Product previousSegmentationSourceProduct) {
+                                          IntSet previousSegmentationTrimmingRegionKeys, Product previousSegmentationSourceProduct,
+                                          Product inputTargetProduct) {
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("currentSegmentationTrimmingRegionKeys", currentSegmentationTrimmingRegionKeys);
@@ -77,6 +78,7 @@ public class BandsExtractor {
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("currentSegmentationSourceProduct", currentSegmentationSourceProduct);
         sourceProducts.put("previousSegmentationSourceProduct", previousSegmentationSourceProduct);
+        sourceProducts.put("inputTargetProduct", inputTargetProduct);
         Operator unionMasksOp = GPF.getDefaultInstance().createOperator("UnionMasksOp", parameters, sourceProducts, null);
         Product targetProductSelection = unionMasksOp.getTargetProduct();
         OperatorExecutor executor = OperatorExecutor.create(unionMasksOp);

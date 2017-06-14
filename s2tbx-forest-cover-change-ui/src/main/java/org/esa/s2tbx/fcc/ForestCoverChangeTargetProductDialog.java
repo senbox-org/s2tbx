@@ -6,24 +6,33 @@ import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.binding.ValidationException;
 import com.bc.ceres.binding.ValueSet;
-import com.bc.ceres.binding.accessors.MapEntryAccessor;
+import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.core.SubProgressMonitor;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyPane;
+import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.Selection;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
-import java.beans.PropertyChangeListener;
+
+import java.awt.Toolkit;
+import java.io.File;
 import java.lang.reflect.Field;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
+
+import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductNodeEvent;
 import org.esa.snap.core.datamodel.ProductNodeListener;
@@ -32,7 +41,6 @@ import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.Parameter;
-import org.esa.snap.core.gpf.annotations.ParameterDescriptorFactory;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
@@ -48,6 +56,8 @@ import org.esa.snap.core.gpf.descriptor.SourceProductDescriptor;
 import org.esa.snap.core.gpf.descriptor.SourceProductsDescriptor;
 import org.esa.snap.core.gpf.descriptor.TargetProductDescriptor;
 import org.esa.snap.core.gpf.descriptor.TargetPropertyDescriptor;
+import org.esa.snap.core.gpf.internal.OperatorExecutor;
+import org.esa.snap.core.gpf.internal.OperatorProductReader;
 import org.esa.snap.core.gpf.internal.RasterDataNodeValues;
 import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
 import org.esa.snap.core.gpf.ui.OperatorMenu;
@@ -55,6 +65,9 @@ import org.esa.snap.core.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.core.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelectorModel;
+import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.rcp.SnapApp;
+import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
 import org.esa.snap.ui.UIUtils;
 import org.esa.s2tbx.fcc.annotation.*;
@@ -62,46 +75,43 @@ import org.esa.s2tbx.fcc.annotation.*;
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
-public class FccDialog extends SingleTargetProductDialog {
-
+public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDialog {
     private final String operatorName;
     private final OperatorDescriptor operatorDescriptor;
-    private DefaultIOParametersPanel ioParametersPanel;
     private final OperatorParameterSupport parameterSupport;
     private final BindingContext bindingContext;
+    private final DefaultIOParametersPanel ioParametersPanel;
+    private final ProductChangedHandler productChangedHandler;
+
     private List<ParameterDescriptor> parameterDescriptors;
     private List<SourceProductDescriptor> sourceProductDescriptors;
-    private TargetProductDescriptor targetProductDescriptor;
     private List<TargetPropertyDescriptor> targetPropertyDescriptors;
-    private SourceProductsDescriptor sourceProductsDescriptor;
     private Map<String, List<String>> parameterGroupDescriptors;
     private JTabbedPane form;
     private PropertyDescriptor[] rasterDataNodeTypeProperties;
     private String targetProductNameSuffix;
-    private ProductChangedHandler productChangedHandler;
 
-    public FccDialog(String operatorName, AppContext appContext, String title, String helpID) {
-        this(operatorName, appContext, title, helpID, true);
-    }
-
-    public FccDialog(String operatorName, AppContext appContext, String title, String helpID, boolean targetProductSelectorDisplay) {
+    public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
+
         this.operatorName = operatorName;
-        targetProductNameSuffix = "";
+        this.targetProductNameSuffix = "";
+
         processAnnotationsRec(ForestCoverChangeOp.class);
+
         OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operatorName);
         if (operatorSpi == null) {
             throw new IllegalArgumentException("No SPI found for operator name '" + operatorName + "'");
         }
 
-        operatorDescriptor = operatorSpi.getOperatorDescriptor();
-        ioParametersPanel = new DefaultIOParametersPanel(getAppContext(), operatorDescriptor, getTargetProductSelector(), targetProductSelectorDisplay);
+        this.operatorDescriptor = operatorSpi.getOperatorDescriptor();
+        this.ioParametersPanel = new DefaultIOParametersPanel(getAppContext(), this.operatorDescriptor, getTargetProductSelector(), true);
 
-        parameterSupport = new OperatorParameterSupport(operatorDescriptor);
-        final ArrayList<SourceProductSelector> sourceProductSelectorList = ioParametersPanel.getSourceProductSelectorList();
-        final PropertySet propertySet = parameterSupport.getPropertySet();
+        this.parameterSupport = new OperatorParameterSupport(this.operatorDescriptor);
+        ArrayList<SourceProductSelector> sourceProductSelectorList = this.ioParametersPanel.getSourceProductSelectorList();
+        PropertySet propertySet = this.parameterSupport.getPropertySet();
 
-        bindingContext = new BindingContext(propertySet);
+        this.bindingContext = new BindingContext(propertySet);
 
         if (propertySet.getProperties().length > 0) {
             if (!sourceProductSelectorList.isEmpty()) {
@@ -113,27 +123,58 @@ public class FccDialog extends SingleTargetProductDialog {
                         rdnTypeProperties.add(parameterDescriptor);
                     }
                 }
-                rasterDataNodeTypeProperties = rdnTypeProperties.toArray(
-                        new PropertyDescriptor[rdnTypeProperties.size()]);
+                this.rasterDataNodeTypeProperties = rdnTypeProperties.toArray(new PropertyDescriptor[rdnTypeProperties.size()]);
             }
         }
-        productChangedHandler = new ProductChangedHandler();
+        this.productChangedHandler = new ProductChangedHandler();
         if (!sourceProductSelectorList.isEmpty()) {
             sourceProductSelectorList.get(0).addSelectionChangeListener(productChangedHandler);
         }
     }
 
     @Override
+    protected void onApply() {
+        if (!canApply()) {
+            return;
+        }
+
+        TargetProductSelectorModel model = targetProductSelector.getModel();
+        String productDirPath = model.getProductDir().getAbsolutePath();
+        appContext.getPreferences().setPropertyString(SaveProductAsAction.PREFERENCES_KEY_LAST_PRODUCT_DIR, productDirPath);
+
+        Product targetProduct = null;
+        long createTargetProductTime = 0;
+        try {
+            long t0 = System.currentTimeMillis();
+            targetProduct = createTargetProduct();
+            createTargetProductTime = System.currentTimeMillis() - t0;
+
+        } catch (Throwable t) {
+            handleInitialisationError(t);
+            return;
+        }
+        if (targetProduct == null) {
+            throw new NullPointerException("The target product is null.");
+        }
+
+        targetProduct.setName(model.getProductName());
+        targetProduct.setFileLocation(model.getProductFile());
+
+        TargetProductSwingWorker worker = new TargetProductSwingWorker(targetProduct, createTargetProductTime);
+        worker.executeWithBlocking(); // start the thread
+    }
+
+    @Override
     public int show() {
-        ioParametersPanel.initSourceProductSelectors();
-        if (form == null) {
+        this.ioParametersPanel.initSourceProductSelectors();
+        if (this.form == null) {
             initForm();
             if (getJDialog().getJMenuBar() == null) {
-                final OperatorMenu operatorMenu = createDefaultMenuBar();
+                OperatorMenu operatorMenu = createDefaultMenuBar();
                 getJDialog().setJMenuBar(operatorMenu.createDefaultMenu());
             }
         }
-        setContent(form);
+        setContent(this.form);
         return super.show();
     }
 
@@ -146,29 +187,21 @@ public class FccDialog extends SingleTargetProductDialog {
 
     @Override
     protected Product createTargetProduct() throws Exception {
-        final HashMap<String, Product> sourceProducts = ioParametersPanel.createSourceProductsMap();
-        return GPF.createProduct(operatorName, parameterSupport.getParameterMap(), sourceProducts);
-    }
-
-    protected DefaultIOParametersPanel getDefaultIOParametersPanel() {
-        return ioParametersPanel;
+        HashMap<String, Product> sourceProducts = this.ioParametersPanel.createSourceProductsMap();
+        return GPF.createProduct(this.operatorName, this.parameterSupport.getParameterMap(), sourceProducts);
     }
 
     public String getTargetProductNameSuffix() {
-        return targetProductNameSuffix;
+        return this.targetProductNameSuffix;
     }
 
     public void setTargetProductNameSuffix(String suffix) {
-        targetProductNameSuffix = suffix;
-    }
-
-    public BindingContext getBindingContext() {
-        return bindingContext;
+        this.targetProductNameSuffix = suffix;
     }
 
     private void initForm() {
-        form = new JTabbedPane();
-        form.add("I/O Parameters", ioParametersPanel);
+        this.form = new JTabbedPane();
+        this.form.add("I/O Parameters", this.ioParametersPanel);
         final TableLayout layout = new TableLayout(1);
         layout.setTableAnchor(TableLayout.Anchor.WEST);
         layout.setTableFill(TableLayout.Fill.BOTH);
@@ -177,14 +210,12 @@ public class FccDialog extends SingleTargetProductDialog {
         layout.setRowWeightY(2, 1.0);
         layout.setTablePadding(3, 3);
 
-
-        if (bindingContext.getPropertySet().getProperties().length > 0) {
+        if (this.bindingContext.getPropertySet().getProperties().length > 0) {
             PropertyContainer container = new PropertyContainer();
-            container.addProperties(bindingContext.getPropertySet().getProperties());
-            for(Map.Entry<String, List<String>> pair : parameterGroupDescriptors.entrySet())
-            {
-                for(String prop:pair.getValue()){
-                    container.removeProperty(bindingContext.getPropertySet().getProperty(prop));
+            container.addProperties(this.bindingContext.getPropertySet().getProperties());
+            for(Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
+                for (String prop:pair.getValue()) {
+                    container.removeProperty(this.bindingContext.getPropertySet().getProperty(prop));
                 }
             }
             final PropertyPane parametersPane = new PropertyPane(container);
@@ -192,18 +223,55 @@ public class FccDialog extends SingleTargetProductDialog {
             parametersPanel.add(parametersPane.createPanel());
             parametersPanel.setBorder(new EmptyBorder(4, 4, 4, 4));
             form.add("Processing Parameters", new JScrollPane(parametersPanel));
-            for(Map.Entry<String, List<String>> pair : parameterGroupDescriptors.entrySet())
-            {
-                parametersPanel.add(createPanel(pair.getKey()+ " parameters", bindingContext, pair.getValue()));
+            for (Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
+                parametersPanel.add(createPanel(pair.getKey()+ " parameters", this.bindingContext, pair.getValue()));
             }
             updateSourceProduct();
         }
     }
 
-    private JPanel createPanel(String name, BindingContext bindingContext, List<String> parameters){
+    private void showSaveInfo(long saveTime) {
+        File productFile = getTargetProductSelector().getModel().getProductFile();
+        String message = MessageFormat.format(
+                "<html>The target product has been successfully written to<br>{0}<br>" +
+                        "Total time spend for processing: {1}",
+                formatFile(productFile),
+                formatDuration(saveTime)
+        );
+        showSuppressibleInformationDialog(message, "saveInfo");
+    }
 
+    private String formatFile(File file) {
+        return FileUtils.getDisplayText(file, 54);
+    }
+
+    private String formatDuration(long millis) {
+        long seconds = millis / 1000;
+        millis -= seconds * 1000;
+        long minutes = seconds / 60;
+        seconds -= minutes * 60;
+        long hours = minutes / 60;
+        minutes -= hours * 60;
+        return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+    }
+
+    private void showSaveAndOpenInAppInfo(long saveTime) {
+        File productFile = getTargetProductSelector().getModel().getProductFile();
+        String message = MessageFormat.format(
+                "<html>The target product has been successfully written to<br>" +
+                        "<p>{0}</p><br>" +
+                        "and has been opened in {1}.<br><br>" +
+                        "Total time spend for processing: {2}<br>",
+                formatFile(productFile),
+                appContext.getApplicationName(),
+                formatDuration(saveTime)
+        );
+        showSuppressibleInformationDialog(message, "saveAndOpenInAppInfo");
+    }
+
+    private JPanel createPanel(String name, BindingContext bindingContext, List<String> parameters) {
         PropertyContainer container = new PropertyContainer();
-        for(String parameter: parameters){
+        for (String parameter: parameters) {
             Property prop = bindingContext.getPropertySet().getProperty(parameter);
             container.addProperty(prop);
         }
@@ -214,8 +282,7 @@ public class FccDialog extends SingleTargetProductDialog {
     }
 
     private void processAnnotationsRec(Class<?> operatorClass) {
-
-        final Class<?> superclass = operatorClass.getSuperclass();
+        Class<?> superclass = operatorClass.getSuperclass();
         if (superclass != null && !superclass.equals(Operator.class)) {
             processAnnotationsRec(superclass);
         }
@@ -261,15 +328,11 @@ public class FccDialog extends SingleTargetProductDialog {
 
             SourceProducts sourceProductsAnnotation = declaredField.getAnnotation(SourceProducts.class);
             if (sourceProductsAnnotation != null && Product[].class.isAssignableFrom(fieldType)) {
-                // Note: superclass declarations are overwritten here.
-                sourceProductsDescriptor = new AnnotationSourceProductsDescriptor(fieldName, sourceProductsAnnotation);
                 continue;
             }
 
             TargetProduct targetProductAnnotation = declaredField.getAnnotation(TargetProduct.class);
             if (targetProductAnnotation != null) {
-                // Note: superclass declarations are overwritten here.
-                targetProductDescriptor = new AnnotationTargetProductDescriptor(fieldName, targetProductAnnotation);
                 continue;
             }
 
@@ -284,11 +347,7 @@ public class FccDialog extends SingleTargetProductDialog {
     }
 
     private OperatorMenu createDefaultMenuBar() {
-        return new OperatorMenu(getJDialog(),
-                operatorDescriptor,
-                parameterSupport,
-                getAppContext(),
-                getHelpID());
+        return new OperatorMenu(getJDialog(), operatorDescriptor, parameterSupport, getAppContext(), getHelpID());
     }
 
     private void updateSourceProduct() {
@@ -391,5 +450,94 @@ public class FccDialog extends SingleTargetProductDialog {
             }
         }
         propertyDescriptor.setValueSet(new ValueSet(values));
+    }
+
+    private class TargetProductSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
+        private final Product targetProduct;
+        private long saveTime;
+        private final long createTargetProductTime;
+
+        private TargetProductSwingWorker(Product targetProduct, long createTargetProductTime) {
+            super(getJDialog(), "Run Forest Cover Change");
+
+            this.targetProduct = targetProduct;
+            this.createTargetProductTime = createTargetProductTime;
+        }
+
+        @Override
+        protected Product doInBackground(ProgressMonitor pm) throws Exception {
+            final TargetProductSelectorModel model = getTargetProductSelector().getModel();
+            pm.beginTask("Running...", model.isOpenInAppSelected() ? 100 : 95);
+            saveTime = 0L;
+            Product product = null;
+            try {
+                long t0 = System.currentTimeMillis();
+                OperatorProductReader operatorProductReader = (OperatorProductReader) this.targetProduct.getProductReader();
+                Operator operator = operatorProductReader.getOperatorContext().getOperator();
+
+                operator.doExecute(SubProgressMonitor.create(pm, 95));
+//                OperatorExecutor executor = OperatorExecutor.create(operator);
+//                executor.execute(SubProgressMonitor.create(pm, 95));
+
+                if (model.isSaveToFileSelected()) {
+                    File file = model.getProductFile();
+                    String formatName = model.getFormatName();
+                    boolean clearCacheAfterRowWrite = false;
+                    boolean incremental = false;
+                    GPF.writeProduct(this.targetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
+                }
+
+                product = this.targetProduct;
+
+                saveTime = System.currentTimeMillis() - t0;
+                if (model.isOpenInAppSelected()) {
+                    File targetFile = model.getProductFile();
+                    if (!targetFile.exists()) {
+                        targetFile = this.targetProduct.getFileLocation();
+                    }
+                    if (targetFile.exists()) {
+                        product = ProductIO.readProduct(targetFile);
+                        if (product == null) {
+                            product = this.targetProduct; // todo - check - this cannot be ok!!! (nf)
+                        }
+                    }
+                    pm.worked(5);
+                }
+            } finally {
+                pm.done();
+                if (product != this.targetProduct) {
+                    this.targetProduct.dispose();
+                }
+                Preferences preferences = SnapApp.getDefault().getPreferences();
+                if (preferences.getBoolean(GPF.BEEP_AFTER_PROCESSING_PROPERTY, false)) {
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            }
+            return product;
+        }
+
+        @Override
+        protected void done() {
+            final TargetProductSelectorModel model = getTargetProductSelector().getModel();
+            long totalSaveTime = saveTime + createTargetProductTime;
+            try {
+                final Product targetProduct = get();
+                if (model.isSaveToFileSelected() && model.isOpenInAppSelected()) {
+                    appContext.getProductManager().addProduct(targetProduct);
+                    showSaveAndOpenInAppInfo(totalSaveTime);
+                } else if (model.isOpenInAppSelected()) {
+                    appContext.getProductManager().addProduct(targetProduct);
+                    showOpenInAppInfo();
+                } else {
+                    showSaveInfo(totalSaveTime);
+                }
+            } catch (InterruptedException e) {
+                // ignore
+            } catch (ExecutionException e) {
+                handleProcessingError(e.getCause());
+            } catch (Throwable t) {
+                handleProcessingError(t);
+            }
+        }
     }
 }
