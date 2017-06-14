@@ -202,12 +202,6 @@ class S2tbxMosaicIOPanel extends JPanel {
         final BindingContext context = new BindingContext(propertySet);
         context.bind(S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE, updateTargetCheckBox);
         updateTargetCheckBox.setEnabled(false);
-        /*context.addPropertyChangeListener("nativeResolution",
-                (PropertyChangeEvent evt) ->{ if (S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION.equals(evt.getPropertyName())) {
-                    final PropertySet propertySet = context.getPropertySet();
-                    boolean useNativeResolution = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION));
-                    updateTargetCheckBox.setEnabled(!useNativeResolution);
-                }});*/
         targetProductPanel.add(updateTargetCheckBox);
 
         final CardLayout cards = new CardLayout(0, 3);
