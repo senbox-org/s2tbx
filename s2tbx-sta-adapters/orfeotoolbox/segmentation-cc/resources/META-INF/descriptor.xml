@@ -7,7 +7,7 @@
   <description>Performs segmentation of an image, and output either a raster or a vector file. In vector mode, large input datasets are supported.</description>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>
-  <menuLocation>Menu/Optical</menuLocation>
+  <menuLocation>Menu/Optical/OrfeoToolbox</menuLocation>
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/bin/$OTB_BINSEGMENTATION_CC_EXEC</mainToolFileLocation>
