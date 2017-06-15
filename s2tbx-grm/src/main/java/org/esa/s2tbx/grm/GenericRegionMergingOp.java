@@ -44,26 +44,33 @@ public class GenericRegionMergingOp extends Operator {
     public static final String BEST_FITTING_REGION_MERGING_CRITERION = "Best Fitting";
     public static final String LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION = "Local Mutual Best Fitting";
 
+    public static final String DEFAULT_TOTAL_NUMBER_OF_ITERATIONS = "50";
+    public static final String DEFAULT_THRESHOLD = "100.0";
+    public static final String DEFAULT_SPECTRAL_WEIGHT = "0.5";
+    public static final String DEFAULT_SHAPE_WEIGHT = "0.5";
+
     @Parameter(label = "Merging cost criterion",
+            defaultValue = BAATZ_SCHAPE_MERGING_COST_CRITERION,
             description = "The method to compute the region merging.",
             valueSet = {SPRING_MERGING_COST_CRITERION, BAATZ_SCHAPE_MERGING_COST_CRITERION, FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION})
     private String mergingCostCriterion;
 
     @Parameter(label = "Region merging criterion",
+            defaultValue = LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION,
             description = "The method to check the region merging.",
             valueSet = {BEST_FITTING_REGION_MERGING_CRITERION, LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION})
     private String regionMergingCriterion;
 
-    @Parameter(label = "Total iterations", description = "The total number of iterations.")
+    @Parameter(defaultValue = DEFAULT_TOTAL_NUMBER_OF_ITERATIONS, label = "Total iterations", description = "The total number of iterations.")
     private int totalIterationsForSecondSegmentation;
 
-    @Parameter(label = "Threshold", description = "The threshold.")
+    @Parameter(defaultValue = DEFAULT_THRESHOLD, label = "Threshold", description = "The threshold.")
     private float threshold;
 
-    @Parameter(label = "Spectral weight", description = "The spectral weight.")
+    @Parameter(defaultValue = DEFAULT_SPECTRAL_WEIGHT, label = "Spectral weight", description = "The spectral weight.")
     private float spectralWeight;
 
-    @Parameter(label = "Shape weight", description = "The shape weight.")
+    @Parameter(defaultValue = DEFAULT_SHAPE_WEIGHT, label = "Shape weight", description = "The shape weight.")
     private float shapeWeight;
 
     @SourceProduct(alias = "source", description = "The source product.")
@@ -235,6 +242,7 @@ public class GenericRegionMergingOp extends Operator {
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
+        this.targetProduct.setSceneGeoCoding(this.sourceProduct.getSceneGeoCoding());
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);

@@ -3,9 +3,9 @@
     #set($fileList = $sourceProduct.FileLocation.listFiles())
     #foreach($file in $fileList)
         #if($file.Name.startsWith("MTD_MSIL1C.xml") || ($file.Name.startsWith("S2A") && $file.Name.endsWith(".xml") && !$file.Name.endsWith("report.xml")))
-            #set($parentNameAux=$sourceProduct.FileLocation.Name.replace("L1C", "L2A").replace("OPER", "USER"))
-            #set($fileNameAux=$file.Name.replace("L1C", "L2A").replace("OPER", "USER"))
-            #set($targetName=$sourceProduct.FileLocation.ParentFile.toPath().resolve($parentNameAux).resolve($fileNameAux).toString())
+            #set($parentNameAux=$sourceProduct.FileLocation.ParentFile.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+            #set($fileNameAux=$sourceProduct.FileLocation.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+            #set($targetName=$sourceProduct.FileLocation.ParentFile.toPath().resolveSibling($parentNameAux).resolve($fileNameAux).toString())
         #end
     #end
 #else

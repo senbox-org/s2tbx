@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Pansharpening-rcs</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -13,7 +14,7 @@
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINPANSHARPENING_RCS_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
   <templateType>VELOCITY</templateType>
-  <template>
+  <template type="file">
     <file>pansharpening-rcs-template.vm</file>
   </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
@@ -21,16 +22,16 @@
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <windows></windows>
+      <value/>
+      <windows/>
       <linux>/usr/bin</linux>
-      <macosx></macosx>
+      <macosx/>
       <isTransient>false</isTransient>
       <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINPANSHARPENING_RCS_EXEC</key>
-      <value></value>
+      <value/>
       <windows>otbcli_Pansharpening.bat</windows>
       <linux>otbcli_Pansharpening</linux>
       <macosx>otbcli_Pansharpening</macosx>
@@ -41,7 +42,6 @@
   <parameters>
     <parameter>
       <name>targetProductFile</name>
-      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description> Output image.</description>
       <valueSet/>
@@ -54,12 +54,12 @@
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
   <sourceProductDescriptors>
-    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+    <org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
       <name>Input PAN Image</name>
-    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
-    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+    </org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
+    <org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
       <name>Input XS Image</name>
-    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+    </org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
   </sourceProductDescriptors>
   <targetPropertyDescriptors/>
   <numSourceProducts>1</numSourceProducts>

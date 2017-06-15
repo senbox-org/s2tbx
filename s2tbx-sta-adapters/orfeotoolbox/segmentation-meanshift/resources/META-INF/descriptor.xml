@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Segmentation-meanshift</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -13,7 +14,7 @@
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINSEGMENTATION_MEANSHIFT_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
   <templateType>VELOCITY</templateType>
-  <template>
+  <template type="file">
     <file>segmentation-meanshift-template.vm</file>
   </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
@@ -21,16 +22,16 @@
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <windows></windows>
+      <value/>
+      <windows/>
       <linux>/usr/bin</linux>
-      <macosx></macosx>
+      <macosx/>
       <isTransient>false</isTransient>
       <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINSEGMENTATION_MEANSHIFT_EXEC</key>
-      <value></value>
+      <value/>
       <windows>otbcli_Segmentation.bat</windows>
       <linux>otbcli_Segmentation</linux>
       <macosx>otbcli_Segmentation</macosx>
@@ -41,7 +42,6 @@
   <parameters>
     <parameter>
       <name>spatialr_int</name>
-      <alias>Spatial radius</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>5</defaultValue>
       <description>Spatial radius of the neighborhood.</description>
@@ -52,7 +52,6 @@
     </parameter>
     <parameter>
       <name>ranger_float</name>
-      <alias>Range radius</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>15</defaultValue>
       <description>Range radius defining the radius (expressed in radiometry unit) in the multispectral space.</description>
@@ -63,7 +62,6 @@
     </parameter>
     <parameter>
       <name>thres_float</name>
-      <alias>Mode convergence threshold</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.1</defaultValue>
       <description>Algorithm iterative scheme will stop if mean-shift vector is below this threshold or if iteration number reached maximum number of iterations.</description>
@@ -74,7 +72,6 @@
     </parameter>
     <parameter>
       <name>maxiter_int</name>
-      <alias>Maximum number of iterations</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>100</defaultValue>
       <description>Algorithm iterative scheme will stop if convergence hasn't been reached after the maximum number of iterations.</description>
@@ -85,7 +82,6 @@
     </parameter>
     <parameter>
       <name>minsize_int</name>
-      <alias>Minimum region size</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>100</defaultValue>
       <description>Minimum size of a region (in pixel unit) in segmentation. Smaller clusters will be merged to the neighboring cluster with the closest radiometry. If set to 0 no pruning is done.</description>
@@ -96,7 +92,6 @@
     </parameter>
     <parameter>
       <name>out_str</name>
-      <alias>Output vector file</alias>
       <dataType>java.io.File</dataType>
       <defaultValue>segmentation-meanshift.shp</defaultValue>
       <description>The output vector file or database (name can be anything understood by OGR)</description>
@@ -107,7 +102,6 @@
     </parameter>
     <parameter>
       <name>outmode_string</name>
-      <alias>Writing mode for the output vector file</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>ulco</defaultValue>
       <description>This allows setting the writing behaviour for the output vector file. Please note that the actual behaviour depends on the file format.</description>
@@ -118,7 +112,6 @@
     </parameter>
     <parameter>
       <name>neighbor_bool</name>
-      <alias>8-neighbor connectivity</alias>
       <dataType>java.lang.Boolean</dataType>
       <defaultValue>True</defaultValue>
       <description>Activate 8-Neighborhood connectivity (default is 4).</description>
@@ -129,7 +122,6 @@
     </parameter>
     <parameter>
       <name>stitch_bool</name>
-      <alias>Stitch polygons</alias>
       <dataType>java.lang.Boolean</dataType>
       <defaultValue>True</defaultValue>
       <description>Scan polygons on each side of tiles and stitch polygons which connect by more than one pixel.</description>
@@ -140,7 +132,6 @@
     </parameter>
     <parameter>
       <name>minsize_int</name>
-      <alias>Minimum object size</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1</defaultValue>
       <description>Objects whose size is below the minimum object size (area in pixels) will be ignored during vectorization.</description>
@@ -151,7 +142,6 @@
     </parameter>
     <parameter>
       <name>simplify_float</name>
-      <alias>Simplify polygons</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.1</defaultValue>
       <description>Simplify polygons according to a given tolerance (in pixel). This option allows reducing the size of the output file or database.</description>
@@ -162,7 +152,6 @@
     </parameter>
     <parameter>
       <name>layername_string</name>
-      <alias>Layer name</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>layer</defaultValue>
       <description>Name of the layer in the vector file or database (default is Layer).</description>
@@ -173,7 +162,6 @@
     </parameter>
     <parameter>
       <name>fieldname_string</name>
-      <alias>Geometry index field name</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>DN</defaultValue>
       <description>Name of the field holding the geometry index in the output vector file or database.</description>
@@ -184,7 +172,6 @@
     </parameter>
     <parameter>
       <name>tilesize_int</name>
-      <alias>Tiles size</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1024</defaultValue>
       <description>User defined tiles size for tile-based segmentation. Optimal tile size is selected according to available RAM if null.</description>
@@ -195,7 +182,6 @@
     </parameter>
     <parameter>
       <name>startlabel_int</name>
-      <alias>Starting geometry index</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1</defaultValue>
       <description>Starting value of the geometry index field</description>
@@ -209,9 +195,9 @@
   <isSystem>false</isSystem>
   <isHandlingOutputName>true</isHandlingOutputName>
   <sourceProductDescriptors>
-    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+    <org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
       <name>Input Image</name>
-    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+    </org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
   </sourceProductDescriptors>
   <targetPropertyDescriptors/>
   <numSourceProducts>1</numSourceProducts>
