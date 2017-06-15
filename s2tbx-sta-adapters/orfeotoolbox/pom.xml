@@ -26,7 +26,7 @@
         <module>segmentation-meanshift</module>
         <module>segmentation-mprofiles</module>
         <module>segmentation-watershed</module>
-        <module>s-f-s-texture-extraction</module>
+        <module>sfstextureextraction</module>
     </modules>
 
 </project>

@@ -84,7 +84,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s-f-s-texture-extraction</artifactId>
+            <artifactId>sfstextureextraction</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
