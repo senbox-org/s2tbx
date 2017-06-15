@@ -117,6 +117,7 @@ class S2tbxMosaicFormModel {
     void setSourceProducts(File[] files) throws IOException {
         boolean changeSourceProducts = false;
         boolean atLeastOneUniSizeProduct = false;
+        boolean allProductsUniSize = true;
         if (files != null && files.length > 0) {
             final List<File> fileList = Arrays.asList(files);
             final Iterator<Map.Entry<File, Product>> iterator = sourceProductMap.entrySet().iterator();
@@ -139,6 +140,8 @@ class S2tbxMosaicFormModel {
                     product = ProductIO.readProduct(file);
                     if(!product.isMultiSize()){
                         atLeastOneUniSizeProduct = true;
+                    } else {
+                        allProductsUniSize = false;
                     }
                     sourceProductMap.put(file, product);
                     if (Boolean.TRUE.equals(getPropertyValue(PROPERTY_SHOW_SOURCE_PRODUCTS))) {
@@ -149,6 +152,8 @@ class S2tbxMosaicFormModel {
                 else{
                     if(!product.isMultiSize()){
                         atLeastOneUniSizeProduct = true;
+                    } else {
+                        allProductsUniSize = false;
                     }
                 }
                 final int refNo = i + 1;
@@ -160,18 +165,21 @@ class S2tbxMosaicFormModel {
 
             bindingContext = parentForm.getBindingContext();
             bindingContext.bindEnabledState(PROPERTY_NATIVE_RESOLUTION, !atLeastOneUniSizeProduct,enableNativeResolution(true));
+            bindingContext.bindEnabledState(PROPERTY_OVERLAPPING, !allProductsUniSize, enableNativeResolution(true));
             bindingContext.bindEnabledState("pixelSizeX", atLeastOneUniSizeProduct, enableNativeResolution(true));
             bindingContext.bindEnabledState("pixelSizeY", atLeastOneUniSizeProduct, enableNativeResolution(true));
         }
         if(files.length == 0){
             bindingContext = parentForm.getBindingContext();
             bindingContext.bindEnabledState(PROPERTY_NATIVE_RESOLUTION, true ,enableNativeResolution(true));
+            bindingContext.bindEnabledState(PROPERTY_OVERLAPPING, true, enableNativeResolution(true));
             bindingContext.bindEnabledState("pixelSizeX", false, enableNativeResolution(true));
             bindingContext.bindEnabledState("pixelSizeY", false, enableNativeResolution(true));
         }
         /* update region selectable map bounds according to the SourceProducts status: REMOVE or NEW product(s) */
         if (changeSourceProducts) updateRegionSelectableMapBounds(files);
     }
+
 
     private Enablement.Condition enableNativeResolution(boolean state) {
         return new Enablement.Condition() {

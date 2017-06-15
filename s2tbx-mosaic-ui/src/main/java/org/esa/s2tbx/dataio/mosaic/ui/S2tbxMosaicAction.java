@@ -45,11 +45,8 @@ public class S2tbxMosaicAction extends AbstractSnapAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (dialog == null) {
-            dialog = new S2tbxMosaicDialog(Bundle.CTL_S2MosaicAction_Name(),
-                                      "multiSizeMosaicAction", getAppContext());
-
-        }
+        dialog = new S2tbxMosaicDialog(Bundle.CTL_S2MosaicAction_Name(),
+                                       "multiSizeMosaicAction", getAppContext());
         dialog.show();
     }
 
