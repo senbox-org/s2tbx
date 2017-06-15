@@ -16,6 +16,7 @@
 
 package org.esa.s2tbx.dataio.mosaic.ui;
 
+import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.snap.core.gpf.ui.TargetProductSelector;
 import org.esa.snap.ui.AppContext;
 
@@ -50,6 +51,10 @@ public class S2tbxMosaicForm extends JTabbedPane {
 
     S2tbxMosaicFormModel getFormModel() {
         return mosaicModel;
+    }
+
+    public BindingContext getBindingContext() {
+        return mapProjectionPanel.getBindingContext();
     }
 
     void prepareShow() {

@@ -20,6 +20,8 @@ import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.binding.accessors.MapEntryAccessor;
+import com.bc.ceres.swing.binding.BindingContext;
+import com.bc.ceres.swing.binding.Enablement;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -78,7 +80,7 @@ class S2tbxMosaicFormModel {
     private final Map<File, Product> sourceProductMap = Collections.synchronizedMap(new HashMap<>());
     private final WorldMapPaneDataModel worldMapModel = new WorldMapPaneDataModel();
     private S2tbxMosaicForm parentForm;
-
+    private BindingContext bindingContext;
     S2tbxMosaicFormModel(S2tbxMosaicForm parentForm) {
         this.parentForm = parentForm;
 
@@ -102,6 +104,7 @@ class S2tbxMosaicFormModel {
                     worldMapModel.setProducts(null);
                 }
         });
+
     }
 
     private void addTransientProperty(String propertyName, Class<?> propertyType) {
@@ -113,6 +116,7 @@ class S2tbxMosaicFormModel {
 
     void setSourceProducts(File[] files) throws IOException {
         boolean changeSourceProducts = false;
+        boolean atLeastOneUniSizeProduct = false;
         if (files != null && files.length > 0) {
             final List<File> fileList = Arrays.asList(files);
             final Iterator<Map.Entry<File, Product>> iterator = sourceProductMap.entrySet().iterator();
@@ -129,14 +133,23 @@ class S2tbxMosaicFormModel {
 
             for (int i = 0; i < files.length; i++) {
                 final File file = files[i];
+
                 Product product = sourceProductMap.get(file);
                 if (product == null) {
                     product = ProductIO.readProduct(file);
+                    if(!product.isMultiSize()){
+                        atLeastOneUniSizeProduct = true;
+                    }
                     sourceProductMap.put(file, product);
                     if (Boolean.TRUE.equals(getPropertyValue(PROPERTY_SHOW_SOURCE_PRODUCTS))) {
                         worldMapModel.addProduct(product);
                     }
                     changeSourceProducts = true;
+                }
+                else{
+                    if(!product.isMultiSize()){
+                        atLeastOneUniSizeProduct = true;
+                    }
                 }
                 final int refNo = i + 1;
                 if (product.getRefNo() != refNo) {
@@ -144,10 +157,34 @@ class S2tbxMosaicFormModel {
                     product.setRefNo(refNo);
                 }
             }
+
+            bindingContext = parentForm.getBindingContext();
+            bindingContext.bindEnabledState(PROPERTY_NATIVE_RESOLUTION, !atLeastOneUniSizeProduct,enableNativeResolution(true));
+            bindingContext.bindEnabledState("pixelSizeX", atLeastOneUniSizeProduct, enableNativeResolution(true));
+            bindingContext.bindEnabledState("pixelSizeY", atLeastOneUniSizeProduct, enableNativeResolution(true));
+        }
+        if(files.length == 0){
+            bindingContext = parentForm.getBindingContext();
+            bindingContext.bindEnabledState(PROPERTY_NATIVE_RESOLUTION, true ,enableNativeResolution(true));
+            bindingContext.bindEnabledState("pixelSizeX", false, enableNativeResolution(true));
+            bindingContext.bindEnabledState("pixelSizeY", false, enableNativeResolution(true));
         }
         /* update region selectable map bounds according to the SourceProducts status: REMOVE or NEW product(s) */
         if (changeSourceProducts) updateRegionSelectableMapBounds(files);
     }
+
+    private Enablement.Condition enableNativeResolution(boolean state) {
+        return new Enablement.Condition() {
+            @Override
+            public boolean evaluate(BindingContext bindingContext) {
+                if(state){
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
+
 
     private void updateRegionSelectableMapBounds(File[] files){
 

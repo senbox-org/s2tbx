@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.mosaic.ui;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
+import com.bc.ceres.swing.binding.Enablement;
 import java.awt.Dimension;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -26,6 +27,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.esa.snap.binning.operator.BinningOp;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.dataop.dem.ElevationModelDescriptor;
@@ -92,6 +94,7 @@ class S2tbxMosaicMapProjectionPanel extends JPanel {
                     Boolean enabled1 = !updateMode;
                     crsSelectionPanel.setEnabled(enabled1);
                 });
+
     }
 
     private void createUI() {
@@ -160,15 +163,22 @@ class S2tbxMosaicMapProjectionPanel extends JPanel {
         final JCheckBox performAtNativeResolution = new JCheckBox("Perform mosaic at native resolution");
         performAtNativeResolution.setSelected(true);
         bindingCtx.bind(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION, performAtNativeResolution);
-
+        bindingCtx.bindEnabledState("pixelSizeX", false,isNativeResolutionUsed(true));
+        bindingCtx.bindEnabledState("pixelSizeY", false,isNativeResolutionUsed(true));
         final JComboBox<String> overlappingComboBox = new JComboBox<>(new DefaultComboBoxModel<>(OVERLAPPING_VALUES));
         bindingCtx.bind(S2tbxMosaicFormModel.PROPERTY_OVERLAPPING, overlappingComboBox);
-
         bindingCtx.addPropertyChangeListener(
                 (PropertyChangeEvent evt) -> { if (S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION.equals(evt.getPropertyName())){
                     final PropertySet propertySet = bindingCtx.getPropertySet();
                     boolean useNativeResolution = Boolean.TRUE.equals(propertySet.getValue(S2tbxMosaicFormModel.PROPERTY_NATIVE_RESOLUTION));
-                    overlappingComboBox.setEnabled(useNativeResolution);}});
+                   if(useNativeResolution){
+                       bindingCtx.bindEnabledState("pixelSizeX", false,isNativeResolutionUsed(useNativeResolution));
+                       bindingCtx.bindEnabledState("pixelSizeY", false,isNativeResolutionUsed(useNativeResolution));
+                   }else {
+                       bindingCtx.bindEnabledState("pixelSizeX", true, isNativeResolutionUsed(!useNativeResolution));
+                       bindingCtx.bindEnabledState("pixelSizeY", true, isNativeResolutionUsed(!useNativeResolution));
+                   }
+                }});
 
         boundsInputPanel = new BoundsInputPanel(bindingCtx, S2tbxMosaicFormModel.PROPERTY_UPDATE_MODE);
         panel.add(boundsInputPanel.createBoundsInputPanel(true));
@@ -181,6 +191,17 @@ class S2tbxMosaicMapProjectionPanel extends JPanel {
         panel.add(showSourceProductsCheckBox);
 
         return panel;
+    }
+    private static Enablement.Condition isNativeResolutionUsed(final boolean state) {
+        return new Enablement.Condition() {
+            @Override
+            public boolean evaluate(BindingContext bindingContext) {
+                if(state){
+                    return true;
+                }
+                return false;
+            }
+        };
     }
 
     private JPanel createOrthorectifyPanel() {

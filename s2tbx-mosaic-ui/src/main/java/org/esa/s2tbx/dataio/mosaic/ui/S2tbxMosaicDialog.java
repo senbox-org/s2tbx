@@ -16,6 +16,10 @@
 
 package org.esa.s2tbx.dataio.mosaic.ui;
 
+import com.bc.ceres.binding.PropertySet;
+import com.bc.ceres.swing.binding.Binding;
+import com.bc.ceres.swing.binding.BindingContext;
+import com.bc.ceres.swing.binding.Enablement;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.dataop.barithm.BandArithmetic;
 import org.esa.snap.core.dataop.dem.ElevationModelDescriptor;
@@ -117,7 +121,27 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
     public int show() {
         form.prepareShow();
         setContent(form);
-        return super.show();
+        int result = super.show();
+        setDisabledState();
+        return result;
+    }
+
+    private void setDisabledState() {
+        final BindingContext bindingCtx = form.getBindingContext();
+        bindingCtx.bindEnabledState("pixelSizeX", false, enablePixelSize(true));
+        bindingCtx.bindEnabledState("pixelSizeY", false, enablePixelSize(true));
+    }
+
+    private static Enablement.Condition enablePixelSize(final boolean state) {
+        return new Enablement.Condition() {
+            @Override
+            public boolean evaluate(BindingContext bindingContext) {
+                if(state){
+                    return true;
+                }
+                return false;
+            }
+        };
     }
 
     @Override
@@ -125,7 +149,6 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
         form.prepareHide();
         super.hide();
     }
-
 
     private boolean verifyVariablesAndConditions(S2tbxMosaicFormModel mosaicModel) {
         final Map<String, Product> sourceProductMap = mosaicModel.getSourceProductMap();
