@@ -419,6 +419,12 @@ public final class S2tbxMosaicOp extends Operator {
                 this.pixelSizeX = pixelSize[0];
                 this.pixelSizeY = pixelSize[1];
             }
+            final double[] maximumPixelSizeSourceProduct = computeSourceProductMaximumResolution(this.sourceProducts[0]);
+            if(maximumPixelSizeSourceProduct[0] != this.pixelSizeX ||
+                    maximumPixelSizeSourceProduct[1] != this.pixelSizeY) {
+                this.pixelSizeX = maximumPixelSizeSourceProduct[0];
+                this.pixelSizeY = maximumPixelSizeSourceProduct[1];
+            }
             final int width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / this.pixelSizeX);
             final int height = MathUtils.floorInt(this.targetEnvelope.getSpan(1) / this.pixelSizeY);
             final CrsGeoCoding geoCoding = new CrsGeoCoding(targetCRS,
@@ -438,6 +444,20 @@ public final class S2tbxMosaicOp extends Operator {
         } catch (Exception e) {
             throw new OperatorException(e);
         }
+    }
+
+    private double[] computeSourceProductMaximumResolution(Product sourceProduct) {
+        AffineTransform affTransform = sourceProduct.getBandAt(0).getSourceImage().getModel().getImageToModelTransform(0);
+        double[] productResolution = new double[] {affTransform.getScaleX(),Math.abs(affTransform.getScaleY())};
+        for(int index = 0;index<sourceProduct.getNumBands();index++)
+        {
+            affTransform = sourceProduct.getBandAt(index).getSourceImage().getModel().getImageToModelTransform(0);
+            if(( affTransform.getScaleX() < productResolution[0])||(Math.abs(affTransform.getScaleY()) < productResolution[1])){
+                productResolution[0] = affTransform.getScaleX();
+                productResolution[1] = Math.abs(affTransform.getScaleY());
+            }
+        }
+        return productResolution;
     }
 
     private void addTargetBands(Product product) {
