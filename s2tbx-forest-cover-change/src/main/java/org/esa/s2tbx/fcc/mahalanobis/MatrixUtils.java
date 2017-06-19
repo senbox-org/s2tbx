@@ -18,7 +18,7 @@ public class MatrixUtils {
         return transposedMatrix;
     }
 
-    public static Matrix multiplyByConstant(Matrix matrix, double constant) {
+    public static Matrix multiplyByConstant(Matrix matrix, float constant) {
         Matrix mat = new Matrix(matrix.getRowCount(), matrix.getColumnCount());
         for (int i = 0; i < matrix.getRowCount(); i++) {
             for (int j = 0; j < matrix.getColumnCount(); j++) {
@@ -51,17 +51,17 @@ public class MatrixUtils {
         return mat;
     }
 
-    private static double determinant(Matrix matrix) {
+    private static float determinant(Matrix matrix) {
         return matrix.computeDeterminant();
     }
 
     public static Matrix inverse(Matrix matrix) {
         Matrix tempMatrix = transpose(cofactor(matrix));
-        double matrixDeterminant = determinant(matrix);
-        if (matrixDeterminant == 0.0d) {
+        float matrixDeterminant = determinant(matrix);
+        if (matrixDeterminant == 0.0f) {
             return null;
         }
-        return multiplyByConstant(tempMatrix, 1.0d/matrixDeterminant);
+        return multiplyByConstant(tempMatrix, 1.0f/matrixDeterminant);
     }
 
     public static Matrix subtract(Matrix matrix1, Matrix matrix2) {
@@ -97,7 +97,7 @@ public class MatrixUtils {
 
         for (int i=0;i<multipliedMatrix.getRowCount();i++) {
             for (int j=0;j<multipliedMatrix.getColumnCount();j++) {
-                double sum = 0.0f;
+                float sum = 0.0f;
                 for (int k=0;k<matrix1.getColumnCount();k++) {
                     sum += matrix1.getValueAt(i, k) * matrix2.getValueAt(k, j);
                 }

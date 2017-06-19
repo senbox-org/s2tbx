@@ -5,6 +5,7 @@ import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.chi.distribution.ChiSquareDistribution;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
@@ -41,7 +42,7 @@ public class TrimmingHelper {
         double chi = computeChiDistribution(4);
 
         while (true) {
-            Object2DoubleOpenHashMap<PixelSourceBands> result = MahalanobisDistance.computeMahalanobisSquareMatrix(statistics.values());
+            Object2FloatOpenHashMap<PixelSourceBands> result = MahalanobisDistance.computeMahalanobisSquareMatrix(statistics.values());
             if (result == null) {
                 break;
             } else {
@@ -51,7 +52,7 @@ public class TrimmingHelper {
                 while (it.hasNext()) {
                     Int2ObjectMap.Entry<PixelSourceBands> entry = it.next();
                     PixelSourceBands point = entry.getValue();
-                    double distance = result.getDouble(point);
+                    float distance = result.getFloat(point);
                     if (distance <= chi) {
                         validStatistics.put(entry.getIntKey(), point);
                     }

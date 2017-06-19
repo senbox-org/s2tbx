@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
@@ -17,11 +18,11 @@ import java.util.List;
  */
 public class MahalanobisDistance {
 
-    public static Object2DoubleOpenHashMap<PixelSourceBands> computeMahalanobisSquareMatrix(Collection<PixelSourceBands> points) {
-        double meanValueB4Band = 0.0d;
-        double meanValueB8Band = 0.0d;
-        double meanValueB11Band = 0.0d;
-        double standardDeviationValueB11Band = 0.0d;
+    public static Object2FloatOpenHashMap<PixelSourceBands> computeMahalanobisSquareMatrix(Collection<PixelSourceBands> points) {
+        float meanValueB4Band = 0.0f;
+        float meanValueB8Band = 0.0f;
+        float meanValueB11Band = 0.0f;
+        float standardDeviationValueB11Band = 0.0f;
         for (PixelSourceBands point : points) {
             meanValueB4Band += point.getMeanValueB4Band();
             meanValueB8Band += point.getMeanValueB8Band();
@@ -31,10 +32,10 @@ public class MahalanobisDistance {
 
         int numberOfPoints = points.size();
 
-        meanValueB4Band = meanValueB4Band / (double)numberOfPoints;
-        meanValueB8Band = meanValueB8Band / (double)numberOfPoints;
-        meanValueB11Band = meanValueB11Band / (double)numberOfPoints;
-        standardDeviationValueB11Band = standardDeviationValueB11Band / (double)numberOfPoints;
+        meanValueB4Band = meanValueB4Band / (float)numberOfPoints;
+        meanValueB8Band = meanValueB8Band / (float)numberOfPoints;
+        meanValueB11Band = meanValueB11Band / (float)numberOfPoints;
+        standardDeviationValueB11Band = standardDeviationValueB11Band / (float)numberOfPoints;
 
         Matrix matrix = new Matrix(numberOfPoints, 4);
         Int2ObjectMap<PixelSourceBands> map = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
@@ -55,12 +56,12 @@ public class MahalanobisDistance {
         if (inverseMatrix != null) {
             Matrix resultMatrix = MatrixUtils.multiply(matrix, inverseMatrix);
             Matrix squaredMahalanobisMatrix = MatrixUtils.multiply(resultMatrix, transposeMatrix);
-            Object2DoubleOpenHashMap<PixelSourceBands> result = new Object2DoubleOpenHashMap<PixelSourceBands>();
+            Object2FloatOpenHashMap<PixelSourceBands> result = new Object2FloatOpenHashMap<PixelSourceBands>();
             int matrixSize = squaredMahalanobisMatrix.getColumnCount();
             for (int i=0; i<matrixSize; i++) {
-                double value = squaredMahalanobisMatrix.getValueAt(i, i);
+                float value = squaredMahalanobisMatrix.getValueAt(i, i);
                 PixelSourceBands point = map.get(i);
-                result.put(point, Math.sqrt(value));
+                result.put(point, (float)Math.sqrt(value));
             }
             return result;
         }

@@ -4,21 +4,21 @@ package org.esa.s2tbx.fcc.mahalanobis;
  * Created by jcoravu on 6/6/2017.
  */
 public class Matrix {
-    private double data[][];
+    private float data[][];
 
     public Matrix(int rowCount, int columnCount) {
-        this.data = new double[rowCount][columnCount];
+        this.data = new float[rowCount][columnCount];
 
         for (int i=0; i<rowCount; i++) {
-            this.data[i] = new double[columnCount];
+            this.data[i] = new float[columnCount];
         }
     }
 
-    public void setValueAt(int rowIndex, int columnIndex, double cellValue) {
+    public void setValueAt(int rowIndex, int columnIndex, float cellValue) {
         this.data[rowIndex][columnIndex] = cellValue;
     }
 
-    public double getValueAt(int rowIndex, int columnIndex) {
+    public float getValueAt(int rowIndex, int columnIndex) {
         return this.data[rowIndex][columnIndex];
     }
 
@@ -34,19 +34,19 @@ public class Matrix {
         return getRowCount() == getColumnCount();
     }
 
-    public double computeDeterminant() {
+    public float computeDeterminant() {
         if (!isSquare()) {
             throw new IllegalArgumentException("The matrix must be square.");
         }
         return determinant(this.data);
     }
 
-    private static double determinant(double[][] matrix) {
+    private static float determinant(float[][] matrix) {
         int n = matrix.length;
         if (n == 1) {
             return matrix[0][0];
         } else {
-            double det = 0.0d;
+            float det = 0.0f;
             for (int j = 0; j < n; j++) {
                 det += Math.pow(-1, j) * matrix[0][j] * determinant(minor(matrix, 0, j));
             }
@@ -63,13 +63,13 @@ public class Matrix {
      * @param j removing the j-th column of m
      * @return minor of m
      */
-    private static double[][] minor(double[][] matrix, int i, int j) {
+    private static float[][] minor(float[][] matrix, int i, int j) {
         int n = matrix.length;
-        double[][] minor = new double[n-1][n-1];
+        float[][] minor = new float[n-1][n-1];
         // index for minor matrix position:
         int r = 0, s = 0;
         for (int k = 0; k < n; k++) {
-            double[] row = matrix[k];
+            float[] row = matrix[k];
             if (k != i) {
                 for (int l = 0; l < row.length; l++) {
                     if (l != j) {
