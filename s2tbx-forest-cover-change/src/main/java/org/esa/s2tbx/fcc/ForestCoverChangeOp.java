@@ -1,16 +1,21 @@
 package org.esa.s2tbx.fcc;
 
 import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.s2tbx.fcc.intern.BandsExtractor;
+import org.esa.s2tbx.fcc.intern.ColorFillerOp;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
 import org.esa.s2tbx.fcc.intern.TrimmingHelper;
+import org.esa.s2tbx.grm.AbstractGenericRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -18,11 +23,21 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
+import org.esa.snap.core.gpf.descriptor.SourceProductDescriptor;
+import org.esa.snap.core.gpf.descriptor.SourceProductsDescriptor;
+import org.esa.snap.core.gpf.internal.OperatorExecutor;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
 import java.io.File;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -38,6 +53,8 @@ import java.util.logging.Logger;
         authors = "Razvan Dumitrascu, Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class ForestCoverChangeOp extends Operator {
+    private static final Logger logger = Logger.getLogger(ForestCoverChangeOp.class.getName());
+
     @SourceProduct(alias = "Source Product TM", description = "The source product to be modified.")
     private Product currentSourceProduct;
     @SourceProduct(alias = "Source Product ETM", description = "The source product to be modified.")
@@ -96,57 +113,244 @@ public class ForestCoverChangeOp extends Operator {
         this.targetProduct.addBand(targetBand);
 
         //TODO Jean remove
-        Logger rootLogger = Logger.getLogger("org.esa.s2tbx.grm");
-        rootLogger.setLevel(Level.FINER);
+        Logger logger = Logger.getLogger("org.esa.s2tbx.fcc");
+        logger.setLevel(Level.FINE);
     }
+
+//    @Override
+//    public void doExecute(ProgressMonitor pm) throws OperatorException {
+//        this.targetProduct.getBandAt(0).setSourceImage(null);
+//
+//        if (logger.isLoggable(Level.FINE)) {
+//            logger.log(Level.FINE, ""); // add an empty line
+//            logger.log(Level.FINE, "Start execution Forest Cover Change");
+//        }
+//
+//        String[] sourceBandNames = new String[] {"B4", "B8", "B11", "B12"}; // int[] indexes = new int[] {3, 4, 10, 11};
+//
+//        Product previousProduct = generateBandsExtractor(this.previousSourceProduct, sourceBandNames);
+//
+//        Product currentProduct = generateBandsExtractor(this.currentSourceProduct, sourceBandNames);
+//
+//        logger.log(Level.FINE, "Before segmentation all bands");
+//
+//        Product segmentationAllBandsProduct = generateBandsSegmentation(currentProduct, previousProduct);
+//
+//        logger.log(Level.FINE, "Before trimming");
+//
+//        int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
+//
+//        IntSet currentSegmentationTrimmingRegionKeys = computeTrimming(segmentationAllBandsProduct, currentProduct, trimmingSourceProductBandIndices);
+//
+//        IntSet previousSegmentationTrimmingRegionKeys = computeTrimming(segmentationAllBandsProduct, previousProduct, trimmingSourceProductBandIndices);
+//
+//        logger.log(Level.FINE, "Before generate color fill");
+//
+//        Product currentProductColorFill = generateColorFill(currentProduct);
+//        Product previousProductColorFill = generateColorFill(previousProduct);
+//
+//        logger.log(Level.FINE, "Before run union mask");
+//        runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
+//
+//        if (logger.isLoggable(Level.FINE)) {
+//            logger.log(Level.FINE, ""); // add an empty line
+//            logger.log(Level.FINE, "Finish execution Forest Cover Change");
+//        }
+//    }
 
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
         this.targetProduct.getBandAt(0).setSourceImage(null);
 
-        File parentFolder = new File("D:\\Forest_cover_changes");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start execution Forest Cover Change");
+        }
 
-        String[] sourceBandNames = new String[] {"B4", "B5", "B10", "B11"}; // int[] indexes = new int[] {3, 4, 10, 11};
+        String[] sourceBandNames = new String[] {"B4", "B8", "B11", "B12"}; // int[] indexes = new int[] {3, 4, 10, 11};
 
-        Product previousProduct = BandsExtractor.generateBandsExtractor(this.previousSourceProduct, sourceBandNames);
-        previousProduct = BandsExtractor.resampleAllBands(previousProduct);
+        Product previousProduct = generateBandsExtractor(this.previousSourceProduct, sourceBandNames);
 
-        Product currentProduct = BandsExtractor.generateBandsExtractor(this.currentSourceProduct, sourceBandNames);
-        currentProduct = BandsExtractor.resampleAllBands(currentProduct);
+        Product currentProduct = generateBandsExtractor(this.currentSourceProduct, sourceBandNames);
 
-        Product bandsDifferenceProduct = BandsExtractor.generateBandsDifference(currentProduct, previousProduct);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start generate color fill for current product");
+        }
 
-        Product segmentationAllBandsProduct = BandsExtractor.runSegmentation(currentProduct, previousProduct, bandsDifferenceProduct,
-                                                                             mergingCostCriterion, regionMergingCriterion,
-                                                                             totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
-        BandsExtractor.writeProduct(segmentationAllBandsProduct, parentFolder, "severalSourcesGenericRegionMergingOp");
+        Product currentProductColorFill = generateColorFill(currentProduct);
 
-        Product currentSegmentationProduct = BandsExtractor.runSegmentation(currentProduct, mergingCostCriterion, regionMergingCriterion,
-                                                                            totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
-        BandsExtractor.writeProduct(currentSegmentationProduct, parentFolder, "firstSegmentation");
-
-        Product previousSegmentationProduct = BandsExtractor.runSegmentation(previousProduct, mergingCostCriterion, regionMergingCriterion,
-                                                                             totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
-        BandsExtractor.writeProduct(previousSegmentationProduct, parentFolder, "secondSegmentation");
-
-        Product currentProductColorFill = BandsExtractor.runColorFillerOp(currentSegmentationProduct, forestCoverPercentage);
-        BandsExtractor.writeProduct(currentProductColorFill, parentFolder, "firstProductColorFill");
-
-        Product previousProductColorFill = BandsExtractor.runColorFillerOp(previousSegmentationProduct, forestCoverPercentage);
-        BandsExtractor.writeProduct(previousProductColorFill, parentFolder, "secondProductColorFill");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start trimming for current product");
+        }
 
         int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
 
+        IntSet currentSegmentationTrimmingRegionKeys = computeTrimming(currentProductColorFill, currentProduct, trimmingSourceProductBandIndices);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start generate color fill for previous product");
+        }
+
+        Product previousProductColorFill = generateColorFill(previousProduct);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start trimming for previous product");
+        }
+
+        IntSet previousSegmentationTrimmingRegionKeys = computeTrimming(previousProductColorFill, previousProduct, trimmingSourceProductBandIndices);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start running union mask");
+        }
+        runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish execution Forest Cover Change");
+        }
+    }
+
+    private IntSet computeTrimming(Product segmentationAllBandsProduct, Product currentProduct, int[] trimmingSourceProductBandIndices) {
         Int2ObjectMap<PixelSourceBands> currentTrimmingStatistics = TrimmingHelper.doTrimming(segmentationAllBandsProduct, currentProduct, trimmingSourceProductBandIndices);
-        IntSet currentSegmentationTrimmingRegionKeys = currentTrimmingStatistics.keySet();
+        return currentTrimmingStatistics.keySet();
+    }
 
-        Int2ObjectMap<PixelSourceBands> previousTrimmingStatistics = TrimmingHelper.doTrimming(segmentationAllBandsProduct, previousProduct, trimmingSourceProductBandIndices);
-        IntSet previousSegmentationTrimmingRegionKeys = previousTrimmingStatistics.keySet();
+    private Product generateColorFill(Product sourceProduct) {
+        Product segmentationProduct = runSegmentation(sourceProduct, mergingCostCriterion, regionMergingCriterion,
+                                                                        totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+        return runColorFillerOp(segmentationProduct, forestCoverPercentage);
+    }
 
-        BandsExtractor.runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
-//        Product unionMasksProduct = BandsExtractor.runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill,
-//                                                                   previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
-//        BandsExtractor.writeProduct(unionMasksProduct, parentFolder, "unionMasksProduct");
+    private Product generateBandsSegmentation(Product currentProduct, Product previousProduct) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Generate bands segmentation");
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("mergingCostCriterion", mergingCostCriterion);
+        parameters.put("regionMergingCriterion", regionMergingCriterion);
+        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
+        parameters.put("threshold", threshold);
+        parameters.put("spectralWeight", spectralWeight);
+        parameters.put("shapeWeight", shapeWeight);
+        Map<String, Product> sourceProducts = new HashMap<String, Product>();
+        sourceProducts.put("currentSourceProduct", currentProduct);
+        sourceProducts.put("previousSourceProduct", previousProduct);
+        Operator operator = GPF.getDefaultInstance().createOperator("ImageSegmentationOp", parameters, sourceProducts, null);
+        Product targetProduct = operator.getTargetProduct();
+        targetProduct.setSceneGeoCoding(currentProduct.getSceneGeoCoding());
+        OperatorExecutor executor = OperatorExecutor.create(operator);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        return targetProduct;
+    }
+
+    private static Product runSegmentation(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion,
+                                          int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
+                                          float shapeWeight) {
+
+        String[] sourceBandNames = buildBandNamesArray(sourceProduct);
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("mergingCostCriterion", mergingCostCriterion);
+        parameters.put("regionMergingCriterion", regionMergingCriterion);
+        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
+        parameters.put("threshold", threshold);
+        parameters.put("spectralWeight", spectralWeight);
+        parameters.put("shapeWeight", shapeWeight);
+        parameters.put("sourceBandNames", sourceBandNames);
+
+        Map<String, Product> sourceProducts = new HashMap<String, Product>();
+        sourceProducts.put("sourceProduct", sourceProduct);
+
+        Operator operator = GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
+        Product targetProduct = operator.getTargetProduct();
+        targetProduct.setSceneGeoCoding(sourceProduct.getSceneGeoCoding());
+        OperatorExecutor executor = OperatorExecutor.create(operator);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        return targetProduct;
+    }
+
+    private static String[] buildBandNamesArray(Product sourceProduct) {
+        ProductNodeGroup<Band> bandGroup = sourceProduct.getBandGroup();
+        int bandCount = bandGroup.getNodeCount();
+        String[] sourceBandNames = new String[bandCount];
+        for (int i=0; i<bandCount; i++) {
+            sourceBandNames[i] = bandGroup.get(i).getName();
+        }
+        return sourceBandNames;
+    }
+
+    private static Product runColorFillerOp(Product firstProduct, float percentagePixels) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("percentagePixels", percentagePixels);
+        Map<String, Product> sourceProducts = new HashMap<>();
+        sourceProducts.put("sourceProduct", firstProduct);
+        ColorFillerOp colFillOp = (ColorFillerOp) GPF.getDefaultInstance().createOperator("ColorFillerOp", parameters, sourceProducts, null);
+        Product targetProductSelection = colFillOp.getTargetProduct();
+        OperatorExecutor executor = OperatorExecutor.create(colFillOp);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        return targetProductSelection;
+    }
+
+    private static Product generateBandsDifference(Product currentProduct, Product previousProduct) {
+        Product[] products = new Product[] {currentProduct, previousProduct};
+        Map<String, Object> parameters = new HashMap<>();
+        return GPF.createProduct("BandsDifferenceOp", parameters, products, null);
+    }
+
+    private static Product generateBandsExtractor(Product sourceProduct, String[] sourceBandNames) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Generate bands extractor for source product '" + sourceProduct.getName()+"'");
+        }
+
+        Map<String, Product> sourceProducts = new HashMap<>(1);
+        sourceProducts.put("sourceProduct", sourceProduct);
+        Map<String, Object> parameters = new HashMap<>(1);
+        parameters.put("sourceBandNames", sourceBandNames);
+        Product targetProduct = GPF.createProduct("BandsExtractorOp", parameters, sourceProducts, null);
+        return resampleAllBands(targetProduct);
+    }
+
+    private static Product resampleAllBands(Product sourceProduct) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Resample bands for source product '" + sourceProduct.getName()+"'");
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("targetWidth", sourceProduct.getSceneRasterWidth());
+        parameters.put("targetHeight", sourceProduct.getSceneRasterHeight());
+        Product targetProduct = GPF.createProduct("Resample", parameters, sourceProduct);
+        targetProduct.setName(sourceProduct.getName());
+        return targetProduct;
+    }
+
+    private static Product runUnionMasksOp(IntSet currentSegmentationTrimmingRegionKeys, Product currentSegmentationSourceProduct,
+                                          IntSet previousSegmentationTrimmingRegionKeys, Product previousSegmentationSourceProduct,
+                                          Product inputTargetProduct) {
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("currentSegmentationTrimmingRegionKeys", currentSegmentationTrimmingRegionKeys);
+        parameters.put("previousSegmentationTrimmingRegionKeys", previousSegmentationTrimmingRegionKeys);
+        Map<String, Product> sourceProducts = new HashMap<>();
+        sourceProducts.put("currentSegmentationSourceProduct", currentSegmentationSourceProduct);
+        sourceProducts.put("previousSegmentationSourceProduct", previousSegmentationSourceProduct);
+        sourceProducts.put("inputTargetProduct", inputTargetProduct);
+        Operator unionMasksOp = GPF.getDefaultInstance().createOperator("UnionMasksOp", parameters, sourceProducts, null);
+        Product targetProductSelection = unionMasksOp.getTargetProduct();
+        OperatorExecutor executor = OperatorExecutor.create(unionMasksOp);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        return targetProductSelection;
     }
 
     public static class Spi extends OperatorSpi {

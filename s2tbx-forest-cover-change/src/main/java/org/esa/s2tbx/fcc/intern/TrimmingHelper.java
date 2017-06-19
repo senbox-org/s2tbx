@@ -75,10 +75,10 @@ public class TrimmingHelper {
             Int2ObjectMap.Entry<List<PixelSourceBands>> entry = it.next();
             List<PixelSourceBands> pixelsList = entry.getValue();
 
-            double sumB4PixelValue = 0.0d;
-            double sumB8PixelValue = 0.0d;
-            double sumB11PixelValue = 0.0d;
-            double sumStandardDeviationB8PixelValue = 0.0d;
+            float sumB4PixelValue = 0.0f;
+            float sumB8PixelValue = 0.0f;
+            float sumB11PixelValue = 0.0f;
+            float sumStandardDeviationB8PixelValue = 0.0f;
             for (PixelSourceBands pixelValues: pixelsList) {
                 sumB4PixelValue += pixelValues.getMeanValueB4Band();
                 sumB8PixelValue += pixelValues.getMeanValueB8Band();
@@ -86,18 +86,18 @@ public class TrimmingHelper {
                 sumStandardDeviationB8PixelValue += pixelValues.getStandardDeviationValueB8Band();
             }
 
-            double averageB4PixelValue = sumB4PixelValue / pixelsList.size();
-            double averageB8PixelValue = sumB8PixelValue / pixelsList.size();
-            double averageB11PixelValue = sumB11PixelValue / pixelsList.size();
+            float averageB4PixelValue = sumB4PixelValue / pixelsList.size();
+            float averageB8PixelValue = sumB8PixelValue / pixelsList.size();
+            float averageB11PixelValue = sumB11PixelValue / pixelsList.size();
             // compute the standard deviation
-            double averageStandardDeviationB8PixelValue = sumStandardDeviationB8PixelValue / pixelsList.size();
-            double sum = 0.0d;
+            float averageStandardDeviationB8PixelValue = sumStandardDeviationB8PixelValue / pixelsList.size();
+            float sum = 0.0f;
             for (PixelSourceBands pixelValues: pixelsList) {
                 double value = pixelValues.getStandardDeviationValueB8Band() - averageStandardDeviationB8PixelValue;
                 sum += Math.pow((value), 2);
             }
-            double average = sum / (double)pixelsList.size();
-            averageStandardDeviationB8PixelValue = Math.sqrt(average);
+            float average = sum / (float)pixelsList.size();
+            averageStandardDeviationB8PixelValue = (float)Math.sqrt(average);
 
             PixelSourceBands averagePerBand = new PixelSourceBands(averageB4PixelValue, averageB8PixelValue, averageB11PixelValue, averageStandardDeviationB8PixelValue);
             statistics.put(entry.getIntKey(), averagePerBand);

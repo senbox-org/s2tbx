@@ -3,6 +3,7 @@ package org.esa.s2tbx.grm;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.grm.segmentation.AbstractSegmenter;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
+import org.esa.s2tbx.grm.segmentation.GraphDataSource;
 import org.esa.s2tbx.grm.segmentation.tiles.AbstractTileSegmenter;
 import org.esa.s2tbx.grm.segmentation.tiles.BaatzSchapeTileSegmenter;
 import org.esa.s2tbx.grm.segmentation.tiles.FullLambdaScheduleTileSegmenter;
@@ -87,7 +88,7 @@ public abstract class AbstractGenericRegionMergingOp extends Operator {
 
     protected abstract String getTargetProductType();
 
-    protected abstract Tile[] getSourceTiles(BoundingBox tileRegion);
+    protected abstract GraphDataSource[] getSourceTiles(BoundingBox tileRegion);
 
     @Override
     public void initialize() throws OperatorException {
@@ -132,6 +133,10 @@ public abstract class AbstractGenericRegionMergingOp extends Operator {
         } catch (IOException e) {
             throw new OperatorException(e);
         }
+
+        //TODO Jean remove
+        Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
+        logger.setLevel(Level.FINE);
     }
 
     @Override
@@ -252,7 +257,7 @@ public abstract class AbstractGenericRegionMergingOp extends Operator {
     private void executeFirstTileSegmentation(Rectangle targetRectangle, int totalTileCount) throws OperatorException {
         try {
             ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
-            Tile[] sourceTiles = getSourceTiles(currentTile.getRegion());
+            GraphDataSource[] sourceTiles = getSourceTiles(currentTile.getRegion());
             try {
                 this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
             } catch (Exception ex) {

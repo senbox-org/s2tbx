@@ -122,7 +122,7 @@ public abstract class AbstractTileSegmenter {
         return tile.getImageLeftX() / this.tileWidth;
     }
 
-    public void runOneTileFirstSegmentation(Tile[] sourceTiles, ProcessingTile tileToProcess) throws IllegalAccessException, IOException {
+    public void runOneTileFirstSegmentation(GraphDataSource[] sourceTiles, ProcessingTile tileToProcess) throws IllegalAccessException, IOException {
         int tileColumnIndex = computeTileColumnIndex(tileToProcess);
         int tileRowIndex = computeTileRowIndex(tileToProcess);
 

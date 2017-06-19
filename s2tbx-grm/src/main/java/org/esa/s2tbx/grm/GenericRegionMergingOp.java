@@ -3,6 +3,7 @@ package org.esa.s2tbx.grm;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.grm.segmentation.AbstractSegmenter;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
+import org.esa.s2tbx.grm.segmentation.GraphDataSource;
 import org.esa.s2tbx.grm.segmentation.tiles.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -81,12 +82,13 @@ public class GenericRegionMergingOp extends AbstractGenericRegionMergingOp {
     }
 
     @Override
-    protected Tile[] getSourceTiles(BoundingBox tileRegion) {
-        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+    protected GraphDataSource[] getSourceTiles(BoundingBox tileRegion) {
+        GraphDataSource[] sourceTiles = new GraphDataSource[this.sourceBandNames.length];
         Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
         for (int i=0; i<this.sourceBandNames.length; i++) {
             Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            sourceTiles[i] = getSourceTile(band, rectangleToRead);
+            Tile tile = getSourceTile(band, rectangleToRead);
+            sourceTiles[i] = new GraphDataSource(tile);
         }
         return sourceTiles;
     }

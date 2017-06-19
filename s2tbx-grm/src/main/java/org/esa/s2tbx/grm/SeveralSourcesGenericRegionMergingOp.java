@@ -1,6 +1,7 @@
 package org.esa.s2tbx.grm;
 
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
+import org.esa.s2tbx.grm.segmentation.GraphDataSource;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
@@ -93,15 +94,16 @@ public class SeveralSourcesGenericRegionMergingOp extends AbstractGenericRegionM
     }
 
     @Override
-    protected Tile[] getSourceTiles(BoundingBox tileRegion) {
-        Tile[] sourceTiles = new Tile[this.totalSourceBandCount];
+    protected GraphDataSource[] getSourceTiles(BoundingBox tileRegion) {
+        GraphDataSource[] sourceTiles = new GraphDataSource[this.totalSourceBandCount];
         Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
         for (int i=0, k = 0; i<this.sourceBandNames.length; i++) {
             String[] bandNames = this.sourceBandNames[i];
             Product product = this.sourceProducts[i];
             for (int j=0; j<bandNames.length; j++) {
                 Band band = product.getBand(bandNames[j]);
-                sourceTiles[k++] = getSourceTile(band, rectangleToRead);
+                Tile tile = getSourceTile(band, rectangleToRead);
+                sourceTiles[k++] = new GraphDataSource(tile);
             }
         }
         return sourceTiles;
