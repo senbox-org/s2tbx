@@ -388,29 +388,23 @@ public final class S2tbxMosaicOp extends Operator {
     }
 
     private ReferencedEnvelope computeReprojectedBounds() {
-        Rectangle2D bounds = null;
-        Rectangle2D piece = null;
-        for (Product product : this.sourceProducts) {
-            piece = new Rectangle2D.Double();
-            final GeoCoding geoCoding = product.getSceneGeoCoding();
-            GeoPos minPoint = geoCoding.getGeoPos(new PixelPos(0, 0), null);
-            GeoPos maxPoint = geoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(),
-                    product.getSceneRasterHeight()), null);
-
-            piece.setFrameFromDiagonal(minPoint.getLon(), minPoint.getLat(),
-                    maxPoint.getLon(), maxPoint.getLat());
-            if (bounds == null) {
-                bounds = piece;
-            } else {
-                bounds = bounds.createUnion(piece);
-            }
+        final Rectangle2D bounds = new Rectangle2D.Double();
+        bounds.setFrameFromDiagonal(westBound, northBound, eastBound, southBound);
+        final ReferencedEnvelope boundsEnvelope = new ReferencedEnvelope(bounds, DefaultGeographicCRS.WGS84);
+        ReferencedEnvelope targetEnvelope = null;
+        try {
+            targetEnvelope = boundsEnvelope.transform(targetCRS, true);
+        } catch (TransformException e) {
+            e.printStackTrace();
+        } catch (FactoryException e) {
+            e.printStackTrace();
         }
-        ReferencedEnvelope envelope = transformEnvelope(DefaultGeographicCRS.WGS84, targetCRS, bounds);
-        if (envelope == null) {
+        if (targetEnvelope == null) {
             throw new OperatorException("Cannot compute reprojected bounds");
         }
-        return envelope; //new Rectangle2D.Double(envelope.getMinX(), envelope.getMinY(), envelope.getWidth(), envelope.getHeight());
+        return targetEnvelope; //new Rectangle2D.Double(envelope.getMinX(), envelope.getMinY(), envelope.getWidth(), envelope.getHeight());
     }
+
 
     private Product createTargetProduct() {
         try {
@@ -525,7 +519,13 @@ public final class S2tbxMosaicOp extends Operator {
                 }
             }
             final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
-            final int levels = srcBands[0].getSourceImage().getModel().getLevelCount();
+            int levels = srcBands[0].getSourceImage().getModel().getLevelCount();
+            for(Product product: this.sourceProducts){
+                int lowestLevel = product.getBandAt(0).getSourceImage().getModel().getLevelCount();
+                if(lowestLevel < levels){
+                    levels = lowestLevel;
+                }
+            }
             MathTransform mapTransform = band.getGeoCoding().getImageToMapTransform();
             DirectPosition bandOrigin = mapTransform.transform(new DirectPosition2D(0, 0), null);
             S2MosaicMultiLevelSource bandSource =
