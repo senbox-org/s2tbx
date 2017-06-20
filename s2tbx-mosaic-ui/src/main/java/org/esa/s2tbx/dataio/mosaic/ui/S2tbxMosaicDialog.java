@@ -75,9 +75,9 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
     protected boolean verifyUserInput() {
         final S2tbxMosaicFormModel mosaicModel = form.getFormModel();
 
-        /*if(!verifiyCompatibilityProducts(mosaicModel)){
+        if(!verifiyCompatibilityProducts(mosaicModel)){
             return false;
-        }*/
+        }
         if (!verifySourceProducts(mosaicModel)) {
             return false;
         }
@@ -183,33 +183,35 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
         return true;
     }
 
-    /*private boolean verifiyCompatibilityProducts(S2tbxMosaicFormModel mosaicModel) {
-        Product modelProduct = mosaicModel.getSourceProductMap().values().iterator().next();
-        for(Product product:mosaicModel.getSourceProductMap().values() ){
-            if(modelProduct.getNumBands() != product.getNumBands()){
-                String msg = "Source product: '" + modelProduct.getName() + " is not compatible with product "+ product.getName() + ".\n Different bands in products";
-                showErrorDialog(msg);
-                return false;
-            }
-            for(int index = 0; index < product.getNumBands(); index++){
-                if(!modelProduct.getBandAt(index).getName().equals(product.getBandAt(index).getName())) {
-                    String msg = "Source product: '" + modelProduct.getName() + " is not compatible with product " + product.getName() + ".\n Band " +
-                            modelProduct.getBandAt(index).getName() + " does not appear in product " +  modelProduct.getName();
+    private boolean verifiyCompatibilityProducts(S2tbxMosaicFormModel mosaicModel) {
+        boolean isNativeResolution = mosaicModel.getPropertySet().getValue("nativeResolution");
+        if(isNativeResolution) {
+            Product modelProduct = mosaicModel.getSourceProductMap().values().iterator().next();
+            for (Product product : mosaicModel.getSourceProductMap().values()) {
+                if (modelProduct.getNumBands() != product.getNumBands()) {
+                    String msg = "Source product: '" + modelProduct.getName() + " is not compatible with product " + product.getName() + ".\n Different bands in products";
                     showErrorDialog(msg);
                     return false;
                 }
-                if((modelProduct.getBandAt(index).getRasterHeight() != product.getBandAt(index).getRasterHeight())||
-                        (modelProduct.getBandAt(index).getRasterWidth() != product.getBandAt(index).getRasterWidth())){
-                    String msg = "Source product: " + modelProduct.getName() + " is not compatible with product "+ product.getName() +
-                            ".\n Band " + modelProduct.getBandAt(index).getName() + " has a different raster size for product " + product.getName();
-                    showErrorDialog(msg);
-                    return false;
+                for (int index = 0; index < product.getNumBands(); index++) {
+                    if (!modelProduct.getBandAt(index).getName().equals(product.getBandAt(index).getName())) {
+                        String msg = "Source product: '" + modelProduct.getName() + " is not compatible with product " + product.getName() + ".\n Band " +
+                                modelProduct.getBandAt(index).getName() + " does not appear in product " + modelProduct.getName();
+                        showErrorDialog(msg);
+                        return false;
+                    }
+                    if ((modelProduct.getBandAt(index).getRasterHeight() != product.getBandAt(index).getRasterHeight()) ||
+                            (modelProduct.getBandAt(index).getRasterWidth() != product.getBandAt(index).getRasterWidth())) {
+                        String msg = "Source product: " + modelProduct.getName() + " is not compatible with product " + product.getName() +
+                                ".\n Band " + modelProduct.getBandAt(index).getName() + " has a different raster size for product " + product.getName();
+                        showErrorDialog(msg);
+                        return false;
+                    }
                 }
             }
         }
-
         return true;
-    }*/
+    }
 
     private boolean isExpressionValidForProduct(String expressionName, String expression, String productIdentifier, Product product) {
         try {
