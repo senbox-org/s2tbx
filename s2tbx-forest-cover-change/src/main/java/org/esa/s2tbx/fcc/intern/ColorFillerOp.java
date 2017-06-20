@@ -6,9 +6,17 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.media.jai.JAI;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.IndexCoding;
@@ -41,10 +49,10 @@ import org.esa.snap.core.util.ProductUtils;
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 
 public class ColorFillerOp extends Operator {
-    @SuppressWarnings({"PackageVisibleField"})
-    @SourceProduct(alias = "source", description = "The source product to be modified.")
-    private Product sourceProduct;
+    private static final Logger logger = Logger.getLogger(ColorFillerOp.class.getName());
 
+    @SourceProduct(alias = "Source", description = "The source product to be modified.")
+    private Product sourceProduct;
 
     @TargetProduct
     private Product targetProduct;
@@ -53,8 +61,12 @@ public class ColorFillerOp extends Operator {
     private float percentagePixels;
 
     private Product CCILandCoverProduct;
-    private Map<Integer, ObjectsSelectionOp.PixelStatistic> statistics;
-    private Set validRegions;
+    private Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics;
+    private IntSet validRegions;
+
+    public ColorFillerOp() {
+    }
+
     @Override
     public void initialize() throws OperatorException {
         validateInputs();
@@ -62,7 +74,8 @@ public class ColorFillerOp extends Operator {
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("sourceProduct", this.sourceProduct);
         ObjectsSelectionOp objSelOp = (ObjectsSelectionOp) GPF.getDefaultInstance().createOperator("ObjectsSelectionOp", parameters, sourceProducts, null);
-        Product targetProductObjectsSelectionOp = objSelOp.getTargetProduct();
+        objSelOp.getTargetProduct();
+
         OperatorExecutor executor = OperatorExecutor.create(objSelOp);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 
@@ -72,28 +85,55 @@ public class ColorFillerOp extends Operator {
         createTargetProduct();
     }
 
-    private Set generateValidStatisticRegions() {
-        Set<Integer> validReg = new HashSet<>();
-        for (Map.Entry<Integer, ObjectsSelectionOp.PixelStatistic> pair : this.statistics.entrySet()) {
-            ObjectsSelectionOp.PixelStatistic value = pair.getValue();
+    @Override
+    public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+        Rectangle tileRegion = targetTile.getRectangle();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Compute color filler for tile region[x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
+        }
+
+        Band segmentationBand = sourceProduct.getBandAt(0);
+        for (int y = tileRegion.y; y < tileRegion.y + tileRegion.height; y++) {
+            for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
+                int sgmentationValue = segmentationBand.getSampleInt(x, y);
+                if (!this.validRegions.contains(sgmentationValue)) {
+                    sgmentationValue = ForestCoverChangeConstans.NO_DATA_VALUE;
+                }
+                targetTile.setSample(x, y, sgmentationValue);
+//                if (this.validRegions.contains(sgmentationValue)) {
+//                    targetTile.setSample(x, y, sgmentationValue);
+//                } else {
+//                    targetTile.setSample(x, y, ForestCoverChangeConstans.NO_DATA_VALUE);
+//                }
+            }
+        }
+    }
+
+    private IntSet generateValidStatisticRegions() {
+        IntSet validReg = new IntOpenHashSet();
+        ObjectIterator<Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic>> it = this.statistics.int2ObjectEntrySet().iterator();
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic> entry = it.next();
+            ObjectsSelectionOp.PixelStatistic value = entry.getValue();
             float percet = ((float)value.getPixelsInRange()/(float)value.getTotalNumberPixels())*100;
-            if(percet>=this.percentagePixels){
-                validReg.add(pair.getKey());
+            if (percet >= this.percentagePixels) {
+                validReg.add(entry.getIntKey());
             }
         }
         return validReg;
     }
 
     private void validateInputs() {
-
-        if(this.sourceProduct.isMultiSize()){
+        if (this.sourceProduct.isMultiSize()) {
             String message = String.format("Source product '%s' contains rasters of different sizes and can not be processed.\n" +
                             "Please consider resampling it so that all rasters have the same size.",
                     this.sourceProduct.getName());
             throw new OperatorException(message);
         }
         GeoCoding geo = this.sourceProduct.getSceneGeoCoding();
-        if(geo == null){
+        if (geo == null) {
             String message = String.format("Source product '%s' must contain GeoCoding", this.sourceProduct.getName());
             throw new OperatorException(message);
         }
@@ -109,34 +149,6 @@ public class ColorFillerOp extends Operator {
         this.targetProduct.setSceneGeoCoding(this.sourceProduct.getSceneGeoCoding());
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
-       /* final ProductNodeGroup<IndexCoding> indexCodingGroup = this.CCILandCoverProduct.getIndexCodingGroup();
-        for (int i = 0; i < indexCodingGroup.getNodeCount(); i++) {
-            IndexCoding sourceIndexCoding = indexCodingGroup.get(i);
-            ProductUtils.copyIndexCoding(sourceIndexCoding, this.targetProduct);
-        }
-        final IndexCoding sourceIndexCoding = this.CCILandCoverProduct.getBandAt(0).getIndexCoding();
-        if (sourceIndexCoding != null) {
-            final String indexCodingName = sourceIndexCoding.getName();
-            final IndexCoding destIndexCoding = this.targetProduct.getIndexCodingGroup().get(indexCodingName);
-            this.targetProduct.getBandAt(0).setSampleCoding(destIndexCoding);
-            this.targetProduct.getBandAt(0).setImageInfo(this.CCILandCoverProduct.getBandAt(0).getImageInfo());
-        }*/
-    }
-
-    @Override
-    public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
-        Rectangle region  = targetTile.getRectangle();
-        Band segmentationBand = sourceProduct.getBandAt(0);
-        for (int y = region.y; y < region.y + region.height; y++) {
-            for (int x = region.x; x < region.x + region.width; x++) {
-                int sgmentationValue = segmentationBand.getSampleInt(x,y);
-                if(this.validRegions.contains(sgmentationValue)){
-                    targetTile.setSample(x, y, sgmentationValue);
-                } else {
-                    targetTile.setSample(x, y, ForestCoverChangeConstans.NO_DATA_VALUE);
-                }
-            }
-        }
     }
 
     public static class Spi extends OperatorSpi {

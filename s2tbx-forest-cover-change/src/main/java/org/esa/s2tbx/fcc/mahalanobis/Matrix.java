@@ -4,7 +4,7 @@ package org.esa.s2tbx.fcc.mahalanobis;
  * Created by jcoravu on 6/6/2017.
  */
 public class Matrix {
-    private float data[][];
+    private final float data[][];
 
     public Matrix(int rowCount, int columnCount) {
         this.data = new float[rowCount][columnCount];
@@ -12,6 +12,10 @@ public class Matrix {
         for (int i=0; i<rowCount; i++) {
             this.data[i] = new float[columnCount];
         }
+    }
+
+    protected Matrix(float data[][]) {
+        this.data = data;
     }
 
     public void setValueAt(int rowIndex, int columnIndex, float cellValue) {

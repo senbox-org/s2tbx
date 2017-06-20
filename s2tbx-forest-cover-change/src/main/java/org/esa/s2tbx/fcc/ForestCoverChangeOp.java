@@ -117,47 +117,6 @@ public class ForestCoverChangeOp extends Operator {
         logger.setLevel(Level.FINE);
     }
 
-//    @Override
-//    public void doExecute(ProgressMonitor pm) throws OperatorException {
-//        this.targetProduct.getBandAt(0).setSourceImage(null);
-//
-//        if (logger.isLoggable(Level.FINE)) {
-//            logger.log(Level.FINE, ""); // add an empty line
-//            logger.log(Level.FINE, "Start execution Forest Cover Change");
-//        }
-//
-//        String[] sourceBandNames = new String[] {"B4", "B8", "B11", "B12"}; // int[] indexes = new int[] {3, 4, 10, 11};
-//
-//        Product previousProduct = generateBandsExtractor(this.previousSourceProduct, sourceBandNames);
-//
-//        Product currentProduct = generateBandsExtractor(this.currentSourceProduct, sourceBandNames);
-//
-//        logger.log(Level.FINE, "Before segmentation all bands");
-//
-//        Product segmentationAllBandsProduct = generateBandsSegmentation(currentProduct, previousProduct);
-//
-//        logger.log(Level.FINE, "Before trimming");
-//
-//        int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
-//
-//        IntSet currentSegmentationTrimmingRegionKeys = computeTrimming(segmentationAllBandsProduct, currentProduct, trimmingSourceProductBandIndices);
-//
-//        IntSet previousSegmentationTrimmingRegionKeys = computeTrimming(segmentationAllBandsProduct, previousProduct, trimmingSourceProductBandIndices);
-//
-//        logger.log(Level.FINE, "Before generate color fill");
-//
-//        Product currentProductColorFill = generateColorFill(currentProduct);
-//        Product previousProductColorFill = generateColorFill(previousProduct);
-//
-//        logger.log(Level.FINE, "Before run union mask");
-//        runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
-//
-//        if (logger.isLoggable(Level.FINE)) {
-//            logger.log(Level.FINE, ""); // add an empty line
-//            logger.log(Level.FINE, "Finish execution Forest Cover Change");
-//        }
-//    }
-
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
         this.targetProduct.getBandAt(0).setSourceImage(null);
@@ -169,7 +128,10 @@ public class ForestCoverChangeOp extends Operator {
 
         String[] sourceBandNames = new String[] {"B4", "B8", "B11", "B12"}; // int[] indexes = new int[] {3, 4, 10, 11};
 
-        Product previousProduct = generateBandsExtractor(this.previousSourceProduct, sourceBandNames);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start bands extractor for current product");
+        }
 
         Product currentProduct = generateBandsExtractor(this.currentSourceProduct, sourceBandNames);
 
@@ -188,6 +150,13 @@ public class ForestCoverChangeOp extends Operator {
         int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
 
         IntSet currentSegmentationTrimmingRegionKeys = computeTrimming(currentProductColorFill, currentProduct, trimmingSourceProductBandIndices);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start bands extractor for previous product");
+        }
+
+        Product previousProduct = generateBandsExtractor(this.previousSourceProduct, sourceBandNames);
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -215,8 +184,8 @@ public class ForestCoverChangeOp extends Operator {
         }
     }
 
-    private IntSet computeTrimming(Product segmentationAllBandsProduct, Product currentProduct, int[] trimmingSourceProductBandIndices) {
-        Int2ObjectMap<PixelSourceBands> currentTrimmingStatistics = TrimmingHelper.doTrimming(segmentationAllBandsProduct, currentProduct, trimmingSourceProductBandIndices);
+    private static IntSet computeTrimming(Product segmentationSourceProduct, Product currentProduct, int[] trimmingSourceProductBandIndices) {
+        Int2ObjectMap<PixelSourceBands> currentTrimmingStatistics = TrimmingHelper.doTrimming(segmentationSourceProduct, currentProduct, trimmingSourceProductBandIndices);
         return currentTrimmingStatistics.keySet();
     }
 
@@ -265,7 +234,7 @@ public class ForestCoverChangeOp extends Operator {
         parameters.put("shapeWeight", shapeWeight);
         parameters.put("sourceBandNames", sourceBandNames);
 
-        Map<String, Product> sourceProducts = new HashMap<String, Product>();
+        Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
         sourceProducts.put("sourceProduct", sourceProduct);
 
         Operator operator = GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);

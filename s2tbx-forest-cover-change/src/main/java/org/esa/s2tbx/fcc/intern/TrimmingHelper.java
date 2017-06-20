@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.esa.s2tbx.fcc.ForestCoverChangeOp;
 import org.esa.s2tbx.fcc.chi.distribution.ChiSquareDistribution;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
 import org.esa.snap.core.datamodel.Product;
@@ -16,8 +17,11 @@ import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TrimmingHelper {
+    private static final Logger logger = Logger.getLogger(TrimmingHelper.class.getName());
 
     private TrimmingHelper() {
     }
@@ -36,10 +40,19 @@ public class TrimmingHelper {
     }
 
     public static Int2ObjectMap<PixelSourceBands> doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices) {
-        Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
-        Int2ObjectMap<PixelSourceBands> statistics = computeStatistics(trimmingStatistics);
+        Int2ObjectMap<PixelSourceBands> statistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Timming statistics per region size " + statistics.size());
+        }
 
         double chi = computeChiDistribution(4);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "The chi distribution is " + chi);
+        }
 
         while (true) {
             Object2FloatOpenHashMap<PixelSourceBands> result = MahalanobisDistance.computeMahalanobisSquareMatrix(statistics.values());
@@ -107,7 +120,7 @@ public class TrimmingHelper {
         return statistics;
     }
 
-    private static Int2ObjectMap<List<PixelSourceBands>> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices) {
+    private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("sourceBandIndices", sourceBandIndices);
         Map<String, Product> sourceProducts = new HashMap<>();
@@ -115,8 +128,17 @@ public class TrimmingHelper {
         sourceProducts.put("sourceProduct", sourceProduct);
         TrimmingRegionComputingOp trimRegOp = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
         trimRegOp.getTargetProduct();
+
         OperatorExecutor executor = OperatorExecutor.create(trimRegOp);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-        return trimRegOp.getPixelsStatistics();
+
+        Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics = trimRegOp.getPixelsStatistics();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Timming statistics size " + trimmingStatistics.size());
+        }
+
+        return computeStatistics(trimmingStatistics);
     }
 }

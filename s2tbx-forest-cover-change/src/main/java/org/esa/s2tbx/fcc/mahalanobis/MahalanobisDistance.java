@@ -7,18 +7,27 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import org.esa.s2tbx.fcc.ForestCoverChangeOp;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by jcoravu on 6/6/2017.
  */
 public class MahalanobisDistance {
+    private static final Logger logger = Logger.getLogger(MahalanobisDistance.class.getName());
 
     public static Object2FloatOpenHashMap<PixelSourceBands> computeMahalanobisSquareMatrix(Collection<PixelSourceBands> points) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Compute the Mahalanobis distance for " + points.size() + " regions");
+        }
+
         float meanValueB4Band = 0.0f;
         float meanValueB8Band = 0.0f;
         float meanValueB11Band = 0.0f;
@@ -37,6 +46,11 @@ public class MahalanobisDistance {
         meanValueB11Band = meanValueB11Band / (float)numberOfPoints;
         standardDeviationValueB11Band = standardDeviationValueB11Band / (float)numberOfPoints;
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "The centroid points are : meanValueB4Band="+meanValueB4Band+", meanValueB8Band="+meanValueB8Band+", meanValueB11Band="+meanValueB11Band+", standardDeviationValueB11Band="+standardDeviationValueB11Band+", numberOfPoints="+numberOfPoints);
+        }
+
         Matrix matrix = new Matrix(numberOfPoints, 4);
         Int2ObjectMap<PixelSourceBands> map = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
         int index = -1;
@@ -48,14 +62,10 @@ public class MahalanobisDistance {
             matrix.setValueAt(index, 2, (point.getMeanValueB11Band() - meanValueB11Band));
             matrix.setValueAt(index, 3, (point.getStandardDeviationValueB8Band() - standardDeviationValueB11Band));
         }
-        Matrix transposeMatrix = MatrixUtils.transpose(matrix);
 
-        Matrix quadraticMatrix = MatrixUtils.multiply(transposeMatrix, matrix);
-        Matrix covarianceMatrix = computeCovariance(quadraticMatrix, matrix.getRowCount());
-        Matrix inverseMatrix = MatrixUtils.inverse(covarianceMatrix);
+        Matrix inverseMatrix = computeInverseMatrix(matrix);
         if (inverseMatrix != null) {
-            Matrix resultMatrix = MatrixUtils.multiply(matrix, inverseMatrix);
-            Matrix squaredMahalanobisMatrix = MatrixUtils.multiply(resultMatrix, transposeMatrix);
+            Matrix squaredMahalanobisMatrix = computeSquaredMahalanobisMatrix(matrix, inverseMatrix);
             Object2FloatOpenHashMap<PixelSourceBands> result = new Object2FloatOpenHashMap<PixelSourceBands>();
             int matrixSize = squaredMahalanobisMatrix.getColumnCount();
             for (int i=0; i<matrixSize; i++) {
@@ -66,6 +76,19 @@ public class MahalanobisDistance {
             return result;
         }
         return null;
+    }
+
+    private static Matrix computeSquaredMahalanobisMatrix(Matrix matrix, Matrix inverseMatrix) {
+        TransposeMatrix transposeMatrix = new TransposeMatrix(matrix);
+        Matrix resultMatrix = MatrixUtils.multiply(matrix, inverseMatrix);
+        return MatrixUtils.multiply(resultMatrix, transposeMatrix);
+    }
+
+    private static Matrix computeInverseMatrix(Matrix matrix) {
+        TransposeMatrix transposeMatrix = new TransposeMatrix(matrix);
+        Matrix quadraticMatrix = MatrixUtils.multiply(transposeMatrix, matrix);
+        Matrix covarianceMatrix = computeCovariance(quadraticMatrix, matrix.getRowCount());
+        return MatrixUtils.inverse(covarianceMatrix);
     }
 
     private static Matrix computeCovariance(Matrix matrix, int inputRowCount) {

@@ -4,8 +4,15 @@ import com.bc.ceres.core.ProgressMonitor;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.media.jai.JAI;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -33,27 +40,26 @@ import org.esa.snap.core.util.ProductUtils;
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 
 public class ObjectsSelectionOp extends Operator {
+    private static final Logger logger = Logger.getLogger(ObjectsSelectionOp.class.getName());
 
-    @SuppressWarnings({"PackageVisibleField"})
-    @SourceProduct(alias = "source", description = "The source product to be modified.")
+    @SourceProduct(alias = "Source", description = "The source product to be modified.")
     private Product sourceProduct;
 
     @TargetProduct
     private Product targetProduct;
 
     private Product landCoverProduct;
-    private HashMap<Integer,PixelStatistic> statistic;
+    private Int2ObjectMap<PixelStatistic> statistics;
+
+    public ObjectsSelectionOp() {
+    }
 
     @Override
     public void initialize() throws OperatorException {
         validateSourceProduct();
         this.landCoverProduct = addLandCoverBand();
-        this.statistic = new HashMap<>();
-        createTargetProduct();
-        this.targetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
-    }
+        this.statistics = new Int2ObjectLinkedOpenHashMap<PixelStatistic>();
 
-    private void createTargetProduct() {
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
@@ -64,22 +70,28 @@ public class ObjectsSelectionOp extends Operator {
         this.targetProduct.addBand(targetBand);
     }
 
-
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
-        Rectangle region  = targetTile.getRectangle();
-        Band segmentationBand = sourceProduct.getBandAt(0);
-        for (int y = region.y; y < region.y + region.height; y++) {
-            for (int x = region.x; x < region.x + region.width; x++) {
-                int segmentationPixelValue = segmentationBand.getSampleInt(x,y);
-                PixelStatistic pixel = this.statistic.get(segmentationPixelValue);
-                if (pixel==null) {
-                    pixel = new PixelStatistic(0,0);
-                    this.statistic.put(segmentationPixelValue, pixel);
+        Rectangle tileRegion = targetTile.getRectangle();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Compute object selection for tile region[x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
+        }
+
+        Band segmentationBand = this.sourceProduct.getBandAt(0);
+        Band landCoverBand = this.landCoverProduct.getBandAt(0);
+        for (int y = tileRegion.y; y < tileRegion.y + tileRegion.height; y++) {
+            for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
+                int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
+                PixelStatistic pixel = this.statistics.get(segmentationPixelValue);
+                if (pixel == null) {
+                    pixel = new PixelStatistic(0, 0);
+                    this.statistics.put(segmentationPixelValue, pixel);
                 }
                 pixel.incrementTotalNumberPixels();
-                int landCoverPixelValue = landCoverProduct.getBandAt(0).getSampleInt(x, y);
-                for(int index : ForestCoverChangeConstans.COVER_LABElS) {
+                int landCoverPixelValue = landCoverBand.getSampleInt(x, y);
+                for (int index : ForestCoverChangeConstans.COVER_LABElS) {
                     if (index == landCoverPixelValue) {
                         pixel.incrementPixelsInRange();
                     }
@@ -88,15 +100,15 @@ public class ObjectsSelectionOp extends Operator {
         }
     }
 
-    public Map<Integer,PixelStatistic> getStatistics(){
-        return this.statistic;
+    public Int2ObjectMap<PixelStatistic> getStatistics() {
+        return this.statistics;
     }
 
     public Product getLandCoverProduct(){ return this.landCoverProduct; }
 
     private void validateSourceProduct() {
         GeoCoding geo = this.sourceProduct.getSceneGeoCoding();
-        if(geo == null){
+        if (geo == null) {
             throw new OperatorException("Source product must contain GeoCoding");
         }
     }
@@ -121,12 +133,10 @@ public class ObjectsSelectionOp extends Operator {
         parameters.put("landCoverNames", ForestCoverChangeConstans.LAND_COVER_NAME);
         return GPF.createProduct("AddLandCover", parameters, landCover);
     }
-    public static final class PixelStatistic{
+
+    public static final class PixelStatistic {
         int totalNumberPixels;
         int pixelsInRage;
-
-        public PixelStatistic() {
-        }
 
         public PixelStatistic(int totalNumberPixels, int pixelsInRage) {
             this.totalNumberPixels = totalNumberPixels;
@@ -137,20 +147,12 @@ public class ObjectsSelectionOp extends Operator {
             return totalNumberPixels;
         }
 
-        public void setTotalNumberPixels(int  totalNumberPixels) {
-            this.totalNumberPixels = totalNumberPixels;
-        }
-
         public void incrementTotalNumberPixels(){
             this.totalNumberPixels++;
         }
 
         public int getPixelsInRange() {
             return pixelsInRage;
-        }
-
-        public void setPixelsInRange(int pixelsInRage) {
-            this.pixelsInRage = pixelsInRage;
         }
 
         public void incrementPixelsInRange(){
