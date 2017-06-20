@@ -84,16 +84,18 @@ public class ObjectsSelectionOp extends Operator {
         for (int y = tileRegion.y; y < tileRegion.y + tileRegion.height; y++) {
             for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
                 int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
-                PixelStatistic pixel = this.statistics.get(segmentationPixelValue);
-                if (pixel == null) {
-                    pixel = new PixelStatistic(0, 0);
-                    this.statistics.put(segmentationPixelValue, pixel);
-                }
-                pixel.incrementTotalNumberPixels();
                 int landCoverPixelValue = landCoverBand.getSampleInt(x, y);
-                for (int index : ForestCoverChangeConstans.COVER_LABElS) {
-                    if (index == landCoverPixelValue) {
-                        pixel.incrementPixelsInRange();
+                synchronized (this.statistics) {
+                    PixelStatistic pixel = this.statistics.get(segmentationPixelValue);
+                    if (pixel == null) {
+                        pixel = new PixelStatistic(0, 0);
+                        this.statistics.put(segmentationPixelValue, pixel);
+                    }
+                    pixel.incrementTotalNumberPixels();
+                    for (int index : ForestCoverChangeConstans.COVER_LABElS) {
+                        if (index == landCoverPixelValue) {
+                            pixel.incrementPixelsInRange();
+                        }
                     }
                 }
             }
@@ -103,8 +105,6 @@ public class ObjectsSelectionOp extends Operator {
     public Int2ObjectMap<PixelStatistic> getStatistics() {
         return this.statistics;
     }
-
-    public Product getLandCoverProduct(){ return this.landCoverProduct; }
 
     private void validateSourceProduct() {
         GeoCoding geo = this.sourceProduct.getSceneGeoCoding();

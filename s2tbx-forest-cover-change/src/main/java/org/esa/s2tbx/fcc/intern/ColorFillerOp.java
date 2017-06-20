@@ -60,8 +60,6 @@ public class ColorFillerOp extends Operator {
     @Parameter (itemAlias = "percentagePixels", description = "The percentage of valid forrest pixels in a region")
     private float percentagePixels;
 
-    private Product CCILandCoverProduct;
-    private Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics;
     private IntSet validRegions;
 
     public ColorFillerOp() {
@@ -70,6 +68,7 @@ public class ColorFillerOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         validateInputs();
+
         Map<String, Object> parameters = new HashMap<>();
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("sourceProduct", this.sourceProduct);
@@ -79,9 +78,9 @@ public class ColorFillerOp extends Operator {
         OperatorExecutor executor = OperatorExecutor.create(objSelOp);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 
-        this.statistics = objSelOp.getStatistics();
-        this.CCILandCoverProduct = objSelOp.getLandCoverProduct();
-        this.validRegions = generateValidStatisticRegions();
+        Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics = objSelOp.getStatistics();
+        this.validRegions = computeValidStatisticRegions(statistics, this.percentagePixels);
+
         createTargetProduct();
     }
 
@@ -111,14 +110,14 @@ public class ColorFillerOp extends Operator {
         }
     }
 
-    private IntSet generateValidStatisticRegions() {
+    private static IntSet computeValidStatisticRegions(Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics, float percentagePixels) {
         IntSet validReg = new IntOpenHashSet();
-        ObjectIterator<Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic>> it = this.statistics.int2ObjectEntrySet().iterator();
+        ObjectIterator<Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic>> it = statistics.int2ObjectEntrySet().iterator();
         while (it.hasNext()) {
             Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic> entry = it.next();
             ObjectsSelectionOp.PixelStatistic value = entry.getValue();
-            float percet = ((float)value.getPixelsInRange()/(float)value.getTotalNumberPixels())*100;
-            if (percet >= this.percentagePixels) {
+            float percent = ((float)value.getPixelsInRange()/(float)value.getTotalNumberPixels())*100;
+            if (percent >= percentagePixels) {
                 validReg.add(entry.getIntKey());
             }
         }

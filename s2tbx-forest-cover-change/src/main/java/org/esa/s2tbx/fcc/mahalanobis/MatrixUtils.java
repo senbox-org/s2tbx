@@ -51,17 +51,15 @@ public class MatrixUtils {
         return mat;
     }
 
-    private static float determinant(Matrix matrix) {
-        return matrix.computeDeterminant();
-    }
-
     public static Matrix inverse(Matrix matrix) {
-        Matrix tempMatrix = transpose(cofactor(matrix));
-        float matrixDeterminant = determinant(matrix);
+        float matrixDeterminant = matrix.computeDeterminant();
         if (matrixDeterminant == 0.0f) {
             return null;
         }
-        return multiplyByConstant(tempMatrix, 1.0f/matrixDeterminant);
+        Matrix cofactorMatrix = cofactor(matrix);
+        //Matrix transposeMatrix = transpose(cofactorMatrix);
+        TransposeMatrix transposeMatrix = new TransposeMatrix(cofactorMatrix);
+        return multiplyByConstant(transposeMatrix, 1.0f/matrixDeterminant);
     }
 
     public static Matrix subtract(Matrix matrix1, Matrix matrix2) {
@@ -85,7 +83,8 @@ public class MatrixUtils {
         Matrix mat = new Matrix(matrix.getRowCount(), matrix.getColumnCount());
         for (int i=0;i<matrix.getRowCount();i++) {
             for (int j=0; j<matrix.getColumnCount();j++) {
-                mat.setValueAt(i, j, changeSign(i) * changeSign(j) * determinant(createSubMatrix(matrix, i, j)));
+                Matrix subMatrix = createSubMatrix(matrix, i, j);
+                mat.setValueAt(i, j, changeSign(i) * changeSign(j) * subMatrix.computeDeterminant());
             }
         }
 

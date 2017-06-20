@@ -7,7 +7,7 @@ public class TransposeMatrix extends Matrix {
     private final Matrix matrix;
 
     public TransposeMatrix(Matrix matrix) {
-        super(null);
+        super(null, 0, 0);
 
         this.matrix = matrix;
     }
@@ -25,5 +25,20 @@ public class TransposeMatrix extends Matrix {
     @Override
     public int getColumnCount() {
         return this.matrix.getRowCount();
+    }
+
+    @Override
+    public void setValueAt(int rowIndex, int columnIndex, float cellValue) {
+        throw new UnsupportedOperationException("The 'setValueAt' is not implemented.");
+    }
+
+    @Override
+    public boolean isSquare() {
+        throw new UnsupportedOperationException("The 'isSquare' is not implemented.");
+    }
+
+    @Override
+    public float computeDeterminant() {
+        throw new UnsupportedOperationException("The 'computeDeterminant' is not implemented.");
     }
 }
