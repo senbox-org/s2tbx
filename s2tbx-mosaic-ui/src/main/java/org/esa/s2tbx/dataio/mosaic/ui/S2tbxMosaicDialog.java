@@ -37,6 +37,8 @@ import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.ui.AppContext;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import java.awt.geom.AffineTransform;
 import java.util.Map;
 
 /**
@@ -184,8 +186,6 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
     }
 
     private boolean verifiyCompatibilityProducts(S2tbxMosaicFormModel mosaicModel) {
-        boolean isNativeResolution = mosaicModel.getPropertySet().getValue("nativeResolution");
-        if(isNativeResolution) {
             Product modelProduct = mosaicModel.getSourceProductMap().values().iterator().next();
             for (Product product : mosaicModel.getSourceProductMap().values()) {
                 if (modelProduct.getNumBands() != product.getNumBands()) {
@@ -200,15 +200,16 @@ class S2tbxMosaicDialog extends SingleTargetProductDialog {
                         showErrorDialog(msg);
                         return false;
                     }
-                    if ((modelProduct.getBandAt(index).getRasterHeight() != product.getBandAt(index).getRasterHeight()) ||
-                            (modelProduct.getBandAt(index).getRasterWidth() != product.getBandAt(index).getRasterWidth())) {
+                    AffineTransform affTransformModelProduct = modelProduct.getBandAt(index).getSourceImage().getModel().getImageToModelTransform(0);
+                    AffineTransform affTransformTestProduct =  product.getBandAt(index).getSourceImage().getModel().getImageToModelTransform(0);
+                    if ((affTransformModelProduct.getScaleX() != affTransformTestProduct.getScaleX()) ||
+                            (affTransformModelProduct.getScaleY() != affTransformTestProduct.getScaleY())) {
                         String msg = "Source product: " + modelProduct.getName() + " is not compatible with product " + product.getName() +
-                                ".\n Band " + modelProduct.getBandAt(index).getName() + " has a different raster size for product " + product.getName();
+                                ".\n Band " + modelProduct.getBandAt(index).getName() + " has a different pixel size for product " + product.getName();
                         showErrorDialog(msg);
                         return false;
                     }
                 }
-            }
         }
         return true;
     }
