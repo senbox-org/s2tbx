@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.esa.s2tbx.fcc.ForestCoverChangeOp;
 import org.esa.s2tbx.fcc.chi.distribution.ChiSquareDistribution;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
@@ -47,38 +48,53 @@ public class TrimmingHelper {
             logger.log(Level.FINE, "Timming statistics per region size " + statistics.size());
         }
 
-        double chi = computeChiDistribution(4);
+        ChiSquaredDistribution chi  = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "The chi distribution is " + chi);
-        }
 
-        while (true) {
-            Object2FloatOpenHashMap<PixelSourceBands> result = MahalanobisDistance.computeMahalanobisSquareMatrix(statistics.values());
-            if (result == null) {
-                break;
-            } else {
-                Int2ObjectMap<PixelSourceBands> validStatistics = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
-
-                ObjectIterator<Int2ObjectMap.Entry<PixelSourceBands>> it = statistics.int2ObjectEntrySet().iterator();
-                while (it.hasNext()) {
-                    Int2ObjectMap.Entry<PixelSourceBands> entry = it.next();
-                    PixelSourceBands point = entry.getValue();
-                    float distance = result.getFloat(point);
-                    if (distance <= chi) {
-                        validStatistics.put(entry.getIntKey(), point);
-                    }
-                }
-
-                if (validStatistics.size() == 0 || statistics.size() == validStatistics.size()) {
+        float[] confidenceLevels = new float[]{ForestCoverChangeConstans.CONFIDENCE_LEVEL_99, ForestCoverChangeConstans.CONFIDENCE_LEVEL_95, ForestCoverChangeConstans.CONFIDENCE_LEVEL_90};
+        for(float confidence: confidenceLevels) {
+            double  cumulativeProbability = chi.inverseCumulativeProbability(confidence);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "The chi distribution is " + cumulativeProbability);
+            }
+            while (true) {
+                Object2FloatOpenHashMap<PixelSourceBands> result = MahalanobisDistance.computeMahalanobisSquareMatrix(statistics.values());
+                if (result == null) {
                     break;
                 } else {
-                    statistics = validStatistics;
+                    Int2ObjectMap<PixelSourceBands> validStatistics = new Int2ObjectLinkedOpenHashMap<>();
+
+                    ObjectIterator<Int2ObjectMap.Entry<PixelSourceBands>> it = statistics.int2ObjectEntrySet().iterator();
+                    while (it.hasNext()) {
+                        Int2ObjectMap.Entry<PixelSourceBands> entry = it.next();
+                        PixelSourceBands point = entry.getValue();
+                        float distance = result.getFloat(point);
+                        if (distance <= cumulativeProbability) {
+                            validStatistics.put(entry.getIntKey(), point);
+                        }else{
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.log(Level.FINE, ""); // add an empty line
+                                logger.log(Level.FINE, "deleted value is " + distance);
+                            }
+                        }
+
+                    }
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, ""); // add an empty line
+                        logger.log(Level.FINE, "number of validated statistics are  " + validStatistics.size());
+                    }
+
+                    if (validStatistics.size() == 0 || statistics.size() == validStatistics.size()) {
+                        break;
+                    } else {
+                        statistics = validStatistics;
+                    }
                 }
             }
         }
         return statistics;
+
     }
 
     private static Int2ObjectMap<PixelSourceBands> computeStatistics(Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics) {
