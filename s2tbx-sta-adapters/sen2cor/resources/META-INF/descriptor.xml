@@ -22,12 +22,12 @@
   <variables>
     <variable>
       <key>SEN2COR_HOME</key>
-      <value>C:\Users\kraftek.C-S\documents\sen2cor</value>
+      <value>$USERPROFILE/documents/sen2cor</value>
       <isShared>false</isShared>
     </variable>
     <variable>
       <key>SEN2COR_BIN</key>
-      <value>C:\Users\kraftek.C-S\.snap\auxdata\Sen2Cor-2.3.1-win64</value>
+      <value></value>
       <isShared>true</isShared>
     </variable>
     <osvariable>
@@ -41,7 +41,7 @@
     </osvariable>
     <osvariable>
       <key>USERPROFILE</key>
-      <value>C:\Users\kraftek.C-S</value>
+      <value></value>
       <isShared>false</isShared>
       <windows></windows>
       <linux>~</linux>
@@ -126,9 +126,9 @@
           <parameterType>RegularParameter</parameterType>
         </parameter>
         <parameter>
-          <name>medianFIlter</name>
-          <dataType>java.lang.Float</dataType>
-          <defaultValue>0.0</defaultValue>
+          <name>medianFilter</name>
+          <dataType>java.lang.Integer</dataType>
+          <defaultValue>0</defaultValue>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -316,9 +316,9 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
-      <name>medianFIlter</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>0.0</defaultValue>
+      <name>medianFilter</name>
+      <dataType>java.lang.Integer</dataType>
+      <defaultValue>0</defaultValue>
       <valueSet reference="../../templateparameter[2]/parameters/parameter[2]/valueSet"/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
@@ -454,9 +454,9 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
-      <name>medianFIlter</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>0.0</defaultValue>
+      <name>medianFilter</name>
+      <dataType>java.lang.Integer</dataType>
+      <defaultValue>0</defaultValue>
       <valueSet reference="../../templateparameter[2]/parameters/parameter[2]/valueSet"/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>

@@ -57,9 +57,9 @@
 				<Look_Up_Tables>
 				  <Aerosol_Type><xsl:value-of select="$aerosol"/></Aerosol_Type>
 				  <!-- RURAL, MARITIME, AUTO -->
-				  <Mid_Latitude><xsl:value-of select="'SUMMER'"/></Mid_Latitude>
+				  <Mid_Latitude><xsl:value-of select="$midLat"/></Mid_Latitude>
 				  <!-- SUMMER, WINTER, AUTO -->
-				  <Ozone_Content><xsl:value-of select="'h'"/></Ozone_Content>
+				  <Ozone_Content><xsl:value-of select="$ozone"/></Ozone_Content>
 				  <!-- 0, f-k, t-y -->
 				  <!-- The atmospheric temperature profile and ozone content:
 					"0" means: get best approximation from metadata (this is smallest difference between metadata and column DU)
