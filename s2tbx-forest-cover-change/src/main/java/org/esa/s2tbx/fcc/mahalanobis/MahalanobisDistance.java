@@ -51,58 +51,78 @@ public class MahalanobisDistance {
             logger.log(Level.FINE, "The centroid points are : meanValueB4Band="+meanValueB4Band+", meanValueB8Band="+meanValueB8Band+", meanValueB11Band="+meanValueB11Band+", standardDeviationValueB11Band="+standardDeviationValueB11Band+", numberOfPoints="+numberOfPoints);
         }
 
-        Matrix matrix = new Matrix(numberOfPoints, 4);
-        Int2ObjectMap<PixelSourceBands> map = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
-        int index = -1;
-        for (PixelSourceBands point : points) {
-            index++;
-            map.put(index, point);
-            matrix.setValueAt(index, 0, (point.getMeanValueB4Band() - meanValueB4Band));
-            matrix.setValueAt(index, 1, (point.getMeanValueB8Band() - meanValueB8Band));
-            matrix.setValueAt(index, 2, (point.getMeanValueB11Band() - meanValueB11Band));
-            matrix.setValueAt(index, 3, (point.getStandardDeviationValueB8Band() - standardDeviationValueB11Band));
+        TrimmingStatisticsMatrix trimmingStatisticsMatrix = new TrimmingStatisticsMatrix(points, meanValueB4Band, meanValueB8Band, meanValueB11Band, standardDeviationValueB11Band);
+
+        Matrix inverseMatrix = computeInverseMatrix(trimmingStatisticsMatrix);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "computeMahalanobisSquareMatrix matrix="+trimmingStatisticsMatrix+", inverseMatrix="+inverseMatrix);
         }
 
-        Matrix inverseMatrix = computeInverseMatrix(matrix);
         if (inverseMatrix != null) {
-            Matrix squaredMahalanobisMatrix = computeSquaredMahalanobisMatrix(matrix, inverseMatrix);
+            float[] values = computeSquaredMahalanobisMatrix(trimmingStatisticsMatrix, inverseMatrix);
             Object2FloatOpenHashMap<PixelSourceBands> result = new Object2FloatOpenHashMap<PixelSourceBands>();
-            int matrixSize = squaredMahalanobisMatrix.getColumnCount();
-            for (int i=0; i<matrixSize; i++) {
-                float value = squaredMahalanobisMatrix.getValueAt(i, i);
-                PixelSourceBands point = map.get(i);
-                result.put(point, (float)Math.sqrt(value));
+            for (int i=0; i<values.length; i++) {
+                PixelSourceBands point = trimmingStatisticsMatrix.getPointAt(i);
+                result.put(point, (float)Math.sqrt(values[i]));
             }
             return result;
         }
         return null;
     }
 
-    private static Matrix computeSquaredMahalanobisMatrix(Matrix matrix, Matrix inverseMatrix) {
+    //TODO Jean new method
+    private static float[] computeSquaredMahalanobisMatrix(Matrix matrix, Matrix inverseMatrix) {
+
+        MultiplyMatrix resultMatrix = new MultiplyMatrix(matrix, inverseMatrix);
         TransposeMatrix transposeMatrix = new TransposeMatrix(matrix);
-        Matrix resultMatrix = MatrixUtils.multiply(matrix, inverseMatrix);
-        return MatrixUtils.multiply(resultMatrix, transposeMatrix);
+        MultiplyMatrix squaredMahalanobisMatrix = new MultiplyMatrix(resultMatrix, transposeMatrix);
+        int squaredMahalanobisMatrixRowCount = squaredMahalanobisMatrix.getRowCount();
+        int squaredMahalanobisMatrixColumnCount = squaredMahalanobisMatrix.getColumnCount();
+        if (squaredMahalanobisMatrixRowCount != squaredMahalanobisMatrixColumnCount) {
+            throw new IllegalArgumentException("Wrong squared Mahalanobis squaredMahalanobisMatrixRowCount="+squaredMahalanobisMatrixRowCount+" squaredMahalanobisMatrixColumnCount="+squaredMahalanobisMatrixColumnCount);
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "computeSquaredMahalanobisMatrix squaredMahalanobisMatrixRowCount="+squaredMahalanobisMatrixRowCount+" matrix="+matrix+", inverseMatrix="+inverseMatrix);
+        }
+
+        float[] values = new float[squaredMahalanobisMatrixRowCount];
+        for (int i=0; i<squaredMahalanobisMatrix.getRowCount(); i++) {
+            values[i] = squaredMahalanobisMatrix.getValueAt(i, i);
+
+            if (i % 1000 == 0 && logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "values["+i+"]="+values[i]+"  squaredMahalanobisMatrixRowCount="+squaredMahalanobisMatrixRowCount);
+            }
+        }
+        return values;
     }
 
     private static Matrix computeInverseMatrix(Matrix matrix) {
         TransposeMatrix transposeMatrix = new TransposeMatrix(matrix);
-        Matrix quadraticMatrix = MatrixUtils.multiply(transposeMatrix, matrix);
-        Matrix covarianceMatrix = computeCovariance(quadraticMatrix, matrix.getRowCount());
+//        Matrix quadraticMatrix = MatrixUtils.multiply(transposeMatrix, matrix);
+        MultiplyMatrix quadraticMatrix = new MultiplyMatrix(transposeMatrix, matrix);
+        //Matrix covarianceMatrix = computeCovariance(quadraticMatrix, matrix.getRowCount());
+        float value = 1.0f / (float)(matrix.getRowCount() - 1);
+        MultiplyByConstantMatrix covarianceMatrix = new MultiplyByConstantMatrix(quadraticMatrix, value);
         return MatrixUtils.inverse(covarianceMatrix);
     }
 
-    private static Matrix computeCovariance(Matrix matrix, int inputRowCount) {
-        float value = 1.0f / (float)(inputRowCount-1);
-        int rowCount = matrix.getRowCount();
-        int columnCount = matrix.getColumnCount();
-        Matrix result = new Matrix(rowCount, columnCount);
-        for (int i=0; i<rowCount; i++) {
-            for (int j=0; j<columnCount; j++) {
-                result.setValueAt(i, j, value * matrix.getValueAt(i, j));
-            }
-        }
-        return result;
-    }
+//    private static Matrix computeCovariance(Matrix matrix, int inputRowCount) {
+//        float value = 1.0f / (float)(inputRowCount-1);
+//        int rowCount = matrix.getRowCount();
+//        int columnCount = matrix.getColumnCount();
+//        Matrix result = new Matrix(rowCount, columnCount);
+//        for (int i=0; i<rowCount; i++) {
+//            for (int j=0; j<columnCount; j++) {
+//                result.setValueAt(i, j, value * matrix.getValueAt(i, j));
+//            }
+//        }
+//        return result;
+//    }
 
     public static void main(String args[]) {
         System.out.println("MahalanobisDistance main method");

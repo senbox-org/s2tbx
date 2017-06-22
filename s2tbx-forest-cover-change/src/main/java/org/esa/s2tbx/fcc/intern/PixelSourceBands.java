@@ -5,10 +5,10 @@ package org.esa.s2tbx.fcc.intern;
  * @since 5.0.6
  */
 public class PixelSourceBands {
-    private float meanValueB4Band;
-    private float meanvalueB8Band;
-    private float meanValueB11Band;
-    private float standardDeviationValueB8Band;
+    private final float meanValueB4Band;
+    private final float meanvalueB8Band;
+    private final float meanValueB11Band;
+    private final float standardDeviationValueB8Band;
 
     public PixelSourceBands(float valueB4Band, float valueB8Band, float valueB11Band, float valueB12Band){
         this.meanValueB4Band = valueB4Band;

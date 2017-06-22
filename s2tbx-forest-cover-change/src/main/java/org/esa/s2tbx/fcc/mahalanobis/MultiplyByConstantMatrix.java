@@ -3,27 +3,29 @@ package org.esa.s2tbx.fcc.mahalanobis;
 /**
  * Created by jcoravu on 20/6/2017.
  */
-public class TransposeMatrix extends Matrix {
+public class MultiplyByConstantMatrix extends Matrix {
     private final Matrix matrix;
+    private final float constant;
 
-    public TransposeMatrix(Matrix matrix) {
+    public MultiplyByConstantMatrix(Matrix matrix, float constant) {
         super();
 
         this.matrix = matrix;
+        this.constant = constant;
     }
 
     @Override
     public float getValueAt(int rowIndex, int columnIndex) {
-        return this.matrix.getValueAt(columnIndex, rowIndex);
+        return matrix.getValueAt(rowIndex, columnIndex) * constant;
     }
 
     @Override
     public int getRowCount() {
-        return this.matrix.getColumnCount();
+        return this.matrix.getRowCount();
     }
 
     @Override
     public int getColumnCount() {
-        return this.matrix.getRowCount();
+        return this.matrix.getColumnCount();
     }
 }
