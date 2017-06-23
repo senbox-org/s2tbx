@@ -4,7 +4,6 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
@@ -29,21 +28,21 @@ public class TrimmingHelper {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Timming statistics per region size " + statistics.size());
+            logger.log(Level.FINE, "Apply the trimming for "+ statistics.size()+" valid regions");
         }
 
         ChiSquaredDistribution chi  = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
 
         float[] confidenceLevels = new float[]{ForestCoverChangeConstans.CONFIDENCE_LEVEL_99, ForestCoverChangeConstans.CONFIDENCE_LEVEL_95, ForestCoverChangeConstans.CONFIDENCE_LEVEL_90};
-        for (float confidence: confidenceLevels) {
-            double cumulativeProbability = chi.inverseCumulativeProbability(confidence);
+        for (int i=0; i<confidenceLevels.length; i++) {
+            double cumulativeProbability = chi.inverseCumulativeProbability(confidenceLevels[i]);
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, ""); // add an empty line
-                logger.log(Level.FINE, "The chi distribution is " + cumulativeProbability);
+                logger.log(Level.FINE, "The chi distribution is " + cumulativeProbability+ " and the iteration is " + (i+1));
             }
             boolean continueRunning = true;
             while (continueRunning) {
-                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.computeMahalanobisSquareMatrix(statistics, cumulativeProbability);
+                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.filterValidRegionsUsingMahalanobisDistance(statistics, cumulativeProbability);
                 if (validStatistics == null) {
                     continueRunning = false;//break;
                 } else {
@@ -63,10 +62,30 @@ public class TrimmingHelper {
         return statistics;
     }
 
-    private static Int2ObjectMap<PixelSourceBands> computeStatistics(Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics) {
-        Int2ObjectMap<PixelSourceBands> statistics = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
-        ObjectIterator<Int2ObjectMap.Entry<List<PixelSourceBands>>> it = trimmingStatistics.int2ObjectEntrySet().iterator();
+    private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("sourceBandIndices", sourceBandIndices);
+        Map<String, Product> sourceProducts = new HashMap<>();
+        sourceProducts.put("segmentationSourceProduct", segmentationSourceProduct);
+        sourceProducts.put("sourceProduct", sourceProduct);
+        TrimmingRegionComputingOp trimRegOp = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
+        trimRegOp.getTargetProduct();
 
+        OperatorExecutor executor = OperatorExecutor.create(trimRegOp);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        return computeStatisticsPerRegion(trimRegOp.getValidRegionsMap());
+    }
+
+    private static Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion(Int2ObjectMap<List<PixelSourceBands>> validRegionsMap) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Compute the average pixel values per region of "+validRegionsMap.size()+" valid regions before trimming");
+        }
+
+        Int2ObjectMap<PixelSourceBands> statistics = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
+
+        ObjectIterator<Int2ObjectMap.Entry<List<PixelSourceBands>>> it = validRegionsMap.int2ObjectEntrySet().iterator();
         while (it.hasNext()) {
             Int2ObjectMap.Entry<List<PixelSourceBands>> entry = it.next();
             List<PixelSourceBands> pixelsList = entry.getValue();
@@ -100,27 +119,5 @@ public class TrimmingHelper {
         }
 
         return statistics;
-    }
-
-    private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("sourceBandIndices", sourceBandIndices);
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("segmentationSourceProduct", segmentationSourceProduct);
-        sourceProducts.put("sourceProduct", sourceProduct);
-        TrimmingRegionComputingOp trimRegOp = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
-        trimRegOp.getTargetProduct();
-
-        OperatorExecutor executor = OperatorExecutor.create(trimRegOp);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-
-        Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics = trimRegOp.getPixelsStatistics();
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Timming statistics size " + trimmingStatistics.size());
-        }
-
-        return computeStatistics(trimmingStatistics);
     }
 }

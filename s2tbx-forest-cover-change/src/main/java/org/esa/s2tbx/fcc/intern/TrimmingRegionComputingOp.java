@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.media.jai.JAI;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
@@ -36,8 +38,9 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
         authors = "Razvan Dumitrascu, Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class TrimmingRegionComputingOp extends Operator {
-    @SuppressWarnings({"PackageVisibleField"})
-    @SourceProduct(alias = "source", description = "The segmentation source product with segments that have more than 95% forest cover")
+    private static final Logger logger = Logger.getLogger(TrimmingRegionComputingOp.class.getName());
+
+    @SourceProduct(alias = "Source", description = "The segmentation source product with segments that have more than 95% forest cover")
     private Product segmentationSourceProduct;
 
     @SourceProduct(alias = "sourceCompositionProduct", description = "The source products to be used for trimming.")
@@ -49,7 +52,7 @@ public class TrimmingRegionComputingOp extends Operator {
     @Parameter(itemAlias = "sourceBandIndices", description = "The index from the source product to be used.")
     private int[] sourceBandIndices;
 
-    private Int2ObjectMap<List<PixelSourceBands>> statistics;
+    private Int2ObjectMap<List<PixelSourceBands>> validRegionsMap;
 
     public TrimmingRegionComputingOp() {
     }
@@ -58,13 +61,19 @@ public class TrimmingRegionComputingOp extends Operator {
     public void initialize() throws OperatorException {
         validateSourceProducts();
         validateParametersInput();
-        this.statistics = new Int2ObjectLinkedOpenHashMap<List<PixelSourceBands>>();
+        this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<List<PixelSourceBands>>();
         createTargetProduct();
     }
 
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle tileRegion = targetTile.getRectangle();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Compute trimming statistics for tile region: bounds [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
+        }
+
         Band firstBand = this.sourceProduct.getBandAt(sourceBandIndices[0]);
         Band secondBand = this.sourceProduct.getBandAt(sourceBandIndices[1]);
         Band thirdBand = this.sourceProduct.getBandAt(sourceBandIndices[2]);
@@ -74,14 +83,14 @@ public class TrimmingRegionComputingOp extends Operator {
             for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
                 int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
                 if (segmentationPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE) {
-                    synchronized (this.statistics) {
-                        List<PixelSourceBands> value = this.statistics.get(segmentationPixelValue);
+                    PixelSourceBands pixels = new PixelSourceBands(firstBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y),
+                                                                   thirdBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y));
+                    synchronized (this.validRegionsMap) {
+                        List<PixelSourceBands> value = this.validRegionsMap.get(segmentationPixelValue);
                         if (value == null) {
                             value = new ArrayList<>();
-                            this.statistics.put(segmentationPixelValue, value);
+                            this.validRegionsMap.put(segmentationPixelValue, value);
                         }
-                        PixelSourceBands pixels = new PixelSourceBands(firstBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y),
-                                                                       thirdBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y));
                         value.add(pixels);
                     }
                 }
@@ -93,8 +102,8 @@ public class TrimmingRegionComputingOp extends Operator {
      *
      * @return returns the HashMap containing the pixels values from the 4 bands selected per region
      */
-    public Int2ObjectMap<List<PixelSourceBands>> getPixelsStatistics() {
-        return this.statistics;
+    public Int2ObjectMap<List<PixelSourceBands>> getValidRegionsMap() {
+        return this.validRegionsMap;
     }
 
     private void createTargetProduct() {

@@ -76,7 +76,7 @@ public class ObjectsSelectionOp extends Operator {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute object selection for tile region[x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
+            logger.log(Level.FINE, "Compute object selection for tile region: bounds [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
         }
 
         Band segmentationBand = this.sourceProduct.getBandAt(0);

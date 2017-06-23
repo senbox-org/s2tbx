@@ -108,6 +108,7 @@ public class ForestCoverChangeOp extends Operator {
         Dimension tileSize = JAI.getDefaultTileSize();
 
         this.targetProduct = new Product("forestCoverChange", this.currentSourceProduct.getProductType(), sceneWidth, sceneHeight);
+        this.targetProduct.setSceneGeoCoding(this.currentSourceProduct.getSceneGeoCoding());
         this.targetProduct.setPreferredTileSize(tileSize);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);

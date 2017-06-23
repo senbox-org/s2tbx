@@ -90,7 +90,7 @@ public class ColorFillerOp extends Operator {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute color filler for tile region[x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
+            logger.log(Level.FINE, "Compute color filler for tile region: bounds [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
         }
 
         Band segmentationBand = sourceProduct.getBandAt(0);
@@ -101,11 +101,6 @@ public class ColorFillerOp extends Operator {
                     sgmentationValue = ForestCoverChangeConstans.NO_DATA_VALUE;
                 }
                 targetTile.setSample(x, y, sgmentationValue);
-//                if (this.validRegions.contains(sgmentationValue)) {
-//                    targetTile.setSample(x, y, sgmentationValue);
-//                } else {
-//                    targetTile.setSample(x, y, ForestCoverChangeConstans.NO_DATA_VALUE);
-//                }
             }
         }
     }
@@ -116,7 +111,7 @@ public class ColorFillerOp extends Operator {
         while (it.hasNext()) {
             Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic> entry = it.next();
             ObjectsSelectionOp.PixelStatistic value = entry.getValue();
-            float percent = ((float)value.getPixelsInRange()/(float)value.getTotalNumberPixels())*100;
+            float percent = ((float)value.getPixelsInRange()/(float)value.getTotalNumberPixels()) * 100;
             if (percent >= percentagePixels) {
                 validReg.add(entry.getIntKey());
             }
