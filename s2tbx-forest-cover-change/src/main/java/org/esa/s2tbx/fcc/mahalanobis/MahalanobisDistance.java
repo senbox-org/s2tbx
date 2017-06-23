@@ -13,26 +13,28 @@ import java.util.logging.Logger;
 public class MahalanobisDistance {
     private static final Logger logger = Logger.getLogger(MahalanobisDistance.class.getName());
 
-    public static Int2ObjectMap<PixelSourceBands> filterValidRegionsUsingMahalanobisDistance(Int2ObjectMap<PixelSourceBands> validRegionStatictics, double cumulativeProbability)
+    public static Int2ObjectMap<PixelSourceBands> filterValidRegionsUsingMahalanobisDistance(Int2ObjectMap<PixelSourceBands> validRegionStatistics, double cumulativeProbability)
                                                                                  throws InterruptedException {
 
         int threadCount = Runtime.getRuntime().availableProcessors() + 1;
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute the Mahalanobis distance for " + validRegionStatictics.size() + " valid regions and " + threadCount + " threads.");
+            logger.log(Level.FINE, "Start computing the Mahalanobis distance: valid region count: " + validRegionStatistics.size() + ", Chi distribution: "+cumulativeProbability+ ", thread count: " + threadCount);
         }
 
-        TrimmingStatisticsMatrix trimmingStatisticsMatrix = new TrimmingStatisticsMatrix(validRegionStatictics);
+        TrimmingStatisticsMatrix trimmingStatisticsMatrix = new TrimmingStatisticsMatrix(validRegionStatistics);
 
         Matrix inverseMatrix = computeInverseMatrix(trimmingStatisticsMatrix, threadCount);
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "computeMahalanobisSquareMatrix matrix="+trimmingStatisticsMatrix+", inverseMatrix="+inverseMatrix);
-        }
+        if (inverseMatrix == null) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "Finish computing the Mahalanobis distance: valid region count: " + validRegionStatistics.size() + ", removed region count: "+0+", Chi distribution: "+cumulativeProbability+ ", thread count: " + threadCount+", no inverse matrix");
+            }
 
-        if (inverseMatrix != null) {
+            return null;
+        } else {
             MahalanobisDistanceHelper mahalanobisDistanceHelper = new MahalanobisDistanceHelper(trimmingStatisticsMatrix, inverseMatrix, cumulativeProbability);
 
             for (int i=0; i<threadCount; i++) {
@@ -43,9 +45,16 @@ public class MahalanobisDistance {
 
             mahalanobisDistanceHelper.computeDistances();
 
-            return mahalanobisDistanceHelper.waitToFinish();
+            Int2ObjectMap<PixelSourceBands> result = mahalanobisDistanceHelper.waitToFinish();
+
+            if (logger.isLoggable(Level.FINE)) {
+                int removedRegionCount = validRegionStatistics.size() - result.size();
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "Finish computing the Mahalanobis distance: valid region count: " + result.size() + ", removed region count: "+removedRegionCount+ ", Chi distribution: "+cumulativeProbability+ ", thread count: " + threadCount);
+            }
+
+            return result;
         }
-        return null;
     }
 
     private static Matrix computeInverseMatrix(Matrix matrix, int threadCount) throws InterruptedException {
@@ -88,7 +97,7 @@ public class MahalanobisDistance {
             try {
                 this.storageMatrixHelper.computeMatrixCells();
             } catch (Exception exception) {
-                logger.log(Level.SEVERE, "Failed to compute the matrix.", exception);
+                logger.log(Level.SEVERE, "Failed to compute the matrix cells.", exception);
             } finally {
                 this.storageMatrixHelper.decrementThreadCounter();
             }
@@ -236,13 +245,13 @@ public class MahalanobisDistance {
                     float squareDistance = this.squaredMahalanobisMatrix.getValueAt(index, index);
                     if (Math.sqrt(squareDistance) <= this.cumulativeProbability) {
                         synchronized (this.validStatistics) {
-                            this.validStatistics.put(this.trimmingStatisticsMatrix.getRegionKeyAt(index), this.trimmingStatisticsMatrix.getRegionAt(index));
+                            this.validStatistics.put(this.trimmingStatisticsMatrix.getRegionKeyAt(index), this.trimmingStatisticsMatrix.getRegionMeanPixelsAt(index));
                         }
                     }
 
-                    if (index % 1000 == 0 && logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, ""); // add an empty line
-                        logger.log(Level.FINE, "Mahalanobis distance computation: index: "+index+", total regions: "+this.trimmingStatisticsMatrix.getRowCount()+", distance: " +Math.sqrt(squareDistance)+", chi distribution: "+this.cumulativeProbability);
+                    if (index % 1000 == 0 && logger.isLoggable(Level.FINER)) {
+                        logger.log(Level.FINER, ""); // add an empty line
+                        logger.log(Level.FINER, "Mahalanobis distance computation: index: "+index+", total regions: "+this.trimmingStatisticsMatrix.getRowCount()+", distance: " +Math.sqrt(squareDistance)+", chi distribution: "+this.cumulativeProbability);
                     }
                 }
             } while (index >= 0);

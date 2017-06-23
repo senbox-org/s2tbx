@@ -120,12 +120,15 @@ public class ForestCoverChangeOp extends Operator {
 
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
-        this.targetProduct.getBandAt(0).setSourceImage(null);
+        long startTime = System.currentTimeMillis();
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start execution Forest Cover Change");
+            logger.log(Level.FINE, "Start Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight() + ", start time: " + new Date(startTime));
         }
+
+        // reset the source inmage of the target product
+        this.targetProduct.getBandAt(0).setSourceImage(null);
 
         String[] sourceBandNames = new String[] {"B4", "B8", "B11", "B12"}; // int[] indexes = new int[] {3, 4, 10, 11};
 
@@ -190,8 +193,10 @@ public class ForestCoverChangeOp extends Operator {
         runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
 
         if (logger.isLoggable(Level.FINE)) {
+            long finishTime = System.currentTimeMillis();
+            long totalSeconds = (finishTime - startTime) / 1000;
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish execution Forest Cover Change");
+            logger.log(Level.FINE, "Finish Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight()+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
         }
     }
 
@@ -204,31 +209,6 @@ public class ForestCoverChangeOp extends Operator {
         Product segmentationProduct = runSegmentation(sourceProduct, mergingCostCriterion, regionMergingCriterion,
                                                                         totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
         return runColorFillerOp(segmentationProduct, forestCoverPercentage);
-    }
-
-    private Product generateBandsSegmentation(Product currentProduct, Product previousProduct) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Generate bands segmentation");
-        }
-
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("mergingCostCriterion", mergingCostCriterion);
-        parameters.put("regionMergingCriterion", regionMergingCriterion);
-        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
-        parameters.put("threshold", threshold);
-        parameters.put("spectralWeight", spectralWeight);
-        parameters.put("shapeWeight", shapeWeight);
-        Map<String, Product> sourceProducts = new HashMap<String, Product>();
-        sourceProducts.put("currentSourceProduct", currentProduct);
-        sourceProducts.put("previousSourceProduct", previousProduct);
-        Operator operator = GPF.getDefaultInstance().createOperator("ImageSegmentationOp", parameters, sourceProducts, null);
-        Product targetProduct = operator.getTargetProduct();
-        targetProduct.setSceneGeoCoding(currentProduct.getSceneGeoCoding());
-        OperatorExecutor executor = OperatorExecutor.create(operator);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-
-        return targetProduct;
     }
 
     private static Product runSegmentation(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion,

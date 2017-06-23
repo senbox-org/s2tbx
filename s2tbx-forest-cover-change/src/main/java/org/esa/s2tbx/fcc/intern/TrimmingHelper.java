@@ -24,11 +24,13 @@ public class TrimmingHelper {
     }
 
     public static Int2ObjectMap<PixelSourceBands> doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices) throws InterruptedException {
-        Int2ObjectMap<PixelSourceBands> statistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
+        Int2ObjectMap<PixelSourceBands> validRegionStatistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
+
+        int initialValidRegionCount = validRegionStatistics.size();
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Apply the trimming for "+ statistics.size()+" valid regions");
+            logger.log(Level.FINE, "Start applying trimming: valid region count: "+ initialValidRegionCount);
         }
 
         ChiSquaredDistribution chi  = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
@@ -36,30 +38,34 @@ public class TrimmingHelper {
         float[] confidenceLevels = new float[]{ForestCoverChangeConstans.CONFIDENCE_LEVEL_99, ForestCoverChangeConstans.CONFIDENCE_LEVEL_95, ForestCoverChangeConstans.CONFIDENCE_LEVEL_90};
         for (int i=0; i<confidenceLevels.length; i++) {
             double cumulativeProbability = chi.inverseCumulativeProbability(confidenceLevels[i]);
+
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, ""); // add an empty line
-                logger.log(Level.FINE, "The chi distribution is " + cumulativeProbability+ " and the iteration is " + (i+1));
+                logger.log(Level.FINE, "Start applying the trimming on the valid regions: iteration: "+(i+1)+", Chi distribution: " + cumulativeProbability+", valid region count: " + validRegionStatistics.size());
             }
+
             boolean continueRunning = true;
             while (continueRunning) {
-                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.filterValidRegionsUsingMahalanobisDistance(statistics, cumulativeProbability);
+                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.filterValidRegionsUsingMahalanobisDistance(validRegionStatistics, cumulativeProbability);
                 if (validStatistics == null) {
                     continueRunning = false;//break;
                 } else {
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, ""); // add an empty line
-                        logger.log(Level.FINE, "number of validated statistics are  " + validStatistics.size());
-                    }
-
-                    if (validStatistics.size() == 0 || statistics.size() == validStatistics.size()) {
+                    if (validStatistics.size() == 0 || validRegionStatistics.size() == validStatistics.size()) {
                         continueRunning = false;//break;
                     } else {
-                        statistics = validStatistics;
+                        validRegionStatistics = validStatistics;
                     }
                 }
             }
         }
-        return statistics;
+
+        if (logger.isLoggable(Level.FINE)) {
+            int removedValidRegionCount = initialValidRegionCount - validRegionStatistics.size();
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish applying trimming: valid region count: "+ validRegionStatistics.size()+", removed region count: " + removedValidRegionCount);
+        }
+
+        return validRegionStatistics;
     }
 
     private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices) {
