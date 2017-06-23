@@ -4,12 +4,9 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.esa.s2tbx.fcc.ForestCoverChangeOp;
-import org.esa.s2tbx.fcc.chi.distribution.ChiSquareDistribution;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
@@ -27,20 +24,7 @@ public class TrimmingHelper {
     private TrimmingHelper() {
     }
 
-    private static double computeChiDistribution(int numberOfComponentsPerPixel) {
-        double result = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 0.99d);
-        double value = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 0.95d);
-        if (result < value) {
-            result = value;
-        }
-        value = ChiSquareDistribution.computeChiSquare(numberOfComponentsPerPixel, 0.9d);
-        if (result < value) {
-            result = value;
-        }
-        return result;
-    }
-
-    public static Int2ObjectMap<PixelSourceBands> doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices) {
+    public static Int2ObjectMap<PixelSourceBands> doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices) throws InterruptedException {
         Int2ObjectMap<PixelSourceBands> statistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
 
         if (logger.isLoggable(Level.FINE)) {
@@ -50,43 +34,26 @@ public class TrimmingHelper {
 
         ChiSquaredDistribution chi  = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
 
-
         float[] confidenceLevels = new float[]{ForestCoverChangeConstans.CONFIDENCE_LEVEL_99, ForestCoverChangeConstans.CONFIDENCE_LEVEL_95, ForestCoverChangeConstans.CONFIDENCE_LEVEL_90};
-        for(float confidence: confidenceLevels) {
-            double  cumulativeProbability = chi.inverseCumulativeProbability(confidence);
+        for (float confidence: confidenceLevels) {
+            double cumulativeProbability = chi.inverseCumulativeProbability(confidence);
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "The chi distribution is " + cumulativeProbability);
             }
-            while (true) {
-                Object2FloatOpenHashMap<PixelSourceBands> result = MahalanobisDistance.computeMahalanobisSquareMatrix(statistics.values());
-                if (result == null) {
-                    break;
+            boolean continueRunning = true;
+            while (continueRunning) {
+                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.computeMahalanobisSquareMatrix(statistics, cumulativeProbability);
+                if (validStatistics == null) {
+                    continueRunning = false;//break;
                 } else {
-                    Int2ObjectMap<PixelSourceBands> validStatistics = new Int2ObjectLinkedOpenHashMap<>();
-
-                    ObjectIterator<Int2ObjectMap.Entry<PixelSourceBands>> it = statistics.int2ObjectEntrySet().iterator();
-                    while (it.hasNext()) {
-                        Int2ObjectMap.Entry<PixelSourceBands> entry = it.next();
-                        PixelSourceBands point = entry.getValue();
-                        float distance = result.getFloat(point);
-                        if (distance <= cumulativeProbability) {
-                            validStatistics.put(entry.getIntKey(), point);
-                        }else{
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.log(Level.FINE, ""); // add an empty line
-                                logger.log(Level.FINE, "deleted value is " + distance);
-                            }
-                        }
-
-                    }
                     if (logger.isLoggable(Level.FINE)) {
                         logger.log(Level.FINE, ""); // add an empty line
                         logger.log(Level.FINE, "number of validated statistics are  " + validStatistics.size());
                     }
 
                     if (validStatistics.size() == 0 || statistics.size() == validStatistics.size()) {
-                        break;
+                        continueRunning = false;//break;
                     } else {
                         statistics = validStatistics;
                     }
@@ -94,7 +61,6 @@ public class TrimmingHelper {
             }
         }
         return statistics;
-
     }
 
     private static Int2ObjectMap<PixelSourceBands> computeStatistics(Int2ObjectMap<List<PixelSourceBands>> trimmingStatistics) {

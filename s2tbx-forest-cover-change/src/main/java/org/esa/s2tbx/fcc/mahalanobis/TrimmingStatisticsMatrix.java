@@ -1,55 +1,69 @@
 package org.esa.s2tbx.fcc.mahalanobis;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
-
-import java.util.Collection;
 
 /**
  * Created by jcoravu on 20/6/2017.
  */
 public class TrimmingStatisticsMatrix extends Matrix {
-    private final PixelSourceBands[] points;
+    private final Int2ObjectMap.Entry<?>[] regions;
     private final float meanValueB4Band;
     private final float meanValueB8Band;
     private final float meanValueB11Band;
-    private final float standardDeviationValueB11Band;
+    private final float standardDeviationMeanValueB11Band;
 
-    public TrimmingStatisticsMatrix(Collection<PixelSourceBands> points, float meanValueB4Band, float meanValueB8Band, float meanValueB11Band, float standardDeviationValueB11Band) {
+    public TrimmingStatisticsMatrix(Int2ObjectMap<PixelSourceBands> statistics) {
         super();
 
-        this.meanValueB4Band = meanValueB4Band;
-        this.meanValueB8Band = meanValueB8Band;
-        this.meanValueB11Band = meanValueB11Band;
-        this.standardDeviationValueB11Band = standardDeviationValueB11Band;
+        float totalValueB4Band = 0.0f;
+        float totalValueB8Band = 0.0f;
+        float totalValueB11Band = 0.0f;
+        float totalStandardDeviationValueB11Band = 0.0f;
 
-        this.points = new PixelSourceBands[points.size()];
+        int numberOfPoints = statistics.size();
+        this.regions = new Int2ObjectMap.Entry<?>[numberOfPoints];
+
         int index = -1;
-        for (PixelSourceBands point : points) {
-            index++;
-            this.points[index] = point;
+
+        ObjectIterator<Int2ObjectMap.Entry<PixelSourceBands>> it = statistics.int2ObjectEntrySet().iterator();
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<PixelSourceBands> entry = it.next();
+            PixelSourceBands point = entry.getValue();
+            this.regions[++index] = entry;
+            totalValueB4Band += point.getMeanValueB4Band();
+            totalValueB8Band += point.getMeanValueB8Band();
+            totalValueB11Band += point.getMeanValueB11Band();
+            totalStandardDeviationValueB11Band += point.getStandardDeviationValueB8Band();
         }
+
+        this.meanValueB4Band = totalValueB4Band / (float)numberOfPoints;
+        this.meanValueB8Band = totalValueB8Band / (float)numberOfPoints;
+        this.meanValueB11Band = totalValueB11Band / (float)numberOfPoints;
+        this.standardDeviationMeanValueB11Band = totalStandardDeviationValueB11Band / (float)numberOfPoints;
     }
 
     @Override
     public float getValueAt(int rowIndex, int columnIndex) {
         if (columnIndex == 0) {
-            return this.points[rowIndex].getMeanValueB4Band() - this.meanValueB4Band;
+            return getRegionAt(rowIndex).getMeanValueB4Band() - this.meanValueB4Band;
         }
         if (columnIndex == 1) {
-            return this.points[rowIndex].getMeanValueB8Band() - this.meanValueB8Band;
+            return getRegionAt(rowIndex).getMeanValueB8Band() - this.meanValueB8Band;
         }
         if (columnIndex == 2) {
-            return this.points[rowIndex].getMeanValueB11Band() - this.meanValueB11Band;
+            return getRegionAt(rowIndex).getMeanValueB11Band() - this.meanValueB11Band;
         }
         if (columnIndex == 3) {
-            return this.points[rowIndex].getStandardDeviationValueB8Band() - this.standardDeviationValueB11Band;
+            return getRegionAt(rowIndex).getStandardDeviationValueB8Band() - this.standardDeviationMeanValueB11Band;
         }
         throw new IllegalArgumentException("Unknown column index " + columnIndex + ".");
     }
 
     @Override
     public int getRowCount() {
-        return this.points.length;
+        return this.regions.length;
     }
 
     @Override
@@ -57,7 +71,11 @@ public class TrimmingStatisticsMatrix extends Matrix {
         return 4;
     }
 
-    public PixelSourceBands getPointAt(int index) {
-        return this.points[index];
+    public PixelSourceBands getRegionAt(int index) {
+        return (PixelSourceBands)this.regions[index].getValue();
+    }
+
+    public int getRegionKeyAt(int index) {
+        return this.regions[index].getIntKey();
     }
 }

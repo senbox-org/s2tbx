@@ -149,7 +149,12 @@ public class ForestCoverChangeOp extends Operator {
 
         int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
 
-        IntSet currentSegmentationTrimmingRegionKeys = computeTrimming(currentProductColorFill, currentProduct, trimmingSourceProductBandIndices);
+        IntSet currentSegmentationTrimmingRegionKeys = null;
+        try {
+            currentSegmentationTrimmingRegionKeys = computeTrimming(currentProductColorFill, currentProduct, trimmingSourceProductBandIndices);
+        } catch (InterruptedException e) {
+            throw new OperatorException(e);
+        }
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -170,7 +175,12 @@ public class ForestCoverChangeOp extends Operator {
             logger.log(Level.FINE, "Start trimming for previous product");
         }
 
-        IntSet previousSegmentationTrimmingRegionKeys = computeTrimming(previousProductColorFill, previousProduct, trimmingSourceProductBandIndices);
+        IntSet previousSegmentationTrimmingRegionKeys = null;
+        try {
+            previousSegmentationTrimmingRegionKeys = computeTrimming(previousProductColorFill, previousProduct, trimmingSourceProductBandIndices);
+        } catch (InterruptedException e) {
+            throw new OperatorException(e);
+        }
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -184,7 +194,7 @@ public class ForestCoverChangeOp extends Operator {
         }
     }
 
-    private static IntSet computeTrimming(Product segmentationSourceProduct, Product currentProduct, int[] trimmingSourceProductBandIndices) {
+    private static IntSet computeTrimming(Product segmentationSourceProduct, Product currentProduct, int[] trimmingSourceProductBandIndices) throws InterruptedException {
         Int2ObjectMap<PixelSourceBands> currentTrimmingStatistics = TrimmingHelper.doTrimming(segmentationSourceProduct, currentProduct, trimmingSourceProductBandIndices);
         return currentTrimmingStatistics.keySet();
     }
