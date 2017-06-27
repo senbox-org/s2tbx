@@ -8,20 +8,26 @@ import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
  * @author Cosmin Cara
  */
 public enum OSCategory {
-    WIN_32("gdal-2.1.3-win32", "release-1500-gdal-2-1-3-mapserver-7-0-4.zip", "Windows"),
-    WIN_64("gdal-2.1.3-win64", "release-1500-x64-gdal-2-1-3-mapserver-7-0-4.zip", "Windows"),
-    LINUX_64("gdal-2.2.0-linux", "gdal-2.2.0-linux-bin.zip", "Linux"),
-    MAC_OS_X(null, null, "Macintosh"),
-    UNSUPPORTED(null, null, "");
+    WIN_32("gdal-2.1.3-win32", "release-1500-gdal-2-1-3-mapserver-7-0-4.zip", "environment-variables-win32", "Windows"),
+    WIN_64("gdal-2.1.3-win64", "release-1500-x64-gdal-2-1-3-mapserver-7-0-4.zip", "environment-variables-win64", "Windows"),
+    LINUX_64("gdal-2.2.0-linux", "gdal-2.2.0-linux-bin.zip", "environment-variables", "Linux"),
+    MAC_OS_X(null, null, null, "Macintosh"),
+    UNSUPPORTED(null, null, null, "");
 
     String directory;
     String zipFileName;
     String operatingSystemName;
+    String environmentVariablesFileName;
 
-    OSCategory(String directory, String zipFileName, String operatingSystemName) {
+    OSCategory(String directory, String zipFileName, String environmentVariablesFileName, String operatingSystemName) {
         this.directory = directory;
         this.zipFileName = zipFileName;
+        this.environmentVariablesFileName = environmentVariablesFileName;
         this.operatingSystemName = operatingSystemName;
+    }
+
+    public String getEnvironmentVariablesFileName() {
+        return environmentVariablesFileName;
     }
 
     public String getOperatingSystemName() {

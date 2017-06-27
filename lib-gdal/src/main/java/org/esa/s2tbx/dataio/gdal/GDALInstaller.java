@@ -139,11 +139,12 @@ public class GDALInstaller {
             }
         }
 
+        String libraryFileNameFromSources = System.mapLibraryName(osCategory.getEnvironmentVariablesFileName());
         String libraryFileName = System.mapLibraryName("environment-variables");
         Path libraryFilePath = gdalApplicationFolderPath.resolve(libraryFileName);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "The library file path is '" + libraryFilePath.toString() + "'.");
+            logger.log(Level.FINE, "The library file path on the local disk is '" + libraryFilePath.toString() + "' and the library file name from sources is '" + libraryFileNameFromSources + "'.");
         }
 
         if (canCopyGDALDistribution) {
@@ -151,7 +152,7 @@ public class GDALInstaller {
                 logger.log(Level.FINE, "Copy the library file.");
             }
 
-            String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileName;
+            String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileNameFromSources;
             URL libraryFileURLFromSources = getClass().getClassLoader().getResource(libraryFilePathFromSources);
             FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
         }
