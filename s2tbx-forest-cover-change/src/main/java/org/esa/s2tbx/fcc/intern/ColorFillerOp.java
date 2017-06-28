@@ -140,7 +140,7 @@ public class ColorFillerOp extends Operator {
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_fill", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
-        this.targetProduct.setSceneGeoCoding(this.sourceProduct.getSceneGeoCoding());
+        ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
     }

@@ -114,7 +114,7 @@ public class TrimmingHelper {
             float averageStandardDeviationB8PixelValue = sumStandardDeviationB8PixelValue / pixelsList.size();
             float sum = 0.0f;
             for (PixelSourceBands pixelValues: pixelsList) {
-                double value = pixelValues.getStandardDeviationValueB8Band() - averageStandardDeviationB8PixelValue;
+                float value = pixelValues.getStandardDeviationValueB8Band() - averageStandardDeviationB8PixelValue;
                 sum += Math.pow((value), 2);
             }
             float average = sum / (float)pixelsList.size();

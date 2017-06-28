@@ -1,6 +1,7 @@
 package org.esa.s2tbx.fcc;
 
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
@@ -11,11 +12,6 @@ import java.util.logging.SimpleFormatter;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.SubProgressMonitor;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.intern.BandsExtractor;
-import org.esa.s2tbx.fcc.intern.PixelSourceBands;
-import org.esa.s2tbx.fcc.intern.TrimmingHelper;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.landcover.dataio.CCILandCoverModelDescriptor;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -58,10 +54,24 @@ public class RunForestCoverChange {
 
             Product targetProduct = runForestCoverChange(firstInputProduct, secondInputProduct, mergingCostCriterion, regionMergingCriterion,
                                                 totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight, treeCoverPercentagePixels);
-            BandsExtractor.writeProduct(targetProduct, parentFolder, "unionMasksProduct");
+            writeProduct(targetProduct, parentFolder, "unionMasksProduct");
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void writeProduct(Product outputProduct, File parentFolder, String fileName){
+        File file = new File(parentFolder, fileName);
+        if(!file.exists()){
+            try {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        String formatName = "BEAM-DIMAP";
+        GPF.writeProduct(outputProduct, file, formatName, false, false, ProgressMonitor.NULL);
     }
 
     public static Product runForestCoverChange(Product firstSourceProduct, Product secondSourceProduct,

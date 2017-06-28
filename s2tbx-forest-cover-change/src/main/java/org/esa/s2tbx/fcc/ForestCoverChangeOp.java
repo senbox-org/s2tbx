@@ -5,11 +5,9 @@ import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
-import org.esa.s2tbx.fcc.intern.BandsExtractor;
 import org.esa.s2tbx.fcc.intern.ColorFillerOp;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
 import org.esa.s2tbx.fcc.intern.TrimmingHelper;
-import org.esa.s2tbx.grm.AbstractGenericRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -23,21 +21,15 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
-import org.esa.snap.core.gpf.descriptor.SourceProductDescriptor;
-import org.esa.snap.core.gpf.descriptor.SourceProductsDescriptor;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
+import org.esa.snap.core.util.ProductUtils;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
-import java.io.File;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -108,8 +100,8 @@ public class ForestCoverChangeOp extends Operator {
         Dimension tileSize = JAI.getDefaultTileSize();
 
         this.targetProduct = new Product("forestCoverChange", this.currentSourceProduct.getProductType(), sceneWidth, sceneHeight);
-        this.targetProduct.setSceneGeoCoding(this.currentSourceProduct.getSceneGeoCoding());
         this.targetProduct.setPreferredTileSize(tileSize);
+        ProductUtils.copyGeoCoding(this.currentSourceProduct, this.targetProduct);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
 
@@ -132,12 +124,32 @@ public class ForestCoverChangeOp extends Operator {
 
         String[] sourceBandNames = new String[] {"B4", "B8", "B11", "B12"}; // int[] indexes = new int[] {3, 4, 10, 11};
 
+        int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
+
+        ProductTrimmingResult currentResult = runTrimming(this.currentSourceProduct, sourceBandNames, trimmingSourceProductBandIndices);
+        IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
+        Product currentProductColorFill = currentResult.getSegmentationProductColorFill();
+
+        ProductTrimmingResult previousResult = runTrimming(this.previousSourceProduct, sourceBandNames, trimmingSourceProductBandIndices);
+        IntSet previousSegmentationTrimmingRegionKeys = previousResult.getTrimmingRegionKeys();
+        Product previousProductColorFill = previousResult.getSegmentationProductColorFill();
+
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start bands extractor for current product");
+            logger.log(Level.FINE, "Start running union mask");
         }
+        runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
 
-        Product currentProduct = generateBandsExtractor(this.currentSourceProduct, sourceBandNames);
+        if (logger.isLoggable(Level.FINE)) {
+            long finishTime = System.currentTimeMillis();
+            long totalSeconds = (finishTime - startTime) / 1000;
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight()+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+        }
+    }
+
+    private ProductTrimmingResult runTrimming(Product sourceProduct, String[] sourceBandNames, int[] trimmingSourceProductBandIndices) {
+        Product currentProduct = generateBandsExtractor(sourceProduct, sourceBandNames);
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -151,52 +163,30 @@ public class ForestCoverChangeOp extends Operator {
             logger.log(Level.FINE, "Start trimming for current product");
         }
 
-        int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
-
         IntSet currentSegmentationTrimmingRegionKeys = null;
         try {
             currentSegmentationTrimmingRegionKeys = computeTrimming(currentProductColorFill, currentProduct, trimmingSourceProductBandIndices);
         } catch (InterruptedException e) {
             throw new OperatorException(e);
         }
+        return new ProductTrimmingResult(currentSegmentationTrimmingRegionKeys, currentProductColorFill);
+    }
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start bands extractor for previous product");
+    private static class ProductTrimmingResult {
+        private final IntSet trimmingRegionKeys;
+        private final Product segmentationProductColorFill;
+
+        ProductTrimmingResult(IntSet trimmingRegionKeys, Product segmentationProductColorFill) {
+            this.trimmingRegionKeys = trimmingRegionKeys;
+            this.segmentationProductColorFill = segmentationProductColorFill;
         }
 
-        Product previousProduct = generateBandsExtractor(this.previousSourceProduct, sourceBandNames);
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start generate color fill for previous product");
+        public IntSet getTrimmingRegionKeys() {
+            return trimmingRegionKeys;
         }
 
-        Product previousProductColorFill = generateColorFill(previousProduct);
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start trimming for previous product");
-        }
-
-        IntSet previousSegmentationTrimmingRegionKeys = null;
-        try {
-            previousSegmentationTrimmingRegionKeys = computeTrimming(previousProductColorFill, previousProduct, trimmingSourceProductBandIndices);
-        } catch (InterruptedException e) {
-            throw new OperatorException(e);
-        }
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start running union mask");
-        }
-        runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
-
-        if (logger.isLoggable(Level.FINE)) {
-            long finishTime = System.currentTimeMillis();
-            long totalSeconds = (finishTime - startTime) / 1000;
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight()+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+        public Product getSegmentationProductColorFill() {
+            return segmentationProductColorFill;
         }
     }
 
@@ -231,6 +221,7 @@ public class ForestCoverChangeOp extends Operator {
         Operator operator = GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
         Product targetProduct = operator.getTargetProduct();
         targetProduct.setSceneGeoCoding(sourceProduct.getSceneGeoCoding());
+
         OperatorExecutor executor = OperatorExecutor.create(operator);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 
@@ -254,6 +245,7 @@ public class ForestCoverChangeOp extends Operator {
         sourceProducts.put("sourceProduct", firstProduct);
         ColorFillerOp colFillOp = (ColorFillerOp) GPF.getDefaultInstance().createOperator("ColorFillerOp", parameters, sourceProducts, null);
         Product targetProductSelection = colFillOp.getTargetProduct();
+
         OperatorExecutor executor = OperatorExecutor.create(colFillOp);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 

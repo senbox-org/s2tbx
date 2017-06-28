@@ -115,7 +115,6 @@ public class TrimmingRegionComputingOp extends Operator {
         this.targetProduct.setPreferredTileSize(tileSize);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
-        this.targetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
     }
 
     private void validateParametersInput() {
