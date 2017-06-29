@@ -144,6 +144,11 @@ public class GenericRegionMergingOp extends Operator {
         } catch (IOException e) {
             throw new OperatorException(e);
         }
+
+        //TODO Jean remove
+        Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
+        logger.setLevel(Level.FINE);
+
     }
 
     @Override
@@ -200,6 +205,8 @@ public class GenericRegionMergingOp extends Operator {
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
             }
+            this.tileSegmenter = null;
+            this.segmenter = null;
         }
     }
 

@@ -3,10 +3,6 @@ package org.esa.s2tbx.fcc.intern;
 import com.bc.ceres.core.ProgressMonitor;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.jai.JAI;
@@ -52,7 +48,7 @@ public class TrimmingRegionComputingOp extends Operator {
     @Parameter(itemAlias = "sourceBandIndices", description = "The index from the source product to be used.")
     private int[] sourceBandIndices;
 
-    private Int2ObjectMap<List<PixelSourceBands>> validRegionsMap;
+    private Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap;
 
     public TrimmingRegionComputingOp() {
     }
@@ -61,7 +57,7 @@ public class TrimmingRegionComputingOp extends Operator {
     public void initialize() throws OperatorException {
         validateSourceProducts();
         validateParametersInput();
-        this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<List<PixelSourceBands>>();
+        this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<>();
         createTargetProduct();
     }
 
@@ -83,15 +79,14 @@ public class TrimmingRegionComputingOp extends Operator {
             for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
                 int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
                 if (segmentationPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE) {
-                    PixelSourceBands pixels = new PixelSourceBands(firstBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y),
-                                                                   thirdBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y));
                     synchronized (this.validRegionsMap) {
-                        List<PixelSourceBands> value = this.validRegionsMap.get(segmentationPixelValue);
+                        AveragePixelsSourceBands value = this.validRegionsMap.get(segmentationPixelValue);
                         if (value == null) {
-                            value = new ArrayList<>();
+                            value = new AveragePixelsSourceBands();
                             this.validRegionsMap.put(segmentationPixelValue, value);
                         }
-                        value.add(pixels);
+                        value.addPixelValuesBands(firstBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y),
+                                thirdBand.getSampleFloat(x, y));
                     }
                 }
             }
@@ -102,7 +97,7 @@ public class TrimmingRegionComputingOp extends Operator {
      *
      * @return returns the HashMap containing the pixels values from the 4 bands selected per region
      */
-    public Int2ObjectMap<List<PixelSourceBands>> getValidRegionsMap() {
+    public Int2ObjectMap<AveragePixelsSourceBands> getValidRegionsMap() {
         return this.validRegionsMap;
     }
 
