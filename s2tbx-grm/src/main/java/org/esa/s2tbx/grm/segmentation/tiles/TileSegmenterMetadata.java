@@ -32,12 +32,14 @@ public class TileSegmenterMetadata {
         this.isFusion = false;
     }
 
-    public void addTile(int rowIndex, int columnIndex, int leftX, int topY, int width, int height) {
+    public BoundingBox addTile(int rowIndex, int columnIndex, int leftX, int topY, int width, int height) {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
-        this.tilesMap.put(key, new BoundingBox(leftX, topY, width, height));
+        BoundingBox oldValue = this.tilesMap.put(key, new BoundingBox(leftX, topY, width, height));
 
         this.computedTileCountX = Math.max(this.computedTileCountX, columnIndex+1);
         this.computedTileCountY = Math.max(this.computedTileCountY, rowIndex+1);
+
+        return oldValue;
     }
 
     public BoundingBox getTileAt(int rowIndex, int columnIndex) {
@@ -73,4 +75,7 @@ public class TileSegmenterMetadata {
         return availableMemory;
     }
 
+    public boolean canRunSecondPartialSegmentation() {
+        return (this.accumulatedMemory > this.availableMemory) && this.isFusion;
+    }
 }

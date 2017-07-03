@@ -141,20 +141,23 @@ public class MahalanobisDistance {
             int localRowIndex = -1;
             int localColumnIndex = -1;
             do {
+                localRowIndex = -1;
+                localColumnIndex = -1;
                 synchronized (this.storageMatrix) {
                     if (this.rowIndex < this.storageMatrix.getRowCount()) {
-                        localRowIndex = this.rowIndex;
                         if (this.columnIndex < this.storageMatrix.getColumnCount()) {
                             localColumnIndex = this.columnIndex;
-                            this.columnIndex++;
+                            localRowIndex = this.rowIndex;
                         } else {
                             this.columnIndex = 0; // reset the column index
                             localColumnIndex = this.columnIndex;
+
                             this.rowIndex++; // increment the row index
+                            if (this.rowIndex < this.storageMatrix.getRowCount()) {
+                                localRowIndex = this.rowIndex;
+                            }
                         }
-                    } else {
-                        localRowIndex = -1;
-                        localColumnIndex = -1;
+                        this.columnIndex++;
                     }
                 }
                 if (localRowIndex >= 0 && localColumnIndex >= 0) {

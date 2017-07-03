@@ -5,6 +5,7 @@ import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
+import org.esa.s2tbx.fcc.intern.BandsExtractorOp;
 import org.esa.s2tbx.fcc.intern.ColorFillerOp;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
 import org.esa.s2tbx.fcc.intern.TrimmingHelper;
@@ -26,6 +27,7 @@ import org.esa.snap.core.util.ProductUtils;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -126,29 +128,34 @@ public class ForestCoverChangeOp extends Operator {
 
         int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
 
-        ProductTrimmingResult currentResult = runTrimming(this.currentSourceProduct, sourceBandNames, trimmingSourceProductBandIndices);
-        IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
-        Product currentProductColorFill = currentResult.getSegmentationProductColorFill();
+        try {
+            ProductTrimmingResult currentResult = runTrimming(this.currentSourceProduct, sourceBandNames, trimmingSourceProductBandIndices);
+            IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
+            Product currentProductColorFill = currentResult.getSegmentationProductColorFill();
 
-        ProductTrimmingResult previousResult = runTrimming(this.previousSourceProduct, sourceBandNames, trimmingSourceProductBandIndices);
-        IntSet previousSegmentationTrimmingRegionKeys = previousResult.getTrimmingRegionKeys();
-        Product previousProductColorFill = previousResult.getSegmentationProductColorFill();
+            ProductTrimmingResult previousResult = runTrimming(this.previousSourceProduct, sourceBandNames, trimmingSourceProductBandIndices);
+            IntSet previousSegmentationTrimmingRegionKeys = previousResult.getTrimmingRegionKeys();
+            Product previousProductColorFill = previousResult.getSegmentationProductColorFill();
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start running union mask");
-        }
-        runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "Start running union mask");
+            }
+            runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
 
-        if (logger.isLoggable(Level.FINE)) {
-            long finishTime = System.currentTimeMillis();
-            long totalSeconds = (finishTime - startTime) / 1000;
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight()+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+            if (logger.isLoggable(Level.FINE)) {
+                long finishTime = System.currentTimeMillis();
+                long totalSeconds = (finishTime - startTime) / 1000;
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "Finish Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight()+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+            }
+
+        } catch (Exception ex) {
+            throw new OperatorException(ex);
         }
     }
 
-    private ProductTrimmingResult runTrimming(Product sourceProduct, String[] sourceBandNames, int[] trimmingSourceProductBandIndices) {
+    private ProductTrimmingResult runTrimming(Product sourceProduct, String[] sourceBandNames, int[] trimmingSourceProductBandIndices) throws Exception {
         Product currentProduct = generateBandsExtractor(sourceProduct, sourceBandNames);
 
         if (logger.isLoggable(Level.FINE)) {
@@ -195,38 +202,14 @@ public class ForestCoverChangeOp extends Operator {
         return currentTrimmingStatistics.keySet();
     }
 
-    private Product generateColorFill(Product sourceProduct) {
-        Product segmentationProduct = runSegmentation(sourceProduct, mergingCostCriterion, regionMergingCriterion,
-                                                                        totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+    private Product generateColorFill(Product sourceProduct) throws Exception {
+        String[] sourceBandNames = buildBandNamesArray(sourceProduct);
+        Product segmentationProduct = GenericRegionMergingOp.runSegmentation(sourceProduct, sourceBandNames, mergingCostCriterion, regionMergingCriterion,
+                                                                             totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+
         return runColorFillerOp(segmentationProduct, forestCoverPercentage);
     }
 
-    private static Product runSegmentation(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion,
-                                          int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
-                                          float shapeWeight) {
-
-        String[] sourceBandNames = buildBandNamesArray(sourceProduct);
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("mergingCostCriterion", mergingCostCriterion);
-        parameters.put("regionMergingCriterion", regionMergingCriterion);
-        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
-        parameters.put("threshold", threshold);
-        parameters.put("spectralWeight", spectralWeight);
-        parameters.put("shapeWeight", shapeWeight);
-        parameters.put("sourceBandNames", sourceBandNames);
-
-        Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
-        sourceProducts.put("sourceProduct", sourceProduct);
-
-        Operator operator = GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
-        Product targetProduct = operator.getTargetProduct();
-        targetProduct.setSceneGeoCoding(sourceProduct.getSceneGeoCoding());
-
-        OperatorExecutor executor = OperatorExecutor.create(operator);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-
-        return targetProduct;
-    }
 
     private static String[] buildBandNamesArray(Product sourceProduct) {
         ProductNodeGroup<Band> bandGroup = sourceProduct.getBandGroup();
@@ -238,11 +221,11 @@ public class ForestCoverChangeOp extends Operator {
         return sourceBandNames;
     }
 
-    private static Product runColorFillerOp(Product firstProduct, float percentagePixels) {
+    private static Product runColorFillerOp(Product sourceProduct, float percentagePixels) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("percentagePixels", percentagePixels);
         Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("sourceProduct", firstProduct);
+        sourceProducts.put("sourceProduct", sourceProduct);
         ColorFillerOp colFillOp = (ColorFillerOp) GPF.getDefaultInstance().createOperator("ColorFillerOp", parameters, sourceProducts, null);
         Product targetProductSelection = colFillOp.getTargetProduct();
 
@@ -252,23 +235,13 @@ public class ForestCoverChangeOp extends Operator {
         return targetProductSelection;
     }
 
-    private static Product generateBandsDifference(Product currentProduct, Product previousProduct) {
-        Product[] products = new Product[] {currentProduct, previousProduct};
-        Map<String, Object> parameters = new HashMap<>();
-        return GPF.createProduct("BandsDifferenceOp", parameters, products, null);
-    }
-
     private static Product generateBandsExtractor(Product sourceProduct, String[] sourceBandNames) {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Generate bands extractor for source product '" + sourceProduct.getName()+"'");
         }
 
-        Map<String, Product> sourceProducts = new HashMap<>(1);
-        sourceProducts.put("sourceProduct", sourceProduct);
-        Map<String, Object> parameters = new HashMap<>(1);
-        parameters.put("sourceBandNames", sourceBandNames);
-        Product targetProduct = GPF.createProduct("BandsExtractorOp", parameters, sourceProducts, null);
+        Product targetProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames);
         return resampleAllBands(targetProduct);
     }
 

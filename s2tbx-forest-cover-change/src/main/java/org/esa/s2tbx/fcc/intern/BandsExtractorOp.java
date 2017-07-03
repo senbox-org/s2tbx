@@ -37,26 +37,25 @@ public class BandsExtractorOp extends Operator {
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
             throw new OperatorException("Please select at least one band.");
         }
-        this.targetProduct = generateBandsExtractor();
+        this.targetProduct = extractBands(this.sourceProduct, this.sourceBandNames);
     }
 
-    private Product generateBandsExtractor() {
-        Product product = new Product(this.sourceProduct.getName(), this.sourceProduct.getProductType(),
-                                      this.sourceProduct.getSceneRasterWidth(), this.sourceProduct.getSceneRasterHeight());
-        product.setStartTime(this.sourceProduct.getStartTime());
-        product.setEndTime(this.sourceProduct.getEndTime());
-        product.setNumResolutionsMax(this.sourceProduct.getNumResolutionsMax());
+    public static Product extractBands(Product sourceProduct, String[] sourceBandNames) {
+        Product product = new Product(sourceProduct.getName(), sourceProduct.getProductType(), sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        product.setStartTime(sourceProduct.getStartTime());
+        product.setEndTime(sourceProduct.getEndTime());
+        product.setNumResolutionsMax(sourceProduct.getNumResolutionsMax());
 
-        ProductUtils.copyMetadata(this.sourceProduct, product);
-        ProductUtils.copyGeoCoding(this.sourceProduct, product);
-        ProductUtils.copyTiePointGrids(this.sourceProduct, product);
-        ProductUtils.copyVectorData(this.sourceProduct, product);
+        ProductUtils.copyMetadata(sourceProduct, product);
+        ProductUtils.copyGeoCoding(sourceProduct, product);
+        ProductUtils.copyTiePointGrids(sourceProduct, product);
+        ProductUtils.copyVectorData(sourceProduct, product);
 
-        for (int i=0; i<this.sourceBandNames.length; i++) {
-            Band sourceBand = this.sourceProduct.getBand(this.sourceBandNames[i]);
+        for (int i=0; i<sourceBandNames.length; i++) {
+            Band sourceBand = sourceProduct.getBand(sourceBandNames[i]);
             String sourceBandName = sourceBand.getName();
             String targetBandName = sourceBandName;
-            ProductUtils.copyBand(sourceBandName, this.sourceProduct, targetBandName, product, true);
+            ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName, product, true);
 
             Band targetBand = product.getBand(targetBandName);
             ProductUtils.copyGeoCoding(sourceBand, targetBand);

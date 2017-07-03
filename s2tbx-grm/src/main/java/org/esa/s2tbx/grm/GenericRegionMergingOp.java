@@ -15,6 +15,7 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
 
 import javax.media.jai.JAI;
@@ -140,7 +141,8 @@ public class GenericRegionMergingOp extends Operator {
         this.totalTileCount = tileCountX * tileCountY;
 
         try {
-            createTileSegmenter();
+            this.tileSegmenter = buildTileSegmenter(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+                                                    threshold, spectralWeight, shapeWeight, targetProduct);
         } catch (IOException e) {
             throw new OperatorException(e);
         }
@@ -148,7 +150,6 @@ public class GenericRegionMergingOp extends Operator {
         //TODO Jean remove
         Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
         logger.setLevel(Level.FINE);
-
     }
 
     @Override
@@ -205,8 +206,6 @@ public class GenericRegionMergingOp extends Operator {
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
             }
-            this.tileSegmenter = null;
-            this.segmenter = null;
         }
     }
 
@@ -265,7 +264,7 @@ public class GenericRegionMergingOp extends Operator {
         return sourceTiles;
     }
 
-    private void createTileSegmenter() throws IOException {
+    private void createTileSegmenter11() throws IOException {
         boolean fastSegmentation = false;
         if (BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(this.regionMergingCriterion)) {
             fastSegmentation = true;
@@ -300,6 +299,66 @@ public class GenericRegionMergingOp extends Operator {
                 }
             }
         }
+    }
+
+    private static AbstractTileSegmenter buildTileSegmenter(String mergingCostCriterion, String regionMergingCriterion,
+                                                            int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
+                                                            float shapeWeight, Product targetProduct)
+                                                            throws IOException {
+
+        AbstractTileSegmenter tileSegmenter = null;
+        boolean fastSegmentation = false;
+        if (GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(regionMergingCriterion)) {
+            fastSegmentation = true;
+        } else if (GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(regionMergingCriterion)) {
+            fastSegmentation = false;
+        }
+        Dimension imageSize = new Dimension(targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
+        Dimension tileSize = targetProduct.getPreferredTileSize();
+        if (GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
+            tileSegmenter = new SpringTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+        } else if (GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
+            tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, spectralWeight, shapeWeight);
+        } else if (GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
+            tileSegmenter = new FullLambdaScheduleTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+        } else {
+            throw new IllegalArgumentException("Unknown merging cost criterion '" + mergingCostCriterion + "'.");
+        }
+        return tileSegmenter;
+    }
+
+    public static Product runSegmentation(Product sourceProduct, String[] sourceBandNames, String mergingCostCriterion, String regionMergingCriterion,
+                                          int totalIterationsForSecondSegmentation, float threshold, float spectralWeight, float shapeWeight)
+                                          throws Exception {
+
+        //TODO Jean remove
+        Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
+        logger.setLevel(Level.FINE);
+
+        int sceneWidth = sourceProduct.getSceneRasterWidth();
+        int sceneHeight = sourceProduct.getSceneRasterHeight();
+        Dimension tileSize = JAI.getDefaultTileSize();
+
+        Product targetProduct = new Product(sourceProduct.getName() + "_grm", sourceProduct.getProductType(), sceneWidth, sceneHeight);
+        targetProduct.setPreferredTileSize(tileSize);
+        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+
+        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+                                                                 threshold, spectralWeight, shapeWeight, targetProduct);
+
+        long startTime = System.currentTimeMillis();
+        AbstractTileSegmenter.logStartSegmentation(startTime, tileSegmenter);
+
+        AbstractSegmenter segmenter = tileSegmenter.runSegmentationUsingThreads(sourceProduct, sourceBandNames);
+
+        Band productTargetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
+        segmenter.fillBandData(productTargetBand);
+        productTargetBand.getSourceImage();
+        targetProduct.addBand(productTargetBand);
+
+        AbstractTileSegmenter.logFinishSegmentation(startTime, tileSegmenter, segmenter);
+
+        return targetProduct;
     }
 
     public static class Spi extends OperatorSpi {
