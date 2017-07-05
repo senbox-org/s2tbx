@@ -22,6 +22,7 @@ import com.sun.jna.Native;
 import com.sun.jna.win32.W32APIOptions;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.MessageDigest;
@@ -74,7 +75,7 @@ public class Utils {
     }
 
 
-    public static String GetIterativeShortPathNameW(String path) {
+    public static String GetIterativeShortPathNameW(String path) throws IOException{
         if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             return path;
         }
@@ -111,6 +112,13 @@ public class Utils {
             return shortComplete;
         }
 
+        if(complete.equals(path)) {
+            if(path.length() <= 260) {
+                return path;
+            } else {
+                throw new IOException(String.format("The path %s is too long and it is not possible to get the windows short path. Please, try to copy the product to the root folder.", path));
+            }
+        }
         return GetIterativeShortPathNameW(complete);
     }
 
