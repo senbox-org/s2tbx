@@ -254,7 +254,7 @@ public abstract class Node {
                     toThis.setBoundary(toThis.getBoundary() + boundary);
 
                     // increment the boundary of the edge from node a targeting to node neigh_b.
-                    Edge toNeighB = this.findEdge(targetNodeOfCurrentEdge);
+                    Edge toNeighB = findEdge(targetNodeOfCurrentEdge);
                     toNeighB.setBoundary(toNeighB.getBoundary() + boundary);
                 }
             }

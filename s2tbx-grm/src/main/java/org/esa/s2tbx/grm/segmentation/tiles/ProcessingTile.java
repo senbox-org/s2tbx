@@ -72,82 +72,66 @@ public class ProcessingTile {
 
     public int getTopMargin() {
         return this.marginTopY;
-        //return this.margin[Contour.TOP_MOVE_INDEX];
     }
 
     public int getBottomMargin() {
         return this.marginBottomY;
-        //return this.margin[Contour.BOTTOM_MOVE_INDEX];
     }
 
     public int getLeftMargin() {
         return this.marginLeftX;
-        //return this.margin[Contour.LEFT_MOVE_INDEX];
     }
 
     public int getRightMargin() {
         return this.marginRightX;
-        //return this.margin[Contour.RIGHT_MOVE_INDEX];
     }
 
     public void setTopMargin(int marginValue) {
         this.marginTopY = marginValue;
-        //this.margin[Contour.TOP_MOVE_INDEX] = marginValue;
     }
 
     public void setBottomMargin(int marginValue) {
         this.marginBottomY = marginValue;
-        //this.margin[Contour.BOTTOM_MOVE_INDEX] = marginValue;
     }
 
     public void setLeftMargin(int marginValue) {
         this.marginLeftX = marginValue;
-        //this.margin[Contour.LEFT_MOVE_INDEX] = marginValue;
     }
 
     public void setRightMargin(int marginValue) {
         this.marginRightX = marginValue;
-        //this.margin[Contour.RIGHT_MOVE_INDEX] = marginValue;
     }
 
     public int getImageTopY() {
         return this.imageTopY;
-        //return rows[0];
     }
 
     public void setImageTopY(int topY) {
         this.imageTopY = topY;
-        //rows[0] = topY;
     }
 
     public int getImageBottomY() {
         return this.imageBottomY;
-        //return rows[1];
     }
 
     public void setImageBottomY(int bottomY) {
         this.imageBottomY = bottomY;
-        //rows[1] = bottomY;
     }
 
     public int getImageLeftX() {
         return this.imageLeftX;
-        //return columns[0];
     }
 
     public void setImageLeftX(int leftX) {
         this.imageLeftX = leftX;
-        //columns[0] = leftX;
     }
 
     public int getImageRightX() {
         return this.imageRightX;
-        //return columns[1];
     }
 
     public void setImageRightX(int rightX) {
         this.imageRightX = rightX;
-        //columns[1] = rightX;
     }
 
     public void setRegion(BoundingBox region) {
@@ -164,5 +148,9 @@ public class ProcessingTile {
 
     public int getImageHeight() {
         return getImageBottomY() - getImageTopY() + 1;
+    }
+
+    public boolean isRegionInside(BoundingBox box) {
+        return (box.getLeftX() > getImageLeftX() && box.getTopY() > getImageTopY() && box.getRightX() - 1 < getImageRightX() && box.getBottomY() - 1 < getImageBottomY());
     }
 }

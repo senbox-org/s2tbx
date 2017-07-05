@@ -6,21 +6,24 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.internal.TileImpl;
+import org.esa.snap.utils.AbstractImageTilesHelper;
 
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.io.IOException;
 
 /**
- * @author  Jean Coravu
+ * @author Jean Coravu
  */
-public class TileFirstSegmentationHelper extends AbstractTileSegmentationHelper {
-    private Product sourceProduct;
-    private String[] sourceBandNames;
+public class TileFirstSegmentationHelper extends AbstractImageTilesHelper {
+    private final AbstractTileSegmenter tileSegmenter;
+    private final Product sourceProduct;
+    private final String[] sourceBandNames;
 
     public TileFirstSegmentationHelper(Product sourceProduct, String[] sourceBandNames, AbstractTileSegmenter tileSegmenter) {
-        super(tileSegmenter);
+        super(tileSegmenter.getImageWidth(), tileSegmenter.getImageHeight(), tileSegmenter.getTileWidth(), tileSegmenter.getTileHeight());
 
+        this.tileSegmenter = tileSegmenter;
         this.sourceProduct = sourceProduct;
         this.sourceBandNames = sourceBandNames;
     }

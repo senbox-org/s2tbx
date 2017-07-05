@@ -156,50 +156,23 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private ProductTrimmingResult runTrimming(Product sourceProduct, String[] sourceBandNames, int[] trimmingSourceProductBandIndices) throws Exception {
-        Product currentProduct = generateBandsExtractor(sourceProduct, sourceBandNames);
+        Product product = generateBandsExtractor(sourceProduct, sourceBandNames);
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start generate color fill for current product");
         }
 
-        Product currentProductColorFill = generateColorFill(currentProduct);
+        Product productColorFill = generateColorFill(product);
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start trimming for current product");
         }
 
-        IntSet currentSegmentationTrimmingRegionKeys = null;
-        try {
-            currentSegmentationTrimmingRegionKeys = computeTrimming(currentProductColorFill, currentProduct, trimmingSourceProductBandIndices);
-        } catch (InterruptedException e) {
-            throw new OperatorException(e);
-        }
-        return new ProductTrimmingResult(currentSegmentationTrimmingRegionKeys, currentProductColorFill);
-    }
+        IntSet segmentationTrimmingRegionKeys = TrimmingHelper.doTrimming(productColorFill, product, trimmingSourceProductBandIndices);
 
-    private static class ProductTrimmingResult {
-        private final IntSet trimmingRegionKeys;
-        private final Product segmentationProductColorFill;
-
-        ProductTrimmingResult(IntSet trimmingRegionKeys, Product segmentationProductColorFill) {
-            this.trimmingRegionKeys = trimmingRegionKeys;
-            this.segmentationProductColorFill = segmentationProductColorFill;
-        }
-
-        public IntSet getTrimmingRegionKeys() {
-            return trimmingRegionKeys;
-        }
-
-        public Product getSegmentationProductColorFill() {
-            return segmentationProductColorFill;
-        }
-    }
-
-    private static IntSet computeTrimming(Product segmentationSourceProduct, Product currentProduct, int[] trimmingSourceProductBandIndices) throws InterruptedException {
-        Int2ObjectMap<PixelSourceBands> currentTrimmingStatistics = TrimmingHelper.doTrimming(segmentationSourceProduct, currentProduct, trimmingSourceProductBandIndices);
-        return currentTrimmingStatistics.keySet();
+        return new ProductTrimmingResult(segmentationTrimmingRegionKeys, productColorFill);
     }
 
     private Product generateColorFill(Product sourceProduct) throws Exception {
@@ -276,6 +249,24 @@ public class ForestCoverChangeOp extends Operator {
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 
         return targetProductSelection;
+    }
+
+    private static class ProductTrimmingResult {
+        private final IntSet trimmingRegionKeys;
+        private final Product segmentationProductColorFill;
+
+        ProductTrimmingResult(IntSet trimmingRegionKeys, Product segmentationProductColorFill) {
+            this.trimmingRegionKeys = trimmingRegionKeys;
+            this.segmentationProductColorFill = segmentationProductColorFill;
+        }
+
+        public IntSet getTrimmingRegionKeys() {
+            return trimmingRegionKeys;
+        }
+
+        public Product getSegmentationProductColorFill() {
+            return segmentationProductColorFill;
+        }
     }
 
     public static class Spi extends OperatorSpi {

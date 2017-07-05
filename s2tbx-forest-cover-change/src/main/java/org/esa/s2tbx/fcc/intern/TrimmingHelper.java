@@ -4,6 +4,9 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
@@ -11,9 +14,14 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 
+import javax.media.jai.JAI;
+import java.awt.Dimension;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +31,9 @@ public class TrimmingHelper {
     private TrimmingHelper() {
     }
 
-    public static Int2ObjectMap<PixelSourceBands> doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices) throws InterruptedException {
+    public static IntSet doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices)
+                                    throws InterruptedException, IOException, IllegalAccessException {
+
         Int2ObjectMap<PixelSourceBands> validRegionStatistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
 
         int initialValidRegionCount = validRegionStatistics.size();
@@ -65,22 +75,41 @@ public class TrimmingHelper {
             logger.log(Level.FINE, "Finish applying trimming: valid region count: "+ validRegionStatistics.size()+", removed region count: " + removedValidRegionCount);
         }
 
-        return validRegionStatistics;
+//        IntSet trimmingRegionKeys = new IntOpenHashSet(validRegionStatistics.keySet());
+//        IntIterator it = validRegionStatistics.keySet().iterator();
+//        while (it.hasNext()) {
+//            trimmingRegionKeys.add(it.nextInt());
+//        }
+//
+//        return validRegionStatistics;
+        return new IntOpenHashSet(validRegionStatistics.keySet());
     }
 
-    private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("sourceBandIndices", sourceBandIndices);
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("segmentationSourceProduct", segmentationSourceProduct);
-        sourceProducts.put("sourceProduct", sourceProduct);
-        TrimmingRegionComputingOp trimRegOp = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
-        trimRegOp.getTargetProduct();
+    private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices)
+                                                                             throws IllegalAccessException, InterruptedException, IOException {
 
-        OperatorExecutor executor = OperatorExecutor.create(trimRegOp);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+//        Map<String, Object> parameters = new HashMap<>();
+//        parameters.put("sourceBandIndices", sourceBandIndices);
+//        Map<String, Product> sourceProducts = new HashMap<>();
+//        sourceProducts.put("segmentationSourceProduct", segmentationSourceProduct);
+//        sourceProducts.put("sourceProduct", sourceProduct);
+//        TrimmingRegionComputingOp trimRegOp = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
+//        trimRegOp.getTargetProduct();
+//
+//        OperatorExecutor executor = OperatorExecutor.create(trimRegOp);
+//        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+//
+//        return computeStatisticsPerRegion(trimRegOp.getValidRegionsMap());
 
-        return computeStatisticsPerRegion(trimRegOp.getValidRegionsMap());
+        int imageWidth = segmentationSourceProduct.getSceneRasterWidth();
+        int imageHeight = segmentationSourceProduct.getSceneRasterHeight();
+        Dimension tileSize = JAI.getDefaultTileSize();
+        int threadCount = Runtime.getRuntime().availableProcessors();
+        Executor threadPool = Executors.newFixedThreadPool(threadCount);
+
+        TrimmingRegionComputingHelper helper = new TrimmingRegionComputingHelper(segmentationSourceProduct, sourceProduct, sourceBandIndices, imageWidth, imageHeight, tileSize.width, tileSize.height);
+        Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap = helper.computeRegionsUsingThreads(threadCount, threadPool);
+        return computeStatisticsPerRegion(validRegionsMap);
     }
 
     private static Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion(Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap) {

@@ -73,6 +73,7 @@ public class TrimmingRegionComputingOp extends Operator {
         Band firstBand = this.sourceProduct.getBandAt(sourceBandIndices[0]);
         Band secondBand = this.sourceProduct.getBandAt(sourceBandIndices[1]);
         Band thirdBand = this.sourceProduct.getBandAt(sourceBandIndices[2]);
+
         Band segmentationBand = this.segmentationSourceProduct.getBandAt(0);
 
         for (int y = tileRegion.y; y < tileRegion.y + tileRegion.height; y++) {
@@ -85,8 +86,7 @@ public class TrimmingRegionComputingOp extends Operator {
                             value = new AveragePixelsSourceBands();
                             this.validRegionsMap.put(segmentationPixelValue, value);
                         }
-                        value.addPixelValuesBands(firstBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y),
-                                thirdBand.getSampleFloat(x, y));
+                        value.addPixelValuesBands(firstBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y), thirdBand.getSampleFloat(x, y));
                     }
                 }
             }

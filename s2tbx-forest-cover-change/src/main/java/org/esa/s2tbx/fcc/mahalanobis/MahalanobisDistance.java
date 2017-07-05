@@ -16,7 +16,7 @@ public class MahalanobisDistance {
     public static Int2ObjectMap<PixelSourceBands> filterValidRegionsUsingMahalanobisDistance(Int2ObjectMap<PixelSourceBands> validRegionStatistics, double cumulativeProbability)
                                                                                  throws InterruptedException {
 
-        int threadCount = Runtime.getRuntime().availableProcessors() + 1;
+        int threadCount = Runtime.getRuntime().availableProcessors();
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line

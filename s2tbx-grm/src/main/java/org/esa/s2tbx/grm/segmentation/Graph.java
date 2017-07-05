@@ -9,6 +9,7 @@ import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * @author Jean Coravu
@@ -86,7 +87,8 @@ public class Graph {
         for (int i=0; i<nodeCount; i++) {
             Node node = this.nodes.get(i);
             BoundingBox box = node.getBox();
-            if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
+            if (tile.isRegionInside(box)) {
+            //if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
                 // the node is inside the tile
                 continue;
             } else {
@@ -117,7 +119,14 @@ public class Graph {
         return result;
     }
 
-    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int tileCountX, int tileCountY, int imageWidth) {
+    public Int2ObjectMap<List<Node>> buildBorderPixelMapUsingThreads(int threadCount, Executor threadPool, ProcessingTile tile, int rowTileIndex,
+                                                                     int columnTileIndex, int tileCountX, int tileCountY, int imageWidth)
+                                                                     throws InterruptedException {
+        TileBorderPixelsHelper helper = new TileBorderPixelsHelper(this, tile, rowTileIndex, columnTileIndex, tileCountX, tileCountY, imageWidth);
+        return helper.computeBorderPixelsUsingThreads(threadCount, threadPool);
+    }
+
+    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int columnTileIndex, int tileCountX, int tileCountY, int imageWidth) {
         Int2ObjectMap<List<Node>> borderPixelMap = new Int2ObjectLinkedOpenHashMap<List<Node>>(); // key = node id
 
         int rowMin = (tile.getImageTopY() > 0) ? tile.getImageTopY() - 1 : tile.getImageTopY();
@@ -129,7 +138,9 @@ public class Graph {
         for (int i=0; i<nodeCount; i++) {
             Node node = this.nodes.get(i);
             BoundingBox box = node.getBox();
-            if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
+            if (tile.isRegionInside(box)) {
+            //if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
+                // the node is inside the tile
                 continue;
             } else {
                 IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
@@ -141,11 +152,11 @@ public class Graph {
                     boolean addNode = false;
                     if (rowTileIndex > 0 && (rowPixel == tile.getImageTopY() || rowPixel == rowMin)) {
                         addNode = true;
-                    } else if (colTileIndex < tileCountX - 1 && (colPixel == tile.getImageRightX() || colPixel == colMax)) {
+                    } else if (columnTileIndex < tileCountX - 1 && (colPixel == tile.getImageRightX() || colPixel == colMax)) {
                         addNode = true;
                     } else if (rowTileIndex < tileCountY - 1 && (rowPixel == tile.getImageBottomY() || rowPixel == rowMax)) {
                         addNode = true;
-                    } else if (colTileIndex > 0 && (colPixel == tile.getImageLeftX() || colPixel == colMin)) {
+                    } else if (columnTileIndex > 0 && (colPixel == tile.getImageLeftX() || colPixel == colMin)) {
                         addNode = true;
                     }
                     if (addNode) {
