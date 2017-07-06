@@ -67,7 +67,7 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesHelper {
     }
 
     Int2ObjectMap<AveragePixelsSourceBands> computeRegionsUsingThreads(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
-        super.executeUsingThreads(threadCount, threadPool);
+        super.executeInParallel(threadCount, threadPool);
 
         return this.validRegionsMap;
     }

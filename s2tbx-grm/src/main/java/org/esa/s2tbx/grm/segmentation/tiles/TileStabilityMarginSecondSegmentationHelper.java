@@ -21,7 +21,7 @@ public class TileStabilityMarginSecondSegmentationHelper extends AbstractImageTi
     }
 
     @Override
-    protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IOException, IllegalAccessException {
+    protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IOException, IllegalAccessException, InterruptedException {
         this.tileSegmenter.runTileStabilityMarginSecondSegmentation(this.iteration, localRowIndex, localColumnIndex, this.numberOfNeighborLayers);
     }
 }

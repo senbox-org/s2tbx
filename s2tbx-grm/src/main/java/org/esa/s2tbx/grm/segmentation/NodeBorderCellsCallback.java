@@ -5,5 +5,5 @@ package org.esa.s2tbx.grm.segmentation;
  */
 public interface NodeBorderCellsCallback {
 
-    void addBorderCellId(Node analyzedNode, int borderCellId);
+    boolean addBorderCellId(Node analyzedNode, int borderCellId);
 }

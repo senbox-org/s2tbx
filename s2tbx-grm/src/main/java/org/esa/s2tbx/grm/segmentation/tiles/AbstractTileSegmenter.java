@@ -73,19 +73,19 @@ public abstract class AbstractTileSegmenter {
     }
 
     public final int getImageHeight() {
-        return imageHeight;
+        return this.imageHeight;
     }
 
     public final int getImageWidth() {
-        return imageWidth;
+        return this.imageWidth;
     }
 
     public final int getTileHeight() {
-        return tileHeight;
+        return this.tileHeight;
     }
 
     public final int getTileWidth() {
-        return tileWidth;
+        return this.tileWidth;
     }
 
     public final ProcessingTile buildTile(int tileLeftX, int tileTopY, int tileSizeX, int tileSizeY) {
@@ -98,21 +98,25 @@ public abstract class AbstractTileSegmenter {
             int numberOfRemainingIterations = runFirstAndSecondSegmentations(sourceProduct, sourceBandNames);
             return mergeGraphsAndAchieveSegmentation(numberOfRemainingIterations);
         } finally {
-            boolean deleted = FileUtils.deleteTree(this.temporaryFolder);
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, ""); // add an empty line
-                if (deleted) {
-                    logger.log(Level.FINE, "Successfully deleted the temporary folder path '" + getTemporaryFolderPath()+"'");
-                } else {
-                    logger.log(Level.FINE, "Failed to delete the temporary folder path '" + getTemporaryFolderPath()+"'");
-                }
+            deleteTemporaryFolder();
+        }
+    }
+
+    private void deleteTemporaryFolder() {
+        boolean deleted = FileUtils.deleteTree(this.temporaryFolder);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            if (deleted) {
+                logger.log(Level.FINE, "Successfully deleted the temporary folder path '" + getTemporaryFolderPath()+"'");
+            } else {
+                logger.log(Level.FINE, "Failed to delete the temporary folder path '" + getTemporaryFolderPath()+"'");
             }
         }
     }
 
     private int runFirstAndSecondSegmentations(Product sourceProduct, String[] sourceBandNames) throws IllegalAccessException, IOException, InterruptedException {
         // run the first segmentation
-        runFirstSegmentationUsingThreads(sourceProduct, sourceBandNames, threadCount, threadPool);
+        runFirstSegmentationInParallel(sourceProduct, sourceBandNames, threadCount, threadPool);
 
         // run the second segmentation
         logRunSecondSegmentationForAllTiles();
@@ -123,7 +127,7 @@ public abstract class AbstractTileSegmenter {
             this.tileSegmenterMetadata.resetValues();
             iteration++;
 
-            runSecondPartialSegmentationUsingThreads(iteration, threadCount, threadPool);
+            runSecondPartialSegmentationInParallel(iteration, threadCount, threadPool);
 
             // update number of remaining iterations
             if (numberOfIterationsRemaining < this.iterationsForEachSecondSegmentation) {
@@ -132,17 +136,17 @@ public abstract class AbstractTileSegmenter {
                 numberOfIterationsRemaining -= this.iterationsForEachSecondSegmentation;
             }
         }
-        if (this.tileSegmenterMetadata.getAccumulatedMemory() > this.tileSegmenterMetadata.getAvailableMemory()) {
+        if (this.tileSegmenterMetadata.getAccumulatedMemory() > this.tileSegmenterMetadata.getTotalMemory()) {
             throw new IllegalArgumentException("No more possible fusions, but can not store the output graph.");
         }
         return numberOfIterationsRemaining;
     }
 
-    private void runFirstSegmentationUsingThreads(Product sourceProduct, String[] sourceBandNames, int threadCount, Executor threadPool)
+    private void runFirstSegmentationInParallel(Product sourceProduct, String[] sourceBandNames, int threadCount, Executor threadPool)
                                                   throws IllegalAccessException, IOException, InterruptedException {
 
         TileFirstSegmentationHelper tileFirstSegmentationHelper = new TileFirstSegmentationHelper(sourceProduct, sourceBandNames, this);
-        tileFirstSegmentationHelper.executeUsingThreads(threadCount, threadPool);
+        tileFirstSegmentationHelper.executeInParallel(threadCount, threadPool);
     }
 
     private void logRunSecondPartialSegmentation(int iteration) {
@@ -163,7 +167,7 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    private void runSecondPartialSegmentationUsingThreads(int iteration, int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
+    private void runSecondPartialSegmentationInParallel(int iteration, int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
         // log a message
         logRunSecondPartialSegmentation(iteration);
 
@@ -176,14 +180,14 @@ public abstract class AbstractTileSegmenter {
 
         // during this step we extract the stability margin for the next round
         TileStabilityMarginSecondSegmentationHelper segmentationHelper = new TileStabilityMarginSecondSegmentationHelper(iteration, numberOfNeighborLayers, this);
-        segmentationHelper.executeUsingThreads(threadCount, threadPool);
+        segmentationHelper.executeInParallel(threadCount, threadPool);
     }
 
     private void runSecondSegmentation(int iteration, int threadCount, Executor threadPool, int numberOfNeighborLayers)
                                        throws IllegalAccessException, IOException, InterruptedException {
 
         TileSecondSegmentationHelper tileSecondSegmentationHelper = new TileSecondSegmentationHelper(iteration, numberOfNeighborLayers, this);
-        tileSecondSegmentationHelper.executeUsingThreads(threadCount, threadPool);
+        tileSecondSegmentationHelper.executeInParallel(threadCount, threadPool);
     }
 
     private void logRunSecondSegmentationForAllTiles() {
@@ -191,7 +195,7 @@ public abstract class AbstractTileSegmenter {
             int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
             int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
             int tileMargin = computeTileMargin();
-            float availableKiloBytes = this.tileSegmenterMetadata.getAvailableMemory() / 1024.0f;
+            float availableKiloBytes = this.tileSegmenterMetadata.getTotalMemory() / 1024.0f;
             float accumulatedKiloBytes = this.tileSegmenterMetadata.getAccumulatedMemory() / 1024.0f;
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Second segmentation for all tiles: tile column count: "+tileCountX+", tile row count: "+tileCountY+", initial available memory: "+availableKiloBytes+" KB, acumulated memory: "+accumulatedKiloBytes+" KB, fusion: " + this.tileSegmenterMetadata.isFusion()+", margin: "+tileMargin+", number of second iterations: "+this.iterationsForEachSecondSegmentation);
@@ -215,13 +219,13 @@ public abstract class AbstractTileSegmenter {
                 numberOfIterationsRemaining -= this.iterationsForEachSecondSegmentation;
             }
         }
-        if (this.tileSegmenterMetadata.getAccumulatedMemory() > this.tileSegmenterMetadata.getAvailableMemory()) {
+        if (this.tileSegmenterMetadata.getAccumulatedMemory() > this.tileSegmenterMetadata.getTotalMemory()) {
             throw new IllegalArgumentException("No more possible fusions, but can not store the output graph.");
         }
         try {
             return mergeGraphsAndAchieveSegmentation(numberOfIterationsRemaining);
         } finally {
-            FileUtils.deleteTree(this.temporaryFolder);
+            deleteTemporaryFolder();
         }
     }
 
@@ -233,7 +237,7 @@ public abstract class AbstractTileSegmenter {
         return tile.getImageLeftX() / this.tileWidth;
     }
 
-    public void runOneTileFirstSegmentation(Tile[] sourceTiles, ProcessingTile tileToProcess) throws IllegalAccessException, IOException {
+    public void runOneTileFirstSegmentation(Tile[] sourceTiles, ProcessingTile tileToProcess) throws IllegalAccessException, IOException, InterruptedException {
         int tileColumnIndex = computeTileColumnIndex(tileToProcess);
         int tileRowIndex = computeTileRowIndex(tileToProcess);
 
@@ -268,7 +272,7 @@ public abstract class AbstractTileSegmenter {
         int graphNodeCountBeforeRemoving = graph.getNodeCount();
 
         // remove unstable segments
-        graph.removeUnstableSegments(tileToProcess, this.imageWidth);
+        graph.removeUnstableSegments(this.threadCount, this.threadPool, tileToProcess, this.imageWidth);
 
         if (logger.isLoggable(Level.FINEST)) {
             int removedNodeCount = graphNodeCountBeforeRemoving - graph.getNodeCount();
@@ -280,7 +284,7 @@ public abstract class AbstractTileSegmenter {
         writeGraph(graph, tileToProcess.getNodeFileName(), tileToProcess.getEdgeFileName());
 
         // extract stability margin for all borders different from 0 imageWidth-1 and imageHeight -1 and write them to the stability margin
-        List<Node> nodesToIterate = graph.detectBorderNodes(tileToProcess, this.imageWidth, this.imageHeight);
+        List<Node> nodesToIterate = graph.detectBorderNodes(this.threadCount, this.threadPool, tileToProcess, this.imageWidth, this.imageHeight);
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "First tile segmentation (after detecting border nodes): graph node count: "+graph.getNodeCount()+", border node count: " + nodesToIterate.size());
@@ -366,7 +370,6 @@ public abstract class AbstractTileSegmenter {
         Graph graph = readGraphSecondPartialSegmentation(currentTile, rowIndex, columnIndex, tileCountX, tileCountY);
 
         Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapUsingThreads(threadCount, threadPool, currentTile, rowIndex, columnIndex, tileCountX, tileCountY, this.imageWidth);
-        //Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(currentTile, rowIndex, columnIndex, tileCountX, tileCountY, this.imageWidth);
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "Second tile segmentation (after building border pixel map): row index: " + rowIndex + ", column index: " + columnIndex+", graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size());
@@ -383,9 +386,13 @@ public abstract class AbstractTileSegmenter {
 
         updateNeighborsOfNoneDuplicatedNodes(borderPixelMap, this.imageWidth, this.imageHeight);
 
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "Second tile segmentation (after updating neighbors): row index: " + rowIndex + ", column index: " + columnIndex+", graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size());
+        }
+
         // remove the useless nodes
         graphNodeCountBeforeRemoving = graph.getNodeCount();
-        List<Node> nodesToIterate = graph.findUselessNodes(currentTile, this.imageWidth);
+        List<Node> nodesToIterate = graph.findUselessNodes(this.threadCount, this.threadPool, currentTile, this.imageWidth);
         Int2ObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
         graph.removeUselessNodes(borderNodes, currentTile);
 
@@ -405,7 +412,7 @@ public abstract class AbstractTileSegmenter {
 
         graphNodeCountBeforeRemoving = graph.getNodeCount();
 
-        graph.removeUnstableSegments(currentTile, this.imageWidth);
+        graph.removeUnstableSegments(this.threadCount, this.threadPool, currentTile, this.imageWidth);
 
         if (logger.isLoggable(Level.FINEST)) {
             int removedNodeCount = graphNodeCountBeforeRemoving - graph.getNodeCount();
@@ -447,7 +454,7 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    public final void runTileStabilityMarginSecondSegmentation(int iteration, int rowIndex, int columnIndex, int numberOfNeighborLayers) throws IOException {
+    public final void runTileStabilityMarginSecondSegmentation(int iteration, int rowIndex, int columnIndex, int numberOfNeighborLayers) throws IOException, InterruptedException {
         BoundingBox rectangle = this.tileSegmenterMetadata.getTileAt(rowIndex, columnIndex);
         ProcessingTile currentTile = buildTile(rectangle.getLeftX(), rectangle.getTopY(), rectangle.getWidth(), rectangle.getHeight());
 
@@ -462,7 +469,7 @@ public abstract class AbstractTileSegmenter {
             logger.log(Level.FINEST, "Run second segmentation (extract the stability margin - after read graph): row index: " + rowIndex + ", column index: " + columnIndex +", graph node count: "+graph.getNodeCount());
         }
 
-        List<Node> nodesToIterate = graph.detectBorderNodes(currentTile, this.imageWidth, this.imageHeight);
+        List<Node> nodesToIterate = graph.detectBorderNodes(this.threadCount, this.threadPool, currentTile, this.imageWidth, this.imageHeight);
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "Run second segmentation (extract the stability margin - after detecting border nodes): row index: " + rowIndex + ", column index: " + columnIndex+", border node count: " + nodesToIterate.size());
@@ -844,9 +851,27 @@ public abstract class AbstractTileSegmenter {
         return tile;
     }
 
+    private static int computeBoundary(int gridId, Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth, int imageHeight, int[] cellNeighborhood, Node firstNeighborNode) {
+        int boundary = 0;
+        List<Node> resultNodes = borderPixelMap.get(gridId);
+        if (resultNodes != null) {
+            AbstractSegmenter.generateFourNeighborhood(cellNeighborhood, gridId, imageWidth, imageHeight);
+            for (int k = 0; k < cellNeighborhood.length; k++) {
+                if (cellNeighborhood[k] > -1) {
+                    List<Node> cellNeighborNodes = borderPixelMap.get(cellNeighborhood[k]);
+                    if (cellNeighborNodes != null && cellNeighborNodes.get(0) == firstNeighborNode) {
+                        boundary++;
+                    }
+                }
+            }
+        }
+        return boundary;
+    }
+
     private static void updateNeighborsOfNoneDuplicatedNodes(Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth, int imageHeight) {
         int[] neighborhood = new int[4];
         int[] cellNeighborhood = new int[4];
+        IntSet borderCells = new IntOpenHashSet();
 
         ObjectIterator<Int2ObjectMap.Entry<List<Node>>> it = borderPixelMap.int2ObjectEntrySet().iterator();
         while (it.hasNext()) {
@@ -863,26 +888,56 @@ public abstract class AbstractTileSegmenter {
                         if (currentNode != firstNeighborNode) {
                             Edge edge = currentNode.findEdge(firstNeighborNode);
                             if (edge == null) {
+                                //TODO Jean new code
+                                borderCells.clear(); // clear the set
                                 int boundary = 0;
-                                IntSet borderCells = AbstractSegmenter.generateBorderCells(currentNode.getContour(), currentNode.getId(), imageWidth);
-                                IntIterator itCells = borderCells.iterator();
-                                while (itCells.hasNext()) {
-                                    int gridId = itCells.nextInt();
-                                    List<Node> resultNodes = borderPixelMap.get(gridId);
-                                    if (resultNodes != null) {
-                                        AbstractSegmenter.generateFourNeighborhood(cellNeighborhood, gridId, imageWidth, imageHeight);
-                                        for(int k = 0; k < cellNeighborhood.length; k++) {
-                                            if (cellNeighborhood[k] > -1) {
-                                                List<Node> cellNeighborNodes = borderPixelMap.get(cellNeighborhood[k]);
-                                                if (cellNeighborNodes != null && cellNeighborNodes.get(0) == firstNeighborNode) {
-                                                    boundary++;
-                                                }
+                                if (borderCells.add(currentNode.getId())) {
+                                    boundary += computeBoundary(currentNode.getId(), borderPixelMap, imageWidth, imageHeight, cellNeighborhood, firstNeighborNode);
+                                }
+                                Contour contour = currentNode.getContour();
+                                if (contour.hasBorderSize()) {
+                                    // initialize the first move at prev
+                                    int previousMoveId = contour.getMove(0);
+                                    // declare the current pixel index
+                                    int currentCellId = currentNode.getId();
+                                    // explore the contour
+                                    int contourSize = contour.computeContourBorderSize();
+                                    for (int moveIndex = 1; moveIndex < contourSize; moveIndex++) {
+                                        int currentMoveId = contour.getMove(moveIndex);
+                                        int nextCellId = Contour.computeNextCellId(previousMoveId, currentMoveId, currentCellId, imageWidth);
+                                        if (nextCellId != currentCellId) {
+                                            currentCellId = nextCellId;
+                                            if (borderCells.add(currentCellId)) {
+                                                boundary += computeBoundary(currentCellId, borderPixelMap, imageWidth, imageHeight, cellNeighborhood, firstNeighborNode);
                                             }
                                         }
+                                        previousMoveId = currentMoveId;
                                     }
                                 }
                                 currentNode.addEdge(firstNeighborNode, boundary);
                                 firstNeighborNode.addEdge(currentNode, boundary);
+
+//                                //TODO Jean old code
+//                                int boundary = 0;
+//                                IntSet borderCells = AbstractSegmenter.generateBorderCells(currentNode, imageWidth);
+//                                IntIterator itCells = borderCells.iterator();
+//                                while (itCells.hasNext()) {
+//                                    int gridId = itCells.nextInt();
+//                                    List<Node> resultNodes = borderPixelMap.get(gridId);
+//                                    if (resultNodes != null) {
+//                                        AbstractSegmenter.generateFourNeighborhood(cellNeighborhood, gridId, imageWidth, imageHeight);
+//                                        for (int k = 0; k < cellNeighborhood.length; k++) {
+//                                            if (cellNeighborhood[k] > -1) {
+//                                                List<Node> cellNeighborNodes = borderPixelMap.get(cellNeighborhood[k]);
+//                                                if (cellNeighborNodes != null && cellNeighborNodes.get(0) == firstNeighborNode) {
+//                                                    boundary++;
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                                currentNode.addEdge(firstNeighborNode, boundary);
+//                                firstNeighborNode.addEdge(currentNode, boundary);
                             }
                         }
                     }

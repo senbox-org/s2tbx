@@ -211,7 +211,8 @@ public abstract class Node {
     }
 
     public int removeEdge(Node target) {
-        for (int i = 0; i < this.edges.size(); i++) {
+        int edgeCount = this.edges.size();
+        for (int i = 0; i < edgeCount; i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
                 this.edges.remove(i);
@@ -219,6 +220,16 @@ public abstract class Node {
             }
         }
         return -1;
+    }
+
+    public final void removeEdgeToUnstableNode() {
+        int edgeCount = this.edges.size();
+        for (int j=0; j<edgeCount; j++) {
+            Edge edge = this.edges.get(j);
+            Node nodeNeighbor = edge.getTarget();
+            int removedEdgeIndex = nodeNeighbor.removeEdge(this);
+            assert(removedEdgeIndex >= 0);
+        }
     }
 
     private void updateNeighbors(Node neighborToRemove) {

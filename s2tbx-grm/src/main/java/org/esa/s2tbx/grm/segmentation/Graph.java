@@ -3,6 +3,7 @@ package org.esa.s2tbx.grm.segmentation;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
@@ -81,100 +82,58 @@ public class Graph {
         }
     }
 
-    public List<Node> detectBorderNodes(ProcessingTile tile, int imageWidth, int imageHeight) {
-        List<Node> result = new ArrayList<Node>();
-        int nodeCount = this.nodes.size();
-        for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i);
-            BoundingBox box = node.getBox();
-            if (tile.isRegionInside(box)) {
-            //if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
-                // the node is inside the tile
-                continue;
-            } else {
-                // the node is on the tile margin or outside the tile
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                IntIterator itCells = borderCells.iterator();
-                while (itCells.hasNext()) {
-                    int gridIdInImage = itCells.nextInt();
-                    int rowPixelInImage = gridIdInImage / imageWidth;
-                    int colPixelInImage = gridIdInImage % imageWidth;
-                    if (tile.getImageTopY() > 0 && rowPixelInImage == tile.getImageTopY()) {
-                        result.add(node);
-                        break;
-                    } else if (tile.getImageRightX() < imageWidth - 1 && colPixelInImage == tile.getImageRightX()) {
-                        result.add(node);
-                        break;
-                    } else if (tile.getImageBottomY() < imageHeight - 1 && rowPixelInImage == tile.getImageBottomY()) {
-                        result.add(node);
-                        break;
-                    } else if (tile.getImageLeftX() > 0 && colPixelInImage == tile.getImageLeftX()) {
-                        result.add(node);
-                        break;
-                    }
-                }
-            }
-        }
+    public List<Node> detectBorderNodes(int threadCount, Executor threadPool, ProcessingTile tile, int imageWidth, int imageHeight)
+                                        throws InterruptedException {
 
-        return result;
+        TileBorderNodesHelper helper = new TileBorderNodesHelper(this, tile, imageWidth, imageHeight);
+        return helper.processInParallel(threadCount, threadPool);
+
+//        List<Node> result = new ArrayList<Node>();
+//        int nodeCount = this.nodes.size();
+//        for (int i=0; i<nodeCount; i++) {
+//            Node node = this.nodes.get(i);
+//            BoundingBox box = node.getBox();
+//            if (tile.isRegionInside(box)) {
+//                continue; // the node is inside the tile
+//            } else {
+//                // the node is on the tile margin or outside the tile
+//                IntSet borderCells = AbstractSegmenter.generateBorderCells(node, imageWidth);
+//                IntIterator itCells = borderCells.iterator();
+//                while (itCells.hasNext()) {
+//                    int gridIdInImage = itCells.nextInt();
+//                    int rowPixelInImage = gridIdInImage / imageWidth;
+//                    int colPixelInImage = gridIdInImage % imageWidth;
+//                    if (tile.getImageTopY() > 0 && rowPixelInImage == tile.getImageTopY()) {
+//                        result.add(node);
+//                        break;
+//                    } else if (tile.getImageRightX() < imageWidth - 1 && colPixelInImage == tile.getImageRightX()) {
+//                        result.add(node);
+//                        break;
+//                    } else if (tile.getImageBottomY() < imageHeight - 1 && rowPixelInImage == tile.getImageBottomY()) {
+//                        result.add(node);
+//                        break;
+//                    } else if (tile.getImageLeftX() > 0 && colPixelInImage == tile.getImageLeftX()) {
+//                        result.add(node);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return result;
     }
 
     public Int2ObjectMap<List<Node>> buildBorderPixelMapUsingThreads(int threadCount, Executor threadPool, ProcessingTile tile, int rowTileIndex,
                                                                      int columnTileIndex, int tileCountX, int tileCountY, int imageWidth)
                                                                      throws InterruptedException {
+
         TileBorderPixelsHelper helper = new TileBorderPixelsHelper(this, tile, rowTileIndex, columnTileIndex, tileCountX, tileCountY, imageWidth);
-        return helper.computeBorderPixelsUsingThreads(threadCount, threadPool);
-    }
-
-    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int columnTileIndex, int tileCountX, int tileCountY, int imageWidth) {
-        Int2ObjectMap<List<Node>> borderPixelMap = new Int2ObjectLinkedOpenHashMap<List<Node>>(); // key = node id
-
-        int rowMin = (tile.getImageTopY() > 0) ? tile.getImageTopY() - 1 : tile.getImageTopY();
-        int rowMax = tile.getImageBottomY() + 1;
-        int colMin = (tile.getImageLeftX() > 0) ? tile.getImageLeftX() - 1 : tile.getImageLeftX();
-        int colMax = tile.getImageRightX() + 1;
-
-        int nodeCount = this.nodes.size();
-        for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i);
-            BoundingBox box = node.getBox();
-            if (tile.isRegionInside(box)) {
-            //if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
-                // the node is inside the tile
-                continue;
-            } else {
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                IntIterator itCells = borderCells.iterator();
-                while (itCells.hasNext()) {
-                    int gridId = itCells.nextInt();
-                    int rowPixel = gridId / imageWidth;
-                    int colPixel = gridId % imageWidth;
-                    boolean addNode = false;
-                    if (rowTileIndex > 0 && (rowPixel == tile.getImageTopY() || rowPixel == rowMin)) {
-                        addNode = true;
-                    } else if (columnTileIndex < tileCountX - 1 && (colPixel == tile.getImageRightX() || colPixel == colMax)) {
-                        addNode = true;
-                    } else if (rowTileIndex < tileCountY - 1 && (rowPixel == tile.getImageBottomY() || rowPixel == rowMax)) {
-                        addNode = true;
-                    } else if (columnTileIndex > 0 && (colPixel == tile.getImageLeftX() || colPixel == colMin)) {
-                        addNode = true;
-                    }
-                    if (addNode) {
-                        List<Node> nodes = borderPixelMap.get(gridId);
-                        if (nodes == null) {
-                            nodes = new ArrayList<Node>();
-                            borderPixelMap.put(gridId, nodes);
-                        }
-                        nodes.add(node);
-                    }
-                }
-            }
-        }
-        return borderPixelMap;
+        return helper.processInParallel(threadCount, threadPool);
     }
 
     public void removeDuplicatedNodes(Int2ObjectMap<List<Node>> borderPixelMap, int imageWidth) {
         ObjectIterator<Int2ObjectMap.Entry<List<Node>>> it = borderPixelMap.int2ObjectEntrySet().iterator();
+        IntSet borderCells = new IntOpenHashSet();
         while (it.hasNext()) {
             Int2ObjectMap.Entry<List<Node>> entry = it.next();
             List<Node> nodes = entry.getValue();
@@ -201,70 +160,94 @@ public class Graph {
                     currentNode.setExpired(true);
                 }
 
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(refNode.getContour(), refNode.getId(), imageWidth);
-                IntIterator itCells = borderCells.iterator();
-                while (itCells.hasNext()) {
-                    int gridId = itCells.nextInt();
-                    List<Node> resultNodes = borderPixelMap.get(gridId);
+                //TODO Jean new code
+                borderCells.clear(); // clear the set
+                if (borderCells.add(refNode.getId())) {
+                    List<Node> resultNodes = borderPixelMap.get(refNode.getId());
                     if (resultNodes != null) {
                         resultNodes.clear();
                         resultNodes.add(refNode);
                     }
                 }
-            }
-        }
-        removeExpiredNodes();
-    }
-
-    public void removeUnstableSegments(ProcessingTile tile, int imageWidth) {
-        int nodeCount = this.nodes.size();
-        for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i);
-            BoundingBox box = node.getBox();
-            if (box.getLeftX() >= tile.getImageLeftX() && box.getTopY() >= tile.getImageTopY() && box.getRightX() - 1 <= tile.getImageRightX() && box.getBottomY() - 1 <= tile.getImageBottomY()) {
-                continue;
-            } else if (box.getLeftX() > tile.getImageRightX() || box.getTopY() > tile.getImageBottomY() || box.getRightX() - 1 < tile.getImageLeftX()
-                       || box.getBottomY() - 1 < tile.getImageTopY()) {
-                node.setExpired(true);
-                removeEdgeToUnstableNode(node);
-            } else {
-                boolean stable = false;
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                IntIterator itCells = borderCells.iterator();
-                while (itCells.hasNext()) {
-                    int gridIdInImage = itCells.nextInt();
-                    int rowPixelInImage = gridIdInImage / imageWidth;
-                    int colPixelInImage = gridIdInImage % imageWidth;
-                    if (rowPixelInImage >= tile.getImageTopY() && rowPixelInImage <= tile.getImageBottomY() && colPixelInImage >= tile.getImageLeftX() && colPixelInImage <= tile.getImageRightX()) {
-                        stable = true;
-                        break;
+                Contour contour = refNode.getContour();
+                if (contour.hasBorderSize()) {
+                    // initialize the first move at prev
+                    int previousMoveId = contour.getMove(0);
+                    // declare the current pixel index
+                    int currentCellId = refNode.getId();
+                    // explore the contour
+                    int contourSize = contour.computeContourBorderSize();
+                    for (int moveIndex = 1; moveIndex < contourSize; moveIndex++) {
+                        int currentMoveId = contour.getMove(moveIndex);
+                        int nextCellId = Contour.computeNextCellId(previousMoveId, currentMoveId, currentCellId, imageWidth);
+                        if (nextCellId != currentCellId) {
+                            currentCellId = nextCellId;
+                            if (borderCells.add(currentCellId)) {
+                                List<Node> resultNodes = borderPixelMap.get(currentCellId);
+                                if (resultNodes != null) {
+                                    resultNodes.clear();
+                                    resultNodes.add(refNode);
+                                }
+                            }
+                        }
+                        previousMoveId = currentMoveId;
                     }
                 }
-                if (!stable) {
-                    node.setExpired(true);
-                    removeEdgeToUnstableNode(node);
-                }
+
+//                //TODO Jean old code
+//                IntSet borderCells = AbstractSegmenter.generateBorderCells(refNode, imageWidth);
+//                IntIterator itCells = borderCells.iterator();
+//                while (itCells.hasNext()) {
+//                    int gridId = itCells.nextInt();
+//                    List<Node> resultNodes = borderPixelMap.get(gridId);
+//                    if (resultNodes != null) {
+//                        resultNodes.clear();
+//                        resultNodes.add(refNode);
+//                    }
+//                }
             }
         }
         removeExpiredNodes();
     }
 
-    private void removeEdgeToUnstableNode(Node node) {
-        int edgeCount = node.getEdgeCount();
-        for (int j=0; j<edgeCount; j++) {
-            Edge edge = node.getEdgeAt(j);
-            Node nodeNeighbor = edge.getTarget();
-            int removedEdgeIndex = nodeNeighbor.removeEdge(node);
-            assert(removedEdgeIndex >= 0);
-        }
+    public void removeUnstableSegments(int threadCount, Executor threadPool, ProcessingTile tile, int imageWidth) throws InterruptedException {
+        TileRemoveUnstableNodesHelper helper = new TileRemoveUnstableNodesHelper(this, tile, imageWidth);
+        helper.processInParallel(threadCount, threadPool);
+
+//        int nodeCount = this.nodes.size();
+//        for (int i=0; i<nodeCount; i++) {
+//            Node node = this.nodes.get(i);
+//            BoundingBox box = node.getBox();
+//            if (box.getLeftX() >= tile.getImageLeftX() && box.getTopY() >= tile.getImageTopY() && box.getRightX() - 1 <= tile.getImageRightX() && box.getBottomY() - 1 <= tile.getImageBottomY()) {
+//                continue;
+//            } else if (box.getLeftX() > tile.getImageRightX() || box.getTopY() > tile.getImageBottomY() || box.getRightX() - 1 < tile.getImageLeftX()
+//                    || box.getBottomY() - 1 < tile.getImageTopY()) {
+//                node.setExpired(true);
+//                node.removeEdgeToUnstableNode();
+//            } else {
+//                boolean stable = false;
+//                IntSet borderCells = AbstractSegmenter.generateBorderCells(node, imageWidth);
+//                IntIterator itCells = borderCells.iterator();
+//                while (itCells.hasNext()) {
+//                    int gridIdInImage = itCells.nextInt();
+//                    int rowPixelInImage = gridIdInImage / imageWidth;
+//                    int colPixelInImage = gridIdInImage % imageWidth;
+//                    if (rowPixelInImage >= tile.getImageTopY() && rowPixelInImage <= tile.getImageBottomY() && colPixelInImage >= tile.getImageLeftX() && colPixelInImage <= tile.getImageRightX()) {
+//                        stable = true;
+//                        break;
+//                    }
+//                }
+//                if (!stable) {
+//                    node.setExpired(true);
+//                    node.removeEdgeToUnstableNode();
+//                }
+//            }
+//        }
+//        removeExpiredNodes();
     }
 
     public void addNodes(Graph subgraph) {
-        int nodeCount = subgraph.getNodeCount();
-        for (int i=0; i<nodeCount; i++) {
-            Node node = subgraph.getNodeAt(i);
-            addNode(node);
-        }
+        this.nodes.addAll(subgraph.nodes);
     }
 
     public void rescaleGraph(ProcessingTile tile, int imageWidth) {
@@ -291,39 +274,42 @@ public class Graph {
         }
     }
 
-    public List<Node> findUselessNodes(ProcessingTile tile, int imageWidth) {
-        List<Node> nodesToIterate = new ArrayList<Node>();
-        int nodeCount = this.nodes.size();
-        for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i);
-            BoundingBox box = node.getBox();
+    public List<Node> findUselessNodes(int threadCount, Executor threadPool, ProcessingTile tile, int imageWidth) throws InterruptedException {
+        TileUselessNodesHelper helper = new TileUselessNodesHelper(this, tile, imageWidth);
+        return helper.processInParallel(threadCount, threadPool);
 
-            if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
-                continue;
-            } else if (box.getLeftX() > tile.getImageRightX() || box.getTopY() > tile.getImageBottomY() || box.getRightX() - 1 < tile.getImageLeftX() || box.getBottomY() - 1 < tile.getImageTopY()) {
-                continue;
-            } else {
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
-                IntIterator itCells = borderCells.iterator();
-                while (itCells.hasNext()) {
-                    int gridId = itCells.nextInt();
-                    int rowPixel = gridId / imageWidth;
-                    int colPixel = gridId % imageWidth;
-                    if (rowPixel == tile.getImageTopY() || rowPixel == tile.getImageBottomY()) {
-                        if (colPixel >= tile.getImageLeftX() && colPixel <= tile.getImageRightX()) {
-                            nodesToIterate.add(node);
-                            break;
-                        }
-                    } else if (colPixel == tile.getImageLeftX() || colPixel == tile.getImageRightX()) {
-                        if (rowPixel >= tile.getImageTopY() && rowPixel <= tile.getImageBottomY()) {
-                            nodesToIterate.add(node);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return nodesToIterate;
+//        List<Node> nodesToIterate = new ArrayList<Node>();
+//        int nodeCount = this.nodes.size();
+//        for (int i=0; i<nodeCount; i++) {
+//            Node node = this.nodes.get(i);
+//            BoundingBox box = node.getBox();
+//
+//            if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
+//                continue;
+//            } else if (box.getLeftX() > tile.getImageRightX() || box.getTopY() > tile.getImageBottomY() || box.getRightX() - 1 < tile.getImageLeftX() || box.getBottomY() - 1 < tile.getImageTopY()) {
+//                continue;
+//            } else {
+//                IntSet borderCells = AbstractSegmenter.generateBorderCells(node, imageWidth);
+//                IntIterator itCells = borderCells.iterator();
+//                while (itCells.hasNext()) {
+//                    int gridId = itCells.nextInt();
+//                    int rowPixel = gridId / imageWidth;
+//                    int columnPixel = gridId % imageWidth;
+//                    if (rowPixel == tile.getImageTopY() || rowPixel == tile.getImageBottomY()) {
+//                        if (columnPixel >= tile.getImageLeftX() && columnPixel <= tile.getImageRightX()) {
+//                            nodesToIterate.add(node);
+//                            break;
+//                        }
+//                    } else if (columnPixel == tile.getImageLeftX() || columnPixel == tile.getImageRightX()) {
+//                        if (rowPixel >= tile.getImageTopY() && rowPixel <= tile.getImageBottomY()) {
+//                            nodesToIterate.add(node);
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return nodesToIterate;
     }
 
     public void removeUselessNodes(Int2ObjectMap<Node> borderNodes, ProcessingTile tile) {
@@ -335,7 +321,7 @@ public class Graph {
             if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
                 continue;
             } else if (!borderNodes.containsKey(node.getId())) {
-                removeEdgeToUnstableNode(node);
+                node.removeEdgeToUnstableNode();
                 node.setExpired(true);
             }
         }

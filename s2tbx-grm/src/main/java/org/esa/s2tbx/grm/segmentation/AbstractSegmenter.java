@@ -246,7 +246,7 @@ public abstract class AbstractSegmenter {
         int nodeCount = this.graph.getNodeCount();
         for (int i = 0; i < nodeCount; i++) {
             Node node = this.graph.getNodeAt(i);
-            IntSet borderCells = generateBorderCells(node.getContour(), node.getId(), this.imageWidth);
+            IntSet borderCells = generateBorderCells(node, this.imageWidth);
             IntIterator itCells = borderCells.iterator();
             while (itCells.hasNext()) {
                 int gridId = itCells.nextInt();
@@ -424,82 +424,38 @@ public abstract class AbstractSegmenter {
         return new BoundingBox(minimumLeftUpperX, minimumLeftUpperY, width, height);
     }
 
-    public static IntSet generateBorderCells(Contour contour, int startCellId, int width) {
-        IntSet borderCells = new IntOpenHashSet();
+    private static class NodeBorderCellsCallbackImpl implements NodeBorderCellsCallback {
+        private final IntSet borderCells;
 
-        // add the first pixel to the border list
-        borderCells.add(startCellId);
-
-        if (contour.size() > 8) {
-            // initialize the first move at prev
-            int previousMoveId = contour.getMove(0);
-
-            // declare the current pixel index
-            int currentCellId = startCellId;
-
-            // Explore the contour
-            for (int contourIndex = 1; contourIndex < contour.size() / 2; contourIndex++) {
-                int currentMoveId = contour.getMove(contourIndex);
-                assert (currentMoveId >= 0 && currentMoveId <= 3);
-
-                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
-                    // impossible case is previous index = 2 (bottom)
-                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId -= width; // go to the top
-                        borderCells.add(currentCellId);
-                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId = currentCellId - width + 1; // go to the top right
-                        borderCells.add(currentCellId);
-                    }
-                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
-                    // impossible case is previous index = 3 (left)
-                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId++; // go to the right
-                        borderCells.add(currentCellId);
-                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId = currentCellId + width + 1; // go to the bottom right
-                        borderCells.add(currentCellId);
-                    }
-                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
-                    // impossible case is previous index = 0 (top)
-                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId += width;
-                        borderCells.add(currentCellId);
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId = currentCellId + width - 1; // go to the bottom left
-                        borderCells.add(currentCellId);
-                    }
-                } else { // current index = 3 (left)
-                    // impossible case is previous index = 1 (right)
-                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId = currentCellId - width - 1;  // go to the top left
-                        borderCells.add(currentCellId);
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId--; // go the to left
-                        borderCells.add(currentCellId);
-                    }
-                }
-
-                previousMoveId = currentMoveId;
-            }
+        NodeBorderCellsCallbackImpl() {
+            this.borderCells = new IntOpenHashSet();
         }
-        return borderCells;
+
+        @Override
+        public boolean addBorderCellId(Node analyzedNode, int borderCellId) {
+            this.borderCells.add(borderCellId);
+            return true;
+        }
+
+        public IntSet getBorderCells() {
+            return borderCells;
+        }
+    }
+
+    public static IntSet generateBorderCells(Node node, int width) {
+        NodeBorderCellsCallbackImpl nodeBorderCellsCallback = new NodeBorderCellsCallbackImpl();
+        generateBorderCells(node, width, nodeBorderCellsCallback);
+        return nodeBorderCellsCallback.getBorderCells();
     }
 
     public static void generateBorderCells(Node node, int width, NodeBorderCellsCallback nodeBorderCellsCallback) {
         // add the first pixel to the border list
-            nodeBorderCellsCallback.addBorderCellId(node, node.getId());
+        if (!nodeBorderCellsCallback.addBorderCellId(node, node.getId())) {
+            return;
+        }
 
         Contour contour = node.getContour();
-        if (contour.size() > 8) {
+        if (contour.hasBorderSize()) {
             // initialize the first move at prev
             int previousMoveId = contour.getMove(0);
 
@@ -507,54 +463,15 @@ public abstract class AbstractSegmenter {
             int currentCellId = node.getId();
 
             // explore the contour
-            int contourSize = contour.size() / 2;
-            for (int contourIndex = 1; contourIndex < contourSize; contourIndex++) {
-                int currentMoveId = contour.getMove(contourIndex);
-                assert (currentMoveId >= 0 && currentMoveId <= 3);
+            int contourSize = contour.computeContourBorderSize();
+            for (int moveIndex = 1; moveIndex < contourSize; moveIndex++) {
+                int currentMoveId = contour.getMove(moveIndex);
 
-                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
-                    // impossible case is previous index = 2 (bottom)
-                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId -= width; // go to the top
-                            nodeBorderCellsCallback.addBorderCellId(node, currentCellId);
-                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId = currentCellId - width + 1; // go to the top right
-                            nodeBorderCellsCallback.addBorderCellId(node, currentCellId);
-                    }
-                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
-                    // impossible case is previous index = 3 (left)
-                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId++; // go to the right
-                        nodeBorderCellsCallback.addBorderCellId(node, currentCellId);
-                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId = currentCellId + width + 1; // go to the bottom right
-                        nodeBorderCellsCallback.addBorderCellId(node, currentCellId);
-                    }
-                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
-                    // impossible case is previous index = 0 (top)
-                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId += width;
-                        nodeBorderCellsCallback.addBorderCellId(node, currentCellId);
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId = currentCellId + width - 1; // go to the bottom left
-                        nodeBorderCellsCallback.addBorderCellId(node, currentCellId);
-                    }
-                } else { // current index = 3 (left)
-                    // impossible case is previous index = 1 (right)
-                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId = currentCellId - width - 1;  // go to the top left
-                        nodeBorderCellsCallback.addBorderCellId(node, currentCellId);
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId--; // go the to left
-                        nodeBorderCellsCallback.addBorderCellId(node, currentCellId);
+                int nextCellId = Contour.computeNextCellId(previousMoveId, currentMoveId, currentCellId, width);
+                if (nextCellId != currentCellId) {
+                    currentCellId = nextCellId;
+                    if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+                        return;
                     }
                 }
 
@@ -562,6 +479,93 @@ public abstract class AbstractSegmenter {
             }
         }
     }
+
+//    public static void generateBorderCells(Node node, int width, NodeBorderCellsCallback nodeBorderCellsCallback) {
+//        // add the first pixel to the border list
+//        if (!nodeBorderCellsCallback.addBorderCellId(node, node.getId())) {
+//            return;
+//        }
+//
+//        Contour contour = node.getContour();
+//        if (contour.size() > 8) {
+//            // initialize the first move at prev
+//            int previousMoveId = contour.getMove(0);
+//
+//            // declare the current pixel index
+//            int currentCellId = node.getId();
+//
+//            // explore the contour
+//            int contourSize = contour.size() / 2;
+//            for (int contourIndex = 1; contourIndex < contourSize; contourIndex++) {
+//                int currentMoveId = contour.getMove(contourIndex);
+//                assert (currentMoveId >= 0 && currentMoveId <= 3);
+//
+//                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
+//                    // impossible case is previous index = 2 (bottom)
+//                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+//                        currentCellId -= width; // go to the top
+//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+//                            return;
+//                        }
+//                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+//                        currentCellId = currentCellId - width + 1; // go to the top right
+//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+//                            return;
+//                        }
+//                    }
+//                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
+//                    // impossible case is previous index = 3 (left)
+//                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+//                        currentCellId++; // go to the right
+//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+//                            return;
+//                        }
+//                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+//                        currentCellId = currentCellId + width + 1; // go to the bottom right
+//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+//                            return;
+//                        }
+//                    }
+//                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
+//                    // impossible case is previous index = 0 (top)
+//                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+//                        currentCellId += width;
+//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+//                            return;
+//                        }
+//                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+//                        currentCellId = currentCellId + width - 1; // go to the bottom left
+//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+//                            return;
+//                        }
+//                    }
+//                } else { // current index = 3 (left)
+//                    // impossible case is previous index = 1 (right)
+//                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+//                        currentCellId = currentCellId - width - 1;  // go to the top left
+//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+//                            return;
+//                        }
+//                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+//                        currentCellId--; // go the to left
+//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
+//                            return;
+//                        }
+//                    }
+//                }
+//
+//                previousMoveId = currentMoveId;
+//            }
+//        }
+//    }
 
     public static void generateEightNeighborhood(int[] neighborhood, int id, int width, int height) {
         int x = id % width;

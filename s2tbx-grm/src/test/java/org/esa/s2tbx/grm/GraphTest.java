@@ -10,6 +10,8 @@ import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -18,12 +20,16 @@ import static org.junit.Assert.assertNotNull;
  * @author Jean Coravu.
  */
 public class GraphTest {
+    private final int threadCount;
+    private final Executor threadPool;
 
     public GraphTest() {
+        this.threadCount = Runtime.getRuntime().availableProcessors();
+        this.threadPool = Executors.newCachedThreadPool();
     }
 
     @Test
-    public void testDetectBorderNodes() {
+    public void testDetectBorderNodes() throws InterruptedException {
         int imageWidth = 10;
         int imageHeight = 10;
         int tileLeftX = 0;
@@ -36,7 +42,7 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        List<Node> result = graph.detectBorderNodes(tile, imageWidth, imageHeight);
+        List<Node> result = graph.detectBorderNodes(this.threadCount, this.threadPool, tile, imageWidth, imageHeight);
         assertNotNull(result);
         assertEquals(1, result.size());
 
@@ -46,7 +52,7 @@ public class GraphTest {
     }
 
     @Test
-    public void testBuildBorderPixelMap() {
+    public void testBuildBorderPixelMap() throws InterruptedException {
         int imageWidth = 10;
         int imageHeight = 10;
         int tileLeftX = 0;
@@ -61,14 +67,14 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(tile, 0, 0, tileCountX, tileCountY, imageWidth);
+        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapUsingThreads(this.threadCount, this.threadPool, tile, 0, 0, tileCountX, tileCountY, imageWidth);
 
         assertNotNull(borderPixelMap);
         assertEquals(2, borderPixelMap.size());
     }
 
     @Test
-    public void testRemoveDuplicatedNodes() {
+    public void testRemoveDuplicatedNodes() throws InterruptedException {
         int imageWidth = 10;
         int imageHeight = 10;
         int tileLeftX = 0;
@@ -83,7 +89,7 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMap(tile, 0, 0, tileCountX, tileCountY, imageWidth);
+        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapUsingThreads(this.threadCount, this.threadPool, tile, 0, 0, tileCountX, tileCountY, imageWidth);
 
         assertNotNull(borderPixelMap);
         assertEquals(2, borderPixelMap.size());
@@ -94,7 +100,7 @@ public class GraphTest {
     }
 
     @Test
-    public void testRemoveUnstableSegments() {
+    public void testRemoveUnstableSegments() throws InterruptedException {
         int imageWidth = 10;
         int imageHeight = 10;
         int tileLeftX = 0;
@@ -107,13 +113,13 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        graph.removeUnstableSegments(tile, imageWidth);
+        graph.removeUnstableSegments(this.threadCount, this.threadPool, tile, imageWidth);
 
         assertEquals(2, graph.getNodeCount());
     }
 
     @Test
-    public void testFindUselessNodes() {
+    public void testFindUselessNodes() throws InterruptedException {
         int imageWidth = 10;
         int imageHeight = 10;
         int tileLeftX = 0;
@@ -126,7 +132,7 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        List<Node> nodesToIterate = graph.findUselessNodes(tile, imageWidth);
+        List<Node> nodesToIterate = graph.findUselessNodes(this.threadCount, this.threadPool, tile, imageWidth);
         assertNotNull(nodesToIterate);
         assertEquals(2, nodesToIterate.size());
     }

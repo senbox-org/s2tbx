@@ -39,7 +39,7 @@ public abstract class AbstractImageTilesHelper {
     protected abstract void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex)
                                     throws IOException, IllegalAccessException, InterruptedException;
 
-    public final void executeUsingThreads(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
+    public final void executeInParallel(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
         for (int i=0; i<threadCount; i++) {
             TileSegmentationRunnable segmentationRunnable = new TileSegmentationRunnable(this);
             threadPool.execute(segmentationRunnable);

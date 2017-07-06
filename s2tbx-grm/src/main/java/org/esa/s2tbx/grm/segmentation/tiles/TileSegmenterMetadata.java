@@ -9,7 +9,7 @@ import java.util.Map;
  * @author Jean Coravu
  */
 public class TileSegmenterMetadata {
-    private final long availableMemory;
+    private final long totalMemory;
     private final Map<String, BoundingBox> tilesMap;
 
     private long accumulatedMemory;
@@ -22,7 +22,7 @@ public class TileSegmenterMetadata {
         this.computedTileCountX = 0;
         this.computedTileCountY = 0;
 
-        this.availableMemory = Runtime.getRuntime().totalMemory();
+        this.totalMemory = Runtime.getRuntime().totalMemory();
 
         resetValues();
     }
@@ -71,11 +71,11 @@ public class TileSegmenterMetadata {
         return isFusion;
     }
 
-    public long getAvailableMemory() {
-        return availableMemory;
+    public long getTotalMemory() {
+        return totalMemory;
     }
 
     public boolean canRunSecondPartialSegmentation() {
-        return (this.accumulatedMemory > this.availableMemory) && this.isFusion;
+        return (this.accumulatedMemory > this.totalMemory) && this.isFusion;
     }
 }

@@ -60,55 +60,55 @@ public class SegmenterTest {
         assertEquals(170, mergedBox.getHeight());
     }
 
-    @Test
-    public void testGenerateBorderCells() {
-        Contour contour = new Contour();
-
-        contour.pushRight();
-        contour.pushRight();
-        contour.pushRight();
-
-        contour.pushBottom();
-        contour.pushBottom();
-        contour.pushBottom();
-
-        contour.pushLeft();
-        contour.pushLeft();
-        contour.pushLeft();
-
-        contour.pushTop();
-        contour.pushTop();
-        contour.pushTop();
-
-        IntSet borderCells = AbstractSegmenter.generateBorderCells(contour, 100, 1000);
-        assertEquals(8, borderCells.size());
-
-        IntIterator iterator = borderCells.iterator();
-
-        int cellId = iterator.nextInt();
-        assertEquals(2100, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(2101, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(2102, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(1100, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(100, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(102, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(101, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(1102, cellId);
-    }
+//    @Test
+//    public void testGenerateBorderCells() {
+//        Contour contour = new Contour();
+//
+//        contour.pushRight();
+//        contour.pushRight();
+//        contour.pushRight();
+//
+//        contour.pushBottom();
+//        contour.pushBottom();
+//        contour.pushBottom();
+//
+//        contour.pushLeft();
+//        contour.pushLeft();
+//        contour.pushLeft();
+//
+//        contour.pushTop();
+//        contour.pushTop();
+//        contour.pushTop();
+//
+//        IntSet borderCells = AbstractSegmenter.generateBorderCells(contour, 100, 1000);
+//        assertEquals(8, borderCells.size());
+//
+//        IntIterator iterator = borderCells.iterator();
+//
+//        int cellId = iterator.nextInt();
+//        assertEquals(2100, cellId);
+//
+//        cellId = iterator.nextInt();
+//        assertEquals(2101, cellId);
+//
+//        cellId = iterator.nextInt();
+//        assertEquals(2102, cellId);
+//
+//        cellId = iterator.nextInt();
+//        assertEquals(1100, cellId);
+//
+//        cellId = iterator.nextInt();
+//        assertEquals(100, cellId);
+//
+//        cellId = iterator.nextInt();
+//        assertEquals(102, cellId);
+//
+//        cellId = iterator.nextInt();
+//        assertEquals(101, cellId);
+//
+//        cellId = iterator.nextInt();
+//        assertEquals(1102, cellId);
+//    }
 
     @Test
     public void testFullLambdaScheduleSegmenter() {
