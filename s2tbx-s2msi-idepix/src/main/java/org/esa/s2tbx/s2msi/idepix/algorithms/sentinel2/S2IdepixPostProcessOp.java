@@ -108,7 +108,7 @@ public class S2IdepixPostProcessOp extends Operator {
             for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
 
                 if (targetRectangle.contains(x, y)) {
-                    boolean isInvalid = targetTile.getSampleBit(x, y, S2IdepixConstants.F_INVALID);
+                    boolean isInvalid = targetTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_INVALID);
                     if (!isInvalid) {
                         combineFlags(x, y, classifFlagTile, targetTile);
                         if (s2CloudBufferProduct != null) {
@@ -128,7 +128,7 @@ public class S2IdepixPostProcessOp extends Operator {
 
                     if (cloudShadowFlagValue == oceanCloudShadowIndexValue ||
                             cloudShadowFlagValue == landCloudShadowIndexValue) {
-                        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SHADOW, true);
+                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, true);
                     }
                 }
             }

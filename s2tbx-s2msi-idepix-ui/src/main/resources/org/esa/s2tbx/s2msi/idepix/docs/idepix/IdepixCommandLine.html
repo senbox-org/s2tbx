@@ -51,18 +51,46 @@ To obtain general help on the graph processing, use the command
     </li>
 </ul>
 
-Specific help on the Idepix processor can be obtained for the supported instruments with
+Specific help on the Idepix processor for a given instrument onboard a given satellite can be obtained with
 <ul>
     <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Landsat8
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.&lt;Satellite&gt;.&lt;Instrument&gt;
+    </li>
+</ul>
+
+so we have the following options:
+<ul>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Sentinel2.MSI
     </li>
     <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Modis
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Sentinel3.OLCI
+    </li>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Envisat.MERIS
+    </li>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Landsat8.OLI
+    </li>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Probav.Vegetation
+    </li>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Spot.Vegetation
+    </li>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.TerraAqua.Modis
+    </li>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.OrbView2.Seawifs
+    </li>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.SuomiNpp.Viirs
     </li>
 </ul>
 In this case, information on the usage and a list of all available parameters are given. E.g., for MODIS this looks
 like in the figure below.
-<p align="center"><img src="images/IdepixCommandLineModis.png"></p>
+<p align="center"><img src="images/IdepixCommandLineModis_new.png"></p>
 
 The Idepix processor parameters can also be specified via a graph xml file.
 E.g., a possible graph xml file for MODIS could look like the following. (Note that in principle it is not necessary
@@ -72,9 +100,9 @@ to explicitly set parameters if default values shall be used).
     &lt;graph id="IdepixModisTest"&gt;
         &lt;version&gt;1.0&lt;/version&gt;
         &lt;node id="idepix"&gt;
-            &lt;operator&gt;Idepix.Modis&lt;/operator&gt;
+            &lt;operator&gt;Idepix.TerraAqua.Modis&lt;/operator&gt;
             &lt;sources&gt;
-                &lt;source&gt;${modisProduct}&lt;/source&gt;
+                &lt;source&gt;${sourceProduct}&lt;/source&gt;
             &lt;/sources&gt;
             &lt;parameters&gt;
                 &lt;cloudFlaggingStrength&gt;CLOUD_CONSERVATIVE&lt;/cloudFlaggingStrength&gt;
@@ -98,7 +126,7 @@ to explicitly set parameters if default values shall be used).
 
 This graph can be invoked by the following call on the command line:
 <pre>
-  gpt &lt;graph-file.xml&gt; -SmodisProduct=&lt;path-to-source-file&gt;
+  gpt &lt;graph-file.xml&gt; -SsourceProduct=&lt;path-to-source-file&gt;
 </pre>
 
 <hr>

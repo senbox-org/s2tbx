@@ -266,10 +266,6 @@ public class S2IdepixAlgorithm {
         return (float) value;
     }
 
-    public float pressureValue() {
-        return UNCERTAINTY_VALUE;
-    }
-
     public float aPrioriLandValue() {
         return radiometricLandValue();
     }
@@ -286,10 +282,6 @@ public class S2IdepixAlgorithm {
 
     public void setRefl(float[] refl) {
         this.refl = refl;
-    }
-
-    public void setNnOutput(double[] nnOutput) {
-        this.nnOutput = nnOutput;
     }
 
     public void setIsLand(boolean isLand) {
@@ -319,10 +311,6 @@ public class S2IdepixAlgorithm {
 
     public float getNdviThreshold() {
         return NDVI_THRESH;
-    }
-
-    public float getNdwiThreshold() {
-        return NDWI_THRESH;
     }
 
     public float getTc1Threshold() {

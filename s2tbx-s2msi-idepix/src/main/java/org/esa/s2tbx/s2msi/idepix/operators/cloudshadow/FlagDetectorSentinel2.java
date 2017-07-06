@@ -20,10 +20,10 @@ public class FlagDetectorSentinel2 implements FlagDetector {
     private final int land_byte;
 
     FlagDetectorSentinel2(Tile classifSourceTile, Tile bufferSourceTile, Rectangle roi) {
-        invalid_byte = (int) Math.pow(2, S2IdepixConstants.F_INVALID);
-        cloud_byte = (int) Math.pow(2, S2IdepixConstants.F_CLOUD);
-        cloud_buffer_byte = (int) Math.pow(2, S2IdepixConstants.F_CLOUD_BUFFER);
-        land_byte = (int) Math.pow(2, S2IdepixConstants.F_LAND);
+        invalid_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_INVALID);
+        cloud_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_CLOUD);
+        cloud_buffer_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_CLOUD_BUFFER);
+        land_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_LAND);
         classifData = classifSourceTile.getSamplesInt();
         if (bufferSourceTile != null) {
             bufferData = bufferSourceTile.getSamplesInt();
