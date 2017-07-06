@@ -1,0 +1,224 @@
+<!--
+  ~ Copyright (C) 2010 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>SNAP Data Processors - Idepix Landsat-8 OLI Processor Description</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            SNAP Data Processors - Idepix Landsat-8 OLI Processor Description
+        </td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg"
+                                                                                                                                                       border=0></a>
+        </td>
+    </tr>
+</table>
+
+<h3>Processor Description</h3>
+
+<h4>I/O Parameters Tab</h4>
+
+<p align="center"><img src="images/IdepixPathsLandsat8.png"></p>
+
+<h5>Source Product Group</h5>
+
+<p class="i1">
+    <b>Name: </b>
+    Used to select the spectral source product. The source product shall
+    contain spectral bands providing a source spectrum at each pixel. Use the <b>...</b> button to
+    open a data product currently not opened in the Sentinel Toolbox.
+</p>
+
+<h5>Supported Landsat-8 OLI Source Products</h5>
+The following Landsat-8 OLI source products are supported for Idepix classification:
+<ul>
+    <li>
+        Ls8ppprrrYYYYDDDGGGVV_MTL.txt:<br>
+        Landsat-8 OLI Level 1 T- Terrain Corrected products (30/15m), for detailed product description and
+        file naming convention see USGS Landsat Product Handbook, section4
+        (http://landsat.usgs.gov/l8handbook_section4.php).
+    </li>
+</ul>
+
+
+<h5>Target Product Group</h5>
+
+<p class="i1">
+    <b>Name:</b>
+    Used to specify the name of the target product.
+</p>
+
+<p class="i1">
+    <b>Save to:</b>
+    Used to specify whether the target product should be saved to the file system. The
+    combo box presents a list of file formats.
+</p>
+
+<p class="i1">
+    <b>Open in SNAP:</b>
+    Used to specify whether the target product should be opened in the Sentinel Toolbox.
+    When the target product is not saved, it is opened in the Sentinel Toolbox automatically.
+</p>
+
+<h3>The Processing Parameters</h3>
+
+
+<p>
+    <b>NOTE: </b> The pixel classification for Landsat-8 OLI, i.e. all the cloud tests, work on TOA reflectances rather than
+    radiances. As the Landsat-8 OLI product reader by default interprets the spectral band values as radiances, a
+    specific property must be set to read the data as reflectances before using Idepix:
+</p>
+<ul>
+    <li>
+        if not present, create a file 's3tbx.properties' in the folder [USER_HOME]/.snap/etc
+    </li>
+    <li>
+        in this file 's3tbx.properties' add the entry
+        <ul>
+            <li>
+                s3tbx.landsat.readAs=reflectance
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<p align="center"><img src="images/IdepixParameterLandsat8.png"></p>
+
+<p class="i1">
+    <b>Width of cloud buffer (# of pixels): </b><br>
+    The width of the cloud buffer in # of pixels. The default value is 1.
+</p>
+
+<p class="i1">
+    <b>Refine pixel classification near coastlines (time consuming!): </b><br>
+    If set, the pixel classification near coastlines is refined using a spatial filtering.
+    This improves distinction of clouds and bright beaches. Note that this is a time consuming operation
+    for Landsat-8 OLI products, as this filtering also considers neighbourhood pixels of the pixel being
+    classified. The default value is 'false'.
+</p>
+
+<p class="i1">
+    <b>Neural Net to be applied: </b><br>
+    Specifies the neural net which is applied for the pixel classification. The user can select between a
+    standard neural net ('ALL') suitable for most conditions, and various other neural nets for certain conditions,
+    i.e. if land or water is dominant in the given scene. The neural nets with the suffix '_USE_THERMAL'
+    explicitly use the thermal infrared bands at 10895nm and 12005nm as input. The default neural net is 'ALL'.
+</p>
+
+<p class="i1">
+    <b>NN cloud ambiguous lower boundary: </b><br>
+    The boundary of the neural network output value where pixels are regarded as either clear (NN output lower
+    than boundary) or 'cloud ambiguous' (NN output higher than boundary). The output value of the neural network
+    (floating point number on the interval [0.0, 5.0]) is written to the target product in a band 'nnResult'.
+    Providing the NN cloud ambiguous lower boundary as user option allows a fine tuning of the pixel classification
+    under certain conditions. The default value is 1.95.
+</p>
+
+<p class="i1">
+    <b>NN cloud ambiguous/sure separation value: </b><br>
+    The boundary of the neural network output value where pixels are regarded as either 'cloud ambiguous' (NN output
+    lower
+    than boundary) or 'cloud sure' (NN output higher than boundary). The output value of the neural network
+    (floating point number on the interval [0.0, 5.0]) is written to the target product in a band 'nnResult'.
+    Providing the NN cloud ambiguous/sure separation value as user option allows a fine tuning of the pixel
+    classification
+    under certain conditions. The default value is 3.45.
+</p>
+
+<p class="i1">
+    <b>NN cloud sure /snow separation value: </b><br>
+    The boundary of the neural network output value where pixels are regarded as either 'cloud sure' (NN output lower
+    than boundary) or 'snow' (NN output higher than boundary). The output value of the neural network
+    (floating point number on the interval [0.0, 5.0]) is written to the target product in a band 'nnResult'.
+    Providing the NN cloud sure / snow separation value as user option allows a fine tuning of the pixel classification
+    under certain conditions. The default value is 4.3.
+</p>
+
+<p class="i1">
+    <b>Apply SHIMEZ cloud test: </b><br>
+    If set, the SHIMEZ cloud test (see algorithm specification for details) is applied for the cloud classification
+    in addition to the neural network. The default value is 'true'.
+</p>
+
+<p class="i1">
+    <b>Threshold A for SHIMEZ cloud test: </b><br>
+    The threshold A in the SHIMEZ cloud test (see algorithm specification for details). The default value is 0.1.
+</p>
+
+<p class="i1">
+    <b>Threshold B for SHIMEZ cloud test: </b><br>
+    The threshold B in the SHIMEZ cloud test (see algorithm specification for details). The default value is 0.25.
+</p>
+
+<p class="i1">
+    <b>Apply HOT cloud test: </b><br>
+    If set, the HOT cloud test (see algorithm specification for details) is applied for the cloud classification
+    in addition to the neural network. The default value is 'false'.
+</p>
+
+<p class="i1">
+    <b>Threshold A for HOT cloud test: </b><br>
+    The threshold A in the HOT cloud test (see algorithm specification for details). The default value is 0.1.
+</p>
+
+<p class="i1">
+    <b>Apply CLOST cloud test: </b><br>
+    If set, the CLOST cloud test (see algorithm specification for details) is applied for the cloud classification
+    in addition to the neural network. The default value is 'false'.
+</p>
+
+<p class="i1">
+    <b>Threshold A for CLOST cloud test: </b><br>
+    The threshold A in the CLOST cloud test (see algorithm specification for details). The default value is 0.001.
+</p>
+
+<p class="i1">
+    <b>Apply OTSU cloud test: </b><br>
+    If set, the OTSU cloud test (see algorithm specification for details) is applied for the cloud classification
+    in addition to the neural network. The default value is 'false'.
+</p>
+
+<p class="i1">
+    <b>Write source bands to the target product: </b><br>
+    If set, all bands from the source product are written to target product.
+    The default value is 'true'.
+</p>
+
+<h3>The Processing Result</h3>
+The Idepix classification result is written into the target product as a flag band named 'pixel_classif_flags'.
+This band holds integer values which for Landsat-8 OLI follow the flag coding shown below.
+
+<p align="center">
+    <img src="images/Landsat8FlagCoding.png" border="0">
+</p>
+<br>
+
+The target product also provides a corresponding flag mask to visualize the pixel classification through the
+SNAP Mask Manager:
+
+<p align="center">
+    <img src="images/Landsat8MaskManager.png" border="0">
+</p>
+
+<hr>
+</body>
+</html>
