@@ -57,10 +57,10 @@ public class ColorFillerOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter (itemAlias = "percentagePixels", description = "The percentage of valid forrest pixels in a region")
-    private float percentagePixels;
-
+    @Parameter (itemAlias = "validRegions", description = "The valid regions with forest pixels")
     private IntSet validRegions;
+
+    private Set<String> processedTiles;
 
     public ColorFillerOp() {
     }
@@ -69,19 +69,9 @@ public class ColorFillerOp extends Operator {
     public void initialize() throws OperatorException {
         validateInputs();
 
-        Map<String, Object> parameters = new HashMap<>();
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("sourceProduct", this.sourceProduct);
-        ObjectsSelectionOp objSelOp = (ObjectsSelectionOp) GPF.getDefaultInstance().createOperator("ObjectsSelectionOp", parameters, sourceProducts, null);
-        objSelOp.getTargetProduct();
-
-        OperatorExecutor executor = OperatorExecutor.create(objSelOp);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-
-        Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics = objSelOp.getStatistics();
-        this.validRegions = computeValidStatisticRegions(statistics, this.percentagePixels);
-
         createTargetProduct();
+
+        this.processedTiles = new HashSet<String>();
     }
 
     @Override
@@ -93,7 +83,14 @@ public class ColorFillerOp extends Operator {
             logger.log(Level.FINE, "Compute color filler for tile region: bounds [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
         }
 
-        Band segmentationBand = sourceProduct.getBandAt(0);
+        String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
+        synchronized (this.processedTiles) {
+            if (!this.processedTiles.add(key)) {
+                throw new OperatorException("The tile region [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"] has already been computed.");
+            }
+        }
+
+        Band segmentationBand = this.sourceProduct.getBandAt(0);
         for (int y = tileRegion.y; y < tileRegion.y + tileRegion.height; y++) {
             for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
                 int sgmentationValue = segmentationBand.getSampleInt(x, y);
@@ -103,20 +100,6 @@ public class ColorFillerOp extends Operator {
                 targetTile.setSample(x, y, sgmentationValue);
             }
         }
-    }
-
-    private static IntSet computeValidStatisticRegions(Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics, float percentagePixels) {
-        IntSet validReg = new IntOpenHashSet();
-        ObjectIterator<Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic>> it = statistics.int2ObjectEntrySet().iterator();
-        while (it.hasNext()) {
-            Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic> entry = it.next();
-            ObjectsSelectionOp.PixelStatistic value = entry.getValue();
-            float percent = ((float)value.getPixelsInRange()/(float)value.getTotalNumberPixels()) * 100;
-            if (percent >= percentagePixels) {
-                validReg.add(entry.getIntKey());
-            }
-        }
-        return validReg;
     }
 
     private void validateInputs() {

@@ -3,10 +3,13 @@ package org.esa.s2tbx.fcc;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.s2tbx.fcc.intern.BandsExtractorOp;
 import org.esa.s2tbx.fcc.intern.ColorFillerOp;
+import org.esa.s2tbx.fcc.intern.ObjectsSelectionOp;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
 import org.esa.s2tbx.fcc.intern.TrimmingHelper;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
@@ -184,7 +187,6 @@ public class ForestCoverChangeOp extends Operator {
         return runColorFillerOp(segmentationProduct, forestCoverPercentage);
     }
 
-
     private static String[] buildBandNamesArray(Product sourceProduct) {
         ProductNodeGroup<Band> bandGroup = sourceProduct.getBandGroup();
         int bandCount = bandGroup.getNodeCount();
@@ -196,8 +198,10 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private static Product runColorFillerOp(Product sourceProduct, float percentagePixels) {
+        IntSet validRegions = runObjectsSelectionOp(sourceProduct, percentagePixels);
+
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("percentagePixels", percentagePixels);
+        parameters.put("validRegions", validRegions);
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("sourceProduct", sourceProduct);
         ColorFillerOp colFillOp = (ColorFillerOp) GPF.getDefaultInstance().createOperator("ColorFillerOp", parameters, sourceProducts, null);
@@ -209,10 +213,34 @@ public class ForestCoverChangeOp extends Operator {
         return targetProductSelection;
     }
 
+    private static IntSet runObjectsSelectionOp(Product sourceProduct, float percentagePixels) {
+        Map<String, Object> parameters = new HashMap<>();
+        Map<String, Product> sourceProducts = new HashMap<>();
+        sourceProducts.put("sourceProduct", sourceProduct);
+        ObjectsSelectionOp objSelOp = (ObjectsSelectionOp) GPF.getDefaultInstance().createOperator("ObjectsSelectionOp", parameters, sourceProducts, null);
+        objSelOp.getTargetProduct();
+
+        OperatorExecutor executor = OperatorExecutor.create(objSelOp);
+        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+
+        Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics = objSelOp.getStatistics();
+        IntSet validRegions = new IntOpenHashSet();
+        ObjectIterator<Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic>> it = statistics.int2ObjectEntrySet().iterator();
+        while (it.hasNext()) {
+            Int2ObjectMap.Entry<ObjectsSelectionOp.PixelStatistic> entry = it.next();
+            ObjectsSelectionOp.PixelStatistic value = entry.getValue();
+            float percent = ((float)value.getPixelsInRange()/(float)value.getTotalNumberPixels()) * 100;
+            if (percent >= percentagePixels) {
+                validRegions.add(entry.getIntKey());
+            }
+        }
+        return validRegions;
+    }
+
     private static Product generateBandsExtractor(Product sourceProduct, String[] sourceBandNames) {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Generate bands extractor for source product '" + sourceProduct.getName()+"'");
+            logger.log(Level.FINE, "Extract "+sourceBandNames.length+" bands for source product '" + sourceProduct.getName()+"'");
         }
 
         Product targetProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames);
@@ -222,7 +250,7 @@ public class ForestCoverChangeOp extends Operator {
     private static Product resampleAllBands(Product sourceProduct) {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Resample bands for source product '" + sourceProduct.getName()+"'");
+            logger.log(Level.FINE, "Resample the bands for source product '" + sourceProduct.getName()+"'");
         }
 
         Map<String, Object> parameters = new HashMap<>();

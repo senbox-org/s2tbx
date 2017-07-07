@@ -66,6 +66,6 @@ public class TileSegmenterMetadata {
     }
 
     public boolean canRunSecondPartialSegmentation() {
-        return this.isFusion && (this.accumulatedMemory > Runtime.getRuntime().freeMemory());
+        return this.isFusion;// && (this.accumulatedMemory > (0.5f * Runtime.getRuntime().freeMemory()));
     }
 }

@@ -4,8 +4,10 @@ import com.bc.ceres.core.ProgressMonitor;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.jai.JAI;
@@ -50,6 +52,7 @@ public class ObjectsSelectionOp extends Operator {
 
     private Product landCoverProduct;
     private Int2ObjectMap<PixelStatistic> statistics;
+    private Set<String> processedTiles;
 
     public ObjectsSelectionOp() {
     }
@@ -68,6 +71,8 @@ public class ObjectsSelectionOp extends Operator {
         this.targetProduct.setPreferredTileSize(tileSize);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
+
+        this.processedTiles = new HashSet<String>();
     }
 
     @Override
@@ -77,6 +82,13 @@ public class ObjectsSelectionOp extends Operator {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Compute object selection for tile region: bounds [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
+        }
+
+        String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
+        synchronized (this.processedTiles) {
+            if (!this.processedTiles.add(key)) {
+                throw new OperatorException("The tile region [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"] has already been computed.");
+            }
         }
 
         Band segmentationBand = this.sourceProduct.getBandAt(0);

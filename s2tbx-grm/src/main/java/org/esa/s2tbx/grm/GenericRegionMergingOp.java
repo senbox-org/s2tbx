@@ -2,7 +2,9 @@ package org.esa.s2tbx.grm;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.grm.segmentation.AbstractSegmenter;
+import org.esa.s2tbx.grm.segmentation.BaatzSchapeNode;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
+import org.esa.s2tbx.grm.segmentation.Graph;
 import org.esa.s2tbx.grm.segmentation.tiles.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -17,6 +19,7 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
+import org.esa.snap.utils.ObjectMemory;
 
 import javax.media.jai.JAI;
 import java.awt.*;
