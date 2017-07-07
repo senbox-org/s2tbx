@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author Jean Coravu
  */
-class TileBorderPixelsHelper extends AbstractTileGraphNodesHelper<Int2ObjectMap<List<Node>>> implements NodeBorderCellsCallback {
+class TileBorderPixelsHelper extends AbstractTileGraphNodesHelper<Int2ObjectMap<List<Node>>> {
     private final Int2ObjectMap<List<Node>> borderPixelMap;
     private final int rowMin;
     private final int rowMax;
@@ -72,28 +72,7 @@ class TileBorderPixelsHelper extends AbstractTileGraphNodesHelper<Int2ObjectMap<
                     previousMoveId = currentMoveId;
                 }
             }
-
-            //TODO Jean old code
-            //AbstractSegmenter.generateBorderCells(node, this.imageWidth, this);
         }
-    }
-
-    @Override
-    public boolean addBorderCellId(Node analyzedNode, int borderCellId) {
-//        int rowPixel = borderCellId / this.imageWidth;
-//        int columnPixel = borderCellId % this.imageWidth;
-//        if (this.rowTileIndex > 0 && (rowPixel == this.tile.getImageTopY() || rowPixel == rowMin)) {
-//            addNode(analyzedNode, borderCellId);
-//        } else if (this.columnTileIndex < this.tileCountX - 1 && (columnPixel == this.tile.getImageRightX() || columnPixel == columnMax)) {
-//            addNode(analyzedNode, borderCellId);
-//        } else if (this.rowTileIndex < this.tileCountY - 1 && (rowPixel == this.tile.getImageBottomY() || rowPixel == rowMax)) {
-//            addNode(analyzedNode, borderCellId);
-//        } else if (this.columnTileIndex > 0 && (columnPixel == this.tile.getImageLeftX() || columnPixel == columnMin)) {
-//            addNode(analyzedNode, borderCellId);
-//        }
-//        return true;
-
-        return false;
     }
 
     private boolean canAddBorderCell(int borderCellId) {
@@ -130,17 +109,6 @@ class TileBorderPixelsHelper extends AbstractTileGraphNodesHelper<Int2ObjectMap<
                 if (index >= nodeCount) {
                     nodes.add(analyzedNode);
                 }
-
-//                boolean found = false;
-//                int nodeCount = nodes.size();
-//                for (int i=0; i<nodeCount && !found; i++) {
-//                    if (nodes.get(i) == analyzedNode) {
-//                        found = true;
-//                    }
-//                }
-//                if (!found) {
-//                    nodes.add(analyzedNode);
-//                }
             }
         }
     }

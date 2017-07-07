@@ -47,6 +47,12 @@ public abstract class AbstractSegmenter {
         this.imageHeight = imageHeight;
     }
 
+    public final Band buildBandData(String bandName) {
+        Band targetBand = new Band(bandName, ProductData.TYPE_INT32, this.imageWidth, this.imageHeight);
+        fillBandData(targetBand);
+        return targetBand;
+    }
+
     public final void fillBandData(Band targetBand) {
         if (targetBand.getRasterWidth() != this.imageWidth) {
             throw new IllegalArgumentException("Different band width.");
@@ -56,7 +62,7 @@ public abstract class AbstractSegmenter {
         }
         int widthCount = this.imageWidth + 2;
         int heightCount = this.imageHeight + 2;
-        int[][] marker = buildMarkerMatrix();
+        int[][] marker = buildMarkerMatrix(widthCount, heightCount);
 
         int dataType = targetBand.getDataType();
         ProductData data = targetBand.createCompatibleRasterData();
@@ -237,24 +243,64 @@ public abstract class AbstractSegmenter {
         }
     }
 
-    private int[][] buildMarkerMatrix() {
-        int widthCount = this.imageWidth + 2;
-        int heightCount = this.imageHeight + 2;
+    private int[][] buildMarkerMatrix(int widthCount, int heightCount) {
         int[][] mask = new int[heightCount][widthCount];
         int[][] marker = new int[heightCount][widthCount];
 
+//        int nodeCount = this.graph.getNodeCount();
+//        for (int i = 0; i < nodeCount; i++) {
+//            Node node = this.graph.getNodeAt(i);
+//            IntSet borderCells = generateBorderCells(node, this.imageWidth);
+//            IntIterator itCells = borderCells.iterator();
+//            while (itCells.hasNext()) {
+//                int gridId = itCells.nextInt();
+//                int gridX = gridId % this.imageWidth;
+//                int gridY = gridId / this.imageWidth;
+//                mask[gridY + 1][gridX + 1] = i + 1;
+//            }
+//        }
+
         int nodeCount = this.graph.getNodeCount();
+        IntSet borderCells = new IntOpenHashSet();
         for (int i = 0; i < nodeCount; i++) {
             Node node = this.graph.getNodeAt(i);
-            IntSet borderCells = generateBorderCells(node, this.imageWidth);
-            IntIterator itCells = borderCells.iterator();
-            while (itCells.hasNext()) {
-                int gridId = itCells.nextInt();
-                int gridX = gridId % this.imageWidth;
-                int gridY = gridId / this.imageWidth;
+            borderCells.clear();
+
+            // add the first pixel to the border list
+            if (borderCells.add(node.getId())) {
+                int gridX = node.getId() % this.imageWidth;
+                int gridY = node.getId() / this.imageWidth;
                 mask[gridY + 1][gridX + 1] = i + 1;
             }
+
+            Contour contour = node.getContour();
+            if (contour.hasBorderSize()) {
+                // initialize the first move at prev
+                int previousMoveId = contour.getMove(0);
+
+                // declare the current pixel index
+                int currentCellId = node.getId();
+
+                // explore the contour
+                int contourSize = contour.computeContourBorderSize();
+                for (int moveIndex = 1; moveIndex < contourSize; moveIndex++) {
+                    int currentMoveId = contour.getMove(moveIndex);
+
+                    int nextCellId = Contour.computeNextCellId(previousMoveId, currentMoveId, currentCellId, this.imageWidth);
+                    if (nextCellId != currentCellId) {
+                        currentCellId = nextCellId;
+                        if (borderCells.add(currentCellId)) {
+                            int gridX = currentCellId % this.imageWidth;
+                            int gridY = currentCellId / this.imageWidth;
+                            mask[gridY + 1][gridX + 1] = i + 1;
+                        }
+                    }
+
+                    previousMoveId = currentMoveId;
+                }
+            }
         }
+
         // fill the first and the last rows (the top and the bottom rows) in the mask matrix
         for (int x = 0; x < widthCount; x++) {
             mask[0][x] = nodeCount + 1;
@@ -424,35 +470,11 @@ public abstract class AbstractSegmenter {
         return new BoundingBox(minimumLeftUpperX, minimumLeftUpperY, width, height);
     }
 
-    private static class NodeBorderCellsCallbackImpl implements NodeBorderCellsCallback {
-        private final IntSet borderCells;
-
-        NodeBorderCellsCallbackImpl() {
-            this.borderCells = new IntOpenHashSet();
-        }
-
-        @Override
-        public boolean addBorderCellId(Node analyzedNode, int borderCellId) {
-            this.borderCells.add(borderCellId);
-            return true;
-        }
-
-        public IntSet getBorderCells() {
-            return borderCells;
-        }
-    }
-
     public static IntSet generateBorderCells(Node node, int width) {
-        NodeBorderCellsCallbackImpl nodeBorderCellsCallback = new NodeBorderCellsCallbackImpl();
-        generateBorderCells(node, width, nodeBorderCellsCallback);
-        return nodeBorderCellsCallback.getBorderCells();
-    }
+        IntSet borderCells = new IntOpenHashSet();
 
-    public static void generateBorderCells(Node node, int width, NodeBorderCellsCallback nodeBorderCellsCallback) {
         // add the first pixel to the border list
-        if (!nodeBorderCellsCallback.addBorderCellId(node, node.getId())) {
-            return;
-        }
+        borderCells.add(node.getId());
 
         Contour contour = node.getContour();
         if (contour.hasBorderSize()) {
@@ -470,102 +492,14 @@ public abstract class AbstractSegmenter {
                 int nextCellId = Contour.computeNextCellId(previousMoveId, currentMoveId, currentCellId, width);
                 if (nextCellId != currentCellId) {
                     currentCellId = nextCellId;
-                    if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-                        return;
-                    }
+                    borderCells.add(currentCellId);
                 }
 
                 previousMoveId = currentMoveId;
             }
         }
+        return borderCells;
     }
-
-//    public static void generateBorderCells(Node node, int width, NodeBorderCellsCallback nodeBorderCellsCallback) {
-//        // add the first pixel to the border list
-//        if (!nodeBorderCellsCallback.addBorderCellId(node, node.getId())) {
-//            return;
-//        }
-//
-//        Contour contour = node.getContour();
-//        if (contour.size() > 8) {
-//            // initialize the first move at prev
-//            int previousMoveId = contour.getMove(0);
-//
-//            // declare the current pixel index
-//            int currentCellId = node.getId();
-//
-//            // explore the contour
-//            int contourSize = contour.size() / 2;
-//            for (int contourIndex = 1; contourIndex < contourSize; contourIndex++) {
-//                int currentMoveId = contour.getMove(contourIndex);
-//                assert (currentMoveId >= 0 && currentMoveId <= 3);
-//
-//                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
-//                    // impossible case is previous index = 2 (bottom)
-//                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
-//
-//                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-//                        currentCellId -= width; // go to the top
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
-//                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-//                        currentCellId = currentCellId - width + 1; // go to the top right
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
-//                    }
-//                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
-//                    // impossible case is previous index = 3 (left)
-//                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
-//
-//                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-//                        currentCellId++; // go to the right
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
-//                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-//                        currentCellId = currentCellId + width + 1; // go to the bottom right
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
-//                    }
-//                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
-//                    // impossible case is previous index = 0 (top)
-//                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
-//
-//                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-//                        currentCellId += width;
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
-//                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-//                        currentCellId = currentCellId + width - 1; // go to the bottom left
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
-//                    }
-//                } else { // current index = 3 (left)
-//                    // impossible case is previous index = 1 (right)
-//                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
-//
-//                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-//                        currentCellId = currentCellId - width - 1;  // go to the top left
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
-//                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-//                        currentCellId--; // go the to left
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
-//                    }
-//                }
-//
-//                previousMoveId = currentMoveId;
-//            }
-//        }
-//    }
 
     public static void generateEightNeighborhood(int[] neighborhood, int id, int width, int height) {
         int x = id % width;

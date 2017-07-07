@@ -269,7 +269,7 @@ public class GenericRegionMergingOp extends Operator {
             ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
             Tile[] sourceTiles = getSourceTiles(currentTile.getRegion());
             try {
-                this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
+                this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             }
@@ -331,10 +331,9 @@ public class GenericRegionMergingOp extends Operator {
         long startTime = System.currentTimeMillis();
         AbstractTileSegmenter.logStartSegmentation(startTime, tileSegmenter);
 
-        AbstractSegmenter segmenter = tileSegmenter.runSegmentationUsingThreads(sourceProduct, sourceBandNames);
+        AbstractSegmenter segmenter = tileSegmenter.runSegmentationInParallel(sourceProduct, sourceBandNames);
 
-        Band productTargetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        segmenter.fillBandData(productTargetBand);
+        Band productTargetBand = segmenter.buildBandData("band_1");
         productTargetBand.getSourceImage();
         targetProduct.addBand(productTargetBand);
 

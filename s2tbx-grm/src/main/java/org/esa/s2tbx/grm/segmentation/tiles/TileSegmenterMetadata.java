@@ -1,7 +1,5 @@
 package org.esa.s2tbx.grm.segmentation.tiles;
 
-import org.esa.s2tbx.grm.segmentation.BoundingBox;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +8,7 @@ import java.util.Map;
  */
 public class TileSegmenterMetadata {
     private final long totalMemory;
-    private final Map<String, BoundingBox> tilesMap;
+    private final Map<String, ProcessingTile> tilesMap;
 
     private long accumulatedMemory;
     private boolean isFusion;
@@ -18,7 +16,7 @@ public class TileSegmenterMetadata {
     private int computedTileCountY;
 
     public TileSegmenterMetadata() {
-        this.tilesMap = new HashMap<String, BoundingBox>();
+        this.tilesMap = new HashMap<String, ProcessingTile>();
         this.computedTileCountX = 0;
         this.computedTileCountY = 0;
 
@@ -32,9 +30,9 @@ public class TileSegmenterMetadata {
         this.isFusion = false;
     }
 
-    public BoundingBox addTile(int rowIndex, int columnIndex, int leftX, int topY, int width, int height) {
+    public ProcessingTile addTile(int rowIndex, int columnIndex, ProcessingTile tileToAdd) {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
-        BoundingBox oldValue = this.tilesMap.put(key, new BoundingBox(leftX, topY, width, height));
+        ProcessingTile oldValue = this.tilesMap.put(key, tileToAdd);
 
         this.computedTileCountX = Math.max(this.computedTileCountX, columnIndex+1);
         this.computedTileCountY = Math.max(this.computedTileCountY, rowIndex+1);
@@ -42,7 +40,7 @@ public class TileSegmenterMetadata {
         return oldValue;
     }
 
-    public BoundingBox getTileAt(int rowIndex, int columnIndex) {
+    public ProcessingTile getTileAt(int rowIndex, int columnIndex) {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
         return this.tilesMap.get(key);
     }

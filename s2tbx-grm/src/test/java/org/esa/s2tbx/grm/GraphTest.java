@@ -67,7 +67,7 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapUsingThreads(this.threadCount, this.threadPool, tile, 0, 0, tileCountX, tileCountY, imageWidth);
+        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapInParallel(this.threadCount, this.threadPool, tile, 0, 0, tileCountX, tileCountY, imageWidth);
 
         assertNotNull(borderPixelMap);
         assertEquals(2, borderPixelMap.size());
@@ -89,7 +89,7 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapUsingThreads(this.threadCount, this.threadPool, tile, 0, 0, tileCountX, tileCountY, imageWidth);
+        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapInParallel(this.threadCount, this.threadPool, tile, 0, 0, tileCountX, tileCountY, imageWidth);
 
         assertNotNull(borderPixelMap);
         assertEquals(2, borderPixelMap.size());
@@ -113,7 +113,7 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        graph.removeUnstableSegments(this.threadCount, this.threadPool, tile, imageWidth);
+        graph.removeUnstableSegmentsInParallel(this.threadCount, this.threadPool, tile, imageWidth);
 
         assertEquals(2, graph.getNodeCount());
     }
@@ -132,7 +132,7 @@ public class GraphTest {
 
         ProcessingTile tile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, tileMargin, imageWidth, imageHeight);
 
-        List<Node> nodesToIterate = graph.findUselessNodes(this.threadCount, this.threadPool, tile, imageWidth);
+        List<Node> nodesToIterate = graph.findUselessNodesInParallel(this.threadCount, this.threadPool, tile, imageWidth);
         assertNotNull(nodesToIterate);
         assertEquals(2, nodesToIterate.size());
     }

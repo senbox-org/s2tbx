@@ -32,7 +32,7 @@ public class TileFirstSegmentationHelper extends AbstractImageTilesHelper {
     protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IllegalAccessException, IOException, InterruptedException {
         ProcessingTile currentTile = this.tileSegmenter.buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
         Tile[] sourceTiles = buildSourceTiles(currentTile.getRegion());
-        this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
+        this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
     }
 
     private Tile[] buildSourceTiles(BoundingBox tileRegion) {

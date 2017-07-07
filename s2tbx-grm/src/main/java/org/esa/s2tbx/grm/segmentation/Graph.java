@@ -123,7 +123,7 @@ public class Graph {
 //        return result;
     }
 
-    public Int2ObjectMap<List<Node>> buildBorderPixelMapUsingThreads(int threadCount, Executor threadPool, ProcessingTile tile, int rowTileIndex,
+    public Int2ObjectMap<List<Node>> buildBorderPixelMapInParallel(int threadCount, Executor threadPool, ProcessingTile tile, int rowTileIndex,
                                                                      int columnTileIndex, int tileCountX, int tileCountY, int imageWidth)
                                                                      throws InterruptedException {
 
@@ -210,7 +210,7 @@ public class Graph {
         removeExpiredNodes();
     }
 
-    public void removeUnstableSegments(int threadCount, Executor threadPool, ProcessingTile tile, int imageWidth) throws InterruptedException {
+    public void removeUnstableSegmentsInParallel(int threadCount, Executor threadPool, ProcessingTile tile, int imageWidth) throws InterruptedException {
         TileRemoveUnstableNodesHelper helper = new TileRemoveUnstableNodesHelper(this, tile, imageWidth);
         helper.processInParallel(threadCount, threadPool);
 
@@ -274,7 +274,7 @@ public class Graph {
         }
     }
 
-    public List<Node> findUselessNodes(int threadCount, Executor threadPool, ProcessingTile tile, int imageWidth) throws InterruptedException {
+    public List<Node> findUselessNodesInParallel(int threadCount, Executor threadPool, ProcessingTile tile, int imageWidth) throws InterruptedException {
         TileUselessNodesHelper helper = new TileUselessNodesHelper(this, tile, imageWidth);
         return helper.processInParallel(threadCount, threadPool);
 

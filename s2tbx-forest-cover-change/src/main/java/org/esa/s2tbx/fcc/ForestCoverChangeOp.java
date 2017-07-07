@@ -141,6 +141,7 @@ public class ForestCoverChangeOp extends Operator {
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Start running union mask");
             }
+
             runUnionMasksOp(currentSegmentationTrimmingRegionKeys, currentProductColorFill, previousSegmentationTrimmingRegionKeys, previousProductColorFill, this.targetProduct);
 
             if (logger.isLoggable(Level.FINE)) {
@@ -160,14 +161,14 @@ public class ForestCoverChangeOp extends Operator {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start generate color fill for current product");
+            logger.log(Level.FINE, "Start generate color fill for source product '" + sourceProduct.getName()+"'");
         }
 
         Product productColorFill = generateColorFill(product);
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start trimming for current product");
+            logger.log(Level.FINE, "Start trimming for source product '" + sourceProduct.getName()+"'");
         }
 
         IntSet segmentationTrimmingRegionKeys = TrimmingHelper.doTrimming(productColorFill, product, trimmingSourceProductBandIndices);
