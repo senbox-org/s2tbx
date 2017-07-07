@@ -7,6 +7,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +67,15 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelCom
                     }
                 }
             }
+        }
+    }
+
+    public void doClose(){
+        int regionsCount = this.validRegionsMap.size();
+        for (int index = 0; index<regionsCount; index++) {
+            AveragePixelsSourceBands node = this.validRegionsMap.get(index);
+            WeakReference<AveragePixelsSourceBands> reference = new WeakReference<>(node);
+            reference.clear();
         }
     }
 

@@ -104,7 +104,10 @@ public class TrimmingHelper {
         Dimension tileSize = JAI.getDefaultTileSize();
         TrimmingRegionComputingHelper helper = new TrimmingRegionComputingHelper(segmentationSourceProduct, sourceProduct, sourceBandIndices, tileSize.width, tileSize.height);
         Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap = helper.computeRegionsInParallel(threadCount, threadPool);
-        return computeStatisticsPerRegion(validRegionsMap);
+        Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion = computeStatisticsPerRegion(validRegionsMap);
+        helper.doClose();
+        System.gc();
+        return computeStatisticsPerRegion;
     }
 
     private static Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion(Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap) {
