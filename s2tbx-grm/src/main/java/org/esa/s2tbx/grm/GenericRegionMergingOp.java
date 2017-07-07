@@ -269,7 +269,7 @@ public class GenericRegionMergingOp extends Operator {
             ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
             Tile[] sourceTiles = getSourceTiles(currentTile.getRegion());
             try {
-                this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
+                this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             }

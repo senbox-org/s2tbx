@@ -308,6 +308,7 @@ public abstract class AbstractTileSegmenter {
                 this.tileSegmenterMetadata.setFusion(true);
             }
         }
+        graph.doClose();
     }
 
     public final int getIterationsForEachFirstSegmentation() {
@@ -432,6 +433,7 @@ public abstract class AbstractTileSegmenter {
         }
 
         writeGraph(graph, currentTile.getNodeFileName(), currentTile.getEdgeFileName());
+        graph.doClose();
     }
 
     private void runSecondPartialSegmentation(int iteration) throws IllegalAccessException, IOException, InterruptedException {
@@ -488,6 +490,7 @@ public abstract class AbstractTileSegmenter {
         }
 
         writeStabilityMargin(borderNodes, currentTile.getNodeMarginFileName(), currentTile.getEdgeMarginFileName());
+        graph.doClose();
     }
 
     private AbstractSegmenter mergeGraphsAndAchieveSegmentation(int numberOfRemainingIterations) throws IOException, InterruptedException {
