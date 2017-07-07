@@ -335,6 +335,7 @@ public class GenericRegionMergingOp extends Operator {
 
         Band productTargetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         segmenter.fillBandData(productTargetBand);
+        segmenter.getGraph().doClose();
         productTargetBand.getSourceImage();
         targetProduct.addBand(productTargetBand);
 
