@@ -206,7 +206,7 @@ public class GraphTest {
 
         sixthNode.addEdge(thirdNode, 1);
 
-        Graph graph = new Graph();
+        Graph graph = new Graph(6);
         graph.addNode(firstNode);
         graph.addNode(secondNode);
         graph.addNode(thirdNode);

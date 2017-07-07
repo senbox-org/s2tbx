@@ -7,7 +7,6 @@ import java.util.Map;
  * @author Jean Coravu
  */
 public class TileSegmenterMetadata {
-    private final long totalMemory;
     private final Map<String, ProcessingTile> tilesMap;
 
     private long accumulatedMemory;
@@ -19,8 +18,6 @@ public class TileSegmenterMetadata {
         this.tilesMap = new HashMap<String, ProcessingTile>();
         this.computedTileCountX = 0;
         this.computedTileCountY = 0;
-
-        this.totalMemory = Runtime.getRuntime().totalMemory();
 
         resetValues();
     }
@@ -46,34 +43,29 @@ public class TileSegmenterMetadata {
     }
 
     public int getComputedTileCountX() {
-        return computedTileCountX;
+        return this.computedTileCountX;
     }
 
     public int getComputedTileCountY() {
-        return computedTileCountY;
+        return this.computedTileCountY;
     }
 
-    public void addAccumulatedMemory(long accumulatedMemoryToAdd) {
+    public void addAccumulatedMemory(long accumulatedMemoryToAdd, boolean isFusion) {
         this.accumulatedMemory += accumulatedMemoryToAdd;
+        if (isFusion) {
+            this.isFusion = isFusion;
+        }
     }
 
     public long getAccumulatedMemory() {
-        return accumulatedMemory;
-    }
-
-    public void setFusion(boolean fusion) {
-        isFusion = fusion;
+        return this.accumulatedMemory;
     }
 
     public boolean isFusion() {
-        return isFusion;
-    }
-
-    public long getTotalMemory() {
-        return totalMemory;
+        return this.isFusion;
     }
 
     public boolean canRunSecondPartialSegmentation() {
-        return (this.accumulatedMemory > this.totalMemory) && this.isFusion;
+        return this.isFusion && (this.accumulatedMemory > Runtime.getRuntime().freeMemory());
     }
 }

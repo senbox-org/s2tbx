@@ -158,7 +158,9 @@ public abstract class Node {
     }
 
     public void resetCostUpdatedFlagToAllEdges() {
-        for (Edge edge : this.edges) {
+        int edgeCount = this.edges.size();
+        for (int i = 0; i < edgeCount; i++) {
+            Edge edge = this.edges.get(i);
             edge.setCostUpdated(false);
             Edge toNeigh = edge.getTarget().findEdge(this);
             toNeigh.setCostUpdated(false);
@@ -201,7 +203,8 @@ public abstract class Node {
     }
 
     public Edge findEdge(Node target) {
-        for (int i = 0; i < this.edges.size(); i++) {
+        int edgeCount = this.edges.size();
+        for (int i = 0; i < edgeCount; i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
                 return edge;

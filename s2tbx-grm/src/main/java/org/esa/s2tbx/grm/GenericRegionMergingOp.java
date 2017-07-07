@@ -134,6 +134,7 @@ public class GenericRegionMergingOp extends Operator {
 
         int sceneWidth = this.targetProduct.getSceneRasterWidth();
         int sceneHeight = this.targetProduct.getSceneRasterHeight();
+        Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
         Dimension tileSize = this.targetProduct.getPreferredTileSize();
 
         int tileCountX = MathUtils.ceilInt(sceneWidth / (double) tileSize.width);
@@ -142,7 +143,7 @@ public class GenericRegionMergingOp extends Operator {
 
         try {
             this.tileSegmenter = buildTileSegmenter(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
-                                                    threshold, spectralWeight, shapeWeight, targetProduct);
+                                                    threshold, spectralWeight, shapeWeight, imageSize, tileSize);
         } catch (IOException e) {
             throw new OperatorException(e);
         }
@@ -269,7 +270,7 @@ public class GenericRegionMergingOp extends Operator {
             ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
             Tile[] sourceTiles = getSourceTiles(currentTile.getRegion());
             try {
-                this.tileSegmenter.runOneTileFirstSegmentation(sourceTiles, currentTile);
+                this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             }
@@ -285,7 +286,7 @@ public class GenericRegionMergingOp extends Operator {
 
     private static AbstractTileSegmenter buildTileSegmenter(String mergingCostCriterion, String regionMergingCriterion,
                                                             int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
-                                                            float shapeWeight, Product targetProduct)
+                                                            float shapeWeight, Dimension imageSize, Dimension tileSize)
                                                             throws IOException {
 
         AbstractTileSegmenter tileSegmenter = null;
@@ -295,8 +296,6 @@ public class GenericRegionMergingOp extends Operator {
         } else if (GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(regionMergingCriterion)) {
             fastSegmentation = false;
         }
-        Dimension imageSize = new Dimension(targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
-        Dimension tileSize = targetProduct.getPreferredTileSize();
         if (GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
             tileSegmenter = new SpringTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
         } else if (GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
@@ -317,27 +316,30 @@ public class GenericRegionMergingOp extends Operator {
         Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
         logger.setLevel(Level.FINE);
 
-        int sceneWidth = sourceProduct.getSceneRasterWidth();
-        int sceneHeight = sourceProduct.getSceneRasterHeight();
+        Dimension imageSize = new Dimension(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
         Dimension tileSize = JAI.getDefaultTileSize();
 
-        Product targetProduct = new Product(sourceProduct.getName() + "_grm", sourceProduct.getProductType(), sceneWidth, sceneHeight);
-        targetProduct.setPreferredTileSize(tileSize);
-        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
-
         AbstractTileSegmenter tileSegmenter = buildTileSegmenter(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
-                                                                 threshold, spectralWeight, shapeWeight, targetProduct);
+                                                                 threshold, spectralWeight, shapeWeight, imageSize, tileSize);
 
         long startTime = System.currentTimeMillis();
         AbstractTileSegmenter.logStartSegmentation(startTime, tileSegmenter);
 
         AbstractSegmenter segmenter = tileSegmenter.runSegmentationInParallel(sourceProduct, sourceBandNames);
-
         Band productTargetBand = segmenter.buildBandData("band_1");
-        productTargetBand.getSourceImage();
-        targetProduct.addBand(productTargetBand);
 
         AbstractTileSegmenter.logFinishSegmentation(startTime, tileSegmenter, segmenter);
+
+        segmenter.getGraph().doClose();
+        segmenter = null;
+        tileSegmenter = null;
+        System.gc();
+
+        Product targetProduct = new Product(sourceProduct.getName() + "_grm", sourceProduct.getProductType(), productTargetBand.getRasterWidth(), productTargetBand.getRasterHeight());
+        targetProduct.setPreferredTileSize(tileSize);
+        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+        productTargetBand.getSourceImage();
+        targetProduct.addBand(productTargetBand);
 
         return targetProduct;
     }

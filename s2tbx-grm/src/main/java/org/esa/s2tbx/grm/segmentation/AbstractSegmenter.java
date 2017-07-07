@@ -207,7 +207,7 @@ public abstract class AbstractSegmenter {
 
         int numberOfComponentsPerPixel = sourceTiles.length;
         int numberOfNodes = this.imageWidth * this.imageHeight;
-        this.graph = new Graph();
+        this.graph = new Graph(numberOfNodes);
 
         for (int i = 0; i < numberOfNodes; i++) {
             int upperLeftX = i % this.imageWidth;
