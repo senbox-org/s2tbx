@@ -247,19 +247,6 @@ public abstract class AbstractSegmenter {
         int[][] mask = new int[heightCount][widthCount];
         int[][] marker = new int[heightCount][widthCount];
 
-//        int nodeCount = this.graph.getNodeCount();
-//        for (int i = 0; i < nodeCount; i++) {
-//            Node node = this.graph.getNodeAt(i);
-//            IntSet borderCells = generateBorderCells(node, this.imageWidth);
-//            IntIterator itCells = borderCells.iterator();
-//            while (itCells.hasNext()) {
-//                int gridId = itCells.nextInt();
-//                int gridX = gridId % this.imageWidth;
-//                int gridY = gridId / this.imageWidth;
-//                mask[gridY + 1][gridX + 1] = i + 1;
-//            }
-//        }
-
         int nodeCount = this.graph.getNodeCount();
         IntSet borderCells = new IntOpenHashSet();
         for (int i = 0; i < nodeCount; i++) {

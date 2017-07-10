@@ -31,10 +31,10 @@ public class TrimmingHelper {
     private TrimmingHelper() {
     }
 
-    public static IntSet doTrimming(Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices)
+    public static IntSet doTrimming(int threadCount, Executor threadPool, Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices)
                                     throws InterruptedException, IOException, IllegalAccessException {
 
-        Int2ObjectMap<PixelSourceBands> validRegionStatistics = computeTrimmingStatistics(segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
+        Int2ObjectMap<PixelSourceBands> validRegionStatistics = computeTrimmingStatistics(threadCount, threadPool, segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
 
         int initialValidRegionCount = validRegionStatistics.size();
 
@@ -85,7 +85,7 @@ public class TrimmingHelper {
         return new IntOpenHashSet(validRegionStatistics.keySet());
     }
 
-    private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices)
+    private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(int threadCount, Executor threadPool, Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices)
                                                                              throws IllegalAccessException, InterruptedException, IOException {
 
 //        Map<String, Object> parameters = new HashMap<>();
@@ -101,14 +101,9 @@ public class TrimmingHelper {
 //
 //        return computeStatisticsPerRegion(trimRegOp.getValidRegionsMap());
 
-        int imageWidth = segmentationSourceProduct.getSceneRasterWidth();
-        int imageHeight = segmentationSourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
-        int threadCount = Runtime.getRuntime().availableProcessors();
-        Executor threadPool = Executors.newFixedThreadPool(threadCount);
-
-        TrimmingRegionComputingHelper helper = new TrimmingRegionComputingHelper(segmentationSourceProduct, sourceProduct, sourceBandIndices, imageWidth, imageHeight, tileSize.width, tileSize.height);
-        Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap = helper.computeRegionsUsingThreads(threadCount, threadPool);
+        TrimmingRegionComputingHelper helper = new TrimmingRegionComputingHelper(segmentationSourceProduct, sourceProduct, sourceBandIndices, tileSize.width, tileSize.height);
+        Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap = helper.computeRegionsInParallel(threadCount, threadPool);
         return computeStatisticsPerRegion(validRegionsMap);
     }
 

@@ -24,8 +24,8 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesHelper {
 
     private final Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap;
 
-    TrimmingRegionComputingHelper(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int imageWidth, int imageHeight, int tileWidth, int tileHeight) {
-        super(imageWidth, imageHeight, tileWidth, tileHeight);
+    TrimmingRegionComputingHelper(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
+        super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.segmentationSourceProduct = segmentationSourceProduct;
         this.sourceProduct = sourceProduct;
@@ -66,7 +66,7 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesHelper {
         }
     }
 
-    Int2ObjectMap<AveragePixelsSourceBands> computeRegionsUsingThreads(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
+    Int2ObjectMap<AveragePixelsSourceBands> computeRegionsInParallel(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
         super.executeInParallel(threadCount, threadPool);
 
         return this.validRegionsMap;
