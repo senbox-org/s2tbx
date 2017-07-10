@@ -3,6 +3,7 @@ package org.esa.s2tbx.grm.segmentation;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public abstract class Node {
      * Node is identified by the location of the first pixel of the region.
      */
     private int id;
-    private final List<Edge> edges;
+    private final List<SoftReference<Edge>> edges;
     protected final float[] means;
 
     private int area;
@@ -30,7 +31,7 @@ public abstract class Node {
 
     protected Node(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel) {
         this.id = id;
-        this.edges = new ArrayList<Edge>();
+        this.edges = new ArrayList<>();
         this.means = new float[numberOfComponentsPerPixel];
 
         this.contour = new Contour();
@@ -49,7 +50,7 @@ public abstract class Node {
 
     protected Node(int id, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
         this.id = id;
-        this.edges = new ArrayList<Edge>();
+        this.edges = new ArrayList<>();
         this.means = new float[numberOfComponentsPerPixel];
 
         this.contour = contour;
@@ -146,11 +147,11 @@ public abstract class Node {
     }
 
     public void addEdge(Node target, int boundary) {
-        this.edges.add(new Edge(target, boundary));
+        this.edges.add(new SoftReference<>(new Edge(target, boundary)));
     }
 
     public Edge getEdgeAt(int index) {
-        return this.edges.get(index);
+        return this.edges.get(index).get();
     }
 
     public int getEdgeCount() {
@@ -160,7 +161,7 @@ public abstract class Node {
     public void resetCostUpdatedFlagToAllEdges() {
         int edgeCount = this.edges.size();
         for (int i = 0; i < edgeCount; i++) {
-            Edge edge = this.edges.get(i);
+            Edge edge = this.edges.get(i).get();
             edge.setCostUpdated(false);
             Edge toNeigh = edge.getTarget().findEdge(this);
             toNeigh.setCostUpdated(false);
@@ -174,8 +175,8 @@ public abstract class Node {
         if (secondIndex < 0 || secondIndex >= this.edges.size()) {
             throw new IllegalArgumentException("The second index " + secondIndex + " is out of bounds. The maximum index is " + (this.edges.size()-1));
         }
-        Edge auxEdge = this.edges.set(firstIndex, this.edges.get(secondIndex));
-        this.edges.set(secondIndex, auxEdge);
+        Edge auxEdge = this.edges.set(firstIndex, this.edges.get(secondIndex)).get();
+        this.edges.set(secondIndex, new SoftReference<>(auxEdge));
     }
 
     /**
@@ -185,7 +186,7 @@ public abstract class Node {
      */
     public Node checkLMBF(float threshold) {
         if (isValid() && this.edges.size() > 0) {
-            Edge firstEdge = this.edges.get(0);
+            Edge firstEdge = this.edges.get(0).get();
             if (firstEdge.getCost() < threshold) {
                 Node firstEdgeTarget = firstEdge.getTarget();
                 if (firstEdgeTarget.isValid()) {
@@ -205,7 +206,7 @@ public abstract class Node {
     public Edge findEdge(Node target) {
         int edgeCount = this.edges.size();
         for (int i = 0; i < edgeCount; i++) {
-            Edge edge = this.edges.get(i);
+            Edge edge = this.edges.get(i).get();
             if (edge.getTarget() == target) {
                 return edge;
             }
@@ -216,7 +217,7 @@ public abstract class Node {
     public int removeEdge(Node target) {
         int edgeCount = this.edges.size();
         for (int i = 0; i < edgeCount; i++) {
-            Edge edge = this.edges.get(i);
+            Edge edge = this.edges.get(i).get();
             if (edge.getTarget() == target) {
                 this.edges.remove(i);
                 return i;
@@ -228,7 +229,7 @@ public abstract class Node {
     public final void removeEdgeToUnstableNode() {
         int edgeCount = this.edges.size();
         for (int j=0; j<edgeCount; j++) {
-            Edge edge = this.edges.get(j);
+            Edge edge = this.edges.get(j).get();
             Node nodeNeighbor = edge.getTarget();
             int removedEdgeIndex = nodeNeighbor.removeEdge(this);
             assert(removedEdgeIndex >= 0);
@@ -461,6 +462,17 @@ public abstract class Node {
                 }
                 previousMoveId = currentMoveId;
             }
+        }
+    }
+    public void doClose(){
+        int edgeCount  = this.getEdgeCount();
+        for(int index = 0; index<edgeCount; index++){
+            SoftReference<Edge> ref = this.edges.get(index);
+            Edge edge = ref.get();
+            if(edge != null){
+                edge = null;
+            }
+            ref.clear();
         }
     }
 

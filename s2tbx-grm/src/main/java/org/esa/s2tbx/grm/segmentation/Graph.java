@@ -229,6 +229,7 @@ public class Graph {
             SoftReference<Node> ref = this.nodes.get(index);
             Node node = ref.get();
             if (node != null) {
+                node.doClose();
                 node = null;
             }
             ref.clear();
