@@ -488,7 +488,7 @@ public abstract class Node {
 
     private static class ArrayListExtendedNew<ItemType> extends ArrayList<ItemType> {
 
-        ArrayListExtendedNew(int numberOfNodes) {
+        private ArrayListExtendedNew(int numberOfNodes) {
             super(numberOfNodes);
         }
 
