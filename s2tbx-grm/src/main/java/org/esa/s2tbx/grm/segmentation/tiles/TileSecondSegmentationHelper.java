@@ -1,21 +1,13 @@
 package org.esa.s2tbx.grm.segmentation.tiles;
 
-import com.bc.ceres.glevel.MultiLevelImage;
-import org.esa.s2tbx.grm.segmentation.BoundingBox;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.gpf.Tile;
-import org.esa.snap.core.gpf.internal.TileImpl;
-import org.esa.snap.utils.AbstractImageTilesHelper;
+import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 
-import java.awt.Rectangle;
-import java.awt.image.Raster;
 import java.io.IOException;
 
 /**
  * @author Jean Coravu
  */
-public class TileSecondSegmentationHelper extends AbstractImageTilesHelper {
+public class TileSecondSegmentationHelper extends AbstractImageTilesParallelComputing {
     private final AbstractTileSegmenter tileSegmenter;
     private final int iteration;
     private final int numberOfNeighborLayers;

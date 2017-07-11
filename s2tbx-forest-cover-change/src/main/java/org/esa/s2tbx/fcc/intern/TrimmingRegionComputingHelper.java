@@ -4,9 +4,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.utils.AbstractImageTilesHelper;
+import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 
-import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
@@ -15,7 +14,7 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class TrimmingRegionComputingHelper extends AbstractImageTilesHelper {
+public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelComputing {
     private static final Logger logger = Logger.getLogger(TrimmingRegionComputingHelper.class.getName());
 
     private final Product segmentationSourceProduct;

@@ -3,20 +3,17 @@ package org.esa.snap.utils;
 import org.esa.snap.core.util.math.MathUtils;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jean Coravu
  */
-public abstract class AbstractImageTilesHelper extends AbstractMatrixCellsHelper {
+public abstract class AbstractImageTilesParallelComputing extends AbstractMatrixCellsParallelComputing {
     private int imageWidth;
     private int imageHeight;
     private int tileWidth;
     private int tileHeight;
 
-    protected AbstractImageTilesHelper(int imageWidth, int imageHeight, int tileWidth, int tileHeight) {
+    protected AbstractImageTilesParallelComputing(int imageWidth, int imageHeight, int tileWidth, int tileHeight) {
         super(MathUtils.ceilInt(imageWidth / (double) tileWidth), MathUtils.ceilInt(imageHeight / (double) tileHeight));
 
         this.imageWidth = imageWidth;

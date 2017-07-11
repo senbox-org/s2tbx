@@ -2,9 +2,9 @@ package org.esa.s2tbx.grm.segmentation;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.esa.snap.utils.ArrayListExtended;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 /**
  * @author Jean Coravu
@@ -18,7 +18,7 @@ public abstract class Node {
      * Node is identified by the location of the first pixel of the region.
      */
     private int id;
-    private final ArrayListExtendedNew<Edge> edges;
+    private final ArrayListExtended<Edge> edges;
     protected final float[] means;
 
     private int area;
@@ -30,7 +30,7 @@ public abstract class Node {
 
     protected Node(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel) {
         this.id = id;
-        this.edges = new ArrayListExtendedNew<Edge>(0);
+        this.edges = new ArrayListExtended<Edge>(0);
         this.means = new float[numberOfComponentsPerPixel];
 
         this.contour = new Contour();
@@ -49,7 +49,7 @@ public abstract class Node {
 
     protected Node(int id, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
         this.id = id;
-        this.edges = new ArrayListExtendedNew<Edge>(0);
+        this.edges = new ArrayListExtended<Edge>(0);
         this.means = new float[numberOfComponentsPerPixel];
 
         this.contour = contour;
@@ -66,7 +66,7 @@ public abstract class Node {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "@" + this.hashCode() + "[id="+id+"]";
+        return getClass().getSimpleName() + "@" + this.hashCode() + "[id=" + id + "]";
     }
 
     public void initData(int index, float pixel) {
@@ -91,9 +91,9 @@ public abstract class Node {
 
     public void setMerged(boolean merged) {
         if (merged) {
-            this.flags = (byte)(this.flags | MERGED_FLAG);
+            this.flags = (byte) (this.flags | MERGED_FLAG);
         } else {
-            this.flags = (byte)(this.flags & ~MERGED_FLAG);
+            this.flags = (byte) (this.flags & ~MERGED_FLAG);
         }
     }
 
@@ -103,9 +103,9 @@ public abstract class Node {
 
     public void setExpired(boolean expired) {
         if (expired) {
-            this.flags = (byte)(this.flags | EXPIRED_FLAG);
+            this.flags = (byte) (this.flags | EXPIRED_FLAG);
         } else {
-            this.flags = (byte)(this.flags & ~EXPIRED_FLAG);
+            this.flags = (byte) (this.flags & ~EXPIRED_FLAG);
         }
     }
 
@@ -115,9 +115,9 @@ public abstract class Node {
 
     public void setValid(boolean valid) {
         if (valid) {
-            this.flags = (byte)(this.flags | VALID_FLAG);
+            this.flags = (byte) (this.flags | VALID_FLAG);
         } else {
-            this.flags = (byte)(this.flags & ~VALID_FLAG);
+            this.flags = (byte) (this.flags & ~VALID_FLAG);
         }
     }
 
@@ -169,10 +169,10 @@ public abstract class Node {
 
     public void swapEdges(int firstIndex, int secondIndex) {
         if (firstIndex < 0 || firstIndex >= this.edges.size()) {
-            throw new IllegalArgumentException("The first index " + firstIndex + " is out of bounds. The maximum index is " + (this.edges.size()-1));
+            throw new IllegalArgumentException("The first index " + firstIndex + " is out of bounds. The maximum index is " + (this.edges.size() - 1));
         }
         if (secondIndex < 0 || secondIndex >= this.edges.size()) {
-            throw new IllegalArgumentException("The second index " + secondIndex + " is out of bounds. The maximum index is " + (this.edges.size()-1));
+            throw new IllegalArgumentException("The second index " + secondIndex + " is out of bounds. The maximum index is " + (this.edges.size() - 1));
         }
         Edge auxEdge = this.edges.set(firstIndex, this.edges.get(secondIndex));
         this.edges.set(secondIndex, auxEdge);
@@ -180,6 +180,7 @@ public abstract class Node {
 
     /**
      * Check the local mutual best fitting.
+     *
      * @param threshold
      * @return
      */
@@ -229,17 +230,17 @@ public abstract class Node {
 
     public final void removeEdgeToUnstableNode() {
         int edgeCount = this.edges.size();
-        for (int j=0; j<edgeCount; j++) {
+        for (int j = 0; j < edgeCount; j++) {
             Edge edge = this.edges.get(j);
             Node nodeNeighbor = edge.getTarget();
             int removedEdgeIndex = nodeNeighbor.removeEdge(this);
-            assert(removedEdgeIndex >= 0);
+            assert (removedEdgeIndex >= 0);
         }
     }
 
     public void doClose() {
         int edgeCount = this.edges.size();
-        for (int j=0; j<edgeCount; j++) {
+        for (int j = 0; j < edgeCount; j++) {
             Edge edge = this.edges.get(j);
             WeakReference<Edge> reference = new WeakReference<Edge>(edge);
             reference.clear();
@@ -249,7 +250,7 @@ public abstract class Node {
 
     private void updateNeighbors(Node neighborToRemove) {
         // explore the neighbors of 'neighborToRemove'
-        for (int i=0; i<neighborToRemove.getEdgeCount(); i++) {
+        for (int i = 0; i < neighborToRemove.getEdgeCount(); i++) {
             Edge currentEdge = neighborToRemove.getEdgeAt(i);
             // retrieve the edge targeting node 'neighborToRemove'
             Node targetNodeOfCurrentEdge = currentEdge.getTarget();
@@ -330,7 +331,7 @@ public abstract class Node {
 
         // table containing id neighbors
         int[] neighbors = new int[8];
-        for (; ;) {
+        for (; ; ) {
             // compute neighbor' ids
             AbstractSegmenter.generateEightNeighborhood(neighbors, currentNodeId, boxWidth, boxHeight);
 
@@ -485,16 +486,6 @@ public abstract class Node {
 
         return bbY * bbox.getWidth() + bbX;
     }
-
-    private static class ArrayListExtendedNew<ItemType> extends ArrayList<ItemType> {
-
-        private ArrayListExtendedNew(int numberOfNodes) {
-            super(numberOfNodes);
-        }
-
-        void removeItems(int fromIndexInclusive, int toIndexExclusive) {
-            removeRange(fromIndexInclusive, toIndexExclusive);
-        }
-    }
 }
+
 

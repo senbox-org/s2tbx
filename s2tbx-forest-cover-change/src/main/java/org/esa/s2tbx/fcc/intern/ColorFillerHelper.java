@@ -5,7 +5,7 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.ProductUtils;
-import org.esa.snap.utils.AbstractImageTilesHelper;
+import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class ColorFillerHelper extends AbstractImageTilesHelper {
+public class ColorFillerHelper extends AbstractImageTilesParallelComputing {
     private static final Logger logger = Logger.getLogger(ColorFillerHelper.class.getName());
 
     private final Product sourceProduct;

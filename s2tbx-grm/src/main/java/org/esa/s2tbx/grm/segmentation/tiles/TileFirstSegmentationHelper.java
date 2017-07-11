@@ -6,7 +6,7 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.internal.TileImpl;
-import org.esa.snap.utils.AbstractImageTilesHelper;
+import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 
 import java.awt.Rectangle;
 import java.awt.image.Raster;
@@ -15,7 +15,7 @@ import java.io.IOException;
 /**
  * @author Jean Coravu
  */
-public class TileFirstSegmentationHelper extends AbstractImageTilesHelper {
+public class TileFirstSegmentationHelper extends AbstractImageTilesParallelComputing {
     private final AbstractTileSegmenter tileSegmenter;
     private final Product sourceProduct;
     private final String[] sourceBandNames;

@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.utils.AbstractImageTilesHelper;
+import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class UnionMasksHelper extends AbstractImageTilesHelper {
+public class UnionMasksHelper extends AbstractImageTilesParallelComputing {
     private static final Logger logger = Logger.getLogger(UnionMasksHelper.class.getName());
 
     private final ProductData productData;

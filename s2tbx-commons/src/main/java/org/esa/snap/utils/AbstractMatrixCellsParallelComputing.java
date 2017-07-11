@@ -8,21 +8,21 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public abstract class AbstractMatrixCellsHelper {
+public abstract class AbstractMatrixCellsParallelComputing {
     private final int columnCount;
     private final int rowCount;
 
-    private int rowIndex;
-    private int columnIndex;
+    private int currentRowIndex;
+    private int currentColumnIndex;
     private int threadCounter;
     private Exception threadException;
 
-    protected AbstractMatrixCellsHelper(int columnCount, int rowCount) {
+    protected AbstractMatrixCellsParallelComputing(int columnCount, int rowCount) {
         this.columnCount = columnCount;
         this.rowCount = rowCount;
 
-        this.rowIndex = 0;
-        this.columnIndex = 0;
+        this.currentRowIndex = 0;
+        this.currentColumnIndex = 0;
         this.threadCounter = 0;
     }
 
@@ -33,7 +33,7 @@ public abstract class AbstractMatrixCellsHelper {
             MatrixCellRunnable segmentationRunnable = new MatrixCellRunnable(this);
             threadPool.execute(segmentationRunnable);
         }
-        executeSegmentation();
+        execute();
         waitToFinish();
     }
 
@@ -42,45 +42,48 @@ public abstract class AbstractMatrixCellsHelper {
     }
 
     private synchronized void decrementThreadCounter(Exception threadException) {
+        this.threadCounter--;
         if (this.threadException == null) {
             this.threadException = threadException;
         }
-        this.threadCounter--;
         if (this.threadCounter <= 0) {
             notifyAll();
         }
     }
 
     private synchronized void waitToFinish() throws Exception {
-        if (this.threadException != null) {
-            throw this.threadException;
-        }
         if (this.threadCounter > 0) {
             wait();
         }
+        if (this.threadException != null) {
+            throw this.threadException;
+        }
     }
 
-    private void executeSegmentation() throws Exception {
+    private void execute() throws Exception {
         int localRowIndex = -1;
         int localColumnIndex = -1;
         do {
             localRowIndex = -1;
             localColumnIndex = -1;
             synchronized (this) {
-                if (this.rowIndex < this.rowCount) {
-                    if (this.columnIndex < this.columnCount) {
-                        localColumnIndex = this.columnIndex;
-                        localRowIndex = this.rowIndex;
+                if (this.threadException != null) {
+                    return;
+                }
+                if (this.currentRowIndex < this.rowCount) {
+                    if (this.currentColumnIndex < this.columnCount) {
+                        localColumnIndex = this.currentColumnIndex;
+                        localRowIndex = this.currentRowIndex;
                     } else {
-                        this.columnIndex = 0; // reset the column index
-                        localColumnIndex = this.columnIndex;
+                        this.currentColumnIndex = 0; // reset the column index
+                        localColumnIndex = this.currentColumnIndex;
 
-                        this.rowIndex++; // increment the row index
-                        if (this.rowIndex < this.rowCount) {
-                            localRowIndex = this.rowIndex;
+                        this.currentRowIndex++; // increment the row index
+                        if (this.currentRowIndex < this.rowCount) {
+                            localRowIndex = this.currentRowIndex;
                         }
                     }
-                    this.columnIndex++;
+                    this.currentColumnIndex++;
                 }
             }
             if (localRowIndex >= 0 && localColumnIndex >= 0) {
@@ -92,9 +95,9 @@ public abstract class AbstractMatrixCellsHelper {
     private static class MatrixCellRunnable implements Runnable {
         private static final Logger logger = Logger.getLogger(MatrixCellRunnable.class.getName());
 
-        private final AbstractMatrixCellsHelper imageTilesHelper;
+        private final AbstractMatrixCellsParallelComputing imageTilesHelper;
 
-        public MatrixCellRunnable(AbstractMatrixCellsHelper imageTilesHelper) {
+        public MatrixCellRunnable(AbstractMatrixCellsParallelComputing imageTilesHelper) {
             this.imageTilesHelper = imageTilesHelper;
             this.imageTilesHelper.incrementThreadCounter();
         }
@@ -103,7 +106,7 @@ public abstract class AbstractMatrixCellsHelper {
         public void run() {
             Exception threadException = null;
             try {
-                this.imageTilesHelper.executeSegmentation();
+                this.imageTilesHelper.execute();
             } catch (Exception exception) {
                 threadException = exception;
                 logger.log(Level.SEVERE, "Failed to execute the image tiles.", exception);

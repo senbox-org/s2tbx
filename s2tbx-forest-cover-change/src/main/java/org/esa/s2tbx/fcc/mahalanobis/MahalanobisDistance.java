@@ -2,10 +2,9 @@ package org.esa.s2tbx.fcc.mahalanobis;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import org.esa.s2tbx.fcc.intern.AveragePixelsSourceBands;
 import org.esa.s2tbx.fcc.intern.PixelSourceBands;
-import org.esa.snap.core.util.math.MathUtils;
-import org.esa.snap.utils.AbstractMatrixCellsHelper;
+import org.esa.snap.utils.AbstractArrayCellsParallelComputing;
+import org.esa.snap.utils.AbstractMatrixCellsParallelComputing;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -40,12 +39,7 @@ public class MahalanobisDistance {
             return null;
         } else {
             MahalanobisDistanceHelper mahalanobisDistanceHelper = new MahalanobisDistanceHelper(trimmingStatisticsMatrix, inverseMatrix, cumulativeProbability);
-            for (int i=0; i<threadCount; i++) {
-                MahalanobisDistanceRunnable mahalanobisDistanceRunnable = new MahalanobisDistanceRunnable(mahalanobisDistanceHelper);
-                threadPool.execute(mahalanobisDistanceRunnable);
-            }
-            mahalanobisDistanceHelper.computeDistances();
-            Int2ObjectMap<PixelSourceBands> result = mahalanobisDistanceHelper.waitToFinish();
+            Int2ObjectMap<PixelSourceBands> result = mahalanobisDistanceHelper.computeCellsInParallel(threadCount, threadPool);
 
             if (logger.isLoggable(Level.FINE)) {
                 int removedRegionCount = validRegionStatistics.size() - result.size();
@@ -76,7 +70,7 @@ public class MahalanobisDistance {
         return storageMatrixHelper.computeMatrixCellsInParallel(threadCount, threadPool);
     }
 
-    private static class StorageMatrixHelper extends AbstractMatrixCellsHelper {
+    private static class StorageMatrixHelper extends AbstractMatrixCellsParallelComputing {
         private final Matrix inputMatrix;
         private final StorageMatrix storageMatrix;
 
@@ -100,36 +94,15 @@ public class MahalanobisDistance {
         }
     }
 
-    private static class MahalanobisDistanceRunnable implements Runnable {
-        private final MahalanobisDistanceHelper mahalanobisDistanceHelper;
-
-        MahalanobisDistanceRunnable(MahalanobisDistanceHelper mahalanobisDistanceHelper) {
-            this.mahalanobisDistanceHelper = mahalanobisDistanceHelper;
-            this.mahalanobisDistanceHelper.incrementThreadCounter();
-        }
-
-        @Override
-        public void run() {
-            try {
-                this.mahalanobisDistanceHelper.computeDistances();
-            } catch (Exception exception) {
-                logger.log(Level.SEVERE, "Failed to compute the Mahalanobis distance.", exception);
-            } finally {
-                this.mahalanobisDistanceHelper.decrementThreadCounter();
-            }
-        }
-    }
-
-    private static class MahalanobisDistanceHelper {
+    private static class MahalanobisDistanceHelper extends AbstractArrayCellsParallelComputing {
         private final TrimmingStatisticsMatrix trimmingStatisticsMatrix;
         private final MultiplyMatrix squaredMahalanobisMatrix;
         private final Int2ObjectMap<PixelSourceBands> validStatistics;
         private final double cumulativeProbability;
 
-        private int threadCounter;
-        private int matrixCounter;
-
         MahalanobisDistanceHelper(TrimmingStatisticsMatrix trimmingStatisticsMatrix, Matrix inverseMatrix, double cumulativeProbability) {
+            super(trimmingStatisticsMatrix.getRowCount());
+
             MultiplyMatrix resultMatrix = new MultiplyMatrix(trimmingStatisticsMatrix, inverseMatrix);
             TransposeMatrix transposeMatrix = new TransposeMatrix(trimmingStatisticsMatrix);
             this.squaredMahalanobisMatrix = new MultiplyMatrix(resultMatrix, transposeMatrix);
@@ -143,53 +116,27 @@ public class MahalanobisDistance {
             this.trimmingStatisticsMatrix = trimmingStatisticsMatrix;
             this.cumulativeProbability = cumulativeProbability;
             this.validStatistics = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
-            this.threadCounter = 0;
-            this.matrixCounter = 0;
         }
 
-        synchronized void incrementThreadCounter() {
-            this.threadCounter++;
-        }
+        @Override
+        protected void computeCell(int localIndex) {
+            float squareDistance = this.squaredMahalanobisMatrix.getValueAt(localIndex, localIndex);
+            if (Math.sqrt(squareDistance) <= this.cumulativeProbability) {
+                synchronized (this.validStatistics) {
+                    this.validStatistics.put(this.trimmingStatisticsMatrix.getRegionKeyAt(localIndex), this.trimmingStatisticsMatrix.getRegionMeanPixelsAt(localIndex));
+                }
+            }
 
-        synchronized void decrementThreadCounter() {
-            this.threadCounter--;
-            if (this.threadCounter <= 0) {
-                notifyAll();
+            if (localIndex % 1000 == 0 && logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, ""); // add an empty line
+                logger.log(Level.FINER, "Mahalanobis distance computation: index: "+localIndex+", total regions: "+this.trimmingStatisticsMatrix.getRowCount()+", distance: " +Math.sqrt(squareDistance)+", chi distribution: "+this.cumulativeProbability);
             }
         }
 
-        synchronized Int2ObjectMap<PixelSourceBands> waitToFinish() throws InterruptedException {
-            if (this.threadCounter > 0) {
-                wait();
-            }
+        public Int2ObjectMap<PixelSourceBands> computeCellsInParallel(int threadCount, Executor threadPool) throws Exception {
+            super.executeInParallel(threadCount, threadPool);
+
             return this.validStatistics;
-        }
-
-        void computeDistances() {
-            int index = -1;
-            do {
-                synchronized (this.squaredMahalanobisMatrix) {
-                    if (this.matrixCounter < this.trimmingStatisticsMatrix.getRowCount()) {
-                        index = this.matrixCounter;
-                        this.matrixCounter++;
-                    } else {
-                        index = -1;
-                    }
-                }
-                if (index >= 0) {
-                    float squareDistance = this.squaredMahalanobisMatrix.getValueAt(index, index);
-                    if (Math.sqrt(squareDistance) <= this.cumulativeProbability) {
-                        synchronized (this.validStatistics) {
-                            this.validStatistics.put(this.trimmingStatisticsMatrix.getRegionKeyAt(index), this.trimmingStatisticsMatrix.getRegionMeanPixelsAt(index));
-                        }
-                    }
-
-                    if (index % 1000 == 0 && logger.isLoggable(Level.FINER)) {
-                        logger.log(Level.FINER, ""); // add an empty line
-                        logger.log(Level.FINER, "Mahalanobis distance computation: index: "+index+", total regions: "+this.trimmingStatisticsMatrix.getRowCount()+", distance: " +Math.sqrt(squareDistance)+", chi distribution: "+this.cumulativeProbability);
-                    }
-                }
-            } while (index >= 0);
         }
     }
 }

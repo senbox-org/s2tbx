@@ -1,13 +1,13 @@
 package org.esa.s2tbx.grm.segmentation.tiles;
 
-import org.esa.snap.utils.AbstractImageTilesHelper;
+import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 
 import java.io.IOException;
 
 /**
  * @author Jean Coravu
  */
-public class TileStabilityMarginSecondSegmentationHelper extends AbstractImageTilesHelper {
+public class TileStabilityMarginSecondSegmentationHelper extends AbstractImageTilesParallelComputing {
     private final AbstractTileSegmenter tileSegmenter;
     private final int iteration;
     private final int numberOfNeighborLayers;

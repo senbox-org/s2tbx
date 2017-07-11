@@ -5,9 +5,9 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
+import org.esa.snap.utils.ArrayListExtended;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -229,16 +229,5 @@ public class Graph {
             reference.clear();
         }
         this.nodes.removeItems(0, nodeCount);
-    }
-
-    private static class ArrayListExtended<ItemType> extends ArrayList<ItemType> {
-
-        ArrayListExtended(int numberOfNodes) {
-            super(numberOfNodes);
-        }
-
-        void removeItems(int fromIndexInclusive, int toIndexExclusive) {
-            removeRange(fromIndexInclusive, toIndexExclusive);
-        }
     }
 }
