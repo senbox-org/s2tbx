@@ -1,14 +1,12 @@
 package org.esa.s2tbx.grm.segmentation;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
 
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -17,18 +15,18 @@ import java.util.concurrent.Executor;
  * @author Jean Coravu
  */
 public class Graph {
-    private final ArrayListExtended<SoftReference<Node>> nodes;
+    private final ArrayListExtended<Node> nodes;
 
     public Graph(int numberOfNodes) {
         this.nodes = new ArrayListExtended<>(numberOfNodes);
     }
 
     public Node getNodeAt(int index) {
-        return this.nodes.get(index).get();
+        return this.nodes.get(index);
     }
 
     public void addNode(Node nodeToAdd) {
-        this.nodes.add(new SoftReference<>(nodeToAdd));
+        this.nodes.add(nodeToAdd);
     }
 
     public int getNodeCount() {
@@ -39,17 +37,16 @@ public class Graph {
         int nodeCount = this.nodes.size();
         int lastIndexToCopy = -1;
         for (int i=0; i<nodeCount; i++) {
-            SoftReference<Node> referenceNode = this.nodes.get(i);
-            Node node = referenceNode.get();
+            Node node = this.nodes.get(i);
             if (node.isExpired()) {
                 if (lastIndexToCopy == -1) {
                     lastIndexToCopy = i;
                 }
-                // mark the node to be collected by the GC
-                node = null;
-                referenceNode.clear();
+                node.doClose();
+                WeakReference<Node> reference = new WeakReference<Node>(node);
+                reference.clear();
             } else if (lastIndexToCopy > -1) {
-                this.nodes.set(lastIndexToCopy, referenceNode);
+                this.nodes.set(lastIndexToCopy, node);
                 lastIndexToCopy++;
             }
         }
@@ -62,7 +59,7 @@ public class Graph {
     void setValidFlagToAllNodes() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i).get();
+            Node node = this.nodes.get(i);
             node.setValid(true);
         }
     }
@@ -70,7 +67,7 @@ public class Graph {
     void resetMergedFlagToAllNodes() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i).get();
+            Node node = this.nodes.get(i);
             node.setMerged(false);
         }
     }
@@ -78,7 +75,7 @@ public class Graph {
     void resetCostUpdatedFlagToAllEdges() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i).get();
+            Node node = this.nodes.get(i);
             int edgeCount = node.getEdgeCount();
             for (int j=0; j<edgeCount; j++) {
                 Edge edge = node.getEdgeAt(j);
@@ -181,7 +178,7 @@ public class Graph {
         BoundingBox region = tile.getRegion();
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i).get();
+            Node node = this.nodes.get(i);
 
             // start pixel index of the node (in the tile)
             int rowNodeTile = node.getId() / region.getWidth();
@@ -209,7 +206,7 @@ public class Graph {
     public void removeUselessNodes(Int2ObjectMap<Node> borderNodes, ProcessingTile tile) {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            Node node = this.nodes.get(i).get();
+            Node node = this.nodes.get(i);
             BoundingBox box = node.getBox();
 
             if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
@@ -226,14 +223,12 @@ public class Graph {
     public void doClose() {
         int nodeCount = this.nodes.size();
         for (int index = 0; index<nodeCount; index++) {
-            SoftReference<Node> ref = this.nodes.get(index);
-            Node node = ref.get();
-            if (node != null) {
-                node.doClose();
-                node = null;
-            }
-            ref.clear();
+            Node node = this.nodes.get(index);
+            node.doClose();
+            WeakReference<Node> reference = new WeakReference<Node>(node);
+            reference.clear();
         }
+        this.nodes.removeItems(0, nodeCount);
     }
 
     private static class ArrayListExtended<ItemType> extends ArrayList<ItemType> {
@@ -242,8 +237,8 @@ public class Graph {
             super(numberOfNodes);
         }
 
-        void removeItems(int fromIndex, int toIndex) {
-            removeRange(fromIndex, toIndex);
+        void removeItems(int fromIndexInclusive, int toIndexExclusive) {
+            removeRange(fromIndexInclusive, toIndexExclusive);
         }
     }
 }

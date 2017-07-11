@@ -93,7 +93,7 @@ public abstract class AbstractTileSegmenter {
         return AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, margin, this.imageWidth, this.imageHeight);
     }
 
-    public final AbstractSegmenter runSegmentationInParallel(Product sourceProduct, String[] sourceBandNames) throws IllegalAccessException, IOException, InterruptedException {
+    public final AbstractSegmenter runSegmentationInParallel(Product sourceProduct, String[] sourceBandNames) throws Exception {
         try {
             // run the first segmentation
             runFirstSegmentationInParallel(sourceProduct, sourceBandNames, threadCount, threadPool);
@@ -116,7 +116,7 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    private int runSecondSegmentationsInParallel() throws IllegalAccessException, IOException, InterruptedException {
+    private int runSecondSegmentationsInParallel() throws Exception {
         // run the second segmentation
         logRunSecondSegmentationForAllTiles();
 
@@ -134,7 +134,7 @@ public abstract class AbstractTileSegmenter {
     }
 
     private void runFirstSegmentationInParallel(Product sourceProduct, String[] sourceBandNames, int threadCount, Executor threadPool)
-                                                  throws IllegalAccessException, IOException, InterruptedException {
+                                                  throws Exception {
 
         TileFirstSegmentationHelper tileFirstSegmentationHelper = new TileFirstSegmentationHelper(sourceProduct, sourceBandNames, this);
         tileFirstSegmentationHelper.executeInParallel(threadCount, threadPool);
@@ -158,7 +158,7 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    private void runSecondPartialSegmentationInParallel(int iteration) throws IllegalAccessException, IOException, InterruptedException {
+    private void runSecondPartialSegmentationInParallel(int iteration) throws Exception {
         // log a message
         logRunSecondPartialSegmentation(iteration);
 
@@ -175,7 +175,7 @@ public abstract class AbstractTileSegmenter {
     }
 
     private void runSecondSegmentationInParallel(int iteration, int threadCount, Executor threadPool, int numberOfNeighborLayers)
-                                       throws IllegalAccessException, IOException, InterruptedException {
+                                       throws Exception {
 
         TileSecondSegmentationHelper tileSecondSegmentationHelper = new TileSecondSegmentationHelper(iteration, numberOfNeighborLayers, this);
         tileSecondSegmentationHelper.executeInParallel(threadCount, threadPool);

@@ -41,7 +41,7 @@ public class ColorFillerHelper extends AbstractImageTilesHelper {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute color filler for tile region: bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"], row index: "+ localRowIndex+", column index: "+localColumnIndex);
+            logger.log(Level.FINE, "Color filler for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
         Band segmentationBand = this.sourceProduct.getBandAt(0);
@@ -61,7 +61,7 @@ public class ColorFillerHelper extends AbstractImageTilesHelper {
         }
     }
 
-    public Product computeRegionsInParallel(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
+    public Product computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();

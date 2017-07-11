@@ -36,7 +36,7 @@ public class ObjectsSelectionHelper extends AbstractImageTilesHelper {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute object selection for tile region: bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"], row index: "+ localRowIndex+", column index: "+localColumnIndex);
+            logger.log(Level.FINE, "Object selection for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
         Band segmentationBand = this.sourceProduct.getBandAt(0);
@@ -65,7 +65,7 @@ public class ObjectsSelectionHelper extends AbstractImageTilesHelper {
         }
     }
 
-    public Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> computeRegionsInParallel(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
+    public Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
         return this.statistics;

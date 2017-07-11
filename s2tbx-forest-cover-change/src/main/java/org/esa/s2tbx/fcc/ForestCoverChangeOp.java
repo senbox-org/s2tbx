@@ -208,7 +208,7 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private static Product runColorFillerOp(int threadCount, Executor threadPool, Product sourceProduct, float percentagePixels)
-                                            throws IllegalAccessException, InterruptedException, IOException {
+                                            throws Exception {
 
         IntSet validRegions = runObjectsSelectionOp(threadCount, threadPool, sourceProduct, percentagePixels);
 
@@ -230,7 +230,7 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private static IntSet runObjectsSelectionOp(int threadCount, Executor threadPool, Product sourceProduct, float percentagePixels)
-                                                throws IllegalAccessException, InterruptedException, IOException {
+                                                throws Exception {
 
 //        Map<String, Object> parameters = new HashMap<>();
 //        Map<String, Product> sourceProducts = new HashMap<>();
@@ -306,7 +306,7 @@ public class ForestCoverChangeOp extends Operator {
     private static Product runUnionMasksOp(int threadCount, Executor threadPool, IntSet currentSegmentationTrimmingRegionKeys,
                                            Product currentSegmentationSourceProduct, IntSet previousSegmentationTrimmingRegionKeys,
                                            Product previousSegmentationSourceProduct, Product inputTargetProduct)
-                                           throws IllegalAccessException, InterruptedException, IOException {
+                                           throws Exception {
 
         Dimension tileSize = JAI.getDefaultTileSize();
         UnionMasksHelper helper = new UnionMasksHelper(currentSegmentationSourceProduct, previousSegmentationSourceProduct, currentSegmentationTrimmingRegionKeys,

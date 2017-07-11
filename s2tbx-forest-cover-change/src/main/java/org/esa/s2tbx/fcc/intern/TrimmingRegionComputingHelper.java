@@ -38,7 +38,7 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesHelper {
     protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IOException, IllegalAccessException {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute trimming statistics for tile region: bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"], row index: "+ localRowIndex+", column index: "+localColumnIndex);
+            logger.log(Level.FINE, "Trimming statistics for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
         Band firstBand = this.sourceProduct.getBandAt(this.sourceBandIndices[0]);
@@ -53,20 +53,24 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesHelper {
             for (int x = tileLeftX; x < tileRightX; x++) {
                 int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
                 if (segmentationPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE) {
+                    float a = firstBand.getSampleFloat(x, y);
+                    float b = secondBand.getSampleFloat(x, y);
+                    float c = thirdBand.getSampleFloat(x, y);
+
                     synchronized (this.validRegionsMap) {
                         AveragePixelsSourceBands value = this.validRegionsMap.get(segmentationPixelValue);
                         if (value == null) {
                             value = new AveragePixelsSourceBands();
                             this.validRegionsMap.put(segmentationPixelValue, value);
                         }
-                        value.addPixelValuesBands(firstBand.getSampleFloat(x, y), secondBand.getSampleFloat(x, y), thirdBand.getSampleFloat(x, y));
+                        value.addPixelValuesBands(a, b, c);
                     }
                 }
             }
         }
     }
 
-    Int2ObjectMap<AveragePixelsSourceBands> computeRegionsInParallel(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
+    Int2ObjectMap<AveragePixelsSourceBands> computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
         return this.validRegionsMap;

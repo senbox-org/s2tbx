@@ -8,12 +8,15 @@ import org.esa.snap.utils.AbstractImageTilesHelper;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Jean Coravu
  */
 public class UnionMasksHelper extends AbstractImageTilesHelper {
+    private static final Logger logger = Logger.getLogger(UnionMasksHelper.class.getName());
+
     private final ProductData productData;
     private final Product currentSegmentationSourceProduct;
     private final Product previousSegmentationSourceProduct;
@@ -38,6 +41,11 @@ public class UnionMasksHelper extends AbstractImageTilesHelper {
     @Override
     protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex)
                            throws IOException, IllegalAccessException, InterruptedException {
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Union masks for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
+        }
 
         Band currentSegmentationBand = this.currentSegmentationSourceProduct.getBandAt(0);
         Band previousSegmentationBand = this.previousSegmentationSourceProduct.getBandAt(0);
@@ -69,7 +77,7 @@ public class UnionMasksHelper extends AbstractImageTilesHelper {
         }
     }
 
-    public ProductData computeRegionsInParallel(int threadCount, Executor threadPool) throws IllegalAccessException, IOException, InterruptedException {
+    public ProductData computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
         return this.productData;

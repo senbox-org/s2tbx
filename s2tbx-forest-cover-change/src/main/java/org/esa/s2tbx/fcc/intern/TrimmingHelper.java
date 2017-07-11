@@ -32,7 +32,7 @@ public class TrimmingHelper {
     }
 
     public static IntSet doTrimming(int threadCount, Executor threadPool, Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices)
-                                    throws InterruptedException, IOException, IllegalAccessException {
+                                    throws Exception {
 
         Int2ObjectMap<PixelSourceBands> validRegionStatistics = computeTrimmingStatistics(threadCount, threadPool, segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
 
@@ -56,7 +56,7 @@ public class TrimmingHelper {
 
             boolean continueRunning = true;
             while (continueRunning) {
-                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.filterValidRegionsUsingMahalanobisDistance(validRegionStatistics, cumulativeProbability);
+                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.filterValidRegionsUsingMahalanobisDistance(threadCount, threadPool, validRegionStatistics, cumulativeProbability);
                 if (validStatistics == null) {
                     continueRunning = false;//break;
                 } else {
@@ -86,7 +86,7 @@ public class TrimmingHelper {
     }
 
     private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(int threadCount, Executor threadPool, Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices)
-                                                                             throws IllegalAccessException, InterruptedException, IOException {
+                                                                             throws Exception {
 
 //        Map<String, Object> parameters = new HashMap<>();
 //        parameters.put("sourceBandIndices", sourceBandIndices);
