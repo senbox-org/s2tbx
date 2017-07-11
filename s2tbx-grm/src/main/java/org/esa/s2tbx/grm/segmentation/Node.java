@@ -175,8 +175,8 @@ public abstract class Node {
         if (secondIndex < 0 || secondIndex >= this.edges.size()) {
             throw new IllegalArgumentException("The second index " + secondIndex + " is out of bounds. The maximum index is " + (this.edges.size()-1));
         }
-        Edge auxEdge = this.edges.set(firstIndex, this.edges.get(secondIndex)).get();
-        this.edges.set(secondIndex, new SoftReference<>(auxEdge));
+        SoftReference<Edge> auxEdge = this.edges.set(firstIndex, this.edges.get(secondIndex));
+        this.edges.set(secondIndex, auxEdge);
     }
 
     /**
