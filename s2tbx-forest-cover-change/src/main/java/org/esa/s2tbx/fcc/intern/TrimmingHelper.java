@@ -106,6 +106,7 @@ public class TrimmingHelper {
         Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap = helper.computeRegionsInParallel(threadCount, threadPool);
         Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion = computeStatisticsPerRegion(validRegionsMap);
         helper.doClose();
+        helper = null;
         System.gc();
         return computeStatisticsPerRegion;
     }

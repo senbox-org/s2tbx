@@ -77,6 +77,7 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelCom
             WeakReference<AveragePixelsSourceBands> reference = new WeakReference<>(node);
             reference.clear();
         }
+        this.validRegionsMap.clear();
     }
 
     Int2ObjectMap<AveragePixelsSourceBands> computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
