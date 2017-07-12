@@ -28,7 +28,7 @@ public abstract class AbstractSegmenter {
 
     protected abstract Node buildNode(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel);
 
-    public final boolean update(Tile[] sourceTiles, BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
+    public final boolean update(TileDataSource[] sourceTiles, BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
         initNodes(sourceTiles, rectange, addFourNeighbors);
 
         boolean merged = false;
@@ -201,7 +201,7 @@ public abstract class AbstractSegmenter {
         }
     }
 
-    private void initNodes(Tile[] sourceTiles, BoundingBox rectange, boolean addFourNeighbors) {
+    private void initNodes(TileDataSource[] sourceTiles, BoundingBox rectange, boolean addFourNeighbors) {
         this.imageWidth = rectange.getWidth();
         this.imageHeight = rectange.getHeight();
 

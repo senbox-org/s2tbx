@@ -142,12 +142,22 @@ public class ForestCoverChangeOp extends Operator {
 
         try {
             ProductTrimmingResult currentResult = runTrimming(threadCount, threadPool, this.currentSourceProduct, sourceBandNames, trimmingSourceProductBandIndices);
+            Product currentProduct = currentResult.getProduct();
             IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
             Product currentProductColorFill = currentResult.getSegmentationProductColorFill();
 
             ProductTrimmingResult previousResult = runTrimming(threadCount, threadPool, this.previousSourceProduct, sourceBandNames, trimmingSourceProductBandIndices);
+            Product previousProduct = previousResult.getProduct();
             IntSet previousSegmentationTrimmingRegionKeys = previousResult.getTrimmingRegionKeys();
             Product previousProductColorFill = previousResult.getSegmentationProductColorFill();
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "Start segmentation for difference bands.");
+            }
+
+            Product segmentationProduct = GenericRegionMergingOp.runSegmentation(currentProduct, previousProduct, sourceBandNames, mergingCostCriterion, regionMergingCriterion,
+                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, ""); // add an empty line
@@ -186,7 +196,7 @@ public class ForestCoverChangeOp extends Operator {
 
         IntSet segmentationTrimmingRegionKeys = TrimmingHelper.doTrimming(threadCount, threadPool, productColorFill, product, trimmingSourceProductBandIndices);
 
-        return new ProductTrimmingResult(segmentationTrimmingRegionKeys, productColorFill);
+        return new ProductTrimmingResult(product, segmentationTrimmingRegionKeys, productColorFill);
     }
 
     private Product generateColorFill(int threadCount, Executor threadPool, Product sourceProduct) throws Exception {
@@ -331,12 +341,18 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private static class ProductTrimmingResult {
+        private final Product product;
         private final IntSet trimmingRegionKeys;
         private final Product segmentationProductColorFill;
 
-        ProductTrimmingResult(IntSet trimmingRegionKeys, Product segmentationProductColorFill) {
+        ProductTrimmingResult(Product product, IntSet trimmingRegionKeys, Product segmentationProductColorFill) {
+            this.product = product;
             this.trimmingRegionKeys = trimmingRegionKeys;
             this.segmentationProductColorFill = segmentationProductColorFill;
+        }
+
+        public Product getProduct() {
+            return product;
         }
 
         public IntSet getTrimmingRegionKeys() {

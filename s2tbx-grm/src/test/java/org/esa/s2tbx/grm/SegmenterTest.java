@@ -442,7 +442,7 @@ public class SegmenterTest {
         Band sourceBand = sourceProduct.getBandAt(0);
         Rectangle targetRectangle = new Rectangle(0, 0, sceneWidth, sceneHeight);
         Tile tile = new TileImpl(sourceBand, sourceBand.getSourceImage().getData(), targetRectangle, true);
-        Tile[] sourceTiles = new Tile[] {tile};
+        TileDataSource[] sourceTiles = new TileDataSource[] {new TileDataSourceImpl(tile)};
 
         BaatzSchapeSegmenter segmenter = new BaatzSchapeSegmenter(spectralWeight, shapeWeight, threshold);
         segmenter.update(sourceTiles, rectange, numberOfIterations, fastSegmentation, addFourNeighbors);
@@ -458,7 +458,7 @@ public class SegmenterTest {
         Band sourceBand = sourceProduct.getBandAt(0);
         Rectangle targetRectangle = new Rectangle(0, 0, sceneWidth, sceneHeight);
         Tile tile = new TileImpl(sourceBand, sourceBand.getSourceImage().getData(), targetRectangle, true);
-        Tile[] sourceTiles = new Tile[] {tile};
+        TileDataSource[] sourceTiles = new TileDataSource[] {new TileDataSourceImpl(tile)};
 
         SpringSegmenter segmenter = new SpringSegmenter(threshold);
         segmenter.update(sourceTiles, rectange, numberOfIterations, fastSegmentation, addFourNeighbors);
@@ -475,7 +475,7 @@ public class SegmenterTest {
         Band sourceBand = sourceProduct.getBandAt(0);
         Rectangle targetRectangle = new Rectangle(0, 0, sceneWidth, sceneHeight);
         Tile tile = new TileImpl(sourceBand, sourceBand.getSourceImage().getData(), targetRectangle, true);
-        Tile[] sourceTiles = new Tile[] {tile};
+        TileDataSource[] sourceTiles = new TileDataSource[] {new TileDataSourceImpl(tile)};
         FullLambdaScheduleSegmenter segmenter = new FullLambdaScheduleSegmenter(threshold);
         segmenter.update(sourceTiles, rectange, numberOfIterations, fastSegmentation, addFourNeighbors);
         return segmenter;

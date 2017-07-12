@@ -5,6 +5,8 @@ import org.esa.s2tbx.grm.segmentation.AbstractSegmenter;
 import org.esa.s2tbx.grm.segmentation.BaatzSchapeNode;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
 import org.esa.s2tbx.grm.segmentation.Graph;
+import org.esa.s2tbx.grm.segmentation.TileDataSource;
+import org.esa.s2tbx.grm.segmentation.TileDataSourceImpl;
 import org.esa.s2tbx.grm.segmentation.tiles.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -187,7 +189,7 @@ public class GenericRegionMergingOp extends Operator {
             }
 
             try {
-                this.segmenter = this.tileSegmenter.runAllTilesSecondSegmentation();
+                this.segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
             } catch (Exception e) {
                 throw new OperatorException(e);
             }
@@ -258,12 +260,12 @@ public class GenericRegionMergingOp extends Operator {
         this.targetProduct.addBand(targetBand);
     }
 
-    private Tile[] getSourceTiles(BoundingBox tileRegion) {
-        Tile[] sourceTiles = new Tile[this.sourceBandNames.length];
+    private TileDataSource[] getSourceTiles(BoundingBox tileRegion) {
+        TileDataSource[] sourceTiles = new TileDataSource[this.sourceBandNames.length];
         Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
         for (int i=0; i<this.sourceBandNames.length; i++) {
             Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            sourceTiles[i] = getSourceTile(band, rectangleToRead);
+            sourceTiles[i] = new TileDataSourceImpl(getSourceTile(band, rectangleToRead));
         }
         return sourceTiles;
     }
@@ -271,7 +273,7 @@ public class GenericRegionMergingOp extends Operator {
     private void executeFirstTileSegmentation(Rectangle targetRectangle, int totalTileCount) throws OperatorException {
         try {
             ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
-            Tile[] sourceTiles = getSourceTiles(currentTile.getRegion());
+            TileDataSource[] sourceTiles = getSourceTiles(currentTile.getRegion());
             try {
                 this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
             } catch (Exception ex) {
@@ -328,7 +330,8 @@ public class GenericRegionMergingOp extends Operator {
         long startTime = System.currentTimeMillis();
         AbstractTileSegmenter.logStartSegmentation(startTime, tileSegmenter);
 
-        AbstractSegmenter segmenter = tileSegmenter.runSegmentationInParallel(sourceProduct, sourceBandNames);
+        tileSegmenter.runFirstSegmentationsInParallel(sourceProduct, sourceBandNames);
+        AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
         Band productTargetBand = segmenter.buildBandData("band_1");
 
         AbstractTileSegmenter.logFinishSegmentation(startTime, tileSegmenter, segmenter);
@@ -341,6 +344,43 @@ public class GenericRegionMergingOp extends Operator {
         Product targetProduct = new Product(sourceProduct.getName() + "_grm", sourceProduct.getProductType(), productTargetBand.getRasterWidth(), productTargetBand.getRasterHeight());
         targetProduct.setPreferredTileSize(tileSize);
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+        productTargetBand.getSourceImage();
+        targetProduct.addBand(productTargetBand);
+
+        return targetProduct;
+    }
+
+    public static Product runSegmentation(Product currentSourceProduct, Product previousSourceProduct, String[] sourceBandNames, String mergingCostCriterion, String regionMergingCriterion,
+                                          int totalIterationsForSecondSegmentation, float threshold, float spectralWeight, float shapeWeight)
+                                          throws Exception {
+
+        //TODO Jean remove
+        Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
+        logger.setLevel(Level.FINE);
+
+        Dimension imageSize = new Dimension(currentSourceProduct.getSceneRasterWidth(), currentSourceProduct.getSceneRasterHeight());
+        Dimension tileSize = JAI.getDefaultTileSize();
+
+        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+                threshold, spectralWeight, shapeWeight, imageSize, tileSize);
+
+        long startTime = System.currentTimeMillis();
+        AbstractTileSegmenter.logStartSegmentation(startTime, tileSegmenter);
+
+        tileSegmenter.runDifferenceFirstSegmentationsInParallel(currentSourceProduct, previousSourceProduct, sourceBandNames);
+        AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
+        Band productTargetBand = segmenter.buildBandData("band_1");
+
+        AbstractTileSegmenter.logFinishSegmentation(startTime, tileSegmenter, segmenter);
+
+        segmenter.getGraph().doClose();
+        segmenter = null;
+        tileSegmenter = null;
+        System.gc();
+
+        Product targetProduct = new Product(currentSourceProduct.getName() + "_grm", currentSourceProduct.getProductType(), productTargetBand.getRasterWidth(), productTargetBand.getRasterHeight());
+        targetProduct.setPreferredTileSize(tileSize);
+        ProductUtils.copyGeoCoding(currentSourceProduct, targetProduct);
         productTargetBand.getSourceImage();
         targetProduct.addBand(productTargetBand);
 

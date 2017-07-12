@@ -17,16 +17,18 @@ import java.io.IOException;
 /**
  * @author Jean Coravu
  */
-public class TileFirstSegmentationHelper extends AbstractImageTilesParallelComputing {
+public class DifferenceTileFirstSegmentationHelper extends AbstractImageTilesParallelComputing {
     private final AbstractTileSegmenter tileSegmenter;
-    private final Product sourceProduct;
+    private final Product currentSourceProduct;
+    private final Product previousSourceProduct;
     private final String[] sourceBandNames;
 
-    public TileFirstSegmentationHelper(Product sourceProduct, String[] sourceBandNames, AbstractTileSegmenter tileSegmenter) {
+    public DifferenceTileFirstSegmentationHelper(Product currentSourceProduct, Product previousSourceProduct, String[] sourceBandNames, AbstractTileSegmenter tileSegmenter) {
         super(tileSegmenter.getImageWidth(), tileSegmenter.getImageHeight(), tileSegmenter.getTileWidth(), tileSegmenter.getTileHeight());
 
         this.tileSegmenter = tileSegmenter;
-        this.sourceProduct = sourceProduct;
+        this.currentSourceProduct = currentSourceProduct;
+        this.previousSourceProduct = previousSourceProduct;
         this.sourceBandNames = sourceBandNames;
     }
 
@@ -41,11 +43,34 @@ public class TileFirstSegmentationHelper extends AbstractImageTilesParallelCompu
         TileDataSource[] sourceTiles = new TileDataSource[this.sourceBandNames.length];
         Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
         for (int i=0; i<this.sourceBandNames.length; i++) {
-            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            MultiLevelImage image = band.getSourceImage();
-            Raster awtRaster = image.getData(rectangleToRead);
-            sourceTiles[i] = new TileDataSourceImpl(new TileImpl(band, awtRaster));
+            Band currentBand = this.currentSourceProduct.getBand(this.sourceBandNames[i]);
+            Tile currentTile = buildTile(currentBand, rectangleToRead);
+            Band previousBand = this.previousSourceProduct.getBand(this.sourceBandNames[i]);
+            Tile previousTile = buildTile(previousBand, rectangleToRead);
+            sourceTiles[i] = new DifferenceTileDataSourceImpl(currentTile, previousTile);
         }
         return sourceTiles;
     }
+
+    private static Tile buildTile(Band band, Rectangle rectangleToRead) {
+        MultiLevelImage image = band.getSourceImage();
+        Raster awtRaster = image.getData(rectangleToRead);
+        return new TileImpl(band, awtRaster);
+    }
+
+    private static class DifferenceTileDataSourceImpl implements TileDataSource {
+        private final Tile currentTile;
+        private final Tile previousTile;
+
+        public DifferenceTileDataSourceImpl(Tile currentTile, Tile previousTile) {
+            this.currentTile = currentTile;
+            this.previousTile = previousTile;
+        }
+
+        @Override
+        public float getSampleFloat(int x, int y) {
+            return this.currentTile.getSampleFloat(x, y) - this.previousTile.getSampleFloat(x, y);
+        }
+    }
+
 }

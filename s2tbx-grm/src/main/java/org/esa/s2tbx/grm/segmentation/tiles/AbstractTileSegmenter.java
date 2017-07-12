@@ -93,17 +93,6 @@ public abstract class AbstractTileSegmenter {
         return AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, margin, this.imageWidth, this.imageHeight);
     }
 
-    public final AbstractSegmenter runSegmentationInParallel(Product sourceProduct, String[] sourceBandNames) throws Exception {
-        try {
-            // run the first segmentation
-            runFirstSegmentationInParallel(sourceProduct, sourceBandNames, threadCount, threadPool);
-            int numberOfRemainingIterations = runSecondSegmentationsInParallel();
-            return mergeGraphsAndAchieveSegmentation(numberOfRemainingIterations);
-        } finally {
-            deleteTemporaryFolder();
-        }
-    }
-
     private void deleteTemporaryFolder() {
         boolean deleted = FileUtils.deleteTree(this.temporaryFolder);
         if (logger.isLoggable(Level.FINE)) {
@@ -118,7 +107,16 @@ public abstract class AbstractTileSegmenter {
 
     private int runSecondSegmentationsInParallel() throws Exception {
         // run the second segmentation
-        logRunSecondSegmentationForAllTiles();
+        if (logger.isLoggable(Level.FINE)) {
+            int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
+            int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
+            int tileMargin = computeTileMargin();
+            float freeMemoryKiloBytes = Runtime.getRuntime().freeMemory() / 1024.0f;
+            float totalMemoryKiloBytes = Runtime.getRuntime().totalMemory() / 1024.0f;
+            float accumulatedKiloBytes = this.tileSegmenterMetadata.getAccumulatedMemory() / 1024.0f;
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Second segmentation for all tiles: tile column count: "+tileCountX+", tile row count: "+tileCountY+", total memory: "+totalMemoryKiloBytes+" KB, free memory: "+freeMemoryKiloBytes+" KB, acumulated memory: "+accumulatedKiloBytes+" KB, fusion: " + this.tileSegmenterMetadata.isFusion()+", margin: "+tileMargin+", number of second iterations: "+this.iterationsForEachSecondSegmentation);
+        }
 
         int numberOfIterationsRemaining = this.totalIterationsForSecondSegmentation;
         int iteration = 0;
@@ -133,45 +131,38 @@ public abstract class AbstractTileSegmenter {
         return numberOfIterationsRemaining;
     }
 
-    private void runFirstSegmentationInParallel(Product sourceProduct, String[] sourceBandNames, int threadCount, Executor threadPool)
-                                                  throws Exception {
-
+    public final void runFirstSegmentationsInParallel(Product sourceProduct, String[] sourceBandNames) throws Exception {
         TileFirstSegmentationHelper tileFirstSegmentationHelper = new TileFirstSegmentationHelper(sourceProduct, sourceBandNames, this);
-        tileFirstSegmentationHelper.executeInParallel(threadCount, threadPool);
+        tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 
-    private void logRunSecondPartialSegmentation(int iteration) {
+    public final void runDifferenceFirstSegmentationsInParallel(Product currentSourceProduct, Product previousSourceProduct, String[] sourceBandNames) throws Exception {
+        DifferenceTileFirstSegmentationHelper tileFirstSegmentationHelper = new DifferenceTileFirstSegmentationHelper(currentSourceProduct, previousSourceProduct, sourceBandNames, this);
+        tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
+    }
+
+    private void runSecondPartialSegmentationInParallel(int iteration) throws Exception {
+        // log a message
         int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
         int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Run second segmentation: iteration: "+iteration+", tile column count: " +tileCountX+", tile row count: " + tileCountY + ", acumulated memory: " + this.tileSegmenterMetadata.getAccumulatedMemory()+", fusion: " + this.tileSegmenterMetadata.isFusion()+", margin: "+computeTileMargin());
         }
-    }
 
-    private void logRunSecondSegmentationExtractStabilityMargin() {
-        int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
-        int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
+        int numberOfNeighborLayers = computeNumberOfNeighborLayers();
+
+        runSecondSegmentationInParallel(iteration, this.threadCount, this.threadPool, numberOfNeighborLayers);
+
+        // log a message
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Run second segmentation: (extract the stability margin for the next round): tile column count: " +tileCountX+", tile row count: " + tileCountY + ", acumulated memory: " + this.tileSegmenterMetadata.getAccumulatedMemory()+", fusion: " + this.tileSegmenterMetadata.isFusion());
         }
-    }
-
-    private void runSecondPartialSegmentationInParallel(int iteration) throws Exception {
-        // log a message
-        logRunSecondPartialSegmentation(iteration);
-
-        int numberOfNeighborLayers = computeNumberOfNeighborLayers();
-
-        runSecondSegmentationInParallel(iteration, threadCount, threadPool, numberOfNeighborLayers);
-
-        // log a message
-        logRunSecondSegmentationExtractStabilityMargin();
 
         // during this step we extract the stability margin for the next round
         TileStabilityMarginSecondSegmentationHelper segmentationHelper = new TileStabilityMarginSecondSegmentationHelper(iteration, numberOfNeighborLayers, this);
-        segmentationHelper.executeInParallel(threadCount, threadPool);
+        segmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 
     private void runSecondSegmentationInParallel(int iteration, int threadCount, Executor threadPool, int numberOfNeighborLayers)
@@ -181,43 +172,10 @@ public abstract class AbstractTileSegmenter {
         tileSecondSegmentationHelper.executeInParallel(threadCount, threadPool);
     }
 
-    private void logRunSecondSegmentationForAllTiles() {
-        if (logger.isLoggable(Level.FINE)) {
-            int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
-            int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
-            int tileMargin = computeTileMargin();
-            float freeMemoryKiloBytes = Runtime.getRuntime().freeMemory() / 1024.0f;
-            float totalMemoryKiloBytes = Runtime.getRuntime().totalMemory() / 1024.0f;
-            float accumulatedKiloBytes = this.tileSegmenterMetadata.getAccumulatedMemory() / 1024.0f;
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Second segmentation for all tiles: tile column count: "+tileCountX+", tile row count: "+tileCountY+", total memory: "+totalMemoryKiloBytes+" KB, free memory: "+freeMemoryKiloBytes+" KB, acumulated memory: "+accumulatedKiloBytes+" KB, fusion: " + this.tileSegmenterMetadata.isFusion()+", margin: "+tileMargin+", number of second iterations: "+this.iterationsForEachSecondSegmentation);
-        }
-    }
-
-    public final AbstractSegmenter runAllTilesSecondSegmentation() throws IllegalAccessException, IOException, InterruptedException {
-        logRunSecondSegmentationForAllTiles();
-
-        int numberOfIterationsRemaining = this.totalIterationsForSecondSegmentation;
-        if (numberOfIterationsRemaining >= this.iterationsForEachSecondSegmentation) {
-            int iteration = 0;
-            while (this.tileSegmenterMetadata.canRunSecondPartialSegmentation()) {
-                this.tileSegmenterMetadata.resetValues();
-                iteration++;
-                runSecondPartialSegmentation(iteration);
-
-                // update number of remaining iterations
-                if (numberOfIterationsRemaining < this.iterationsForEachSecondSegmentation) {
-                    break;
-                } else {
-                    numberOfIterationsRemaining -= this.iterationsForEachSecondSegmentation;
-                }
-            }
-//        if (this.tileSegmenterMetadata.getAccumulatedMemory() > this.tileSegmenterMetadata.getTotalMemory()) {
-//            throw new IllegalArgumentException("No more possible fusions, but can not store the output graph.");
-//        }
-        }
+    public final AbstractSegmenter runSecondSegmentationsAndMergeGraphs() throws Exception {
         try {
-            return mergeGraphsAndAchieveSegmentation(numberOfIterationsRemaining);
+            int numberOfRemainingIterations = runSecondSegmentationsInParallel();
+            return mergeGraphsAndAchieveSegmentation(numberOfRemainingIterations);
         } finally {
             deleteTemporaryFolder();
         }
@@ -231,7 +189,7 @@ public abstract class AbstractTileSegmenter {
         return tile.getImageLeftX() / this.tileWidth;
     }
 
-    public void runTileFirstSegmentation(Tile[] sourceTiles, ProcessingTile tileToProcess) throws IllegalAccessException, IOException, InterruptedException {
+    public void runTileFirstSegmentation(TileDataSource[] sourceTiles, ProcessingTile tileToProcess) throws IllegalAccessException, IOException, InterruptedException {
         int tileColumnIndex = computeTileColumnIndex(tileToProcess);
         int tileRowIndex = computeTileRowIndex(tileToProcess);
 
@@ -430,31 +388,6 @@ public abstract class AbstractTileSegmenter {
         nodesToIterate = null;
         borderNodes = null;
         System.gc();
-    }
-
-    private void runSecondPartialSegmentation(int iteration) throws IllegalAccessException, IOException, InterruptedException {
-        // log a message
-        logRunSecondPartialSegmentation(iteration);
-
-        int numberOfNeighborLayers = computeNumberOfNeighborLayers();
-        int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
-        int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
-
-        for (int rowIndex = 0; rowIndex < tileCountY; rowIndex++) {
-            for (int columnIndex = 0; columnIndex < tileCountX; columnIndex++) {
-                runTileSecondSegmentation(iteration, rowIndex, columnIndex, numberOfNeighborLayers);
-            }
-        }
-
-        // log a message
-        logRunSecondSegmentationExtractStabilityMargin();
-
-        // during this step we extract the stability margin for the next round
-        for (int rowIndex = 0; rowIndex < tileCountY; rowIndex++) {
-            for (int columnIndex = 0; columnIndex<tileCountX; columnIndex++) {
-                runTileStabilityMarginSecondSegmentation(iteration, rowIndex, columnIndex, numberOfNeighborLayers);
-            }
-        }
     }
 
     public final void runTileStabilityMarginSecondSegmentation(int iteration, int rowIndex, int columnIndex, int numberOfNeighborLayers) throws IOException, InterruptedException {
