@@ -1,4 +1,4 @@
-package org.esa.s2tbx.fcc.intern;
+package org.esa.s2tbx.fcc.common;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.datamodel.Band;
@@ -8,12 +8,10 @@ import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
-import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 
 import javax.media.jai.JAI;
-import javax.sound.midi.SysexMessage;
 import java.awt.*;
 import java.util.Iterator;
 import java.util.Map;

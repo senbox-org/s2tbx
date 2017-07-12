@@ -1,6 +1,7 @@
-package org.esa.s2tbx.fcc.intern;
+package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;

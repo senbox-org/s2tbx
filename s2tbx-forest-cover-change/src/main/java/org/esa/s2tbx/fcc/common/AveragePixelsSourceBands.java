@@ -1,10 +1,12 @@
-package org.esa.s2tbx.fcc.intern;
+package org.esa.s2tbx.fcc.common;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 
 /**
- * Created by rdumitrascu on 6/29/2017.
+ * @author Razvan Dumitrascu
+ * @since 5.0.6
  */
+
 public class AveragePixelsSourceBands {
 
     //list containing the values used to compute standard deviation

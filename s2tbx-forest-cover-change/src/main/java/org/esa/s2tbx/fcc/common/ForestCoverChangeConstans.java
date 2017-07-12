@@ -1,4 +1,4 @@
-package org.esa.s2tbx.fcc.intern;
+package org.esa.s2tbx.fcc.common;
 
 /**
  * @author Razvan Dumitrascu
