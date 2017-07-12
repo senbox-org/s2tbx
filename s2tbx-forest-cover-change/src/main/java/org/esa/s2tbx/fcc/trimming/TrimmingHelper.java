@@ -78,6 +78,58 @@ public class TrimmingHelper {
         return new IntOpenHashSet(validRegionStatistics.keySet());
     }
 
+    public static IntSet doTrimmingII(int threadCount, Executor threadPool, Int2ObjectMap<PixelSourceBands> validRegionStatistics )
+            throws Exception {
+
+        int initialValidRegionCount = validRegionStatistics.size();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start applying trimming: valid region count: "+ initialValidRegionCount);
+        }
+
+        ChiSquaredDistribution chi  = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
+
+        float[] confidenceLevels = new float[]{ForestCoverChangeConstans.CONFIDENCE_LEVEL_99, ForestCoverChangeConstans.CONFIDENCE_LEVEL_95, ForestCoverChangeConstans.CONFIDENCE_LEVEL_90};
+        for (int i=0; i<confidenceLevels.length; i++) {
+            double cumulativeProbability = chi.inverseCumulativeProbability(confidenceLevels[i]);
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "Start applying the trimming on the valid regions: iteration: "+(i+1)+", Chi distribution: " + cumulativeProbability+", valid region count: " + validRegionStatistics.size());
+            }
+
+            boolean continueRunning = true;
+            while (continueRunning) {
+                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.filterValidRegionsUsingMahalanobisDistance(threadCount, threadPool, validRegionStatistics, cumulativeProbability);
+                if (validStatistics == null) {
+                    continueRunning = false;//break;
+                } else {
+                    if (validStatistics.size() == 0 || validRegionStatistics.size() == validStatistics.size()) {
+                        continueRunning = false;//break;
+                    } else {
+                        validRegionStatistics = validStatistics;
+                    }
+                }
+            }
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            int removedValidRegionCount = initialValidRegionCount - validRegionStatistics.size();
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish applying trimming: valid region count: "+ validRegionStatistics.size()+", removed region count: " + removedValidRegionCount);
+        }
+
+//        IntSet trimmingRegionKeys = new IntOpenHashSet(validRegionStatistics.keySet());
+//        IntIterator it = validRegionStatistics.keySet().iterator();
+//        while (it.hasNext()) {
+//            trimmingRegionKeys.add(it.nextInt());
+//        }
+//
+//        return validRegionStatistics;
+        return new IntOpenHashSet(validRegionStatistics.keySet());
+    }
+
     private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(int threadCount, Executor threadPool, Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices)
                                                                              throws Exception {
 
@@ -104,7 +156,7 @@ public class TrimmingHelper {
         return computeStatisticsPerRegion;
     }
 
-    private static Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion(Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap) {
+    public static Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion(Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap) {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Compute the average pixel values per region of "+validRegionsMap.size()+" valid regions before trimming");

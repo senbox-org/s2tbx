@@ -15,7 +15,7 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
  * @since 5.0.6
  */
 @OperatorMetadata(
-        alias = "TrimmingRegionComputingOp",
+        alias = "DifferenceRegionComputingOp",
         version="1.0",
         category = "",
         description = "Creates a hash map containing the values from the source bands for a respective segmentation region",
@@ -27,8 +27,8 @@ public class DifferenceRegionComputingOp extends AbstractRegionComputingOp {
     @SourceProduct(alias = "currentSourceProduct", description = "The current source product to be used for trimming.")
     private Product currentSourceProduct;
 
-    @SourceProduct(alias = "previousSourceProductETM", description = "The previous source product to be used for trimming.")
-    private Product previousSourceProductETM;
+    @SourceProduct(alias = "previousSourceProduct", description = "The previous source product to be used for trimming.")
+    private Product previousSourceProduct;
 
     @SourceProduct(alias = "unionMask", description = "The source products to be used for trimming.")
     private Product unionMask;
@@ -45,21 +45,21 @@ public class DifferenceRegionComputingOp extends AbstractRegionComputingOp {
     @Override
     protected float getFirstBandBandValue(int x, int y) {
         Band firstBandCurrentProduct = this.currentSourceProduct.getBandAt(sourceBandIndices[0]);
-        Band firstBandPreviousProduct = this.previousSourceProductETM.getBandAt(sourceBandIndices[0]);
+        Band firstBandPreviousProduct = this.previousSourceProduct.getBandAt(sourceBandIndices[0]);
         return firstBandCurrentProduct.getSampleFloat(x, y) - firstBandPreviousProduct.getSampleFloat(x, y);
     }
 
     @Override
     protected float getSecondBandBandValue(int x, int y) {
         Band secondBandCurrentProduct = this.currentSourceProduct.getBandAt(sourceBandIndices[1]);
-        Band secondBandPreviousProduct = this.previousSourceProductETM.getBandAt(sourceBandIndices[1]);
+        Band secondBandPreviousProduct = this.previousSourceProduct.getBandAt(sourceBandIndices[1]);
         return secondBandCurrentProduct.getSampleFloat(x, y) - secondBandPreviousProduct.getSampleFloat(x, y);
     }
 
     @Override
     protected float getThirdBandBandValue(int x, int y) {
         Band thirdBandCurrentProduct = this.currentSourceProduct.getBandAt(sourceBandIndices[2]);
-        Band thirdBandPreviousProduct = this.previousSourceProductETM.getBandAt(sourceBandIndices[2]);
+        Band thirdBandPreviousProduct = this.previousSourceProduct.getBandAt(sourceBandIndices[2]);
         return thirdBandCurrentProduct.getSampleFloat(x, y) - thirdBandPreviousProduct.getSampleFloat(x, y);
     }
 
@@ -82,17 +82,17 @@ public class DifferenceRegionComputingOp extends AbstractRegionComputingOp {
                     this.segmentationSourceProduct.getName(), this.currentSourceProduct.getName());
             throw new OperatorException(message);
         }
-        if (this.previousSourceProductETM.isMultiSize()) {
+        if (this.previousSourceProduct.isMultiSize()) {
             String message = String.format("Source product '%s' contains rasters of different sizes and can not be processed.\n" +
                             "Please consider resampling it so that all rasters have the same size.",
-                    this.previousSourceProductETM.getName());
+                    this.previousSourceProduct.getName());
             throw new OperatorException(message);
         }
-        if ((this.previousSourceProductETM.getSceneRasterHeight() != this.segmentationSourceProduct.getSceneRasterHeight()) ||
-                (this.previousSourceProductETM.getSceneRasterWidth() != this.segmentationSourceProduct.getSceneRasterWidth())) {
+        if ((this.previousSourceProduct.getSceneRasterHeight() != this.segmentationSourceProduct.getSceneRasterHeight()) ||
+                (this.previousSourceProduct.getSceneRasterWidth() != this.segmentationSourceProduct.getSceneRasterWidth())) {
             String message = String.format("Source product '%s' must have the same scene raster size as the source Composition Product '%s'.\n" +
                             "Please consider resampling it so that the 2 products have the same size.",
-                    this.segmentationSourceProduct.getName(), this.previousSourceProductETM.getName());
+                    this.segmentationSourceProduct.getName(), this.previousSourceProduct.getName());
             throw new OperatorException(message);
         }
     }
