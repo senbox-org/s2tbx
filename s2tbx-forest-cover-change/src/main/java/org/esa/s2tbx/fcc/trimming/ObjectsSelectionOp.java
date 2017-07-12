@@ -1,11 +1,10 @@
-package org.esa.s2tbx.fcc.intern;
+package org.esa.s2tbx.fcc.trimming;
 
 import com.bc.ceres.core.ProgressMonitor;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -14,7 +13,7 @@ import javax.media.jai.JAI;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;

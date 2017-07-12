@@ -1,4 +1,4 @@
-package org.esa.s2tbx.fcc.intern;
+package org.esa.s2tbx.fcc.common;
 
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;

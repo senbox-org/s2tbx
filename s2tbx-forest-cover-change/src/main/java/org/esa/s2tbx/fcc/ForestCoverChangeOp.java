@@ -1,22 +1,18 @@
 package org.esa.s2tbx.fcc;
 
 import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
-import org.esa.s2tbx.fcc.intern.AveragePixelsSourceBands;
-import org.esa.s2tbx.fcc.intern.BandsExtractorOp;
-import org.esa.s2tbx.fcc.intern.ColorFillerHelper;
-import org.esa.s2tbx.fcc.intern.ColorFillerOp;
-import org.esa.s2tbx.fcc.intern.ForestCoverChangeConstans;
-import org.esa.s2tbx.fcc.intern.ObjectsSelectionHelper;
-import org.esa.s2tbx.fcc.intern.ObjectsSelectionOp;
-import org.esa.s2tbx.fcc.intern.PixelSourceBands;
-import org.esa.s2tbx.fcc.intern.TrimmingHelper;
-import org.esa.s2tbx.fcc.intern.UnionMasksHelper;
+import org.esa.s2tbx.fcc.common.BandsExtractorOp;
+import org.esa.s2tbx.fcc.trimming.ColorFillerHelper;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.trimming.ObjectsSelectionHelper;
+import org.esa.s2tbx.fcc.trimming.ObjectsSelectionOp;
+import org.esa.s2tbx.fcc.trimming.TrimmingHelper;
+import org.esa.s2tbx.fcc.trimming.UnionMasksHelper;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -30,12 +26,10 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.util.ProductUtils;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,9 +53,9 @@ import java.util.logging.Logger;
 public class ForestCoverChangeOp extends Operator {
     private static final Logger logger = Logger.getLogger(ForestCoverChangeOp.class.getName());
 
-    @SourceProduct(alias = "Source Product TM", description = "The source product to be modified.")
+    @SourceProduct(alias = "Current Source Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
-    @SourceProduct(alias = "Source Product ETM", description = "The source product to be modified.")
+    @SourceProduct(alias = "Previous Source Product", description = "The source product to be modified.")
     private Product previousSourceProduct;
 
     @TargetProduct

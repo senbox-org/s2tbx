@@ -1,10 +1,10 @@
-package org.esa.s2tbx.fcc.intern;
+package org.esa.s2tbx.fcc.trimming;
 
 import com.bc.ceres.core.ProgressMonitor;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -14,8 +14,6 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 
-import javax.media.jai.JAI;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 
 /**

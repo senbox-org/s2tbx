@@ -1,27 +1,20 @@
-package org.esa.s2tbx.fcc.intern;
+package org.esa.s2tbx.fcc.trimming;
 
-import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.PixelSourceBands;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.gpf.GPF;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
