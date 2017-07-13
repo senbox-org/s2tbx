@@ -23,9 +23,7 @@ public class FinalMasksHelper extends AbstractImageTilesParallelComputing {
     private final Product unionMaskProduct;
     private final IntSet differenceTrimmingSet;
 
-    public FinalMasksHelper(Product differenceSegmentationProduct, Product unionMaskProduct,
-                            IntSet differenceTrimmingSet, int tileWidth, int tileHeight) {
-
+    public FinalMasksHelper(Product differenceSegmentationProduct, Product unionMaskProduct, IntSet differenceTrimmingSet, int tileWidth, int tileHeight) {
         super(differenceSegmentationProduct.getSceneRasterWidth(), differenceSegmentationProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.differenceSegmentationProduct = differenceSegmentationProduct;
@@ -55,15 +53,13 @@ public class FinalMasksHelper extends AbstractImageTilesParallelComputing {
             for (int x = tileLeftX; x < tileRightX; x++) {
                 int segmentationPixelValue = differenceSegmentationBand.getSampleInt(x, y);
                 if (this.differenceTrimmingSet.contains(segmentationPixelValue)) {
-
                     int unionPixelValue = unionMaskBand.getSampleInt(x, y);
-                   if(unionPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE){
-                       segmentationPixelValue = 1;
-                   }
-                   else {
-                       segmentationPixelValue = ForestCoverChangeConstans.NO_DATA_VALUE;
-                   }
-                }  else {
+                    if (unionPixelValue == ForestCoverChangeConstans.NO_DATA_VALUE) {
+                        segmentationPixelValue = ForestCoverChangeConstans.NO_DATA_VALUE;
+                    } else {
+                        segmentationPixelValue = 1;
+                    }
+                } else {
                     segmentationPixelValue = ForestCoverChangeConstans.NO_DATA_VALUE;
                 }
                 synchronized (this.productData) {

@@ -473,9 +473,9 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             try {
                 long t0 = System.currentTimeMillis();
                 OperatorProductReader operatorProductReader = (OperatorProductReader) this.targetProduct.getProductReader();
-                Operator operator = operatorProductReader.getOperatorContext().getOperator();
+                ForestCoverChangeOp operator = (ForestCoverChangeOp)operatorProductReader.getOperatorContext().getOperator();
 
-                operator.doExecute(SubProgressMonitor.create(pm, 95));
+                operator.doExecuteNew(SubProgressMonitor.create(pm, 95));
 //                OperatorExecutor executor = OperatorExecutor.create(operator);
 //                executor.execute(SubProgressMonitor.create(pm, 95));
 

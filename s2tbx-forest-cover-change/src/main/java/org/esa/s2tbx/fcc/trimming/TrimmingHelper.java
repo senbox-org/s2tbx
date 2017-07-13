@@ -24,11 +24,7 @@ public class TrimmingHelper {
     private TrimmingHelper() {
     }
 
-    public static IntSet doTrimming(int threadCount, Executor threadPool, Product segmentationSourceProduct, Product sourceCompositionProduct, int[] sourceBandIndices)
-                                    throws Exception {
-
-        Int2ObjectMap<PixelSourceBands> validRegionStatistics = computeTrimmingStatistics(threadCount, threadPool, segmentationSourceProduct, sourceCompositionProduct, sourceBandIndices);
-
+    public static IntSet doTrimming(int threadCount, Executor threadPool, Int2ObjectMap<PixelSourceBands> validRegionStatistics) throws Exception {
         int initialValidRegionCount = validRegionStatistics.size();
 
         if (logger.isLoggable(Level.FINE)) {
@@ -36,7 +32,7 @@ public class TrimmingHelper {
             logger.log(Level.FINE, "Start applying trimming: valid region count: "+ initialValidRegionCount);
         }
 
-        ChiSquaredDistribution chi  = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
+        ChiSquaredDistribution chi = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
 
         float[] confidenceLevels = new float[]{ForestCoverChangeConstans.CONFIDENCE_LEVEL_99, ForestCoverChangeConstans.CONFIDENCE_LEVEL_95, ForestCoverChangeConstans.CONFIDENCE_LEVEL_90};
         for (int i=0; i<confidenceLevels.length; i++) {
@@ -68,92 +64,20 @@ public class TrimmingHelper {
             logger.log(Level.FINE, "Finish applying trimming: valid region count: "+ validRegionStatistics.size()+", removed region count: " + removedValidRegionCount);
         }
 
-//        IntSet trimmingRegionKeys = new IntOpenHashSet(validRegionStatistics.keySet());
-//        IntIterator it = validRegionStatistics.keySet().iterator();
-//        while (it.hasNext()) {
-//            trimmingRegionKeys.add(it.nextInt());
-//        }
-//
-//        return validRegionStatistics;
         return new IntOpenHashSet(validRegionStatistics.keySet());
     }
 
-    public static IntSet doTrimmingII(int threadCount, Executor threadPool, Int2ObjectMap<PixelSourceBands> validRegionStatistics )
-            throws Exception {
+    public static IntSet computeTrimmingStatistics(int threadCount, Executor threadPool, Product segmentationSourceProduct,
+                                                   Product sourceProduct, int[] sourceBandIndices, Dimension tileSize)
+                                                   throws Exception {
 
-        int initialValidRegionCount = validRegionStatistics.size();
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start applying trimming: valid region count: "+ initialValidRegionCount);
-        }
-
-        ChiSquaredDistribution chi  = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
-
-        float[] confidenceLevels = new float[]{ForestCoverChangeConstans.CONFIDENCE_LEVEL_99, ForestCoverChangeConstans.CONFIDENCE_LEVEL_95, ForestCoverChangeConstans.CONFIDENCE_LEVEL_90};
-        for (int i=0; i<confidenceLevels.length; i++) {
-            double cumulativeProbability = chi.inverseCumulativeProbability(confidenceLevels[i]);
-
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, ""); // add an empty line
-                logger.log(Level.FINE, "Start applying the trimming on the valid regions: iteration: "+(i+1)+", Chi distribution: " + cumulativeProbability+", valid region count: " + validRegionStatistics.size());
-            }
-
-            boolean continueRunning = true;
-            while (continueRunning) {
-                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.filterValidRegionsUsingMahalanobisDistance(threadCount, threadPool, validRegionStatistics, cumulativeProbability);
-                if (validStatistics == null) {
-                    continueRunning = false;//break;
-                } else {
-                    if (validStatistics.size() == 0 || validRegionStatistics.size() == validStatistics.size()) {
-                        continueRunning = false;//break;
-                    } else {
-                        validRegionStatistics = validStatistics;
-                    }
-                }
-            }
-        }
-
-        if (logger.isLoggable(Level.FINE)) {
-            int removedValidRegionCount = initialValidRegionCount - validRegionStatistics.size();
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish applying trimming: valid region count: "+ validRegionStatistics.size()+", removed region count: " + removedValidRegionCount);
-        }
-
-//        IntSet trimmingRegionKeys = new IntOpenHashSet(validRegionStatistics.keySet());
-//        IntIterator it = validRegionStatistics.keySet().iterator();
-//        while (it.hasNext()) {
-//            trimmingRegionKeys.add(it.nextInt());
-//        }
-//
-//        return validRegionStatistics;
-        return new IntOpenHashSet(validRegionStatistics.keySet());
-    }
-
-    private static Int2ObjectMap<PixelSourceBands> computeTrimmingStatistics(int threadCount, Executor threadPool, Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices)
-                                                                             throws Exception {
-
-//        Map<String, Object> parameters = new HashMap<>();
-//        parameters.put("sourceBandIndices", sourceBandIndices);
-//        Map<String, Product> sourceProducts = new HashMap<>();
-//        sourceProducts.put("segmentationSourceProduct", segmentationSourceProduct);
-//        sourceProducts.put("sourceProduct", sourceProduct);
-//        TrimmingRegionComputingOp trimRegOp = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
-//        trimRegOp.getTargetProduct();
-//
-//        OperatorExecutor executor = OperatorExecutor.create(trimRegOp);
-//        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-//
-//        return computeStatisticsPerRegion(trimRegOp.getValidRegionsMap());
-
-        Dimension tileSize = JAI.getDefaultTileSize();
         TrimmingRegionComputingHelper helper = new TrimmingRegionComputingHelper(segmentationSourceProduct, sourceProduct, sourceBandIndices, tileSize.width, tileSize.height);
-        Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap = helper.computeRegionsInParallel(threadCount, threadPool);
-        Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion = computeStatisticsPerRegion(validRegionsMap);
-        helper.doClose();
+        IntSet segmentationTrimmingRegionKeys = helper.computeRegionsInParallel(threadCount, threadPool);
+
         helper = null;
         System.gc();
-        return computeStatisticsPerRegion;
+
+        return segmentationTrimmingRegionKeys;
     }
 
     public static Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion(Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap) {

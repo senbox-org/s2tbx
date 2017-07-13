@@ -20,20 +20,26 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelComputing {
-    private static final Logger logger = Logger.getLogger(TrimmingRegionComputingHelper.class.getName());
+public class DifferenceRegionComputingHelper extends AbstractImageTilesParallelComputing {
+    private static final Logger logger = Logger.getLogger(DifferenceRegionComputingHelper.class.getName());
 
-    private final Product segmentationSourceProduct;
-    private final Product sourceProduct;
+    private final Product differenceSegmentationProduct;
+    private final Product currentSourceProduct;
+    private final Product previousSourceProduct;
+    private final Product unionMask;
     private final int[] sourceBandIndices;
 
     private final Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap;
 
-    TrimmingRegionComputingHelper(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
-        super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
+    public DifferenceRegionComputingHelper(Product differenceSegmentationProduct, Product currentSourceProduct, Product previousSourceProduct,
+                                    Product unionMask, int[] sourceBandIndices, int tileWidth, int tileHeight) {
 
-        this.segmentationSourceProduct = segmentationSourceProduct;
-        this.sourceProduct = sourceProduct;
+        super(differenceSegmentationProduct.getSceneRasterWidth(), differenceSegmentationProduct.getSceneRasterHeight(), tileWidth, tileHeight);
+
+        this.differenceSegmentationProduct = differenceSegmentationProduct;
+        this.currentSourceProduct = currentSourceProduct;
+        this.previousSourceProduct = previousSourceProduct;
+        this.unionMask = unionMask;
         this.sourceBandIndices = sourceBandIndices;
 
         this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<>();
@@ -46,21 +52,27 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelCom
             logger.log(Level.FINE, "Trimming statistics for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
-        Band firstBand = this.sourceProduct.getBandAt(this.sourceBandIndices[0]);
-        Band secondBand = this.sourceProduct.getBandAt(this.sourceBandIndices[1]);
-        Band thirdBand = this.sourceProduct.getBandAt(this.sourceBandIndices[2]);
+        Band firstCurrentBand = this.currentSourceProduct.getBandAt(this.sourceBandIndices[0]);
+        Band secondCurrentBand = this.currentSourceProduct.getBandAt(this.sourceBandIndices[1]);
+        Band thirdCurrentBand = this.currentSourceProduct.getBandAt(this.sourceBandIndices[2]);
 
-        Band segmentationBand = this.segmentationSourceProduct.getBandAt(0);
+        Band firstPreviousBand = this.previousSourceProduct.getBandAt(this.sourceBandIndices[0]);
+        Band secondPreviousBand = this.previousSourceProduct.getBandAt(this.sourceBandIndices[1]);
+        Band thirdPreviousBand = this.previousSourceProduct.getBandAt(this.sourceBandIndices[2]);
+
+        Band segmentationBand = this.differenceSegmentationProduct.getBandAt(0);
+        Band unionBand = this.unionMask.getBandAt(0);
 
         int tileBottomY = tileTopY + tileHeight;
         int tileRightX = tileLeftX + tileWidth;
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
-                int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
-                if (segmentationPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE) {
-                    float a = firstBand.getSampleFloat(x, y);
-                    float b = secondBand.getSampleFloat(x, y);
-                    float c = thirdBand.getSampleFloat(x, y);
+                if (unionBand.getSampleFloat(x, y) != ForestCoverChangeConstans.NO_DATA_VALUE) {
+                    int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
+
+                    float a = firstCurrentBand.getSampleFloat(x, y) - firstPreviousBand.getSampleFloat(x, y);
+                    float b = secondCurrentBand.getSampleFloat(x, y) - secondPreviousBand.getSampleFloat(x, y);
+                    float c = thirdCurrentBand.getSampleFloat(x, y) - thirdPreviousBand.getSampleFloat(x, y);
 
                     synchronized (this.validRegionsMap) {
                         AveragePixelsSourceBands value = this.validRegionsMap.get(segmentationPixelValue);
@@ -85,23 +97,23 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelCom
         this.validRegionsMap.clear();
     }
 
-    IntSet computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
+    public IntSet computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
-        Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion = TrimmingHelper.computeStatisticsPerRegion(this.validRegionsMap);
+        Int2ObjectMap<PixelSourceBands> differenceRegionsTrimming = TrimmingHelper.computeStatisticsPerRegion(this.validRegionsMap);
 
         doClose();
 
-        IntSet segmentationTrimmingRegionKeys = TrimmingHelper.doTrimming(threadCount, threadPool, computeStatisticsPerRegion);
+        IntSet differenceTrimmingSet = TrimmingHelper.doTrimming(threadCount, threadPool, differenceRegionsTrimming);
 
-        ObjectIterator<PixelSourceBands> it = computeStatisticsPerRegion.values().iterator();
+        ObjectIterator<PixelSourceBands> it = differenceRegionsTrimming.values().iterator();
         while (it.hasNext()) {
             PixelSourceBands value = it.next();
             WeakReference<PixelSourceBands> reference = new WeakReference<PixelSourceBands>(value);
             reference.clear();
         }
-        computeStatisticsPerRegion.clear();
+        differenceRegionsTrimming.clear();
 
-        return segmentationTrimmingRegionKeys;
+        return differenceTrimmingSet;
     }
 }
