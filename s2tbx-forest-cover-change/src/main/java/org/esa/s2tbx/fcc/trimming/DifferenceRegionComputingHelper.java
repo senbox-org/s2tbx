@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class DifferenceRegionComputingHelper extends AbstractImageTilesParallelComputing {
+public class DifferenceRegionComputingHelper extends AbstractRegionParallelComputing {
     private static final Logger logger = Logger.getLogger(DifferenceRegionComputingHelper.class.getName());
 
     private final Product differenceSegmentationProduct;
@@ -28,8 +28,6 @@ public class DifferenceRegionComputingHelper extends AbstractImageTilesParallelC
     private final Product previousSourceProduct;
     private final Product unionMask;
     private final int[] sourceBandIndices;
-
-    private final Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap;
 
     public DifferenceRegionComputingHelper(Product differenceSegmentationProduct, Product currentSourceProduct, Product previousSourceProduct,
                                     Product unionMask, int[] sourceBandIndices, int tileWidth, int tileHeight) {
@@ -41,15 +39,13 @@ public class DifferenceRegionComputingHelper extends AbstractImageTilesParallelC
         this.previousSourceProduct = previousSourceProduct;
         this.unionMask = unionMask;
         this.sourceBandIndices = sourceBandIndices;
-
-        this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<>();
     }
 
     @Override
     protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IOException, IllegalAccessException {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Trimming statistics for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
+            logger.log(Level.FINE, "Difference trimming statistics for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
         Band firstCurrentBand = this.currentSourceProduct.getBandAt(this.sourceBandIndices[0]);
@@ -74,46 +70,9 @@ public class DifferenceRegionComputingHelper extends AbstractImageTilesParallelC
                     float b = secondCurrentBand.getSampleFloat(x, y) - secondPreviousBand.getSampleFloat(x, y);
                     float c = thirdCurrentBand.getSampleFloat(x, y) - thirdPreviousBand.getSampleFloat(x, y);
 
-                    synchronized (this.validRegionsMap) {
-                        AveragePixelsSourceBands value = this.validRegionsMap.get(segmentationPixelValue);
-                        if (value == null) {
-                            value = new AveragePixelsSourceBands();
-                            this.validRegionsMap.put(segmentationPixelValue, value);
-                        }
-                        value.addPixelValuesBands(a, b, c);
-                    }
+                    addPixelValuesBands(segmentationPixelValue, a, b, c);
                 }
             }
         }
-    }
-
-    private void doClose() {
-        ObjectIterator<AveragePixelsSourceBands> it = this.validRegionsMap.values().iterator();
-        while (it.hasNext()) {
-            AveragePixelsSourceBands value = it.next();
-            WeakReference<AveragePixelsSourceBands> reference = new WeakReference<>(value);
-            reference.clear();
-        }
-        this.validRegionsMap.clear();
-    }
-
-    public IntSet computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
-        super.executeInParallel(threadCount, threadPool);
-
-        Int2ObjectMap<PixelSourceBands> differenceRegionsTrimming = TrimmingHelper.computeStatisticsPerRegion(this.validRegionsMap);
-
-        doClose();
-
-        IntSet differenceTrimmingSet = TrimmingHelper.doTrimming(threadCount, threadPool, differenceRegionsTrimming);
-
-        ObjectIterator<PixelSourceBands> it = differenceRegionsTrimming.values().iterator();
-        while (it.hasNext()) {
-            PixelSourceBands value = it.next();
-            WeakReference<PixelSourceBands> reference = new WeakReference<PixelSourceBands>(value);
-            reference.clear();
-        }
-        differenceRegionsTrimming.clear();
-
-        return differenceTrimmingSet;
     }
 }

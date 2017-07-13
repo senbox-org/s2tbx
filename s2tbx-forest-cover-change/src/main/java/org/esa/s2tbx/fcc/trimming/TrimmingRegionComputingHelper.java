@@ -20,14 +20,12 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelComputing {
+public class TrimmingRegionComputingHelper extends AbstractRegionParallelComputing {
     private static final Logger logger = Logger.getLogger(TrimmingRegionComputingHelper.class.getName());
 
     private final Product segmentationSourceProduct;
     private final Product sourceProduct;
     private final int[] sourceBandIndices;
-
-    private final Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap;
 
     TrimmingRegionComputingHelper(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
         super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
@@ -35,8 +33,6 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelCom
         this.segmentationSourceProduct = segmentationSourceProduct;
         this.sourceProduct = sourceProduct;
         this.sourceBandIndices = sourceBandIndices;
-
-        this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<>();
     }
 
     @Override
@@ -62,46 +58,9 @@ public class TrimmingRegionComputingHelper extends AbstractImageTilesParallelCom
                     float b = secondBand.getSampleFloat(x, y);
                     float c = thirdBand.getSampleFloat(x, y);
 
-                    synchronized (this.validRegionsMap) {
-                        AveragePixelsSourceBands value = this.validRegionsMap.get(segmentationPixelValue);
-                        if (value == null) {
-                            value = new AveragePixelsSourceBands();
-                            this.validRegionsMap.put(segmentationPixelValue, value);
-                        }
-                        value.addPixelValuesBands(a, b, c);
-                    }
+                    addPixelValuesBands(segmentationPixelValue, a, b, c);
                 }
             }
         }
-    }
-
-    private void doClose() {
-        ObjectIterator<AveragePixelsSourceBands> it = this.validRegionsMap.values().iterator();
-        while (it.hasNext()) {
-            AveragePixelsSourceBands value = it.next();
-            WeakReference<AveragePixelsSourceBands> reference = new WeakReference<>(value);
-            reference.clear();
-        }
-        this.validRegionsMap.clear();
-    }
-
-    IntSet computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
-        super.executeInParallel(threadCount, threadPool);
-
-        Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion = TrimmingHelper.computeStatisticsPerRegion(this.validRegionsMap);
-
-        doClose();
-
-        IntSet segmentationTrimmingRegionKeys = TrimmingHelper.doTrimming(threadCount, threadPool, computeStatisticsPerRegion);
-
-        ObjectIterator<PixelSourceBands> it = computeStatisticsPerRegion.values().iterator();
-        while (it.hasNext()) {
-            PixelSourceBands value = it.next();
-            WeakReference<PixelSourceBands> reference = new WeakReference<PixelSourceBands>(value);
-            reference.clear();
-        }
-        computeStatisticsPerRegion.clear();
-
-        return segmentationTrimmingRegionKeys;
     }
 }
