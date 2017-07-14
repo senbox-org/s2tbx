@@ -475,9 +475,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 OperatorProductReader operatorProductReader = (OperatorProductReader) this.targetProduct.getProductReader();
                 ForestCoverChangeOp operator = (ForestCoverChangeOp)operatorProductReader.getOperatorContext().getOperator();
 
-                operator.doExecuteNew(SubProgressMonitor.create(pm, 95));
-//                OperatorExecutor executor = OperatorExecutor.create(operator);
-//                executor.execute(SubProgressMonitor.create(pm, 95));
+                OperatorExecutor executor = OperatorExecutor.create(operator);
+                executor.execute(SubProgressMonitor.create(pm, 95));
 
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();

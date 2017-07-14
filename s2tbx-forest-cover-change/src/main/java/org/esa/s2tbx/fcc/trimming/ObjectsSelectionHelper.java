@@ -66,7 +66,7 @@ public class ObjectsSelectionHelper extends AbstractImageTilesParallelComputing 
         }
     }
 
-    public Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
+    public Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
         return this.statistics;

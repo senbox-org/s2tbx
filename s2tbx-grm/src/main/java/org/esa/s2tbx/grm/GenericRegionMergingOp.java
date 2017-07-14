@@ -27,6 +27,8 @@ import javax.media.jai.JAI;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -147,7 +149,9 @@ public class GenericRegionMergingOp extends Operator {
         this.totalTileCount = tileCountX * tileCountY;
 
         try {
-            this.tileSegmenter = buildTileSegmenter(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+            int threadCount = Runtime.getRuntime().availableProcessors();
+            Executor threadPool = Executors.newCachedThreadPool();
+            this.tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
                                                     threshold, spectralWeight, shapeWeight, imageSize, tileSize);
         } catch (IOException e) {
             throw new OperatorException(e);
@@ -289,7 +293,7 @@ public class GenericRegionMergingOp extends Operator {
         }
     }
 
-    private static AbstractTileSegmenter buildTileSegmenter(String mergingCostCriterion, String regionMergingCriterion,
+    private static AbstractTileSegmenter buildTileSegmenter(int threadCount, Executor threadPool, String mergingCostCriterion, String regionMergingCriterion,
                                                             int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
                                                             float shapeWeight, Dimension imageSize, Dimension tileSize)
                                                             throws IOException {
@@ -302,19 +306,20 @@ public class GenericRegionMergingOp extends Operator {
             fastSegmentation = false;
         }
         if (GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
-            tileSegmenter = new SpringTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+            tileSegmenter = new SpringTileSegmenter(threadCount, threadPool, imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
         } else if (GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
-            tileSegmenter = new BaatzSchapeTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, spectralWeight, shapeWeight);
+            tileSegmenter = new BaatzSchapeTileSegmenter(threadCount, threadPool, imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, spectralWeight, shapeWeight);
         } else if (GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
-            tileSegmenter = new FullLambdaScheduleTileSegmenter(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+            tileSegmenter = new FullLambdaScheduleTileSegmenter(threadCount, threadPool, imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
         } else {
             throw new IllegalArgumentException("Unknown merging cost criterion '" + mergingCostCriterion + "'.");
         }
         return tileSegmenter;
     }
 
-    public static Product runSegmentation(Product sourceProduct, String[] sourceBandNames, String mergingCostCriterion, String regionMergingCriterion,
-                                          int totalIterationsForSecondSegmentation, float threshold, float spectralWeight, float shapeWeight)
+    public static Product runSegmentation(int threadCount, Executor threadPool, Product sourceProduct, String[] sourceBandNames,
+                                          String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
+                                          float threshold, float spectralWeight, float shapeWeight)
                                           throws Exception {
 
         //TODO Jean remove
@@ -324,17 +329,17 @@ public class GenericRegionMergingOp extends Operator {
         Dimension imageSize = new Dimension(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
         Dimension tileSize = JAI.getDefaultTileSize();
 
-        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
                                                                  threshold, spectralWeight, shapeWeight, imageSize, tileSize);
 
         long startTime = System.currentTimeMillis();
-        AbstractTileSegmenter.logStartSegmentation(startTime, tileSegmenter);
+        tileSegmenter.logStartSegmentation(startTime);
 
         tileSegmenter.runFirstSegmentationsInParallel(sourceProduct, sourceBandNames);
         AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
         Band productTargetBand = segmenter.buildBandData("band_1");
 
-        AbstractTileSegmenter.logFinishSegmentation(startTime, tileSegmenter, segmenter);
+        tileSegmenter.logFinishSegmentation(startTime, segmenter);
 
         segmenter.getGraph().doClose();
         segmenter = null;
@@ -350,7 +355,8 @@ public class GenericRegionMergingOp extends Operator {
         return targetProduct;
     }
 
-    public static Product runSegmentation(Product currentSourceProduct, Product previousSourceProduct, String[] sourceBandNames, String mergingCostCriterion, String regionMergingCriterion,
+    public static Product runSegmentation(int threadCount, Executor threadPool, Product currentSourceProduct, Product previousSourceProduct,
+                                          String[] sourceBandNames, String mergingCostCriterion, String regionMergingCriterion,
                                           int totalIterationsForSecondSegmentation, float threshold, float spectralWeight, float shapeWeight)
                                           throws Exception {
 
@@ -361,17 +367,17 @@ public class GenericRegionMergingOp extends Operator {
         Dimension imageSize = new Dimension(currentSourceProduct.getSceneRasterWidth(), currentSourceProduct.getSceneRasterHeight());
         Dimension tileSize = JAI.getDefaultTileSize();
 
-        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
-                threshold, spectralWeight, shapeWeight, imageSize, tileSize);
+        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion,
+                                                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight, imageSize, tileSize);
 
         long startTime = System.currentTimeMillis();
-        AbstractTileSegmenter.logStartSegmentation(startTime, tileSegmenter);
+        tileSegmenter.logStartSegmentation(startTime);
 
         tileSegmenter.runDifferenceFirstSegmentationsInParallel(currentSourceProduct, previousSourceProduct, sourceBandNames);
         AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
         Band productTargetBand = segmenter.buildBandData("band_1");
 
-        AbstractTileSegmenter.logFinishSegmentation(startTime, tileSegmenter, segmenter);
+        tileSegmenter.logFinishSegmentation(startTime, segmenter);
 
         segmenter.getGraph().doClose();
         segmenter = null;

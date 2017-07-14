@@ -21,18 +21,18 @@ import java.util.logging.Logger;
 public class ColorFillerHelper extends AbstractImageTilesParallelComputing {
     private static final Logger logger = Logger.getLogger(ColorFillerHelper.class.getName());
 
-    private final Product sourceProduct;
+    private final Product segmentationSourceProduct;
     private final IntSet validRegions;
     private final ProductData productData;
 
-    public ColorFillerHelper(Product sourceProduct, IntSet validRegions, int tileWidth, int tileHeight) {
-        super(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
+    public ColorFillerHelper(Product segmentationSourceProduct, IntSet validRegions, int tileWidth, int tileHeight) {
+        super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
-        this.sourceProduct = sourceProduct;
+        this.segmentationSourceProduct = segmentationSourceProduct;
         this.validRegions = validRegions;
 
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
+        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
         this.productData = ProductData.createInstance(ProductData.TYPE_INT32, sceneWidth * sceneHeight);
     }
 
@@ -45,8 +45,8 @@ public class ColorFillerHelper extends AbstractImageTilesParallelComputing {
             logger.log(Level.FINE, "Color filler for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
-        Band segmentationBand = this.sourceProduct.getBandAt(0);
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
+        Band segmentationBand = this.segmentationSourceProduct.getBandAt(0);
+        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
         int tileBottomY = tileTopY + tileHeight;
         int tileRightX = tileLeftX + tileWidth;
         for (int y = tileTopY; y < tileBottomY; y++) {
@@ -62,16 +62,16 @@ public class ColorFillerHelper extends AbstractImageTilesParallelComputing {
         }
     }
 
-    public Product computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
+    public Product runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
+        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
 
-        Product targetProduct = new Product(this.sourceProduct.getName() + "_fill", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
+        Product targetProduct = new Product(this.segmentationSourceProduct.getName() + "_fill", this.segmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
         targetProduct.setPreferredTileSize(tileSize);
-        ProductUtils.copyGeoCoding(this.sourceProduct, targetProduct);
+        ProductUtils.copyGeoCoding(this.segmentationSourceProduct, targetProduct);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         targetBand.setData(this.productData);
 

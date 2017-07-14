@@ -41,7 +41,8 @@ public abstract class AbstractTileSegmenter {
     private final int threadCount;
     private final Executor threadPool;
 
-    protected AbstractTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation, float threshold, boolean fastSegmentation)
+    protected AbstractTileSegmenter(int threadCount, Executor threadPool, Dimension imageSize, Dimension tileSize,
+                                    int totalIterationsForSecondSegmentation, float threshold, boolean fastSegmentation)
                                     throws IOException {
 
         this.imageWidth = imageSize.width;
@@ -60,8 +61,8 @@ public abstract class AbstractTileSegmenter {
         this.iterationsForEachSecondSegmentation = 3; // TODO: find a smart value
         this.tileSegmenterMetadata = new TileSegmenterMetadata();
 
-        this.threadCount = Runtime.getRuntime().availableProcessors();
-        this.threadPool = Executors.newCachedThreadPool();
+        this.threadCount = threadCount;
+        this.threadPool = threadPool;
     }
 
     protected abstract Node buildNode(int nodeId, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel);
@@ -136,7 +137,9 @@ public abstract class AbstractTileSegmenter {
         tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 
-    public final void runDifferenceFirstSegmentationsInParallel(Product currentSourceProduct, Product previousSourceProduct, String[] sourceBandNames) throws Exception {
+    public final void runDifferenceFirstSegmentationsInParallel(Product currentSourceProduct, Product previousSourceProduct, String[] sourceBandNames)
+                                                                throws Exception {
+
         DifferenceTileFirstSegmentationHelper tileFirstSegmentationHelper = new DifferenceTileFirstSegmentationHelper(currentSourceProduct, previousSourceProduct, sourceBandNames, this);
         tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
@@ -189,7 +192,9 @@ public abstract class AbstractTileSegmenter {
         return tile.getImageLeftX() / this.tileWidth;
     }
 
-    public void runTileFirstSegmentation(TileDataSource[] sourceTiles, ProcessingTile tileToProcess) throws IllegalAccessException, IOException, InterruptedException {
+    public void runTileFirstSegmentation(TileDataSource[] sourceTiles, ProcessingTile tileToProcess)
+                                         throws IllegalAccessException, IOException, InterruptedException {
+
         int tileColumnIndex = computeTileColumnIndex(tileToProcess);
         int tileRowIndex = computeTileRowIndex(tileToProcess);
 
@@ -311,7 +316,9 @@ public abstract class AbstractTileSegmenter {
         return (int) (Math.pow(2, this.iterationsForEachSecondSegmentation + 1) - 2);
     }
 
-    public final void runTileSecondSegmentation(int iteration, int rowIndex, int columnIndex, int numberOfNeighborLayers) throws IllegalAccessException, IOException, InterruptedException {
+    public final void runTileSecondSegmentation(int iteration, int rowIndex, int columnIndex, int numberOfNeighborLayers)
+                                                throws IllegalAccessException, IOException, InterruptedException {
+
         int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
         int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
         ProcessingTile currentTile = this.tileSegmenterMetadata.getTileAt(rowIndex, columnIndex);
@@ -926,28 +933,18 @@ public abstract class AbstractTileSegmenter {
         return numberOfFirstIterations;
     }
 
-    public static void logStartSegmentation(long startTime, AbstractTileSegmenter tileSegmenter) {
+    public void logStartSegmentation(long startTime) {
         if (logger.isLoggable(Level.FINE)) {
-            int imageWidth = tileSegmenter.getImageWidth();
-            int imageHeight = tileSegmenter.getImageHeight();
-            int tileWidth = tileSegmenter.getTileWidth();
-            int tileHeight = tileSegmenter.getTileHeight();
-            int tileMargin = tileSegmenter.computeTileMargin();
-            int firstNumberOfIterations = tileSegmenter.getIterationsForEachFirstSegmentation();
+            int tileMargin = computeTileMargin();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", first number of iterations: " + firstNumberOfIterations + ", start time: " + new Date(startTime));
-            logger.log(Level.FINE, "Temporary folder path to store the binary files: '" + tileSegmenter.getTemporaryFolderPath()+"'");
+            logger.log(Level.FINE, "Start Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", thread count: " + this.threadCount + ", start time: " + new Date(startTime));
+            logger.log(Level.FINE, "Temporary folder path to store the binary files: '" + getTemporaryFolderPath()+"'");
         }
     }
 
-    public static void logFinishSegmentation(long startTime, AbstractTileSegmenter tileSegmenter, AbstractSegmenter segmenter) {
+    public void logFinishSegmentation(long startTime, AbstractSegmenter segmenter) {
         if (logger.isLoggable(Level.FINE)) {
-            int imageWidth = tileSegmenter.getImageWidth();
-            int imageHeight = tileSegmenter.getImageHeight();
-            int tileWidth = tileSegmenter.getTileWidth();
-            int tileHeight = tileSegmenter.getTileHeight();
-            int tileMargin = tileSegmenter.computeTileMargin();
-
+            int tileMargin = computeTileMargin();
             long finishTime = System.currentTimeMillis();
             long totalSeconds = (finishTime - startTime) / 1000;
             int graphNodeCount = segmenter.getGraph().getNodeCount();

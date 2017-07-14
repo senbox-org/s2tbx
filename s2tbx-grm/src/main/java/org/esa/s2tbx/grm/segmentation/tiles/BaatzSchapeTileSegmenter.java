@@ -7,6 +7,7 @@ import org.esa.snap.utils.BufferedOutputStreamWrapper;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 /**
  * @author Jean Coravu
@@ -15,11 +16,12 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     private final float spectralWeight;
     private final float shapeWeight;
 
-    public BaatzSchapeTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight)
+    public BaatzSchapeTileSegmenter(int threadCount, Executor threadPool, Dimension imageSize, Dimension tileSize,
+                                    int totalIterationsForSecondSegmentation, float threshold, boolean fastSegmentation,
+                                    float spectralWeight, float shapeWeight)
                                     throws IOException {
 
-        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+        super(threadCount, threadPool, imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
 
         this.spectralWeight = spectralWeight;
         this.shapeWeight = shapeWeight;

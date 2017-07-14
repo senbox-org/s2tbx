@@ -69,7 +69,7 @@ public class FinalMasksHelper extends AbstractImageTilesParallelComputing {
         }
     }
 
-    public ProductData computeRegionsInParallel(int threadCount, Executor threadPool) throws Exception {
+    public ProductData runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
         return this.productData;

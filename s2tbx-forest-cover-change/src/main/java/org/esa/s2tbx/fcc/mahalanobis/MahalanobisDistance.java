@@ -2,11 +2,13 @@ package org.esa.s2tbx.fcc.mahalanobis;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
 import org.esa.s2tbx.fcc.common.PixelSourceBands;
 import org.esa.snap.utils.AbstractArrayCellsParallelComputing;
 import org.esa.snap.utils.AbstractMatrixCellsParallelComputing;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,9 +19,9 @@ import java.util.logging.Logger;
 public class MahalanobisDistance {
     private static final Logger logger = Logger.getLogger(MahalanobisDistance.class.getName());
 
-    public static Int2ObjectMap<PixelSourceBands> filterValidRegionsUsingMahalanobisDistance(int threadCount, Executor threadPool,
-                                                                                             Int2ObjectMap<PixelSourceBands> validRegionStatistics, double cumulativeProbability)
-                                                                                             throws Exception {
+    public static Int2ObjectMap<PixelSourceBands> filterValidRegions(int threadCount, Executor threadPool,
+                                                                     Int2ObjectMap<PixelSourceBands> validRegionStatistics, double cumulativeProbability)
+                                                                     throws Exception {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -29,17 +31,15 @@ public class MahalanobisDistance {
         TrimmingStatisticsMatrix trimmingStatisticsMatrix = new TrimmingStatisticsMatrix(validRegionStatistics);
 
         Matrix inverseMatrix = computeInverseMatrix(threadCount, threadPool, trimmingStatisticsMatrix);
-
+        Int2ObjectMap<PixelSourceBands> result = null;
         if (inverseMatrix == null) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Finish computing the Mahalanobis distance: valid region count: " + validRegionStatistics.size() + ", removed region count: "+0+", Chi distribution: "+cumulativeProbability+ ", thread count: " + threadCount+", no inverse matrix");
             }
-
-            return null;
         } else {
             MahalanobisDistanceHelper mahalanobisDistanceHelper = new MahalanobisDistanceHelper(trimmingStatisticsMatrix, inverseMatrix, cumulativeProbability);
-            Int2ObjectMap<PixelSourceBands> result = mahalanobisDistanceHelper.computeCellsInParallel(threadCount, threadPool);
+            result = mahalanobisDistanceHelper.computeCellsInParallel(threadCount, threadPool);
 
             if (logger.isLoggable(Level.FINE)) {
                 int removedRegionCount = validRegionStatistics.size() - result.size();
@@ -47,8 +47,14 @@ public class MahalanobisDistance {
                 logger.log(Level.FINE, "Finish computing the Mahalanobis distance: valid region count: " + result.size() + ", removed region count: "+removedRegionCount+ ", Chi distribution: "+cumulativeProbability+ ", thread count: " + threadCount);
             }
 
-            return result;
+            WeakReference<Matrix> reference = new WeakReference<Matrix>(inverseMatrix);
+            reference.clear();
         }
+
+        WeakReference<TrimmingStatisticsMatrix> reference = new WeakReference<TrimmingStatisticsMatrix>(trimmingStatisticsMatrix);
+        reference.clear();
+
+        return result;
     }
 
     private static Matrix computeInverseMatrix(int threadCount, Executor threadPool, Matrix matrix) throws Exception {

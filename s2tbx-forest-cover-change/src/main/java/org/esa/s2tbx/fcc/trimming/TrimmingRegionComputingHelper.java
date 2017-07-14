@@ -27,7 +27,7 @@ public class TrimmingRegionComputingHelper extends AbstractRegionParallelComputi
     private final Product sourceProduct;
     private final int[] sourceBandIndices;
 
-    TrimmingRegionComputingHelper(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
+    public TrimmingRegionComputingHelper(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
         super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.segmentationSourceProduct = segmentationSourceProduct;
