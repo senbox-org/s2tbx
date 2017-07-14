@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import javax.media.jai.JAI;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -86,7 +86,7 @@ public class ColorFillerOp extends Operator {
             for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
                 int sgmentationValue = segmentationBand.getSampleInt(x, y);
                 if (!this.validRegions.contains(sgmentationValue)) {
-                    sgmentationValue = ForestCoverChangeConstans.NO_DATA_VALUE;
+                    sgmentationValue = ForestCoverChangeConstants.NO_DATA_VALUE;
                 }
                 targetTile.setSample(x, y, sgmentationValue);
             }

@@ -7,12 +7,11 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.fcc.common.PixelSourceBands;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
 import org.esa.snap.core.datamodel.Product;
 
-import javax.media.jai.JAI;
 import java.awt.Dimension;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
@@ -32,9 +31,9 @@ public class TrimmingHelper {
             logger.log(Level.FINE, "Start applying trimming: valid region count: "+ initialValidRegionCount);
         }
 
-        ChiSquaredDistribution chi = new ChiSquaredDistribution(ForestCoverChangeConstans.DEGREES_OF_FREEDOM);
+        ChiSquaredDistribution chi = new ChiSquaredDistribution(ForestCoverChangeConstants.DEGREES_OF_FREEDOM);
 
-        float[] confidenceLevels = new float[]{ForestCoverChangeConstans.CONFIDENCE_LEVEL_99, ForestCoverChangeConstans.CONFIDENCE_LEVEL_95, ForestCoverChangeConstans.CONFIDENCE_LEVEL_90};
+        float[] confidenceLevels = new float[]{ForestCoverChangeConstants.CONFIDENCE_LEVEL_99, ForestCoverChangeConstants.CONFIDENCE_LEVEL_95, ForestCoverChangeConstants.CONFIDENCE_LEVEL_90};
         for (int i=0; i<confidenceLevels.length; i++) {
             double cumulativeProbability = chi.inverseCumulativeProbability(confidenceLevels[i]);
 

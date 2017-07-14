@@ -2,7 +2,7 @@ package org.esa.s2tbx.fcc.trimming;
 
 import com.bc.ceres.core.ProgressMonitor;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Operator;
@@ -73,7 +73,7 @@ public class UnionMasksOp extends Operator {
                     if (this.currentSegmentationTrimmingRegionKeys.contains(segmentationPixelValue)) {
                         segmentationPixelValue = 100;
                     } else {
-                        segmentationPixelValue = ForestCoverChangeConstans.NO_DATA_VALUE;
+                        segmentationPixelValue = ForestCoverChangeConstants.NO_DATA_VALUE;
                     }
                 }
                 targetTile.setSample(x, y, segmentationPixelValue);
