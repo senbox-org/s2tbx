@@ -1,19 +1,10 @@
 package org.esa.s2tbx.fcc.trimming;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
-import org.esa.s2tbx.fcc.common.PixelSourceBands;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,7 +44,7 @@ public class TrimmingRegionComputingHelper extends AbstractRegionParallelComputi
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
                 int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
-                if (segmentationPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE) {
+                if (segmentationPixelValue != ForestCoverChangeConstants.NO_DATA_VALUE) {
                     float a = firstBand.getSampleFloat(x, y);
                     float b = secondBand.getSampleFloat(x, y);
                     float c = thirdBand.getSampleFloat(x, y);

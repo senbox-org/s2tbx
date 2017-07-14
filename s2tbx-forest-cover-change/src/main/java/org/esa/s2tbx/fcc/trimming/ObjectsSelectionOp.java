@@ -13,7 +13,7 @@ import javax.media.jai.JAI;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -103,7 +103,7 @@ public class ObjectsSelectionOp extends Operator {
                         this.statistics.put(segmentationPixelValue, pixel);
                     }
                     pixel.incrementTotalNumberPixels();
-                    for (int index : ForestCoverChangeConstans.COVER_LABElS) {
+                    for (int index : ForestCoverChangeConstants.COVER_LABElS) {
                         if (index == landCoverPixelValue) {
                             pixel.incrementPixelsInRange();
                         }
@@ -141,7 +141,7 @@ public class ObjectsSelectionOp extends Operator {
     private Product addLandCoverBand() {
         Product landCover = createLandCoverProduct();
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("landCoverNames", ForestCoverChangeConstans.LAND_COVER_NAME);
+        parameters.put("landCoverNames", ForestCoverChangeConstants.LAND_COVER_NAME);
         return GPF.createProduct("AddLandCover", parameters, landCover);
     }
 

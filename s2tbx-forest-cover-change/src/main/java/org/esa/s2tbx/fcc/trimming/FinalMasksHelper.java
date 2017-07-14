@@ -1,7 +1,7 @@
 package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -54,13 +54,13 @@ public class FinalMasksHelper extends AbstractImageTilesParallelComputing {
                 int segmentationPixelValue = differenceSegmentationBand.getSampleInt(x, y);
                 if (this.differenceTrimmingSet.contains(segmentationPixelValue)) {
                     int unionPixelValue = unionMaskBand.getSampleInt(x, y);
-                    if (unionPixelValue == ForestCoverChangeConstans.NO_DATA_VALUE) {
-                        segmentationPixelValue = ForestCoverChangeConstans.NO_DATA_VALUE;
+                    if (unionPixelValue == ForestCoverChangeConstants.NO_DATA_VALUE) {
+                        segmentationPixelValue = ForestCoverChangeConstants.NO_DATA_VALUE;
                     } else {
                         segmentationPixelValue = 1;
                     }
                 } else {
-                    segmentationPixelValue = ForestCoverChangeConstans.NO_DATA_VALUE;
+                    segmentationPixelValue = ForestCoverChangeConstants.NO_DATA_VALUE;
                 }
                 synchronized (this.productData) {
                     this.productData.setElemIntAt(sceneWidth * y + x, segmentationPixelValue);

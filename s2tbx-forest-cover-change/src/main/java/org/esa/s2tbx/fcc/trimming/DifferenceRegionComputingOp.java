@@ -2,7 +2,7 @@ package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
@@ -65,7 +65,7 @@ public class DifferenceRegionComputingOp extends AbstractRegionComputingOp {
 
     @Override
     protected boolean isSegmentationPixelValid(int x, int y, int segmentationPixelValue) {
-        return unionMask.getBandAt(0).getSampleFloat(x, y) != ForestCoverChangeConstans.NO_DATA_VALUE;
+        return unionMask.getBandAt(0).getSampleFloat(x, y) != ForestCoverChangeConstants.NO_DATA_VALUE;
     }
 
     private void validateSourceProducts() {

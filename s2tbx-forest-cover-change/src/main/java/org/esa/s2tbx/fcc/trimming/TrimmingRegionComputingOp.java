@@ -2,7 +2,7 @@ package org.esa.s2tbx.fcc.trimming;
 
 import java.util.logging.Logger;
 
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
@@ -58,7 +58,7 @@ public class TrimmingRegionComputingOp extends AbstractRegionComputingOp {
 
     @Override
     protected boolean isSegmentationPixelValid(int x, int y, int segmentationPixelValue) {
-        return segmentationPixelValue != ForestCoverChangeConstans.NO_DATA_VALUE;
+        return segmentationPixelValue != ForestCoverChangeConstants.NO_DATA_VALUE;
 
     }
 

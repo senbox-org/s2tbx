@@ -1,7 +1,7 @@
 package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstans;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -53,7 +53,7 @@ public class ColorFillerHelper extends AbstractImageTilesParallelComputing {
             for (int x = tileLeftX; x < tileRightX; x++) {
                 int segmentationValue = segmentationBand.getSampleInt(x, y);
                 if (!this.validRegions.contains(segmentationValue)) {
-                    segmentationValue = ForestCoverChangeConstans.NO_DATA_VALUE;
+                    segmentationValue = ForestCoverChangeConstants.NO_DATA_VALUE;
                 }
                 synchronized (this.productData) {
                     this.productData.setElemIntAt(sceneWidth * y + x, segmentationValue);
