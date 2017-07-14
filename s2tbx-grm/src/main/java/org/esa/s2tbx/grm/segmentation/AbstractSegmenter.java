@@ -28,6 +28,20 @@ public abstract class AbstractSegmenter {
 
     protected abstract Node buildNode(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel);
 
+    private static String tileRegionToString(BoundingBox region) {
+        StringBuilder str = new StringBuilder();
+        str.append("[x=")
+                .append(region.getLeftX())
+                .append(", y=")
+                .append(region.getTopY())
+                .append(", width=")
+                .append(region.getWidth())
+                .append(", height=")
+                .append(region.getHeight())
+                .append("]");
+        return str.toString();
+    }
+
     public final boolean update(TileDataSource[] sourceTiles, BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
         initNodes(sourceTiles, rectange, addFourNeighbors);
 
@@ -209,6 +223,8 @@ public abstract class AbstractSegmenter {
         int numberOfNodes = this.imageWidth * this.imageHeight;
         this.graph = new Graph(numberOfNodes);
 
+        logger.log(Level.FINE, "before update bounds: "+tileRegionToString(rectange)+" numberOfNodes="+numberOfNodes);
+
         for (int i = 0; i < numberOfNodes; i++) {
             int upperLeftX = i % this.imageWidth;
             int upperLeftY = i / this.imageWidth;
@@ -241,6 +257,9 @@ public abstract class AbstractSegmenter {
                 node.initData(b, pixel);
             }
         }
+
+        logger.log(Level.FINE, "after update bounds: "+tileRegionToString(rectange)+" numberOfNodes="+numberOfNodes);
+
     }
 
     private int[][] buildMarkerMatrix(int widthCount, int heightCount) {
