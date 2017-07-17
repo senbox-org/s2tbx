@@ -42,9 +42,13 @@ public class TileFirstSegmentationHelper extends AbstractImageTilesParallelCompu
         Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
         for (int i=0; i<this.sourceBandNames.length; i++) {
             Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            MultiLevelImage image = band.getSourceImage();
-            Raster awtRaster = image.getData(rectangleToRead);
-            sourceTiles[i] = new TileDataSourceImpl(new TileImpl(band, awtRaster));
+            Tile tile = null;
+            synchronized (this) {
+                MultiLevelImage image = band.getSourceImage();
+                Raster awtRaster = image.getData(rectangleToRead);
+                tile = new TileImpl(band, awtRaster);
+            }
+            sourceTiles[i] = new TileDataSourceImpl(tile);
         }
         return sourceTiles;
     }

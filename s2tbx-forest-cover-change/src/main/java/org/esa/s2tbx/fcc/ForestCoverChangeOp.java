@@ -107,6 +107,10 @@ public class ForestCoverChangeOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         validateSourceProducts();
+
+        this.currentProductBandsNames = findBandNames(this.currentSourceProduct);
+        this.previousProductBandsNames = findBandNames(this.previousSourceProduct);
+
         int sceneWidth = this.currentSourceProduct.getSceneRasterWidth();
         int sceneHeight = this.currentSourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
@@ -131,11 +135,8 @@ public class ForestCoverChangeOp extends Operator {
             logger.log(Level.FINE, "Start Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight() + ", start time: " + new Date(startTime));
         }
 
-        // reset the source inmage of the target product
+        // reset the source image of the target product
         this.targetProduct.getBandAt(0).setSourceImage(null);
-
-        this.currentProductBandsNames = findBandsNames(this.currentSourceProduct);
-        this.previousProductBandsNames = findBandsNames(this.previousSourceProduct);
 
         Dimension tileSize = JAI.getDefaultTileSize();
         int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
@@ -143,7 +144,8 @@ public class ForestCoverChangeOp extends Operator {
         ExecutorService threadPool = Executors.newCachedThreadPool();
 
         try {
-            ProductTrimmingResult currentResult = runTrimming(threadCount, threadPool, this.currentSourceProduct, this.currentProductBandsNames, trimmingSourceProductBandIndices, tileSize);
+            ProductTrimmingResult currentResult = runTrimming(threadCount, threadPool, this.currentSourceProduct, this.currentProductBandsNames,
+                                                              trimmingSourceProductBandIndices, tileSize);
             Product currentProduct = currentResult.getProduct();
             IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
             Product currentProductColorFill = currentResult.getSegmentationProductColorFill();
@@ -151,7 +153,8 @@ public class ForestCoverChangeOp extends Operator {
             // reset the reference
             currentResult = null;
 
-            ProductTrimmingResult previousResult = runTrimming(threadCount, threadPool, this.previousSourceProduct, this.previousProductBandsNames, trimmingSourceProductBandIndices, tileSize);
+            ProductTrimmingResult previousResult = runTrimming(threadCount, threadPool, this.previousSourceProduct, this.previousProductBandsNames,
+                                                               trimmingSourceProductBandIndices, tileSize);
             Product previousProduct = previousResult.getProduct();
             IntSet previousSegmentationTrimmingRegionKeys = previousResult.getTrimmingRegionKeys();
             Product previousProductColorFill = previousResult.getSegmentationProductColorFill();
@@ -160,7 +163,7 @@ public class ForestCoverChangeOp extends Operator {
             previousResult = null;
 
             Product unionMaskProduct = runUnionMasksOp(threadCount, threadPool, currentSegmentationTrimmingRegionKeys, currentProductColorFill,
-                    previousSegmentationTrimmingRegionKeys, previousProductColorFill, tileSize);
+                                                       previousSegmentationTrimmingRegionKeys, previousProductColorFill, tileSize);
 
             // reset the references
             currentSegmentationTrimmingRegionKeys = null;
@@ -173,8 +176,10 @@ public class ForestCoverChangeOp extends Operator {
                 logger.log(Level.FINE, "Start segmentation for difference bands.");
             }
 
-            Product differenceSegmentationProduct = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, currentProduct, previousProduct, this.currentProductBandsNames, mergingCostCriterion, regionMergingCriterion,
-                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+            Product differenceSegmentationProduct = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, currentProduct, this.currentProductBandsNames,
+                                                                            previousProduct, this.previousProductBandsNames, mergingCostCriterion,
+                                                                            regionMergingCriterion, totalIterationsForSecondSegmentation, threshold,
+                                                                            spectralWeight, shapeWeight);
 
             // reset the references
             currentProduct = null;
@@ -200,10 +205,10 @@ public class ForestCoverChangeOp extends Operator {
 
     private IntSet computeDifferenceTrimmingSet(int threadCount, Executor threadPool, Product differenceSegmentationProduct,
                                                 Product unionMaskProduct, int[] sourceBandIndices, Dimension tileSize)
-            throws Exception {
+                                                throws Exception {
 
         DifferenceRegionComputingHelper helper = new DifferenceRegionComputingHelper(differenceSegmentationProduct, currentSourceProduct, previousSourceProduct,
-                unionMaskProduct, sourceBandIndices, tileSize.width, tileSize.height);
+                                                                                     unionMaskProduct, sourceBandIndices, tileSize.width, tileSize.height);
         IntSet differenceTrimmingSet = helper.runTilesInParallel(threadCount, threadPool);
 
         helper = null;
@@ -214,7 +219,7 @@ public class ForestCoverChangeOp extends Operator {
 
     private ProductTrimmingResult runTrimming(int threadCount, Executor threadPool, Product sourceProduct,
                                               String[] sourceBandNames, int[] trimmingSourceProductBandIndices, Dimension tileSize)
-            throws Exception {
+                                              throws Exception {
 
         Product product = generateBandsExtractor(sourceProduct, sourceBandNames);
 
@@ -230,7 +235,8 @@ public class ForestCoverChangeOp extends Operator {
             logger.log(Level.FINE, "Start trimming for source product '" + sourceProduct.getName()+"'");
         }
 
-        TrimmingRegionComputingHelper helper = new TrimmingRegionComputingHelper(productColorFill, product, trimmingSourceProductBandIndices, tileSize.width, tileSize.height);
+        TrimmingRegionComputingHelper helper = new TrimmingRegionComputingHelper(productColorFill, product, trimmingSourceProductBandIndices,
+                                                                                 tileSize.width, tileSize.height);
         IntSet segmentationTrimmingRegionKeys = helper.runTilesInParallel(threadCount, threadPool);
 
         helper = null;
@@ -240,19 +246,17 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private Product generateColorFill(int threadCount, Executor threadPool, Product sourceProduct, String[] sourceBandNames, Dimension tileSize)
-            throws Exception {
+                                      throws Exception {
 
-        Product segmentationProduct = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, sourceProduct, sourceBandNames,
-                mergingCostCriterion, regionMergingCriterion,
-                totalIterationsForSecondSegmentation, threshold,
-                spectralWeight, shapeWeight);
+        Product segmentationProduct = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, sourceProduct, sourceBandNames, mergingCostCriterion,
+                                                    regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
         return runColorFillerOp(threadCount, threadPool, segmentationProduct, forestCoverPercentage, tileSize);
     }
 
     private static Product runColorFillerOp(int threadCount, Executor threadPool, Product segmentationSourceProduct,
                                             float percentagePixels, Dimension tileSize)
-            throws Exception {
+                                            throws Exception {
 
         IntSet validRegions = runObjectsSelectionOp(threadCount, threadPool, segmentationSourceProduct, percentagePixels, tileSize);
 
@@ -261,7 +265,7 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private static IntSet runObjectsSelectionOp(int threadCount, Executor threadPool, Product sourceProduct, float percentagePixels, Dimension tileSize)
-            throws Exception {
+                                                throws Exception {
 
         Product landCover = buildLandCoverProduct(sourceProduct);
         Map<String, Object> parameters = new HashMap<>();
@@ -325,7 +329,7 @@ public class ForestCoverChangeOp extends Operator {
     private static Product runUnionMasksOp(int threadCount, Executor threadPool, IntSet currentSegmentationTrimmingRegionKeys,
                                            Product currentSegmentationSourceProduct, IntSet previousSegmentationTrimmingRegionKeys,
                                            Product previousSegmentationSourceProduct, Dimension tileSize)
-            throws Exception {
+                                           throws Exception {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -333,7 +337,7 @@ public class ForestCoverChangeOp extends Operator {
         }
 
         UnionMasksHelper helper = new UnionMasksHelper(currentSegmentationSourceProduct, previousSegmentationSourceProduct, currentSegmentationTrimmingRegionKeys,
-                previousSegmentationTrimmingRegionKeys, tileSize.width, tileSize.height);
+                                                       previousSegmentationTrimmingRegionKeys, tileSize.width, tileSize.height);
         ProductData productData = helper.runTilesInParallel(threadCount, threadPool);
         int sceneRasterWidth = currentSegmentationSourceProduct.getSceneRasterWidth();
         int sceneRasterHeight = currentSegmentationSourceProduct.getSceneRasterHeight();
@@ -347,7 +351,7 @@ public class ForestCoverChangeOp extends Operator {
 
     private Product runFinalMaskOp(int threadCount, Executor threadPool, Product differenceSegmentationProduct,
                                    Product unionMaskProduct, IntSet differenceTrimmingSet, Dimension tileSize)
-            throws Exception {
+                                   throws Exception {
 
         FinalMasksHelper helper = new FinalMasksHelper(differenceSegmentationProduct, unionMaskProduct, differenceTrimmingSet, tileSize.width, tileSize.height);
         ProductData productData = helper.runTilesInParallel(threadCount, threadPool);
@@ -380,28 +384,27 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private void validateSourceProducts() {
-
         if (this.currentSourceProduct.getNumBands() < 4) {
-            String message = String.format("Source product '%s' does not contain minimum number of source bands needed.\n",
+            String message = String.format("The current source product '%s' does not contain minimum number of source bands needed.",
                     this.currentSourceProduct.getName());
             throw new OperatorException(message);
         }
         if (this.previousSourceProduct.getNumBands() < 4) {
-            String message = String.format("Source product '%s' does not contain minimum number of source bands needed.\n",
+            String message = String.format("The previous source product '%s' does not contain minimum number of source bands needed.",
                     this.previousSourceProduct.getName());
             throw new OperatorException(message);
         }
-        if (this.currentSourceProduct.getSceneRasterWidth() != this.previousSourceProduct.getSceneRasterWidth() ||
-                this.currentSourceProduct.getSceneRasterHeight() != this.previousSourceProduct.getSceneRasterHeight()){
-            String message = String.format("Source product '%s' and '%s' do not have the same raster sizes.\n",
+        if (this.currentSourceProduct.getSceneRasterWidth() != this.previousSourceProduct.getSceneRasterWidth()
+                || this.currentSourceProduct.getSceneRasterHeight() != this.previousSourceProduct.getSceneRasterHeight()) {
+
+            String message = String.format("Source products '%s' and '%s' do not have the same raster sizes.",
                     this.currentSourceProduct.getName(),
                     this.previousSourceProduct.getName());
             throw new OperatorException(message);
         }
-
     }
 
-    private String[] findBandsNames(Product product) {
+    private static String[] findBandNames(Product product) {
         String red = findBand(ForestCoverChangeConstants.MINIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND,
                               ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND,
                               product);
@@ -432,7 +435,7 @@ public class ForestCoverChangeOp extends Operator {
             }
         }
         if (bestBand == null) {
-            String message = String.format("Source product '%s' does not contain a band that has a wave length between '%s' and '%s'.\n",
+            String message = String.format("Source product '%s' does not contain a band that has a wave length between '%s' and '%s'.",
                     product.getName(),
                     minWavelength,
                     maxWavelength);

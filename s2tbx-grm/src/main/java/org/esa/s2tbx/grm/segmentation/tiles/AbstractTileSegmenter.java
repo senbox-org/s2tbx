@@ -137,10 +137,12 @@ public abstract class AbstractTileSegmenter {
         tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 
-    public final void runDifferenceFirstSegmentationsInParallel(Product currentSourceProduct, Product previousSourceProduct, String[] sourceBandNames)
+    public final void runDifferenceFirstSegmentationsInParallel(Product currentSourceProduct, String[] currentSourceBandNames,
+                                                                Product previousSourceProduct, String[] previousSourceBandNames)
                                                                 throws Exception {
 
-        DifferenceTileFirstSegmentationHelper tileFirstSegmentationHelper = new DifferenceTileFirstSegmentationHelper(currentSourceProduct, previousSourceProduct, sourceBandNames, this);
+        DifferenceTileFirstSegmentationHelper tileFirstSegmentationHelper = new DifferenceTileFirstSegmentationHelper(currentSourceProduct, currentSourceBandNames,
+                                                                                     previousSourceProduct, previousSourceBandNames, this);
         tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 

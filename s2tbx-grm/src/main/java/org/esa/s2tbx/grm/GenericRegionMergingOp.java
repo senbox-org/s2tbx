@@ -355,9 +355,10 @@ public class GenericRegionMergingOp extends Operator {
         return targetProduct;
     }
 
-    public static Product runSegmentation(int threadCount, Executor threadPool, Product currentSourceProduct, Product previousSourceProduct,
-                                          String[] sourceBandNames, String mergingCostCriterion, String regionMergingCriterion,
-                                          int totalIterationsForSecondSegmentation, float threshold, float spectralWeight, float shapeWeight)
+    public static Product runSegmentation(int threadCount, Executor threadPool, Product currentSourceProduct, String[] currentSourceBandNames,
+                                          Product previousSourceProduct, String[] previousSourceBandNames, String mergingCostCriterion,
+                                          String regionMergingCriterion, int totalIterationsForSecondSegmentation, float threshold,
+                                          float spectralWeight, float shapeWeight)
                                           throws Exception {
 
         //TODO Jean remove
@@ -373,7 +374,7 @@ public class GenericRegionMergingOp extends Operator {
         long startTime = System.currentTimeMillis();
         tileSegmenter.logStartSegmentation(startTime);
 
-        tileSegmenter.runDifferenceFirstSegmentationsInParallel(currentSourceProduct, previousSourceProduct, sourceBandNames);
+        tileSegmenter.runDifferenceFirstSegmentationsInParallel(currentSourceProduct, currentSourceBandNames, previousSourceProduct, previousSourceBandNames);
         AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
         Band productTargetBand = segmenter.buildBandData("band_1");
 

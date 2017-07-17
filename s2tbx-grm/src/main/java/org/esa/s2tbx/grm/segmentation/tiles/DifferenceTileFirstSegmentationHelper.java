@@ -21,32 +21,42 @@ public class DifferenceTileFirstSegmentationHelper extends AbstractImageTilesPar
     private final AbstractTileSegmenter tileSegmenter;
     private final Product currentSourceProduct;
     private final Product previousSourceProduct;
-    private final String[] sourceBandNames;
+    private final String[] currentSourceBandNames;
+    private final String[] previousSourceBandNames;
 
-    public DifferenceTileFirstSegmentationHelper(Product currentSourceProduct, Product previousSourceProduct, String[] sourceBandNames, AbstractTileSegmenter tileSegmenter) {
+    public DifferenceTileFirstSegmentationHelper(Product currentSourceProduct, String[] currentSourceBandNames, Product previousSourceProduct,
+                                                 String[] previousSourceBandNames, AbstractTileSegmenter tileSegmenter) {
+
         super(tileSegmenter.getImageWidth(), tileSegmenter.getImageHeight(), tileSegmenter.getTileWidth(), tileSegmenter.getTileHeight());
 
         this.tileSegmenter = tileSegmenter;
         this.currentSourceProduct = currentSourceProduct;
         this.previousSourceProduct = previousSourceProduct;
-        this.sourceBandNames = sourceBandNames;
+        this.currentSourceBandNames = currentSourceBandNames;
+        this.previousSourceBandNames = previousSourceBandNames;
     }
 
     @Override
-    protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IllegalAccessException, IOException, InterruptedException {
+    protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex)
+                           throws IllegalAccessException, IOException, InterruptedException {
+
         ProcessingTile currentTile = this.tileSegmenter.buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
         TileDataSource[] sourceTiles = buildSourceTiles(currentTile.getRegion());
         this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
     }
 
     private TileDataSource[] buildSourceTiles(BoundingBox tileRegion) {
-        TileDataSource[] sourceTiles = new TileDataSource[this.sourceBandNames.length];
+        TileDataSource[] sourceTiles = new TileDataSource[this.currentSourceBandNames.length];
         Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
-        for (int i=0; i<this.sourceBandNames.length; i++) {
-            Band currentBand = this.currentSourceProduct.getBand(this.sourceBandNames[i]);
-            Tile currentTile = buildTile(currentBand, rectangleToRead);
-            Band previousBand = this.previousSourceProduct.getBand(this.sourceBandNames[i]);
-            Tile previousTile = buildTile(previousBand, rectangleToRead);
+        for (int i=0; i<this.currentSourceBandNames.length; i++) {
+            Band currentBand = this.currentSourceProduct.getBand(this.currentSourceBandNames[i]);
+            Band previousBand = this.previousSourceProduct.getBand(this.previousSourceBandNames[i]);
+            Tile currentTile = null;
+            Tile previousTile = null;
+            synchronized (this) {
+                currentTile = buildTile(currentBand, rectangleToRead);
+                previousTile = buildTile(previousBand, rectangleToRead);
+            }
             sourceTiles[i] = new DifferenceTileDataSourceImpl(currentTile, previousTile);
         }
         return sourceTiles;
