@@ -3,7 +3,11 @@ package org.esa.s2tbx.grm;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.grm.segmentation.AbstractSegmenter;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
-import org.esa.s2tbx.grm.segmentation.tiles.*;
+import org.esa.s2tbx.grm.segmentation.tiles.AbstractTileSegmenter;
+import org.esa.s2tbx.grm.segmentation.tiles.BaatzSchapeTileSegmenter;
+import org.esa.s2tbx.grm.segmentation.tiles.FullLambdaScheduleTileSegmenter;
+import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
+import org.esa.s2tbx.grm.segmentation.tiles.SpringTileSegmenter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -15,10 +19,12 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
 
 import javax.media.jai.JAI;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -242,7 +248,7 @@ public class GenericRegionMergingOp extends Operator {
 
         this.targetProduct = new Product(this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
-        this.targetProduct.setSceneGeoCoding(this.sourceProduct.getSceneGeoCoding());
+        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
