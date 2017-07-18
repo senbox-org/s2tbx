@@ -1,7 +1,7 @@
 package org.esa.s2tbx.grm.segmentation;
 
 /**
- * Created by jcoravu on 12/7/2017.
+ * @author  Jean Coravu
  */
 public interface TileDataSource {
 

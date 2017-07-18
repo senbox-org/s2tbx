@@ -3,7 +3,7 @@ package org.esa.s2tbx.grm.segmentation;
 import org.esa.snap.core.gpf.Tile;
 
 /**
- * Created by jcoravu on 12/7/2017.
+ * @author  Jean Coravu
  */
 public class TileDataSourceImpl implements TileDataSource {
     private final Tile tile;

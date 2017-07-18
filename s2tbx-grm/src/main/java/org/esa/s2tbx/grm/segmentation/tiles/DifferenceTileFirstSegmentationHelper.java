@@ -2,6 +2,7 @@ package org.esa.s2tbx.grm.segmentation.tiles;
 
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
+import org.esa.s2tbx.grm.segmentation.DifferenceTileDataSourceImpl;
 import org.esa.s2tbx.grm.segmentation.TileDataSource;
 import org.esa.s2tbx.grm.segmentation.TileDataSourceImpl;
 import org.esa.snap.core.datamodel.Band;
@@ -67,20 +68,4 @@ public class DifferenceTileFirstSegmentationHelper extends AbstractImageTilesPar
         Raster awtRaster = image.getData(rectangleToRead);
         return new TileImpl(band, awtRaster);
     }
-
-    private static class DifferenceTileDataSourceImpl implements TileDataSource {
-        private final Tile currentTile;
-        private final Tile previousTile;
-
-        public DifferenceTileDataSourceImpl(Tile currentTile, Tile previousTile) {
-            this.currentTile = currentTile;
-            this.previousTile = previousTile;
-        }
-
-        @Override
-        public float getSampleFloat(int x, int y) {
-            return this.currentTile.getSampleFloat(x, y) - this.previousTile.getSampleFloat(x, y);
-        }
-    }
-
 }

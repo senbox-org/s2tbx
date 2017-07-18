@@ -12,6 +12,7 @@ import org.esa.s2tbx.fcc.common.BandsExtractorOp;
 import org.esa.s2tbx.fcc.common.PixelSourceBands;
 import org.esa.s2tbx.fcc.trimming.*;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
+import org.esa.s2tbx.grm.DifferencePixelsRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -176,7 +177,7 @@ public class ForestCoverChangeOp extends Operator {
                 logger.log(Level.FINE, "Start segmentation for difference bands.");
             }
 
-            Product differenceSegmentationProduct = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, currentProduct, this.currentProductBandsNames,
+            Product differenceSegmentationProduct = DifferencePixelsRegionMergingOp.runSegmentation(threadCount, threadPool, currentProduct, this.currentProductBandsNames,
                                                                             previousProduct, this.previousProductBandsNames, mergingCostCriterion,
                                                                             regionMergingCriterion, totalIterationsForSecondSegmentation, threshold,
                                                                             spectralWeight, shapeWeight);
