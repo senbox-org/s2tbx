@@ -39,7 +39,6 @@ import org.esa.snap.core.datamodel.ProductNodeListener;
 import org.esa.snap.core.datamodel.RasterDataNode;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
-import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
@@ -47,8 +46,6 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.annotations.TargetProperty;
 import org.esa.snap.core.gpf.descriptor.AnnotationParameterDescriptor;
 import org.esa.snap.core.gpf.descriptor.AnnotationSourceProductDescriptor;
-import org.esa.snap.core.gpf.descriptor.AnnotationSourceProductsDescriptor;
-import org.esa.snap.core.gpf.descriptor.AnnotationTargetProductDescriptor;
 import org.esa.snap.core.gpf.descriptor.AnnotationTargetPropertyDescriptor;
 import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
 import org.esa.snap.core.gpf.descriptor.ParameterDescriptor;
@@ -98,13 +95,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         this.targetProductNameSuffix = "";
 
         processAnnotationsRec(ForestCoverChangeOp.class);
-
-        OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operatorName);
-        if (operatorSpi == null) {
-            throw new IllegalArgumentException("No SPI found for operator name '" + operatorName + "'");
-        }
-
-        this.operatorDescriptor = operatorSpi.getOperatorDescriptor();
+        this.operatorDescriptor = new OperatorDescriptorClass( this.parameterDescriptors.toArray(new ParameterDescriptor[0]),
+                this.sourceProductDescriptors.toArray(new SourceProductDescriptor[0]));
         this.ioParametersPanel = new DefaultIOParametersPanel(getAppContext(), this.operatorDescriptor, getTargetProductSelector(), true);
 
         this.parameterSupport = new OperatorParameterSupport(this.operatorDescriptor);
@@ -130,6 +122,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         if (!sourceProductSelectorList.isEmpty()) {
             sourceProductSelectorList.get(0).addSelectionChangeListener(productChangedHandler);
         }
+
     }
 
     @Override
@@ -149,18 +142,13 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             targetProduct = createTargetProduct();
             createTargetProductTime = System.currentTimeMillis() - t0;
 
+            this.forestCoverChange = new ForestCoverChangeOp(sourceProducts.get("Current Source Product"),
+                    sourceProducts.get("Previous Source Product"),
+                    parameterSupport.getParameterMap());
         } catch (Throwable t) {
             handleInitialisationError(t);
-            return;
         }
-        if (targetProduct == null) {
-            throw new NullPointerException("The target product is null.");
-        }
-
-        targetProduct.setName(model.getProductName());
-        targetProduct.setFileLocation(model.getProductFile());
-
-        TargetProductSwingWorker worker = new TargetProductSwingWorker(targetProduct, createTargetProductTime);
+        TargetProductSwingWorker worker = new TargetProductSwingWorker(this.forestCoverChange, createTargetProductTime);
         worker.executeWithBlocking(); // start the thread
     }
 
@@ -213,9 +201,11 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         if (this.bindingContext.getPropertySet().getProperties().length > 0) {
             PropertyContainer container = new PropertyContainer();
             container.addProperties(this.bindingContext.getPropertySet().getProperties());
-            for(Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
-                for (String prop:pair.getValue()) {
-                    container.removeProperty(this.bindingContext.getPropertySet().getProperty(prop));
+            if (this.parameterGroupDescriptors != null) {
+                for (Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
+                    for (String prop : pair.getValue()) {
+                        container.removeProperty(this.bindingContext.getPropertySet().getProperty(prop));
+                    }
                 }
             }
             final PropertyPane parametersPane = new PropertyPane(container);
@@ -305,7 +295,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                     parameterGroupDescriptors.put(alias, value);
                 }
                 value.add(fieldName);
-                continue;
             }
             Parameter parameterAnnotation = declaredField.getAnnotation(Parameter.class);
             if (parameterAnnotation != null) {
@@ -453,14 +442,12 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     }
 
     private class TargetProductSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
-        private final Product targetProduct;
         private long saveTime;
         private final long createTargetProductTime;
-
-        private TargetProductSwingWorker(Product targetProduct, long createTargetProductTime) {
+        private final ForestCoverChangeOp forestCoverChange;
+        private TargetProductSwingWorker(ForestCoverChangeOp forestCoverChange, long createTargetProductTime) {
             super(getJDialog(), "Run Forest Cover Change");
-
-            this.targetProduct = targetProduct;
+            this.forestCoverChange = forestCoverChange;
             this.createTargetProductTime = createTargetProductTime;
         }
 
@@ -470,43 +457,40 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             pm.beginTask("Running...", model.isOpenInAppSelected() ? 100 : 95);
             saveTime = 0L;
             Product product = null;
+            Product targetProduct = this.forestCoverChange.getTargetProduct();
             try {
                 long t0 = System.currentTimeMillis();
-                OperatorProductReader operatorProductReader = (OperatorProductReader) this.targetProduct.getProductReader();
-                ForestCoverChangeOp operator = (ForestCoverChangeOp)operatorProductReader.getOperatorContext().getOperator();
 
-                operator.doExecuteNew(SubProgressMonitor.create(pm, 95));
-//                OperatorExecutor executor = OperatorExecutor.create(operator);
-//                executor.execute(SubProgressMonitor.create(pm, 95));
 
+                forestCoverChange.doExecute(SubProgressMonitor.create(pm, 95));
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();
                     String formatName = model.getFormatName();
                     boolean clearCacheAfterRowWrite = false;
                     boolean incremental = false;
-                    GPF.writeProduct(this.targetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
+                    GPF.writeProduct(targetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
                 }
 
-                product = this.targetProduct;
+                product = targetProduct;
 
                 saveTime = System.currentTimeMillis() - t0;
                 if (model.isOpenInAppSelected()) {
                     File targetFile = model.getProductFile();
                     if (!targetFile.exists()) {
-                        targetFile = this.targetProduct.getFileLocation();
+                        targetFile = targetProduct.getFileLocation();
                     }
                     if (targetFile.exists()) {
                         product = ProductIO.readProduct(targetFile);
                         if (product == null) {
-                            product = this.targetProduct; // todo - check - this cannot be ok!!! (nf)
+                            product = targetProduct; // todo - check - this cannot be ok!!! (nf)
                         }
                     }
                     pm.worked(5);
                 }
             } finally {
                 pm.done();
-                if (product != this.targetProduct) {
-                    this.targetProduct.dispose();
+                if (product != targetProduct) {
+                    targetProduct.dispose();
                 }
                 Preferences preferences = SnapApp.getDefault().getPreferences();
                 if (preferences.getBoolean(GPF.BEEP_AFTER_PROCESSING_PROPERTY, false)) {

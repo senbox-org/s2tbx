@@ -46,14 +46,7 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  * @since 5.0.6
  */
-@OperatorMetadata(
-        alias = "ForestCoverChangeOp",
-        version="1.0",
-        category = "Raster",
-        description = "Generates Forest Cover Change product from L2a Sentinel 2 products ",
-        authors = "Razvan Dumitrascu, Jean Coravu",
-        copyright = "Copyright (C) 2017 by CS ROMANIA")
-public class ForestCoverChangeOp extends Operator {
+public class ForestCoverChangeOp {
     private static final Logger logger = Logger.getLogger(ForestCoverChangeOp.class.getName());
 
     @SourceProduct(alias = "Current Source Product", description = "The source product to be modified.")
@@ -102,11 +95,30 @@ public class ForestCoverChangeOp extends Operator {
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
 
-    public ForestCoverChangeOp() {
-    }
+    public ForestCoverChangeOp(Product currentSourceProduct, Product previousSourceProduct,  Map<String, Object> parameters) {
+        this.currentSourceProduct = currentSourceProduct;
+        this.previousSourceProduct = previousSourceProduct;
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            if(entry.getKey().equals("forestCoverPercentage")) {
+                this.forestCoverPercentage = (float) entry.getValue();
+            } else if(entry.getKey().equals("totalIterationsForSecondSegmentation")) {
+                this.totalIterationsForSecondSegmentation = (int) entry.getValue();
+            } else if(entry.getKey().equals("regionMergingCriterion")) {
+                this.regionMergingCriterion = (String) entry.getValue();
+            } else if(entry.getKey().equals("shapeWeight")) {
+                this.shapeWeight = (float) entry.getValue();
+            } else if(entry.getKey().equals("spectralWeight")) {
+                this.spectralWeight = (float) entry.getValue();
+            } else if(entry.getKey().equals("threshold")) {
+                this.threshold = (float) entry.getValue();
+            } else if(entry.getKey().equals("mergingCostCriterion")) {
+                this.mergingCostCriterion = (String) entry.getValue();
+            }
 
-    @Override
-    public void initialize() throws OperatorException {
+        }
+        initialize();
+    }
+    private void initialize() {
         validateSourceProducts();
 
         this.currentProductBandsNames = findBandNames(this.currentSourceProduct);
@@ -122,13 +134,14 @@ public class ForestCoverChangeOp extends Operator {
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
 
+    }
+
+
+    public void doExecute(ProgressMonitor pm) throws OperatorException {
+
         //TODO Jean remove
         Logger logger = Logger.getLogger("org.esa.s2tbx.fcc");
         logger.setLevel(Level.FINE);
-    }
-
-//    @Override
-    public void doExecuteNew(ProgressMonitor pm) throws OperatorException {
         long startTime = System.currentTimeMillis();
 
         if (logger.isLoggable(Level.FINE)) {
@@ -155,7 +168,7 @@ public class ForestCoverChangeOp extends Operator {
             currentResult = null;
 
             ProductTrimmingResult previousResult = runTrimming(threadCount, threadPool, this.previousSourceProduct, this.previousProductBandsNames,
-                                                               trimmingSourceProductBandIndices, tileSize);
+                    trimmingSourceProductBandIndices, tileSize);
             Product previousProduct = previousResult.getProduct();
             IntSet previousSegmentationTrimmingRegionKeys = previousResult.getTrimmingRegionKeys();
             Product previousProductColorFill = previousResult.getSegmentationProductColorFill();
@@ -206,7 +219,7 @@ public class ForestCoverChangeOp extends Operator {
 
     private IntSet computeDifferenceTrimmingSet(int threadCount, Executor threadPool, Product differenceSegmentationProduct,
                                                 Product unionMaskProduct, int[] sourceBandIndices, Dimension tileSize)
-                                                throws Exception {
+            throws Exception {
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("sourceBandIndices", sourceBandIndices);
@@ -233,7 +246,7 @@ public class ForestCoverChangeOp extends Operator {
 
     private ProductTrimmingResult runTrimming(int threadCount, Executor threadPool, Product sourceProduct,
                                               String[] sourceBandNames, int[] trimmingSourceProductBandIndices, Dimension tileSize)
-                                              throws Exception {
+            throws Exception {
 
         Product product = generateBandsExtractor(sourceProduct, sourceBandNames);
 
@@ -273,17 +286,17 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private Product generateColorFill(int threadCount, Executor threadPool, Product sourceProduct, String[] sourceBandNames, Dimension tileSize)
-                                      throws Exception {
+            throws Exception {
 
         Product segmentationProduct = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, sourceProduct, sourceBandNames, mergingCostCriterion,
-                                                    regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+                regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
         return runColorFillerOp(threadCount, threadPool, segmentationProduct, forestCoverPercentage, tileSize);
     }
 
     private static Product runColorFillerOp(int threadCount, Executor threadPool, Product segmentationSourceProduct,
                                             float percentagePixels, Dimension tileSize)
-                                            throws Exception {
+            throws Exception {
 
         IntSet validRegions = runObjectsSelectionOp(threadCount, threadPool, segmentationSourceProduct, percentagePixels, tileSize);
 
@@ -306,7 +319,7 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private static IntSet runObjectsSelectionOp(int threadCount, Executor threadPool, Product sourceProduct, float percentagePixels, Dimension tileSize)
-                                                throws Exception {
+            throws Exception {
 
         Product landCover = buildLandCoverProduct(sourceProduct);
         Map<String, Object> parameters = new HashMap<>();
@@ -380,7 +393,7 @@ public class ForestCoverChangeOp extends Operator {
     private static Product runUnionMasksOp(int threadCount, Executor threadPool, IntSet currentSegmentationTrimmingRegionKeys,
                                            Product currentSegmentationSourceProduct, IntSet previousSegmentationTrimmingRegionKeys,
                                            Product previousSegmentationSourceProduct, Dimension tileSize)
-                                           throws Exception {
+            throws Exception {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -419,7 +432,7 @@ public class ForestCoverChangeOp extends Operator {
 
     private Product runFinalMaskOp(int threadCount, Executor threadPool, Product differenceSegmentationProduct,
                                    Product unionMaskProduct, IntSet differenceTrimmingSet, Dimension tileSize)
-                                   throws Exception {
+            throws Exception {
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("differenceTrimmingSet", differenceTrimmingSet);
@@ -490,17 +503,17 @@ public class ForestCoverChangeOp extends Operator {
 
     private static String[] findBandNames(Product product) {
         String red = findBand(ForestCoverChangeConstants.MINIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND,
-                              ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND,
-                              product);
+                ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND,
+                product);
         String nir = findBand(ForestCoverChangeConstants.MINIMUM_SPECTRAL_WAVE_LENGTH_NIR_BAND,
-                              ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_NIR_BAND,
-                              product);
+                ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_NIR_BAND,
+                product);
         String swir = findBand(ForestCoverChangeConstants.MINIMUM_SPECTRAL_WAVE_LENGTH_SWIR_BAND,
-                               ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_SWIR_BAND,
-                               product);
+                ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_SWIR_BAND,
+                product);
         String swir2 = findBand(ForestCoverChangeConstants.MINIMUM_SPECTRAL_WAVE_LENGTH_SWIR2_BAND,
-                                ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_SWIR2_BAND,
-                                product);
+                ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_SWIR2_BAND,
+                product);
         return new String[] {red, nir, swir, swir2};
     }
 
@@ -526,12 +539,5 @@ public class ForestCoverChangeOp extends Operator {
             throw new OperatorException(message);
         }
         return bestBand;
-    }
-
-    public static class Spi extends OperatorSpi {
-
-        public Spi() {
-            super(ForestCoverChangeOp.class);
-        }
     }
 }
