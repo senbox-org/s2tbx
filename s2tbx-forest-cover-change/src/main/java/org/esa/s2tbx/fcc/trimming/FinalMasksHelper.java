@@ -74,4 +74,8 @@ public class FinalMasksHelper extends AbstractImageTilesParallelComputing {
 
         return this.productData;
     }
+
+    public ProductData getProductData() {
+        return productData;
+    }
 }

@@ -2,7 +2,6 @@ package org.esa.s2tbx.fcc.trimming;
 
 import com.bc.ceres.core.ProgressMonitor;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -20,52 +19,49 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 /**
  * @author Jean Coravu
  */
 @OperatorMetadata(
-        alias = "UnionMasksOp",
+        alias = "FinalMasksOp",
         version="1.0",
         category = "",
         description = "",
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
-public class UnionMasksOp extends Operator {
-    @SourceProduct(alias = "source", description = "The first source product")
-    private Product currentSegmentationSourceProduct;
-    @SourceProduct(alias = "source", description = "The second source product")
-    private Product previousSegmentationSourceProduct;
+public class FinalMasksOp extends Operator {
+    @SourceProduct(alias = "differenceSegmentationProduct", description = "The source product")
+    private Product differenceSegmentationProduct;
 
-    @Parameter(itemAlias = "segmentationRegionKeys", description = "Specifies the segmentation keys after trimming.")
-    private IntSet currentSegmentationTrimmingRegionKeys;
-    @Parameter(itemAlias = "segmentationRegionKeys", description = "Specifies the segmentation keys after trimming.")
-    private IntSet previousSegmentationTrimmingRegionKeys;
+    @SourceProduct(alias = "unionMaskProduct", description = "The source product")
+    private Product unionMaskProduct;
+
+    @Parameter(itemAlias = "differenceTrimmingSet", description = "")
+    private IntSet differenceTrimmingSet;
 
     @TargetProduct
     private Product targetProduct;
 
-    private UnionMasksHelper unionMasksHelper;
+    private FinalMasksHelper finalMasksHelper;
     private Set<String> processedTiles;
 
-    public UnionMasksOp() {
+    public FinalMasksOp() {
     }
 
     @Override
     public void initialize() throws OperatorException {
-        int sceneWidth = this.currentSegmentationSourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.currentSegmentationSourceProduct.getSceneRasterHeight();
+        int sceneWidth = this.differenceSegmentationProduct.getSceneRasterWidth();
+        int sceneHeight = this.differenceSegmentationProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
 
-        this.targetProduct = new Product(this.currentSegmentationSourceProduct.getName() + "_union", this.currentSegmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
+        this.targetProduct = new Product(this.differenceSegmentationProduct.getName() + "_union", this.differenceSegmentationProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
 
         this.processedTiles = new HashSet<String>();
-        this.unionMasksHelper = new UnionMasksHelper(currentSegmentationSourceProduct, previousSegmentationSourceProduct,
-                                                     currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys, 0, 0);
+        this.finalMasksHelper = new FinalMasksHelper(differenceSegmentationProduct, unionMaskProduct, differenceTrimmingSet, 0, 0);
     }
 
     @Override
@@ -78,7 +74,7 @@ public class UnionMasksOp extends Operator {
         }
         if (canProcessTile) {
             try {
-                this.unionMasksHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, 0, 0);
+                this.finalMasksHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, 0, 0);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             }
@@ -86,13 +82,13 @@ public class UnionMasksOp extends Operator {
     }
 
     public ProductData getProductData() {
-        return this.unionMasksHelper.getProductData();
+        return this.finalMasksHelper.getProductData();
     }
 
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(UnionMasksOp.class);
+            super(FinalMasksOp.class);
         }
     }
 }

@@ -20,13 +20,13 @@ public class ObjectsSelectionHelper extends AbstractImageTilesParallelComputing 
 
     private final Product sourceProduct;
     private final Product landCoverProduct;
-    private final Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics;
+    private final Int2ObjectMap<PixelStatistic> statistics;
 
     public ObjectsSelectionHelper(Product sourceProduct, Product landCoverProduct, int tileWidth, int tileHeight) {
         super(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.sourceProduct = sourceProduct;
-        this.statistics = new Int2ObjectLinkedOpenHashMap<ObjectsSelectionOp.PixelStatistic>();
+        this.statistics = new Int2ObjectLinkedOpenHashMap<PixelStatistic>();
 
         this.landCoverProduct = landCoverProduct;
     }
@@ -50,9 +50,9 @@ public class ObjectsSelectionHelper extends AbstractImageTilesParallelComputing 
                 int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
                 int landCoverPixelValue = landCoverBand.getSampleInt(x, y);
                 synchronized (this.statistics) {
-                    ObjectsSelectionOp.PixelStatistic pixel = this.statistics.get(segmentationPixelValue);
+                    PixelStatistic pixel = this.statistics.get(segmentationPixelValue);
                     if (pixel == null) {
-                        pixel = new ObjectsSelectionOp.PixelStatistic(0, 0);
+                        pixel = new PixelStatistic(0, 0);
                         this.statistics.put(segmentationPixelValue, pixel);
                     }
                     pixel.incrementTotalNumberPixels();
@@ -66,9 +66,13 @@ public class ObjectsSelectionHelper extends AbstractImageTilesParallelComputing 
         }
     }
 
-    public Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
+    public Int2ObjectMap<PixelStatistic> runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
         return this.statistics;
+    }
+
+    public Int2ObjectMap<PixelStatistic> getStatistics() {
+        return statistics;
     }
 }

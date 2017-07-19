@@ -83,4 +83,8 @@ public class UnionMasksHelper extends AbstractImageTilesParallelComputing {
 
         return this.productData;
     }
+
+    public ProductData getProductData() {
+        return productData;
+    }
 }

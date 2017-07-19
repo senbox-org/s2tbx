@@ -43,7 +43,7 @@ public class ColorFillerOp extends Operator {
     private static final Logger logger = Logger.getLogger(ColorFillerOp.class.getName());
 
     @SourceProduct(alias = "Source", description = "The source product to be modified.")
-    private Product sourceProduct;
+    private Product segmentationSourceProduct;
 
     @TargetProduct
     private Product targetProduct;
@@ -52,6 +52,7 @@ public class ColorFillerOp extends Operator {
     private IntSet validRegions;
 
     private Set<String> processedTiles;
+    private ColorFillerHelper colorFillerHelper;
 
     public ColorFillerOp() {
     }
@@ -63,60 +64,55 @@ public class ColorFillerOp extends Operator {
         createTargetProduct();
 
         this.processedTiles = new HashSet<String>();
+        this.colorFillerHelper = new ColorFillerHelper(segmentationSourceProduct, validRegions, 0, 0);
     }
 
     @Override
     public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle tileRegion = targetTile.getRectangle();
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute color filler for tile region: bounds [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"]");
-        }
-
         String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
+        boolean canProcessTile = false;
         synchronized (this.processedTiles) {
-            if (!this.processedTiles.add(key)) {
-                throw new OperatorException("The tile region [x=" + tileRegion.x+", y="+tileRegion.y+", width="+tileRegion.width+", height="+tileRegion.height+"] has already been computed.");
-            }
+            canProcessTile = this.processedTiles.add(key);
         }
-
-        Band segmentationBand = this.sourceProduct.getBandAt(0);
-        for (int y = tileRegion.y; y < tileRegion.y + tileRegion.height; y++) {
-            for (int x = tileRegion.x; x < tileRegion.x + tileRegion.width; x++) {
-                int sgmentationValue = segmentationBand.getSampleInt(x, y);
-                if (!this.validRegions.contains(sgmentationValue)) {
-                    sgmentationValue = ForestCoverChangeConstants.NO_DATA_VALUE;
-                }
-                targetTile.setSample(x, y, sgmentationValue);
+        if (canProcessTile) {
+            try {
+                this.colorFillerHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, 0, 0);
+            } catch (Exception ex) {
+                throw new OperatorException(ex);
             }
         }
     }
 
     private void validateInputs() {
-        if (this.sourceProduct.isMultiSize()) {
+        if (this.segmentationSourceProduct.isMultiSize()) {
             String message = String.format("Source product '%s' contains rasters of different sizes and can not be processed.\n" +
                             "Please consider resampling it so that all rasters have the same size.",
-                    this.sourceProduct.getName());
+                    this.segmentationSourceProduct.getName());
             throw new OperatorException(message);
         }
-        GeoCoding geo = this.sourceProduct.getSceneGeoCoding();
+        GeoCoding geo = this.segmentationSourceProduct.getSceneGeoCoding();
         if (geo == null) {
-            String message = String.format("Source product '%s' must contain GeoCoding", this.sourceProduct.getName());
+            String message = String.format("Source product '%s' must contain GeoCoding", this.segmentationSourceProduct.getName());
             throw new OperatorException(message);
         }
     }
 
     private void createTargetProduct() {
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
+        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
 
-        this.targetProduct = new Product(this.sourceProduct.getName() + "_fill", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
+        this.targetProduct = new Product(this.segmentationSourceProduct.getName() + "_fill", this.segmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
-        ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
+        ProductUtils.copyGeoCoding(this.segmentationSourceProduct, this.targetProduct);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
+    }
+
+    public ProductData getProductData() {
+        return this.colorFillerHelper.getProductData();
     }
 
     public static class Spi extends OperatorSpi {

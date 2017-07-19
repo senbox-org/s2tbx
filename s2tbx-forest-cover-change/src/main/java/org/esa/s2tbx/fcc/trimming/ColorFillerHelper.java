@@ -79,4 +79,8 @@ public class ColorFillerHelper extends AbstractImageTilesParallelComputing {
 
         return targetProduct;
     }
+
+    public ProductData getProductData() {
+        return productData;
+    }
 }

@@ -46,6 +46,10 @@ public abstract class AbstractRegionParallelComputing extends AbstractImageTiles
     public final IntSet runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
+        return processResult(threadCount, threadPool);
+    }
+
+    public final IntSet processResult(int threadCount, Executor threadPool) throws Exception {
         Int2ObjectMap<PixelSourceBands> differenceRegionsTrimming = computeStatisticsPerRegion(this.validRegionsMap);
 
         doClose();

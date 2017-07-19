@@ -74,7 +74,6 @@ public abstract class AbstractRegionMergingOp extends Operator {
     protected AtomicInteger processingTiles;
     protected AtomicInteger processedTiles;
     protected int totalTileCount;
-    protected AbstractSegmenter segmenter;
 
     protected AbstractRegionMergingOp() {
     }
@@ -138,16 +137,16 @@ public abstract class AbstractRegionMergingOp extends Operator {
                     }
                 }
             }
-
+            AbstractSegmenter segmenter = null;
             try {
-                this.segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
+                segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
             } catch (Exception e) {
                 throw new OperatorException(e);
             }
 
             Band productTargetBand = this.targetProduct.getBandAt(0);
             productTargetBand.setSourceImage(null); // reset the source image
-            this.segmenter.fillBandData(productTargetBand);
+            segmenter.fillBandData(productTargetBand);
             productTargetBand.getSourceImage();
 
             if (logger.isLoggable(Level.FINE)) {
@@ -159,11 +158,16 @@ public abstract class AbstractRegionMergingOp extends Operator {
 
                 long finishTime = System.currentTimeMillis();
                 long totalSeconds = (finishTime - this.startTime) / 1000;
-                int graphNodeCount = this.segmenter.getGraph().getNodeCount();
+                int graphNodeCount = segmenter.getGraph().getNodeCount();
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
             }
+
+            finishSegmentation(segmenter);
         }
+    }
+
+    protected void finishSegmentation(AbstractSegmenter segmenter) {
     }
 
     protected final void initTargetProduct(int sceneWidth, int sceneHeight, String productName, String productType) {
@@ -218,7 +222,7 @@ public abstract class AbstractRegionMergingOp extends Operator {
         }
     }
 
-    protected static AbstractTileSegmenter buildTileSegmenter(int threadCount, Executor threadPool, String mergingCostCriterion, String regionMergingCriterion,
+    public static AbstractTileSegmenter buildTileSegmenter(int threadCount, Executor threadPool, String mergingCostCriterion, String regionMergingCriterion,
                                                               int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
                                                               float shapeWeight, Dimension imageSize, Dimension tileSize)
             throws IOException {

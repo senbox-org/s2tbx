@@ -51,6 +51,8 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
     @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
     private String[] sourceBandNames;
 
+//    private AbstractSegmenter segmenter;
+
     public GenericRegionMergingOp() {
     }
 
@@ -77,9 +79,14 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         initTiles();
     }
 
-    public AbstractSegmenter getSegmenter() {
-        return segmenter;
+    @Override
+    protected void finishSegmentation(AbstractSegmenter segmenter) {
+//        this.segmenter = segmenter;
     }
+
+//    public AbstractSegmenter getSegmenter() {
+//        return segmenter;
+//    }
 
     public String getMergingCostCriterion() {
         return mergingCostCriterion;
