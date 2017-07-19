@@ -50,11 +50,7 @@ import org.esa.snap.core.gpf.descriptor.AnnotationTargetPropertyDescriptor;
 import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
 import org.esa.snap.core.gpf.descriptor.ParameterDescriptor;
 import org.esa.snap.core.gpf.descriptor.SourceProductDescriptor;
-import org.esa.snap.core.gpf.descriptor.SourceProductsDescriptor;
-import org.esa.snap.core.gpf.descriptor.TargetProductDescriptor;
 import org.esa.snap.core.gpf.descriptor.TargetPropertyDescriptor;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
-import org.esa.snap.core.gpf.internal.OperatorProductReader;
 import org.esa.snap.core.gpf.internal.RasterDataNodeValues;
 import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
 import org.esa.snap.core.gpf.ui.OperatorMenu;
@@ -87,6 +83,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private JTabbedPane form;
     private PropertyDescriptor[] rasterDataNodeTypeProperties;
     private String targetProductNameSuffix;
+    private ForestCoverChangeOp forestCoverChange;
 
     public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
@@ -134,13 +131,9 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         TargetProductSelectorModel model = targetProductSelector.getModel();
         String productDirPath = model.getProductDir().getAbsolutePath();
         appContext.getPreferences().setPropertyString(SaveProductAsAction.PREFERENCES_KEY_LAST_PRODUCT_DIR, productDirPath);
-
-        Product targetProduct = null;
         long createTargetProductTime = 0;
         try {
-            long t0 = System.currentTimeMillis();
-            targetProduct = createTargetProduct();
-            createTargetProductTime = System.currentTimeMillis() - t0;
+            final HashMap<String, Product> sourceProducts = ioParametersPanel.createSourceProductsMap();
 
             this.forestCoverChange = new ForestCoverChangeOp(sourceProducts.get("Current Source Product"),
                     sourceProducts.get("Previous Source Product"),
@@ -213,8 +206,10 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             parametersPanel.add(parametersPane.createPanel());
             parametersPanel.setBorder(new EmptyBorder(4, 4, 4, 4));
             form.add("Processing Parameters", new JScrollPane(parametersPanel));
-            for (Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
-                parametersPanel.add(createPanel(pair.getKey()+ " parameters", this.bindingContext, pair.getValue()));
+            if (this.parameterGroupDescriptors != null) {
+                for (Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
+                    parametersPanel.add(createPanel(pair.getKey() + " parameters", this.bindingContext, pair.getValue()));
+                }
             }
             updateSourceProduct();
         }

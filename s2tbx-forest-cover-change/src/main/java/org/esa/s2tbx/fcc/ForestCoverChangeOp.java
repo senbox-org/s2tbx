@@ -501,6 +501,10 @@ public class ForestCoverChangeOp {
         }
     }
 
+    public Product getTargetProduct() {
+        return this.targetProduct;
+    }
+
     private static String[] findBandNames(Product product) {
         String red = findBand(ForestCoverChangeConstants.MINIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND,
                 ForestCoverChangeConstants.MAXIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND,
