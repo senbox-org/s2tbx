@@ -91,7 +91,7 @@ public class RunForestCoverChange {
         sourceProducts.put("currentSourceProduct", firstSourceProduct);
         sourceProducts.put("previousSourceProduct", secondSourceProduct);
 
-        Operator operator = GPF.getDefaultInstance().createOperator("ForestCoverChangeOp", parameters, sourceProducts, null);
+        Operator operator = GPF.getDefaultInstance().createOperator("ForestCoverChange", parameters, sourceProducts, null);
         Product targetProduct = operator.getTargetProduct();
         operator.doExecute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 

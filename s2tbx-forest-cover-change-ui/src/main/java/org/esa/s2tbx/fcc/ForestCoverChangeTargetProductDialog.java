@@ -83,7 +83,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private JTabbedPane form;
     private PropertyDescriptor[] rasterDataNodeTypeProperties;
     private String targetProductNameSuffix;
-    private ForestCoverChangeOp forestCoverChange;
+    private ForestCoverChange forestCoverChange;
 
     public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
@@ -91,7 +91,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         this.operatorName = operatorName;
         this.targetProductNameSuffix = "";
 
-        processAnnotationsRec(ForestCoverChangeOp.class);
+        processAnnotationsRec(ForestCoverChange.class);
         this.operatorDescriptor = new OperatorDescriptorClass( this.parameterDescriptors.toArray(new ParameterDescriptor[0]),
                 this.sourceProductDescriptors.toArray(new SourceProductDescriptor[0]));
         this.ioParametersPanel = new DefaultIOParametersPanel(getAppContext(), this.operatorDescriptor, getTargetProductSelector(), true);
@@ -135,11 +135,12 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         try {
             final HashMap<String, Product> sourceProducts = ioParametersPanel.createSourceProductsMap();
 
-            this.forestCoverChange = new ForestCoverChangeOp(sourceProducts.get("Current Source Product"),
+            this.forestCoverChange = new ForestCoverChange(sourceProducts.get("Current Source Product"),
                     sourceProducts.get("Previous Source Product"),
                     parameterSupport.getParameterMap());
         } catch (Throwable t) {
             handleInitialisationError(t);
+            return;
         }
         TargetProductSwingWorker worker = new TargetProductSwingWorker(this.forestCoverChange, createTargetProductTime);
         worker.executeWithBlocking(); // start the thread
@@ -439,8 +440,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private class TargetProductSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
         private long saveTime;
         private final long createTargetProductTime;
-        private final ForestCoverChangeOp forestCoverChange;
-        private TargetProductSwingWorker(ForestCoverChangeOp forestCoverChange, long createTargetProductTime) {
+        private final ForestCoverChange forestCoverChange;
+        private TargetProductSwingWorker(ForestCoverChange forestCoverChange, long createTargetProductTime) {
             super(getJDialog(), "Run Forest Cover Change");
             this.forestCoverChange = forestCoverChange;
             this.createTargetProductTime = createTargetProductTime;

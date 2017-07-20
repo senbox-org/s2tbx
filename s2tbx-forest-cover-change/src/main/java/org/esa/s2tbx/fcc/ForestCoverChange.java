@@ -7,22 +7,14 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
-import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
 import org.esa.s2tbx.fcc.common.BandsExtractorOp;
-import org.esa.s2tbx.fcc.common.PixelSourceBands;
 import org.esa.s2tbx.fcc.trimming.*;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.grm.DifferencePixelsRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.GPF;
-import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
-import org.esa.snap.core.gpf.OperatorSpi;
-import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
@@ -31,7 +23,6 @@ import org.esa.snap.core.util.ProductUtils;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
-import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,8 +37,8 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  * @since 5.0.6
  */
-public class ForestCoverChangeOp {
-    private static final Logger logger = Logger.getLogger(ForestCoverChangeOp.class.getName());
+public class ForestCoverChange {
+    private static final Logger logger = Logger.getLogger(ForestCoverChange.class.getName());
 
     @SourceProduct(alias = "Current Source Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
@@ -95,7 +86,7 @@ public class ForestCoverChangeOp {
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
 
-    public ForestCoverChangeOp(Product currentSourceProduct, Product previousSourceProduct,  Map<String, Object> parameters) {
+    public ForestCoverChange(Product currentSourceProduct, Product previousSourceProduct, Map<String, Object> parameters) {
         this.currentSourceProduct = currentSourceProduct;
         this.previousSourceProduct = previousSourceProduct;
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
@@ -495,6 +486,26 @@ public class ForestCoverChangeOp {
                 || this.currentSourceProduct.getSceneRasterHeight() != this.previousSourceProduct.getSceneRasterHeight()) {
 
             String message = String.format("Source products '%s' and '%s' do not have the same raster sizes.",
+                    this.currentSourceProduct.getName(),
+                    this.previousSourceProduct.getName());
+            throw new OperatorException(message);
+        }
+        final GeoCoding geoCodingCurrentProduct = currentSourceProduct.getSceneGeoCoding();
+        GeoPos currentProductMinPoint = geoCodingCurrentProduct.getGeoPos(new PixelPos(0, 0), null);
+        GeoPos currentProductMaxPoint = geoCodingCurrentProduct.getGeoPos(new PixelPos(currentSourceProduct.getSceneRasterWidth(),
+                currentSourceProduct.getSceneRasterHeight()), null);
+        final GeoCoding geoCodingPreviousProduct = previousSourceProduct.getSceneGeoCoding();
+        GeoPos previousProductMinPoint = geoCodingPreviousProduct.getGeoPos(new PixelPos(0, 0), null);
+        GeoPos previousProductMaxPoint = geoCodingPreviousProduct.getGeoPos(new PixelPos(previousSourceProduct.getSceneRasterWidth(),
+                previousSourceProduct.getSceneRasterHeight()), null);
+        if ((currentProductMinPoint.getLat() != previousProductMinPoint.getLat())||(currentProductMinPoint.getLon() != previousProductMinPoint.getLon())){
+            String message = String.format("Source products '%s' and '%s' do not have the same geoCoding.",
+                    this.currentSourceProduct.getName(),
+                    this.previousSourceProduct.getName());
+            throw new OperatorException(message);
+        }
+        if ((currentProductMaxPoint.getLat() != previousProductMaxPoint.getLat())||(currentProductMaxPoint.getLon() != previousProductMaxPoint.getLon())){
+            String message = String.format("Source products '%s' and '%s' do not have the same geoCoding.",
                     this.currentSourceProduct.getName(),
                     this.previousSourceProduct.getName());
             throw new OperatorException(message);
