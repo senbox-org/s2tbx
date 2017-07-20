@@ -11,6 +11,7 @@ import org.apache.commons.math3.util.MathUtils;
 /**
  * Created by ramonag on 4/5/2017.
  */
+@Deprecated
 public class GFolki {
 
     //init

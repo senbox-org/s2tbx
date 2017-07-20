@@ -10,7 +10,29 @@ import org.apache.commons.math3.util.MathUtils;
  */
 public class MatrixUtils {
 
+    public static float max(float[][] v){
+        float m = v[0][0];
+        for(int i=1;i<v.length;i++){
+            for(int j=0;j<v[0].length;j++){
+                if(m<v[i][j]) {
+                    m = v[i][j];
+                }
+            }
+        }
+        return m;
+    }
 
+    public static float min(float[][] v){
+        float m = v[0][0];
+        for(int i=1;i<v.length;i++){
+            for(int j=0;j<v[0].length;j++){
+                if(m>v[i][j]) {
+                    m = v[i][j];
+                }
+            }
+        }
+        return m;
+    }
 
     public static int max(int[] v){
         int m = v[0];
@@ -204,5 +226,7 @@ public class MatrixUtils {
 
         return y;
     }
+
+
 
 }

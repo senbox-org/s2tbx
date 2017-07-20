@@ -8,8 +8,7 @@ import org.junit.Test;
 public class ClaheTest {
 
     @Test
-    public void test1(){
-        ClaheNew clahe = new ClaheNew();
-        clahe.process();
+    public void test(){
+        //[TODO]
     }
 }

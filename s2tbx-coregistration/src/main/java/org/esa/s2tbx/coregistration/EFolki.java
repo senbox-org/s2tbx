@@ -7,6 +7,7 @@ import org.apache.commons.math3.analysis.interpolation.SmoothingPolynomialBicubi
 /**
  * Created by ramonag on 4/5/2017.
  */
+@Deprecated
 public class EFolki {
 
     //init

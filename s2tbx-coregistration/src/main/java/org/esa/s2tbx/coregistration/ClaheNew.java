@@ -5,14 +5,16 @@ import java.awt.*;
 /**
  * Created by ramonag on 4/5/2017.
  */
+@Deprecated
 public class ClaheNew {
 
-    public void process(){
-        float [ ] [ ] src = {   { 200, 18, 220, 200, 160 },
+    public static float [ ] [ ] process(float [ ] [ ] src){
+        /*float [ ] [ ] src = {   { 200, 18, 220, 200, 160 },
                 { 180, 200, 180, 210, 200 },
                 { 160, 180, 160, 200, 240 },
                 {  250, 240, 22, 240, 250 }
         };
+        */
         //the size of the local region around a pixel for which the histogram is equalized. This size should be larger than the size of features to be preserved.
         int blockRadius = 12;//63;
         //the number of histogram bins used for histogram equalization. The implementation internally works with byte resolution, so values larger than 256 are not meaningful. This value also limits the quantification of the output when processing 8bit gray or 24bit RGB images. The number of histogram bins should be smaller than the number of pixels in a block.
@@ -150,6 +152,7 @@ public class ClaheNew {
                     dst[x][y] = a * ( v - min ) + min ;
                 }
         }
+        return dst;
     }
 
     static private float getMin(float[][] source){

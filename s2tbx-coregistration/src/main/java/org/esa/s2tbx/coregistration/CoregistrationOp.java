@@ -19,9 +19,27 @@ import org.esa.snap.core.util.ProductUtils;
 import org.netbeans.api.progress.aggregate.ProgressMonitor;
 import org.esa.snap.utils.StringHelper;
 
+import javax.imageio.ImageIO;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImagePyramid;
+import javax.media.jai.JAI;
+import javax.media.jai.KernelJAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.BorderDescriptor;
+import javax.media.jai.operator.ExtremaDescriptor;
+import javax.media.jai.operator.SubsampleAverageDescriptor;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
+import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,195 +56,199 @@ import java.util.Set;
         description = "The 'Coregistration Processor' operator ...",
         authors = "RamonaM",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
-public class CoregistrationOp extends Operator {
-    @Parameter(label = "Solar irradiance (if neither Sentinel-2 nor SPOT)", description = "The solar irradiance.")
-    private float solarIrradiance;
+public class CoregistrationOp //extends Operator
+{
 
-    @Parameter(label = "U (if not Sentinel-2)", description = "U")
-    private float u;
+    public boolean contrast = false;
+    public int levels = 6;
+    public int rank = 4;
+    private static final float[] burt1D = new float[]{0.05f, 0.25f, 0.4f, 0.25f, 0.05f};
 
-    @Parameter(label = "Incidence angle (if neither Sentinel-2 nor SPOT)", description = "The incidence angle in degrees.")
-    private float incidenceAngle;
+    public static BufferedImage img = null;
 
-    @SourceProduct(alias = "source", description = "The source product.")
-    private Product sourceProduct;
-
-    @TargetProduct
-    private Product targetProduct;
-
-    @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
-    private String[] sourceBandNames;
-
-    @Parameter(label = "Copy masks", description = "Copy masks from the source product", defaultValue = "false")
-    private boolean copyMasks;
-
-    private double d2;
-    private double scale;
-    private Map<String, TiePointGrid> tiePointGrids;
-    private Map<String, Float> solarIrradiances;
 
     public CoregistrationOp() {
     }
 
-    @Override
-    public void initialize() throws OperatorException {
-        if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
-            throw new OperatorException("Please select at least one band.");
-        }
-        Band sunZenithBand = this.sourceProduct.getBand("sun_zenith");
-/*
-        if (isSentinelProduct(this.sourceProduct)) {
-            this.solarIrradiances = extractSolarIrradiancesFromSentinelProduct(this.sourceProduct, this.sourceBandNames);
-            this.u = extractUFromSentinelProduct(this.sourceProduct);
-        } else if (isSpotProduct(this.sourceProduct)) {
-            this.solarIrradiances = extractSolarIrradianceFromSpotProduct(this.sourceProduct, this.sourceBandNames);
-            this.incidenceAngle = extractIncidenceAngleFromSpotProduct(this.sourceProduct);
+    public void doExecute(Product sourceProduct, int bandIndex) {
+        //[ToDO] if necessary, JAI dithering operation compresses the three bands of an RGB image to a single-banded byte image.
+
+        int level = sourceProduct.getBandAt(bandIndex).getMultiLevelModel().getLevelCount();
+        //RenderedImage sourceImage = sourceProduct.getBandAt(0).getSourceImage().getImage(level);
+        RenderedImage sourceImage = img;
+        RenderedImage outputImage = sourceImage;
+        if(contrast) {
+            outputImage = applyContrast(sourceImage);
         }
 
-        if (this.solarIrradiances == null && this.solarIrradiance == 0.0f) {
-            throw new OperatorException("Please specify the solar irradiance.");
-        }
-        if (this.u == 0.0f) {
-            throw new OperatorException("Please specify the U.");
-        }
-        */
-        int sceneWidth = 0, sceneHeight = 0;
-        Set<Integer> distictWidths = new HashSet<>();
-        for (String bandName : this.sourceBandNames) {
-            Band band = this.sourceProduct.getBand(bandName);
-            if (sceneWidth < band.getRasterWidth()) {
-                sceneWidth = band.getRasterWidth();
-                sceneHeight = band.getRasterHeight();
+        RenderedImage[] pyramid = pyramid(outputImage, levels);
+
+        for(int k=pyramid.length-1;k>=0;k++) {
+            RenderedImage levelImage = pyramid[k];
+            if (contrast) {
+                //clahe should be applied directly on RenderedImage...
+                levelImage = equalize(convertRenderedImage(levelImage));
             }
-            distictWidths.add(band.getRasterHeight());
-        }
-        /*int sceneWidth = sourceProduct.getSceneRasterWidth();
-        int sceneHeight = sourceProduct.getSceneRasterHeight();*/
-
-        targetProduct = new Product(sourceProduct.getName() + "_rad", sourceProduct.getProductType(), sceneWidth, sceneHeight);
-
-        /*targetProduct.setNumResolutionsMax(this.sourceProduct.getNumResolutionsMax());*/
-        targetProduct.setNumResolutionsMax(distictWidths.size());
-
-        ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
-        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
-        ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
-        if (this.copyMasks) {
-            copyMasks(sourceProduct, targetProduct, sourceBandNames);
-        }
-        ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
-
-        Band[] sourceBands = new Band[this.sourceBandNames.length];
-        this.tiePointGrids = new HashMap<>();
-        for (int i = 0; i < this.sourceBandNames.length; i++) {
-            Band sourceBand = sourceProduct.getBand(this.sourceBandNames[i]);
-            sourceBands[i] = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            int sourceBandWidth = sourceBands[i].getRasterWidth();
-            int sourceBandHeight = sourceBands[i].getRasterHeight();
-
-            Band targetBand = new Band(this.sourceBandNames[i], ProductData.TYPE_FLOAT32, sourceBandWidth, sourceBandHeight);
-            ProductUtils.copyRasterDataNodeProperties(sourceBand, targetBand);
-            targetBand.setGeoCoding(sourceBand.getGeoCoding());
-            this.targetProduct.addBand(targetBand);
-
-            if (sunZenithBand == null) {
-                if (this.incidenceAngle == 0.0f) {
-                    throw new OperatorException("Please specify the incidence angle.");
-                }
-                float[] tiePoints = new float[] {this.incidenceAngle, this.incidenceAngle, this.incidenceAngle, this.incidenceAngle};
-                this.tiePointGrids.put(sourceBand.getName(), new TiePointGrid("angles_" + sourceBand.getName(), 2, 2, 0, 0, sourceBandWidth, sourceBandHeight, tiePoints));
-            } else {
-                int sunZenithBandWidth = sunZenithBand.getRasterWidth();
-                int sunZenithBandHeight = sunZenithBand.getRasterHeight();
-                float[] tiePoints = new float[sunZenithBandWidth * sunZenithBandHeight];
-                int index = 0;
-                for (int row = 0; row < sunZenithBandHeight; row++) {
-                    for (int column = 0; column < sunZenithBandWidth; column++) {
-                        tiePoints[index++] = sunZenithBand.getSampleFloat(column, row);
-                    }
-                }
-                this.tiePointGrids.put(sourceBand.getName(), new TiePointGrid("angles_" + sourceBand.getName(), sunZenithBandWidth, sunZenithBandHeight, 0, 0, sourceBandWidth, sourceBandHeight, tiePoints));
+            //TODO init meshgrid and u/v if necessary...
+            if(rank != 0){
+                //rank apply from MatrixUtils? Or find JAI method for it
             }
+            //............................
         }
 
-        this.d2 = 1.0d / this.u;
-        this.scale = 1.0d;
     }
 
-    @Override
-    public synchronized void computeTile(Band targetBand, Tile targetTile, com.bc.ceres.core.ProgressMonitor pm) throws OperatorException {
-        pm.beginTask("Computing Reflectance to Radiance", targetTile.getHeight());
-        // https://github.com/umwilm/SEN2COR/blob/96a00464bef15404a224b2262accd0802a338ff9/sen2cor/L2A_Tables.py
-        // The final formula is:
-        // rad = rho * cos(radians(sza)) * Es * sc / (pi * d2)
-        // where: d2 = 1.0 / U
-        // scale: 1 / (0.001 * 1000) = 1 (default)
-        Rectangle rectangle = targetTile.getRectangle();
-        /*
-        try {
-            Tile sourceTile = getSourceTile(this.sourceProduct.getBand(targetBand.getName()), rectangle);
-            TiePointGrid tiePointGrid = this.tiePointGrids.get(targetBand.getName());
-            float slrIrr = this.solarIrradiances != null ?
-                    this.solarIrradiances.get(targetBand.getName()) :
-                    this.solarIrradiance;
-            double factor = slrIrr * this.scale / (Math.PI * this.d2);
-            for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
-                for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
-                    //float sunZenitAngle = tiePointGrid.getSampleFloat(x, y);
-                    double sunZenitRadians = Math.toRadians(tiePointGrid.getSampleFloat(x, y));
-                    //float pixelValue = sourceTile.getSampleFloat(x, y);
-                    float result = (float)(sourceTile.getSampleFloat(x, y) * Math.cos(sunZenitRadians) * factor);
-                    targetTile.setSample(x, y, result);
-                }
-                checkForCancellation();
-                pm.worked(1);
-            }
-        } finally {
-            pm.done();
+    private RenderedImage applyContrast(RenderedImage inputImage) {
+        final RenderedImage extrema = ExtremaDescriptor.create(inputImage, null, 1, 1, false, 1, null);
+        double[][] minMax = (double[][]) extrema.getProperty("Extrema");
+        double min = minMax[0][0];
+        double max = minMax[1][0];
+        double dif = max-min;
+
+        double[] multiplyByThis = new double[1];
+        multiplyByThis[0] = 1.0/(max-min);
+        double[] addThis = new double[1];
+        addThis[0] = min/(max-min);
+        ParameterBlock pbRescale = new ParameterBlock();
+        pbRescale.add(multiplyByThis);
+        pbRescale.add(addThis);
+        pbRescale.addSource(inputImage);
+        PlanarImage outImage = (PlanarImage)JAI.create("rescale", pbRescale);
+        return outImage;
+    }
+
+    private RenderedImage[] pyramid(RenderedImage inputImage, int level){
+        RenderedImage[] imagePyramid = new RenderedImage[level+1];
+        imagePyramid[0] = inputImage;
+        for (int k=0;k<=level;k++){
+            imagePyramid[k+1] = pyramBurt(imagePyramid[k]);
         }
-        */
+        return imagePyramid;
     }
 
-    private boolean isSentinelProduct(Product product) {
-        return StringHelper.startsWithIgnoreCase(product.getProductType(), "S2_MSI_Level");
+
+    private RenderedImage pyramBurt(RenderedImage inputImage){
+        int rad = 2;
+        RenderedImage borderedImage = addBorder(inputImage, rad, rad, rad, rad);
+        int kernelSize = burt1D.length;
+        KernelJAI kernel = new KernelJAI(kernelSize,kernelSize,burt1D);
+        PlanarImage conv1 = JAI.create("convolve", borderedImage, kernel);
+        PlanarImage conv2 = JAI.create("convolve", conv1, kernel);
+
+        //resize with 1/2 factor:
+        RenderingHints hints = new RenderingHints(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+
+        RenderedOp resizeOp = SubsampleAverageDescriptor.create(conv2,
+                0.5, 0.5, hints);
+
+        BufferedImage bufferedResizedImage = resizeOp.getAsBufferedImage();
+
+        return bufferedResizedImage;
     }
 
-    private boolean isSpotProduct(Product product) {
-        return StringHelper.startsWithIgnoreCase(product.getProductType(), "SPOTSCENE");
+    private RenderedImage addBorder(RenderedImage inputImage, int left,int right, int top, int bottom) {
+        ParameterBlock pb = new ParameterBlock();
+        pb.addSource(inputImage);
+        pb.add(left);
+        pb.add(right);
+        pb.add(top);
+        pb.add(bottom);
+        pb.add(BorderExtender.BORDER_ZERO);
+        return JAI.create("border", pb);
     }
 
-    private void copyMasks(Product sourceProduct, Product targetProduct, String...bandNames) {
-        if (isSentinelProduct(sourceProduct)) {
-            final ProductNodeGroup<Mask> sourceMaskGroup = sourceProduct.getMaskGroup();
-            int nodeCount = sourceMaskGroup.getNodeCount();
-            for (int i = 0; i < nodeCount; i++) {
-                final Mask mask = sourceMaskGroup.get(i);
-                String maskName = mask.getName();
-                if (!targetProduct.getMaskGroup().contains(maskName)
-                        && StringHelper.endsWithIgnoreCase(maskName, bandNames)) {
-                    if (mask.getImageType().transferMask(mask, targetProduct) == null) {
-                        Mask targetMask = new Mask(maskName, mask.getRasterWidth(), mask.getRasterHeight(), mask.getImageType());
-                        ProductUtils.copyRasterDataNodeProperties(mask, targetMask);
-                        targetMask.setSourceImage(mask.getSourceImage());
-                        targetProduct.getMaskGroup().add(targetMask);
-                    }
-                }
-            }
-        } else {
-            final ProductNodeGroup<Mask> sourceMaskGroup = sourceProduct.getMaskGroup();
-            for (int i = 0; i < sourceMaskGroup.getNodeCount(); i++) {
-                final Mask mask = sourceMaskGroup.get(i);
-                if (!targetProduct.getMaskGroup().contains(mask.getName())) {
-                    mask.getImageType().transferMask(mask, targetProduct);
-                }
-            }
-        }
-    }
-
-    public static class Spi extends OperatorSpi {
+    /*public static class Spi extends OperatorSpi {
 
         public Spi() {
             super(CoregistrationOp.class);
         }
+    }*/
+
+    BufferedImage equalize(BufferedImage src){
+        BufferedImage nImg = new BufferedImage(src.getWidth(), src.getHeight(),
+                BufferedImage.TYPE_BYTE_GRAY);
+        WritableRaster wr = src.getRaster();
+        WritableRaster er = nImg.getRaster();
+        int totpix= wr.getWidth()*wr.getHeight();
+        int[] histogram = new int[256];
+
+        for (int x = 0; x < wr.getWidth(); x++) {
+            for (int y = 0; y < wr.getHeight(); y++) {
+                histogram[wr.getSample(x, y, 0)]++;
+            }
+        }
+
+        int[] chistogram = new int[256];
+        chistogram[0] = histogram[0];
+        for(int i=1;i<256;i++){
+            chistogram[i] = chistogram[i-1] + histogram[i];
+        }
+
+        float[] arr = new float[256];
+        for(int i=0;i<256;i++){
+            arr[i] =  (float)((chistogram[i]*255.0)/(float)totpix);
+        }
+
+        for (int x = 0; x < wr.getWidth(); x++) {
+            for (int y = 0; y < wr.getHeight(); y++) {
+                int nVal = (int) arr[wr.getSample(x, y, 0)];
+                er.setSample(x, y, 0, nVal);
+            }
+        }
+        nImg.setData(er);
+        return nImg;
+        /* [TODO] solution to access pixel values to avoid RenderedImage transformation ?????
+        1 int width = pi.getWidth();
+2 int height = pi.getHeight();
+3 SampleModel sm = pi.getSampleModel();
+4 int nbands = sm.getNumBands();
+5 int[] pixel = new int[nbands];
+6 RandomIter iterator = RandomIterFactory.create(pi, null);
+7 for(int h=0;h<height;h++)
+8 for(int w=0;w<width;w++)
+9 {
+10 iterator.getPixel(w,h,pixel);
+11 System.out.print("at ("+w+","+h+"): ");
+12 for(int band=0;band<nbands;band++)
+13 System.out.print(pixel[band]+" ");
+14 System.out.println();
+15 }
+         */
     }
+
+    public static BufferedImage convertRenderedImage(RenderedImage img) {
+        if (img instanceof BufferedImage) {
+        			return (BufferedImage) img;
+        		}
+        ColorModel cm = img.getColorModel();
+        int width = img.getWidth();
+        int height = img.getHeight();
+        WritableRaster raster = cm
+        		.createCompatibleWritableRaster(width, height);
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        Hashtable properties = new Hashtable<>();
+        String[] keys = img.getPropertyNames();
+        if (keys != null) {
+            for (int i = 0; i < keys.length; i++) {
+                properties.put(keys[i], img.getProperty(keys[i]));
+            }
+        }
+        BufferedImage result = new BufferedImage(cm, raster,
+        			isAlphaPremultiplied, properties);
+        img.copyData(raster);
+        return result;
+    }
+
+    public static void main(String args[]){
+        try {
+            img = ImageIO.read(new File("strawberry.jpg"));
+        } catch (IOException e) {
+            //[TODO]
+        }
+
+        CoregistrationOp op = new CoregistrationOp();
+        op.doExecute(null, 0);
+    }
+
 }
