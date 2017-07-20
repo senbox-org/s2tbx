@@ -98,7 +98,7 @@ public abstract class AbstractRegionParallelComputing extends AbstractImageTiles
 
             boolean continueRunning = true;
             while (continueRunning) {
-                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.filterValidRegions(threadCount, threadPool, validRegionStatistics, cumulativeProbability);
+                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.computeValidRegionsInParallel(threadCount, threadPool, validRegionStatistics, cumulativeProbability);
                 if (validStatistics == null) {
                     continueRunning = false;
                 } else {

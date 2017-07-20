@@ -97,6 +97,12 @@
             <artifactId>fastutil</artifactId>
             <version>6.3</version>
         </dependency>
+
+        <!-- JUnit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 
 

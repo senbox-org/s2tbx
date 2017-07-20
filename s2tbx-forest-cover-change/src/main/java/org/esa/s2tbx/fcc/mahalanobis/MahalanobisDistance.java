@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class MahalanobisDistance {
     private static final Logger logger = Logger.getLogger(MahalanobisDistance.class.getName());
 
-    public static Int2ObjectMap<PixelSourceBands> filterValidRegions(int threadCount, Executor threadPool,
+    public static Int2ObjectMap<PixelSourceBands> computeValidRegionsInParallel(int threadCount, Executor threadPool,
                                                                      Int2ObjectMap<PixelSourceBands> validRegionStatistics, double cumulativeProbability)
                                                                      throws Exception {
 
