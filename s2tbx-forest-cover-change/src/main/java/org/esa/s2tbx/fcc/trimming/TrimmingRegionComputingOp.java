@@ -2,17 +2,12 @@ package org.esa.s2tbx.fcc.trimming;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.bc.ceres.core.ProgressMonitor;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -52,7 +47,7 @@ public class TrimmingRegionComputingOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    private TrimmingRegionComputingHelper trimmingRegionComputingHelper;
+    private TrimmingRegionTilesComputing trimmingRegionComputingHelper;
     private Set<String> processedTiles;
 
     public TrimmingRegionComputingOp() {
@@ -70,7 +65,7 @@ public class TrimmingRegionComputingOp extends Operator {
         this.targetProduct.addBand(targetBand);
 
         this.processedTiles = new HashSet<String>();
-        this.trimmingRegionComputingHelper = new TrimmingRegionComputingHelper(this.segmentationSourceProduct, this.sourceProduct, this.sourceBandIndices, 0, 0);
+        this.trimmingRegionComputingHelper = new TrimmingRegionTilesComputing(this.segmentationSourceProduct, this.sourceProduct, this.sourceBandIndices, 0, 0);
     }
 
     @Override

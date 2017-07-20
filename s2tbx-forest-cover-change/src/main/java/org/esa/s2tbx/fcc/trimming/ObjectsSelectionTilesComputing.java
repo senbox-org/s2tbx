@@ -15,14 +15,14 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class ObjectsSelectionHelper extends AbstractImageTilesParallelComputing {
-    private static final Logger logger = Logger.getLogger(ObjectsSelectionHelper.class.getName());
+public class ObjectsSelectionTilesComputing extends AbstractImageTilesParallelComputing {
+    private static final Logger logger = Logger.getLogger(ObjectsSelectionTilesComputing.class.getName());
 
     private final Product sourceProduct;
     private final Product landCoverProduct;
     private final Int2ObjectMap<PixelStatistic> statistics;
 
-    public ObjectsSelectionHelper(Product sourceProduct, Product landCoverProduct, int tileWidth, int tileHeight) {
+    public ObjectsSelectionTilesComputing(Product sourceProduct, Product landCoverProduct, int tileWidth, int tileHeight) {
         super(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.sourceProduct = sourceProduct;

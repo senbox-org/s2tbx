@@ -15,15 +15,15 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class FinalMasksHelper extends AbstractImageTilesParallelComputing {
-    private static final Logger logger = Logger.getLogger(FinalMasksHelper.class.getName());
+public class FinalMasksTilesComputing extends AbstractImageTilesParallelComputing {
+    private static final Logger logger = Logger.getLogger(FinalMasksTilesComputing.class.getName());
 
     private final ProductData productData;
     private final Product differenceSegmentationProduct;
     private final Product unionMaskProduct;
     private final IntSet differenceTrimmingSet;
 
-    public FinalMasksHelper(Product differenceSegmentationProduct, Product unionMaskProduct, IntSet differenceTrimmingSet, int tileWidth, int tileHeight) {
+    public FinalMasksTilesComputing(Product differenceSegmentationProduct, Product unionMaskProduct, IntSet differenceTrimmingSet, int tileWidth, int tileHeight) {
         super(differenceSegmentationProduct.getSceneRasterWidth(), differenceSegmentationProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.differenceSegmentationProduct = differenceSegmentationProduct;

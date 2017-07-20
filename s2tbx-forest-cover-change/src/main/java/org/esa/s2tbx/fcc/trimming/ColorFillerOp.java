@@ -6,12 +6,10 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.jai.JAI;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -52,7 +50,7 @@ public class ColorFillerOp extends Operator {
     private IntSet validRegions;
 
     private Set<String> processedTiles;
-    private ColorFillerHelper colorFillerHelper;
+    private ColorFillerTilesComputing colorFillerHelper;
 
     public ColorFillerOp() {
     }
@@ -64,7 +62,7 @@ public class ColorFillerOp extends Operator {
         createTargetProduct();
 
         this.processedTiles = new HashSet<String>();
-        this.colorFillerHelper = new ColorFillerHelper(segmentationSourceProduct, validRegions, 0, 0);
+        this.colorFillerHelper = new ColorFillerTilesComputing(segmentationSourceProduct, validRegions, 0, 0);
     }
 
     @Override

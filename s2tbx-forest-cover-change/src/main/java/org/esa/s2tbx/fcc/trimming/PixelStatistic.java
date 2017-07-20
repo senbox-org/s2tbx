@@ -4,8 +4,8 @@ package org.esa.s2tbx.fcc.trimming;
  * @author Jean Coravu
  */
 public final class PixelStatistic {
-    int totalNumberPixels;
-    int pixelsInRage;
+    private int totalNumberPixels;
+    private int pixelsInRage;
 
     public PixelStatistic(int totalNumberPixels, int pixelsInRage) {
         this.totalNumberPixels = totalNumberPixels;
