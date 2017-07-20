@@ -2,7 +2,6 @@ package org.esa.s2tbx.fcc.trimming;
 
 import com.bc.ceres.core.ProgressMonitor;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -20,7 +19,6 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 /**
  * @author Jean Coravu
@@ -46,7 +44,7 @@ public class UnionMasksOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    private UnionMasksHelper unionMasksHelper;
+    private UnionMasksTilesComputing unionMasksHelper;
     private Set<String> processedTiles;
 
     public UnionMasksOp() {
@@ -64,7 +62,7 @@ public class UnionMasksOp extends Operator {
         this.targetProduct.addBand(targetBand);
 
         this.processedTiles = new HashSet<String>();
-        this.unionMasksHelper = new UnionMasksHelper(currentSegmentationSourceProduct, previousSegmentationSourceProduct,
+        this.unionMasksHelper = new UnionMasksTilesComputing(currentSegmentationSourceProduct, previousSegmentationSourceProduct,
                                                      currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys, 0, 0);
     }
 

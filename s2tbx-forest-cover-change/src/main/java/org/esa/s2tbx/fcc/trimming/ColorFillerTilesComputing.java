@@ -18,14 +18,14 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class ColorFillerHelper extends AbstractImageTilesParallelComputing {
-    private static final Logger logger = Logger.getLogger(ColorFillerHelper.class.getName());
+public class ColorFillerTilesComputing extends AbstractImageTilesParallelComputing {
+    private static final Logger logger = Logger.getLogger(ColorFillerTilesComputing.class.getName());
 
     private final Product segmentationSourceProduct;
     private final IntSet validRegions;
     private final ProductData productData;
 
-    public ColorFillerHelper(Product segmentationSourceProduct, IntSet validRegions, int tileWidth, int tileHeight) {
+    public ColorFillerTilesComputing(Product segmentationSourceProduct, IntSet validRegions, int tileWidth, int tileHeight) {
         super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.segmentationSourceProduct = segmentationSourceProduct;

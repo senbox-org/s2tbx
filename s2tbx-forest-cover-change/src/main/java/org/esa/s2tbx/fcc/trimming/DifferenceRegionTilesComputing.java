@@ -11,8 +11,8 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class DifferenceRegionComputingHelper extends AbstractRegionParallelComputing {
-    private static final Logger logger = Logger.getLogger(DifferenceRegionComputingHelper.class.getName());
+public class DifferenceRegionTilesComputing extends AbstractRegionParallelComputing {
+    private static final Logger logger = Logger.getLogger(DifferenceRegionTilesComputing.class.getName());
 
     private final Product differenceSegmentationProduct;
     private final Product currentSourceProduct;
@@ -20,8 +20,8 @@ public class DifferenceRegionComputingHelper extends AbstractRegionParallelCompu
     private final Product unionMask;
     private final int[] sourceBandIndices;
 
-    public DifferenceRegionComputingHelper(Product differenceSegmentationProduct, Product currentSourceProduct, Product previousSourceProduct,
-                                    Product unionMask, int[] sourceBandIndices, int tileWidth, int tileHeight) {
+    public DifferenceRegionTilesComputing(Product differenceSegmentationProduct, Product currentSourceProduct, Product previousSourceProduct,
+                                          Product unionMask, int[] sourceBandIndices, int tileWidth, int tileHeight) {
 
         super(differenceSegmentationProduct.getSceneRasterWidth(), differenceSegmentationProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 

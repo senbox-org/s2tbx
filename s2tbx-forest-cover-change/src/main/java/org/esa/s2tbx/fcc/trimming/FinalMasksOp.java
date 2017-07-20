@@ -43,7 +43,7 @@ public class FinalMasksOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    private FinalMasksHelper finalMasksHelper;
+    private FinalMasksTilesComputing finalMasksHelper;
     private Set<String> processedTiles;
 
     public FinalMasksOp() {
@@ -61,7 +61,7 @@ public class FinalMasksOp extends Operator {
         this.targetProduct.addBand(targetBand);
 
         this.processedTiles = new HashSet<String>();
-        this.finalMasksHelper = new FinalMasksHelper(differenceSegmentationProduct, unionMaskProduct, differenceTrimmingSet, 0, 0);
+        this.finalMasksHelper = new FinalMasksTilesComputing(differenceSegmentationProduct, unionMaskProduct, differenceTrimmingSet, 0, 0);
     }
 
     @Override

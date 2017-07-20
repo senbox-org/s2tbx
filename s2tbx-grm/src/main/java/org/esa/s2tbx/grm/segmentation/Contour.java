@@ -123,14 +123,8 @@ public class Contour {
 
             if (previousMoveId == Contour.TOP_MOVE_INDEX) {
                 currentCellId -= width; // go to the top
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
             } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
                 currentCellId = currentCellId - width + 1; // go to the top right
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
             }
         } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
             // impossible case is previous index = 3 (left)
@@ -138,14 +132,8 @@ public class Contour {
 
             if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
                 currentCellId++; // go to the right
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
             } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
                 currentCellId = currentCellId + width + 1; // go to the bottom right
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
             }
         } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
             // impossible case is previous index = 0 (top)
@@ -153,14 +141,8 @@ public class Contour {
 
             if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
                 currentCellId += width;
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
             } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
                 currentCellId = currentCellId + width - 1; // go to the bottom left
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
             }
         } else { // current index = 3 (left)
             // impossible case is previous index = 1 (right)
@@ -168,14 +150,8 @@ public class Contour {
 
             if (previousMoveId == Contour.TOP_MOVE_INDEX) {
                 currentCellId = currentCellId - width - 1;  // go to the top left
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
             } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
                 currentCellId--; // go the to left
-//                        if (!nodeBorderCellsCallback.addBorderCellId(node, currentCellId)) {
-//                            return;
-//                        }
             }
         }
 

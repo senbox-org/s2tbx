@@ -242,6 +242,7 @@ public abstract class Node {
         int edgeCount = this.edges.size();
         for (int j = 0; j < edgeCount; j++) {
             Edge edge = this.edges.get(j);
+            edge.getTarget().removeEdge(this);
             WeakReference<Edge> reference = new WeakReference<Edge>(edge);
             reference.clear();
         }
@@ -331,7 +332,7 @@ public abstract class Node {
 
         // table containing id neighbors
         int[] neighbors = new int[8];
-        for (; ; ) {
+        while (true) {
             // compute neighbor' ids
             AbstractSegmenter.generateEightNeighborhood(neighbors, currentNodeId, boxWidth, boxHeight);
 
@@ -412,10 +413,9 @@ public abstract class Node {
 
     private static void generateBorderCellsForContourFusion(IntSet outputBorderCells, Contour contour, int startCellId, int width, BoundingBox mergedBox) {
         // add the first pixel to the border list
-        int id = gridToBBox(startCellId, mergedBox, width);
-        outputBorderCells.add(id);
+        outputBorderCells.add(gridToBBox(startCellId, mergedBox, width));
 
-        if (contour.size() > 8) { // contour size > 8 => more then 4 moves
+        if (contour.hasBorderSize()) { // contour size > 8 => more then 4 moves
             // initialize the first move at previous index
             int previousMoveId = contour.getMove(0);
 
@@ -423,55 +423,63 @@ public abstract class Node {
             int currentCellId = startCellId;
 
             // explore the contour
-            for (int contourIndex = 1; contourIndex < contour.size() / 2; contourIndex++) {
+            int contourSize = contour.computeContourBorderSize();
+            for (int contourIndex = 1; contourIndex < contourSize; contourIndex++) {
                 int currentMoveId = contour.getMove(contourIndex);
-                assert (currentMoveId >= 0 && currentMoveId <= 3);
+//                assert (currentMoveId >= 0 && currentMoveId <= 3);
+//
+//                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
+//                    // impossible case is previous index = 2 (bottom)
+//                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+//                        currentCellId -= width; // go to the top
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+//                        currentCellId = currentCellId - width + 1; // go to the top right
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    }
+//                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
+//                    // impossible case is previous index = 3 (left)
+//                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+//                        currentCellId++; // go to the right
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+//                        currentCellId = currentCellId + width + 1; // go to the bottom right
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    }
+//                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
+//                    // impossible case is previous index = 0 (top)
+//                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+//                        currentCellId += width;
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+//                        currentCellId = currentCellId + width - 1; // go to the bottom left
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    }
+//                } else { // current index = 3 (left)
+//                    // impossible case is previous index = 1 (right)
+//                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+//                        currentCellId = currentCellId - width - 1; // go to the top left
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+//                        currentCellId--; // go the to left
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    }
+//                }
 
-                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
-                    // impossible case is previous index = 2 (bottom)
-                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId -= width; // go to the top
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId = currentCellId - width + 1; // go to the top right
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    }
-                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
-                    // impossible case is previous index = 3 (left)
-                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId++; // go to the right
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId = currentCellId + width + 1; // go to the bottom right
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    }
-                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
-                    // impossible case is previous index = 0 (top)
-                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId += width;
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId = currentCellId + width - 1; // go to the bottom left
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    }
-                } else { // current index = 3 (left)
-                    // impossible case is previous index = 1 (right)
-                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId = currentCellId - width - 1; // go to the top left
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId--; // go the to left
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    }
+                int nextCellId = Contour.computeNextCellId(previousMoveId, currentMoveId, currentCellId, width);
+                if (nextCellId != currentCellId) {
+                    currentCellId = nextCellId;
+                    outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
                 }
+
                 previousMoveId = currentMoveId;
             }
         }

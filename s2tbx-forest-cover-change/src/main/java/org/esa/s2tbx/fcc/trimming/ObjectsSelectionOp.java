@@ -3,22 +3,15 @@ package org.esa.s2tbx.fcc.trimming;
 import com.bc.ceres.core.ProgressMonitor;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.media.jai.JAI;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -26,7 +19,6 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.util.ProductUtils;
 
 /**
  * @author Razvan Dumitrascu
@@ -50,7 +42,7 @@ public class ObjectsSelectionOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    private ObjectsSelectionHelper objectsSelectionHelper;
+    private ObjectsSelectionTilesComputing objectsSelectionHelper;
     private Set<String> processedTiles;
 
     public ObjectsSelectionOp() {
@@ -70,7 +62,7 @@ public class ObjectsSelectionOp extends Operator {
         this.targetProduct.addBand(targetBand);
 
         this.processedTiles = new HashSet<String>();
-        this.objectsSelectionHelper = new ObjectsSelectionHelper(this.sourceProduct, this.landCoverProduct, 0, 0);
+        this.objectsSelectionHelper = new ObjectsSelectionTilesComputing(this.sourceProduct, this.landCoverProduct, 0, 0);
     }
 
     @Override

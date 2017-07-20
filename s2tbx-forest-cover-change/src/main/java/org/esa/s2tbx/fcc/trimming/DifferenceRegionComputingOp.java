@@ -1,10 +1,7 @@
 package org.esa.s2tbx.fcc.trimming;
 
 import com.bc.ceres.core.ProgressMonitor;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -55,7 +52,7 @@ public class DifferenceRegionComputingOp extends Operator {
     @Parameter(itemAlias = "sourceBandIndices", description = "The index from the source product to be used.")
     private int[] sourceBandIndices;
 
-    private DifferenceRegionComputingHelper differenceRegionComputingHelper;
+    private DifferenceRegionTilesComputing differenceRegionComputingHelper;
     private Set<String> processedTiles;
 
     @Override
@@ -72,7 +69,7 @@ public class DifferenceRegionComputingOp extends Operator {
         this.targetProduct.addBand(targetBand);
 
         this.processedTiles = new HashSet<String>();
-        this.differenceRegionComputingHelper = new DifferenceRegionComputingHelper(differenceSegmentationProduct, currentSourceProduct, previousSourceProduct, unionMask, sourceBandIndices, 0, 0);
+        this.differenceRegionComputingHelper = new DifferenceRegionTilesComputing(differenceSegmentationProduct, currentSourceProduct, previousSourceProduct, unionMask, sourceBandIndices, 0, 0);
     }
 
     @Override

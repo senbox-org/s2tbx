@@ -455,37 +455,6 @@ public abstract class AbstractSegmenter {
         return new BoundingBox(minimumLeftUpperX, minimumLeftUpperY, width, height);
     }
 
-    public static IntSet generateBorderCells(Node node, int width) {
-        IntSet borderCells = new IntOpenHashSet();
-
-        // add the first pixel to the border list
-        borderCells.add(node.getId());
-
-        Contour contour = node.getContour();
-        if (contour.hasBorderSize()) {
-            // initialize the first move at prev
-            int previousMoveId = contour.getMove(0);
-
-            // declare the current pixel index
-            int currentCellId = node.getId();
-
-            // explore the contour
-            int contourSize = contour.computeContourBorderSize();
-            for (int moveIndex = 1; moveIndex < contourSize; moveIndex++) {
-                int currentMoveId = contour.getMove(moveIndex);
-
-                int nextCellId = Contour.computeNextCellId(previousMoveId, currentMoveId, currentCellId, width);
-                if (nextCellId != currentCellId) {
-                    currentCellId = nextCellId;
-                    borderCells.add(currentCellId);
-                }
-
-                previousMoveId = currentMoveId;
-            }
-        }
-        return borderCells;
-    }
-
     public static void generateEightNeighborhood(int[] neighborhood, int id, int width, int height) {
         int x = id % width;
         int y = id / width;

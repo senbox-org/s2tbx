@@ -15,8 +15,8 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class UnionMasksHelper extends AbstractImageTilesParallelComputing {
-    private static final Logger logger = Logger.getLogger(UnionMasksHelper.class.getName());
+public class UnionMasksTilesComputing extends AbstractImageTilesParallelComputing {
+    private static final Logger logger = Logger.getLogger(UnionMasksTilesComputing.class.getName());
 
     private final ProductData productData;
     private final Product currentSegmentationSourceProduct;
@@ -24,8 +24,8 @@ public class UnionMasksHelper extends AbstractImageTilesParallelComputing {
     private final IntSet currentSegmentationTrimmingRegionKeys;
     private final IntSet previousSegmentationTrimmingRegionKeys;
 
-    public UnionMasksHelper(Product currentSegmentationSourceProduct, Product previousSegmentationSourceProduct,
-                            IntSet currentSegmentationTrimmingRegionKeys, IntSet previousSegmentationTrimmingRegionKeys, int tileWidth, int tileHeight) {
+    public UnionMasksTilesComputing(Product currentSegmentationSourceProduct, Product previousSegmentationSourceProduct,
+                                    IntSet currentSegmentationTrimmingRegionKeys, IntSet previousSegmentationTrimmingRegionKeys, int tileWidth, int tileHeight) {
 
         super(currentSegmentationSourceProduct.getSceneRasterWidth(), currentSegmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 

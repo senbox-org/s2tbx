@@ -225,7 +225,7 @@ public class ForestCoverChange {
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
         IntSet differenceTrimmingSet = operator.processResult(threadCount, threadPool);
 
-//        DifferenceRegionComputingHelper helper = new DifferenceRegionComputingHelper(differenceSegmentationProduct, currentSourceProduct, previousSourceProduct,
+//        DifferenceRegionTilesComputing helper = new DifferenceRegionTilesComputing(differenceSegmentationProduct, currentSourceProduct, previousSourceProduct,
 //                                                                                     unionMaskProduct, sourceBandIndices, tileSize.width, tileSize.height);
 //        IntSet differenceTrimmingSet = helper.runTilesInParallel(threadCount, threadPool);
 //
@@ -266,7 +266,7 @@ public class ForestCoverChange {
 
         IntSet segmentationTrimmingRegionKeys = operator.processResult(threadCount, threadPool);
 
-//        TrimmingRegionComputingHelper helper = new TrimmingRegionComputingHelper(productColorFill, product, trimmingSourceProductBandIndices,
+//        TrimmingRegionTilesComputing helper = new TrimmingRegionTilesComputing(productColorFill, product, trimmingSourceProductBandIndices,
 //                                                                                 tileSize.width, tileSize.height);
 //        IntSet segmentationTrimmingRegionKeys = helper.runTilesInParallel(threadCount, threadPool);
 //        helper = null;
@@ -305,7 +305,7 @@ public class ForestCoverChange {
         targetBand.setSourceImage(null);
         targetBand.getSourceImage();
         return targetProduct;
-//        ColorFillerHelper helper = new ColorFillerHelper(segmentationSourceProduct, validRegions, tileSize.width, tileSize.height);
+//        ColorFillerTilesComputing helper = new ColorFillerTilesComputing(segmentationSourceProduct, validRegions, tileSize.width, tileSize.height);
 //        return helper.runTilesInParallel(threadCount, threadPool);
     }
 
@@ -327,7 +327,7 @@ public class ForestCoverChange {
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
         Int2ObjectMap<PixelStatistic> statistics = operator.getStatistics();
 
-//        ObjectsSelectionHelper helper = new ObjectsSelectionHelper(sourceProduct, landCoverProduct, tileSize.width, tileSize.height);
+//        ObjectsSelectionTilesComputing helper = new ObjectsSelectionTilesComputing(sourceProduct, landCoverProduct, tileSize.width, tileSize.height);
 //        Int2ObjectMap<ObjectsSelectionOp.PixelStatistic> statistics = helper.runTilesInParallel(threadCount, threadPool);
 
         IntSet validRegions = new IntOpenHashSet();
@@ -408,7 +408,7 @@ public class ForestCoverChange {
         targetBand.getSourceImage();
         return targetProduct;
 
-//        UnionMasksHelper helper = new UnionMasksHelper(currentSegmentationSourceProduct, previousSegmentationSourceProduct, currentSegmentationTrimmingRegionKeys,
+//        UnionMasksTilesComputing helper = new UnionMasksTilesComputing(currentSegmentationSourceProduct, previousSegmentationSourceProduct, currentSegmentationTrimmingRegionKeys,
 //                                                       previousSegmentationTrimmingRegionKeys, tileSize.width, tileSize.height);
 //        ProductData productData = helper.runTilesInParallel(threadCount, threadPool);
 //        int sceneRasterWidth = currentSegmentationSourceProduct.getSceneRasterWidth();
@@ -441,7 +441,7 @@ public class ForestCoverChange {
         targetBand.getSourceImage();
         return this.targetProduct;
 
-//        FinalMasksHelper helper = new FinalMasksHelper(differenceSegmentationProduct, unionMaskProduct, differenceTrimmingSet, tileSize.width, tileSize.height);
+//        FinalMasksTilesComputing helper = new FinalMasksTilesComputing(differenceSegmentationProduct, unionMaskProduct, differenceTrimmingSet, tileSize.width, tileSize.height);
 //        ProductData productData = helper.runTilesInParallel(threadCount, threadPool);
 //        this.targetProduct.getBandAt(0).setData(productData);
 //        return this.targetProduct;
