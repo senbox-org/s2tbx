@@ -78,6 +78,13 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-commons</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-engine-utilities</artifactId>
             <version>${project.version}</version>
@@ -97,6 +104,7 @@
             <artifactId>fastutil</artifactId>
             <version>6.3</version>
         </dependency>
+
 
         <!-- JUnit -->
         <dependency>

@@ -15,8 +15,10 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by rdumitrascu on 7/20/2017.
+ * @author Razvan Dumitrascu
+ * @since 5.0.6
  */
+
 public class BandsExtractorOpTest {
 
     private static final int WIDTH = 10;
