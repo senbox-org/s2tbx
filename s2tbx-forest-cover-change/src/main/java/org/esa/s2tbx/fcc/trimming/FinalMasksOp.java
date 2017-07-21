@@ -13,6 +13,7 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.utils.AbstractTilesComputingOp;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
@@ -30,7 +31,7 @@ import java.util.Set;
         description = "",
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
-public class FinalMasksOp extends Operator {
+public class FinalMasksOp extends AbstractTilesComputingOp {
     @SourceProduct(alias = "differenceSegmentationProduct", description = "The source product")
     private Product differenceSegmentationProduct;
 
@@ -39,9 +40,6 @@ public class FinalMasksOp extends Operator {
 
     @Parameter(itemAlias = "differenceTrimmingSet", description = "")
     private IntSet differenceTrimmingSet;
-
-    @TargetProduct
-    private Product targetProduct;
 
     private FinalMasksTilesComputing finalMasksHelper;
     private Set<String> processedTiles;
@@ -53,20 +51,16 @@ public class FinalMasksOp extends Operator {
     public void initialize() throws OperatorException {
         int sceneWidth = this.differenceSegmentationProduct.getSceneRasterWidth();
         int sceneHeight = this.differenceSegmentationProduct.getSceneRasterHeight();
-        Dimension tileSize = JAI.getDefaultTileSize();
-
-        this.targetProduct = new Product(this.differenceSegmentationProduct.getName() + "_union", this.differenceSegmentationProduct.getProductType(), sceneWidth, sceneHeight);
-        this.targetProduct.setPreferredTileSize(tileSize);
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        this.targetProduct.addBand(targetBand);
+        initTargetProduct(sceneWidth, sceneHeight, this.differenceSegmentationProduct.getName() + "_final", this.differenceSegmentationProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
 
         this.processedTiles = new HashSet<String>();
         this.finalMasksHelper = new FinalMasksTilesComputing(differenceSegmentationProduct, unionMaskProduct, differenceTrimmingSet, 0, 0);
     }
 
     @Override
-    public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
         Rectangle tileRegion = targetTile.getRectangle();
+
         String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
         boolean canProcessTile = false;
         synchronized (this.processedTiles) {
@@ -74,7 +68,7 @@ public class FinalMasksOp extends Operator {
         }
         if (canProcessTile) {
             try {
-                this.finalMasksHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, 0, 0);
+                this.finalMasksHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             }

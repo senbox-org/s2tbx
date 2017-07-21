@@ -63,10 +63,8 @@ public class DifferencePixelsRegionMergingOp extends AbstractRegionMergingOp {
 
         int sceneWidth = this.currentSourceProduct.getSceneRasterWidth();
         int sceneHeight = this.currentSourceProduct.getSceneRasterHeight();
-        initTargetProduct(sceneWidth, sceneHeight, this.currentSourceProduct.getName() + "_grm", this.currentSourceProduct.getProductType());
+        initTargetProduct(sceneWidth, sceneHeight, this.currentSourceProduct.getName() + "_grm", this.currentSourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
         ProductUtils.copyGeoCoding(this.currentSourceProduct, this.targetProduct);
-
-        initTiles();
     }
 
     @Override

@@ -19,6 +19,7 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.utils.AbstractTilesComputingOp;
 
 /**
  * @author Razvan Dumitrascu
@@ -32,15 +33,12 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
         authors = "Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 
-public class ObjectsSelectionOp extends Operator {
+public class ObjectsSelectionOp extends AbstractTilesComputingOp {
     @SourceProduct(alias = "Source", description = "The source product to be modified.")
     private Product sourceProduct;
 
     @SourceProduct(alias = "Land cover product", description = "The land cover product.")
     private Product landCoverProduct;
-
-    @TargetProduct
-    private Product targetProduct;
 
     private ObjectsSelectionTilesComputing objectsSelectionHelper;
     private Set<String> processedTiles;
@@ -54,20 +52,16 @@ public class ObjectsSelectionOp extends Operator {
 
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
-        Dimension tileSize = JAI.getDefaultTileSize();
-
-        this.targetProduct = new Product(this.sourceProduct.getName() + "_CCI", this.sourceProduct.getProductType(), sceneWidth, sceneHeight);
-        this.targetProduct.setPreferredTileSize(tileSize);
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        this.targetProduct.addBand(targetBand);
+        initTargetProduct(sceneWidth, sceneHeight, this.sourceProduct.getName() + "_CCI", this.sourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
 
         this.processedTiles = new HashSet<String>();
         this.objectsSelectionHelper = new ObjectsSelectionTilesComputing(this.sourceProduct, this.landCoverProduct, 0, 0);
     }
 
     @Override
-    public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
         Rectangle tileRegion = targetTile.getRectangle();
+
         String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
         boolean canProcessTile = false;
         synchronized (this.processedTiles) {
@@ -75,7 +69,7 @@ public class ObjectsSelectionOp extends Operator {
         }
         if (canProcessTile) {
             try {
-                this.objectsSelectionHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, 0, 0);
+                this.objectsSelectionHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             }

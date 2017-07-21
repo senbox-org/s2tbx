@@ -19,6 +19,7 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.utils.AbstractTilesComputingOp;
 
 import javax.media.jai.JAI;
 
@@ -34,7 +35,7 @@ import javax.media.jai.JAI;
         description = "Creates a hash map containing the values from the source bands for a respective segmentation region",
         authors = "Razvan Dumitrascu, Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
-public class TrimmingRegionComputingOp extends Operator {
+public class TrimmingRegionComputingOp extends AbstractTilesComputingOp {
     @SourceProduct(alias = "Source product", description = "The source products to be used for trimming.")
     private Product sourceProduct;
 
@@ -43,9 +44,6 @@ public class TrimmingRegionComputingOp extends Operator {
 
     @Parameter(label = "Source band indices", description = "The source band indices.")
     private int[] sourceBandIndices;
-
-    @TargetProduct
-    private Product targetProduct;
 
     private TrimmingRegionTilesComputing trimmingRegionComputingHelper;
     private Set<String> processedTiles;
@@ -57,20 +55,16 @@ public class TrimmingRegionComputingOp extends Operator {
     public void initialize() throws OperatorException {
         int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
         int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
-        Dimension tileSize = JAI.getDefaultTileSize();
-
-        this.targetProduct = new Product(this.segmentationSourceProduct.getName() + "_trim", this.segmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
-        this.targetProduct.setPreferredTileSize(tileSize);
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        this.targetProduct.addBand(targetBand);
+        initTargetProduct(sceneWidth, sceneHeight, this.segmentationSourceProduct.getName() + "_trim", this.segmentationSourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
 
         this.processedTiles = new HashSet<String>();
         this.trimmingRegionComputingHelper = new TrimmingRegionTilesComputing(this.segmentationSourceProduct, this.sourceProduct, this.sourceBandIndices, 0, 0);
     }
 
     @Override
-    public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
         Rectangle tileRegion = targetTile.getRectangle();
+
         String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
         boolean canProcessTile = false;
         synchronized (this.processedTiles) {
@@ -78,7 +72,7 @@ public class TrimmingRegionComputingOp extends Operator {
         }
         if (canProcessTile) {
             try {
-                this.trimmingRegionComputingHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, 0, 0);
+                this.trimmingRegionComputingHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             }
