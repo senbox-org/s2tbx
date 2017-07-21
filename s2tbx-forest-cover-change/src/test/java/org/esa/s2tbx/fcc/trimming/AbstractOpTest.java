@@ -1,5 +1,6 @@
 package org.esa.s2tbx.fcc.trimming;
 
+import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 
@@ -25,6 +26,11 @@ public abstract class AbstractOpTest {
     public final void setUp() throws Exception {
         assumeTrue(TestUtil.testdataAvailable());
         checkTestDirectoryExists();
+    }
+
+    protected static final ProductReaderPlugIn buildDimapProductReaderPlugIn() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Class<?> sentinelReaderPlugInClass = Class.forName("org.esa.snap.core.dataio.dimap.DimapProductReaderPlugIn");
+        return (ProductReaderPlugIn)sentinelReaderPlugInClass.newInstance();
     }
 
     private void checkTestDirectoryExists() {

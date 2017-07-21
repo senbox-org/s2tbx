@@ -42,8 +42,7 @@ public class ColorFillerOpTest extends AbstractOpTest {
 
     @Test
     public void testColorFillerOp() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        Class<?> sentinelReaderPlugInClass = Class.forName("org.esa.snap.core.dataio.dimap.DimapProductReaderPlugIn");
-        ProductReaderPlugIn productReaderPlugIn = (ProductReaderPlugIn)sentinelReaderPlugInClass.newInstance();
+        ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
         File currentProductFile = this.forestCoverChangeTestsFolderPath.resolve("S2A_20160713T125925_A005524_T35UMP_grm.dim").toFile();
         Product segmentationProduct = productReaderPlugIn.createReaderInstance().readProductNodes(currentProductFile, null);

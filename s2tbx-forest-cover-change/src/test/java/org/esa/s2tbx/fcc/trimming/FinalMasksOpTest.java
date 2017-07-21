@@ -37,8 +37,7 @@ public class FinalMasksOpTest extends AbstractOpTest {
 
     @Test
     public void testFinalMask() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
-        Class<?> sentinelReaderPlugInClass = Class.forName("org.esa.snap.core.dataio.dimap.DimapProductReaderPlugIn");
-        ProductReaderPlugIn productReaderPlugIn = (ProductReaderPlugIn)sentinelReaderPlugInClass.newInstance();
+        ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
         Path finalFolder = this.forestCoverChangeTestsFolderPath.resolve("final");
 
