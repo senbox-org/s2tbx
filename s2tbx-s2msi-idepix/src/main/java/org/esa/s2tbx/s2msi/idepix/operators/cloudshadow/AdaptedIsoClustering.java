@@ -38,14 +38,17 @@ import java.util.List;
 
 /**
  * Clustering algorithm based on David Arthur and Sergei Vassilvitski k-means++ algorithm.
- * This has been adapted by Grit and Michael.
+ * This has been adapted by Grit Kirches and Michael Paperin.
  *
  * @param <T> type of the points to cluster
  * @see <a href="http://en.wikipedia.org/wiki/K-means%2B%2B">K-means++ (wikipedia)</a>
  * @since 3.2
  */
-public class MyClustering<T extends Clusterable> extends Clusterer<T> {
+public class AdaptedIsoClustering<T extends Clusterable> extends Clusterer<T> {
 
+
+    // we use one seed so that results are reproducable
+    private static final int SEED = 544653563;
 
     /**
      * Strategies to use for replacing an empty cluster.
@@ -106,7 +109,7 @@ public class MyClustering<T extends Clusterable> extends Clusterer<T> {
      * @param maxIterations the maximum number of iterations to run the algorithm for.
      *                      If negative, no maximum will be used.
      */
-    public MyClustering(final int k, final int maxIterations) {
+    public AdaptedIsoClustering(final int k, final int maxIterations) {
         this(k, maxIterations, new EuclideanDistance());
     }
 
@@ -123,7 +126,7 @@ public class MyClustering<T extends Clusterable> extends Clusterer<T> {
      */
 
 
-    public MyClustering(final int k, final int maxIterations, final DistanceMeasure measure) {
+    public AdaptedIsoClustering(final int k, final int maxIterations, final DistanceMeasure measure) {
         this(k, maxIterations, measure, new JDKRandomGenerator());
     }
 
@@ -139,9 +142,9 @@ public class MyClustering<T extends Clusterable> extends Clusterer<T> {
      * @param measure       the distance measure to use
      * @param random        random generator to use for choosing initial centers
      */
-    public MyClustering(final int k, final int maxIterations,
-                        final DistanceMeasure measure,
-                        final RandomGenerator random) {
+    public AdaptedIsoClustering(final int k, final int maxIterations,
+                                final DistanceMeasure measure,
+                                final RandomGenerator random) {
         this(k, maxIterations, measure, random, EmptyClusterStrategy.LARGEST_VARIANCE);
     }
 
@@ -156,14 +159,15 @@ public class MyClustering<T extends Clusterable> extends Clusterer<T> {
      * @param emptyStrategy strategy to use for handling empty clusters that
      *                      may appear during algorithm iterations
      */
-    public MyClustering(final int k, final int maxIterations,
-                        final DistanceMeasure measure,
-                        final RandomGenerator random,
-                        final EmptyClusterStrategy emptyStrategy) {
+    public AdaptedIsoClustering(final int k, final int maxIterations,
+                                final DistanceMeasure measure,
+                                final RandomGenerator random,
+                                final EmptyClusterStrategy emptyStrategy) {
         super(measure);
         this.k = k;
         this.maxIterations = maxIterations;
         this.random = random;
+        random.setSeed(SEED);
         this.emptyStrategy = emptyStrategy;
     }
 
