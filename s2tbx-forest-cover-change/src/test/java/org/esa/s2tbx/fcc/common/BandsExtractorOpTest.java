@@ -1,20 +1,15 @@
 package org.esa.s2tbx.fcc.common;
 
-import org.esa.s2tbx.fcc.common.BandsExtractorOp;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.geotools.referencing.CRS;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.operator.ConstantDescriptor;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
