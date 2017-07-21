@@ -201,7 +201,7 @@ public class S2IdepixUtils {
         gaCloudProduct.getMaskGroup().add(index++, mask);
         mask = Mask.BandMathsType.create("IDEPIX_LAND",
                                          IDEPIX_CLEAR_LAND_DESCR_TEXT, w, h,
-                                         "pixel_classif_flags.IDEPIX_CLEAR_LAND",
+                                         "pixel_classif_flags.IDEPIX_LAND",
                                          getRandomColour(r), 0.5f);
         gaCloudProduct.getMaskGroup().add(index++, mask);
 
