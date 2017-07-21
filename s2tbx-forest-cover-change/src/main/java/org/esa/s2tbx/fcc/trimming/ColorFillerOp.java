@@ -47,7 +47,6 @@ public class ColorFillerOp extends AbstractTilesComputingOp {
     @Parameter (itemAlias = "validRegions", description = "The valid regions with forest pixels")
     private IntSet validRegions;
 
-    private Set<String> processedTiles;
     private ColorFillerTilesComputing colorFillerHelper;
 
     public ColorFillerOp() {
@@ -62,26 +61,13 @@ public class ColorFillerOp extends AbstractTilesComputingOp {
         initTargetProduct(sceneWidth, sceneHeight, this.segmentationSourceProduct.getName() + "_fill", this.segmentationSourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
         ProductUtils.copyGeoCoding(this.segmentationSourceProduct, this.targetProduct);
 
-        this.processedTiles = new HashSet<String>();
         this.colorFillerHelper = new ColorFillerTilesComputing(segmentationSourceProduct, validRegions, 0, 0);
     }
 
     @Override
-    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
         Rectangle tileRegion = targetTile.getRectangle();
-
-        String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
-        boolean canProcessTile = false;
-        synchronized (this.processedTiles) {
-            canProcessTile = this.processedTiles.add(key);
-        }
-        if (canProcessTile) {
-            try {
-                this.colorFillerHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
-            } catch (Exception ex) {
-                throw new OperatorException(ex);
-            }
-        }
+        this.colorFillerHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
     }
 
     private void validateInputs() {

@@ -12,18 +12,25 @@ import org.esa.snap.core.util.math.MathUtils;
 import javax.media.jai.JAI;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author  Jean Coravu
  */
 public abstract class AbstractTilesComputingOp extends Operator {
+    private static final Logger logger = Logger.getLogger(AbstractTilesComputingOp.class.getName());
+
     @TargetProduct
     protected Product targetProduct;
 
-    private AtomicInteger processingTiles;
-    private AtomicInteger processedTiles;
+    private AtomicInteger processingTileCount;
+    private AtomicInteger processedTileCount;
     private int totalTileCount;
+    private Set<String> processedTiles;
 
     protected AbstractTilesComputingOp() {
     }
@@ -32,37 +39,55 @@ public abstract class AbstractTilesComputingOp extends Operator {
     public final void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle targetRectangle = targetTile.getRectangle();
         Dimension tileSize = this.targetProduct.getPreferredTileSize();
-        int tileColumnIndex = targetRectangle.x / tileSize.width;
         int tileRowIndex = targetRectangle.y / tileSize.height;
+        int tileColumnIndex = targetRectangle.x / tileSize.width;
 
-        int startProcessingTileCount = this.processingTiles.incrementAndGet();
-        if (startProcessingTileCount == 1) {
-            beforeProcessingFirstTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+        String key = tileRowIndex+"|"+tileColumnIndex;
+        boolean canProcessTile = false;
+        synchronized (this.processedTiles) {
+            canProcessTile = this.processedTiles.add(key);
         }
-
-        try {
-            processTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
-        } finally {
-            synchronized (this.processedTiles) {
-                int finishProcessingTileCount = this.processedTiles.incrementAndGet();
-                if (finishProcessingTileCount == this.totalTileCount) {
-                    this.processedTiles.notifyAll();
-                }
+        if (canProcessTile) {
+            int startProcessingTileCount = this.processingTileCount.incrementAndGet();
+            if (startProcessingTileCount == 1) {
+                beforeProcessingFirstTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
             }
-        }
 
-        if (startProcessingTileCount == this.totalTileCount) {
-            synchronized (this.processedTiles) {
-                if (this.processedTiles.get() < this.totalTileCount) {
-                    try {
-                        this.processedTiles.wait();
-                    } catch (InterruptedException e) {
-                        throw new OperatorException(e);
+            try {
+                processTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+            } catch (Exception ex) {
+                throw new OperatorException(ex);
+            } finally {
+                synchronized (this.processedTileCount) {
+                    int finishProcessingTileCount = this.processedTileCount.incrementAndGet();
+                    if (finishProcessingTileCount == this.totalTileCount) {
+                        this.processedTileCount.notifyAll();
                     }
                 }
             }
 
-            afterProcessedLastTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+            if (startProcessingTileCount == this.totalTileCount) {
+                synchronized (this.processedTileCount) {
+                    if (this.processedTileCount.get() < this.totalTileCount) {
+                        try {
+                            this.processedTileCount.wait();
+                        } catch (InterruptedException e) {
+                            throw new OperatorException(e);
+                        }
+                    }
+                }
+
+                try {
+                    afterProcessedLastTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+                } catch (Exception e) {
+                    throw new OperatorException(e);
+                }
+            }
+        } else {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "Tile already computed: row index: "+tileRowIndex+", column index: "+tileColumnIndex+", bounds [x=" + targetRectangle.x+", y="+targetRectangle.y+", width="+targetRectangle.width+", height="+targetRectangle.height+"]");
+            }
         }
     }
 
@@ -76,9 +101,20 @@ public abstract class AbstractTilesComputingOp extends Operator {
         initTiles();
     }
 
+    protected void beforeProcessingFirstTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
+    }
+
+    protected void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
+    }
+
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
+    }
+
     private void initTiles() {
-        this.processingTiles = new AtomicInteger(0);
-        this.processedTiles = new AtomicInteger(0);
+        this.processedTiles = new HashSet<String>();
+
+        this.processingTileCount = new AtomicInteger(0);
+        this.processedTileCount = new AtomicInteger(0);
 
         int sceneWidth = this.targetProduct.getSceneRasterWidth();
         int sceneHeight = this.targetProduct.getSceneRasterHeight();
@@ -87,14 +123,5 @@ public abstract class AbstractTilesComputingOp extends Operator {
         int tileCountX = MathUtils.ceilInt(sceneWidth / (double) tileSize.width);
         int tileCountY = MathUtils.ceilInt(sceneHeight / (double) tileSize.height);
         this.totalTileCount = tileCountX * tileCountY;
-    }
-
-    protected void beforeProcessingFirstTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
-    }
-
-    protected void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
-    }
-
-    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
     }
 }

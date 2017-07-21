@@ -42,7 +42,6 @@ public class FinalMasksOp extends AbstractTilesComputingOp {
     private IntSet differenceTrimmingSet;
 
     private FinalMasksTilesComputing finalMasksHelper;
-    private Set<String> processedTiles;
 
     public FinalMasksOp() {
     }
@@ -53,26 +52,13 @@ public class FinalMasksOp extends AbstractTilesComputingOp {
         int sceneHeight = this.differenceSegmentationProduct.getSceneRasterHeight();
         initTargetProduct(sceneWidth, sceneHeight, this.differenceSegmentationProduct.getName() + "_final", this.differenceSegmentationProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
 
-        this.processedTiles = new HashSet<String>();
         this.finalMasksHelper = new FinalMasksTilesComputing(differenceSegmentationProduct, unionMaskProduct, differenceTrimmingSet, 0, 0);
     }
 
     @Override
-    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
         Rectangle tileRegion = targetTile.getRectangle();
-
-        String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
-        boolean canProcessTile = false;
-        synchronized (this.processedTiles) {
-            canProcessTile = this.processedTiles.add(key);
-        }
-        if (canProcessTile) {
-            try {
-                this.finalMasksHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
-            } catch (Exception ex) {
-                throw new OperatorException(ex);
-            }
-        }
+        this.finalMasksHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
     }
 
     public ProductData getProductData() {

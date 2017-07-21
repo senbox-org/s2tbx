@@ -119,13 +119,8 @@ public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
     }
 
     @Override
-    protected void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
-        AbstractSegmenter segmenter = null;
-        try {
-            segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
-        } catch (Exception e) {
-            throw new OperatorException(e);
-        }
+    protected void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
+        AbstractSegmenter segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
 
         Band productTargetBand = this.targetProduct.getBandAt(0);
         productTargetBand.setSourceImage(null); // reset the source image
@@ -143,22 +138,18 @@ public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
             long totalSeconds = (finishTime - this.startTime) / 1000;
             int graphNodeCount = segmenter.getGraph().getNodeCount();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+            logger.log(Level.FINE, "Finish Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", graph node count: " + graphNodeCount + ", total seconds: " + totalSeconds + ", finish time: " + new Date(finishTime));
         }
 
         finishSegmentation(segmenter);
     }
 
     @Override
-    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
         Rectangle targetRectangle = targetTile.getRectangle();
         ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
         TileDataSource[] sourceTiles = getSourceTiles(currentTile.getRegion());
-        try {
-            this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
-        } catch (Exception ex) {
-            throw new OperatorException(ex);
-        }
+        this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
     }
 
     @Override

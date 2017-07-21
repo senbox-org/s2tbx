@@ -46,7 +46,6 @@ public class TrimmingRegionComputingOp extends AbstractTilesComputingOp {
     private int[] sourceBandIndices;
 
     private TrimmingRegionTilesComputing trimmingRegionComputingHelper;
-    private Set<String> processedTiles;
 
     public TrimmingRegionComputingOp() {
     }
@@ -57,26 +56,13 @@ public class TrimmingRegionComputingOp extends AbstractTilesComputingOp {
         int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
         initTargetProduct(sceneWidth, sceneHeight, this.segmentationSourceProduct.getName() + "_trim", this.segmentationSourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
 
-        this.processedTiles = new HashSet<String>();
         this.trimmingRegionComputingHelper = new TrimmingRegionTilesComputing(this.segmentationSourceProduct, this.sourceProduct, this.sourceBandIndices, 0, 0);
     }
 
     @Override
-    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
         Rectangle tileRegion = targetTile.getRectangle();
-
-        String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
-        boolean canProcessTile = false;
-        synchronized (this.processedTiles) {
-            canProcessTile = this.processedTiles.add(key);
-        }
-        if (canProcessTile) {
-            try {
-                this.trimmingRegionComputingHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
-            } catch (Exception ex) {
-                throw new OperatorException(ex);
-            }
-        }
+        this.trimmingRegionComputingHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
     }
 
     public final IntSet processResult(int threadCount, Executor threadPool) throws Exception {

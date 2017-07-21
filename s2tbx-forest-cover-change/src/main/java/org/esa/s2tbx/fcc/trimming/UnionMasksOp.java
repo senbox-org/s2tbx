@@ -61,21 +61,9 @@ public class UnionMasksOp extends AbstractTilesComputingOp {
     }
 
     @Override
-    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
         Rectangle tileRegion = targetTile.getRectangle();
-
-        String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
-        boolean canProcessTile = false;
-        synchronized (this.processedTiles) {
-            canProcessTile = this.processedTiles.add(key);
-        }
-        if (canProcessTile) {
-            try {
-                this.unionMasksHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
-            } catch (Exception ex) {
-                throw new OperatorException(ex);
-            }
-        }
+        this.unionMasksHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
     }
 
     public ProductData getProductData() {

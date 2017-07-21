@@ -41,7 +41,6 @@ public class ObjectsSelectionOp extends AbstractTilesComputingOp {
     private Product landCoverProduct;
 
     private ObjectsSelectionTilesComputing objectsSelectionHelper;
-    private Set<String> processedTiles;
 
     public ObjectsSelectionOp() {
     }
@@ -54,26 +53,13 @@ public class ObjectsSelectionOp extends AbstractTilesComputingOp {
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
         initTargetProduct(sceneWidth, sceneHeight, this.sourceProduct.getName() + "_CCI", this.sourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
 
-        this.processedTiles = new HashSet<String>();
         this.objectsSelectionHelper = new ObjectsSelectionTilesComputing(this.sourceProduct, this.landCoverProduct, 0, 0);
     }
 
     @Override
-    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
         Rectangle tileRegion = targetTile.getRectangle();
-
-        String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
-        boolean canProcessTile = false;
-        synchronized (this.processedTiles) {
-            canProcessTile = this.processedTiles.add(key);
-        }
-        if (canProcessTile) {
-            try {
-                this.objectsSelectionHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
-            } catch (Exception ex) {
-                throw new OperatorException(ex);
-            }
-        }
+        this.objectsSelectionHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
     }
 
     public Int2ObjectMap<PixelStatistic> getStatistics() {
