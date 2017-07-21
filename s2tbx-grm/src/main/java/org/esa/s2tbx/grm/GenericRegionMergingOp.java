@@ -71,10 +71,8 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
 
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
-        initTargetProduct(sceneWidth, sceneHeight, this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType());
+        initTargetProduct(sceneWidth, sceneHeight, this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
         ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
-
-        initTiles();
     }
 
     public String getMergingCostCriterion() {

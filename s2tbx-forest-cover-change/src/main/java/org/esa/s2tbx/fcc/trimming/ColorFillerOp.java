@@ -23,6 +23,7 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
+import org.esa.snap.utils.AbstractTilesComputingOp;
 
 /**
  * @author Razvan Dumitrascu
@@ -37,14 +38,11 @@ import org.esa.snap.core.util.ProductUtils;
         authors = "Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 
-public class ColorFillerOp extends Operator {
+public class ColorFillerOp extends AbstractTilesComputingOp {
     private static final Logger logger = Logger.getLogger(ColorFillerOp.class.getName());
 
     @SourceProduct(alias = "Source", description = "The source product to be modified.")
     private Product segmentationSourceProduct;
-
-    @TargetProduct
-    private Product targetProduct;
 
     @Parameter (itemAlias = "validRegions", description = "The valid regions with forest pixels")
     private IntSet validRegions;
@@ -59,14 +57,17 @@ public class ColorFillerOp extends Operator {
     public void initialize() throws OperatorException {
         validateInputs();
 
-        createTargetProduct();
+        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
+        int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
+        initTargetProduct(sceneWidth, sceneHeight, this.segmentationSourceProduct.getName() + "_fill", this.segmentationSourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
+        ProductUtils.copyGeoCoding(this.segmentationSourceProduct, this.targetProduct);
 
         this.processedTiles = new HashSet<String>();
         this.colorFillerHelper = new ColorFillerTilesComputing(segmentationSourceProduct, validRegions, 0, 0);
     }
 
     @Override
-    public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
         Rectangle tileRegion = targetTile.getRectangle();
 
         String key = tileRegion.x+"|"+tileRegion.y+"|"+tileRegion.width+"|"+tileRegion.height;
@@ -76,7 +77,7 @@ public class ColorFillerOp extends Operator {
         }
         if (canProcessTile) {
             try {
-                this.colorFillerHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, 0, 0);
+                this.colorFillerHelper.runTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height, tileRowIndex, tileColumnIndex);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             }
@@ -95,18 +96,6 @@ public class ColorFillerOp extends Operator {
             String message = String.format("Source product '%s' must contain GeoCoding", this.segmentationSourceProduct.getName());
             throw new OperatorException(message);
         }
-    }
-
-    private void createTargetProduct() {
-        int sceneWidth = this.segmentationSourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.segmentationSourceProduct.getSceneRasterHeight();
-        Dimension tileSize = JAI.getDefaultTileSize();
-
-        this.targetProduct = new Product(this.segmentationSourceProduct.getName() + "_fill", this.segmentationSourceProduct.getProductType(), sceneWidth, sceneHeight);
-        this.targetProduct.setPreferredTileSize(tileSize);
-        ProductUtils.copyGeoCoding(this.segmentationSourceProduct, this.targetProduct);
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        this.targetProduct.addBand(targetBand);
     }
 
     public ProductData getProductData() {

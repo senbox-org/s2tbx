@@ -4,6 +4,7 @@ import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 
+import java.awt.Dimension;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,9 +22,9 @@ public class DifferenceRegionTilesComputing extends AbstractRegionParallelComput
     private final int[] sourceBandIndices;
 
     public DifferenceRegionTilesComputing(Product differenceSegmentationProduct, Product currentSourceProduct, Product previousSourceProduct,
-                                          Product unionMask, int[] sourceBandIndices, int tileWidth, int tileHeight) {
+                                          Product unionMask, int[] sourceBandIndices, Dimension tileSize) {
 
-        super(differenceSegmentationProduct.getSceneRasterWidth(), differenceSegmentationProduct.getSceneRasterHeight(), tileWidth, tileHeight);
+        super(differenceSegmentationProduct.getSceneRasterWidth(), differenceSegmentationProduct.getSceneRasterHeight(), tileSize.width, tileSize.height);
 
         this.differenceSegmentationProduct = differenceSegmentationProduct;
         this.currentSourceProduct = currentSourceProduct;
@@ -57,9 +58,19 @@ public class DifferenceRegionTilesComputing extends AbstractRegionParallelComput
                 if (unionBand.getSampleFloat(x, y) != ForestCoverChangeConstants.NO_DATA_VALUE) {
                     int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
 
-                    float a = firstCurrentBand.getSampleFloat(x, y) - firstPreviousBand.getSampleFloat(x, y);
-                    float b = secondCurrentBand.getSampleFloat(x, y) - secondPreviousBand.getSampleFloat(x, y);
-                    float c = thirdCurrentBand.getSampleFloat(x, y) - thirdPreviousBand.getSampleFloat(x, y);
+//                    float a = firstCurrentBand.getSampleFloat(x, y) - firstPreviousBand.getSampleFloat(x, y);
+//                    float b = secondCurrentBand.getSampleFloat(x, y) - secondPreviousBand.getSampleFloat(x, y);
+//                    float c = thirdCurrentBand.getSampleFloat(x, y) - thirdPreviousBand.getSampleFloat(x, y);
+
+                    //TODO Jean remove
+                    float a = firstCurrentBand.getSampleFloat(x, y);
+                    a -= firstPreviousBand.getSampleFloat(x, y);
+
+                    float b = secondCurrentBand.getSampleFloat(x, y);
+                    b -= secondPreviousBand.getSampleFloat(x, y);
+
+                    float c = thirdCurrentBand.getSampleFloat(x, y);
+                    c -= thirdPreviousBand.getSampleFloat(x, y);
 
                     addPixelValuesBands(segmentationPixelValue, a, b, c);
                 }

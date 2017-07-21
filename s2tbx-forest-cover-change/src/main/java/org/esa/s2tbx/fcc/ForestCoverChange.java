@@ -124,15 +124,14 @@ public class ForestCoverChange {
         ProductUtils.copyGeoCoding(this.currentSourceProduct, this.targetProduct);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
-
     }
 
 
     public void doExecute(ProgressMonitor pm) throws OperatorException {
-
         //TODO Jean remove
         Logger logger = Logger.getLogger("org.esa.s2tbx.fcc");
         logger.setLevel(Level.FINE);
+
         long startTime = System.currentTimeMillis();
 
         if (logger.isLoggable(Level.FINE)) {
@@ -210,26 +209,26 @@ public class ForestCoverChange {
 
     private IntSet computeDifferenceTrimmingSet(int threadCount, Executor threadPool, Product differenceSegmentationProduct,
                                                 Product unionMaskProduct, int[] sourceBandIndices, Dimension tileSize)
-            throws Exception {
+                                                throws Exception {
 
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("sourceBandIndices", sourceBandIndices);
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("currentSourceProduct", currentSourceProduct);
-        sourceProducts.put("previousSourceProduct", previousSourceProduct);
-        sourceProducts.put("unionMask", unionMaskProduct);
-        sourceProducts.put("differenceSegmentationProduct", differenceSegmentationProduct);
-        DifferenceRegionComputingOp operator = (DifferenceRegionComputingOp) GPF.getDefaultInstance().createOperator("DifferenceRegionComputingOp", parameters, sourceProducts, null);
-        operator.getTargetProduct();
-        OperatorExecutor executor = OperatorExecutor.create(operator);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-        IntSet differenceTrimmingSet = operator.processResult(threadCount, threadPool);
+//        Map<String, Object> parameters = new HashMap<>();
+//        parameters.put("sourceBandIndices", sourceBandIndices);
+//        Map<String, Product> sourceProducts = new HashMap<>();
+//        sourceProducts.put("currentSourceProduct", currentSourceProduct);
+//        sourceProducts.put("previousSourceProduct", previousSourceProduct);
+//        sourceProducts.put("unionMask", unionMaskProduct);
+//        sourceProducts.put("differenceSegmentationProduct", differenceSegmentationProduct);
+//        DifferenceRegionComputingOp operator = (DifferenceRegionComputingOp) GPF.getDefaultInstance().createOperator("DifferenceRegionComputingOp", parameters, sourceProducts, null);
+//        operator.getTargetProduct();
+//        OperatorExecutor executor = OperatorExecutor.create(operator);
+//        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+//        IntSet differenceTrimmingSet = operator.processResult(threadCount, threadPool);
 
-//        DifferenceRegionTilesComputing helper = new DifferenceRegionTilesComputing(differenceSegmentationProduct, currentSourceProduct, previousSourceProduct,
-//                                                                                     unionMaskProduct, sourceBandIndices, tileSize.width, tileSize.height);
-//        IntSet differenceTrimmingSet = helper.runTilesInParallel(threadCount, threadPool);
-//
-//        helper = null;
+        DifferenceRegionTilesComputing helper = new DifferenceRegionTilesComputing(differenceSegmentationProduct, currentSourceProduct, previousSourceProduct,
+                                                                                     unionMaskProduct, sourceBandIndices, tileSize);
+        IntSet differenceTrimmingSet = helper.runTilesInParallel(threadCount, threadPool);
+
+        helper = null;
         System.gc();
 
         return differenceTrimmingSet;
@@ -237,7 +236,7 @@ public class ForestCoverChange {
 
     private ProductTrimmingResult runTrimming(int threadCount, Executor threadPool, Product sourceProduct,
                                               String[] sourceBandNames, int[] trimmingSourceProductBandIndices, Dimension tileSize)
-            throws Exception {
+                                              throws Exception {
 
         Product product = generateBandsExtractor(sourceProduct, sourceBandNames);
 
@@ -253,24 +252,20 @@ public class ForestCoverChange {
             logger.log(Level.FINE, "Start trimming for source product '" + sourceProduct.getName()+"'");
         }
 
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("sourceBandIndices", trimmingSourceProductBandIndices);
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("segmentationSourceProduct", productColorFill);
-        sourceProducts.put("sourceProduct", product);
-        TrimmingRegionComputingOp operator = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
-        operator.getTargetProduct();
+//        Map<String, Object> parameters = new HashMap<>();
+//        parameters.put("sourceBandIndices", trimmingSourceProductBandIndices);
+//        Map<String, Product> sourceProducts = new HashMap<>();
+//        sourceProducts.put("segmentationSourceProduct", productColorFill);
+//        sourceProducts.put("sourceProduct", product);
+//        TrimmingRegionComputingOp operator = (TrimmingRegionComputingOp) GPF.getDefaultInstance().createOperator("TrimmingRegionComputingOp", parameters, sourceProducts, null);
+//        operator.getTargetProduct();
+//        OperatorExecutor executor = OperatorExecutor.create(operator);
+//        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+//        IntSet segmentationTrimmingRegionKeys = operator.processResult(threadCount, threadPool);
 
-        OperatorExecutor executor = OperatorExecutor.create(operator);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-
-        IntSet segmentationTrimmingRegionKeys = operator.processResult(threadCount, threadPool);
-
-//        TrimmingRegionTilesComputing helper = new TrimmingRegionTilesComputing(productColorFill, product, trimmingSourceProductBandIndices,
-//                                                                                 tileSize.width, tileSize.height);
-//        IntSet segmentationTrimmingRegionKeys = helper.runTilesInParallel(threadCount, threadPool);
-//        helper = null;
-
+        TrimmingRegionTilesComputing helper = new TrimmingRegionTilesComputing(productColorFill, product, trimmingSourceProductBandIndices, tileSize.width, tileSize.height);
+        IntSet segmentationTrimmingRegionKeys = helper.runTilesInParallel(threadCount, threadPool);
+        helper = null;
         System.gc();
 
         return new ProductTrimmingResult(product, segmentationTrimmingRegionKeys, productColorFill);
@@ -287,7 +282,7 @@ public class ForestCoverChange {
 
     private static Product runColorFillerOp(int threadCount, Executor threadPool, Product segmentationSourceProduct,
                                             float percentagePixels, Dimension tileSize)
-            throws Exception {
+                                            throws Exception {
 
         IntSet validRegions = runObjectsSelectionOp(threadCount, threadPool, segmentationSourceProduct, percentagePixels, tileSize);
 
@@ -305,6 +300,7 @@ public class ForestCoverChange {
         targetBand.setSourceImage(null);
         targetBand.getSourceImage();
         return targetProduct;
+
 //        ColorFillerTilesComputing helper = new ColorFillerTilesComputing(segmentationSourceProduct, validRegions, tileSize.width, tileSize.height);
 //        return helper.runTilesInParallel(threadCount, threadPool);
     }

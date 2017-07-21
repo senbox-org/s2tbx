@@ -14,6 +14,7 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.math.MathUtils;
+import org.esa.snap.utils.AbstractTilesComputingOp;
 
 import javax.media.jai.JAI;
 import java.awt.*;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
 /**
  * @author  Jean Coravu
  */
-public abstract class AbstractRegionMergingOp extends Operator {
+public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
     private static final Logger logger = Logger.getLogger(AbstractRegionMergingOp.class.getName());
 
     public static final String SPRING_MERGING_COST_CRITERION = "Spring";
@@ -66,14 +67,8 @@ public abstract class AbstractRegionMergingOp extends Operator {
     @Parameter(defaultValue = DEFAULT_SHAPE_WEIGHT, label = "Shape weight", description = "The shape weight.")
     protected float shapeWeight;
 
-    @TargetProduct
-    protected Product targetProduct;
-
     protected AbstractTileSegmenter tileSegmenter;
     protected long startTime;
-    protected AtomicInteger processingTiles;
-    protected AtomicInteger processedTiles;
-    protected int totalTileCount;
 
     protected AbstractRegionMergingOp() {
     }
@@ -109,120 +104,83 @@ public abstract class AbstractRegionMergingOp extends Operator {
     protected abstract TileDataSource[] getSourceTiles(BoundingBox tileRegion);
 
     @Override
-    public final void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
-        int startProcessingTileCount = this.processingTiles.incrementAndGet();
-        if (startProcessingTileCount == 1) {
-            this.startTime = System.currentTimeMillis();
-            if (logger.isLoggable(Level.FINE)) {
-                int imageWidth = this.tileSegmenter.getImageWidth();
-                int imageHeight = this.tileSegmenter.getImageHeight();
-                int tileWidth = this.tileSegmenter.getTileWidth();
-                int tileHeight = this.tileSegmenter.getTileHeight();
-                int tileMargin = this.tileSegmenter.computeTileMargin();
-                int firstNumberOfIterations = this.tileSegmenter.getIterationsForEachFirstSegmentation();
-                logger.log(Level.FINE, ""); // add an empty line
-                logger.log(Level.FINE, "Start Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", first number of iterations: " + firstNumberOfIterations + ", start time: " + new Date(startTime));
-            }
+    protected void beforeProcessingFirstTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
+        this.startTime = System.currentTimeMillis();
+        if (logger.isLoggable(Level.FINE)) {
+            int imageWidth = this.tileSegmenter.getImageWidth();
+            int imageHeight = this.tileSegmenter.getImageHeight();
+            int tileWidth = this.tileSegmenter.getTileWidth();
+            int tileHeight = this.tileSegmenter.getTileHeight();
+            int tileMargin = this.tileSegmenter.computeTileMargin();
+            int firstNumberOfIterations = this.tileSegmenter.getIterationsForEachFirstSegmentation();
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", first number of iterations: " + firstNumberOfIterations + ", start time: " + new Date(startTime));
+        }
+    }
+
+    @Override
+    protected void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
+        AbstractSegmenter segmenter = null;
+        try {
+            segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
+        } catch (Exception e) {
+            throw new OperatorException(e);
         }
 
-        executeFirstTileSegmentation(targetTile.getRectangle(), this.totalTileCount);
+        Band productTargetBand = this.targetProduct.getBandAt(0);
+        productTargetBand.setSourceImage(null); // reset the source image
+        segmenter.fillBandData(productTargetBand);
+        productTargetBand.getSourceImage();
 
-        if (startProcessingTileCount == this.totalTileCount) {
-            synchronized (this.processedTiles) {
-                if (this.processedTiles.get() < this.totalTileCount) {
-                    try {
-                        this.processedTiles.wait();
-                    } catch (InterruptedException e) {
-                        throw new OperatorException(e);
-                    }
-                }
-            }
-            AbstractSegmenter segmenter = null;
-            try {
-                segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
-            } catch (Exception e) {
-                throw new OperatorException(e);
-            }
+        if (logger.isLoggable(Level.FINE)) {
+            int imageWidth = tileSegmenter.getImageWidth();
+            int imageHeight = tileSegmenter.getImageHeight();
+            int tileWidth = tileSegmenter.getTileWidth();
+            int tileHeight = tileSegmenter.getTileHeight();
+            int tileMargin = tileSegmenter.computeTileMargin();
 
-            Band productTargetBand = this.targetProduct.getBandAt(0);
-            productTargetBand.setSourceImage(null); // reset the source image
-            segmenter.fillBandData(productTargetBand);
-            productTargetBand.getSourceImage();
+            long finishTime = System.currentTimeMillis();
+            long totalSeconds = (finishTime - this.startTime) / 1000;
+            int graphNodeCount = segmenter.getGraph().getNodeCount();
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+        }
 
-            if (logger.isLoggable(Level.FINE)) {
-                int imageWidth = tileSegmenter.getImageWidth();
-                int imageHeight = tileSegmenter.getImageHeight();
-                int tileWidth = tileSegmenter.getTileWidth();
-                int tileHeight = tileSegmenter.getTileHeight();
-                int tileMargin = tileSegmenter.computeTileMargin();
+        finishSegmentation(segmenter);
+    }
 
-                long finishTime = System.currentTimeMillis();
-                long totalSeconds = (finishTime - this.startTime) / 1000;
-                int graphNodeCount = segmenter.getGraph().getNodeCount();
-                logger.log(Level.FINE, ""); // add an empty line
-                logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
-            }
+    @Override
+    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws OperatorException {
+        Rectangle targetRectangle = targetTile.getRectangle();
+        ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
+        TileDataSource[] sourceTiles = getSourceTiles(currentTile.getRegion());
+        try {
+            this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
+        } catch (Exception ex) {
+            throw new OperatorException(ex);
+        }
+    }
 
-            finishSegmentation(segmenter);
+    @Override
+    protected void initTargetProduct(int sceneWidth, int sceneHeight, String productName, String productType, String bandName, int bandDataType) {
+        super.initTargetProduct(sceneWidth, sceneHeight, productName, productType, bandName, bandDataType);
+
+        Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
+        Dimension tileSize = this.targetProduct.getPreferredTileSize();
+        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
+        Executor threadPool = Executors.newCachedThreadPool();
+        try {
+            this.tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+                                                    this.threshold, spectralWeight, shapeWeight, imageSize, tileSize);
+        } catch (IOException e) {
+            throw new OperatorException(e);
         }
     }
 
     protected void finishSegmentation(AbstractSegmenter segmenter) {
     }
 
-    protected final void initTargetProduct(int sceneWidth, int sceneHeight, String productName, String productType) {
-        Dimension tileSize = JAI.getDefaultTileSize();
-
-        this.targetProduct = new Product(productName, productType, sceneWidth, sceneHeight);
-        this.targetProduct.setPreferredTileSize(tileSize);
-
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        this.targetProduct.addBand(targetBand);
-    }
-
-    protected final void executeFirstTileSegmentation(Rectangle targetRectangle, int totalTileCount) throws OperatorException {
-        try {
-            ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
-            TileDataSource[] sourceTiles = getSourceTiles(currentTile.getRegion());
-            try {
-                this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
-            } catch (Exception ex) {
-                throw new OperatorException(ex);
-            }
-        } finally {
-            synchronized (this.processedTiles) {
-                int finishProcessingTileCount = this.processedTiles.incrementAndGet();
-                if (finishProcessingTileCount == totalTileCount) {
-                    this.processedTiles.notifyAll();
-                }
-            }
-        }
-    }
-
-    protected final void initTiles() {
-        this.processingTiles = new AtomicInteger(0);
-        this.processedTiles = new AtomicInteger(0);
-
-        int sceneWidth = this.targetProduct.getSceneRasterWidth();
-        int sceneHeight = this.targetProduct.getSceneRasterHeight();
-        Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
-        Dimension tileSize = this.targetProduct.getPreferredTileSize();
-
-        int tileCountX = MathUtils.ceilInt(sceneWidth / (double) tileSize.width);
-        int tileCountY = MathUtils.ceilInt(sceneHeight / (double) tileSize.height);
-        this.totalTileCount = tileCountX * tileCountY;
-
-        try {
-            int threadCount = Runtime.getRuntime().availableProcessors();
-            Executor threadPool = Executors.newCachedThreadPool();
-            this.tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
-                    threshold, spectralWeight, shapeWeight, imageSize, tileSize);
-        } catch (IOException e) {
-            throw new OperatorException(e);
-        }
-    }
-
-    public static AbstractTileSegmenter buildTileSegmenter(int threadCount, Executor threadPool, String mergingCostCriterion, String regionMergingCriterion,
+    private static AbstractTileSegmenter buildTileSegmenter(int threadCount, Executor threadPool, String mergingCostCriterion, String regionMergingCriterion,
                                                               int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
                                                               float shapeWeight, Dimension imageSize, Dimension tileSize)
             throws IOException {

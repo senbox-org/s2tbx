@@ -16,6 +16,10 @@ public class DifferenceTileDataSourceImpl implements TileDataSource {
 
     @Override
     public float getSampleFloat(int x, int y) {
-        return this.currentTile.getSampleFloat(x, y) - this.previousTile.getSampleFloat(x, y);
+        //return this.currentTile.getSampleFloat(x, y) - this.previousTile.getSampleFloat(x, y);
+
+        //TODO Jean remove
+        float a = this.currentTile.getSampleFloat(x, y);
+        return a - this.previousTile.getSampleFloat(x, y);
     }
 }

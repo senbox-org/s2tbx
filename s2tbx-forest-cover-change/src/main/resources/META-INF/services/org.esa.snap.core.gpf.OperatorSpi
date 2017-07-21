@@ -4,5 +4,4 @@ org.esa.s2tbx.fcc.trimming.ColorFillerOp$Spi
 org.esa.s2tbx.fcc.trimming.TrimmingRegionComputingOp$Spi
 org.esa.s2tbx.fcc.trimming.UnionMasksOp$Spi
 org.esa.s2tbx.fcc.trimming.TrimmingOp$Spi
-org.esa.s2tbx.fcc.trimming.DifferenceRegionComputingOp$Spi
 org.esa.s2tbx.fcc.trimming.FinalMasksOp$Spi
