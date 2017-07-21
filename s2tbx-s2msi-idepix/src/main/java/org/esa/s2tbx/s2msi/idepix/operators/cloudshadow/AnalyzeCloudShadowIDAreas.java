@@ -2,12 +2,11 @@ package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import org.esa.snap.core.datamodel.Product;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.util.Arrays;
 
 /**
  * todo: add comment
- *
  */
 class AnalyzeCloudShadowIDAreas {
 
@@ -20,23 +19,20 @@ class AnalyzeCloudShadowIDAreas {
     static void identifyCloudShadowArea(Product sourceProduct, Rectangle sourceRectangle, float[] sourceBandA,
                                         float[] sourceBandB, int[] flagArray,
                                         int[] cloudShadowIDArray, int[] cloudLongShadowIDArray,
-                                        int[][] cloudShadowIdBorderRectangle, int counterTable) {
+                                        int[][] cloudShadowIdBorderRectangle, int cloudIndexTable) {
 
         int sourceWidth = sourceRectangle.width;
         int sourceHeight = sourceRectangle.height;
         int sourceLength = sourceRectangle.width * sourceRectangle.height;
-
-        int smallShadowsNumber = 0;
 
         int productHeight = sourceProduct.getSceneRasterHeight();
         int productWidth = sourceProduct.getSceneRasterWidth();
 
         int maxRectangleWidth = -1;
         int maxRectangleHeight = -1;
-        int counter;
-        int counterLong;
+        int counterA;
+        int counterB;
         int minNumberMemberCluster;
-        int counterTableLongShadow;
 
 
         int[] dummyLongCloudShadowIDArray = new int[sourceLength];
@@ -44,11 +40,14 @@ class AnalyzeCloudShadowIDAreas {
 
         // cloudShadowIdBorderRectangle  - position of source array (e.g.  0,0 - > -CloudShadowOp.searchBorderRadius, -CloudShadowOp.searchBorderRadius in sourceRectangle,
         // CloudShadowOp.searchBorderRadius, CloudShadowOp.searchBorderRadius in targetRectangle
-        for (int bc = 0; bc < counterTable; bc++) {
-            if ((cloudShadowIdBorderRectangle[bc][0] != productWidth + 1) || (cloudShadowIdBorderRectangle[bc][1] != -1) ||
-                    (cloudShadowIdBorderRectangle[bc][2] != productHeight + 1) || (cloudShadowIdBorderRectangle[bc][3] != -1)) {
-                maxRectangleWidth = Math.max(maxRectangleWidth, cloudShadowIdBorderRectangle[bc][1] - cloudShadowIdBorderRectangle[bc][0]);
-                maxRectangleHeight = Math.max(maxRectangleHeight, cloudShadowIdBorderRectangle[bc][3] - cloudShadowIdBorderRectangle[bc][2]);
+
+        // define maximum rectangle width and maximum rectangle height
+        for (int cloudIndex = 0; cloudIndex < cloudIndexTable; cloudIndex++) {
+            // todo check if
+            if ((cloudShadowIdBorderRectangle[cloudIndex][0] != productWidth + 1) || (cloudShadowIdBorderRectangle[cloudIndex][1] != -1) ||
+                    (cloudShadowIdBorderRectangle[cloudIndex][2] != productHeight + 1) || (cloudShadowIdBorderRectangle[cloudIndex][3] != -1)) {
+                maxRectangleWidth = Math.max(maxRectangleWidth, cloudShadowIdBorderRectangle[cloudIndex][1] - cloudShadowIdBorderRectangle[cloudIndex][0]);
+                maxRectangleHeight = Math.max(maxRectangleHeight, cloudShadowIdBorderRectangle[cloudIndex][3] - cloudShadowIdBorderRectangle[cloudIndex][2]);
             }
         }
 
@@ -60,137 +59,162 @@ class AnalyzeCloudShadowIDAreas {
         Arrays.fill(arrayXPos, -1);
         int[] arrayYPos = new int[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
         Arrays.fill(arrayYPos, -1);
+        int[] arrayXPosA = new int[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
+        Arrays.fill(arrayXPosA, -1);
+        int[] arrayYPosA = new int[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
+        Arrays.fill(arrayYPosA, -1);
+        int[] arrayXPosB = new int[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
+        Arrays.fill(arrayXPosB, -1);
+        int[] arrayYPosB = new int[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
+        Arrays.fill(arrayYPosB, -1);
 
 
-        for (int bc = SegmentationCloud.NO_SHADOW + 1; bc < counterTable; bc++) {
-            counter = 0;
+        for (int cloudIndex = SegmentationCloud.NO_SHADOW + 1; cloudIndex < cloudIndexTable; cloudIndex++) {
+            counterA = 0;
+            counterB = 0;
 
-            if ((cloudShadowIdBorderRectangle[bc][0] != productWidth + 1) || (cloudShadowIdBorderRectangle[bc][1] != -1) ||
-                    (cloudShadowIdBorderRectangle[bc][2] != productHeight + 1) || (cloudShadowIdBorderRectangle[bc][3] != -1)) {
+            // todo invert if
+            if ((cloudShadowIdBorderRectangle[cloudIndex][0] != productWidth + 1) || (cloudShadowIdBorderRectangle[cloudIndex][1] != -1) ||
+                    (cloudShadowIdBorderRectangle[cloudIndex][2] != productHeight + 1) || (cloudShadowIdBorderRectangle[cloudIndex][3] != -1)) {
                 Arrays.fill(arrayBandA, Double.NaN);
                 Arrays.fill(arrayBandB, Double.NaN);
-                Arrays.fill(arrayXPos, -1);
-                Arrays.fill(arrayYPos, -1);
+                Arrays.fill(arrayXPosA, -1);
+                Arrays.fill(arrayXPosB, -1);
+                Arrays.fill(arrayYPosA, -1);
+                Arrays.fill(arrayYPosB, -1);
                 double minArrayBandA = Double.MAX_VALUE;
                 double minArrayBandB = Double.MAX_VALUE;
 
-                for (int j = cloudShadowIdBorderRectangle[bc][2]; j <= cloudShadowIdBorderRectangle[bc][3]; j++) {
-                    for (int i = cloudShadowIdBorderRectangle[bc][0]; i <= cloudShadowIdBorderRectangle[bc][1]; i++) {
+                for (int j = cloudShadowIdBorderRectangle[cloudIndex][2]; j <= cloudShadowIdBorderRectangle[cloudIndex][3]; j++) {
+                    for (int i = cloudShadowIdBorderRectangle[cloudIndex][0]; i <= cloudShadowIdBorderRectangle[cloudIndex][1]; i++) {
 
-                        if (cloudShadowIDArray[j * (sourceWidth) + i] == bc) {
+                        if (cloudShadowIDArray[j * (sourceWidth) + i] == cloudIndex) {
 
-                            arrayBandA[counter] = sourceBandA[j * (sourceWidth) + i];
-                            arrayBandB[counter] = sourceBandB[j * (sourceWidth) + i];
+                            final int flag = flagArray[j * (sourceWidth) + i];
 
-                            if (arrayBandA[counter] < -0.99) arrayBandA[counter] = 1.0; //Double.NaN;
-                            if (arrayBandB[counter] < -0.99) arrayBandB[counter] = 1.0; //Double.NaN;
+                            arrayBandA[counterA] = sourceBandA[j * (sourceWidth) + i];
+                            arrayBandB[counterB] = sourceBandB[j * (sourceWidth) + i];
 
-                            arrayXPos[counter] = i;
-                            arrayYPos[counter] = j;
+                            if (arrayBandA[counterA] >= 1e-8 && !Double.isNaN(arrayBandA[counterA]) &&
+                                    flag == PreparationMaskBand.LAND_FLAG) {
+                                arrayXPosA[counterA] = i;
+                                arrayYPosA[counterA] = j;
 
-                            if (arrayBandA[counter] < minArrayBandA) {
-                                minArrayBandA = arrayBandA[counter];
+                                if (arrayBandA[counterA] < minArrayBandA) {
+                                    minArrayBandA = arrayBandA[counterA];
+                                }
+                                counterA++;
+                            } else if (arrayBandB[counterB] >= 1e-8 && !Double.isNaN(arrayBandB[counterB]) &&
+                                    flag == PreparationMaskBand.OCEAN_FLAG) {
+                                arrayXPosB[counterB] = i;
+                                arrayYPosB[counterB] = j;
+
+                                if (arrayBandB[counterB] < minArrayBandB) {
+                                    minArrayBandB = arrayBandB[counterB];
+                                }
+                                counterB++;
                             }
-                            if (arrayBandB[counter] < minArrayBandB) {
-                                minArrayBandB = arrayBandB[counter];
-                            }
-                            counter++;
-                            //System.out.printf("BC-ID: %d X0 %d,  Y0 %d  \n  ",bc, X0, Y0);
-
                         }
                     }
                 }
 
-                //System.out.printf("ShadowId %d,  number of pixels in the potential cloud shadow area %d  \n  ", bc, counter);
-
                 minNumberMemberCluster = clusterCount * 2 + 1;
 
-                if (counter > minNumberMemberCluster && counter < S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) { // minimum number of potential shadow points for the cluster analysis per cluster
-                    analysePotentialCloudShadowArea(flagArray, sourceWidth, counter, arrayBandA,
-                            arrayXPos, arrayYPos);
-                } else {
-                    if (counter >= S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) {
+                analyseCloudShadows(sourceBandA, flagArray, cloudShadowIDArray, cloudLongShadowIDArray,
+                                    cloudShadowIdBorderRectangle, sourceWidth, sourceHeight, counterA,
+                                    minNumberMemberCluster, arrayBandA, arrayXPosA, arrayYPosA, cloudIndex,
+                                    minArrayBandA);
+                analyseCloudShadows(sourceBandB, flagArray, cloudShadowIDArray, cloudLongShadowIDArray,
+                                    cloudShadowIdBorderRectangle, sourceWidth, sourceHeight, counterB,
+                                    minNumberMemberCluster, arrayBandB, arrayXPosB, arrayYPosB, cloudIndex,
+                                    minArrayBandB);
+            }
+        }
+    }
 
-                        //will be filled in SegmentationLongCloudClass Arrays.fill(cloudIdArray, ....);
-                        Arrays.fill(dummyLongCloudShadowIDArray, sourceLength);
-                        //bc cloud shadow counterTable = max of ID
-                        counterTableLongShadow = SegmentationLongCloudShadow.computeLongCloudShadowID(
-                                sourceWidth,
-                                sourceHeight,
-                                cloudShadowIDArray,
-                                cloudShadowIdBorderRectangle,
-                                dummyLongCloudShadowIDArray,
-                                bc);
+    private static void analyseCloudShadows(float[] sourceBand, int[] flagArray, int[] cloudShadowIDArray,
+                                            int[] cloudLongShadowIDArray, int[][] cloudShadowIdBorderRectangle,
+                                            int sourceWidth, int sourceHeight, int counter, int minNumberMemberCluster,
+                                            double[] arrayBand, int[] arrayXPos, int[] arrayYPos, int cloudIndex,
+                                            double minArrayBand) {
+        // minimum number of potential shadow points for the cluster analysis per cluster
+        if (counter > minNumberMemberCluster && counter < S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) {
+            analysePotentialCloudShadowArea(flagArray, sourceWidth, counter, arrayBand,
+                                            arrayXPos, arrayYPos);
+        } else if (counter >= S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) {
+            analyseLongCloudShadows(sourceWidth, sourceHeight, cloudShadowIDArray, cloudShadowIdBorderRectangle,
+                                    cloudIndex, arrayBand, arrayXPos, arrayYPos, flagArray, sourceBand,
+                                    minNumberMemberCluster, cloudLongShadowIDArray);
+        } else {
+            analyseSmallCloudShadows(flagArray, arrayBand, minArrayBand, sourceWidth, counter, arrayXPos, arrayYPos);
+        }
+    }
 
-                        for (int bcLong = SegmentationLongCloudShadow.NO_SHADOW + 1; bcLong < counterTableLongShadow; bcLong++) {
+    private static void analyseLongCloudShadows(int sourceWidth, int sourceHeight, int[] cloudShadowIDArray,
+                                                int[][] cloudShadowIdBorderRectangle, int cloudIndex,
+                                                double[] arrayBand, int[] arrayXPos, int[] arrayYPos, int[] flagArray,
+                                                float[] sourceBand, int minNumberMemberCluster,
+                                                int[] cloudLongShadowIDArray) {
+        final int sourceLength = sourceWidth * sourceHeight;
+        int[] dummyLongCloudShadowIDArray = new int[sourceLength];
+        //will be filled in SegmentationLongCloudClass Arrays.fill(cloudIdArray, ....);
+        Arrays.fill(dummyLongCloudShadowIDArray, sourceLength);
+        //bc cloud shadow cloudIndexTable = max of ID
+        int counterTableLongShadow = SegmentationLongCloudShadow.computeLongCloudShadowID(
+                sourceWidth,
+                sourceHeight,
+                cloudShadowIDArray,
+                cloudShadowIdBorderRectangle,
+                dummyLongCloudShadowIDArray,
+                cloudIndex);
 
-                            counterLong = 0;
-                            Arrays.fill(arrayBandA, Double.NaN);
-                            Arrays.fill(arrayBandB, Double.NaN);
-                            Arrays.fill(arrayXPos, -1);
-                            Arrays.fill(arrayYPos, -1);
-                            minArrayBandA = Double.MAX_VALUE;
-                            minArrayBandB = Double.MAX_VALUE;
-                            for (int j = cloudShadowIdBorderRectangle[bc][2]; j <= cloudShadowIdBorderRectangle[bc][3]; j++) {
-                                for (int i = cloudShadowIdBorderRectangle[bc][0]; i <= cloudShadowIdBorderRectangle[bc][1]; i++) {
-                                    if (dummyLongCloudShadowIDArray[j * (sourceWidth) + i] == bcLong) {
-                                        arrayBandA[counterLong] = sourceBandA[j * (sourceWidth) + i];
-                                        arrayBandB[counterLong] = sourceBandB[j * (sourceWidth) + i];
-                                        arrayXPos[counterLong] = i;
-                                        arrayYPos[counterLong] = j;
-                                        if (arrayBandA[counterLong] < minArrayBandA) {
-                                            minArrayBandA = arrayBandA[counterLong];
-                                        }
-                                        if (arrayBandB[counterLong] < minArrayBandB) {
-                                            minArrayBandB = arrayBandB[counterLong];
-                                        }
-                                        counterLong++;
-                                    }
-                                }
+        for (int longCloudIndex = SegmentationLongCloudShadow.NO_SHADOW + 1; longCloudIndex < counterTableLongShadow; longCloudIndex++) {
+
+            int counter = 0;
+            Arrays.fill(arrayBand, Double.NaN);
+            Arrays.fill(arrayXPos, -1);
+            Arrays.fill(arrayYPos, -1);
+            double minArrayBand = Double.MAX_VALUE;
+            for (int j = cloudShadowIdBorderRectangle[cloudIndex][2]; j <= cloudShadowIdBorderRectangle[cloudIndex][3]; j++) {
+                for (int i = cloudShadowIdBorderRectangle[cloudIndex][0]; i <= cloudShadowIdBorderRectangle[cloudIndex][1]; i++) {
+                    if (dummyLongCloudShadowIDArray[j * (sourceWidth) + i] == longCloudIndex) {
+                        final int flag = flagArray[j * (sourceWidth) + i];
+                        if (flag == PreparationMaskBand.LAND_FLAG) {
+                            arrayBand[counter] = sourceBand[j * (sourceWidth) + i];
+                            if (arrayBand[counter] < minArrayBand) {
+                                minArrayBand = arrayBand[counter];
                             }
-
-                            if (counterLong > minNumberMemberCluster) { // minimum number of potential shadow points for the cluster analysis per cluster
-                                analysePotentialCloudShadowArea(flagArray, sourceWidth, counterLong, arrayBandA,
-                                        arrayXPos, arrayYPos);
-                            } else {
-                                if (counterLong > 0) {
-                                    smallShadowsNumber = analyseSmallCloudShadows(flagArray, arrayBandA,
-                                            minArrayBandA, sourceWidth, smallShadowsNumber,
-                                            counterLong, arrayXPos, arrayYPos);
-                                }
-                            }
+                            arrayXPos[counter] = i;
+                            arrayYPos[counter] = j;
+                            counter++;
                         }
-
-                        for (int z = 0; z < sourceLength; z++) {
-                            cloudLongShadowIDArray[z] += 1000 * bc + dummyLongCloudShadowIDArray[z];
-                        }
-
-                    } else {
-                        smallShadowsNumber = analyseSmallCloudShadows(flagArray, arrayBandA,
-                                minArrayBandA, sourceWidth, smallShadowsNumber,
-                                counter, arrayXPos, arrayYPos);
 
                     }
                 }
             }
-        }
 
+            if (counter > minNumberMemberCluster) { // minimum number of potential shadow points for the cluster analysis per cluster
+                analysePotentialCloudShadowArea(flagArray, sourceWidth, counter,
+                                                arrayBand, arrayXPos, arrayYPos);
+            } else if (counter > 0) {
+                analyseSmallCloudShadows(flagArray, arrayBand, minArrayBand, sourceWidth,
+                                         counter, arrayXPos, arrayYPos);
+            }
+            for (int z = 0; z < sourceLength; z++) {
+                cloudLongShadowIDArray[z] += 1000 * cloudIndex + dummyLongCloudShadowIDArray[z];
+            }
+        }
     }
 
-    private static int analyseSmallCloudShadows(int[] flagArray, double[] arrayBandA,
-                                                double minArrayBandA, int sourceWidth,
-                                                int smallShadowsNumber, int counter, int[] arrayXPos, int[] arrayYPos) {
+    private static void analyseSmallCloudShadows(int[] flagArray, double[] arrayBandA, double minArrayBandA,
+                                                 int sourceWidth, int counter, int[] arrayXPos, int[] arrayYPos) {
         int indexkk;
-        smallShadowsNumber++;
-
-
         for (int kkk = 0; kkk < counter; kkk++) {
             indexkk = arrayYPos[kkk] * sourceWidth + arrayXPos[kkk];
             if (flagArray[indexkk] < PreparationMaskBand.CLOUD_SHADOW_FLAG && arrayBandA[kkk] <= minArrayBandA) {
                 flagArray[indexkk] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
             }
         }
-        return smallShadowsNumber;
     }
 
     private static void analysePotentialCloudShadowArea(int[] flagArray,

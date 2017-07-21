@@ -53,7 +53,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     private final static int MAX_TILE_DIMENSION = 1400;
 
     private Band sourceBandClusterA;
-//    private Band sourceBandClusterB;
+    private Band sourceBandClusterB;
 
     private Band sourceBandFlag1;
     private Band sourceBandFlag2;
@@ -89,7 +89,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         ProductUtils.copyGeoCoding(s2ClassifProduct, targetProduct);
 
         sourceBandClusterA = s2ClassifProduct.getBand(sourceBandNameClusterA);
-//        sourceBandClusterB = s2ClassifProduct.getBand(sourceBandNameClusterB);
+        sourceBandClusterB = s2ClassifProduct.getBand(sourceBandNameClusterB);
 
         sourceSunZenith = s2ClassifProduct.getBand(sourceSunZenithName);
         // take these. They're as good as the tile dimensions from any other band and DEFINITELY more reliable than
@@ -209,6 +209,7 @@ public class S2IdepixCloudShadowOp extends Operator {
             sourceTileFlag2 = getSourceTile(sourceBandFlag2, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
         }
         Tile sourceTileClusterA = getSourceTile(sourceBandClusterA, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
+        Tile sourceTileClusterB = getSourceTile(sourceBandClusterB, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
 
         Tile targetTileCloudShadow = targetTiles.get(targetBandCloudShadow);
 
@@ -227,7 +228,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         final float[] sourceSunAzimuth = sourceTileSunAzimuth.getSamplesFloat();
         final float[] sourceAltitude = sourceTileAltitude.getSamplesFloat();
         final float[] sourceClusterA = sourceTileClusterA.getSamplesFloat();
-        final float[] sourceClusterB = sourceTileClusterA.getSamplesFloat();
+        final float[] sourceClusterB = sourceTileClusterB.getSamplesFloat();
 
         float[] sourceLatitudes = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
         float[] sourceLongitudes = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
