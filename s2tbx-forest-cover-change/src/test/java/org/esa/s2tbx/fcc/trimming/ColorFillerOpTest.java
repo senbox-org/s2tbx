@@ -35,51 +35,32 @@ import static org.junit.Assume.assumeTrue;
  * @since 5.0.6
  */
 
-public class ColorFillerOpTest {
-    private Path colorFillerTestsFolderPath;
-    private Product segmentationProduct;
-    private IntSet validRegions;
+public class ColorFillerOpTest extends AbstractOpTest {
 
-    @Before
-    public void setUp() throws Exception {
-        assumeTrue(TestUtil.testdataAvailable());
-        checkTestDirectoryExists();
-        Class<?> sentinelReaderPlugInClass = Class.forName("org.esa.snap.core.dataio.dimap.DimapProductReaderPlugIn");
-        ProductReaderPlugIn productReaderPlugIn = (ProductReaderPlugIn)sentinelReaderPlugInClass.newInstance();
-
-        File currentProductFile = this.colorFillerTestsFolderPath.resolve("S2A_20160713T125925_A005524_T35UMP_grm.dim").toFile();
-        this.segmentationProduct = productReaderPlugIn.createReaderInstance().readProductNodes(currentProductFile, null);
-
-        this.validRegions =  new IntOpenHashSet();
-        validRegions.add(1);
-        validRegions.add(10);
-        validRegions.add(12);
-        validRegions.add(20);
-        validRegions.add(34);
-        validRegions.add(45);
-        validRegions.add(53);
-        validRegions.add(63);
-        validRegions.add(117);
-        validRegions.add(293);
-        validRegions.add(402);
-        validRegions.add(800);
-        validRegions.add(1005);
-        validRegions.add(1200);
+    public ColorFillerOpTest() {
     }
 
     @Test
-    public void testColorFillerOp() throws IOException {
+    public void testColorFillerOp() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Class<?> sentinelReaderPlugInClass = Class.forName("org.esa.snap.core.dataio.dimap.DimapProductReaderPlugIn");
+        ProductReaderPlugIn productReaderPlugIn = (ProductReaderPlugIn)sentinelReaderPlugInClass.newInstance();
+
+        File currentProductFile = this.forestCoverChangeTestsFolderPath.resolve("S2A_20160713T125925_A005524_T35UMP_grm.dim").toFile();
+        Product segmentationProduct = productReaderPlugIn.createReaderInstance().readProductNodes(currentProductFile, null);
+
+        IntSet validRegions = buildValidRegions();
+
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("validRegions", this.validRegions);
+        parameters.put("validRegions", validRegions);
         Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("segmentationSourceProduct", this.segmentationProduct);
+        sourceProducts.put("segmentationSourceProduct", segmentationProduct);
         ColorFillerOp operator = (ColorFillerOp) GPF.getDefaultInstance().createOperator("ColorFillerOp", parameters, sourceProducts, null);
         Product targetProduct = operator.getTargetProduct();
 
         assertEquals(targetProduct.getName(), "S2A_20160713T125925_A005524_T35UMP_grm_fill");
         assertEquals(targetProduct.getSceneRasterSize(), new Dimension(549, 549));
         assertEquals(targetProduct.getNumBands(), 1);
-        assertEquals(targetProduct.getProductType(),segmentationProduct.getProductType() );
+        assertEquals(targetProduct.getProductType(), segmentationProduct.getProductType());
 
         OperatorExecutor executor = OperatorExecutor.create(operator);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
@@ -92,7 +73,7 @@ public class ColorFillerOpTest {
         chechSampleintTargetBand(targetBand);
     }
 
-    private void chechSampleintTargetBand(Band band) {
+    private static void chechSampleintTargetBand(Band band) {
         int bandValue = band.getSampleInt(5, 3);
         assertEquals(1, bandValue);
 
@@ -136,25 +117,28 @@ public class ColorFillerOpTest {
         assertEquals(1200, bandValue);
     }
 
-    private void checkTargetBand(Band targetBand) {
-
+    private static void checkTargetBand(Band targetBand) {
         assertNotNull(targetBand);
         assertEquals(ProductData.TYPE_INT32, targetBand.getDataType());
-        long size = segmentationProduct.getSceneRasterWidth() * segmentationProduct.getSceneRasterHeight();
-        assertEquals(size, targetBand.getNumDataElems());
+        assertEquals(549 * 549, targetBand.getNumDataElems());
     }
 
-    private void checkTestDirectoryExists() {
-        String testDirectoryPathProperty = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
-        assertNotNull("The system property '" + TestUtil.PROPERTYNAME_DATA_DIR + "' representing the test directory is not set.", testDirectoryPathProperty);
-        Path testFolderPath = Paths.get(testDirectoryPathProperty);
-        if (!Files.exists(testFolderPath)) {
-            fail("The test directory path "+testDirectoryPathProperty+" is not valid.");
-        }
-
-        this.colorFillerTestsFolderPath = testFolderPath.resolve("_forest-cover-change");
-        if (!Files.exists(colorFillerTestsFolderPath)) {
-            fail("The Forest Cover Change test directory path "+ colorFillerTestsFolderPath.toString()+" is not valid.");
-        }
+    private static IntSet buildValidRegions() {
+        IntSet validRegions = new IntOpenHashSet();
+        validRegions.add(1);
+        validRegions.add(10);
+        validRegions.add(12);
+        validRegions.add(20);
+        validRegions.add(34);
+        validRegions.add(45);
+        validRegions.add(53);
+        validRegions.add(63);
+        validRegions.add(117);
+        validRegions.add(293);
+        validRegions.add(402);
+        validRegions.add(800);
+        validRegions.add(1005);
+        validRegions.add(1200);
+        return validRegions;
     }
 }
