@@ -210,6 +210,7 @@ public class S2IdepixOp extends Operator {
             inputShadow.put("s2CloudBuffer", cloudBufferProduct);
             Map<String, Object> params = new HashMap<>();
             params.put("computeCloudShadow", computeCloudShadow);
+            params.put("cloudBufferWidth", cloudBufferWidth);
             postProcessingProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixPostProcessOp.class),
                                                       params, inputShadow);
         }

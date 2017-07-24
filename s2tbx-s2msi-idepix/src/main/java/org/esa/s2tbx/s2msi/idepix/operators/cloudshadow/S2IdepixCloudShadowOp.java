@@ -15,6 +15,7 @@ import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
+import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
@@ -43,6 +44,10 @@ public class S2IdepixCloudShadowOp extends Operator {
     @SourceProduct(alias = "s2CloudBuffer", optional = true)
     private Product s2CloudBufferProduct;      // has only classifFlagBand with buffer added
 
+    @Parameter(defaultValue = "2", interval = "[0,100]",
+            label = " Width of cloud buffer (# of pixels)",
+            description = " The width of the 'safety buffer' around a pixel identified as cloudy.")
+    private int cloudBufferWidth;
 
     @TargetProduct
     private Product targetProduct;
@@ -72,7 +77,6 @@ public class S2IdepixCloudShadowOp extends Operator {
     static double OUTLIER_THRESHOLD = 0.94;
     static double Threshold_Whiteness_Darkness = -1000;
     static int CloudShadowFragmentationThreshold = 500000;
-    static int GROWING_CLOUD = 1;
     static int searchBorderRadius;
     private static final String landClusterSourceBandName = "B8A";
     private static final String waterClusterSourceBandName = "B3";
@@ -245,7 +249,9 @@ public class S2IdepixCloudShadowOp extends Operator {
                 s2ClassifProduct.getSceneRasterHeight(),
                 sourceRectangle,
                 flagArray,
-                flagDetector);
+                flagDetector,
+                sourceTileFlag2 != null,
+                cloudBufferWidth);
 
         int counterTable = SegmentationCloud.computeCloudID(sourceWidth, sourceHeight, flagArray, cloudIDArray);
 

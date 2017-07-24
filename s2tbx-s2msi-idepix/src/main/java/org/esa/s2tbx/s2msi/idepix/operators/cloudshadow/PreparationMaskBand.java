@@ -1,12 +1,13 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
-import java.awt.*;
+import java.awt.Rectangle;
 
 /**
  * todo: add comment
- *
  */
 public class PreparationMaskBand {
+
+    static final int GROWING_CLOUD = 2;
 
     static final int INVALID_FLAG = 10000;
     static final int CLOUD_FLAG = 1000;
@@ -21,9 +22,9 @@ public class PreparationMaskBand {
                                        int productHeight,
                                        Rectangle tileSourceRectangle,
                                        int[] flagArray,
-                                       FlagDetector flagDetector) {
-
-        int growingCloud = S2IdepixCloudShadowOp.GROWING_CLOUD;
+                                       FlagDetector flagDetector,
+                                       boolean hasCloudBuffer,
+                                       int cloudBufferWidth) {
 
         int sourceHeight = tileSourceRectangle.height;
         int sourceWidth = tileSourceRectangle.width;
@@ -56,16 +57,17 @@ public class PreparationMaskBand {
 
         System.arraycopy(flagArray, 0, preparedArray, 0, sourceHeight * sourceWidth);
 
-
-        for (int j = growingCloud; j < sourceHeight - growingCloud; j++) {
-            for (int i = growingCloud; i < sourceWidth - growingCloud; i++) {
-                index = j * (sourceWidth) + i;
-                if (flagArray[index] >= PreparationMaskBand.CLOUD_FLAG && flagArray[index] <= PreparationMaskBand.INVALID_FLAG) {
-                    for (int iw = -growingCloud; iw <= growingCloud; iw++) {
-                        for (int jw = -growingCloud; jw <= growingCloud; jw++) {
-                            temp = index + iw + jw * sourceWidth;
-                            if (flagArray[temp] < PreparationMaskBand.CLOUD_FLAG) {
-                                preparedArray[temp] = flagArray[temp] + PreparationMaskBand.CLOUD_FLAG;
+        if (!hasCloudBuffer || cloudBufferWidth < 2) {
+            for (int j = GROWING_CLOUD; j < sourceHeight - GROWING_CLOUD; j++) {
+                for (int i = GROWING_CLOUD; i < sourceWidth - GROWING_CLOUD; i++) {
+                    index = j * (sourceWidth) + i;
+                    if (flagArray[index] >= PreparationMaskBand.CLOUD_FLAG && flagArray[index] <= PreparationMaskBand.INVALID_FLAG) {
+                        for (int iw = -GROWING_CLOUD; iw <= GROWING_CLOUD; iw++) {
+                            for (int jw = -GROWING_CLOUD; jw <= GROWING_CLOUD; jw++) {
+                                temp = index + iw + jw * sourceWidth;
+                                if (flagArray[temp] < PreparationMaskBand.CLOUD_FLAG) {
+                                    preparedArray[temp] = flagArray[temp] + PreparationMaskBand.CLOUD_FLAG;
+                                }
                             }
                         }
                     }
