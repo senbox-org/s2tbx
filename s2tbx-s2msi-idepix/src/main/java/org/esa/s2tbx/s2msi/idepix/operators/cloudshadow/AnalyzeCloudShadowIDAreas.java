@@ -16,8 +16,8 @@ class AnalyzeCloudShadowIDAreas {
     private AnalyzeCloudShadowIDAreas() {
     }
 
-    static void identifyCloudShadowArea(Product sourceProduct, Rectangle sourceRectangle, float[] landClusterSamples,
-                                        float[] waterClusterSamples, int[] flagArray,
+    static void identifyCloudShadowArea(Product sourceProduct, Rectangle sourceRectangle, float[] landBandValues,
+                                        float[] waterBandValues, int[] flagArray,
                                         int[] cloudShadowIDArray, int[] cloudLongShadowIDArray,
                                         int[][] cloudShadowIdBorderRectangle, int cloudIndexTable) {
 
@@ -51,10 +51,10 @@ class AnalyzeCloudShadowIDAreas {
             }
         }
 
-        double[] landCloudShadow = new double[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
-        Arrays.fill(landCloudShadow, Double.NaN);
-        double[] waterCloudShadow = new double[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
-        Arrays.fill(waterCloudShadow, Double.NaN);
+        double[] filteredLandBandValues = new double[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
+        Arrays.fill(filteredLandBandValues, Double.NaN);
+        double[] filteredWaterBandValues = new double[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
+        Arrays.fill(filteredWaterBandValues, Double.NaN);
         int[] landXPositions = new int[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
         Arrays.fill(landXPositions, -1);
         int[] landYPositions = new int[(maxRectangleWidth + 1) * (maxRectangleHeight + 1)];
@@ -72,8 +72,8 @@ class AnalyzeCloudShadowIDAreas {
             // todo invert if
             if ((cloudShadowIdBorderRectangle[cloudIndex][0] != productWidth + 1) || (cloudShadowIdBorderRectangle[cloudIndex][1] != -1) ||
                     (cloudShadowIdBorderRectangle[cloudIndex][2] != productHeight + 1) || (cloudShadowIdBorderRectangle[cloudIndex][3] != -1)) {
-                Arrays.fill(landCloudShadow, Double.NaN);
-                Arrays.fill(waterCloudShadow, Double.NaN);
+                Arrays.fill(filteredLandBandValues, Double.NaN);
+                Arrays.fill(filteredWaterBandValues, Double.NaN);
                 Arrays.fill(landXPositions, -1);
                 Arrays.fill(waterXPositions, -1);
                 Arrays.fill(landYPositions, -1);
@@ -88,25 +88,25 @@ class AnalyzeCloudShadowIDAreas {
 
                             final int flag = flagArray[j * (sourceWidth) + i];
 
-                            landCloudShadow[landCounter] = landClusterSamples[j * (sourceWidth) + i];
-                            waterCloudShadow[waterCounter] = waterClusterSamples[j * (sourceWidth) + i];
+                            filteredLandBandValues[landCounter] = landBandValues[j * (sourceWidth) + i];
+                            filteredWaterBandValues[waterCounter] = waterBandValues[j * (sourceWidth) + i];
 
-                            if (landCloudShadow[landCounter] >= 1e-8 && !Double.isNaN(landCloudShadow[landCounter]) &&
+                            if (filteredLandBandValues[landCounter] >= 1e-8 && !Double.isNaN(filteredLandBandValues[landCounter]) &&
                                     flag == PreparationMaskBand.LAND_FLAG) {
                                 landXPositions[landCounter] = i;
                                 landYPositions[landCounter] = j;
 
-                                if (landCloudShadow[landCounter] < minLandValue) {
-                                    minLandValue = landCloudShadow[landCounter];
+                                if (filteredLandBandValues[landCounter] < minLandValue) {
+                                    minLandValue = filteredLandBandValues[landCounter];
                                 }
                                 landCounter++;
-                            } else if (waterCloudShadow[waterCounter] >= 1e-8 && !Double.isNaN(waterCloudShadow[waterCounter]) &&
+                            } else if (filteredWaterBandValues[waterCounter] >= 1e-8 && !Double.isNaN(filteredWaterBandValues[waterCounter]) &&
                                     flag == PreparationMaskBand.OCEAN_FLAG) {
                                 waterXPositions[waterCounter] = i;
                                 waterYPositions[waterCounter] = j;
 
-                                if (waterCloudShadow[waterCounter] < minWaterValue) {
-                                    minWaterValue = waterCloudShadow[waterCounter];
+                                if (filteredWaterBandValues[waterCounter] < minWaterValue) {
+                                    minWaterValue = filteredWaterBandValues[waterCounter];
                                 }
                                 waterCounter++;
                             }
@@ -116,13 +116,13 @@ class AnalyzeCloudShadowIDAreas {
 
                 minNumberMemberCluster = clusterCount * 2 + 1;
 
-                analyseCloudShadows(landClusterSamples, flagArray, cloudShadowIDArray, cloudLongShadowIDArray,
+                analyseCloudShadows(landBandValues, flagArray, cloudShadowIDArray, cloudLongShadowIDArray,
                                     cloudShadowIdBorderRectangle, sourceWidth, sourceHeight, landCounter,
-                                    minNumberMemberCluster, landCloudShadow, landXPositions, landYPositions, cloudIndex,
+                                    minNumberMemberCluster, filteredLandBandValues, landXPositions, landYPositions, cloudIndex,
                                     minLandValue);
-                analyseCloudShadows(waterClusterSamples, flagArray, cloudShadowIDArray, cloudLongShadowIDArray,
+                analyseCloudShadows(waterBandValues, flagArray, cloudShadowIDArray, cloudLongShadowIDArray,
                                     cloudShadowIdBorderRectangle, sourceWidth, sourceHeight, waterCounter,
-                                    minNumberMemberCluster, waterCloudShadow, waterXPositions, waterYPositions, cloudIndex,
+                                    minNumberMemberCluster, filteredWaterBandValues, waterXPositions, waterYPositions, cloudIndex,
                                     minWaterValue);
             }
         }
@@ -135,8 +135,7 @@ class AnalyzeCloudShadowIDAreas {
                                             double minValue) {
         // minimum number of potential shadow points for the cluster analysis per cluster
         if (counter > minNumberMemberCluster && counter < S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) {
-            analysePotentialCloudShadowArea(flagArray, sourceWidth, counter, cloudShadow,
-                                            xPositions, yPositions);
+            analysePotentialCloudShadowArea(flagArray, sourceWidth, counter, cloudShadow, xPositions, yPositions);
         } else if (counter >= S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) {
             analyseLongCloudShadows(sourceWidth, sourceHeight, cloudShadowIDArray, cloudShadowIdBorderRectangle,
                                     cloudIndex, cloudShadow, xPositions, yPositions, flagArray, sourceBand,
@@ -213,8 +212,8 @@ class AnalyzeCloudShadowIDAreas {
 
     private static void analysePotentialCloudShadowArea(int[] flagArray,
                                                         int sourceWidth,
-                                                        int counter,
-                                                        double[] cloudShadow,
+                                                        int validCount,
+                                                        double[] filteredBandValues,
                                                         int[] xPositions,
                                                         int[] yPositions) {
         double darkness;
@@ -225,36 +224,36 @@ class AnalyzeCloudShadowIDAreas {
 
         double distance;
         double temp; // sort bandA (ascending) and select the element (94% of the sorted values)
-        double[] arraySortedBand = new double[counter];
+        double[] sortedAndFilteredBandValues = new double[validCount];
 
         // todo adaption to more bands for all sensors
-        System.arraycopy(cloudShadow, 0, arraySortedBand, 0, counter);
+        System.arraycopy(filteredBandValues, 0, sortedAndFilteredBandValues, 0, validCount);
 
-        Arrays.sort(arraySortedBand);
-        int counterWhiteness = (int) (Math.floor(counter * S2IdepixCloudShadowOp.OUTLIER_THRESHOLD));
-        if (counterWhiteness >= counter) counterWhiteness = counter - 1;
-        double thresholdWhiteness = arraySortedBand[counterWhiteness];
-        double darkestLandValue = arraySortedBand[0];
+        Arrays.sort(sortedAndFilteredBandValues);
+        int counterWhiteness = (int) (Math.floor(validCount * S2IdepixCloudShadowOp.OUTLIER_THRESHOLD));
+        if (counterWhiteness >= validCount) counterWhiteness = validCount - 1;
+        double thresholdWhiteness = sortedAndFilteredBandValues[counterWhiteness];
+        double darkestValue = sortedAndFilteredBandValues[0];
 
         // add 2.5% of darkest values to shadow array but at least one pixel is added
         int addedDarkValues = 1 + (int) Math.floor(0.025 * counterWhiteness + 0.5);
 
-        double[] clusterableLand = new double[counterWhiteness + addedDarkValues];
-        Arrays.fill(clusterableLand, darkestLandValue);
+        double[] clusterable = new double[counterWhiteness + addedDarkValues];
+        Arrays.fill(clusterable, darkestValue);
 
 //        double[] arrayClusterableBandB = new double[counterWhiteness + addedDarkValues];
 
         int countIntern = 0;
-        for (int dd = 0; dd < counter; dd++) {
-            if (cloudShadow[dd] < thresholdWhiteness && countIntern < counterWhiteness) {
-                clusterableLand[countIntern] = cloudShadow[dd];
+        for (int dd = 0; dd < validCount; dd++) {
+            if (filteredBandValues[dd] < thresholdWhiteness && countIntern < counterWhiteness) {
+                clusterable[countIntern] = filteredBandValues[dd];
 //                arrayClusterableBandB[countIntern] = arrayBandB[dd];
                 countIntern++;
             }
         }
 
-        double[][] imageData = new double[S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING][counter];
-        imageData[0] = clusterableLand; //band1data;
+        double[][] imageData = new double[S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING][validCount];
+        imageData[0] = clusterable; //band1data;
         //imageData[1] = arrayClusterableBandB;
 
         ClusteringKMeans computeClustering = new ClusteringKMeans();
@@ -279,10 +278,10 @@ class AnalyzeCloudShadowIDAreas {
         // distance analysis BandValue in relation to the CentroidValue
         // assign membership of BandValue to Cluster
         containerNumber = -1;
-        for (int gg = 0; gg < counter; gg++) {
+        for (int gg = 0; gg < validCount; gg++) {
             distance = Double.MAX_VALUE;
             for (int ff = 0; ff < clusterCount; ff++) {
-                temp = Math.abs(clusterCentroidArray[ff][0] - cloudShadow[gg]);
+                temp = Math.abs(clusterCentroidArray[ff][0] - filteredBandValues[gg]);
                 if (temp < distance) {
                     distance = temp;
                     containerNumber = ff;
