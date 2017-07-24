@@ -74,42 +74,32 @@ public class ForestCoverChangeTest {
     private static void chechTargetProduct(Product targetProduct) {
         Band band = checkTargetBand(targetProduct);
 
-        int bandValue = band.getSampleInt(64, 84);
-        assertEquals(0, bandValue);
+        assertEquals(1, band.getSampleInt(134, 165));
+        assertEquals(1, band.getSampleInt(504, 220));
+        assertEquals(1, band.getSampleInt(223, 384));
+        assertEquals(1, band.getSampleInt(29, 434));
+        assertEquals(1, band.getSampleInt(16, 507));
+        assertEquals(1, band.getSampleInt(219, 384));
+        assertEquals(1, band.getSampleInt(138, 163));
+        assertEquals(1, band.getSampleInt(244, 156));
+        assertEquals(1, band.getSampleInt(93, 358));
+        assertEquals(1, band.getSampleInt(241, 155));
+        assertEquals(1, band.getSampleInt(198, 161));
+        assertEquals(1, band.getSampleInt(39, 509));
 
-        bandValue = band.getSampleInt(172, 164);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(264, 114);
-        assertEquals(0, bandValue);
-
-        bandValue = band.getSampleInt(14, 18);
-        assertEquals(0, bandValue);
-
-        bandValue = band.getSampleInt(130, 334);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(200, 100);
-        assertEquals(0, bandValue);
-
-        bandValue = band.getSampleInt(332, 178);
-        assertEquals(0, bandValue);
-
-        bandValue = band.getSampleInt(548, 400);
-        assertEquals(0, bandValue);
-
-        bandValue = band.getSampleInt(40, 510);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(340, 410);
-        assertEquals(0, bandValue);
-
-        bandValue = band.getSampleInt(183, 144);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(0, 0);
-        assertEquals(0, bandValue);
-
+        assertEquals(0, band.getSampleInt(46, 366));
+        assertEquals(0, band.getSampleInt(61, 47));
+        assertEquals(0, band.getSampleInt(214, 240));
+        assertEquals(0, band.getSampleInt(207, 386));
+        assertEquals(0, band.getSampleInt(175, 166));
+        assertEquals(0, band.getSampleInt(202, 137));
+        assertEquals(0, band.getSampleInt(57, 367));
+        assertEquals(0, band.getSampleInt(31, 480));
+        assertEquals(0, band.getSampleInt(414, 445));
+        assertEquals(0, band.getSampleInt(277, 245));
+        assertEquals(0, band.getSampleInt(63, 368));
+        assertEquals(0, band.getSampleInt(475, 63));
+        assertEquals(0, band.getSampleInt(438, 213));
     }
 
     private static  Band checkTargetBand(Product targetProduct){
