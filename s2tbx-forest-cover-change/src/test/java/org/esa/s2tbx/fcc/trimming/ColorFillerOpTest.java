@@ -15,6 +15,7 @@ import org.junit.Test;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,9 +34,10 @@ public class ColorFillerOpTest extends AbstractOpTest {
 
     @Test
     public void testColorFillerOp() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Path folder = this.forestCoverChangeTestsFolderPath.resolve("object-selection");
         ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
-        File currentProductFile = this.forestCoverChangeTestsFolderPath.resolve("S2A_20160713T125925_A005524_T35UMP_grm.dim").toFile();
+        File currentProductFile = folder.resolve("S2A_20160713T125925_A005524_T35UMP_grm.dim").toFile();
         Product segmentationProduct = productReaderPlugIn.createReaderInstance().readProductNodes(currentProductFile, null);
 
         IntSet validRegions = buildValidRegions();

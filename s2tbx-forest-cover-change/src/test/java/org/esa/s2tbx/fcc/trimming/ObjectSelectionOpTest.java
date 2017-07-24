@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,12 +31,13 @@ public class ObjectSelectionOpTest extends AbstractOpTest  {
     @Test
     public void testObObjectSelectionOp() throws IllegalAccessException, InstantiationException, ClassNotFoundException, IOException {
 
+        Path folder = this.forestCoverChangeTestsFolderPath.resolve("object-selection");
         ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
-        File segmentationProductFile = this.forestCoverChangeTestsFolderPath.resolve("S2A_20160713T125925_A005524_T35UMP_grm.dim").toFile();
+        File segmentationProductFile = folder.resolve("S2A_20160713T125925_A005524_T35UMP_grm.dim").toFile();
         Product sourceProduct = productReaderPlugIn.createReaderInstance().readProductNodes(segmentationProductFile, null);
 
-        File landCoverProductFile = this.forestCoverChangeTestsFolderPath.resolve("S2A_20160713T125925_A005524_T35UMP_grm_landCover.dim").toFile();
+        File landCoverProductFile = folder.resolve("S2A_20160713T125925_A005524_T35UMP_grm_landCover.dim").toFile();
         Product landCoverProduct = productReaderPlugIn.createReaderInstance().readProductNodes(landCoverProductFile, null);
 
 
@@ -65,7 +67,7 @@ public class ObjectSelectionOpTest extends AbstractOpTest  {
 
     private static void checkTargetBand(Band targetBand) {
         assertNotNull(targetBand);
-        assertEquals(targetBand.getName(), "land_cover_CCILandCover-2015");
+        assertEquals("land_cover_CCILandCover-2015", targetBand.getName());
         assertEquals(ProductData.TYPE_INT16, targetBand.getDataType());
         assertEquals(549 * 549, targetBand.getNumDataElems());
     }
@@ -74,40 +76,40 @@ public class ObjectSelectionOpTest extends AbstractOpTest  {
         assertEquals(statistics.size(), 1512);
 
         PixelStatistic pixel = statistics.get(100);
-        assertEquals(pixel.getPixelsInRange(),18);
-        assertEquals(pixel.getTotalNumberPixels(),122);
+        assertEquals(18, pixel.getPixelsInRange());
+        assertEquals(122, pixel.getTotalNumberPixels());
 
         pixel = statistics.get(200);
-        assertEquals(pixel.getPixelsInRange(),31);
-        assertEquals(pixel.getTotalNumberPixels(),163);
+        assertEquals(31, pixel.getPixelsInRange());
+        assertEquals(163, pixel.getTotalNumberPixels());
 
         pixel = statistics.get(300);
-        assertEquals(pixel.getPixelsInRange(),4);
-        assertEquals(pixel.getTotalNumberPixels(),150);
+        assertEquals(4, pixel.getPixelsInRange());
+        assertEquals(150, pixel.getTotalNumberPixels());
 
         pixel = statistics.get(400);
-        assertEquals(pixel.getPixelsInRange(),196);
-        assertEquals(pixel.getTotalNumberPixels(),197);
+        assertEquals(196, pixel.getPixelsInRange());
+        assertEquals(197, pixel.getTotalNumberPixels());
 
         pixel = statistics.get(500);
-        assertEquals(pixel.getPixelsInRange(),0);
-        assertEquals(pixel.getTotalNumberPixels(),43);
+        assertEquals(0, pixel.getPixelsInRange());
+        assertEquals(43, pixel.getTotalNumberPixels());
 
         pixel = statistics.get(600);
-        assertEquals(pixel.getPixelsInRange(),1);
-        assertEquals(pixel.getTotalNumberPixels(),392);
+        assertEquals(1, pixel.getPixelsInRange());
+        assertEquals(392, pixel.getTotalNumberPixels());
 
         pixel = statistics.get(700);
-        assertEquals(pixel.getPixelsInRange(),68);
-        assertEquals(pixel.getTotalNumberPixels(),84);
+        assertEquals(68, pixel.getPixelsInRange());
+        assertEquals(84, pixel.getTotalNumberPixels());
 
         pixel = statistics.get(800);
-        assertEquals(pixel.getPixelsInRange(),4);
-        assertEquals(pixel.getTotalNumberPixels(),119);
+        assertEquals(4, pixel.getPixelsInRange());
+        assertEquals(119, pixel.getTotalNumberPixels());
 
         pixel = statistics.get(900);
-        assertEquals(pixel.getPixelsInRange(),67);
-        assertEquals(pixel.getTotalNumberPixels(),106);
+        assertEquals(67, pixel.getPixelsInRange());
+        assertEquals(106, pixel.getTotalNumberPixels());
 
     }
 
