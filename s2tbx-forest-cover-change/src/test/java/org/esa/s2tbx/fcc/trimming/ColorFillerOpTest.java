@@ -2,33 +2,24 @@ package org.esa.s2tbx.fcc.trimming;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.SubProgressMonitor;
-import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
-import org.esa.snap.utils.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Razvan Dumitrascu
@@ -69,10 +60,10 @@ public class ColorFillerOpTest extends AbstractOpTest {
         targetBand.setSourceImage(null);
         targetBand.getSourceImage();
         checkTargetBand(targetBand);
-        chechSampleintTargetBand(targetBand);
+        checkSampleIntTargetBand(targetBand);
     }
 
-    private static void chechSampleintTargetBand(Band band) {
+    private static void checkSampleIntTargetBand(Band band) {
         int bandValue = band.getSampleInt(5, 3);
         assertEquals(1, bandValue);
 
