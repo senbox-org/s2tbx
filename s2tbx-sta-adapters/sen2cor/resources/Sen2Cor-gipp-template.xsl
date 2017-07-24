@@ -15,6 +15,11 @@
 	<xsl:param name="visibility" select="23.0"/>
 	<xsl:param name="altitude" select="0.100"/>
 	<xsl:param name="wvThresCirrus" select="0.25"/>
+	<xsl:param name="demDirectory" select="'NONE'"/>
+	<xsl:param name="demReference" select="'http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/'"/>
+	<xsl:param name="demUnit" select="'0'"/>
+	<xsl:param name="adjacencyRange" select="1.000"/>
+	<xsl:param name="smoothWVMap" select="100.0"/>
 	<xsl:template match="/">	
 		<Level-2A_Ground_Image_Processing_Parameter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="L2A_GIPP.xsd">
 			<Common_Section>
@@ -24,9 +29,9 @@
 				<!-- can be an unsigned integer value specifying the number or processes you intend to operate in parallel or: AUTO. If AUTO is chosen, the processor determines the number of processes automatically, using cpu_count() -->
 				<Target_Directory>DEFAULT</Target_Directory>
 				<!-- should be either a directory or 'DEFAULT'. If default, target will be created at root of L1C product -->
-				<DEM_Directory>dem/srtm</DEM_Directory>
+				<DEM_Directory><xsl:value-of select="$demDirectory"/></DEM_Directory>
 				<!-- should be either a directory in the sen2cor home folder or 'NONE'. If NONE, no DEM will be used -->
-				<DEM_Reference>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</DEM_Reference>
+				<DEM_Reference><xsl:value-of select="$demReference"/></DEM_Reference>
 				<!-- will be ignored, if DEM is NONE. A SRTM DEM will be downloaded from this reference, if no local DEM is available -->
 				<PSD_Scheme PSD_Version="13" PSD_Reference="S2-PDGS-TAS-DI-PSD-V13.1_Schema">
 					<UP_Scheme_1C>S2_User_Product_Level-1C_Metadata.xsd</UP_Scheme_1C>
@@ -96,15 +101,15 @@
 				  <!-- In most cases, g=0.2 to 0.25 is adequate, in extreme cases of overcorrection g=0.1 should be applied -->
 				</Flags>
 				<Calibration>
-				  <DEM_Unit>0</DEM_Unit>
+				  <DEM_Unit><xsl:value-of select="$demUnit"/></DEM_Unit>
 				  <!-- (0=[m], 1=[dm], 2=[cm]) -->
-				  <Adj_Km>1.000</Adj_Km>
+				  <Adj_Km><xsl:value-of select="$adjacencyRange"/></Adj_Km>
 				  <!-- Adjancency Range [km] -->
 				  <Visibility><xsl:value-of select="$visibility"/></Visibility>
 				  <!-- visibility (5 <= visib <= 120 km) -->
 				  <Altitude><xsl:value-of select="$altitude"/></Altitude>
 				  <!-- [km] -->
-				  <Smooth_WV_Map>100.0</Smooth_WV_Map>
+				  <Smooth_WV_Map><xsl:value-of select="$smoothWVMap"/></Smooth_WV_Map>
 				  <!-- length of square box, [meters] -->
 				  <WV_Threshold_Cirrus><xsl:value-of select="$wvThresCirrus"/></WV_Threshold_Cirrus>
 				  <!-- water vapor threshold to switch off cirrus algorithm [cm]Range: 0.1-1.0 -->
