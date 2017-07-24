@@ -52,11 +52,11 @@ public class S2IdepixCloudShadowOp extends Operator {
     private final static double MAX_CLOUD_HEIGHT = 8000.;
     private final static int MAX_TILE_DIMENSION = 1400;
 
-    private Band sourceBandClusterA;
-    private Band sourceBandClusterB;
+    private Band landClusterSourceBand;
+    private Band waterClusterSourceBand;
 
-    private Band sourceBandFlag1;
-    private Band sourceBandFlag2;
+    private Band sourceFlag1Band;
+    private Band sourceFlag2Band;
 
     private RasterDataNode sourceSunZenith;
     private RasterDataNode sourceSunAzimuth;
@@ -74,12 +74,12 @@ public class S2IdepixCloudShadowOp extends Operator {
     static int CloudShadowFragmentationThreshold = 500000;
     static int GROWING_CLOUD = 1;
     static int searchBorderRadius;
-    private static final String sourceBandNameClusterA = "B8A";
-    private static final String sourceBandNameClusterB = "B3";
+    private static final String landClusterSourceBandName = "B8A";
+    private static final String waterClusterSourceBandName = "B3";
     private static final String sourceSunZenithName = "sun_zenith";
     private static final String sourceSunAzimuthName = "sun_azimuth";
     private static final String sourceAltitudeName = "elevation";
-    private static final String sourceFlagName1 = "pixel_classif_flags";
+    private static final String sourceFlagName = "pixel_classif_flags";
 
     @Override
     public void initialize() throws OperatorException {
@@ -88,8 +88,8 @@ public class S2IdepixCloudShadowOp extends Operator {
 
         ProductUtils.copyGeoCoding(s2ClassifProduct, targetProduct);
 
-        sourceBandClusterA = s2ClassifProduct.getBand(sourceBandNameClusterA);
-        sourceBandClusterB = s2ClassifProduct.getBand(sourceBandNameClusterB);
+        landClusterSourceBand = s2ClassifProduct.getBand(landClusterSourceBandName);
+        waterClusterSourceBand = s2ClassifProduct.getBand(waterClusterSourceBandName);
 
         sourceSunZenith = s2ClassifProduct.getBand(sourceSunZenithName);
         // take these. They're as good as the tile dimensions from any other band and DEFINITELY more reliable than
@@ -100,9 +100,9 @@ public class S2IdepixCloudShadowOp extends Operator {
         sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
         sourceAltitude = s2ClassifProduct.getBand(sourceAltitudeName);
 
-        sourceBandFlag1 = s2ClassifProduct.getBand(sourceFlagName1);
+        sourceFlag1Band = s2ClassifProduct.getBand(sourceFlagName);
         if (s2CloudBufferProduct != null) {
-            sourceBandFlag2 = s2CloudBufferProduct.getBand(sourceFlagName1);
+            sourceFlag2Band = s2CloudBufferProduct.getBand(sourceFlagName);
         }
 
         targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
@@ -203,13 +203,13 @@ public class S2IdepixCloudShadowOp extends Operator {
         Tile sourceTileSunAzimuth = getSourceTile(sourceSunAzimuth, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
         Tile sourceTileAltitude = getSourceTile(sourceAltitude, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
 
-        Tile sourceTileFlag1 = getSourceTile(sourceBandFlag1, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
+        Tile sourceTileFlag1 = getSourceTile(sourceFlag1Band, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
         Tile sourceTileFlag2 = null;
-        if (sourceBandFlag2 != null) {
-            sourceTileFlag2 = getSourceTile(sourceBandFlag2, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
+        if (sourceFlag2Band != null) {
+            sourceTileFlag2 = getSourceTile(sourceFlag2Band, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
         }
-        Tile sourceTileClusterA = getSourceTile(sourceBandClusterA, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
-        Tile sourceTileClusterB = getSourceTile(sourceBandClusterB, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
+        Tile landClusterTile = getSourceTile(landClusterSourceBand, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
+        Tile waterClusterTile = getSourceTile(waterClusterSourceBand, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
 
         Tile targetTileCloudShadow = targetTiles.get(targetBandCloudShadow);
 
@@ -227,8 +227,8 @@ public class S2IdepixCloudShadowOp extends Operator {
         final float[] sourceSunZenith = sourceTileSunZenith.getSamplesFloat();
         final float[] sourceSunAzimuth = sourceTileSunAzimuth.getSamplesFloat();
         final float[] sourceAltitude = sourceTileAltitude.getSamplesFloat();
-        final float[] sourceClusterA = sourceTileClusterA.getSamplesFloat();
-        final float[] sourceClusterB = sourceTileClusterB.getSamplesFloat();
+        final float[] landClusterSamples = landClusterTile.getSamplesFloat();
+        final float[] waterClusterSamples = waterClusterTile.getSamplesFloat();
 
         float[] sourceLatitudes = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
         float[] sourceLongitudes = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
@@ -272,7 +272,7 @@ public class S2IdepixCloudShadowOp extends Operator {
                                                  cloudIDArray, cloudShadowIDArray, counterTable);
 
             AnalyzeCloudShadowIDAreas.identifyCloudShadowArea(s2ClassifProduct, sourceRectangle,
-                                                              sourceClusterA, sourceClusterB,
+                                                              landClusterSamples, waterClusterSamples,
                                                               flagArray, cloudShadowIDArray,
                                                               cloudLongShadowIDArray,
                                                               cloudShadowIdBorderRectangle,
