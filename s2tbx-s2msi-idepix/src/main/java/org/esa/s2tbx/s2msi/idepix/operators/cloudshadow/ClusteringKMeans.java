@@ -15,8 +15,8 @@ public class ClusteringKMeans {
 
     // input: array of 1-dimensional image arrays
     public double[][] computedKMeansCluster(double[]... images) {
-        AdaptedIsoClustering clusterer = new AdaptedIsoClustering(AnalyzeCloudShadowIDAreas.clusterCount,
-                                                                  AnalyzeCloudShadowIDAreas.maxIterCount);
+        AdaptedIsoClusterer clusterer = new AdaptedIsoClusterer(AnalyzeCloudShadowIDAreas.clusterCount,
+                                                                AnalyzeCloudShadowIDAreas.maxIterCount);
         List<Clusterable> list = new ArrayList<>();
         for (int xyPos = 0; xyPos < images[0].length; xyPos++) {
             double[] values = new double[images.length];
