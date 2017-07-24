@@ -1,0 +1,58 @@
+<graph id="s2processing">
+    <version>1.0</version>
+	
+   <node id="sixtym">
+      <operator>Resample</operator>
+      <sources>
+        <sourceProduct>$sourceProduct</sourceProduct>
+      </sources>
+      <parameters>
+        <referenceBand>B1</referenceBand>
+        <downsampling>Mean</downsampling>
+		<upsampling>Bilinear</upsampling>
+      </parameters>
+    </node>
+		
+	<node id="resampled_terrain">
+      <operator>Resample</operator>
+      <sources>
+        <sourceProduct>$terrainProduct</sourceProduct>
+      </sources>
+      <parameters>
+        <targetResolution>60</targetResolution>
+        <downsampling>Mean</downsampling>
+		<upsampling>Bilinear</upsampling>
+      </parameters>
+    </node>
+	
+	<node id="sixtymelev">
+      <operator>Merge</operator>
+      <sources>
+		<masterProduct>sixtym</masterProduct>
+        <sourceProducts>resampled_terrain</sourceProducts>
+      </sources>
+    </node>
+		
+	<node id="cloudshadowidepix">
+        <operator>Idepix.Sentinel2</operator>
+        <sources>
+            <l1cProduct>sixtymelev</l1cProduct>
+        </sources>
+        <parameters>
+			<computeCloudShadow>true</computeCloudShadow>
+            <computeCloudBufferForCloudAmbiguous>true</computeCloudBufferForCloudAmbiguous>
+			<cloudBufferWidth>3</cloudBufferWidth>
+        </parameters>
+    </node>
+	
+	<node id="cloud_subset">
+		<operator>Subset</operator>
+		<sources>
+			<sourceProduct>cloudshadowidepix</sourceProduct>
+		</sources>
+		<parameters>
+			<bandNames>pixel_classif_flags</bandNames>
+		</parameters>
+	</node>
+
+</graph>
