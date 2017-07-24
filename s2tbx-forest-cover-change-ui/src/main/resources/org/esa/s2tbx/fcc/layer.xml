@@ -5,10 +5,11 @@
             <file name="org-esa-s2tbx-fcc-Action.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.s2tbx.fcc.ForestCoverChangeAction.create"/>
-                <attr name="displayName" stringvalue="Forest Cover Change"/>
-                <attr name="dialogTitle" stringvalue="Forest Cover Change"/>
+                <attr name="displayName" stringvalue="Forest Cover Change Processor"/>
+                <attr name="dialogTitle" stringvalue="Forest Cover Change Processor"/>
                 <attr name="operatorName" stringvalue="ForestCoverChangeOp"/>
                 <attr name="targetProductNameSuffix" stringvalue="_fcc"/>
+                <attr name="helpId" stringvalue="forestCoverChangeProcessor"/>
             </file>
 
             <file name="org-esa-s2tbx-extractor-Action.instance">

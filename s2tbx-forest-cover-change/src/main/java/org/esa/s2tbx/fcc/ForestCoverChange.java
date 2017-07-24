@@ -212,16 +212,6 @@ public class ForestCoverChange {
                                                 Product unionMaskProduct, int[] sourceBandIndices, Dimension tileSize)
                                                 throws Exception {
 
-//        String formatName = "BEAM-DIMAP";
-//        boolean clearCacheAfterRowWrite = false;
-//        boolean incremental = false;
-//
-//        File file = new File("D:\\differenceTrimming", "differenceSegmentationProduct.dim");
-//        GPF.writeProduct(differenceSegmentationProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
-//
-//        file = new File("D:\\differenceTrimming", "unionMaskProduct.dim");
-//        GPF.writeProduct(unionMaskProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
-//
         DifferenceRegionTilesComputing helper = new DifferenceRegionTilesComputing(differenceSegmentationProduct, currentSourceProduct, previousSourceProduct,
                                                                                      unionMaskProduct, sourceBandIndices, tileSize);
         IntSet differenceTrimmingSet = helper.runTilesInParallel(threadCount, threadPool);
@@ -249,18 +239,6 @@ public class ForestCoverChange {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start trimming for source product '" + sourceProduct.getName()+"'");
         }
-
-        String formatName = "BEAM-DIMAP";
-        boolean clearCacheAfterRowWrite = false;
-        boolean incremental = false;
-
-        File file = new File("D:\\trimming", "productColorFill.dim");
-        GPF.writeProduct(productColorFill, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
-
-        file = new File("D:\\trimming", "sourceProduct.dim");
-        GPF.writeProduct(product, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
-
-//    public TrimmingRegionTilesComputing(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
 
         TrimmingRegionTilesComputing helper = new TrimmingRegionTilesComputing(productColorFill, product, trimmingSourceProductBandIndices, tileSize.width, tileSize.height);
         IntSet segmentationTrimmingRegionKeys = helper.runTilesInParallel(threadCount, threadPool);
