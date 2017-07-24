@@ -130,6 +130,7 @@ public class S2IdepixOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
+        ensureSingleRasterSize(sourceProduct);
         final boolean inputProductIsValid = S2IdepixUtils.validateInputProduct(sourceProduct, AlgorithmSelector.MSI);
         if (!inputProductIsValid) {
             throw new OperatorException(S2IdepixConstants.INPUT_INCONSISTENCY_ERROR_MESSAGE);
