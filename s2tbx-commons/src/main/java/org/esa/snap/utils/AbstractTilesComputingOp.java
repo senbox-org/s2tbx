@@ -110,7 +110,7 @@ public abstract class AbstractTilesComputingOp extends Operator {
     protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
     }
 
-    private void initTiles() {
+    protected final void initTiles() {
         this.processedTiles = new HashSet<String>();
 
         this.processingTileCount = new AtomicInteger(0);

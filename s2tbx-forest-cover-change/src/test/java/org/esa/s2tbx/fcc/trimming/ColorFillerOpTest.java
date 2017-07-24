@@ -54,11 +54,7 @@ public class ColorFillerOpTest extends AbstractOpTest {
 
         OperatorExecutor executor = OperatorExecutor.create(operator);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-        ProductData productData = operator.getProductData();
         Band targetBand = targetProduct.getBandAt(0);
-        targetBand.setData(productData);
-        targetBand.setSourceImage(null);
-        targetBand.getSourceImage();
         checkTargetBand(targetBand);
         checkSampleIntTargetBand(targetBand);
     }

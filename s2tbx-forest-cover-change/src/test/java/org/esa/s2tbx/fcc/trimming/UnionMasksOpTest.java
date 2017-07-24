@@ -33,7 +33,7 @@ public class UnionMasksOpTest extends AbstractOpTest {
     public void testUnionMask() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
         ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
-        Path unionFolder = this.forestCoverChangeTestsFolderPath.resolve("union");
+        Path unionFolder = this.forestCoverChangeTestsFolderPath.resolve("union-mask");
 
         File currentSegmentationSourceProductFile = unionFolder.resolve("S2A_R093_T35UMP_20170628T092026_grm_fill.dim").toFile();
         Product currentSegmentationSourceProduct = productReaderPlugIn.createReaderInstance().readProductNodes(currentSegmentationSourceProductFile, null);
@@ -54,29 +54,25 @@ public class UnionMasksOpTest extends AbstractOpTest {
         Product targetProduct = operator.getTargetProduct();
         OperatorExecutor executor = OperatorExecutor.create(operator);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-        ProductData productData = operator.getProductData();
-        Band targetBand = targetProduct.getBandAt(0);
-        targetBand.setData(productData);
-        targetBand.setSourceImage(null);
-        targetBand.getSourceImage();
 
+        Band targetBand = targetProduct.getBandAt(0);
         assertNotNull(targetBand);
 
-        assertEquals(255, targetBand.getSampleInt(147, 163));
-        assertEquals(255, targetBand.getSampleInt(57, 237));
-        assertEquals(50, targetBand.getSampleInt(33, 434));
+        assertEquals(1, targetBand.getSampleInt(147, 163));
+        assertEquals(1, targetBand.getSampleInt(57, 237));
+        assertEquals(1, targetBand.getSampleInt(33, 434));
         assertEquals(0, targetBand.getSampleInt(478, 51));
-        assertEquals(100, targetBand.getSampleInt(509, 212));
-        assertEquals(100, targetBand.getSampleInt(209, 533));
-        assertEquals(255, targetBand.getSampleInt(10, 508));
-        assertEquals(100, targetBand.getSampleInt(254, 476));
-        assertEquals(255, targetBand.getSampleInt(84, 343));
+        assertEquals(1, targetBand.getSampleInt(509, 212));
+        assertEquals(1, targetBand.getSampleInt(209, 533));
+        assertEquals(1, targetBand.getSampleInt(10, 508));
+        assertEquals(1, targetBand.getSampleInt(254, 476));
+        assertEquals(1, targetBand.getSampleInt(84, 343));
         assertEquals(0, targetBand.getSampleInt(14, 468));
         assertEquals(0, targetBand.getSampleInt(205, 139));
         assertEquals(0, targetBand.getSampleInt(22, 325));
-        assertEquals(50, targetBand.getSampleInt(196, 397));
-        assertEquals(100, targetBand.getSampleInt(3, 433));
-        assertEquals(100, targetBand.getSampleInt(506, 214));
+        assertEquals(1, targetBand.getSampleInt(196, 397));
+        assertEquals(1, targetBand.getSampleInt(3, 433));
+        assertEquals(1, targetBand.getSampleInt(506, 214));
     }
 
     private static IntSet buildCurrentSegmentationTrimmingRegionKeys() {

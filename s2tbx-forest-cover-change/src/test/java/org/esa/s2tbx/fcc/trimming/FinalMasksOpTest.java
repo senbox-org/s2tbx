@@ -14,6 +14,7 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.media.jai.JAI;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,31 +40,36 @@ public class FinalMasksOpTest extends AbstractOpTest {
     public void testFinalMask() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
         ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
-        Path finalFolder = this.forestCoverChangeTestsFolderPath.resolve("final");
+        Path finalFolder = this.forestCoverChangeTestsFolderPath.resolve("final-mask");
 
-        File differecenSegmentationProductFile = finalFolder.resolve("S2A_R093_T35UMP_20170628T092026_grm.dim").toFile();
-        Product differenceSegmentationProduct = productReaderPlugIn.createReaderInstance().readProductNodes(differecenSegmentationProductFile, null);
+        File differenceSegmentationProductFile = finalFolder.resolve("S2A_R093_T35UMP_20170628T092026_grm.dim").toFile();
+        Product differenceSegmentationProduct = productReaderPlugIn.createReaderInstance().readProductNodes(differenceSegmentationProductFile, null);
 
         File unionMaskProductFile = finalFolder.resolve("S2A_R093_T35UMP_20170628T092026_grm_fill_union.dim").toFile();
         Product unionMaskProduct = productReaderPlugIn.createReaderInstance().readProductNodes(unionMaskProductFile, null);
 
         IntSet differenceTrimmingSet = buildDifferenceTrimmingSet();
 
+        int sceneWidth = differenceSegmentationProduct.getSceneRasterWidth();
+        int sceneHeight = differenceSegmentationProduct.getSceneRasterHeight();
+        Product outputTargetProduct = new Product("FinalMasks", "Type", sceneWidth, sceneHeight);
+        outputTargetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
+        Band outputTargetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
+        outputTargetProduct.addBand(outputTargetBand);
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("differenceTrimmingSet", differenceTrimmingSet);
         Map<String, Product> sourceProducts = new HashMap<>();
         sourceProducts.put("differenceSegmentationProduct", differenceSegmentationProduct);
         sourceProducts.put("unionMaskProduct", unionMaskProduct);
+        sourceProducts.put("outputTargetProduct", outputTargetProduct);
+
         FinalMasksOp operator = (FinalMasksOp) GPF.getDefaultInstance().createOperator("FinalMasksOp", parameters, sourceProducts, null);
         Product targetProduct = operator.getTargetProduct();
         OperatorExecutor executor = OperatorExecutor.create(operator);
         executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-        ProductData productData = operator.getProductData();
-        Band targetBand = targetProduct.getBandAt(0);
-        targetBand.setData(productData);
-        targetBand.setSourceImage(null);
-        targetBand.getSourceImage();
 
+        Band targetBand = targetProduct.getBandAt(0);
         assertNotNull(targetBand);
 
         assertEquals(0, targetBand.getSampleInt(64, 84));
