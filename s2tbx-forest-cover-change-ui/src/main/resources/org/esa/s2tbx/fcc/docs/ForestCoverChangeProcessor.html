@@ -63,19 +63,19 @@
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    RED: 0.63 um - 0.69 um
+    RED: 0.63 &#xb5m - 0.69 &#xb5m
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    NIR: 0.76 um - 0.9 um
+    NIR: 0.76 &#xb5m - 0.9 &#xb5m
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    SWIR: 1.55 um - 1.75 um
+    SWIR: 1.55 &#xb5m - 1.75 &#xb5m
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    SWIR: 2.08 um - 2.35 um
+    SWIR: 2.08 &#xb5m - 2.35 &#xb5m
 </p>
 <p>
     Forest masks are produced in two major steps:
@@ -110,14 +110,17 @@
 
             <p class="i1">
                 <b>Current Source Product</b>
-                Specify the current source product which will be used to compute the forest cover change.
+                Specify the current source product which will be used to compute the forest cover change. The current source product represents the
+                most current product by date.
             </p>
             <p class="i1">
                 <b>Previous Source Product</b>
-                Specify the previous source product which will be used to compute the forest cover change.
+                Specify the previous source product which will be used to compute the forest cover change. The previous source product represents a product that is
+                older than the current source product.
             </p>
             <p>
-                <b>NOTE:</b> The two input products must have the same geo-spatial latitude and longitude and the same raster sizes.
+                <b>NOTE:</b> The two input products must have the same geo-spatial latitude and longitude and the same raster sizes. The two source products must be from
+                the same period of the year for a more precise result.
             </p>
 
             <h5>Target Product</h5>
@@ -150,7 +153,8 @@
         <td style="border-width:0;" valign="top">
             <p class="i1">
                 <b>Forest cover percentage:</b>
-                Specify the  forest cover percentage for each segmentation object.
+                Specify the  forest cover percentage for each segmentation object. It represents the percent of pixels from a segmentation
+                object that are marked as forest in the CCI Land Cover map.
             </p>
             <p class="i1">
                 <b>Merging cost criterion:</b>
@@ -165,12 +169,15 @@
 
             <p class="i1">
                 <b>Total iterations:</b>
-                Specify the total number of iterations.
+                Specify the total number of iterations. The higher the number of iterations, the lower the number of segmentation objects is. On a segmentation
+                step the number of segmentation objects may be reduced by merging the adjacent segments based on the merging cost criterion and
+                region merging criterion.
             </p>
 
             <p class="i1">
                 <b>Threshold:</b>
-                Specify the threshold which is compared with the merging cost. This thereshold avoids undersegmentation.
+                Specify the threshold which is compared with the merging cost. This thereshold avoids undersegmentation. The higher the value of the threshold the least chances
+                of undersegmentation.
             </p>
 
             <p class="i1">
