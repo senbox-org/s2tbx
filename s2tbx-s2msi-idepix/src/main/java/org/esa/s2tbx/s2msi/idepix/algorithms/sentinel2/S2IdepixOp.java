@@ -83,8 +83,9 @@ public class S2IdepixOp extends Operator {
 //    private boolean copyNNValue = true;
     private boolean copyNNValue = false;
 
-    @Parameter(defaultValue = "false", label = " Compute cloud shadow")
-    private boolean computeCloudShadow;
+    //todo remove comments from following line to include cloud shadow op
+//    @Parameter(defaultValue = "false", label = " Compute cloud shadow")
+    private boolean computeCloudShadow = false;
 
     @Parameter(defaultValue = "true", label = " Compute a cloud buffer")
     private boolean computeCloudBuffer;
