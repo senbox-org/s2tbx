@@ -19,7 +19,11 @@
 package org.esa.s2tbx.radiometry;
 
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.FlagCoding;
+import org.esa.snap.core.datamodel.MetadataAttribute;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -27,12 +31,14 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.util.ProductUtils;
 
-import java.awt.*;
+import java.awt.Color;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -138,7 +144,8 @@ public abstract class BaseIndexOp extends Operator {
         String name = getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
-        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+        targetProduct.setSceneGeoCoding(sourceProduct.getBand(this.sourceBandNames[0]).getGeoCoding());
+        //ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
 
         Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sceneWidth, sceneHeight);
         targetProduct.addBand(outputBand);
@@ -180,33 +187,33 @@ public abstract class BaseIndexOp extends Operator {
     protected void loadSourceBands(Product product) throws OperatorException {
         final List<String> bands = new ArrayList<>();
         bandFields.forEach(bandField -> {
-                    Parameter paramAnnotation = bandField.getAnnotation(Parameter.class);
-                    BandParameter bandAnnotation = bandField.getAnnotation(BandParameter.class);
-                    try {
-                        bandField.setAccessible(true);
-                        Object value = bandField.get(this);
-                        if (value == null) {
-                            String bandName = findBand((int) bandAnnotation.minWavelength(),
-                                                       (int) bandAnnotation.maxWavelength(),
-                                                       product);
-                            if (bandName != null) {
-                                bandField.set(this, bandName);
-                                bands.add(bandName);
-                                getLogger().fine(String.format("Using band '%s' as %s",
-                                        bandName, paramAnnotation.label()));
-                            } else {
-                                throw new OperatorException(
-                                        String.format("Unable to find band that could be used as %s. Please specify band.",
-                                                paramAnnotation.label()));
-                            }
-                        } else {
-                            bands.add(value.toString());
-                        }
-                    } catch (IllegalAccessException e) {
-                        getLogger().severe(e.getMessage());
+            Parameter paramAnnotation = bandField.getAnnotation(Parameter.class);
+            BandParameter bandAnnotation = bandField.getAnnotation(BandParameter.class);
+            try {
+                bandField.setAccessible(true);
+                Object value = bandField.get(this);
+                if (value == null) {
+                    String bandName = findBand((int) bandAnnotation.minWavelength(),
+                            (int) bandAnnotation.maxWavelength(),
+                            product);
+                    if (bandName != null) {
+                        bandField.set(this, bandName);
+                        bands.add(bandName);
+                        getLogger().fine(String.format("Using band '%s' as %s",
+                                bandName, paramAnnotation.label()));
+                    } else {
+                        throw new OperatorException(
+                                String.format("Unable to find band that could be used as %s. Please specify band.",
+                                        paramAnnotation.label()));
                     }
+                } else {
+                    bands.add(value.toString());
+                }
+            } catch (IllegalAccessException e) {
+                getLogger().severe(e.getMessage());
+            }
 
-                });
+        });
         this.sourceBandNames = bands.toArray(new String[bands.size()]);
     }
 
@@ -239,11 +246,11 @@ public abstract class BaseIndexOp extends Operator {
 
     private void initDefaultMasks() {
         addMaskDescriptor(ARITHMETIC_FLAG_NAME, FLAGS_BAND_NAME + "." + ARITHMETIC_FLAG_NAME,
-                            "An arithmetic exception occurred.", Color.red.brighter(), 0.7);
+                "An arithmetic exception occurred.", Color.red.brighter(), 0.7);
         addMaskDescriptor(LOW_FLAG_NAME, FLAGS_BAND_NAME + "." + LOW_FLAG_NAME,
-                            "Index value is too low.", Color.red, 0.7);
+                "Index value is too low.", Color.red, 0.7);
         addMaskDescriptor(HIGH_FLAG_NAME, FLAGS_BAND_NAME + "." + HIGH_FLAG_NAME,
-                            "Index value is too high.", Color.red.darker(), 0.7);
+                "Index value is too high.", Color.red.darker(), 0.7);
     }
 
     private FlagCoding initFlagCoding() {
