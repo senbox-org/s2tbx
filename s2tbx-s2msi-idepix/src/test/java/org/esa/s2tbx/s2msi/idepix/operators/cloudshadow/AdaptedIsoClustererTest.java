@@ -3,9 +3,12 @@ package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.DoublePoint;
+import org.apache.commons.math3.random.JDKRandomGenerator;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -16,11 +19,18 @@ import static junit.framework.Assert.assertNotNull;
  */
 public class AdaptedIsoClustererTest {
 
-    @Test
-    public void cluster() throws Exception {
-        final AdaptedIsoClusterer clusterer = new AdaptedIsoClusterer(4, 30);
+    private AdaptedIsoClusterer clusterer;
+    private List<Clusterable> list;
 
-        List<Clusterable> list = new ArrayList<>();
+    @Before
+    public void setUp() {
+        clusterer = new AdaptedIsoClusterer(4, 30);
+        list = new ArrayList<>();
+    }
+
+    @Test
+    public void testCluster_OneBand() throws Exception {
+
 
         final double[][] values = new double[][]{{0.028711784604626533}, {0.03450325057661663}, {0.08324620504691782},
                 {0.09316647688302504}, {0.10110824726904288}, {0.10601160470408544}, {0.10709009357269195},
@@ -73,6 +83,30 @@ public class AdaptedIsoClustererTest {
         assertNotNull(clusters.get(3).getCenter().getPoint());
         assertEquals(1, clusters.get(3).getCenter().getPoint().length);
         assertEquals(0.5715393136281267, clusters.get(3).getCenter().getPoint()[0], 1e-8);
+    }
+
+    @Test
+    public void testCluster_TwoBands() {
+        final JDKRandomGenerator generator = new JDKRandomGenerator();
+
+        double[] values = new double[100];
+        for (int i = 0; i < 100; i++) {
+            values[i] = generator.nextDouble();
+        }
+
+        Arrays.sort(values);
+
+        final StringBuilder stringBuilder = new StringBuilder("{{");
+
+
+        for (int i = 0; i < 100; i++) {
+            stringBuilder.append(values[i]).append("}");
+            if (i < 99) {
+                stringBuilder.append(", {");
+            }
+        }
+        stringBuilder.append("}");
+        System.out.println(stringBuilder.toString());
     }
 
 
