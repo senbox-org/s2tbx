@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Sen2Cor</alias>
   <label>SEN2COR</label>
-  <version>231</version>
+  <version>240</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
   <authors></authors>
   <copyright></copyright>
@@ -22,7 +22,7 @@
   <variables>
     <variable>
       <key>SEN2COR_HOME</key>
-      <value>$USERPROFILE/documents/sen2cor</value>
+      <value>$USER_HOME/documents/sen2cor</value>
       <isShared>false</isShared>
     </variable>
     <variable>
@@ -32,11 +32,11 @@
     </variable>
     <osvariable>
       <key>SEN2COR_EXE</key>
-      <value>L2A_Process.bat</value>
+      <value></value>
       <isShared>false</isShared>
       <windows>L2A_Process.bat</windows>
       <linux>L2A_Process</linux>
-      <macosx>L2A_Process</macosx>
+      <macosx>/bin/L2A_Process</macosx>
       <isTransient>false</isTransient>
     </osvariable>
     <osvariable>
@@ -46,6 +46,24 @@
       <windows></windows>
       <linux>~</linux>
       <macosx>~</macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <osvariable>
+      <key>HOME</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows>$USERPROFILE</windows>
+      <linux></linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <osvariable>
+      <key>USER_HOME</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows>$USERPROFILE</windows>
+      <linux>$HOME</linux>
+      <macosx>$HOME</macosx>
       <isTransient>false</isTransient>
     </osvariable>
   </variables>
@@ -588,25 +606,28 @@
   <windowsBundle>
     <bundleType>ZIP</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://192.168.60.20/snap/sen2cor/Sen2Cor-2.3.1-win64.zip</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.4.0/Sen2Cor-2.4.0-win64.zip</downloadURL>
     <templateparameter>
       <template type="simple">
         <contents></contents>
       </template>
     </templateparameter>
     <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint>Sen2Cor-2.3.1-win64.zip</entryPoint>
+    <entryPoint>Sen2Cor-2.4.0-win64.zip</entryPoint>
     <updateVariable>SEN2COR_BIN</updateVariable>
   </windowsBundle>
   <linuxBundle>
     <bundleType>INSTALLER</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://vanuatu.c-s.ro/snap/sen2cor/Sen2Cor-2.3.1-Linux64.run</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.4.0/Sen2Cor-2.4.0-Linux64.run</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
       <defaultValue>Command Template</defaultValue>
       <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
       <parameterType>TemplateParameter</parameterType>
       <parameters>
         <parameter>
@@ -620,25 +641,47 @@
         </parameter>
       </parameters>
       <template type="simple">
-        <contents></contents>
+        <contents>--target
+$targetLocation/Sen2Cor-2.4.0-Linux64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
     <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint>Sen2Cor-2.3.1-Linux64.run</entryPoint>
+    <entryPoint>Sen2Cor-2.4.0-Linux64.run</entryPoint>
     <updateVariable>SEN2COR_BIN</updateVariable>
   </linuxBundle>
   <macosxBundle>
     <bundleType>INSTALLER</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL></downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.4.0/Sen2Cor-2.4.0-Darwin64.run</downloadURL>
     <templateparameter>
+      <name>arguments</name>
+      <dataType>java.io.File</dataType>
+      <defaultValue>Command Template</defaultValue>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>TemplateParameter</parameterType>
+      <parameters>
+        <parameter>
+          <name>targetLocation</name>
+          <dataType>java.io.File</dataType>
+          <defaultValue>$USERPROFILE\.snap\auxdata</defaultValue>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+      </parameters>
       <template type="simple">
-        <contents></contents>
+        <contents>--target
+$targetLocation/Sen2Cor-2.4.0-Darwin64</contents>
       </template>
+      <outputFile>Command Template</outputFile>
     </templateparameter>
-    <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint></entryPoint>
+    <targetLocation>$USER_HOME/.snap/auxdata</targetLocation>
+    <entryPoint>Sen2Cor-2.4.0-Darwin64.run</entryPoint>
     <updateVariable></updateVariable>
   </macosxBundle>
   <sourceProductDescriptors>
