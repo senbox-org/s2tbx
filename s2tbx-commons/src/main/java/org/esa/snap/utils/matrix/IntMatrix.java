@@ -1,4 +1,4 @@
-package org.esa.s2tbx.fcc.trimming;
+package org.esa.snap.utils.matrix;
 
 /**
  * @author Jean Coravu

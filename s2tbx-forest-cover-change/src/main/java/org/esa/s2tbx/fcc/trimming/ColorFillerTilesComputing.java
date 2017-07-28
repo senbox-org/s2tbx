@@ -5,6 +5,7 @@ import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.utils.AbstractImageTilesParallelComputing;
+import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;

@@ -33,8 +33,15 @@ public abstract class AbstractMatrixCellsParallelComputing {
             MatrixCellRunnable segmentationRunnable = new MatrixCellRunnable(this);
             threadPool.execute(segmentationRunnable);
         }
-        execute();
-        waitToFinish();
+        try {
+            execute();
+        } catch (Exception exception) {
+            synchronized (this) {
+                this.threadException = exception;
+            }
+        } finally {
+            waitToFinish();
+        }
     }
 
     private synchronized void incrementThreadCounter() {

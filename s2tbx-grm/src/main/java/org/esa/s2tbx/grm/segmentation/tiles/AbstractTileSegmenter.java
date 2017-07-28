@@ -94,6 +94,17 @@ public abstract class AbstractTileSegmenter {
         return AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, margin, this.imageWidth, this.imageHeight);
     }
 
+    public final void checkTemporaryTileFiles(int iteration, int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int rowIndex, int columnIndex) throws IOException {
+        ProcessingTile tileToCheck = buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Check tile temporary files: row index: " + rowIndex + ", column index: " + columnIndex+", iteration: "+iteration+", bounds: " +tileRegionToString(tileToCheck.getRegion()));
+        }
+
+        readGraph(tileToCheck.getNodeFileName(), tileToCheck.getEdgeFileName());
+        readGraphMarginsFromTile(tileToCheck);
+    }
+
     private void deleteTemporaryFolder() {
         boolean deleted = FileUtils.deleteTree(this.temporaryFolder);
         if (logger.isLoggable(Level.FINE)) {
@@ -147,6 +158,19 @@ public abstract class AbstractTileSegmenter {
     }
 
     private void runSecondPartialSegmentationInParallel(int iteration) throws Exception {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "---------------- Before checking the tiles temporary files: iteration:" +iteration);
+        }
+
+        CheckTemporarySegmentationFilesHelper helper = new CheckTemporarySegmentationFilesHelper(iteration, this);
+        helper.executeInParallel(0, null);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "---------------- After checking the tiles temporary files: iteration:" +iteration);
+        }
+
         // log a message
         int tileCountX = this.tileSegmenterMetadata.getComputedTileCountX();
         int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
@@ -327,7 +351,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Second tile segmentation: row index: " + rowIndex + ", column index: " + columnIndex+", iteration: "+iteration+", region: " +tileRegionToString(currentTile.getRegion())+", iterations for each second segmentation: "+this.iterationsForEachSecondSegmentation);
+            logger.log(Level.FINE, "Second tile segmentation: row index: " + rowIndex + ", column index: " + columnIndex+", iteration: "+iteration+", bounds: " +tileRegionToString(currentTile.getRegion())+", iterations for each second segmentation: "+this.iterationsForEachSecondSegmentation);
         }
 
         Graph graph = readGraphSecondPartialSegmentation(currentTile, rowIndex, columnIndex, tileCountX, tileCountY);
