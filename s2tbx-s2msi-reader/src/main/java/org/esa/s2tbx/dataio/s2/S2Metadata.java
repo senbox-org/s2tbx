@@ -23,18 +23,44 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
+import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 
+import javax.media.jai.BorderExtender;
+import javax.media.jai.BorderExtenderConstant;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.MosaicDescriptor;
+import javax.media.jai.operator.TranslateDescriptor;
+import java.awt.*;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.awt.image.DataBuffer.TYPE_FLOAT;
 
 /**
  * Represents the Sentinel-2 MSI XML metadata header file.
@@ -90,6 +116,15 @@ public abstract class S2Metadata {
 
     public List<Tile> getTileList() {
         return tileList;
+    }
+
+    public ArrayList<String> getOrderedTileList() {
+        ArrayList<String> orderedTileList = new ArrayList<>(17);
+        for(Tile tile : this.getTileList()) {
+            orderedTileList.add(tile.getId());
+        }
+        java.util.Collections.sort(orderedTileList);
+        return orderedTileList;
     }
 
     public void resetTileList() {
@@ -233,6 +268,37 @@ public abstract class S2Metadata {
             return viewingIncidenceAnglesGrids;
         }
 
+        public AnglesGrid getViewingIncidenceAnglesGrids(int bandId,int detectorId) {
+            if(viewingIncidenceAnglesGrids == null) {
+                return null;
+            }
+
+            int width = 23;
+            int height = 23;
+            for(int i=0;i<viewingIncidenceAnglesGrids.length;i++) {
+                width = viewingIncidenceAnglesGrids[i].azimuth.length;
+                height = viewingIncidenceAnglesGrids[i].azimuth[0].length;
+                if(viewingIncidenceAnglesGrids[i].bandId == bandId && viewingIncidenceAnglesGrids[i].detectorId == detectorId) {
+                    return viewingIncidenceAnglesGrids[i];
+                }
+            }
+
+            AnglesGrid emptyGrid = new AnglesGrid();
+            emptyGrid.setBandId(bandId);
+            emptyGrid.setDetectorId(detectorId);
+            float[][] azimuth = new float[width][height];
+            float[][] zenith = new float[width][height];
+            for(int i= 0;i<width;i++) {
+                for(int j= 0;j<height;j++) {
+                    azimuth[i][j] = Float.NaN;
+                    zenith[i][j] = Float.NaN;
+                }
+            }
+            emptyGrid.setAzimuth(azimuth);
+            emptyGrid.setZenith(zenith);
+            return emptyGrid;
+        }
+
         public void setViewingIncidenceAnglesGrids(AnglesGrid[] viewingIncidenceAnglesGrids) {
             this.viewingIncidenceAnglesGrids = viewingIncidenceAnglesGrids;
         }
@@ -355,6 +421,76 @@ public abstract class S2Metadata {
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
+
+        public int getWidth() {
+            if(zenith == null || zenith[0] == null) {
+                return 0;
+            }
+            int zenithWidth = zenith[0].length;
+
+            if(azimuth == null || azimuth[0] == null) {
+                return 0;
+            }
+            int azimuthWidth = azimuth[0].length;
+            if(azimuthWidth != zenithWidth) {
+                return 0;
+            }
+            return azimuthWidth;
+        }
+
+        public int getHeight() {
+            if(zenith == null) {
+                return 0;
+            }
+            int zenithHeight = zenith.length;
+            if(azimuth == null) {
+                return 0;
+            }
+            int azimuthHeight = azimuth.length;
+            if(azimuthHeight != zenithHeight) {
+                return 0;
+            }
+            return zenithHeight;
+        }
+
+        public float[] getZenithArray() {
+            int gridWidth = getWidth();
+            int gridHeight = getHeight();
+            if(gridWidth == 0 || gridHeight == 0) {
+                return null;
+            }
+            float[] viewingZeniths = new float[gridWidth * gridHeight];
+            Arrays.fill(viewingZeniths, Float.NaN);
+            for (int y = 0; y < gridHeight; y++) {
+                for (int x = 0; x < gridWidth; x++) {
+                    final int index = y * gridWidth + x;
+                    if (isValidAngle(zenith[y][x])) {
+                        viewingZeniths[index] = zenith[y][x];
+                    }
+                }
+            }
+            return viewingZeniths;
+        }
+
+        public float[] getAzimuthArray() {
+            int gridWidth = getWidth();
+            int gridHeight = getHeight();
+            if(gridWidth == 0 || gridHeight == 0) {
+                return null;
+            }
+            float[] viewingAzimuths = new float[gridWidth * gridHeight];
+            Arrays.fill(viewingAzimuths, Float.NaN);
+            for (int y = 0; y < gridHeight; y++) {
+                for (int x = 0; x < gridWidth; x++) {
+                    final int index = y * gridWidth + x;
+                    if (isValidAngle(azimuth[y][x])) {
+                        viewingAzimuths[index] = azimuth[y][x];
+                    }
+                }
+            }
+            return viewingAzimuths;
+        }
+
     }
 
     public static class TileGeometry {
@@ -678,4 +814,253 @@ public abstract class S2Metadata {
             return 0;
         }
     }
+
+
+    /**
+     * Get the angles grid of one detector (it mosaics the different tiles)
+     * @param bandId
+     * @param detectorId
+     * @return S2BandAnglesGridByDetector[2] -> [0]: Zenith     [1]: Azimuth
+     */
+    public S2BandAnglesGridByDetector[] getAnglesGridByDetector(int bandId, int detectorId) {
+
+        HashMap<Tile, S2BandAnglesGrid> zenithAnglesGridsMap = new HashMap<>();
+        HashMap<Tile, S2BandAnglesGrid> azimuthAnglesGridsMap = new HashMap<>();
+        for (S2Metadata.Tile tile : tileList) {
+            S2BandAnglesGridByDetector[] bandAnglesGridByDetector = getAnglesGridByDetectorByTile(tile.getId(),bandId,detectorId);
+            if (bandAnglesGridByDetector != null) {
+                zenithAnglesGridsMap.put(tile, bandAnglesGridByDetector[0]);
+                azimuthAnglesGridsMap.put(tile, bandAnglesGridByDetector[1]);
+            }
+        }
+
+        S2BandAnglesGrid zenithAngleGrid = getMosaicS2BandAnglesGrid(zenithAnglesGridsMap);
+        S2BandAnglesGrid azimuthAngleGrid = getMosaicS2BandAnglesGrid(azimuthAnglesGridsMap);
+
+        S2BandAnglesGridByDetector[] bandAnglesGridByDetector = new S2BandAnglesGridByDetector[2];
+        bandAnglesGridByDetector[0] = new S2BandAnglesGridByDetector(Sentinel2OrthoProductReader.VIEW_ZENITH_PREFIX, S2BandConstants.getBand(bandId), detectorId, zenithAngleGrid.getWidth(), zenithAngleGrid.getHeight(), zenithAngleGrid.originX, zenithAngleGrid.originY, zenithAngleGrid.getResX(), zenithAngleGrid.getResY(), zenithAngleGrid.getData());
+        bandAnglesGridByDetector[1] = new S2BandAnglesGridByDetector(Sentinel2OrthoProductReader.VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(bandId), detectorId, azimuthAngleGrid.getWidth(), azimuthAngleGrid.getHeight(), azimuthAngleGrid.originX, azimuthAngleGrid.originY, azimuthAngleGrid.getResX(), azimuthAngleGrid.getResY(), azimuthAngleGrid.getData());
+
+        return bandAnglesGridByDetector;
+    }
+
+    /**
+     *
+     * @param tileId
+     * @param bandId
+     * @param detectorId
+     * @return S2BandAnglesGridByDetector[2] -> [0]: Zenith     [1]: Azimuth
+     */
+    public S2BandAnglesGridByDetector[] getAnglesGridByDetectorByTile(String tileId, int bandId, int detectorId) {
+        try {
+            Tile tile = getTile(tileId);
+            int resolution = tile.getAnglesResolution();
+            int gridHeight = tile.getSunAnglesGrid().getHeight();
+            int gridWidth = tile.getSunAnglesGrid().getWidth();
+
+            S2Metadata.AnglesGrid viewingIncidenceAnglesGrid = tile.getViewingIncidenceAnglesGrids(bandId, detectorId);
+            if (viewingIncidenceAnglesGrid == null) {
+                return null;
+            }
+
+            float[] viewingZeniths = viewingIncidenceAnglesGrid.getZenithArray();
+            float[] viewingAzimuths = viewingIncidenceAnglesGrid.getAzimuthArray();
+
+
+            S2BandAnglesGridByDetector[] bandAnglesGridByDetector = new S2BandAnglesGridByDetector[2];
+            bandAnglesGridByDetector[0] = new S2BandAnglesGridByDetector(Sentinel2OrthoProductReader.VIEW_ZENITH_PREFIX, S2BandConstants.getBand(bandId), detectorId, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingZeniths);
+            bandAnglesGridByDetector[1] = new S2BandAnglesGridByDetector(Sentinel2OrthoProductReader.VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(bandId), detectorId, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingAzimuths);
+
+            return bandAnglesGridByDetector;
+        } catch (IOException e) {
+            //do nothing
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param tileId
+     * @return [0]: Zenith     [1]: Azimuth
+     */
+    public S2BandAnglesGrid[] getSunAnglesGridByTile(String tileId) {
+        try {
+            Tile tile = getTile(tileId);
+            int resolution = tile.getAnglesResolution();
+            int gridHeight = tile.getSunAnglesGrid().getHeight();
+            int gridWidth = tile.getSunAnglesGrid().getWidth();
+
+            S2Metadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
+            if (sunAnglesGrid == null) {
+                return null;
+            }
+
+            float[] sunZeniths = sunAnglesGrid.getZenithArray();
+            float[] sunAzimuths = sunAnglesGrid.getAzimuthArray();
+
+
+            S2BandAnglesGrid[] sunBandAnglesGrid = new S2BandAnglesGrid[2];
+            sunBandAnglesGrid[0] = new S2BandAnglesGrid(Sentinel2OrthoProductReader.SUN_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, sunZeniths);
+            sunBandAnglesGrid[1] = new S2BandAnglesGrid(Sentinel2OrthoProductReader.SUN_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, sunAzimuths);
+
+            return sunBandAnglesGrid;
+        } catch (IOException e) {
+            //do nothing
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @return [0]: Zenith     [1]: Azimuth
+     */
+    public S2BandAnglesGrid[] getSunAnglesGrid() {
+
+        HashMap<Tile, S2BandAnglesGrid> zenithAnglesGridsMap = new HashMap<>();
+        HashMap<Tile, S2BandAnglesGrid> azimuthAnglesGridsMap = new HashMap<>();
+        for (S2Metadata.Tile tile : tileList) {
+            S2BandAnglesGrid[] bandAnglesGrid = getSunAnglesGridByTile(tile.getId());
+            if (bandAnglesGrid != null) {
+                zenithAnglesGridsMap.put(tile, bandAnglesGrid[0]);
+                azimuthAnglesGridsMap.put(tile, bandAnglesGrid[1]);
+            }
+        }
+
+        S2BandAnglesGrid zenithAngleGrid = getMosaicS2BandAnglesGrid(zenithAnglesGridsMap);
+        S2BandAnglesGrid azimuthAngleGrid = getMosaicS2BandAnglesGrid(azimuthAnglesGridsMap);
+
+        S2BandAnglesGrid[] bandAnglesGrid = new S2BandAnglesGrid[2];
+        bandAnglesGrid[0] = new S2BandAnglesGrid(Sentinel2OrthoProductReader.SUN_ZENITH_PREFIX, null, zenithAngleGrid.getWidth(), zenithAngleGrid.getHeight(), zenithAngleGrid.originX, zenithAngleGrid.originY, zenithAngleGrid.getResX(), zenithAngleGrid.getResY(), zenithAngleGrid.getData());
+        bandAnglesGrid[1] = new S2BandAnglesGrid(Sentinel2OrthoProductReader.SUN_AZIMUTH_PREFIX, null, azimuthAngleGrid.getWidth(), azimuthAngleGrid.getHeight(), azimuthAngleGrid.originX, azimuthAngleGrid.originY, azimuthAngleGrid.getResX(), azimuthAngleGrid.getResY(), azimuthAngleGrid.getData());
+
+        return bandAnglesGrid;
+    }
+
+    /**
+     * Mosaic the angles grids.
+     * It uses INTERP_NEAREST instead of BILINEAR to avoid removing some rows/columns
+     * If the rows/columns are removed, we will have to extrapolate more and the error will be probably higher
+     * @param anglesGridsMap
+     * @return
+     */
+    private S2BandAnglesGrid getMosaicS2BandAnglesGrid(HashMap<S2Metadata.Tile, S2BandAnglesGrid> anglesGridsMap) {
+        float masterOriginX = Float.MAX_VALUE, masterOriginY = -Float.MAX_VALUE;
+
+        int widthAnglesTile = 0;
+        int heightAnglesTile = 0;
+
+        //angle band resolution
+        float resX = 0;
+        float resY = 0;
+
+        TileGeometry tileGeometry = null;
+
+        for(Map.Entry<S2Metadata.Tile, S2BandAnglesGrid> entry : anglesGridsMap.entrySet()) {
+            S2BandAnglesGrid s2BandAnglesGrid = entry.getValue();
+            S2Metadata.Tile tile = entry.getKey();
+
+            if (entry.getValue() != null) {
+                widthAnglesTile = s2BandAnglesGrid.getWidth();
+                heightAnglesTile = s2BandAnglesGrid.getHeight();
+                resX = s2BandAnglesGrid.getResX();
+                resY = s2BandAnglesGrid.getResY();
+                tileGeometry = tile.getTileGeometry(S2SpatialResolution.R10M);
+                if (masterOriginX > s2BandAnglesGrid.originX) masterOriginX = s2BandAnglesGrid.originX;
+                if (masterOriginY < s2BandAnglesGrid.originY) masterOriginY = s2BandAnglesGrid.originY;
+            }
+        }
+
+
+        if (masterOriginX == Float.MAX_VALUE || masterOriginY == -Float.MAX_VALUE || resX == 0 || resY == 0 || widthAnglesTile == 0 || heightAnglesTile == 0) {
+            return null;
+        }
+
+        //Mosaic of planar image
+        ArrayList<PlanarImage> tileImages = new ArrayList<>();
+
+        for (String tileId : getOrderedTileList()) {
+
+            int[] bandOffsets = {0};
+            SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, widthAnglesTile, heightAnglesTile, 1, widthAnglesTile, bandOffsets);
+            ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
+            PlanarImage opImage;
+
+            DataBuffer buffer = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
+            // Wrap it in a writable raster
+            WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
+            S2BandAnglesGrid bandAnglesGrid = null;
+            try {
+                bandAnglesGrid = anglesGridsMap.get(getTile(tileId));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(bandAnglesGrid == null) {
+                continue;
+            }
+
+
+            raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrid.getData());
+
+
+            // And finally create an image with this raster
+            BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
+            opImage = PlanarImage.wrapRenderedImage(image);
+
+            // Translate tile
+            float transX=(bandAnglesGrid.originX-masterOriginX)/bandAnglesGrid.getResX();
+            float transY=(bandAnglesGrid.originY-masterOriginY)/bandAnglesGrid.getResY();
+
+            RenderingHints hints=new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
+            hints.put(JAI.KEY_BORDER_EXTENDER, new BorderExtenderConstant(new double[]{Double.NaN}));
+            opImage = TranslateDescriptor.create(opImage,
+                                                       transX,
+                                                       -transY,
+                                                       Interpolation.getInstance(Interpolation.INTERP_NEAREST), hints);
+            //Use nearestNeighbour because bilinear delete the borders
+            tileImages.add(opImage);
+        }
+
+        ImageLayout imageLayout = new ImageLayout();
+        imageLayout.setMinX(0);
+        imageLayout.setMinY(0);
+        imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+        imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
+        imageLayout.setTileGridXOffset(0);
+        imageLayout.setTileGridYOffset(0);
+
+        RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,JAI.getDefaultInstance().getTileCache());
+        hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+
+        RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
+                                                            MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                            null, null, new double[][] {{-1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
+                                                            hints);
+
+        ImageLayout imageLayout2 = new ImageLayout();
+        imageLayout2.setMinX(0);
+        imageLayout2.setMinY(0);
+        imageLayout2.setTileWidth(mosaicOp.getWidth());
+        imageLayout2.setTileHeight(mosaicOp.getHeight());
+        imageLayout2.setTileGridXOffset(0);
+        imageLayout2.setTileGridYOffset(0);
+
+        RenderingHints hints2 = new RenderingHints(JAI.KEY_TILE_CACHE,JAI.getDefaultInstance().getTileCache());
+        hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout2);
+        mosaicOp.setRenderingHints(hints2);
+
+        DataBuffer dataBuffer = mosaicOp.getData().getDataBuffer();
+        float[] array = new float[mosaicOp.getWidth()* mosaicOp.getHeight()];
+        for (int i = 0; i< mosaicOp.getWidth()* mosaicOp.getHeight(); i++) {
+            array[i] = dataBuffer.getElemFloat(i);
+        }
+
+        S2BandAnglesGrid bandAnglesGrid = new S2BandAnglesGrid("mosaic", null, mosaicOp.getWidth(), mosaicOp.getHeight(), masterOriginX, masterOriginY, resX, resY, array);
+        return bandAnglesGrid;
+    }
+
+    private static boolean isValidAngle(float value) {
+        return !Float.isNaN(value) && !Float.isInfinite(value);
+    }
+
 }

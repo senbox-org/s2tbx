@@ -146,6 +146,7 @@
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.apache.commons.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.s2.*</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
