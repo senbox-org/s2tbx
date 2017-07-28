@@ -13,7 +13,7 @@ public final class PixelStatistic {
     }
 
     public int getTotalNumberPixels() {
-        return totalNumberPixels;
+        return this.totalNumberPixels;
     }
 
     public void incrementTotalNumberPixels(){
@@ -21,10 +21,14 @@ public final class PixelStatistic {
     }
 
     public int getPixelsInRange() {
-        return pixelsInRage;
+        return this.pixelsInRage;
     }
 
     public void incrementPixelsInRange(){
         this.pixelsInRage++;
+    }
+
+    public float computePixelsPercentage() {
+        return ((float)this.pixelsInRage/(float)this.totalNumberPixels) * 100.0f;
     }
 }

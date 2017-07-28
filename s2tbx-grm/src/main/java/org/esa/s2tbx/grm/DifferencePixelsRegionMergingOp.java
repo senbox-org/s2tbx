@@ -104,58 +104,58 @@ public class DifferencePixelsRegionMergingOp extends AbstractRegionMergingOp {
                                           float spectralWeight, float shapeWeight)
                                           throws Exception {
 
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("mergingCostCriterion", mergingCostCriterion);
-        parameters.put("regionMergingCriterion", regionMergingCriterion);
-        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
-        parameters.put("threshold", threshold);
-        parameters.put("spectralWeight", spectralWeight);
-        parameters.put("shapeWeight", shapeWeight);
-        parameters.put("currentSourceBandNames", currentSourceBandNames);
-        parameters.put("previousSourceBandNames", previousSourceBandNames);
-
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("currentSourceProduct", currentSourceProduct);
-        sourceProducts.put("previousSourceProduct", previousSourceProduct);
-        DifferencePixelsRegionMergingOp regionComputingOp = (DifferencePixelsRegionMergingOp)GPF.getDefaultInstance().createOperator("DifferencePixelsRegionMergingOp", parameters, sourceProducts, null);
-        Product targetProduct = regionComputingOp.getTargetProduct();
-
-        OperatorExecutor executor = OperatorExecutor.create(regionComputingOp);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-
-        return targetProduct;
-
-//        //TODO Jean remove
-//        Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
-//        logger.setLevel(Level.FINE);
+//        Map<String, Object> parameters = new HashMap<>();
+//        parameters.put("mergingCostCriterion", mergingCostCriterion);
+//        parameters.put("regionMergingCriterion", regionMergingCriterion);
+//        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
+//        parameters.put("threshold", threshold);
+//        parameters.put("spectralWeight", spectralWeight);
+//        parameters.put("shapeWeight", shapeWeight);
+//        parameters.put("currentSourceBandNames", currentSourceBandNames);
+//        parameters.put("previousSourceBandNames", previousSourceBandNames);
 //
-//        Dimension imageSize = new Dimension(currentSourceProduct.getSceneRasterWidth(), currentSourceProduct.getSceneRasterHeight());
-//        Dimension tileSize = JAI.getDefaultTileSize();
+//        Map<String, Product> sourceProducts = new HashMap<>();
+//        sourceProducts.put("currentSourceProduct", currentSourceProduct);
+//        sourceProducts.put("previousSourceProduct", previousSourceProduct);
+//        DifferencePixelsRegionMergingOp regionComputingOp = (DifferencePixelsRegionMergingOp)GPF.getDefaultInstance().createOperator("DifferencePixelsRegionMergingOp", parameters, sourceProducts, null);
+//        Product targetProduct = regionComputingOp.getTargetProduct();
 //
-//        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion,
-//                                                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight, imageSize, tileSize);
-//
-//        long startTime = System.currentTimeMillis();
-//        tileSegmenter.logStartSegmentation(startTime);
-//
-//        tileSegmenter.runDifferenceFirstSegmentationsInParallel(currentSourceProduct, currentSourceBandNames, previousSourceProduct, previousSourceBandNames);
-//        AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
-//        Band productTargetBand = segmenter.buildBandData("band_1");
-//
-//        tileSegmenter.logFinishSegmentation(startTime, segmenter);
-//
-//        segmenter.getGraph().doClose();
-//        segmenter = null;
-//        tileSegmenter = null;
-//        System.gc();
-//
-//        Product targetProduct = new Product(currentSourceProduct.getName() + "_grm", currentSourceProduct.getProductType(), productTargetBand.getRasterWidth(), productTargetBand.getRasterHeight());
-//        targetProduct.setPreferredTileSize(tileSize);
-//        ProductUtils.copyGeoCoding(currentSourceProduct, targetProduct);
-//        productTargetBand.getSourceImage();
-//        targetProduct.addBand(productTargetBand);
+//        OperatorExecutor executor = OperatorExecutor.create(regionComputingOp);
+//        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
 //
 //        return targetProduct;
+
+        //TODO Jean remove
+        Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
+        logger.setLevel(Level.FINE);
+
+        Dimension imageSize = new Dimension(currentSourceProduct.getSceneRasterWidth(), currentSourceProduct.getSceneRasterHeight());
+        Dimension tileSize = JAI.getDefaultTileSize();
+
+        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion,
+                                                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight, imageSize, tileSize);
+
+        long startTime = System.currentTimeMillis();
+        tileSegmenter.logStartSegmentation(startTime);
+
+        tileSegmenter.runDifferenceFirstSegmentationsInParallel(currentSourceProduct, currentSourceBandNames, previousSourceProduct, previousSourceBandNames);
+        AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
+        Band productTargetBand = segmenter.buildBandData("band_1");
+
+        tileSegmenter.logFinishSegmentation(startTime, segmenter);
+
+        segmenter.getGraph().doClose();
+        segmenter = null;
+        tileSegmenter = null;
+        System.gc();
+
+        Product targetProduct = new Product(currentSourceProduct.getName() + "_grm", currentSourceProduct.getProductType(), productTargetBand.getRasterWidth(), productTargetBand.getRasterHeight());
+        targetProduct.setPreferredTileSize(tileSize);
+        ProductUtils.copyGeoCoding(currentSourceProduct, targetProduct);
+        productTargetBand.getSourceImage();
+        targetProduct.addBand(productTargetBand);
+
+        return targetProduct;
     }
 
     public static class Spi extends OperatorSpi {

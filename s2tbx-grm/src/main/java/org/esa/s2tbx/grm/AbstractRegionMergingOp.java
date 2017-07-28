@@ -171,7 +171,7 @@ public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
     protected void finishSegmentation(AbstractSegmenter segmenter) {
     }
 
-    private static AbstractTileSegmenter buildTileSegmenter(int threadCount, Executor threadPool, String mergingCostCriterion, String regionMergingCriterion,
+    protected static AbstractTileSegmenter buildTileSegmenter(int threadCount, Executor threadPool, String mergingCostCriterion, String regionMergingCriterion,
                                                               int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
                                                               float shapeWeight, Dimension imageSize, Dimension tileSize)
             throws IOException {

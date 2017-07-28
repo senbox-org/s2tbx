@@ -15,12 +15,13 @@ import java.util.logging.Logger;
 public class TrimmingRegionTilesComputing extends AbstractRegionParallelComputing {
     private static final Logger logger = Logger.getLogger(TrimmingRegionTilesComputing.class.getName());
 
-    private final Product segmentationSourceProduct;
+    private final IntMatrix segmentationSourceProduct;
     private final Product sourceProduct;
     private final int[] sourceBandIndices;
 
-    public TrimmingRegionTilesComputing(Product segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
-        super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
+    public TrimmingRegionTilesComputing(IntMatrix segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
+//        super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
+        super(segmentationSourceProduct.getColumnCount(), segmentationSourceProduct.getRowCount(), tileWidth, tileHeight);
 
         this.segmentationSourceProduct = segmentationSourceProduct;
         this.sourceProduct = sourceProduct;
@@ -38,13 +39,13 @@ public class TrimmingRegionTilesComputing extends AbstractRegionParallelComputin
         Band secondBand = this.sourceProduct.getBandAt(this.sourceBandIndices[1]);
         Band thirdBand = this.sourceProduct.getBandAt(this.sourceBandIndices[2]);
 
-        Band segmentationBand = this.segmentationSourceProduct.getBandAt(0);
+//        Band segmentationBand = this.segmentationSourceProduct.getBandAt(0);
 
         int tileBottomY = tileTopY + tileHeight;
         int tileRightX = tileLeftX + tileWidth;
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
-                int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
+                int segmentationPixelValue = this.segmentationSourceProduct.getValueAt(y, x);
                 if (segmentationPixelValue != ForestCoverChangeConstants.NO_DATA_VALUE) {
                     float a = firstBand.getSampleFloat(x, y);
                     float b = secondBand.getSampleFloat(x, y);
