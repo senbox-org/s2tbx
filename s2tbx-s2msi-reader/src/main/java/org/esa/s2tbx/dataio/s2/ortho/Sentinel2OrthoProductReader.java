@@ -91,14 +91,15 @@ import static org.esa.snap.utils.DateHelper.parseDate;
  */
 public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader {
 
-    static final String VIEW_ZENITH_PREFIX = "view_zenith";
-    static final String VIEW_AZIMUTH_PREFIX = "view_azimuth";
-    static final String SUN_ZENITH_PREFIX = "sun_zenith";
-    static final String SUN_AZIMUTH_PREFIX = "sun_azimuth";
+    public static final String VIEW_ZENITH_PREFIX = "view_zenith";
+    public static final String VIEW_AZIMUTH_PREFIX = "view_azimuth";
+    public static final String SUN_ZENITH_PREFIX = "sun_zenith";
+    public static final String SUN_AZIMUTH_PREFIX = "sun_azimuth";
 
 
     private final String epsgCode;
     protected final Logger logger;
+    private S2Metadata metadataHeader = null;
 
     public Sentinel2OrthoProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
         super(readerPlugIn);
@@ -112,6 +113,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     protected abstract String getReaderCacheDir();
+
+    public S2Metadata getMetadataHeader() {
+        return metadataHeader;
+    }
 
     protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException;
 
@@ -170,7 +175,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         //final String aFilter = filterTileId;
 
-        S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode, !foundProductMetadata);
+        metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode, !foundProductMetadata);
         SystemUtils.LOG.fine(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
