@@ -19,17 +19,18 @@ public class TrimmingRegionTilesComputing extends AbstractRegionParallelComputin
     private final Product sourceProduct;
     private final int[] sourceBandIndices;
 
-    public TrimmingRegionTilesComputing(IntMatrix segmentationSourceProduct, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
-//        super(segmentationSourceProduct.getSceneRasterWidth(), segmentationSourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
-        super(segmentationSourceProduct.getColumnCount(), segmentationSourceProduct.getRowCount(), tileWidth, tileHeight);
+    public TrimmingRegionTilesComputing(IntMatrix segmentationMatrix, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
+        super(segmentationMatrix.getColumnCount(), segmentationMatrix.getRowCount(), tileWidth, tileHeight);
 
-        this.segmentationSourceProduct = segmentationSourceProduct;
+        this.segmentationSourceProduct = segmentationMatrix;
         this.sourceProduct = sourceProduct;
         this.sourceBandIndices = sourceBandIndices;
     }
 
     @Override
-    protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IOException, IllegalAccessException {
+    protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex)
+                           throws IOException, IllegalAccessException {
+
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Trimming statistics for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
@@ -38,8 +39,6 @@ public class TrimmingRegionTilesComputing extends AbstractRegionParallelComputin
         Band firstBand = this.sourceProduct.getBandAt(this.sourceBandIndices[0]);
         Band secondBand = this.sourceProduct.getBandAt(this.sourceBandIndices[1]);
         Band thirdBand = this.sourceProduct.getBandAt(this.sourceBandIndices[2]);
-
-//        Band segmentationBand = this.segmentationSourceProduct.getBandAt(0);
 
         int tileBottomY = tileTopY + tileHeight;
         int tileRightX = tileLeftX + tileWidth;

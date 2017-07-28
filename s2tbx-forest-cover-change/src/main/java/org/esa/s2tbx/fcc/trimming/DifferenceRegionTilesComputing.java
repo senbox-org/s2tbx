@@ -16,18 +16,18 @@ import java.util.logging.Logger;
 public class DifferenceRegionTilesComputing extends AbstractRegionParallelComputing {
     private static final Logger logger = Logger.getLogger(DifferenceRegionTilesComputing.class.getName());
 
-    private final Product differenceSegmentationProduct;
+    private final IntMatrix differenceSegmentationMatrix;
     private final Product currentSourceProduct;
     private final Product previousSourceProduct;
     private final IntMatrix unionMask;
     private final int[] sourceBandIndices;
 
-    public DifferenceRegionTilesComputing(Product differenceSegmentationProduct, Product currentSourceProduct, Product previousSourceProduct,
+    public DifferenceRegionTilesComputing(IntMatrix differenceSegmentationMatrix, Product currentSourceProduct, Product previousSourceProduct,
                                           IntMatrix unionMask, int[] sourceBandIndices, Dimension tileSize) {
 
-        super(differenceSegmentationProduct.getSceneRasterWidth(), differenceSegmentationProduct.getSceneRasterHeight(), tileSize.width, tileSize.height);
+        super(differenceSegmentationMatrix.getColumnCount(), differenceSegmentationMatrix.getRowCount(), tileSize.width, tileSize.height);
 
-        this.differenceSegmentationProduct = differenceSegmentationProduct;
+        this.differenceSegmentationMatrix = differenceSegmentationMatrix;
         this.currentSourceProduct = currentSourceProduct;
         this.previousSourceProduct = previousSourceProduct;
         this.unionMask = unionMask;
@@ -35,7 +35,9 @@ public class DifferenceRegionTilesComputing extends AbstractRegionParallelComput
     }
 
     @Override
-    protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IOException, IllegalAccessException {
+    protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex)
+                           throws IOException, IllegalAccessException {
+
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Difference trimming statistics for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
@@ -49,16 +51,12 @@ public class DifferenceRegionTilesComputing extends AbstractRegionParallelComput
         Band secondPreviousBand = this.previousSourceProduct.getBandAt(this.sourceBandIndices[1]);
         Band thirdPreviousBand = this.previousSourceProduct.getBandAt(this.sourceBandIndices[2]);
 
-        Band segmentationBand = this.differenceSegmentationProduct.getBandAt(0);
-//        Band unionBand = this.unionMask.getBandAt(0);
-
         int tileBottomY = tileTopY + tileHeight;
         int tileRightX = tileLeftX + tileWidth;
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
-                //if (unionBand.getSampleFloat(x, y) != ForestCoverChangeConstants.NO_DATA_VALUE) {
                 if (this.unionMask.getValueAt(y, x) != ForestCoverChangeConstants.NO_DATA_VALUE) {
-                    int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
+                    int segmentationPixelValue = this.differenceSegmentationMatrix.getValueAt(y, x);
 
 //                    float a = firstCurrentBand.getSampleFloat(x, y) - firstPreviousBand.getSampleFloat(x, y);
 //                    float b = secondCurrentBand.getSampleFloat(x, y) - secondPreviousBand.getSampleFloat(x, y);

@@ -457,7 +457,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             try {
                 long t0 = System.currentTimeMillis();
 
-
                 forestCoverChange.doExecute(SubProgressMonitor.create(pm, 95));
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();
@@ -470,8 +469,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 product = targetProduct;
 
                 saveTime = System.currentTimeMillis() - t0;
-                if (model.isOpenInAppSelected()) {
-                    File targetFile = model.getProductFile();
+                File targetFile = model.getProductFile();
+                if (model.isOpenInAppSelected() && targetFile != null) {
                     if (!targetFile.exists()) {
                         targetFile = targetProduct.getFileLocation();
                     }

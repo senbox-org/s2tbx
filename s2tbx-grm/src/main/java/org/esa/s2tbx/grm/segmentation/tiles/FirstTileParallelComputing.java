@@ -17,12 +17,12 @@ import java.io.IOException;
 /**
  * @author Jean Coravu
  */
-public class TileFirstSegmentationHelper extends AbstractImageTilesParallelComputing {
+public class FirstTileParallelComputing extends AbstractImageTilesParallelComputing {
     private final AbstractTileSegmenter tileSegmenter;
     private final Product sourceProduct;
     private final String[] sourceBandNames;
 
-    public TileFirstSegmentationHelper(Product sourceProduct, String[] sourceBandNames, AbstractTileSegmenter tileSegmenter) {
+    public FirstTileParallelComputing(Product sourceProduct, String[] sourceBandNames, AbstractTileSegmenter tileSegmenter) {
         super(tileSegmenter.getImageWidth(), tileSegmenter.getImageHeight(), tileSegmenter.getTileWidth(), tileSegmenter.getTileHeight());
 
         this.tileSegmenter = tileSegmenter;

@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.Tile;
+import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +52,21 @@ public abstract class AbstractSegmenter {
         Band targetBand = new Band(bandName, ProductData.TYPE_INT32, this.imageWidth, this.imageHeight);
         fillBandData(targetBand);
         return targetBand;
+    }
+
+    public final IntMatrix buildOutputMatrix() {
+        int widthCount = this.imageWidth + 2;
+        int heightCount = this.imageHeight + 2;
+        int[][] marker = buildMarkerMatrix(widthCount, heightCount);
+
+        IntMatrix result = new IntMatrix(this.imageHeight, this.imageWidth);
+        for (int y = 1; y < heightCount - 1; y++) {
+            for (int x = 1; x < widthCount - 1; x++) {
+                result.setValueAt(y-1, x-1, marker[y][x]);
+            }
+        }
+
+        return result;
     }
 
     public final void fillBandData(Band targetBand) {

@@ -15,6 +15,7 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
+import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
 import java.awt.*;
@@ -98,10 +99,10 @@ public class DifferencePixelsRegionMergingOp extends AbstractRegionMergingOp {
         }
     }
 
-    public static Product runSegmentation(int threadCount, Executor threadPool, Product currentSourceProduct, String[] currentSourceBandNames,
-                                          Product previousSourceProduct, String[] previousSourceBandNames, String mergingCostCriterion,
-                                          String regionMergingCriterion, int totalIterationsForSecondSegmentation, float threshold,
-                                          float spectralWeight, float shapeWeight)
+    public static IntMatrix runSegmentation(int threadCount, Executor threadPool, Product currentSourceProduct, String[] currentSourceBandNames,
+                                            Product previousSourceProduct, String[] previousSourceBandNames, String mergingCostCriterion,
+                                            String regionMergingCriterion, int totalIterationsForSecondSegmentation, float threshold,
+                                            float spectralWeight, float shapeWeight)
                                           throws Exception {
 
 //        Map<String, Object> parameters = new HashMap<>();
@@ -140,7 +141,7 @@ public class DifferencePixelsRegionMergingOp extends AbstractRegionMergingOp {
 
         tileSegmenter.runDifferenceFirstSegmentationsInParallel(currentSourceProduct, currentSourceBandNames, previousSourceProduct, previousSourceBandNames);
         AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
-        Band productTargetBand = segmenter.buildBandData("band_1");
+        IntMatrix result = segmenter.buildOutputMatrix();
 
         tileSegmenter.logFinishSegmentation(startTime, segmenter);
 
@@ -149,13 +150,7 @@ public class DifferencePixelsRegionMergingOp extends AbstractRegionMergingOp {
         tileSegmenter = null;
         System.gc();
 
-        Product targetProduct = new Product(currentSourceProduct.getName() + "_grm", currentSourceProduct.getProductType(), productTargetBand.getRasterWidth(), productTargetBand.getRasterHeight());
-        targetProduct.setPreferredTileSize(tileSize);
-        ProductUtils.copyGeoCoding(currentSourceProduct, targetProduct);
-        productTargetBand.getSourceImage();
-        targetProduct.addBand(productTargetBand);
-
-        return targetProduct;
+        return result;
     }
 
     public static class Spi extends OperatorSpi {

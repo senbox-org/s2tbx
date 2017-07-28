@@ -21,6 +21,7 @@ import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
 import org.esa.snap.utils.ObjectMemory;
+import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
 import java.awt.*;
@@ -114,9 +115,9 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         return sourceTiles;
     }
 
-    public static Product runSegmentation(int threadCount, Executor threadPool, Product sourceProduct, String[] sourceBandNames,
-                                          String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
-                                          float threshold, float spectralWeight, float shapeWeight)
+    public static IntMatrix runSegmentation(int threadCount, Executor threadPool, Product sourceProduct, String[] sourceBandNames,
+                                            String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
+                                            float threshold, float spectralWeight, float shapeWeight)
                                           throws Exception {
 
 //        Map<String, Object> parameters = new HashMap<>();
@@ -153,7 +154,7 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
 
         tileSegmenter.runFirstSegmentationsInParallel(sourceProduct, sourceBandNames);
         AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
-        Band productTargetBand = segmenter.buildBandData("band_1");
+        IntMatrix result = segmenter.buildOutputMatrix();
 
         tileSegmenter.logFinishSegmentation(startTime, segmenter);
 
@@ -162,13 +163,7 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         tileSegmenter = null;
         System.gc();
 
-        Product targetProduct = new Product(sourceProduct.getName() + "_grm", sourceProduct.getProductType(), productTargetBand.getRasterWidth(), productTargetBand.getRasterHeight());
-        targetProduct.setPreferredTileSize(tileSize);
-        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
-        productTargetBand.getSourceImage();
-        targetProduct.addBand(productTargetBand);
-
-        return targetProduct;
+        return result;
     }
 
     public static class Spi extends OperatorSpi {

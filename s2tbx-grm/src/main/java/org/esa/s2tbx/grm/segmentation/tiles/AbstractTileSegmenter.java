@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.grm.segmentation.*;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.BufferedInputStreamWrapper;
 import org.esa.snap.utils.BufferedOutputStreamWrapper;
@@ -16,7 +15,6 @@ import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,12 +93,11 @@ public abstract class AbstractTileSegmenter {
     }
 
     public final void checkTemporaryTileFiles(int iteration, int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int rowIndex, int columnIndex) throws IOException {
-        ProcessingTile tileToCheck = buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
-
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Check tile temporary files: row index: " + rowIndex + ", column index: " + columnIndex+", iteration: "+iteration+", bounds: " +tileRegionToString(tileToCheck.getRegion()));
+            logger.log(Level.FINE, "Check tile temporary files: row index: " + rowIndex + ", column index: " + columnIndex+", iteration: "+iteration+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
+        ProcessingTile tileToCheck = buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
         readGraph(tileToCheck.getNodeFileName(), tileToCheck.getEdgeFileName());
         readGraphMarginsFromTile(tileToCheck);
     }
@@ -144,7 +141,7 @@ public abstract class AbstractTileSegmenter {
     }
 
     public final void runFirstSegmentationsInParallel(Product sourceProduct, String[] sourceBandNames) throws Exception {
-        TileFirstSegmentationHelper tileFirstSegmentationHelper = new TileFirstSegmentationHelper(sourceProduct, sourceBandNames, this);
+        FirstTileParallelComputing tileFirstSegmentationHelper = new FirstTileParallelComputing(sourceProduct, sourceBandNames, this);
         tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 
@@ -152,7 +149,7 @@ public abstract class AbstractTileSegmenter {
                                                                 Product previousSourceProduct, String[] previousSourceBandNames)
                                                                 throws Exception {
 
-        DifferenceTileFirstSegmentationHelper tileFirstSegmentationHelper = new DifferenceTileFirstSegmentationHelper(currentSourceProduct, currentSourceBandNames,
+        DifferenceFirstTileParallelComputing tileFirstSegmentationHelper = new DifferenceFirstTileParallelComputing(currentSourceProduct, currentSourceBandNames,
                                                                                      previousSourceProduct, previousSourceBandNames, this);
         tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
@@ -160,15 +157,15 @@ public abstract class AbstractTileSegmenter {
     private void runSecondPartialSegmentationInParallel(int iteration) throws Exception {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "---------------- Before checking the tiles temporary files: iteration:" +iteration);
+            logger.log(Level.FINE, "Before checking the tiles temporary files: iteration:" +iteration);
         }
 
-        CheckTemporarySegmentationFilesHelper helper = new CheckTemporarySegmentationFilesHelper(iteration, this);
+        CheckTemporaryTileFilesParallelComputing helper = new CheckTemporaryTileFilesParallelComputing(iteration, this);
         helper.executeInParallel(0, null);
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "---------------- After checking the tiles temporary files: iteration:" +iteration);
+            logger.log(Level.FINE, "After checking the tiles temporary files: iteration:" +iteration);
         }
 
         // log a message
@@ -190,14 +187,14 @@ public abstract class AbstractTileSegmenter {
         }
 
         // during this step we extract the stability margin for the next round
-        TileStabilityMarginSecondSegmentationHelper segmentationHelper = new TileStabilityMarginSecondSegmentationHelper(iteration, numberOfNeighborLayers, this);
+        SecondTileStabilityMarginParallelComputing segmentationHelper = new SecondTileStabilityMarginParallelComputing(iteration, numberOfNeighborLayers, this);
         segmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 
     private void runSecondSegmentationInParallel(int iteration, int threadCount, Executor threadPool, int numberOfNeighborLayers)
                                        throws Exception {
 
-        TileSecondSegmentationHelper tileSecondSegmentationHelper = new TileSecondSegmentationHelper(iteration, numberOfNeighborLayers, this);
+        SecondTileParallelComputing tileSecondSegmentationHelper = new SecondTileParallelComputing(iteration, numberOfNeighborLayers, this);
         tileSecondSegmentationHelper.executeInParallel(threadCount, threadPool);
     }
 

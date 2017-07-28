@@ -18,15 +18,15 @@ import java.io.IOException;
 /**
  * @author Jean Coravu
  */
-public class DifferenceTileFirstSegmentationHelper extends AbstractImageTilesParallelComputing {
+public class DifferenceFirstTileParallelComputing extends AbstractImageTilesParallelComputing {
     private final AbstractTileSegmenter tileSegmenter;
     private final Product currentSourceProduct;
     private final Product previousSourceProduct;
     private final String[] currentSourceBandNames;
     private final String[] previousSourceBandNames;
 
-    public DifferenceTileFirstSegmentationHelper(Product currentSourceProduct, String[] currentSourceBandNames, Product previousSourceProduct,
-                                                 String[] previousSourceBandNames, AbstractTileSegmenter tileSegmenter) {
+    public DifferenceFirstTileParallelComputing(Product currentSourceProduct, String[] currentSourceBandNames, Product previousSourceProduct,
+                                                String[] previousSourceBandNames, AbstractTileSegmenter tileSegmenter) {
 
         super(tileSegmenter.getImageWidth(), tileSegmenter.getImageHeight(), tileSegmenter.getTileWidth(), tileSegmenter.getTileHeight());
 
