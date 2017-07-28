@@ -102,36 +102,10 @@ public class DifferencePixelsRegionMergingOp extends AbstractRegionMergingOp {
     public static IntMatrix runSegmentation(int threadCount, Executor threadPool, Product currentSourceProduct, String[] currentSourceBandNames,
                                             Product previousSourceProduct, String[] previousSourceBandNames, String mergingCostCriterion,
                                             String regionMergingCriterion, int totalIterationsForSecondSegmentation, float threshold,
-                                            float spectralWeight, float shapeWeight)
-                                          throws Exception {
-
-//        Map<String, Object> parameters = new HashMap<>();
-//        parameters.put("mergingCostCriterion", mergingCostCriterion);
-//        parameters.put("regionMergingCriterion", regionMergingCriterion);
-//        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
-//        parameters.put("threshold", threshold);
-//        parameters.put("spectralWeight", spectralWeight);
-//        parameters.put("shapeWeight", shapeWeight);
-//        parameters.put("currentSourceBandNames", currentSourceBandNames);
-//        parameters.put("previousSourceBandNames", previousSourceBandNames);
-//
-//        Map<String, Product> sourceProducts = new HashMap<>();
-//        sourceProducts.put("currentSourceProduct", currentSourceProduct);
-//        sourceProducts.put("previousSourceProduct", previousSourceProduct);
-//        DifferencePixelsRegionMergingOp regionComputingOp = (DifferencePixelsRegionMergingOp)GPF.getDefaultInstance().createOperator("DifferencePixelsRegionMergingOp", parameters, sourceProducts, null);
-//        Product targetProduct = regionComputingOp.getTargetProduct();
-//
-//        OperatorExecutor executor = OperatorExecutor.create(regionComputingOp);
-//        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-//
-//        return targetProduct;
-
-        //TODO Jean remove
-        Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
-        logger.setLevel(Level.FINE);
+                                            float spectralWeight, float shapeWeight, Dimension tileSize)
+                                            throws Exception {
 
         Dimension imageSize = new Dimension(currentSourceProduct.getSceneRasterWidth(), currentSourceProduct.getSceneRasterHeight());
-        Dimension tileSize = JAI.getDefaultTileSize();
 
         AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion,
                                                     totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight, imageSize, tileSize);

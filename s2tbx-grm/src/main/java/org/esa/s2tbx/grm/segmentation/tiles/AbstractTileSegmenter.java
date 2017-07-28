@@ -157,7 +157,7 @@ public abstract class AbstractTileSegmenter {
     private void runSecondPartialSegmentationInParallel(int iteration) throws Exception {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Before checking the tiles temporary files: iteration:" +iteration);
+            logger.log(Level.FINE, "Before checking the tiles temporary files: iteration: " +iteration);
         }
 
         CheckTemporaryTileFilesParallelComputing helper = new CheckTemporaryTileFilesParallelComputing(iteration, this);
@@ -165,7 +165,7 @@ public abstract class AbstractTileSegmenter {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "After checking the tiles temporary files: iteration:" +iteration);
+            logger.log(Level.FINE, "After checking the tiles temporary files: iteration: " +iteration);
         }
 
         // log a message

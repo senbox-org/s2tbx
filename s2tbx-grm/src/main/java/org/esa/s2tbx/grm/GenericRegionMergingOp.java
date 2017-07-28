@@ -117,34 +117,10 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
 
     public static IntMatrix runSegmentation(int threadCount, Executor threadPool, Product sourceProduct, String[] sourceBandNames,
                                             String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
-                                            float threshold, float spectralWeight, float shapeWeight)
-                                          throws Exception {
-
-//        Map<String, Object> parameters = new HashMap<>();
-//        parameters.put("mergingCostCriterion", mergingCostCriterion);
-//        parameters.put("regionMergingCriterion", regionMergingCriterion);
-//        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
-//        parameters.put("threshold", threshold);
-//        parameters.put("spectralWeight", spectralWeight);
-//        parameters.put("shapeWeight", shapeWeight);
-//        parameters.put("sourceBandNames", sourceBandNames);
-//
-//        Map<String, Product> sourceProducts = new HashMap<>();
-//        sourceProducts.put("sourceProduct", sourceProduct);
-//        GenericRegionMergingOp regionComputingOp = (GenericRegionMergingOp) GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
-//        Product targetProduct = regionComputingOp.getTargetProduct();
-//
-//        OperatorExecutor executor = OperatorExecutor.create(regionComputingOp);
-//        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-//
-//        return targetProduct;
-
-        //TODO Jean remove
-        Logger logger = Logger.getLogger("org.esa.s2tbx.grm");
-        logger.setLevel(Level.FINE);
+                                            float threshold, float spectralWeight, float shapeWeight, Dimension tileSize)
+                                            throws Exception {
 
         Dimension imageSize = new Dimension(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-        Dimension tileSize = JAI.getDefaultTileSize();
 
         AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
                                                                  threshold, spectralWeight, shapeWeight, imageSize, tileSize);

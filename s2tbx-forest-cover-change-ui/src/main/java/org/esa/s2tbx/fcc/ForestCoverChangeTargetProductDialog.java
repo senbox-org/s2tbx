@@ -469,12 +469,12 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 product = targetProduct;
 
                 saveTime = System.currentTimeMillis() - t0;
-                File targetFile = model.getProductFile();
-                if (model.isOpenInAppSelected() && targetFile != null) {
-                    if (!targetFile.exists()) {
+                if (model.isOpenInAppSelected()) {
+                    File targetFile = model.getProductFile();
+                    if (targetFile == null || !targetFile.exists()) {
                         targetFile = targetProduct.getFileLocation();
                     }
-                    if (targetFile.exists()) {
+                    if (targetFile != null && targetFile.exists()) {
                         product = ProductIO.readProduct(targetFile);
                         if (product == null) {
                             product = targetProduct; // todo - check - this cannot be ok!!! (nf)

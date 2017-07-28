@@ -19,18 +19,18 @@ public class DifferenceRegionTilesComputing extends AbstractRegionParallelComput
     private final IntMatrix differenceSegmentationMatrix;
     private final Product currentSourceProduct;
     private final Product previousSourceProduct;
-    private final IntMatrix unionMask;
+    private final IntMatrix unionMaskMatrix;
     private final int[] sourceBandIndices;
 
     public DifferenceRegionTilesComputing(IntMatrix differenceSegmentationMatrix, Product currentSourceProduct, Product previousSourceProduct,
-                                          IntMatrix unionMask, int[] sourceBandIndices, Dimension tileSize) {
+                                          IntMatrix unionMaskMatrix, int[] sourceBandIndices, Dimension tileSize) {
 
         super(differenceSegmentationMatrix.getColumnCount(), differenceSegmentationMatrix.getRowCount(), tileSize.width, tileSize.height);
 
         this.differenceSegmentationMatrix = differenceSegmentationMatrix;
         this.currentSourceProduct = currentSourceProduct;
         this.previousSourceProduct = previousSourceProduct;
-        this.unionMask = unionMask;
+        this.unionMaskMatrix = unionMaskMatrix;
         this.sourceBandIndices = sourceBandIndices;
     }
 
@@ -55,7 +55,7 @@ public class DifferenceRegionTilesComputing extends AbstractRegionParallelComput
         int tileRightX = tileLeftX + tileWidth;
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
-                if (this.unionMask.getValueAt(y, x) != ForestCoverChangeConstants.NO_DATA_VALUE) {
+                if (this.unionMaskMatrix.getValueAt(y, x) != ForestCoverChangeConstants.NO_DATA_VALUE) {
                     int segmentationPixelValue = this.differenceSegmentationMatrix.getValueAt(y, x);
 
 //                    float a = firstCurrentBand.getSampleFloat(x, y) - firstPreviousBand.getSampleFloat(x, y);

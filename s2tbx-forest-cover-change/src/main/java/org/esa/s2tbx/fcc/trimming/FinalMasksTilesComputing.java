@@ -22,10 +22,10 @@ public class FinalMasksTilesComputing extends AbstractImageTilesParallelComputin
     private final IntMatrix unionMaskMatrix;
     private final IntSet differenceTrimmingSet;
 
-    public FinalMasksTilesComputing(IntMatrix differenceSegmentationMartrix, IntMatrix unionMaskMatrix, IntSet differenceTrimmingSet, int tileWidth, int tileHeight) {
-        super(differenceSegmentationMartrix.getColumnCount(), differenceSegmentationMartrix.getRowCount(), tileWidth, tileHeight);
+    public FinalMasksTilesComputing(IntMatrix differenceSegmentationMatrix, IntMatrix unionMaskMatrix, IntSet differenceTrimmingSet, int tileWidth, int tileHeight) {
+        super(differenceSegmentationMatrix.getColumnCount(), differenceSegmentationMatrix.getRowCount(), tileWidth, tileHeight);
 
-        this.differenceSegmentationMatrix = differenceSegmentationMartrix;
+        this.differenceSegmentationMatrix = differenceSegmentationMatrix;
         this.unionMaskMatrix = unionMaskMatrix;
         this.differenceTrimmingSet = differenceTrimmingSet;
 

@@ -6,6 +6,7 @@ import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.utils.AbstractImageTilesParallelComputing;
+import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -18,14 +19,14 @@ import java.util.logging.Logger;
 public class ObjectsSelectionTilesComputing extends AbstractImageTilesParallelComputing {
     private static final Logger logger = Logger.getLogger(ObjectsSelectionTilesComputing.class.getName());
 
-    private final Product sourceProduct;
+    private final IntMatrix segmentationMatrix;
     private final Product landCoverProduct;
     private final Int2ObjectMap<PixelStatistic> statistics;
 
-    public ObjectsSelectionTilesComputing(Product sourceProduct, Product landCoverProduct, int tileWidth, int tileHeight) {
-        super(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
+    public ObjectsSelectionTilesComputing(IntMatrix segmentationMatrix, Product landCoverProduct, int tileWidth, int tileHeight) {
+        super(segmentationMatrix.getColumnCount(), segmentationMatrix.getRowCount(), tileWidth, tileHeight);
 
-        this.sourceProduct = sourceProduct;
+        this.segmentationMatrix = segmentationMatrix;
         this.statistics = new Int2ObjectLinkedOpenHashMap<PixelStatistic>();
 
         this.landCoverProduct = landCoverProduct;
@@ -40,14 +41,15 @@ public class ObjectsSelectionTilesComputing extends AbstractImageTilesParallelCo
             logger.log(Level.FINE, "Object selection for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
-        Band segmentationBand = this.sourceProduct.getBandAt(0);
+//        Band segmentationBand = this.sourceProduct.getBandAt(0);
         Band landCoverBand = this.landCoverProduct.getBandAt(0);
 
         int tileBottomY = tileTopY + tileHeight;
         int tileRightX = tileLeftX + tileWidth;
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
-                int segmentationPixelValue = segmentationBand.getSampleInt(x, y);
+                int segmentationPixelValue = this.segmentationMatrix.getValueAt(y, x);
+                        //segmentationBand.getSampleInt(x, y);
                 int landCoverPixelValue = landCoverBand.getSampleInt(x, y);
                 synchronized (this.statistics) {
                     PixelStatistic pixel = this.statistics.get(segmentationPixelValue);
