@@ -317,6 +317,62 @@
           <notEmpty>false</notEmpty>
           <parameterType>RegularParameter</parameterType>
         </parameter>
+        <parameter>
+          <name>demDirectory</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>NONE</defaultValue>
+          <description>should be either a directory in the sen2cor home folder or &apos;NONE&apos;. If NONE, no DEM will be used</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>demReference</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</defaultValue>
+          <description>Ignored if DEM is NONE. A DEM will be downloaded from this ref, if no local DEM</description>
+          <valueSet>
+            <string>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>demUnit</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>0</defaultValue>
+          <description>(0=[m], 1=[dm], 2=[cm])</description>
+          <valueSet>
+            <string>0</string>
+            <string>1</string>
+            <string>2</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>adjacencyRange</name>
+          <dataType>java.lang.Float</dataType>
+          <defaultValue>1.000</defaultValue>
+          <description>Adjancency Range [km]</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>smoothWVMap</name>
+          <dataType>java.lang.Float</dataType>
+          <defaultValue>100.0</defaultValue>
+          <description>length of square box, [meters]</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
       </parameters>
       <template type="file">
         <file>Sen2Cor-gipp-template.xsl</file>
@@ -462,139 +518,57 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
-      <name>nbProcesses</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>1</defaultValue>
-      <description>Number of processes to spawn</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>medianFilter</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>0</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[2]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>aerosol</name>
+      <name>demDirectory</name>
       <dataType>java.lang.String</dataType>
-      <defaultValue>RURAL</defaultValue>
-      <description>Aerosol model</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[3]/valueSet"/>
+      <defaultValue>NONE</defaultValue>
+      <description>should be either a directory in the sen2cor home folder or &apos;NONE&apos;. If NONE, no DEM will be used</description>
+      <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
-      <name>midLat</name>
+      <name>demReference</name>
       <dataType>java.lang.String</dataType>
-      <defaultValue>SUMMER</defaultValue>
-      <description></description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[4]/valueSet"/>
+      <defaultValue>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</defaultValue>
+      <description>Ignored if DEM is NONE. A DEM will be downloaded from this ref, if no local DEM</description>
+      <valueSet>
+        <string>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</string>
+      </valueSet>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
-      <name>ozone</name>
+      <name>demUnit</name>
       <dataType>java.lang.String</dataType>
-      <defaultValue>h</defaultValue>
-      <description>Ozone content</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[5]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>wvCorrection</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>1</defaultValue>
-      <description>0=no correciton;1=940nm;2=1130nm;3=both;4=thermal</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[6]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>visUpdateMode</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>1</defaultValue>
-      <description>0=constant, 1=variable visibility</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[7]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>wvWatermask</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>1</defaultValue>
-      <description>0=not replaced;1=land-average;2=line-average</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[8]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>cirrusCorrection</name>
-      <dataType>java.lang.Integer</dataType>
       <defaultValue>0</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[9]/valueSet"/>
+      <description>(0=[m], 1=[dm], 2=[cm])</description>
+      <valueSet>
+        <string>0</string>
+        <string>1</string>
+        <string>2</string>
+      </valueSet>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
-      <name>brdfCorrection</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>0</defaultValue>
-      <description>0=no correction</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[10]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>brdfLower</name>
+      <name>adjacencyRange</name>
       <dataType>java.lang.Float</dataType>
-      <defaultValue>0.22</defaultValue>
-      <description>0.2 to 0.25 is adequate, in extreme cases of overcorrection g=0.1 should be applied</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[11]/valueSet"/>
+      <defaultValue>1.0</defaultValue>
+      <description>Adjancency Range [km]</description>
+      <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
-      <name>visibility</name>
+      <name>smoothWVMap</name>
       <dataType>java.lang.Float</dataType>
-      <defaultValue>23.0</defaultValue>
-      <description>5 &lt;= visibility &lt;= 120</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[12]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>altitude</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>0.1</defaultValue>
-      <description></description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[13]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>wvThresCirrus</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>0.25</defaultValue>
-      <description>water vapor threshold to switch off cirrus algorithm [cm]Range: 0.1-1.0</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[14]/valueSet"/>
+      <defaultValue>100.0</defaultValue>
+      <description>length of square box, [meters]</description>
+      <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
@@ -642,7 +616,7 @@
       </parameters>
       <template type="simple">
         <contents>--target
-$targetLocation/Sen2Cor-2.4.0-Linux64</contents>
+          $targetLocation/Sen2Cor-2.4.0-Linux64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
@@ -676,7 +650,7 @@ $targetLocation/Sen2Cor-2.4.0-Linux64</contents>
       </parameters>
       <template type="simple">
         <contents>--target
-$targetLocation/Sen2Cor-2.4.0-Darwin64</contents>
+          $targetLocation/Sen2Cor-2.4.0-Darwin64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
