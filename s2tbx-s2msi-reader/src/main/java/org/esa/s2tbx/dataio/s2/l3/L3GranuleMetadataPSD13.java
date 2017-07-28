@@ -214,13 +214,16 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
 
     @Override
     public int getMaximumMosaicIndex() {
-        int maxIndex = 0;
-        for (String pviName : getAttributeValues(L3PSD13Constants.PATH_GRANULE_METADATA_PVI_FILENAME)) {
-            try {
-                int aux = Integer.parseInt(pviName.substring(pviName.lastIndexOf("_") + 1));
-                if (aux > maxIndex) maxIndex = aux;
-            } catch (Exception e) {
-                //do nothing
+        int maxIndex = 1;
+        String[] attributeValuesPVI = getAttributeValues(L3PSD13Constants.PATH_GRANULE_METADATA_PVI_FILENAME);
+        if(attributeValuesPVI != null) {
+            for (String pviName : attributeValuesPVI) {
+                try {
+                    int aux = Integer.parseInt(pviName.substring(pviName.lastIndexOf("_") + 1));
+                    if (aux > maxIndex) maxIndex = aux;
+                } catch (Exception e) {
+                    //do nothing
+                }
             }
         }
 
