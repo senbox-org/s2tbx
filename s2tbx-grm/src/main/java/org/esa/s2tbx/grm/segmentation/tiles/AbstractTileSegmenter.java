@@ -98,8 +98,32 @@ public abstract class AbstractTileSegmenter {
         }
 
         ProcessingTile tileToCheck = buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
-        readGraph(tileToCheck.getNodeFileName(), tileToCheck.getEdgeFileName());
-        readGraphMarginsFromTile(tileToCheck);
+        //readGraph(tileToCheck.getNodeFileName(), tileToCheck.getEdgeFileName());
+        //readGraphMarginsFromTile(tileToCheck);
+
+        StringBuilder exceptionMessage = new StringBuilder();
+
+        File nodesFile = new File(this.temporaryFolder, tileToCheck.getNodeFileName());
+        if (!nodesFile.exists()) {
+            exceptionMessage.append(" The nodes file '"+nodesFile.getName()+"' is missing.");
+        }
+        File edgesFile = new File(this.temporaryFolder, tileToCheck.getEdgeFileName());
+        if (!edgesFile.exists()) {
+            exceptionMessage.append(" The edges file '"+edgesFile.getName()+"' is missing.");
+        }
+
+        File nodeMarginsFile = new File(this.temporaryFolder, tileToCheck.getNodeMarginFileName());
+        if (!nodeMarginsFile.exists()) {
+            exceptionMessage.append(" The node margins file '"+nodeMarginsFile.getName()+"' is missing.");
+        }
+        File edgeMarginsFile = new File(this.temporaryFolder, tileToCheck.getEdgeMarginFileName());
+        if (!edgeMarginsFile.exists()) {
+            exceptionMessage.append(" The edge margins file '"+edgeMarginsFile.getName()+"' is missing.");
+        }
+        if (exceptionMessage.length() > 0) {
+            exceptionMessage.insert(0, "Missing tile temporary files: row index" + rowIndex+", column index: "+columnIndex+".");
+            throw new FileNotFoundException(exceptionMessage.toString());
+        }
     }
 
     private void deleteTemporaryFolder() {
