@@ -279,11 +279,31 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                     }
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
-
+                    boolean bFound = false;
                     VirtualPath path = productPath.resolve(imgFilename);
                     if (path.exists()) {
                         tilePathMap.put(tile.getId(), path);
-                    } else {
+                        bFound = true;
+                    } else if(path.getParent() != null ) { //Search a sibling containing the physicalBand name
+                        S2BandConstants bandConstant = S2BandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
+                        if(bandConstant != null) {
+                            VirtualPath[] otherPaths = path.getParent().listPaths(bandConstant.getFilenameBandId());
+                            if (otherPaths != null && otherPaths.length == 1) {
+                                tilePathMap.put(tile.getId(), otherPaths[0]);
+                                bFound = true;
+                            }
+                        } else { //TODO try specificbands
+                            S2SpecificBandConstants specificBandConstant = S2SpecificBandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
+                            if(specificBandConstant != null) {
+                                VirtualPath[] otherPaths = path.getParent().listPaths(specificBandConstant.getFilenameBandId());
+                                if (otherPaths != null && otherPaths.length == 1) {
+                                    tilePathMap.put(tile.getId(), otherPaths[0]);
+                                    bFound = true;
+                                }
+                            }
+                        }
+                    }
+                    if(!bFound) {
                         logger.warning(String.format("Warning: missing file %s\n", path.getFullPathString()));
                     }
                 }
