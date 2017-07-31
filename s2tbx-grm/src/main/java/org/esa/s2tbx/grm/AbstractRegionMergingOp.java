@@ -154,7 +154,7 @@ public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
         Rectangle targetRectangle = targetTile.getRectangle();
         ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
         TileDataSource[] sourceTiles = getSourceTiles(currentTile.getRegion());
-        this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
+        this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile, tileRowIndex, tileColumnIndex);
     }
 
     @Override

@@ -302,11 +302,7 @@ public class GenericRegionMergingOpTest {
 
         Product targetProduct = operator.getTargetProduct(); // initialize the operator
 
-        Dimension preferredTileSize = targetProduct.getPreferredTileSize();
-        assertNotNull(preferredTileSize);
-
-        Dimension newPreferredTileSize = new Dimension(preferredTileSize.width/2, preferredTileSize.height/2);
-        targetProduct.setPreferredTileSize(newPreferredTileSize);
+        assertNotNull(targetProduct.getPreferredTileSize());
 
         assertEquals(mergingCostCriterion, operator.getMergingCostCriterion());
         assertEquals(regionMergingCriterion, operator.getRegionMergingCriterion());

@@ -43,7 +43,7 @@ public class DifferenceFirstTileParallelComputing extends AbstractImageTilesPara
 
         ProcessingTile currentTile = this.tileSegmenter.buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
         TileDataSource[] sourceTiles = buildSourceTiles(currentTile.getRegion());
-        this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
+        this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile, localRowIndex, localColumnIndex);
     }
 
     private TileDataSource[] buildSourceTiles(BoundingBox tileRegion) {

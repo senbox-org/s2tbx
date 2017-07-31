@@ -37,6 +37,11 @@ public class TileSegmenterMetadata {
         return oldValue;
     }
 
+    public ProcessingTile removeTile(int rowIndex, int columnIndex) {
+        String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
+        return this.tilesMap.remove(key);
+    }
+
     public ProcessingTile getTileAt(int rowIndex, int columnIndex) {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
         return this.tilesMap.get(key);

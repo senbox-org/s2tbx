@@ -88,6 +88,8 @@ public abstract class AbstractTilesComputingOp extends Operator {
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Tile already computed: row index: "+tileRowIndex+", column index: "+tileColumnIndex+", bounds [x=" + targetRectangle.x+", y="+targetRectangle.y+", width="+targetRectangle.width+", height="+targetRectangle.height+"]");
             }
+            System.out.println("Tile already computed: row index: "+tileRowIndex+", column index: "+tileColumnIndex+", bounds [x=" + targetRectangle.x+", y="+targetRectangle.y+", width="+targetRectangle.width+", height="+targetRectangle.height+"]");
+
         }
     }
 

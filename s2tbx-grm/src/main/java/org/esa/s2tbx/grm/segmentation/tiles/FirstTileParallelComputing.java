@@ -34,7 +34,7 @@ public class FirstTileParallelComputing extends AbstractImageTilesParallelComput
     protected void runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex) throws IllegalAccessException, IOException, InterruptedException {
         ProcessingTile currentTile = this.tileSegmenter.buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
         TileDataSource[] sourceTiles = buildSourceTiles(currentTile.getRegion());
-        this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile);
+        this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile, localRowIndex, localColumnIndex);
     }
 
     private TileDataSource[] buildSourceTiles(BoundingBox tileRegion) {
