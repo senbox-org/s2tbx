@@ -135,7 +135,7 @@ public class ForestCoverChange {
         this.targetProduct.addBand(targetBand);
     }
 
-    public void doExecute(ProgressMonitor pm) throws OperatorException {
+    public void doExecute() throws OperatorException {
         long startTime = System.currentTimeMillis();
 
         if (logger.isLoggable(Level.FINE)) {

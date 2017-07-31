@@ -47,8 +47,6 @@ public class ColorFillerTilesComputing extends AbstractImageTilesParallelComputi
                 int segmentationValue = this.segmentationMatrix.getValueAt(y, x);
                 if (!this.validRegions.contains(segmentationValue)) {
                     segmentationValue = ForestCoverChangeConstants.NO_DATA_VALUE;
-                } else {
-                    System.out.println("");
                 }
                 synchronized (this.result) {
                     this.result.setValueAt(y, x, segmentationValue);

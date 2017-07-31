@@ -457,7 +457,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             try {
                 long t0 = System.currentTimeMillis();
 
-                forestCoverChange.doExecute(SubProgressMonitor.create(pm, 95));
+                forestCoverChange.doExecute();
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();
                     String formatName = model.getFormatName();
