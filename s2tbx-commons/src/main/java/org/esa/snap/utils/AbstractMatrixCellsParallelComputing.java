@@ -39,6 +39,10 @@ public abstract class AbstractMatrixCellsParallelComputing {
             synchronized (this) {
                 this.threadException = exception;
             }
+        } catch (Throwable throwable) {
+            synchronized (this) {
+                this.threadException = new Exception(throwable);
+            }
         } finally {
             waitToFinish();
         }
@@ -116,7 +120,10 @@ public abstract class AbstractMatrixCellsParallelComputing {
                 this.imageTilesHelper.execute();
             } catch (Exception exception) {
                 threadException = exception;
-                logger.log(Level.SEVERE, "Failed to execute the image tiles.", exception);
+                logger.log(Level.SEVERE, "Failed to execute the image tiles.", threadException);
+            } catch (Throwable throwable) {
+                threadException = new Exception(throwable);
+                logger.log(Level.SEVERE, "Failed to execute the image tiles.", threadException);
             } finally {
                 this.imageTilesHelper.decrementThreadCounter(threadException);
             }

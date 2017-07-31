@@ -27,8 +27,19 @@ public abstract class AbstractArrayCellsParallelComputing {
             ArrayCellsParallelComputingRunnable runnable = new ArrayCellsParallelComputingRunnable(this);
             threadPool.execute(runnable);
         }
-        execute();
-        waitToFinish();
+        try {
+            execute();
+        } catch (Exception exception) {
+            synchronized (this) {
+                this.threadException = exception;
+            }
+        } catch (Throwable throwable) {
+            synchronized (this) {
+                this.threadException = new Exception(throwable);
+            }
+        } finally {
+            waitToFinish();
+        }
     }
 
     private synchronized void incrementThreadCounter() {
@@ -91,7 +102,10 @@ public abstract class AbstractArrayCellsParallelComputing {
                 this.arrayCellsParallelComputing.execute();
             } catch (Exception exception) {
                 threadException = exception;
-                logger.log(Level.SEVERE, "Failed to compute the array cell.", exception);
+                logger.log(Level.SEVERE, "Failed to compute the array cell.", threadException);
+            } catch (Throwable throwable) {
+                threadException = new Exception(throwable);
+                logger.log(Level.SEVERE, "Failed to compute the array cell.", threadException);
             } finally {
                 this.arrayCellsParallelComputing.decrementThreadCounter(threadException);
             }
