@@ -121,7 +121,7 @@ public abstract class AbstractTileSegmenter {
             exceptionMessage.append(" The edge margins file '"+edgeMarginsFile.getName()+"' is missing.");
         }
         if (exceptionMessage.length() > 0) {
-            exceptionMessage.insert(0, "Missing tile temporary files: row index" + rowIndex+", column index: "+columnIndex+".");
+            exceptionMessage.insert(0, "Missing tile temporary files: row index: " + rowIndex+", column index: "+columnIndex+", iteration: "+iteration+".");
             throw new FileNotFoundException(exceptionMessage.toString());
         }
     }

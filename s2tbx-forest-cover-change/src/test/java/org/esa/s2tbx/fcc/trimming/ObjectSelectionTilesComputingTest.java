@@ -1,71 +1,66 @@
 package org.esa.s2tbx.fcc.trimming;
 
-import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.gpf.GPF;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
-import org.esa.snap.core.util.ProductUtils;
+import org.esa.snap.utils.matrix.IntMatrix;
 import org.junit.Test;
+
+import javax.media.jai.JAI;
+import java.awt.Dimension;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
-public class ObjectSelectionOpTest extends AbstractOpTest  {
+public class ObjectSelectionTilesComputingTest extends AbstractOpTest {
+
+    public ObjectSelectionTilesComputingTest() {
+    }
 
     @Test
-    public void testObObjectSelectionOp() throws IllegalAccessException, InstantiationException, ClassNotFoundException, IOException {
+    public void testFinalMasksTilesComputing() throws Exception {
+        Dimension tileSize = JAI.getDefaultTileSize();
+        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
+        ExecutorService threadPool = Executors.newCachedThreadPool();
 
-        Path folder = this.forestCoverChangeTestsFolderPath.resolve("object-selection");
         ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
+        Path folder = this.forestCoverChangeTestsFolderPath.resolve("object-selection");
+
         File segmentationProductFile = folder.resolve("S2A_20160713T125925_A005524_T35UMP_grm.dim").toFile();
-        Product sourceProduct = productReaderPlugIn.createReaderInstance().readProductNodes(segmentationProductFile, null);
+        Product segmentationProduct = productReaderPlugIn.createReaderInstance().readProductNodes(segmentationProductFile, null);
 
         File landCoverProductFile = folder.resolve("S2A_20160713T125925_A005524_T35UMP_grm_landCover.dim").toFile();
         Product landCoverProduct = productReaderPlugIn.createReaderInstance().readProductNodes(landCoverProductFile, null);
 
+        checkLandCoverProduct(landCoverProduct);
 
+        ProductBandToMatrixConverter converter = new ProductBandToMatrixConverter(segmentationProduct, tileSize.width, tileSize.height);
+        IntMatrix segmentationMatrix = converter.runTilesInParallel(threadCount, threadPool);
 
-        Map<String, Object> selectionParameters = new HashMap<>();
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("sourceProduct", sourceProduct);
-        sourceProducts.put("landCoverProduct", landCoverProduct);
-        ObjectsSelectionOp operator = (ObjectsSelectionOp) GPF.getDefaultInstance().createOperator("ObjectsSelectionOp", selectionParameters, sourceProducts, null);
-        operator.getTargetProduct();
-        OperatorExecutor executor = OperatorExecutor.create(operator);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-        Int2ObjectMap<PixelStatistic> statistics = operator.getStatistics();
-        checkLandCoverProduct(landCoverProduct, sourceProduct);
+        ObjectsSelectionTilesComputing tilesComputing = new ObjectsSelectionTilesComputing(segmentationMatrix, landCoverProduct, tileSize.width, tileSize.height);
+        Int2ObjectMap<PixelStatistic> statistics = tilesComputing.runTilesInParallel(threadCount, threadPool);
+
         checkStatistics(statistics);
     }
 
-    private static void checkLandCoverProduct(Product landCoverProduct, Product segmentationProduct) {
+    private static void checkLandCoverProduct(Product landCoverProduct) {
         assertNotNull(landCoverProduct);
         assertEquals(landCoverProduct.getName(), "S2A_20160713T125925_A005524_T35UMP_grm_landCover");
         assertEquals(landCoverProduct.getSceneRasterSize(), new Dimension(549, 549));
         assertEquals(landCoverProduct.getNumBands(), 1);
-        assertEquals(landCoverProduct.getProductType(), segmentationProduct.getProductType());
-        Band band1 = landCoverProduct.getBandAt(0);
-      checkTargetBand(band1);
-    }
 
-    private static void checkTargetBand(Band targetBand) {
+        Band targetBand = landCoverProduct.getBandAt(0);
         assertNotNull(targetBand);
         assertEquals("land_cover_CCILandCover-2015", targetBand.getName());
         assertEquals(ProductData.TYPE_INT16, targetBand.getDataType());
@@ -73,6 +68,8 @@ public class ObjectSelectionOpTest extends AbstractOpTest  {
     }
 
     private static void checkStatistics(Int2ObjectMap<PixelStatistic> statistics) {
+        assertNotNull(statistics);
+
         assertEquals(statistics.size(), 1512);
 
         PixelStatistic pixel = statistics.get(100);
@@ -110,7 +107,5 @@ public class ObjectSelectionOpTest extends AbstractOpTest  {
         pixel = statistics.get(900);
         assertEquals(67, pixel.getPixelsInRange());
         assertEquals(106, pixel.getTotalNumberPixels());
-
     }
-
 }

@@ -41,7 +41,6 @@ public class ObjectsSelectionTilesComputing extends AbstractImageTilesParallelCo
             logger.log(Level.FINE, "Object selection for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
-//        Band segmentationBand = this.sourceProduct.getBandAt(0);
         Band landCoverBand = this.landCoverProduct.getBandAt(0);
 
         int tileBottomY = tileTopY + tileHeight;
@@ -49,7 +48,6 @@ public class ObjectsSelectionTilesComputing extends AbstractImageTilesParallelCo
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
                 int segmentationPixelValue = this.segmentationMatrix.getValueAt(y, x);
-                        //segmentationBand.getSampleInt(x, y);
                 int landCoverPixelValue = landCoverBand.getSampleInt(x, y);
                 synchronized (this.statistics) {
                     PixelStatistic pixel = this.statistics.get(segmentationPixelValue);

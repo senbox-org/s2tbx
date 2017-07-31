@@ -1,43 +1,40 @@
 package org.esa.s2tbx.fcc.trimming;
 
-import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.gpf.GPF;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
-import org.esa.snap.utils.TestUtil;
-import org.junit.Before;
+import org.esa.snap.utils.matrix.IntMatrix;
 import org.junit.Test;
 
 import javax.media.jai.JAI;
+import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
- * @author Jean Coravu
+ * @author Razvan Dumitrascu
+ * @since 5.0.6
  */
-public class FinalMasksOpTest extends AbstractOpTest {
 
-    public FinalMasksOpTest() {
+public class FinalMasksTilesComputingTest extends AbstractOpTest {
+
+    public FinalMasksTilesComputingTest() {
     }
 
     @Test
-    public void testFinalMask() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
+    public void testFinalMasksTilesComputing() throws Exception {
+        Dimension tileSize = JAI.getDefaultTileSize();
+        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
+        ExecutorService threadPool = Executors.newCachedThreadPool();
+
         ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
         Path finalFolder = this.forestCoverChangeTestsFolderPath.resolve("final-mask");
@@ -45,32 +42,27 @@ public class FinalMasksOpTest extends AbstractOpTest {
         File differenceSegmentationProductFile = finalFolder.resolve("S2A_R093_T35UMP_20170628T092026_grm.dim").toFile();
         Product differenceSegmentationProduct = productReaderPlugIn.createReaderInstance().readProductNodes(differenceSegmentationProductFile, null);
 
+        ProductBandToMatrixConverter converter1 = new ProductBandToMatrixConverter(differenceSegmentationProduct, tileSize.width, tileSize.height);
+        IntMatrix differecenSegmentationMatrix = converter1.runTilesInParallel(threadCount, threadPool);
+
         File unionMaskProductFile = finalFolder.resolve("S2A_R093_T35UMP_20170628T092026_grm_fill_union.dim").toFile();
         Product unionMaskProduct = productReaderPlugIn.createReaderInstance().readProductNodes(unionMaskProductFile, null);
 
+        ProductBandToMatrixConverter converter2 = new ProductBandToMatrixConverter(unionMaskProduct, tileSize.width, tileSize.height);
+        IntMatrix unionMaskMatrix = converter2.runTilesInParallel(threadCount, threadPool);
+
         IntSet differenceTrimmingSet = buildDifferenceTrimmingSet();
 
-        int sceneWidth = differenceSegmentationProduct.getSceneRasterWidth();
-        int sceneHeight = differenceSegmentationProduct.getSceneRasterHeight();
-        Product outputTargetProduct = new Product("FinalMasks", "Type", sceneWidth, sceneHeight);
-        outputTargetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
-        Band outputTargetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
-        outputTargetProduct.addBand(outputTargetBand);
+        FinalMasksTilesComputing tilesComputing = new FinalMasksTilesComputing(differecenSegmentationMatrix, unionMaskMatrix, differenceTrimmingSet, tileSize.width, tileSize.height);
+        ProductData productData = tilesComputing.runTilesInParallel(threadCount, threadPool);
 
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("differenceTrimmingSet", differenceTrimmingSet);
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("differenceSegmentationProduct", differenceSegmentationProduct);
-        sourceProducts.put("unionMaskProduct", unionMaskProduct);
-        sourceProducts.put("outputTargetProduct", outputTargetProduct);
+        assertNotNull(productData);
 
-        FinalMasksOp operator = (FinalMasksOp) GPF.getDefaultInstance().createOperator("FinalMasksOp", parameters, sourceProducts, null);
-        Product targetProduct = operator.getTargetProduct();
-        OperatorExecutor executor = OperatorExecutor.create(operator);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
-
-        Band targetBand = targetProduct.getBandAt(0);
-        assertNotNull(targetBand);
+        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, differenceSegmentationProduct.getSceneRasterWidth(), differenceSegmentationProduct.getSceneRasterHeight());
+        targetBand.setData(productData);
+        // reset the source image of the target product
+        targetBand.setSourceImage(null);
+        targetBand.getSourceImage();
 
         assertEquals(0, targetBand.getSampleInt(64, 84));
         assertEquals(0, targetBand.getSampleInt(143, 160));

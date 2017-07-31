@@ -1,36 +1,37 @@
 package org.esa.s2tbx.fcc.trimming;
 
-import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.gpf.GPF;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
+import org.esa.snap.utils.matrix.IntMatrix;
 import org.junit.Test;
 
+import javax.media.jai.JAI;
+import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- * @author Jean Coravu
+ * Created by jcoravu on 31/7/2017.
  */
-public class UnionMasksOpTest extends AbstractOpTest {
+public class UnionMasksTilesComputingTest extends AbstractOpTest {
 
-    public UnionMasksOpTest() {
+    public UnionMasksTilesComputingTest() {
     }
 
     @Test
-    public void testUnionMask() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
+    public void testTrimmingRegionTilesComputing() throws Exception {
+        Dimension tileSize = JAI.getDefaultTileSize();
+        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
+        ExecutorService threadPool = Executors.newCachedThreadPool();
+
         ProductReaderPlugIn productReaderPlugIn = buildDimapProductReaderPlugIn();
 
         Path unionFolder = this.forestCoverChangeTestsFolderPath.resolve("union-mask");
@@ -44,35 +45,35 @@ public class UnionMasksOpTest extends AbstractOpTest {
         IntSet currentSegmentationTrimmingRegionKeys = buildCurrentSegmentationTrimmingRegionKeys();
         IntSet previousSegmentationTrimmingRegionKeys = buildPreviousSegmentationTrimmingRegionKeys();
 
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("currentSegmentationTrimmingRegionKeys", currentSegmentationTrimmingRegionKeys);
-        parameters.put("previousSegmentationTrimmingRegionKeys", previousSegmentationTrimmingRegionKeys);
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("currentSegmentationSourceProduct", currentSegmentationSourceProduct);
-        sourceProducts.put("previousSegmentationSourceProduct", previousSegmentationSourceProduct);
-        UnionMasksOp operator = (UnionMasksOp) GPF.getDefaultInstance().createOperator("UnionMasksOp", parameters, sourceProducts, null);
-        Product targetProduct = operator.getTargetProduct();
-        OperatorExecutor executor = OperatorExecutor.create(operator);
-        executor.execute(SubProgressMonitor.create(ProgressMonitor.NULL, 95));
+        ProductBandToMatrixConverter converter1 = new ProductBandToMatrixConverter(currentSegmentationSourceProduct, tileSize.width, tileSize.height);
+        IntMatrix currentSegmentationSourceMatrix = converter1.runTilesInParallel(threadCount, threadPool);
 
-        Band targetBand = targetProduct.getBandAt(0);
-        assertNotNull(targetBand);
+        ProductBandToMatrixConverter converter2 = new ProductBandToMatrixConverter(previousSegmentationSourceProduct, tileSize.width, tileSize.height);
+        IntMatrix previousSegmentationSourceMatrix = converter2.runTilesInParallel(threadCount, threadPool);
 
-        assertEquals(1, targetBand.getSampleInt(147, 163));
-        assertEquals(1, targetBand.getSampleInt(57, 237));
-        assertEquals(1, targetBand.getSampleInt(33, 434));
-        assertEquals(0, targetBand.getSampleInt(478, 51));
-        assertEquals(1, targetBand.getSampleInt(509, 212));
-        assertEquals(1, targetBand.getSampleInt(209, 533));
-        assertEquals(1, targetBand.getSampleInt(10, 508));
-        assertEquals(1, targetBand.getSampleInt(254, 476));
-        assertEquals(1, targetBand.getSampleInt(84, 343));
-        assertEquals(0, targetBand.getSampleInt(14, 468));
-        assertEquals(0, targetBand.getSampleInt(205, 139));
-        assertEquals(0, targetBand.getSampleInt(22, 325));
-        assertEquals(1, targetBand.getSampleInt(196, 397));
-        assertEquals(1, targetBand.getSampleInt(3, 433));
-        assertEquals(1, targetBand.getSampleInt(506, 214));
+        UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceMatrix, previousSegmentationSourceMatrix,
+                                                                               currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
+                                                                               tileSize.width, tileSize.height);
+        IntMatrix resultMatrix = tilesComputing.runTilesInParallel(threadCount, threadPool);
+
+        assertNotNull(resultMatrix);
+
+        assertEquals(1, resultMatrix.getValueAt(163, 147));
+
+        assertEquals(1, resultMatrix.getValueAt(237, 57));
+        assertEquals(1, resultMatrix.getValueAt(434, 33));
+        assertEquals(0, resultMatrix.getValueAt(51, 478));
+        assertEquals(1, resultMatrix.getValueAt(212, 509));
+        assertEquals(1, resultMatrix.getValueAt(533, 209));
+        assertEquals(1, resultMatrix.getValueAt(508, 10));
+        assertEquals(1, resultMatrix.getValueAt(476, 254));
+        assertEquals(1, resultMatrix.getValueAt(343, 84));
+        assertEquals(0, resultMatrix.getValueAt(468, 14));
+        assertEquals(0, resultMatrix.getValueAt(139, 205));
+        assertEquals(0, resultMatrix.getValueAt(325, 22));
+        assertEquals(1, resultMatrix.getValueAt(397, 196));
+        assertEquals(1, resultMatrix.getValueAt(433, 3));
+        assertEquals(1, resultMatrix.getValueAt(214, 506));
     }
 
     private static IntSet buildCurrentSegmentationTrimmingRegionKeys() {

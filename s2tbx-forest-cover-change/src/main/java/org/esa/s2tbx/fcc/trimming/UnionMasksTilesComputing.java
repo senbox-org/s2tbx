@@ -53,14 +53,14 @@ public class UnionMasksTilesComputing extends AbstractImageTilesParallelComputin
                 if (this.previousSegmentationTrimmingRegionKeys.contains(segmentationPixelValue)) {
                     int currentSegmentationPixelValue = this.currentSegmentationMatrix.getValueAt(y, x);
                     if (this.currentSegmentationTrimmingRegionKeys.contains(currentSegmentationPixelValue)) {
-                        segmentationPixelValue = 255;
+                        segmentationPixelValue = 1;//255;
                     } else {
-                        segmentationPixelValue = 50;
+                        segmentationPixelValue = 1;//50;
                     }
                 } else {
                     segmentationPixelValue = this.currentSegmentationMatrix.getValueAt(y, x);
                     if (this.currentSegmentationTrimmingRegionKeys.contains(segmentationPixelValue)) {
-                        segmentationPixelValue = 100;
+                        segmentationPixelValue = 1;//100;
                     } else {
                         segmentationPixelValue = ForestCoverChangeConstants.NO_DATA_VALUE;
                     }
