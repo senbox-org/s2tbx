@@ -78,7 +78,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
 
     //Templates L3
     public static String SPECTRAL_BAND_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator +"L03_{{TILENUMBER}}_{{DATATAKE_START}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";
-    public static String SCL_FILE_TEMPLATE_L3 = "QI_DATA" + File.separator + "L03_{{TILENUMBER}}_{{DATATAKE_START}}_SCL_{{RESOLUTION}}m.jp2";
+    public static String SCL_FILE_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m"  + File.separator + "L03_{{TILENUMBER}}_{{DATATAKE_START}}_SCL_{{RESOLUTION}}m.jp2";
     public static String MSC_FILE_TEMPLATE_L3 = "QI_DATA" + File.separator + "L03_{{TILENUMBER}}_{{DATATAKE_START}}_MSC_{{RESOLUTION}}m.jp2";
 
     private S2Config.Sentinel2InputType inputType = null;

@@ -286,10 +286,38 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
+                    boolean bFound = false;
                     File file = new File(productDir, imgFilename);
                     if (file.exists()) {
                         tileFileMap.put(tile.getId(), file);
-                    } else {
+                        bFound = true;
+                    } else if(file.getParent() != null ) { //Search a sibling containing the physicalBand name
+                        S2BandConstants bandConstant = S2BandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
+                        if(bandConstant != null) {
+                            String[] otherPaths = file.getParentFile().list(new FilenameFilter() {
+                                public boolean accept(File dir, String name) {
+                                    return name.toLowerCase().endsWith(".jp2") && name.contains(bandConstant.getFilenameBandId());
+                                }
+                            });
+                            if (otherPaths != null && otherPaths.length == 1) {
+                                tileFileMap.put(tile.getId(), file.toPath().resolveSibling(otherPaths[0]).toFile());
+                                bFound = true;
+                            }
+                        } else { //try specificbands
+                            S2SpecificBandConstants specificBandConstant = S2SpecificBandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
+                            if(specificBandConstant != null) {
+                                String[] otherPaths = file.getParentFile().list(new FilenameFilter() {
+                                    public boolean accept(File dir, String name) {
+                                        return name.toLowerCase().endsWith(".jp2") && name.contains(specificBandConstant.getFilenameBandId());
+                                    }
+                                });if (otherPaths != null && otherPaths.length == 1) {
+                                    tileFileMap.put(tile.getId(), file.toPath().resolveSibling(otherPaths[0]).toFile());
+                                    bFound = true;
+                                }
+                            }
+                        }
+                    }
+                    if(!bFound) {
                         logger.warning(String.format("Warning: missing file %s\n", file));
                     }
                 }
