@@ -714,7 +714,9 @@ public abstract class AbstractTileSegmenter {
                     int targetNodeId = edgesFileStream.readInt();
                     int boundary = edgesFileStream.readInt();
                     Node targetNode = nodesMap.get(targetNodeId);
-                    node.addEdge(targetNode, boundary);
+                    if (targetNode != null) {
+                        node.addEdge(targetNode, boundary);
+                    }
                 }
             }
 
