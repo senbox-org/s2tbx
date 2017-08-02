@@ -1,0 +1,43 @@
+<html>
+<head>
+    <title>Sentinel-2 Resampler</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">Resample Sentinel-2 Products</td>
+        <td class="header" align="right"><img src="images/snap_header.jpg" border=0></td>
+    </tr>
+</table>
+
+
+<p>
+    This option allows to resample Sentinel-2 products having into account
+    the particularities of the angle bands.
+</p>
+<p>
+    Because of the discontinuity of the angles when the detector changes,
+    the result of the resampling of the azimuth angle bands is not good from the
+    physics point of view, since it blurs the border between detectors when we use
+    a bilinear method. It is needed an specific processor to carry out the resampling
+    of these bands in a ?special? way.
+</p>
+
+<IMG SRC="./images/bilinearGenericInterpolation.png">
+<p>
+    This operator uses not only the angles bands but also the detector footprints.
+    By using the footprints, it is possible to ?isolate? the angles of each detector and
+    interpolate them without using the angle information of the adjacent detectors (which causes
+    the blurring). In the pixels closest to the border detector-detector, it is necessary to
+    extrapolate the data since not all data is available to carry out the interpolation with
+    bilinear method. Finally, the angles are joined again:
+</p>
+<IMG SRC="./images/s2resampler.png">
+
+<br>
+<hr>
+</body>
+</html>
