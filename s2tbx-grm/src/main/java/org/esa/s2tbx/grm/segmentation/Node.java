@@ -219,13 +219,14 @@ public abstract class Node {
         for (int i = 0; i < edgeCount; i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
+                // found the edge to the target node
                 this.edges.remove(i);
                 WeakReference<Edge> reference = new WeakReference<Edge>(edge);
                 reference.clear();
                 return i;
             }
         }
-        return -1;
+        return -1; // -1 => no edge removed
     }
 
     public final void removeEdgeToUnstableNode() {
@@ -242,11 +243,14 @@ public abstract class Node {
         int edgeCount = this.edges.size();
         for (int j = 0; j < edgeCount; j++) {
             Edge edge = this.edges.get(j);
-            edge.getTarget().removeEdge(this);
+            if (this != edge.getTarget()) {
+                // the target node is different
+                edge.getTarget().removeEdge(this);
+            }
             WeakReference<Edge> reference = new WeakReference<Edge>(edge);
             reference.clear();
         }
-        this.edges.removeItems(0, edgeCount);
+        this.edges.clearItems(); // remove all the edges
     }
 
     private void updateNeighbors(Node neighborToRemove) {

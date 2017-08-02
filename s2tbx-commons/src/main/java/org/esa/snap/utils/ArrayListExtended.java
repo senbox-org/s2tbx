@@ -14,4 +14,8 @@ public class ArrayListExtended<ItemType> extends ArrayList<ItemType> {
     public void removeItems(int fromIndexInclusive, int toIndexExclusive) {
         removeRange(fromIndexInclusive, toIndexExclusive);
     }
+
+    public void clearItems() {
+        removeRange(0, size());
+    }
 }
