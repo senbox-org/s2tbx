@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>5.0.7</version>
+    <version>5.0.8-SNAPSHOT</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -67,8 +67,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>5.0.8</snap.version>
-        <s2tbx.version>5.0.7</s2tbx.version>
+        <snap.version>5.0.9-SNAPSHOT</snap.version>
+        <s2tbx.version>5.0.8-SNAPSHOT</s2tbx.version>
         <tests.version>5.0.0</tests.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
