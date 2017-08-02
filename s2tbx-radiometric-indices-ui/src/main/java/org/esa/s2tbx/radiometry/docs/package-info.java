@@ -19,7 +19,7 @@
 /**
  * Created by dmihailescu on 08/11/2016.
  */
-@HelpSetRegistration(helpSet = "help.hs", position = 2330)
+@HelpSetRegistration(helpSet = "help.hs", position = 2370)
 package org.esa.s2tbx.radiometry.docs;
 
 import org.netbeans.api.javahelp.HelpSetRegistration;
