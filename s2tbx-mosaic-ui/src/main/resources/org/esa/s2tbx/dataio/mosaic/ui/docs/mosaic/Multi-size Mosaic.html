@@ -155,8 +155,11 @@ for single granule Sentinel-2 products. In case of old products (multi granule) 
             <p class="i1">
                 <b>Perform mosaic at native resolution:</b>
                 If selected the created mosaic image is at the native resolution of the source products, no resample
-                is produced on the source products. When "Perform mosaic at native resolution" check box is unselected the Mosaic is performed
-                at the resolution given by "Pixel size X" and "Pixel size Y" values.
+                is produced on the source products. For the mosaic to work the input products must have the same number of bands, the same
+                band names and the bands must have the same resolution. When "Perform mosaic at native resolution" check box is
+                unselected the Mosaic is performed at the resolution given by "Pixel size X" and "Pixel size Y" values. When at least one of the input products is uni-size
+                the "Perform mosaic at native resolution" check box is disabled. When all the input product are uni-size the old mosaic operator is called
+                and the "Perform mosaic at native resolution" check box is disabled also the Overlapping Methods is disabled.
             </p>
             <p class="i1">
                 <b>Overlapping Methods:</b>

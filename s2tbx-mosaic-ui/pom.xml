@@ -153,7 +153,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-binning</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

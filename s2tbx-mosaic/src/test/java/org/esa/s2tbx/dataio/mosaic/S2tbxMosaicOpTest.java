@@ -102,11 +102,11 @@ public class S2tbxMosaicOpTest {
         };
 
         Band b1Band = product.getBand("b1");
-        assertSampleValuesFloat(b1Band, geoPositions, new float[]{5.0f, 3.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b1Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, Float.NaN});
         Band b2Band = product.getBand("b2");
-        assertSampleValuesFloat(b2Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b2Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, 5.0f});
         Band b3Band = product.getBand("b3");
-        assertSampleValuesFloat(b3Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b3Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, 5.0f});
 
     }
     @Test
@@ -136,11 +136,11 @@ public class S2tbxMosaicOpTest {
         };
 
         Band b1Band = product.getBand("b1");
-        assertSampleValuesFloat(b1Band, geoPositions, new float[]{5.0f, 3.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b1Band, geoPositions, new float[]{5.0f, 3.0f, 5.0f, 5.0f, Float.NaN});
         Band b2Band = product.getBand("b2");
-        assertSampleValuesFloat(b2Band, geoPositions, new float[]{5.0f, 3.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b2Band, geoPositions, new float[]{5.0f, 3.0f, 5.0f, 5.0f, 5.0f});
         Band b3Band = product.getBand("b3");
-        assertSampleValuesFloat(b3Band, geoPositions, new float[]{5.0f, 3.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b3Band, geoPositions, new float[]{5.0f, 3.0f, 5.0f, 5.0f, 5.0f});
 
     }
     @Test
@@ -170,11 +170,11 @@ public class S2tbxMosaicOpTest {
         };
 
         Band b1Band = product.getBand("b1");
-        assertSampleValuesFloat(b1Band, geoPositions, new float[]{5.0f, 3.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b1Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, Float.NaN});
         Band b2Band = product.getBand("b2");
-        assertSampleValuesFloat(b2Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b2Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, 5.0f});
         Band b3Band = product.getBand("b3");
-        assertSampleValuesFloat(b3Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, 0.0f});
+        assertSampleValuesFloat(b3Band, geoPositions, new float[]{5.0f, 5.0f, 5.0f, 5.0f, 5.0f});
 
     }
     @Test
@@ -189,10 +189,10 @@ public class S2tbxMosaicOpTest {
                 new MosaicOp.Variable("b3", "b3")
         };
 
-        op.westBound = -20.0;
-        op.northBound = 20.0;
-        op.eastBound = 20.0;
-        op.southBound = -20.0;
+        op.westBound = -1.0;
+        op.northBound = 10.0;
+        op.eastBound = 10.0;
+        op.southBound = -10.0;
         op.pixelSizeX = 1.0;
         op.pixelSizeY = 1.0;
         op.nativeResolution = false;
@@ -201,15 +201,15 @@ public class S2tbxMosaicOpTest {
         final Product product = op.getTargetProduct();
 
         final GeoPos[] geoPositions = {
-                new GeoPos(0, 0), new GeoPos(1, 1), new GeoPos(9, 9), new GeoPos(9.5,9.5), new GeoPos(10.5,10.5),new GeoPos(14.5, 14.5),  new GeoPos(19.5, 19.5)
+                new GeoPos(0, 0), new GeoPos(3, 3), new GeoPos(4, 4), new GeoPos(6,6), new GeoPos(8,8),new GeoPos(10, 10),  new GeoPos(1, 1)
         };
 
         Band b1Band = product.getBand("b1");
-        assertSampleValuesFloat(b1Band, geoPositions, new float[]{0.0f, 2.0f, 1.0f, 0.5f, 1.75f, Float.NaN, Float.NaN});
+        assertSampleValuesFloat(b1Band, geoPositions, new float[]{2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 0.0f, 2.0f});
         Band b2Band = product.getBand("b2");
-        assertSampleValuesFloat(b2Band, geoPositions, new float[]{0.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 7.0f});
+        assertSampleValuesFloat(b2Band, geoPositions, new float[]{2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 0.0f, 2.0f});
         Band b3Band = product.getBand("b3");
-        assertSampleValuesFloat(b3Band, geoPositions, new float[]{0.0f, 2.0f, 2.0f, 2.0f, 2.0f, 0.5f, Float.NaN});
+        assertSampleValuesFloat(b3Band, geoPositions, new float[]{2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 0.0f, 2.0f});
 
     }
     @Test
@@ -224,10 +224,10 @@ public class S2tbxMosaicOpTest {
                 new MosaicOp.Variable("b3", "b3")
         };
 
-        op.westBound = -20.0;
-        op.northBound = 20.0;
-        op.eastBound = 20.0;
-        op.southBound = -20.0;
+        op.westBound = -10.0;
+        op.northBound = 10.0;
+        op.eastBound = 10.0;
+        op.southBound = -10.0;
         op.pixelSizeX = 1.0;
         op.pixelSizeY = 1.0;
         op.nativeResolution = false;
@@ -236,15 +236,15 @@ public class S2tbxMosaicOpTest {
         final Product product = op.getTargetProduct();
 
         final GeoPos[] geoPositions = {
-                new GeoPos(0, 0), new GeoPos(1, 1), new GeoPos(9, 9), new GeoPos(9.5,9.5), new GeoPos(10.5,10.5),new GeoPos(14.5, 14.5),  new GeoPos(19.5, 19.5)
+                new GeoPos(0, 0), new GeoPos(3, 3), new GeoPos(4, 4), new GeoPos(6,6), new GeoPos(8,8), new GeoPos(10, 10),  new GeoPos(1, 1)
         };
 
         Band b1Band = product.getBand("b1");
-        assertSampleValuesFloat(b1Band, geoPositions, new float[]{0.0f, 2.0f, 7.0f, 7.0f, 1.75f, Float.NaN, Float.NaN});
+        assertSampleValuesFloat(b1Band, geoPositions, new float[]{2.0f, 2.0f, 7.0f, 7.0f, 7.0f, 0.0f, 2.0f});
         Band b2Band = product.getBand("b2");
-        assertSampleValuesFloat(b2Band, geoPositions, new float[]{0.0f, 2.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f});
+        assertSampleValuesFloat(b2Band, geoPositions, new float[]{2.0f, 2.0f, 7.0f, 7.0f, 7.0f, 0.0f, 2.0f});
         Band b3Band = product.getBand("b3");
-        assertSampleValuesFloat(b3Band, geoPositions, new float[]{0.0f, 2.0f, 7.0f, 7.0f, 7.0f, 7.0f, Float.NaN});
+        assertSampleValuesFloat(b3Band, geoPositions, new float[]{2.0f, 2.0f, 7.0f, 7.0f, 7.0f, 0.0f, 2.0f});
 
     }
     @Test
@@ -271,15 +271,15 @@ public class S2tbxMosaicOpTest {
         final Product product = op.getTargetProduct();
 
         final GeoPos[] geoPositions = {
-                new GeoPos(0, 0), new GeoPos(1, 1), new GeoPos(9, 9), new GeoPos(9.5,9.5), new GeoPos(10.5,10.5),new GeoPos(14.5, 14.5),  new GeoPos(19.5, 19.5)
+                new GeoPos(0, 0), new GeoPos(3, 3), new GeoPos(4, 4), new GeoPos(6,6), new GeoPos(8,8), new GeoPos(10, 10),  new GeoPos(1, 1)
         };
 
         Band b1Band = product.getBand("b1");
-        assertSampleValuesFloat(b1Band, geoPositions, new float[]{0.0f, 2.0f, 7.0f, 7.0f, 1.75f, Float.NaN, Float.NaN});
+        assertSampleValuesFloat(b1Band, geoPositions, new float[]{2.0f, 2.0f, 7.0f, 7.0f, 7.0f, 0.0f, 2.0f});
         Band b2Band = product.getBand("b2");
-        assertSampleValuesFloat(b2Band, geoPositions, new float[]{0.0f, 2.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f});
+        assertSampleValuesFloat(b2Band, geoPositions, new float[]{2.0f, 2.0f, 7.0f, 7.0f, 7.0f, 0.0f, 2.0f});
         Band b3Band = product.getBand("b3");
-        assertSampleValuesFloat(b3Band, geoPositions, new float[]{0.0f, 2.0f, 7.0f, 7.0f, 7.0f, 7.0f, Float.NaN});
+        assertSampleValuesFloat(b3Band, geoPositions, new float[]{2.0f, 2.0f, 7.0f, 7.0f, 7.0f, 0.0f, 2.0f});
 
     }
     private void assertSampleValuesFloat(Band Band, GeoPos[] geoPositions, float[] expectedValues) {

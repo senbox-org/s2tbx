@@ -32,7 +32,7 @@ import java.awt.event.ActionEvent;
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
-@ActionID(category = "Operators", id = "org.esa.s2tbx.dataio.mosaic.ui.MultisizeMosaicAction")
+@ActionID(category = "Operators", id = "org.esa.s2tbx.dataio.mosaic.ui.multiSizeMosaicAction")
 @ActionRegistration(displayName = "#CTL_S2MosaicAction_Name")
 @ActionReference(path = "Menu/Raster/Geometric Operations", position = 351)
 @NbBundle.Messages({"CTL_S2MosaicAction_Name=Multi-size Mosaic"})
@@ -45,11 +45,8 @@ public class S2tbxMosaicAction extends AbstractSnapAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (dialog == null) {
-            dialog = new S2tbxMosaicDialog(Bundle.CTL_S2MosaicAction_Name(),
-                                      "MultisizeMosaicAction", getAppContext());
-
-        }
+        dialog = new S2tbxMosaicDialog(Bundle.CTL_S2MosaicAction_Name(),
+                                       "multiSizeMosaicAction", getAppContext());
         dialog.show();
     }
 
