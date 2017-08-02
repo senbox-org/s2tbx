@@ -191,14 +191,14 @@ public class ForestCoverChange {
                                                                             this.regionMergingCriterion, this.totalIterationsForSecondSegmentation, this.threshold,
                                                                             this.spectralWeight, this.shapeWeight, tileSize);
 
+            IntSet differenceTrimmingSet = computeDifferenceTrimmingSet(threadCount, threadPool, currentProduct, previousProduct, differenceSegmentationMatrix,
+                                                                        unionMaskProduct, trimmingSourceProductBandIndices, tileSize);
+
             // reset the references
             WeakReference<Product> referenceCurrentProduct = new WeakReference<Product>(currentProduct);
             referenceCurrentProduct.clear();
             WeakReference<Product> referencePreviousProduct = new WeakReference<Product>(previousProduct);
             referencePreviousProduct.clear();
-
-            IntSet differenceTrimmingSet = computeDifferenceTrimmingSet(threadCount, threadPool, differenceSegmentationMatrix,
-                                                                        unionMaskProduct, trimmingSourceProductBandIndices, tileSize);
 
             ProductData productData = runFinalMaskOp(threadCount, threadPool, differenceSegmentationMatrix, unionMaskProduct, differenceTrimmingSet, tileSize);
 
@@ -227,8 +227,8 @@ public class ForestCoverChange {
         }
     }
 
-    private IntSet computeDifferenceTrimmingSet(int threadCount, Executor threadPool, IntMatrix differenceSegmentationMatrix,
-                                                IntMatrix unionMaskMatrix, int[] sourceBandIndices, Dimension tileSize)
+    private IntSet computeDifferenceTrimmingSet(int threadCount, Executor threadPool, Product currentSourceProduct, Product previousSourceProduct,
+                                                IntMatrix differenceSegmentationMatrix, IntMatrix unionMaskMatrix, int[] sourceBandIndices, Dimension tileSize)
                                                 throws Exception {
 
         DifferenceRegionTilesComputing helper = new DifferenceRegionTilesComputing(differenceSegmentationMatrix, currentSourceProduct, previousSourceProduct,
