@@ -55,7 +55,7 @@
 
 <p>
     For Sentinel-2 the formula is: <br><br>
-     <b>(B6 - B5)/(B5 - B4)</b>, where (Central wavelength/Bandwidth): B6 = 740 nm (15 nm), B5 = 705 nm (15 nm), B4 = 665 nm (30 nm)
+    <b>(B6 - B5)/(B5 - B4)</b>, where (Central wavelength/Bandwidth): B6 = 740 nm (15 nm), B5 = 705 nm (15 nm), B4 = 665 nm (30 nm)
 </p>
 
 <h3>MTCI-Flags</h3>
@@ -66,8 +66,8 @@
 <table>
     <tr><th>Bit Position</th><th>Description</th></tr>
     <tr><td>Bit 0</td><td>The computed value for MTCI is NAN or is Infinite</td></tr>
-    <tr><td>Bit 1</td><td>The computed value for MTCI is less than 0 (zero)</td></tr>
-    <tr><td>Bit 2</td><td>The computed value for MTCI is greater than 1 (one)</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for MTCI is less than -1 (minus one)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for MTCI is greater than Floating Point Maximum Value</td></tr>
 </table>
 <p>
 </p>

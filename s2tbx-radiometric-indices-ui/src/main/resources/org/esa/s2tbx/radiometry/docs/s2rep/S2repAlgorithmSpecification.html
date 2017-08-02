@@ -38,12 +38,12 @@
     The <u><b>S</b></u>entinel-<b>2</b> <u><b>R</b></u>ed-<u><b>E</b></u>dge <u><b>P</b></u>osition <b>I</b></u>ndex algorithm is based on linear interpolation, as presented by Guyot and Baret (1988). <br><br>
 
     Red edge, as the inflection point of the strong red absorption to near infrared reflectance, includes the information of both crop (chlorophyll content) N and growth status. <br><br>
-	
-	The reflectance at the inflexion point is estimated and in turn, the REP is retrieved through interpolation of S-2 band 5 and 6 which are positioned on the RE slope. This linear interpolation method has been previously applied to MERIS data by Clevers et al. (2000).<br>
-	It was found to be more robust than the Lagrangian method (Dawson and Curran, 1998), with the benefit of requiring a limited number of spectral bands making it suitable for spaceborne sensors (Clevers et al., 2002). <br><br>
-	
-	<b>Sentinel-2</b> has a key benefit compared to MERIS for the application of the linear interpolation method.<br>
-	The S-2 band 6 (740 nm) measures the reflectance situated at the top of the linear part of the RE slope, whereas MERIS band 10 (753.75 nm) measures reflectance slightly above the linearp art of the RE, where the gradient in decreasing as it reaches the NIR plateau.<br>
+
+    The reflectance at the inflexion point is estimated and in turn, the REP is retrieved through interpolation of S-2 band 5 and 6 which are positioned on the RE slope. This linear interpolation method has been previously applied to MERIS data by Clevers et al. (2000).<br>
+    It was found to be more robust than the Lagrangian method (Dawson and Curran, 1998), with the benefit of requiring a limited number of spectral bands making it suitable for spaceborne sensors (Clevers et al., 2002). <br><br>
+
+    <b>Sentinel-2</b> has a key benefit compared to MERIS for the application of the linear interpolation method.<br>
+    The S-2 band 6 (740 nm) measures the reflectance situated at the top of the linear part of the RE slope, whereas MERIS band 10 (753.75 nm) measures reflectance slightly above the linearp art of the RE, where the gradient in decreasing as it reaches the NIR plateau.<br>
     In theory, this means that <b>S2REP</b> should provide better characterisation of the RE slope compared to application of the method using the MERIS or the future Sentinel-3 sensors. <br><br>
 
 </p>
@@ -74,8 +74,8 @@
 <table>
     <tr><th>Bit Position</th><th>Description</th></tr>
     <tr><td>Bit 0</td><td>The computed value for S2REP is NAN or is Infinite</td></tr>
-    <tr><td>Bit 1</td><td>The computed value for S2REP is less than 0 (zero)</td></tr>
-    <tr><td>Bit 2</td><td>The computed value for S2REP is greater than 1 (one)</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for S2REP is less than 690 (six hundred and ninety)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for S2REP is greater than 740 (seven hundred and fourty)</td></tr>
 </table>
 <p>
 </p>

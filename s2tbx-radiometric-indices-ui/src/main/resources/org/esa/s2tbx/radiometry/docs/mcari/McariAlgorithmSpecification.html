@@ -55,7 +55,7 @@
 
 <p>
     For <b>Sentinel-2</b> the formula is: <br><br>
-    <b>[(B5 - B4) - 0.2 * (B5 - B3)] * (B5 / B4)</b>, where (Central wavelength/Bandwidth): B5 = 705 nm (15 nm), B4 = 665 nm (30 nm), B3 = 560 nm (35 nm)
+    <b>[(B5 - B4) - 0.2 * (B5 - B3)] * (B5 - B4)</b>, where (Central wavelength/Bandwidth): B5 = 705 nm (15 nm), B4 = 665 nm (30 nm), B3 = 560 nm (35 nm)
 </p>
 
 <h3>MCARI-Flags</h3>
@@ -66,7 +66,7 @@
 <table>
     <tr><th>Bit Position</th><th>Description</th></tr>
     <tr><td>Bit 0</td><td>The computed value for MCARI is NAN or is Infinite</td></tr>
-    <tr><td>Bit 1</td><td>The computed value for MCARI is less than 0 (zero)</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for MCARI is less than -1 (minus one)</td></tr>
     <tr><td>Bit 2</td><td>The computed value for MCARI is greater than 1 (one)</td></tr>
 </table>
 <p>
