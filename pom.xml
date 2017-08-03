@@ -68,7 +68,7 @@
 
     <properties>
         <snap.version>5.0.8</snap.version>
-        <s2tbx.version>5.0.8-SNAPSHOT</s2tbx.version>
+        <s2tbx.version>5.0.7</s2tbx.version>
         <tests.version>5.0.0</tests.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
