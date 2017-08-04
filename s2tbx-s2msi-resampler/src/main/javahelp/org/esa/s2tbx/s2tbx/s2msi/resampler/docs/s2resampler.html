@@ -33,8 +33,15 @@
     interpolate them without using the angle information of the adjacent detectors (which causes
     the blurring). In the pixels closest to the border detector-detector, it is necessary to
     extrapolate the data since not all data is available to carry out the interpolation with
-    bilinear method. Finally, the angles are joined again:
+    bilinear method. Finally, the angles are joined again.
 </p>
+
+<p>
+    An approximation has to be made for applying this method: currently the detector footprints
+    overlap and in these overlapping regions the algorithm has to decide which detector is used
+    to compute the angles: it selects always the higher one.
+</p>
+
 <IMG SRC="./images/s2resampler.png">
 <p>
     For extrapolating the angles, a simple algorithm is used. The angle matrix is analysed line
