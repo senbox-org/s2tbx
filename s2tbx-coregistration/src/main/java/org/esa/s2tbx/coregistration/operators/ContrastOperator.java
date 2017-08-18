@@ -11,21 +11,22 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
 /**
- * Created by ramonag on 6/13/2017.
+ * @author R. Manda
  */
 public class ContrastOperator extends PointOpImage {
     private int param1;
     private int param2;
 
-    /** Constructs an SampleOpImage. The image dimensions are copied
+    /**
+     * Constructs an SampleOpImage. The image dimensions are copied
      * from the source image. The tile grid layout, SampleModel, and
      * ColorModel may optionally be specified by an ImageLayout
      * object.
      *
      * @param source a RenderedImage.
      * @param layout an ImageLayout optionally containing the tile
-     * grid layout, SampleModel, and ColorModel, or
-     * null.
+     *               grid layout, SampleModel, and ColorModel, or
+     *               null.
      */
     public ContrastOperator(RenderedImage source,
                             ImageLayout layout,
@@ -43,11 +44,11 @@ public class ContrastOperator extends PointOpImage {
      * results are returned in the input WritableRaster dest. The
      * sources are cobbled.
      *
-     * @param sources an array of sources, guarantee to provide all
-     * necessary source data for computing the rectangle.
-     * @param dest a tile that contains the rectangle to be computed.
+     * @param sources  an array of sources, guarantee to provide all
+     *                 necessary source data for computing the rectangle.
+     * @param dest     a tile that contains the rectangle to be computed.
      * @param destRect the rectangle within this OpImage to be
-     * processed.
+     *                 processed.
      */
     protected void computeRect(Raster[] sources,
                                WritableRaster dest,
@@ -77,10 +78,10 @@ public class ContrastOperator extends PointOpImage {
 // of the underlying arrays.
         switch (dstAccessor.getDataType()) {
             case DataBuffer.TYPE_BYTE:
-                byteLoop(srcAccessor,dstAccessor);
+                byteLoop(srcAccessor, dstAccessor);
                 break;
             case DataBuffer.TYPE_INT:
-                intLoop(srcAccessor,dstAccessor);
+                intLoop(srcAccessor, dstAccessor);
                 break;
             default:
                 String className = this.getClass().getName();
@@ -96,6 +97,7 @@ public class ContrastOperator extends PointOpImage {
             dstAccessor.copyDataToRaster();
         }
     }
+
     /**
      * Computes an area of a given byte-based destination Raster using
      * a souce RasterAccessor and a destination RasterAccesor.
@@ -116,8 +118,8 @@ public class ContrastOperator extends PointOpImage {
         int srcBandOffsets[] = src.getBandOffsets();
         int srcPixelStride = src.getPixelStride();
         int srcScanlineStride = src.getScanlineStride();
-        byte bp1 = (byte)(param1 & 0xff);
-        byte bp2 = (byte)(param2 & 0xff);
+        byte bp1 = (byte) (param1 & 0xff);
+        byte bp2 = (byte) (param2 & 0xff);
 // A standard imaging loop
         for (int k = 0; k < dnumBands; k++) {
             byte dstData[] = dstDataArrays[k];
@@ -129,7 +131,7 @@ public class ContrastOperator extends PointOpImage {
                 int dstPixelOffset = dstScanlineOffset;
                 for (int i = 0; i < dwidth; i++) {
                     int pixel = srcData[srcPixelOffset] & 0xff;
-                    dstData[dstPixelOffset] = (byte)((pixel-bp1)/(bp2-bp1));
+                    dstData[dstPixelOffset] = (byte) ((pixel - bp1) / (bp2 - bp1));
 
                     srcPixelOffset += srcPixelStride;
                     dstPixelOffset += dstPixelStride;
@@ -139,6 +141,7 @@ public class ContrastOperator extends PointOpImage {
             }
         }
     }
+
     /**
      * Computes an area of a given int-based destination Raster using
      * a source RasterAccessor and a destination RasterAccesor.
@@ -166,7 +169,7 @@ public class ContrastOperator extends PointOpImage {
                 int dstPixelOffset = dstScanlineOffset;
                 for (int i = 0; i < dwidth; i++) {
                     int pixel = srcData[srcPixelOffset];
-                    dstData[dstPixelOffset] = (pixel-param1)/(param2-param1);
+                    dstData[dstPixelOffset] = (pixel - param1) / (param2 - param1);
                     srcPixelOffset += srcPixelStride;
                     dstPixelOffset += dstPixelStride;
                 }
