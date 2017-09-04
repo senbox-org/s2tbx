@@ -21,9 +21,12 @@ package org.esa.s2tbx.radiometry;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.FlagCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -144,8 +147,13 @@ public abstract class BaseIndexOp extends Operator {
         String name = getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
-        targetProduct.setSceneGeoCoding(sourceProduct.getBand(this.sourceBandNames[0]).getGeoCoding());
-        //ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+        final GeoCoding sceneGeoCoding = sourceProduct.getSceneGeoCoding();
+        if (sceneGeoCoding instanceof TiePointGeoCoding) {
+            for (TiePointGrid tiePointGrid : sourceProduct.getTiePointGrids()) {
+                targetProduct.addTiePointGrid(tiePointGrid);
+            }
+        }
+        targetProduct.setSceneGeoCoding(sceneGeoCoding);
 
         Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sceneWidth, sceneHeight);
         targetProduct.addBand(outputBand);
