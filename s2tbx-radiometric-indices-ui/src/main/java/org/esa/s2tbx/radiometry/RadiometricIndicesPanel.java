@@ -72,6 +72,7 @@ class RadiometricIndicesPanel {
     private JPanel messagePanel;
     private BindingContext bindingContext;
     private Product currentProduct;
+    private JScrollPane operatorPanel;
     private Callable<Product> sourceProductAccessor;
 
     RadiometricIndicesPanel(String operatorName, PropertySet propertySet, BindingContext bindingContext, Callable<Product> productAccessor) {
@@ -84,15 +85,13 @@ class RadiometricIndicesPanel {
         }
         this.operatorDescriptor = operatorSpi.getOperatorDescriptor();
         this.propertySet = propertySet;
-        this.bindingContext = bindingContext;
+        this.bindingContext = bindingContext == null ? new BindingContext(propertySet) : bindingContext;
         this.sourceProductAccessor = productAccessor;
+        PropertyPane parametersPane = new PropertyPane(this.bindingContext);
+        this.operatorPanel = new JScrollPane(parametersPane.createPanel());
     }
 
     JComponent createPanel() {
-        this.bindingContext = new BindingContext(propertySet);
-        PropertyPane parametersPane = new PropertyPane(bindingContext);
-        JScrollPane operatorPanel = new JScrollPane(parametersPane.createPanel());
-        insertMessageLabel(operatorPanel);
         this.bandFields = Arrays.stream(operatorDescriptor.getOperatorClass().getDeclaredFields())
                 .filter(f -> f.getAnnotation(BandParameter.class) != null)
                 .collect(Collectors.toList());
@@ -112,7 +111,9 @@ class RadiometricIndicesPanel {
                 });
         this.propertySet.getProperty(PROPERTY_RESAMPLE).addPropertyChangeListener(evt -> checkResampling(getSourceProduct()));
 
-        return operatorPanel;
+        insertMessageLabel(this.operatorPanel);
+
+        return this.operatorPanel;
     }
 
     boolean validateParameters() {
@@ -231,6 +232,9 @@ class RadiometricIndicesPanel {
     }
 
     private void setMessage(String method) {
+        if (this.messageLabel == null) {
+            insertMessageLabel(this.operatorPanel);
+        }
         switch (method) {
             case BaseIndexOp.RESAMPLE_LOWEST:
                 this.messageLabel.setText(String.format(resampleMessage, "lowest"));
