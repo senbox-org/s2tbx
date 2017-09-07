@@ -1,9 +1,10 @@
 package org.esa.s2tbx.dataio.cache;
 
-import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.runtime.Activator;
 import org.esa.snap.runtime.Config;
+import org.esa.snap.runtime.Engine;
 
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -22,7 +23,8 @@ public class S2CacheActivator implements Activator {
             try {
                 preferences.flush();
             } catch (BackingStoreException e) {
-                SnapApp.getDefault().getLogger().severe(e.getMessage());
+                Logger logger = Engine.getInstance().getLogger();
+                logger.severe(e.getMessage());
             }
         }
 
