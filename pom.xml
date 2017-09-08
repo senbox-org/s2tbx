@@ -62,6 +62,7 @@
         <module>s2tbx-grm</module>
         <module>s2tbx-grm-ui</module>
         <module>s2tbx-land-cover</module>
+        <module>s2tbx-kompsat2-reader</module>
     </modules>
 
     <packaging>pom</packaging>
