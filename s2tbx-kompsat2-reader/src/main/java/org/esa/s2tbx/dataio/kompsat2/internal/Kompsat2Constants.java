@@ -44,7 +44,6 @@ public class Kompsat2Constants {
     public static final String PATH_ZIP_FILE_NAME = "/EarthObservation/metaDataProperty/EarthObservationMetaData/vendorSpecific/SpecificInformation/localValue";
     public static final String PATH_ID = "/EarthObservation/metaDataProperty/EarthObservationMetaData/identifier";
     public static final String PATH_PRODUCT_TYPE = "/EarthObservation/metaDataProperty/EarthObservationMetaData/productType";
-    public static final String PATH_PRODUCT_STATUS = "/EarthObservation/metaDataProperty/EarthObservationMetaData/status";
 
 
    /*

@@ -6,6 +6,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.utils.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,6 +35,13 @@ public class Kompsat2ProductReaderTest {
 
         Kompsat2ProductReaderPlugin plugin = new Kompsat2ProductReaderPlugin();
         reader = new Kompsat2ProductReader(plugin);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (reader!=null) {
+            reader.close();
+        }
     }
 
     @Test

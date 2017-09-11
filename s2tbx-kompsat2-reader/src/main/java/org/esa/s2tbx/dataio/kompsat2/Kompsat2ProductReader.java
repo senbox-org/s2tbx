@@ -193,22 +193,24 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
             this.productDirectory.close();
             this.productDirectory = null;
         }
-        for (Iterator<Product> iter = this.tiffProduct.listIterator(); iter.hasNext(); ) {
-            Product product = iter.next();
-            if (product != null) {
-                product.closeIO();
-                product.dispose();
-                product = null;
-                iter.remove();
+        if(this.tiffProduct != null) {
+            for (Iterator<Product> iter = this.tiffProduct.listIterator(); iter.hasNext(); ) {
+                Product product = iter.next();
+                if (product != null) {
+                    product.closeIO();
+                    product.dispose();
+                    product = null;
+                    iter.remove();
+                }
             }
         }
-
-        File imageDir = new File(this.metadata.getImageDirectoryPath());
-        if (imageDir.exists()) {
-            deleteDirectory(imageDir);
+        if(this.metadata != null) {
+            File imageDir = new File(this.metadata.getImageDirectoryPath());
+            if (imageDir.exists()) {
+                deleteDirectory(imageDir);
+            }
         }
         super.close();
-
     }
 
     /**
