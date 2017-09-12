@@ -12,20 +12,22 @@ import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Metadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.transform.AffineTransform2D;
 import org.esa.snap.core.util.jai.JAIUtils;
-
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Basic reader for Kompsat 2 products.
@@ -35,7 +37,11 @@ import java.util.logging.Logger;
 
 public class Kompsat2ProductReader  extends AbstractProductReader {
 
-    private static final Logger logger = Logger.getLogger(Kompsat2ProductReader.class.getName());
+    private VirtualDirEx productDirectory;
+    private Kompsat2Metadata metadata;
+    private List<Product> tiffProduct;
+    private Product product;
+    private int tiffImageIndex;
 
     /**
      * Constructs a new abstract product reader.
@@ -43,12 +49,6 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
      * @param readerPlugIn the reader plug-in which created this reader, can be {@code null} for internal reader
      *                     implementations
      */
-    private VirtualDirEx productDirectory;
-    private Kompsat2Metadata metadata;
-    private List<BandMetadata> bandMetadataList;
-    private List<Product> tiffProduct;
-    private Product product;
-    private int tiffImageIndex;
     protected Kompsat2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
@@ -70,8 +70,8 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
         this.metadata = Kompsat2Metadata.create(this.productDirectory.getFile(fileName+Kompsat2Constants.METADATA_FILE_SUFFIX).toPath());
         this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + Kompsat2Constants.ARCHIVE_FILE_EXTENSION).toPath().toString());
         this.metadata.createBandMetadata();
-        this.bandMetadataList = this.metadata.getBandsMetadata();
-        BandMetadataUtil bUtil = new BandMetadataUtil(this.bandMetadataList.toArray(new BandMetadata[this.bandMetadataList.size()]));
+        List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
+        BandMetadataUtil bUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
         int width = bUtil.getMaxNumColumns();
         int height = bUtil.getMaxNumLines();
         this.product = new Product(this.metadata.getProductName(),Kompsat2Constants.KOMPSAT2_PRODUCT, width, height);
@@ -86,22 +86,22 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
         String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
         String dirName = dirNameExtension.substring(0,dirNameExtension.lastIndexOf("."));
         int levels;
-        for (int index = 0; index< this.bandMetadataList.size(); index++) {
-            String imageFileName = this.bandMetadataList.get(index).getImageFileName();
-            this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName+Kompsat2Constants.IMAGE_EXTENSION).toFile()));
+        for (BandMetadata aBandMetadataList : bandMetadataList) {
+            String imageFileName = aBandMetadataList.getImageFileName();
+            this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + Kompsat2Constants.IMAGE_EXTENSION).toFile()));
             this.tiffImageIndex++;
-            Band band  = this.tiffProduct.get(this.tiffImageIndex-1).getBandAt(0);
+            Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
             levels = band.getSourceImage().getModel().getLevelCount();
             final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
             String bandName = null;
-            for (int bandNameIndex = 0; bandNameIndex<Kompsat2Constants.BAND_NAMES.length-1; bandNameIndex++) {
+            for (int bandNameIndex = 0; bandNameIndex < Kompsat2Constants.BAND_NAMES.length - 1; bandNameIndex++) {
                 if (imageFileName.contains(Kompsat2Constants.FILE_NAMES[bandNameIndex])) {
                     bandName = Kompsat2Constants.BAND_NAMES[bandNameIndex];
                 }
             }
             if (bandName == null) {
                 bandName = Kompsat2Constants.BAND_NAMES[4];
-                GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex-1).getSceneGeoCoding();
+                GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
                 if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
                     this.product.setSceneGeoCoding(bandGeoCoding);
                 }
@@ -123,7 +123,7 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
             } else {
                 if (width != band.getRasterWidth()) {
                     AffineTransform2D transform2D =
-                            new AffineTransform2D((float) width /  band.getRasterWidth(), 0.0, 0.0,
+                            new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
                                     (float) height / band.getRasterHeight(), 0.0, 0.0);
                     targetBand.setImageToModelTransform(transform2D);
                 }
@@ -133,8 +133,8 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
                     new MosaicMultiLevelSource(band,
                             band.getRasterWidth(), band.getRasterHeight(),
                             tileSize.width, tileSize.height,
-                            levels,targetBand.getGeoCoding()!= null ?
-                            Product.findImageToModelTransform(targetBand.getGeoCoding()):
+                            levels, targetBand.getGeoCoding() != null ?
+                            Product.findImageToModelTransform(targetBand.getGeoCoding()) :
                             targetBand.getImageToModelTransform());
             targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
             this.product.addBand(targetBand);
@@ -160,8 +160,8 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
     /**
      * Creates geo-coding based on latitude/longitude {@code TiePointGrid}s</li>
      *
-     * @param k2Metadata
-     * @param product
+     * @param k2Metadata Kompsat2Metadata parameter
+     * @param product Product to add TiePointGrid and TiePointGridGeoCoding
      */
     private void initProductTiePointGeoCoding(Kompsat2Metadata k2Metadata, Product product) {
         float[][] cornerLonsLats = k2Metadata.getMetadataComponent().getTiePointGridPoints();
@@ -185,7 +185,6 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
                 if (sourceImage != null) {
                     sourceImage.reset();
                     sourceImage.dispose();
-                    sourceImage = null;
                 }
             }
         }
@@ -194,13 +193,12 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
             this.productDirectory = null;
         }
         if(this.tiffProduct != null) {
-            for (Iterator<Product> iter = this.tiffProduct.listIterator(); iter.hasNext(); ) {
-                Product product = iter.next();
+            for (Iterator<Product> iterator = this.tiffProduct.listIterator(); iterator.hasNext(); ) {
+                Product product = iterator.next();
                 if (product != null) {
                     product.closeIO();
                     product.dispose();
-                    product = null;
-                    iter.remove();
+                    iterator.remove();
                 }
             }
         }
@@ -215,17 +213,19 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
 
     /**
      * Force deletion of directory
-     * @param path
-     * @return
+     * @param path path to file/directory
+     * @return return true if successful
      */
     private static boolean deleteDirectory(File path) {
         if (path.exists()) {
-            File[] files =path.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()) {
-                    deleteDirectory(files[i]);
-                } else {
-                    files[i].delete();
+            File[] files = path.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        deleteDirectory(file);
+                    } else {
+                        file.delete();
+                    }
                 }
             }
         }
