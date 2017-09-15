@@ -49,22 +49,38 @@ public class UnionMasksTilesComputing extends AbstractImageTilesParallelComputin
         int tileRightX = tileLeftX + tileWidth;
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
+                // get the pixel value from the previous segmentation
                 int segmentationPixelValue = this.previousSegmentationMatrix.getValueAt(y, x);
+
+                // check if the pixel value from the previous segmentation exists among the trimming region keys of the previous segmentation
                 if (this.previousSegmentationTrimmingRegionKeys.contains(segmentationPixelValue)) {
-                    int currentSegmentationPixelValue = this.currentSegmentationMatrix.getValueAt(y, x);
-                    if (this.currentSegmentationTrimmingRegionKeys.contains(currentSegmentationPixelValue)) {
-                        segmentationPixelValue = 1;//255;
+                    // the pixel value from the previous segmentation exists among the trimming region keys of the previous segmentation
+
+                    // get the pixel value from the current segmentation
+                    segmentationPixelValue = this.currentSegmentationMatrix.getValueAt(y, x);
+
+                    // check if the pixel value from the current segmentation exists among the trimming region keys of the current segmentation
+                    if (this.currentSegmentationTrimmingRegionKeys.contains(segmentationPixelValue)) {
+                        // the pixel value from the current segmentation exists among the trimming region keys of the current segmentation
+                        segmentationPixelValue = ForestCoverChangeConstants.COMMON_VALUE;//255;
                     } else {
-                        segmentationPixelValue = 1;//50;
+                        segmentationPixelValue = ForestCoverChangeConstants.PREVIOUS_VALUE;//50;
                     }
                 } else {
+                    // the pixel value from the previous segmentation does not exist among the trimming region keys of the previous segmentation
+
+                    // get the pixel value from the current segmentation
                     segmentationPixelValue = this.currentSegmentationMatrix.getValueAt(y, x);
+
+                    // check if the pixel value from the current segmentation exists among the trimming region keys of the current segmentation
                     if (this.currentSegmentationTrimmingRegionKeys.contains(segmentationPixelValue)) {
-                        segmentationPixelValue = 1;//100;
+                        // the pixel value from the current segmentation exists among the trimming region keys of the current segmentation
+                        segmentationPixelValue = ForestCoverChangeConstants.CURRENT_VALUE;//100;
                     } else {
-                        segmentationPixelValue = ForestCoverChangeConstants.NO_DATA_VALUE;
+                        segmentationPixelValue = ForestCoverChangeConstants.NO_DATA_VALUE; // 0
                     }
                 }
+
                 synchronized (this.resultMatrix) {
                     this.resultMatrix.setValueAt(y, x, segmentationPixelValue);
                 }

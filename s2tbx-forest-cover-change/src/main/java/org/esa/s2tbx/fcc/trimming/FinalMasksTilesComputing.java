@@ -48,17 +48,17 @@ public class FinalMasksTilesComputing extends AbstractImageTilesParallelComputin
         int tileRightX = tileLeftX + tileWidth;
         for (int y = tileTopY; y < tileBottomY; y++) {
             for (int x = tileLeftX; x < tileRightX; x++) {
+                // get the pixel value from the difference segmentation
                 int segmentationPixelValue = this.differenceSegmentationMatrix.getValueAt(y, x);
+
+                // check if the pixel value from the difference segmentation exists among the trimming region keys of the difference segmentation
                 if (this.differenceTrimmingSet.contains(segmentationPixelValue)) {
-                    int unionPixelValue = unionMaskMatrix.getValueAt(y, x);
-                    if (unionPixelValue == ForestCoverChangeConstants.NO_DATA_VALUE) {
-                        segmentationPixelValue = ForestCoverChangeConstants.NO_DATA_VALUE;
-                    } else {
-                        segmentationPixelValue = 1;
-                    }
+                    // the pixel value from the difference segmentation exists among the trimming region keys of the difference segmentation
+                    segmentationPixelValue = this.unionMaskMatrix.getValueAt(y, x);
                 } else {
                     segmentationPixelValue = ForestCoverChangeConstants.NO_DATA_VALUE;
                 }
+                
                 synchronized (this.productData) {
                     this.productData.setElemIntAt(sceneWidth * y + x, segmentationPixelValue);
                 }

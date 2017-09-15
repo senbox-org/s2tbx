@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.s2tbx.fcc.common.BandsExtractorOp;
+import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.trimming.*;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.grm.DifferencePixelsRegionMergingOp;
@@ -21,6 +22,7 @@ import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.lang.ref.WeakReference;
 import java.util.Date;
@@ -210,6 +212,16 @@ public class ForestCoverChange {
 
             Band targetBand = this.targetProduct.getBandAt(0);
             targetBand.setData(productData);
+
+            FCCLandCoverModelDescriptor descriptor = new FCCLandCoverModelDescriptor();
+            IndexCoding indexCoding = descriptor.getIndexCoding();
+            targetBand.setSampleCoding(indexCoding);
+            this.targetProduct.getIndexCodingGroup().add(indexCoding);
+
+            ImageInfo imageInfo = descriptor.getImageInfo();
+            imageInfo.getColorPaletteDef().setNumColors(256);
+            targetBand.setImageInfo(imageInfo);
+
             // reset the source image of the target product
             targetBand.setSourceImage(null);
             targetBand.getSourceImage();
