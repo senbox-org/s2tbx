@@ -5,16 +5,25 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
-import javax.media.jai.*;
+
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -30,7 +39,6 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
     private final int imageHeight;
     private final int tileWidth;
     private final int tileHeight;
-    private ImageLayout imageLayout;
     private final Logger logger;
 
     public MosaicMultiLevelSource(Band sourceBand, int imageWidth, int imageHeight,
@@ -47,7 +55,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         this.logger = Logger.getLogger(MosaicMultiLevelSource.class.getName());
     }
 
-    private PlanarImage createTileImage( final int level) throws IOException {
+    private PlanarImage createTileImage(final int level) throws IOException {
         return (PlanarImage) this.sourceBand.getSourceImage().getImage(level);
     }
 
@@ -74,7 +82,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
             return null;
         }
 
-        imageLayout = new ImageLayout();
+        ImageLayout imageLayout = new ImageLayout();
         imageLayout.setMinX(0);
         imageLayout.setMinY(0);
         imageLayout.setTileWidth(JAI.getDefaultTileSize().width);

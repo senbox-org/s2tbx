@@ -55,6 +55,9 @@ public class Kompsat2Constants {
     public static final String TAG_NUMBER_ROWS_MS_IMAGE = "AUX_LINES_PER_IMAGE_MS";
     public static final String TAG_NUMBER_ROWS_PAN_IMAGE = "AUX_LINES_PER_IMAGE_PAN";
     public static final String TAG_PIXEL_SIZE = "AUX_IMAGE_GSD_METER";
-    public static final String TAG__BAND_WIDTH = "INST_BAND_WIDTH";
+    public static final String TAG_BAND_WIDTH = "INST_BAND_WIDTH";
+    public static final String TAG_AZIMUTH_ANGLE = "AUX_IMAGE_SATELLITE_AZIMUTH_DEG";
+    public static final String TAG_INCIDENCE_ANGLE = "AUX_IMAGE_SATELLITE_INCIDENCE_DEG";
+
 
 }

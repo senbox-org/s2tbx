@@ -14,6 +14,8 @@ import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.PointingFactory;
+import org.esa.snap.core.datamodel.PointingFactoryRegistry;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
@@ -91,6 +93,11 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
             this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + Kompsat2Constants.IMAGE_EXTENSION).toFile()));
             this.tiffImageIndex++;
             Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
+            if(this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding() == null &&
+                    this.product.getSceneGeoCoding() == null){
+                initProductTiePointGeoCoding(this.metadata, this.product);
+                initPointingFactory(this.product);
+            }
             levels = band.getSourceImage().getModel().getLevelCount();
             final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
             String bandName = null;
@@ -125,6 +132,7 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
                     AffineTransform2D transform2D =
                             new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
                                     (float) height / band.getRasterHeight(), 0.0, 0.0);
+                    targetBand.setGeoCoding(addTiePointGridGeo(this.metadata, targetBand));
                     targetBand.setImageToModelTransform(transform2D);
                 }
             }
@@ -133,18 +141,18 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
                     new MosaicMultiLevelSource(band,
                             band.getRasterWidth(), band.getRasterHeight(),
                             tileSize.width, tileSize.height,
-                            levels, targetBand.getGeoCoding() != null ?
+                            levels,band.getGeoCoding() != null? targetBand.getGeoCoding() != null ?
                             Product.findImageToModelTransform(targetBand.getGeoCoding()) :
+                            targetBand.getImageToModelTransform():
                             targetBand.getImageToModelTransform());
             targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+            System.out.println(targetBand.canBeOrthorectified());
             this.product.addBand(targetBand);
-
-        }
-        if (this.product.getSceneGeoCoding() == null) {
-            initProductTiePointGeoCoding(this.metadata, this.product);
         }
         return this.product;
     }
+
+
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY,
@@ -171,9 +179,37 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
         product.addTiePointGrid(latGrid);
         TiePointGrid lonGrid = createTiePointGrid(Kompsat2Constants.LON_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
         product.addTiePointGrid(lonGrid);
+        float[] angleAzimuth = new float[4];
+        float[] angleZenith = new float[4];
+        for (int index =0; index<4;index++) {
+            angleAzimuth[index] = (float)k2Metadata.getBandsMetadata().get(0).getAzimuth();
+            angleZenith[index] = (float)k2Metadata.getBandsMetadata().get(0).getIncidenceAngle();
+        }
+        TiePointGrid view_azimuth = createTiePointGrid("view_azimuth", 2, 2, 0, 0, sceneWidth, sceneHeight, angleAzimuth);
+        product.addTiePointGrid(view_azimuth);
+        TiePointGrid view_zenith = createTiePointGrid("view_zenith", 2, 2, 0, 0, sceneWidth, sceneHeight, angleZenith);
+        product.addTiePointGrid(view_zenith);
         if (latGrid != null && lonGrid != null) {
             product.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
         }
+    }
+
+    private GeoCoding addTiePointGridGeo(Kompsat2Metadata metadata, Band targetBand) {
+        float[][] cornerLonsLats = metadata.getMetadataComponent().getTiePointGridPoints();
+        int sceneWidth = targetBand.getRasterWidth();
+        int sceneHeight =  targetBand.getRasterHeight();
+        TiePointGrid latGrid = createTiePointGrid(Kompsat2Constants.LAT_DS_NAME, 2, 2, 0, 0, sceneWidth , sceneHeight, cornerLonsLats[0]);
+        TiePointGrid lonGrid = createTiePointGrid(Kompsat2Constants.LON_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
+        return new TiePointGeoCoding(latGrid, lonGrid);
+    }
+
+    /**
+     * Installs an Kompsat-specific pointing factory in the given product.
+     */
+    public static void initPointingFactory(final Product product) {
+        PointingFactoryRegistry registry = PointingFactoryRegistry.getInstance();
+        PointingFactory pointingFactory = registry.getPointingFactory(product.getProductType());
+        product.setPointingFactory(pointingFactory);
     }
 
     @Override

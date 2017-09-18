@@ -15,6 +15,8 @@ public class BandMetadata {
     private double stepSizeY;
     private String imageFileName;
     private double bandwidth;
+    private double azimuth;
+    private double incidenceAngle;
 
     public BandMetadata(String imageFileName) {
         this.imageFileName = imageFileName;
@@ -70,5 +72,21 @@ public class BandMetadata {
 
     public void setStepSizeY(double stepSizeY) {
         this.stepSizeY = stepSizeY;
+    }
+
+    public double getAzimuth() {
+        return azimuth;
+    }
+
+    public void setAzimuth(double azimuth) {
+        this.azimuth = azimuth;
+    }
+
+    public double getIncidenceAngle() {
+        return incidenceAngle;
+    }
+
+    public void setIncidenceAngle(double incidenceAngle) {
+        this.incidenceAngle = incidenceAngle;
     }
 }

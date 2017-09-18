@@ -10,7 +10,15 @@ import org.esa.snap.utils.DateHelper;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -240,7 +248,7 @@ public class Kompsat2Metadata extends XmlMetadata {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))){
                 String line = reader.readLine();
                 while (line != null) {
-                    if (line.startsWith(Kompsat2Constants.TAG__BAND_WIDTH)) {
+                    if (line.startsWith(Kompsat2Constants.TAG_BAND_WIDTH)) {
                         String[] splitLine = line.split("\\t");
                         imgMetadata.setBandwidth(Double.parseDouble(splitLine[1]));
                     } else if (line.startsWith(Kompsat2Constants.TAG_BITS_PER_PIXEL)) {
@@ -254,11 +262,17 @@ public class Kompsat2Metadata extends XmlMetadata {
                             (line. startsWith(Kompsat2Constants.TAG_NUMBER_ROWS_PAN_IMAGE))) {
                         String[] splitLine = line.split("\\t");
                         imgMetadata.setNumLines(Integer.parseInt(splitLine[1]));
-                    } else if (line.startsWith(Kompsat2Constants. TAG_PIXEL_SIZE)) {
+                    } else if (line.startsWith(Kompsat2Constants.TAG_PIXEL_SIZE)) {
                         String[] splitLine = line.split("\\t");
                         String[] splitResultLine = splitLine[1].split(" ");
                         imgMetadata.setStepSizeX(Double.parseDouble(splitResultLine[0]));
                         imgMetadata.setStepSizeY(Double.parseDouble(splitResultLine[1]));
+                    } else if (line.startsWith(Kompsat2Constants.TAG_AZIMUTH_ANGLE)) {
+                        String[] splitLine = line.split("\\t");
+                        imgMetadata.setAzimuth(Double.parseDouble(splitLine[1]));
+                    } else if (line.startsWith(Kompsat2Constants.TAG_INCIDENCE_ANGLE)) {
+                        String[] splitLine = line.split("\\t");
+                        imgMetadata.setIncidenceAngle(Double.parseDouble(splitLine[1]));
                     }
                     line = reader.readLine();
                 }
