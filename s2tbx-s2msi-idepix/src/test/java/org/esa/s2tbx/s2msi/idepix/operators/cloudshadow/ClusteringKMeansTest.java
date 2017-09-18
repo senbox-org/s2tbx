@@ -61,16 +61,6 @@ public class ClusteringKMeansTest {
         assertEquals(expectedDoubles[0], doubles[0][0], 1e-8);
         assertEquals(expectedDoubles[1], doubles[1][0], 1e-8);
         assertEquals(expectedDoubles[2], doubles[2][0], 1e-8);
-
-//        final StringBuilder outputBuilder = new StringBuilder("new double[]{");
-//        for (int i = 0; i < doubles.length; i++) {
-//            outputBuilder.append(doubles[i][0]);
-//            if (i < doubles.length - 1) {
-//                outputBuilder.append(", ");
-//            }
-//        }
-//        outputBuilder.append("};");
-//        System.out.println(outputBuilder.toString());
     }
 
     @Test
@@ -86,23 +76,6 @@ public class ClusteringKMeansTest {
         for (int i = 0; i < doubles.length; i++) {
             assertArrayEquals(expectedDoubles[i], doubles[i], 1e-8);
         }
-
-//        final StringBuilder outputBuilder = new StringBuilder("new double[][]{");
-//        for (int i = 0; i < doubles.length; i++) {
-//            outputBuilder.append("{");
-//            for (int j = 0; j < doubles[i].length; j++) {
-//                outputBuilder.append(doubles[i][j]);
-//                if (j < doubles[i].length - 1) {
-//                    outputBuilder.append(", ");
-//                }
-//            }
-//            outputBuilder.append("}");
-//            if (i < doubles.length - 1) {
-//                outputBuilder.append(", ");
-//            }
-//        }
-//        outputBuilder.append("};");
-//        System.out.println(outputBuilder.toString());
     }
 
 }

@@ -192,29 +192,20 @@ public class AdaptedIsoClustering<T extends Clusterable> extends Clusterer<T> {
         if (points.size() < k) {
             throw new NumberIsTooSmallException(points.size(), k, false);
         }
-        // todo adaption for more bands is required
         double darkestPoint = Double.MAX_VALUE;
         int darkestPointIndex = -1;
         for (int index = 0; index < points.size(); index++) {
-            DoublePoint p = ((ArrayList<DoublePoint>) points).get(index);
-            double value = p.getPoint()[0];
+            double[] p = ((ArrayList<DoublePoint>) points).get(index).getPoint();
+            //todo check whether this is okay for more than two bands
+            double value = 0;
+            for (int i = 0; i < p.length; i++) {
+                value += Math.pow(p[i], p.length);
+            }
             if (value < darkestPoint) {
                 darkestPoint = value;
                 darkestPointIndex = index;
             }
         }
-        /*
-        int array [][] = {{11, 0},{34, 1},{8, 2}};
-
-         java.util.Arrays.sort(array, new java.util.Comparator<double[]>() {
-             public int compare(double[] a, double[] b) {
-                 return b[0] - a[0];
-             }
-        });
-
-        array [][] = {{8, 2}, {11, 0}, {34, 1}};
-        */
-
 
         // create the initial clusters
         List<CentroidCluster<T>> clusters = chooseInitialCenters(points, darkestPointIndex);
@@ -361,8 +352,6 @@ public class AdaptedIsoClustering<T extends Clusterable> extends Clusterer<T> {
             }
 
 
-            //System.out.printf(":  %f  \n", firstPoint.getPoint()[0]);
-
             // If it's not set to >= 0, the point wasn't found in the previous
             // for loop, probably because distances are extremely small.  Just pick
             // the last available point.
@@ -374,12 +363,11 @@ public class AdaptedIsoClustering<T extends Clusterable> extends Clusterer<T> {
                     }
                 }
             }
-            //System.out.printf("\n InitialCentroids:  %f   \n", firstPoint.getPoint()[0]);
+
             // We found one.
             if (nextPointIndex >= 0) {
 
                 final T p = pointList.get(nextPointIndex);
-                //System.out.printf(":  %f   \n", p.getPoint()[0]);
 
                 resultSet.add(new CentroidCluster<>(p));
 
@@ -532,7 +520,7 @@ public class AdaptedIsoClustering<T extends Clusterable> extends Clusterer<T> {
      * Returns the nearest {@link Cluster} to the given point
      *
      * @param clusters the {@link Cluster}s to search
-     * @param point    the point to find the nearest {@link Cluster} for
+     * @param point the point to find the nearest {@link Cluster} for
      * @return the index of the nearest {@link Cluster} to the given point
      */
     private int getNearestCluster(final Collection<CentroidCluster<T>> clusters, final T point) {
@@ -553,7 +541,7 @@ public class AdaptedIsoClustering<T extends Clusterable> extends Clusterer<T> {
     /**
      * Computes the centroid for a set of points.
      *
-     * @param points    the set of points
+     * @param points the set of points
      * @param dimension the point dimension
      * @return the computed centroid for the set of points
      */
@@ -572,4 +560,3 @@ public class AdaptedIsoClustering<T extends Clusterable> extends Clusterer<T> {
     }
 
 }
-//}
