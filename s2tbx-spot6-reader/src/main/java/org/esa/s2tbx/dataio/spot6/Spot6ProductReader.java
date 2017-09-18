@@ -260,6 +260,15 @@ public class Spot6ProductReader extends AbstractProductReader {
         product.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
     }
 
+    private GeoCoding addTiePointGridGeo(ImageMetadata metadata, int width, int height) {
+        float[][] cornerLonsLats =  metadata.getCornerLonsLats();
+        int sceneWidth = width;
+        int sceneHeight = height;
+        TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, sceneWidth , sceneHeight, cornerLonsLats[1]);
+        TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
+        return new TiePointGeoCoding(latGrid, lonGrid);
+    }
+
     private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight) {
         int bandWidth = imageMetadata.getRasterWidth();
         int bandHeight = imageMetadata.getRasterHeight();
@@ -276,13 +285,16 @@ public class Spot6ProductReader extends AbstractProductReader {
             } else {
                 if (sceneWidth != bandWidth) {
                     AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);
+                    geoCoding = addTiePointGridGeo(imageMetadata, bandWidth, bandHeight);
                     band.setImageToModelTransform(transform2D);
                 }
             }
         } catch (Exception e) {
             logger.warning(e.getMessage());
         }
-        band.setGeoCoding(geoCoding);
+        if(band.getGeoCoding() == null) {
+            band.setGeoCoding(geoCoding);
+        }
     }
 
     private void addMasks(Product target, ImageMetadata metadata) {
