@@ -12,23 +12,19 @@ import java.util.Arrays;
  * todo: add comment
  *
  */
-public class PotentialCloudShadowAreasPathCentralPixel {
+class PotentialCloudShadowAreasPathCentralPixel {
 
     private static final double MAXCLOUD_TOP = S2IdepixCloudShadowOp.maxcloudTop;
     private static final int MEAN_EARTH_RADIUS = 6372000;
 
-    private PotentialCloudShadowAreasPathCentralPixel() {
-    }
-
-    public static int[][] makedCloudShadowArea(Product sourceProduct, Product targetProduct, Rectangle sourceRectangle,
-                                               Rectangle targetRectangle, float[] sourceSunZenith, float[] sourceSunAzimuth,
-                                               float[] sourceLatitude, float[] sourceLongitude, float[] sourceAltitude,
-                                               int[] flagArray, int[] cloudShadowArray, int[] cloudIDArray,
-                                               int[] cloudShadowIDArray, int counterTable) {
+    static int[][] makeCloudShadowArea(Product sourceProduct, Product targetProduct, Rectangle sourceRectangle,
+                                              Rectangle targetRectangle, float[] sourceSunZenith, float[] sourceSunAzimuth,
+                                              float[] sourceLatitude, float[] sourceLongitude, float[] sourceAltitude,
+                                              int[] flagArray, int[] cloudShadowArray, int[] cloudIDArray,
+                                              int[] cloudShadowIDArray, int counterTable) {
 
         int X0;
         int Y0;
-
 
         int X0TargetCenter;
         int Y0TargetCenter;
@@ -191,8 +187,8 @@ public class PotentialCloudShadowAreasPathCentralPixel {
                 X0 = x; // position in the source array
                 Y0 = y;
 
-
-                if (flagArray[Y0 * sourceRectangle.width + X0] < PreparationMaskBand.CLOUD_FLAG) {
+                if ((flagArray[Y0 * sourceRectangle.width + X0] & PreparationMaskBand.CLOUD_FLAG) ==
+                        PreparationMaskBand.CLOUD_FLAG) {
                     identifyPotentialCloudShadow(sourceRectangle, sourceLatitude, sourceLongitude,
                             sourceAltitude, flagArray, cloudShadowArray, X0, Y0,
                             sunZenith, cloudIDArray, cloudShadowIDArray, cloudShadowIdBorderRectangle,
@@ -238,8 +234,8 @@ public class PotentialCloudShadowAreasPathCentralPixel {
             yPath = y0 + indicesPathArray[n][1];
 
             if (yPath < sourceRectangle.height && xPath < sourceRectangle.width && yPath >= 0 && xPath >= 0) {
-                if ((flagArray[yPath * sourceRectangle.width + xPath] >= PreparationMaskBand.CLOUD_FLAG &&
-                        flagArray[yPath * sourceRectangle.width + xPath] < PreparationMaskBand.INVALID_FLAG)) {
+                if (((flagArray[yPath * sourceRectangle.width + xPath] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
+                        (!((flagArray[yPath * sourceRectangle.width + xPath] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG))) {
 
 
                     cloudExtent = CloudVerticalExtent.getCloudVerticalExtentSentinal2();
