@@ -6,15 +6,12 @@ import java.util.Arrays;
  * todo: add comment
  *
  */
-public class SegmentationCloud {
+class SegmentationCloud {
 
     static final int NO_SHADOW = 0;
-    static final int NO_CLOUD = 0;
+    private static final int NO_CLOUD = 0;
 
-    private SegmentationCloud() {
-    }
-
-    public static int computeCloudID(int sourceWidth,
+    static int computeCloudID(int sourceWidth,
                                      int sourceHeight,
                                      int[] flagArray,
                                      int[] cloudIdArray) {
@@ -41,7 +38,8 @@ public class SegmentationCloud {
             for (int i = 0; i < sourceWidth; i++) {
                 index = j * (sourceWidth) + i;
 
-                if (flagArray[index] >= PreparationMaskBand.CLOUD_FLAG && flagArray[index] < PreparationMaskBand.INVALID_FLAG) {
+                if (((flagArray[index] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
+                        (!((flagArray[index] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG))) {
 
                     if (i != 0) leftNeighbour = cloudIdArray[index - 1];
                     if (j != 0) upperNeighbour = cloudIdArray[index - sourceWidth];
