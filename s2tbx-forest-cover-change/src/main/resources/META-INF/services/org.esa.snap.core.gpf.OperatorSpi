@@ -1,1 +1,2 @@
 org.esa.s2tbx.fcc.common.BandsExtractorOp$Spi
+org.esa.s2tbx.fcc.ForestCoverChange$Spi

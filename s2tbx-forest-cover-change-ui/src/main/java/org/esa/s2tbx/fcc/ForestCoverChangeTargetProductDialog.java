@@ -7,7 +7,6 @@ import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.binding.ValidationException;
 import com.bc.ceres.binding.ValueSet;
 import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyPane;
@@ -15,23 +14,7 @@ import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.Selection;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
-
-import java.awt.Toolkit;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.prefs.Preferences;
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.border.EmptyBorder;
-
+import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductNodeEvent;
@@ -63,7 +46,22 @@ import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
 import org.esa.snap.ui.UIUtils;
-import org.esa.s2tbx.fcc.annotation.*;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.border.EmptyBorder;
+import java.awt.Toolkit;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.prefs.Preferences;
 /**
  * @author Razvan Dumitrascu
  * @since 5.0.6
@@ -135,8 +133,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         try {
             final HashMap<String, Product> sourceProducts = ioParametersPanel.createSourceProductsMap();
 
-            this.forestCoverChange = new ForestCoverChange(sourceProducts.get("Current Source Product"),
-                    sourceProducts.get("Previous Source Product"),
+            this.forestCoverChange = new ForestCoverChange(sourceProducts.get("recentProduct"),
+                    sourceProducts.get("previousProduct"),
                     parameterSupport.getParameterMap());
         } catch (Throwable t) {
             handleInitialisationError(t);
@@ -453,7 +451,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             pm.beginTask("Running...", model.isOpenInAppSelected() ? 100 : 95);
             saveTime = 0L;
             Product product = null;
-            Product targetProduct = this.forestCoverChange.getTargetProduct();
+            Product targetProduct = this.forestCoverChange.getOutputProduct();
             try {
                 long t0 = System.currentTimeMillis();
 

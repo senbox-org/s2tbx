@@ -7,14 +7,30 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.s2tbx.fcc.common.BandsExtractorOp;
-import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
-import org.esa.s2tbx.fcc.trimming.*;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
+import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
+import org.esa.s2tbx.fcc.trimming.ColorFillerTilesComputing;
+import org.esa.s2tbx.fcc.trimming.DifferenceRegionTilesComputing;
+import org.esa.s2tbx.fcc.trimming.FinalMasksTilesComputing;
+import org.esa.s2tbx.fcc.trimming.ObjectsSelectionTilesComputing;
+import org.esa.s2tbx.fcc.trimming.PixelStatistic;
+import org.esa.s2tbx.fcc.trimming.TrimmingRegionTilesComputing;
+import org.esa.s2tbx.fcc.trimming.UnionMasksTilesComputing;
 import org.esa.s2tbx.grm.DifferencePixelsRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.ImageInfo;
+import org.esa.snap.core.datamodel.IndexCoding;
+import org.esa.snap.core.datamodel.PixelPos;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
+import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
+import org.esa.snap.core.gpf.OperatorSpi;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
@@ -22,7 +38,6 @@ import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.lang.ref.WeakReference;
 import java.util.Date;
@@ -39,7 +54,14 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  * @since 5.0.6
  */
-public class ForestCoverChange {
+@OperatorMetadata(
+        alias = "ForrestChangeOp",
+        version="1.0",
+        category = "",
+        description = "Creates forrest change masks out of two source products",
+        authors = "Jean Coravu, Razvan Dumitrascu",
+        copyright = "Copyright (C) 2017 by CS ROMANIA")
+public class ForestCoverChange extends Operator {
     static {
         String propertyName = "org.esa.s2tbx.fcc";
         String logLevel = System.getProperty(propertyName);
@@ -51,9 +73,9 @@ public class ForestCoverChange {
 
     private static final Logger logger = Logger.getLogger(ForestCoverChange.class.getName());
 
-    @SourceProduct(alias = "Current Source Product", description = "The source product to be modified.")
+    @SourceProduct(alias = "recentProduct", label = "Recent Date Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
-    @SourceProduct(alias = "Previous Source Product", description = "The source product to be modified.")
+    @SourceProduct(alias = "previousProduct", label = "Previous Date Product", description = "The source product to be modified.")
     private Product previousSourceProduct;
 
     @TargetProduct
@@ -97,6 +119,9 @@ public class ForestCoverChange {
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
 
+    public ForestCoverChange() {
+    }
+
     public ForestCoverChange(Product currentSourceProduct, Product previousSourceProduct, Map<String, Object> parameters) {
         this.currentSourceProduct = currentSourceProduct;
         this.previousSourceProduct = previousSourceProduct;
@@ -120,7 +145,7 @@ public class ForestCoverChange {
         initialize();
     }
 
-    private void initialize() {
+    public void initialize() {
         validateSourceProducts();
 
         this.currentProductBandsNames = findBandNames(this.currentSourceProduct);
@@ -135,6 +160,11 @@ public class ForestCoverChange {
         ProductUtils.copyGeoCoding(this.currentSourceProduct, this.targetProduct);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
+    }
+
+    @Override
+    public void doExecute(ProgressMonitor pm) throws OperatorException {
+        doExecute();
     }
 
     public void doExecute() throws OperatorException {
@@ -160,6 +190,7 @@ public class ForestCoverChange {
             Product currentProduct = currentResult.getProduct();
             IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
             IntMatrix currentProductColorFill = currentResult.getSegmentationProductColorFill();
+
             Product previousProduct = previousResult.getProduct();
             IntSet previousSegmentationTrimmingRegionKeys = previousResult.getTrimmingRegionKeys();
             IntMatrix previousProductColorFill = previousResult.getSegmentationProductColorFill();
@@ -426,7 +457,7 @@ public class ForestCoverChange {
         }
     }
 
-    public Product getTargetProduct() {
+    public Product getOutputProduct() {
         return this.targetProduct;
     }
 
@@ -491,6 +522,13 @@ public class ForestCoverChange {
 
         public IntMatrix getSegmentationProductColorFill() {
             return segmentationProductColorFill;
+        }
+    }
+
+    public static class Spi extends OperatorSpi {
+
+        public Spi() {
+            super(ForestCoverChange.class);
         }
     }
 }
