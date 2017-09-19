@@ -196,10 +196,9 @@ public class AdaptedIsoClustering<T extends Clusterable> extends Clusterer<T> {
         int darkestPointIndex = -1;
         for (int index = 0; index < points.size(); index++) {
             double[] p = ((ArrayList<DoublePoint>) points).get(index).getPoint();
-            //todo check whether this is okay for more than two bands
             double value = 0;
             for (int i = 0; i < p.length; i++) {
-                value += Math.pow(p[i], p.length);
+                value += Math.pow(p[i], 2);
             }
             if (value < darkestPoint) {
                 darkestPoint = value;
