@@ -14,10 +14,12 @@ import org.esa.s2tbx.fcc.trimming.DifferenceRegionTilesComputing;
 import org.esa.s2tbx.fcc.trimming.FinalMasksTilesComputing;
 import org.esa.s2tbx.fcc.trimming.ObjectsSelectionTilesComputing;
 import org.esa.s2tbx.fcc.trimming.PixelStatistic;
+import org.esa.s2tbx.fcc.trimming.ProductDataTilesComputing;
 import org.esa.s2tbx.fcc.trimming.TrimmingRegionTilesComputing;
 import org.esa.s2tbx.fcc.trimming.UnionMasksTilesComputing;
 import org.esa.s2tbx.grm.DifferencePixelsRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
+import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
@@ -26,8 +28,6 @@ import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.dataio.ProductIO;
-import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -40,10 +40,8 @@ import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -200,10 +198,10 @@ public class ForestCoverChange extends Operator {
 
         try {
             ProductTrimmingResult currentResult = runTrimming(threadCount, threadPool, this.currentSourceProduct, this.currentProductBandsNames,
-                                                              trimmingSourceProductBandIndices, tileSize);
+                                                              trimmingSourceProductBandIndices, tileSize,  "previous");
 
             ProductTrimmingResult previousResult = runTrimming(threadCount, threadPool, this.previousSourceProduct, this.previousProductBandsNames,
-                                                               trimmingSourceProductBandIndices, tileSize);
+                                                               trimmingSourceProductBandIndices, tileSize, "current");
 
             Product currentProduct = currentResult.getProduct();
             IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
