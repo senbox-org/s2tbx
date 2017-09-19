@@ -34,7 +34,7 @@ class GrowingCloudShadow {
                                     && iii >= S2IdepixCloudShadowOp.searchBorderRadius
                                     && iii < sourceWidth - S2IdepixCloudShadowOp.searchBorderRadius) {
                                 indexij = jjj * (sourceWidth) + iii;
-                                if (flagArray[indexij] == PreparationMaskBand.OCEAN_FLAG) {
+                                if (flagArray[indexij] == PreparationMaskBand.WATER_FLAG) {
                                     preparedArray[indexij] = 500;
                                 }
                             }
