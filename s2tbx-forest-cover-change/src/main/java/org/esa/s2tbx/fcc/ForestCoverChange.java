@@ -1,5 +1,6 @@
 package org.esa.s2tbx.fcc;
 
+import com.bc.ceres.core.ProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -9,14 +10,33 @@ import org.esa.s2tbx.fcc.common.BandsExtractorOp;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.trimming.*;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
+import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
+import org.esa.s2tbx.fcc.trimming.ColorFillerTilesComputing;
+import org.esa.s2tbx.fcc.trimming.DifferenceRegionTilesComputing;
+import org.esa.s2tbx.fcc.trimming.FinalMasksTilesComputing;
+import org.esa.s2tbx.fcc.trimming.ObjectsSelectionTilesComputing;
+import org.esa.s2tbx.fcc.trimming.PixelStatistic;
+import org.esa.s2tbx.fcc.trimming.ProductDataTilesComputing;
+import org.esa.s2tbx.fcc.trimming.TrimmingRegionTilesComputing;
+import org.esa.s2tbx.fcc.trimming.UnionMasksTilesComputing;
 import org.esa.s2tbx.grm.DifferencePixelsRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.grm.segmentation.tiles.SegmentationSourceProductPair;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.dataio.ProductIO;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.ImageInfo;
+import org.esa.snap.core.datamodel.IndexCoding;
+import org.esa.snap.core.datamodel.PixelPos;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
+import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
+import org.esa.snap.core.gpf.OperatorSpi;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
@@ -24,14 +44,17 @@ import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -42,7 +65,14 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  * @since 5.0.6
  */
-public class ForestCoverChange {
+@OperatorMetadata(
+        alias = "ForrestChangeOp",
+        version="1.0",
+        category = "",
+        description = "Creates forrest change masks out of two source products",
+        authors = "Jean Coravu, Razvan Dumitrascu",
+        copyright = "Copyright (C) 2017 by CS ROMANIA")
+public class ForestCoverChange extends Operator {
     static {
         String propertyName = "org.esa.s2tbx.fcc";
         String logLevel = System.getProperty(propertyName);
@@ -54,9 +84,9 @@ public class ForestCoverChange {
 
     private static final Logger logger = Logger.getLogger(ForestCoverChange.class.getName());
 
-    @SourceProduct(alias = "Current Source Product", description = "The source product to be modified.")
+    @SourceProduct(alias = "recentProduct", label = "Recent Date Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
-    @SourceProduct(alias = "Previous Source Product", description = "The source product to be modified.")
+    @SourceProduct(alias = "previousProduct", label = "Previous Date Product", description = "The source product to be modified.")
     private Product previousSourceProduct;
 
     @TargetProduct
@@ -117,6 +147,9 @@ public class ForestCoverChange {
     private int threadCount;
     private ExecutorService threadPool;
 
+    public ForestCoverChange() {
+    }
+
     public ForestCoverChange(Product currentSourceProduct, Product previousSourceProduct, Map<String, Object> parameters) {
         this.currentSourceProduct = currentSourceProduct;
         this.previousSourceProduct = previousSourceProduct;
@@ -148,7 +181,7 @@ public class ForestCoverChange {
         initialize();
     }
 
-    private void initialize() {
+    public void initialize() {
         validateSourceProducts();
 
         this.currentProductBandsNames = findBandNames(this.currentSourceProduct);
@@ -178,6 +211,11 @@ public class ForestCoverChange {
         this.threadPool = Executors.newCachedThreadPool();
     }
 
+    @Override
+    public void doExecute(ProgressMonitor pm) throws OperatorException {
+        doExecute();
+    }
+
     public void doExecute() throws OperatorException {
         long startTime = System.currentTimeMillis();
 
@@ -186,14 +224,29 @@ public class ForestCoverChange {
             logger.log(Level.FINE, "Start Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight() + ", start time: " + new Date(startTime));
         }
 
+        String destinationFolderPath = System.getProperty("destination.folder.path");
+        this.destinationWritingFolder = null;
+        if (destinationFolderPath != null) {
+            Path path = Paths.get(destinationFolderPath);
+            this.destinationWritingFolder = path.resolve(this.targetProduct.getName()).toFile();
+            if (!this.destinationWritingFolder.exists()) {
+                this.destinationWritingFolder.mkdirs();
+            }
+        }
+
+        Dimension tileSize = this.targetProduct.getPreferredTileSize();
+//        int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
+//        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
+//        ExecutorService threadPool = Executors.newCachedThreadPool();
+//
         try {
             int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
 
-            ProductTrimmingResult currentResult = runTrimming(this.currentSourceProduct, this.currentProductBandsNames,
-                                                              trimmingSourceProductBandIndices,  "previous");
+            ProductTrimmingResult currentResult = runTrimming(threadCount, threadPool, this.currentSourceProduct, this.currentProductBandsNames,
+                                                              trimmingSourceProductBandIndices, tileSize,  "previous");
 
-            ProductTrimmingResult previousResult = runTrimming(this.previousSourceProduct, this.previousProductBandsNames,
-                                                               trimmingSourceProductBandIndices, "current");
+            ProductTrimmingResult previousResult = runTrimming(threadCount, threadPool, this.previousSourceProduct, this.previousProductBandsNames,
+                                                               trimmingSourceProductBandIndices, tileSize, "current");
 
             Product currentProduct = currentResult.getProduct();
             IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
@@ -353,7 +406,7 @@ public class ForestCoverChange {
     }
 
     private ProductTrimmingResult runTrimming(Product sourceProduct, String[] sourceBandNames, int[] trimmingSourceProductBandIndices, String prefixFileName)
-                                              throws Exception {
+            throws Exception {
 
         Product extractedBandsProduct = extractBands(sourceProduct, sourceBandNames);
 
@@ -411,11 +464,11 @@ public class ForestCoverChange {
 
     private IntMatrix generateColorFill(SegmentationSourceProductPair[] segmentationSourcePairs, Product extractedBandsSourceProduct,
                                         Dimension tileSize, String prefixFileName)
-                                        throws Exception {
+            throws Exception {
 
         IntMatrix segmentationMatrix = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, segmentationSourcePairs,
-                                                                               mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
-                                                                               threshold, spectralWeight, shapeWeight, tileSize);
+                mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+                threshold, spectralWeight, shapeWeight, tileSize);
 
         writeProduct(extractedBandsSourceProduct.getSceneGeoCoding(), segmentationMatrix, prefixFileName + "SegmentationMatrix");
 
@@ -423,8 +476,8 @@ public class ForestCoverChange {
     }
 
     private IntMatrix runColorFillerOp(Product extractedBandsSourceProduct,
-                                              IntMatrix segmentationMatrix, float percentagePixels, Dimension tileSize)
-                                              throws Exception {
+                                       IntMatrix segmentationMatrix, float percentagePixels, Dimension tileSize)
+            throws Exception {
 
         IntSet validRegions = runObjectsSelectionOp(segmentationMatrix, extractedBandsSourceProduct, percentagePixels, tileSize);
 
@@ -433,8 +486,8 @@ public class ForestCoverChange {
     }
 
     private IntSet runObjectsSelectionOp(IntMatrix segmentationMatrix,
-                                                Product extractedBandsSourceProduct, float percentagePixels, Dimension tileSize)
-                                                throws Exception {
+                                         Product extractedBandsSourceProduct, float percentagePixels, Dimension tileSize)
+            throws Exception {
 
         Product landCover = buildLandCoverProduct(extractedBandsSourceProduct);
         Map<String, Object> parameters = new HashMap<>();
@@ -458,7 +511,7 @@ public class ForestCoverChange {
 
     private static Product buildLandCoverProduct(Product sourceProduct) {
         Product landCoverProduct = new Product(sourceProduct.getName(), sourceProduct.getProductType(),
-                                               sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+                sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
         landCoverProduct.setStartTime(sourceProduct.getStartTime());
         landCoverProduct.setEndTime(sourceProduct.getEndTime());
         landCoverProduct.setNumResolutionsMax(sourceProduct.getNumResolutionsMax());
@@ -496,7 +549,7 @@ public class ForestCoverChange {
 
     private IntMatrix computeUnionMaskMatrix(IntSet currentSegmentationTrimmingRegionKeys, IntMatrix currentSegmentationSourceProduct,
                                              IntSet previousSegmentationTrimmingRegionKeys, IntMatrix previousSegmentationSourceProduct)
-                                      throws Exception {
+            throws Exception {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -504,13 +557,13 @@ public class ForestCoverChange {
         }
         Dimension tileSize = getPreferredTileSize();
         UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceProduct, previousSegmentationSourceProduct,
-                                                                               currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
-                                                                               tileSize.width, tileSize.height);
+                currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
+                tileSize.width, tileSize.height);
         return tilesComputing.runTilesInParallel(threadCount, threadPool);
     }
 
     private ProductData computeFinalMaskProductData(IntMatrix differenceSegmentationMatrix, IntMatrix unionMaskProduct, IntSet differenceTrimmingSet)
-                                              throws Exception {
+            throws Exception {
 
         Dimension tileSize = getPreferredTileSize();
         FinalMasksTilesComputing tilesComputing = new FinalMasksTilesComputing(differenceSegmentationMatrix, unionMaskProduct, differenceTrimmingSet, tileSize.width, tileSize.height);
@@ -623,6 +676,13 @@ public class ForestCoverChange {
 
         public IntMatrix getSegmentationProductColorFill() {
             return segmentationProductColorFill;
+        }
+    }
+
+    public static class Spi extends OperatorSpi {
+
+        public Spi() {
+            super(ForestCoverChange.class);
         }
     }
 }

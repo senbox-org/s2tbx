@@ -5,16 +5,15 @@ import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-
 import org.esa.snap.core.datamodel.ProductData;
+import org.junit.Test;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Razvan Dumitrascu
@@ -47,7 +46,7 @@ public class ForestCoverChangeTest extends AbstractOpTest {
 
         ForestCoverChange forestCoverChange = new ForestCoverChange(currentSourceProduct, previousSourceProduct, parameters);
         forestCoverChange.doExecute();
-        Product targetProduct = forestCoverChange.getTargetProduct();
+        Product targetProduct = forestCoverChange.getOutputProduct();
 
         assertNotNull(targetProduct);
 
