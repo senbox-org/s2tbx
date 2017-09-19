@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * todo: add comment
+ * @author Tonio Fincke
+ * @author Michael Paperin
  */
-public class ClusteringKMeans {
+class ClusteringKMeans {
 
-    public double[][] computedKMeansCluster(double[]... images) {
+    static double[][] computedKMeansCluster(double[]... images) {
         AdaptedIsoClustering clusterer = new AdaptedIsoClustering(AnalyzeCloudShadowIDAreas.clusterCount,
                                                                   AnalyzeCloudShadowIDAreas.maxIterCount);
         List<Clusterable> list = new ArrayList<>();
@@ -23,11 +24,11 @@ public class ClusteringKMeans {
             }
             list.add(new DoublePoint(values));
         }
-        List<CentroidCluster<Clusterable>> cluster = clusterer.cluster(list);
+        List<CentroidCluster<Clusterable>> clusters = clusterer.cluster(list);
         double[][] clusterCentroidArray = new double[AnalyzeCloudShadowIDAreas.clusterCount][S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING];
 
         int countClusterNumber = 0;
-        for (CentroidCluster<Clusterable> centroidCluster : cluster) {
+        for (CentroidCluster<Clusterable> centroidCluster : clusters) {
             for (int ii = 0; ii < S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING; ii++) {
                 clusterCentroidArray[countClusterNumber][ii] = centroidCluster.getCenter().getPoint()[ii];
             }
