@@ -6,21 +6,17 @@ import java.awt.*;
  * todo: add comment
  *
  */
-public class PreparationMaskBand {
+class PreparationMaskBand {
 
-    static final int INVALID_FLAG = 10000;
-    static final int CLOUD_FLAG = 1000;
-    static final int CLOUD_SHADOW_FLAG = 100;
-    static final int LAND_FLAG = 10;
-    static final int OCEAN_FLAG = 1;
+    static final int INVALID_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_INVALID)+ 0.1);
+    static final int MOUNTAIN_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_MOUNTAIN_SHADOW)+ 0.1);
+    static final int CLOUD_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD_SHADOW)+ 0.1);
+    static final int POTENTIAL_HAZE = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_HAZE)+ 0.1);
+    static final int CLOUD_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD)+ 0.1);
+    static final int LAND_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_LAND)+ 0.1);
+    static final int WATER_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_WATER) + 0.1);
 
-    private PreparationMaskBand() {
-    }
-
-    public static void prepareMaskBand(int productWidth,
-                                       int productHeight,
-                                       Rectangle tileSourceRectangle,
-                                       int[] flagArray,
+    static void prepareMaskBand(int productWidth, int productHeight, Rectangle tileSourceRectangle, int[] flagArray,
                                        FlagDetector flagDetector) {
 
         int growingCloud = S2IdepixCloudShadowOp.GROWING_CLOUD;
@@ -35,16 +31,16 @@ public class PreparationMaskBand {
                         (tileSourceRectangle.x + i) < productWidth && (tileSourceRectangle.y + j) < productHeight) {
 
                     if (flagDetector.isInvalid(i, j)) {
-                        flagArray[j * sourceWidth + i] = PreparationMaskBand.INVALID_FLAG;
+                        flagArray[j * sourceWidth + i] = INVALID_FLAG;
                     } else {
                         if (flagDetector.isLand(i, j)) {
-                            flagArray[j * (sourceWidth) + i] += PreparationMaskBand.LAND_FLAG;
+                            flagArray[j * (sourceWidth) + i] += LAND_FLAG;
                         } else {
-                            flagArray[j * sourceWidth + i] += PreparationMaskBand.OCEAN_FLAG;
+                            flagArray[j * sourceWidth + i] += WATER_FLAG;
                         }
 
                         if (flagDetector.isCloud(i, j) || flagDetector.isCloudBuffer(i, j)) {
-                            flagArray[j * (sourceWidth) + i] += PreparationMaskBand.CLOUD_FLAG;
+                            flagArray[j * (sourceWidth) + i] += CLOUD_FLAG;
                         }
                     }
                 }
@@ -60,12 +56,13 @@ public class PreparationMaskBand {
         for (int j = growingCloud; j < sourceHeight - growingCloud; j++) {
             for (int i = growingCloud; i < sourceWidth - growingCloud; i++) {
                 index = j * (sourceWidth) + i;
-                if (flagArray[index] >= PreparationMaskBand.CLOUD_FLAG && flagArray[index] <= PreparationMaskBand.INVALID_FLAG) {
+                if (((flagArray[index] & CLOUD_FLAG) == CLOUD_FLAG) &&
+                        (!( (flagArray[index] & INVALID_FLAG) == INVALID_FLAG))) {
                     for (int iw = -growingCloud; iw <= growingCloud; iw++) {
                         for (int jw = -growingCloud; jw <= growingCloud; jw++) {
                             temp = index + iw + jw * sourceWidth;
-                            if (flagArray[temp] < PreparationMaskBand.CLOUD_FLAG) {
-                                preparedArray[temp] = flagArray[temp] + PreparationMaskBand.CLOUD_FLAG;
+                            if (!((flagArray[temp] & CLOUD_FLAG) == CLOUD_FLAG)) {
+                                preparedArray[temp] = flagArray[temp] + CLOUD_FLAG;
                             }
                         }
                     }

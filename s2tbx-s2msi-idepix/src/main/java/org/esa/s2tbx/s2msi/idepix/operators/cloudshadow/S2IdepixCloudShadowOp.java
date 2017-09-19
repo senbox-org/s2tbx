@@ -2,11 +2,10 @@ package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.FlagCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.ImageInfo;
-import org.esa.snap.core.datamodel.IndexCoding;
+import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.RasterDataNode;
@@ -17,6 +16,7 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.BitSetter;
 import org.esa.snap.core.util.ProductUtils;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -81,6 +81,22 @@ public class S2IdepixCloudShadowOp extends Operator {
     private static final String sourceAltitudeName = "elevation";
     private static final String sourceFlagName1 = "pixel_classif_flags";
 
+    public static final String F_INVALID_DESCR_TEXT = "Invalid pixels";
+    public static final String F_CLOUD_DESCR_TEXT = "Cloud pixels";
+    public static final String F_MOUNTAIN_SHADOW_DESCR_TEXT = "Mountain shadow pixels";
+    public static final String F_CLOUD_SHADOW_DESCR_TEXT = "Cloud shadow pixels";
+    public static final String F_LAND_DESCR_TEXT = "Land pixels";
+    public static final String F_WATER_DESCR_TEXT = "Water pixels";
+    public static final String F_HAZE_DESCR_TEXT = "Potential haze/semitarnsparent cloud pixels";
+
+    static final int F_WATER = 0;
+    static final int F_LAND = 1;
+    static final int F_CLOUD = 2;
+    static final int F_HAZE = 3;
+    static final int F_CLOUD_SHADOW = 4;
+    static final int F_MOUNTAIN_SHADOW = 5;
+    static final int F_INVALID = 6;
+
     @Override
     public void initialize() throws OperatorException {
 
@@ -106,7 +122,8 @@ public class S2IdepixCloudShadowOp extends Operator {
         }
 
         targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
-        attachIndexCoding(targetBandCloudShadow);
+        attachFlagCoding(targetBandCloudShadow);
+        setupBitmasks(targetProduct);
 
         spatialResolution = determineSourceResolution();
         searchBorderRadius = (int) determineSearchBorderRadius(S2IdepixCloudShadowOp.spatialResolution, maximumSunZenith);
@@ -266,10 +283,10 @@ public class S2IdepixCloudShadowOp extends Operator {
             int[][] cloudShadowIdBorderRectangle =
                     PotentialCloudShadowAreasPathCentralPixel.
                             makedCloudShadowArea(s2ClassifProduct, targetProduct, sourceRectangle,
-                                                 targetRectangle, sourceSunZenith, sourceSunAzimuth,
-                                                 sourceLatitudes, sourceLongitudes, sourceAltitude,
-                                                 flagArray, cloudShadowArray,
-                                                 cloudIDArray, cloudShadowIDArray, counterTable);
+                                                targetRectangle, sourceSunZenith, sourceSunAzimuth,
+                                                sourceLatitudes, sourceLongitudes, sourceAltitude,
+                                                flagArray, cloudShadowArray,
+                                                cloudIDArray, cloudShadowIDArray, counterTable);
 
             AnalyzeCloudShadowIDAreas.identifyCloudShadowArea(s2ClassifProduct, sourceRectangle,
                                                               sourceClusterA, sourceClusterB,
@@ -289,38 +306,60 @@ public class S2IdepixCloudShadowOp extends Operator {
         }
     }
 
-    private void attachIndexCoding(Band targetBandCloudShadow) {
-        IndexCoding cloudCoding = new IndexCoding("cloudCoding");
-        cloudCoding.addIndex("nothing", 0, "");
-        cloudCoding.addIndex("ocean", 1, "");
-        cloudCoding.addIndex("land", 10, "");
-        cloudCoding.addIndex("cloudShadow", 100, "");
-        cloudCoding.addIndex("ocean_cloud_shadow", 101, "");
-        cloudCoding.addIndex("land_cloud_shadow", 110, "");
-        cloudCoding.addIndex("cloud", 1000, "");
-        cloudCoding.addIndex("ocean_cloud", 1001, "");
-        cloudCoding.addIndex("land_cloud", 1010, "");
-        cloudCoding.addIndex("water_pot_haze", 5001, "");
-        cloudCoding.addIndex("land_pot_haze", 5010, "");
-        cloudCoding.addIndex("invalid", 10000, "");
+    private void attachFlagCoding(Band targetBandCloudShadow) {
+        FlagCoding cloudCoding = new FlagCoding("cloudCoding");
+        cloudCoding.addFlag("water", BitSetter.setFlag(0, F_WATER), F_WATER_DESCR_TEXT);;
+        cloudCoding.addFlag("land", BitSetter.setFlag(0, F_LAND), F_LAND_DESCR_TEXT);
+        cloudCoding.addFlag("cloud",BitSetter.setFlag(0, F_CLOUD), F_CLOUD_DESCR_TEXT);
+        cloudCoding.addFlag("pot_haze", BitSetter.setFlag(0, F_HAZE), F_HAZE_DESCR_TEXT);
+        cloudCoding.addFlag("cloudShadow", BitSetter.setFlag(0, F_CLOUD_SHADOW), F_CLOUD_SHADOW_DESCR_TEXT);
+        cloudCoding.addFlag("mountain_shadow", BitSetter.setFlag(0, F_MOUNTAIN_SHADOW), F_MOUNTAIN_SHADOW_DESCR_TEXT);
+        cloudCoding.addFlag("invalid", BitSetter.setFlag(0, F_INVALID), F_INVALID_DESCR_TEXT);
         targetBandCloudShadow.setSampleCoding(cloudCoding);
-        targetBandCloudShadow.getProduct().getIndexCodingGroup().add(cloudCoding);
+        targetBandCloudShadow.getProduct().getFlagCodingGroup().add(cloudCoding);
+    }
 
-        final int sampleCount = cloudCoding.getSampleCount();
-        ColorPaletteDef.Point[] points = new ColorPaletteDef.Point[sampleCount];
-        points[0] = new ColorPaletteDef.Point(0, Color.WHITE);
-        points[1] = new ColorPaletteDef.Point(1, Color.BLUE);
-        points[2] = new ColorPaletteDef.Point(10, Color.GREEN);
-        points[3] = new ColorPaletteDef.Point(100, Color.DARK_GRAY);
-        points[4] = new ColorPaletteDef.Point(101, Color.DARK_GRAY);
-        points[5] = new ColorPaletteDef.Point(110, Color.DARK_GRAY);
-        points[6] = new ColorPaletteDef.Point(1000, Color.YELLOW);
-        points[7] = new ColorPaletteDef.Point(1001, Color.YELLOW);
-        points[8] = new ColorPaletteDef.Point(1010, Color.YELLOW);
-        points[9] = new ColorPaletteDef.Point(5001, Color.CYAN);
-        points[10] = new ColorPaletteDef.Point(5010, Color.LIGHT_GRAY);
-        points[11] = new ColorPaletteDef.Point(10000, Color.RED);
-        targetBandCloudShadow.setImageInfo(new ImageInfo(new ColorPaletteDef(points, points.length)));
+    private static void setupBitmasks(Product targetProduct) {
+
+        int index = 0;
+        int w = targetProduct.getSceneRasterWidth();
+        int h = targetProduct.getSceneRasterHeight();
+        Mask mask;
+        mask = Mask.BandMathsType.create("invalid",
+                                         F_INVALID_DESCR_TEXT, w, h,
+                                         "FlagBand.invalid",
+                                         Color.DARK_GRAY, 0.5f);
+        targetProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("land",
+                                         F_LAND_DESCR_TEXT, w, h,
+                                         "FlagBand.land",
+                                         Color.GREEN, 0.5f);
+        targetProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("water",
+                                         F_WATER_DESCR_TEXT, w, h,
+                                         "FlagBand.water",
+                                         Color.BLUE, 0.5f);
+        targetProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("cloud",
+                                         F_CLOUD_DESCR_TEXT, w, h,
+                                         "FlagBand.cloud",
+                                         Color.YELLOW, 0.5f);
+        targetProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("haze/semitransparent cloud",
+                                         F_HAZE_DESCR_TEXT, w, h,
+                                         " FlagBand.pot_haze",
+                                         Color.CYAN, 0.5f);
+        targetProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("cloud_shadow",
+                                         F_CLOUD_SHADOW_DESCR_TEXT, w, h,
+                                         "FlagBand.cloudShadow",
+                                         Color.ORANGE, 0.5f);
+        targetProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("mountain_shadow",
+                                         F_MOUNTAIN_SHADOW_DESCR_TEXT, w, h,
+                                         "FlagBand.mountain_shadow",
+                                         Color.PINK, 0.5f);
+        targetProduct.getMaskGroup().add(index, mask);
     }
 
     private static void makeFilledBand(int[] inputData, Rectangle targetRectangle, Tile targetTileOutputBand, int mkr) {
