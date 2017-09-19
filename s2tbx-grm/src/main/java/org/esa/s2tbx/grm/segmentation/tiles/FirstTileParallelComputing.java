@@ -19,15 +19,13 @@ import java.io.IOException;
  */
 public class FirstTileParallelComputing extends AbstractImageTilesParallelComputing {
     private final AbstractTileSegmenter tileSegmenter;
-    private final Product sourceProduct;
-    private final String[] sourceBandNames;
+    private final SegmentationSourceProductPair[] segmentationSourcePairs;
 
-    public FirstTileParallelComputing(Product sourceProduct, String[] sourceBandNames, AbstractTileSegmenter tileSegmenter) {
+    public FirstTileParallelComputing(SegmentationSourceProductPair[] segmentationSourcePairs, AbstractTileSegmenter tileSegmenter) {
         super(tileSegmenter.getImageWidth(), tileSegmenter.getImageHeight(), tileSegmenter.getTileWidth(), tileSegmenter.getTileHeight());
 
         this.tileSegmenter = tileSegmenter;
-        this.sourceProduct = sourceProduct;
-        this.sourceBandNames = sourceBandNames;
+        this.segmentationSourcePairs = segmentationSourcePairs;
     }
 
     @Override
@@ -38,17 +36,27 @@ public class FirstTileParallelComputing extends AbstractImageTilesParallelComput
     }
 
     private TileDataSource[] buildSourceTiles(BoundingBox tileRegion) {
-        TileDataSource[] sourceTiles = new TileDataSource[this.sourceBandNames.length];
+        int totalBandCount = 0;
+        for (int i=0; i<this.segmentationSourcePairs.length; i++) {
+            totalBandCount += this.segmentationSourcePairs[i].getSourceBandNames().length;
+        }
+
+        TileDataSource[] sourceTiles = new TileDataSource[totalBandCount];
         Rectangle rectangleToRead = new Rectangle(tileRegion.getLeftX(), tileRegion.getTopY(), tileRegion.getWidth(), tileRegion.getHeight());
-        for (int i=0; i<this.sourceBandNames.length; i++) {
-            Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            Tile tile = null;
-            synchronized (this) {
-                MultiLevelImage image = band.getSourceImage();
-                Raster awtRaster = image.getData(rectangleToRead);
-                tile = new TileImpl(band, awtRaster);
+        int index = 0;
+        for (int k=0; k<this.segmentationSourcePairs.length; k++) {
+            String[] sourceBandNames = this.segmentationSourcePairs[k].getSourceBandNames();
+            Product sourceProduct = this.segmentationSourcePairs[k].getSourceProduct();
+            for (int i=0; i<sourceBandNames.length; i++) {
+                Band band = sourceProduct.getBand(sourceBandNames[i]);
+                Tile tile = null;
+                synchronized (this) {
+                    MultiLevelImage image = band.getSourceImage();
+                    Raster awtRaster = image.getData(rectangleToRead);
+                    tile = new TileImpl(band, awtRaster);
+                }
+                sourceTiles[index++] = new TileDataSourceImpl(tile);
             }
-            sourceTiles[i] = new TileDataSourceImpl(tile);
         }
         return sourceTiles;
     }

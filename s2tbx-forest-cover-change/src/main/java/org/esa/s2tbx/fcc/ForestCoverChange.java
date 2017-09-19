@@ -1,6 +1,5 @@
 package org.esa.s2tbx.fcc;
 
-import com.bc.ceres.core.ProgressMonitor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -12,6 +11,8 @@ import org.esa.s2tbx.fcc.trimming.*;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.grm.DifferencePixelsRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
+import org.esa.s2tbx.grm.segmentation.tiles.SegmentationSourceProductPair;
+import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.GPF;
@@ -23,17 +24,14 @@ import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -82,9 +80,7 @@ public class ForestCoverChange {
     private String regionMergingCriterion;
 
     @ParameterGroup(alias = "Segmentation")
-    @Parameter(label = "Total iterations",
-            defaultValue = "10",
-            description = "The total number of iterations.")
+    @Parameter(label = "Total iterations", defaultValue = "10", description = "The total number of iterations.")
     private int totalIterationsForSecondSegmentation;
 
     @ParameterGroup(alias = "Segmentation")
@@ -99,9 +95,27 @@ public class ForestCoverChange {
     @Parameter(label = "Shape weight", defaultValue = "0.5" , description = "The shape weight.")
     private float shapeWeight;
 
+    @ParameterGroup(alias = "NDVI")
+    @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the red source band is multiplied by this value.")
+    private float ndviRedFactor;
+
+    @ParameterGroup(alias = "NDVI")
+    @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
+    private float ndviNirFactor;
+
+    @ParameterGroup(alias = "NDWI")
+    @Parameter(label = "MIR factor", defaultValue = "1.0F", description = "The value of the MIR source band is multiplied by this value.")
+    private float ndwiMirFactor;
+
+    @ParameterGroup(alias = "NDWI")
+    @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
+    private float ndwiNirFactor;
+
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
     private File destinationWritingFolder;
+    private int threadCount;
+    private ExecutorService threadPool;
 
     public ForestCoverChange(Product currentSourceProduct, Product previousSourceProduct, Map<String, Object> parameters) {
         this.currentSourceProduct = currentSourceProduct;
@@ -121,6 +135,14 @@ public class ForestCoverChange {
                 this.threshold = (float) entry.getValue();
             } else if(entry.getKey().equals("mergingCostCriterion")) {
                 this.mergingCostCriterion = (String) entry.getValue();
+            } else if(entry.getKey().equals("ndviRedFactor")) {
+                this.ndviRedFactor = (float) entry.getValue();
+            } else if(entry.getKey().equals("ndviNirFactor")) {
+                this.ndviNirFactor = (float) entry.getValue();
+            } else if(entry.getKey().equals("ndwiMirFactor")) {
+                this.ndwiMirFactor = (float) entry.getValue();
+            } else if(entry.getKey().equals("ndwiNirFactor")) {
+                this.ndwiNirFactor = (float) entry.getValue();
             }
         }
         initialize();
@@ -141,15 +163,6 @@ public class ForestCoverChange {
         ProductUtils.copyGeoCoding(this.currentSourceProduct, this.targetProduct);
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
-    }
-
-    public void doExecute() throws OperatorException {
-        long startTime = System.currentTimeMillis();
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight() + ", start time: " + new Date(startTime));
-        }
 
         String destinationFolderPath = System.getProperty("destination.folder.path");
         this.destinationWritingFolder = null;
@@ -161,21 +174,31 @@ public class ForestCoverChange {
             }
         }
 
-        Dimension tileSize = this.targetProduct.getPreferredTileSize();
-        int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
-        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
-        ExecutorService threadPool = Executors.newCachedThreadPool();
+        this.threadCount = Runtime.getRuntime().availableProcessors() - 1;
+        this.threadPool = Executors.newCachedThreadPool();
+    }
+
+    public void doExecute() throws OperatorException {
+        long startTime = System.currentTimeMillis();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start Forest Cover Change: imageWidth: "+this.targetProduct.getSceneRasterWidth()+", imageHeight: "+this.targetProduct.getSceneRasterHeight() + ", start time: " + new Date(startTime));
+        }
 
         try {
-            ProductTrimmingResult currentResult = runTrimming(threadCount, threadPool, this.currentSourceProduct, this.currentProductBandsNames,
-                                                              trimmingSourceProductBandIndices, tileSize,  "previous");
+            int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
 
-            ProductTrimmingResult previousResult = runTrimming(threadCount, threadPool, this.previousSourceProduct, this.previousProductBandsNames,
-                                                               trimmingSourceProductBandIndices, tileSize, "current");
+            ProductTrimmingResult currentResult = runTrimming(this.currentSourceProduct, this.currentProductBandsNames,
+                                                              trimmingSourceProductBandIndices,  "previous");
+
+            ProductTrimmingResult previousResult = runTrimming(this.previousSourceProduct, this.previousProductBandsNames,
+                                                               trimmingSourceProductBandIndices, "current");
 
             Product currentProduct = currentResult.getProduct();
             IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
             IntMatrix currentProductColorFill = currentResult.getSegmentationProductColorFill();
+
             Product previousProduct = previousResult.getProduct();
             IntSet previousSegmentationTrimmingRegionKeys = previousResult.getTrimmingRegionKeys();
             IntMatrix previousProductColorFill = previousResult.getSegmentationProductColorFill();
@@ -183,14 +206,15 @@ public class ForestCoverChange {
             // reset the references
             WeakReference<ProductTrimmingResult> referenceCurrentResult = new WeakReference<ProductTrimmingResult>(currentResult);
             referenceCurrentResult.clear();
+
             WeakReference<ProductTrimmingResult> referencePreviousResult = new WeakReference<ProductTrimmingResult>(previousResult);
             referencePreviousResult.clear();
 
-            IntMatrix unionMaskProduct = runUnionMasksOp(threadCount, threadPool, currentSegmentationTrimmingRegionKeys, currentProductColorFill,
-                                                         previousSegmentationTrimmingRegionKeys, previousProductColorFill, tileSize);
+            // run union masks
+            IntMatrix unionMaskMatrix = computeUnionMaskMatrix(currentSegmentationTrimmingRegionKeys, currentProductColorFill,
+                                                         previousSegmentationTrimmingRegionKeys, previousProductColorFill);
 
-            writeProduct(threadCount, threadPool, currentProduct.getSceneGeoCoding(), unionMaskProduct,
-                    tileSize,  "UnionMaskProduct");
+            writeProduct(currentProduct.getSceneGeoCoding(), unionMaskMatrix, "UnionMaskProduct");
 
             // reset the references
             WeakReference<IntSet> referenceCurrentTrimmingRegionKeys = new WeakReference<IntSet>(currentSegmentationTrimmingRegionKeys);
@@ -207,16 +231,12 @@ public class ForestCoverChange {
                 logger.log(Level.FINE, "Start segmentation for difference bands.");
             }
 
-            IntMatrix differenceSegmentationMatrix = DifferencePixelsRegionMergingOp.runSegmentation(threadCount, threadPool, currentProduct, this.currentProductBandsNames,
-                                                                            previousProduct, this.previousProductBandsNames, this.mergingCostCriterion,
-                                                                            this.regionMergingCriterion, this.totalIterationsForSecondSegmentation, this.threshold,
-                                                                            this.spectralWeight, this.shapeWeight, tileSize);
+            IntMatrix differenceSegmentationMatrix = computeDifferenceSegmentationMatrix(currentProduct, previousProduct);
 
-            writeProduct(threadCount, threadPool, currentProduct.getSceneGeoCoding(), differenceSegmentationMatrix,
-                    tileSize,  "DifferenceSegmentationMatrix");
+            writeProduct(currentProduct.getSceneGeoCoding(), differenceSegmentationMatrix, "DifferenceSegmentationMatrix");
 
-            IntSet differenceTrimmingSet = computeDifferenceTrimmingSet(threadCount, threadPool, currentProduct, previousProduct, differenceSegmentationMatrix,
-                                                                        unionMaskProduct, trimmingSourceProductBandIndices, tileSize);
+            IntSet differenceTrimmingSet = computeDifferenceTrimmingSet(currentProduct, previousProduct, differenceSegmentationMatrix,
+                                                                        unionMaskMatrix, trimmingSourceProductBandIndices);
 
             // reset the references
             WeakReference<Product> referenceCurrentProduct = new WeakReference<Product>(currentProduct);
@@ -224,12 +244,12 @@ public class ForestCoverChange {
             WeakReference<Product> referencePreviousProduct = new WeakReference<Product>(previousProduct);
             referencePreviousProduct.clear();
 
-            ProductData productData = runFinalMaskOp(threadCount, threadPool, differenceSegmentationMatrix, unionMaskProduct, differenceTrimmingSet, tileSize);
+            ProductData productData = computeFinalMaskProductData(differenceSegmentationMatrix, unionMaskMatrix, differenceTrimmingSet);
 
             // reset the references
             WeakReference<IntMatrix> referenceDifferenceSegmentationProduct = new WeakReference<IntMatrix>(differenceSegmentationMatrix);
             referenceDifferenceSegmentationProduct.clear();
-            WeakReference<IntMatrix> referenceUnionMaskProduct = new WeakReference<IntMatrix>(unionMaskProduct);
+            WeakReference<IntMatrix> referenceUnionMaskProduct = new WeakReference<IntMatrix>(unionMaskMatrix);
             referenceUnionMaskProduct.clear();
 
             Band targetBand = this.targetProduct.getBandAt(0);
@@ -261,9 +281,24 @@ public class ForestCoverChange {
         }
     }
 
-    private IntSet computeDifferenceTrimmingSet(int threadCount, Executor threadPool, Product currentSourceProduct, Product previousSourceProduct,
-                                                IntMatrix differenceSegmentationMatrix, IntMatrix unionMaskMatrix, int[] sourceBandIndices, Dimension tileSize)
+    private IntMatrix computeDifferenceSegmentationMatrix(Product currentProduct, Product previousProduct) throws Exception {
+        Dimension tileSize = getPreferredTileSize();
+
+        return DifferencePixelsRegionMergingOp.runSegmentation(threadCount, threadPool, currentProduct, this.currentProductBandsNames,
+                previousProduct, this.previousProductBandsNames, this.mergingCostCriterion,
+                this.regionMergingCriterion, this.totalIterationsForSecondSegmentation, this.threshold,
+                this.spectralWeight, this.shapeWeight, tileSize);
+    }
+
+    private Dimension getPreferredTileSize() {
+        return this.targetProduct.getPreferredTileSize();
+    }
+
+    private IntSet computeDifferenceTrimmingSet(Product currentSourceProduct, Product previousSourceProduct,
+                                                IntMatrix differenceSegmentationMatrix, IntMatrix unionMaskMatrix, int[] sourceBandIndices)
                                                 throws Exception {
+
+        Dimension tileSize = getPreferredTileSize();
 
         DifferenceRegionTilesComputing helper = new DifferenceRegionTilesComputing(differenceSegmentationMatrix, currentSourceProduct, previousSourceProduct,
                                                                                      unionMaskMatrix, sourceBandIndices, tileSize);
@@ -275,15 +310,14 @@ public class ForestCoverChange {
         return differenceTrimmingSet;
     }
 
-    private void writeProduct(int threadCount, Executor threadPool, GeoCoding geoCoding, IntMatrix inputMatrix,
-                                     Dimension tileSize, String fileNameWithoutExtension) throws Exception {
-
+    private void writeProduct(GeoCoding geoCoding, IntMatrix inputMatrix, String fileNameWithoutExtension) throws Exception {
         if (this.destinationWritingFolder != null) {
             String formatName = "GeoTIFF"; // GeoTiffProductWriterPlugIn.GEOTIFF_FORMAT_NAME
             boolean incremental = false;
 
+            Dimension tileSize = getPreferredTileSize();
             ProductDataTilesComputing tilesComputing = new ProductDataTilesComputing(inputMatrix, tileSize.width, tileSize.height);
-            ProductData productData = tilesComputing.runTilesInParallel(threadCount, threadPool);
+            ProductData productData = tilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
             int sceneWidth = inputMatrix.getColumnCount();
             int sceneHeight = inputMatrix.getRowCount();
 
@@ -304,22 +338,63 @@ public class ForestCoverChange {
         }
     }
 
-    private ProductTrimmingResult runTrimming(int threadCount, Executor threadPool, Product sourceProduct,
-                                              String[] sourceBandNames, int[] trimmingSourceProductBandIndices,
-                                              Dimension tileSize, String prefixFileName)
+    private void writeProduct(GeoCoding geoCoding, Product targetProduct, String fileNameWithoutExtension) throws Exception {
+        if (this.destinationWritingFolder != null) {
+            String formatName = "GeoTIFF"; // GeoTiffProductWriterPlugIn.GEOTIFF_FORMAT_NAME
+            boolean incremental = false;
+
+            Dimension tileSize = getPreferredTileSize();
+            targetProduct.setPreferredTileSize(tileSize);
+            targetProduct.setSceneGeoCoding(geoCoding);
+
+            File file = new File(this.destinationWritingFolder, fileNameWithoutExtension + ".tif");
+            ProductIO.writeProduct(targetProduct, file, formatName, incremental);
+        }
+    }
+
+    private ProductTrimmingResult runTrimming(Product sourceProduct, String[] sourceBandNames, int[] trimmingSourceProductBandIndices, String prefixFileName)
                                               throws Exception {
 
         Product extractedBandsProduct = extractBands(sourceProduct, sourceBandNames);
+
+        Map<String, Object> ndviParameters = new HashMap<>();
+        ndviParameters.put("redFactor", this.ndviRedFactor);
+        ndviParameters.put("nirFactor", this.ndviNirFactor);
+        ndviParameters.put("redSourceBand", "B4");
+        ndviParameters.put("nirSourceBand", "B8");
+        Product ndviProduct = GPF.createProduct("NdviOp", ndviParameters, extractedBandsProduct);
+        String[] ndviSourceBandNames = new String[2];
+        ndviSourceBandNames[0] = ndviProduct.getBandAt(0).getName();
+        ndviSourceBandNames[1] = ndviProduct.getBandAt(1).getName();
+
+        writeProduct(sourceProduct.getSceneGeoCoding(), ndviProduct, prefixFileName + "NdviProduct");
+
+        Map<String, Object> ndwiParameters = new HashMap<>();
+        ndwiParameters.put("mirFactor", this.ndwiMirFactor);
+        ndwiParameters.put("nirFactor", this.ndwiNirFactor);
+        ndwiParameters.put("mirSourceBand", "B4");
+        ndwiParameters.put("nirSourceBand", "B8");
+        Product ndwiProduct = GPF.createProduct("NdwiOp", ndwiParameters, extractedBandsProduct);
+        String[] ndwiSourceBandNames = new String[2];
+        ndwiSourceBandNames[0] = ndwiProduct.getBandAt(0).getName();
+        ndwiSourceBandNames[1] = ndwiProduct.getBandAt(1).getName();
+
+        writeProduct(sourceProduct.getSceneGeoCoding(), ndwiProduct, prefixFileName + "NdwiProduct");
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start generate color fill for source product '" + sourceProduct.getName()+"'");
         }
+        Dimension tileSize = getPreferredTileSize();
 
-        IntMatrix productColorFill = generateColorFill(threadCount, threadPool, extractedBandsProduct, sourceBandNames, tileSize, prefixFileName);
+        SegmentationSourceProductPair[] segmentationSourcePairs = new SegmentationSourceProductPair[3];
+        segmentationSourcePairs[0] = new SegmentationSourceProductPair(extractedBandsProduct, sourceBandNames);
+        segmentationSourcePairs[1] = new SegmentationSourceProductPair(ndviProduct, ndviSourceBandNames);
+        segmentationSourcePairs[2] = new SegmentationSourceProductPair(ndwiProduct, ndwiSourceBandNames);
 
-        writeProduct(threadCount, threadPool, sourceProduct.getSceneGeoCoding(), productColorFill,
-                        tileSize, prefixFileName + "ProductColorFill");
+        IntMatrix productColorFill = generateColorFill(segmentationSourcePairs, extractedBandsProduct, tileSize, prefixFileName);
+
+        writeProduct(sourceProduct.getSceneGeoCoding(), productColorFill, prefixFileName + "productColorFill");
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -334,31 +409,30 @@ public class ForestCoverChange {
         return new ProductTrimmingResult(extractedBandsProduct, segmentationTrimmingRegionKeys, productColorFill);
     }
 
-    private IntMatrix generateColorFill(int threadCount, Executor threadPool, Product extractedBandsSourceProduct, String[] sourceBandNames,
+    private IntMatrix generateColorFill(SegmentationSourceProductPair[] segmentationSourcePairs, Product extractedBandsSourceProduct,
                                         Dimension tileSize, String prefixFileName)
                                         throws Exception {
 
-        IntMatrix segmentationMatrix = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, extractedBandsSourceProduct, sourceBandNames,
+        IntMatrix segmentationMatrix = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, segmentationSourcePairs,
                                                                                mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
                                                                                threshold, spectralWeight, shapeWeight, tileSize);
 
-        writeProduct(threadCount, threadPool, extractedBandsSourceProduct.getSceneGeoCoding(), segmentationMatrix,
-                tileSize, prefixFileName + "SegmentationMatrix");
+        writeProduct(extractedBandsSourceProduct.getSceneGeoCoding(), segmentationMatrix, prefixFileName + "SegmentationMatrix");
 
-        return runColorFillerOp(threadCount, threadPool, extractedBandsSourceProduct, segmentationMatrix, forestCoverPercentage, tileSize);
+        return runColorFillerOp(extractedBandsSourceProduct, segmentationMatrix, forestCoverPercentage, tileSize);
     }
 
-    private static IntMatrix runColorFillerOp(int threadCount, Executor threadPool, Product extractedBandsSourceProduct,
+    private IntMatrix runColorFillerOp(Product extractedBandsSourceProduct,
                                               IntMatrix segmentationMatrix, float percentagePixels, Dimension tileSize)
                                               throws Exception {
 
-        IntSet validRegions = runObjectsSelectionOp(threadCount, threadPool, segmentationMatrix, extractedBandsSourceProduct, percentagePixels, tileSize);
+        IntSet validRegions = runObjectsSelectionOp(segmentationMatrix, extractedBandsSourceProduct, percentagePixels, tileSize);
 
         ColorFillerTilesComputing tilesComputing = new ColorFillerTilesComputing(segmentationMatrix, validRegions, tileSize.width, tileSize.height);
         return tilesComputing.runTilesInParallel(threadCount, threadPool);
     }
 
-    private static IntSet runObjectsSelectionOp(int threadCount, Executor threadPool, IntMatrix segmentationMatrix,
+    private IntSet runObjectsSelectionOp(IntMatrix segmentationMatrix,
                                                 Product extractedBandsSourceProduct, float percentagePixels, Dimension tileSize)
                                                 throws Exception {
 
@@ -420,26 +494,25 @@ public class ForestCoverChange {
         return targetProduct;
     }
 
-    private static IntMatrix runUnionMasksOp(int threadCount, Executor threadPool, IntSet currentSegmentationTrimmingRegionKeys,
-                                             IntMatrix currentSegmentationSourceProduct, IntSet previousSegmentationTrimmingRegionKeys,
-                                             IntMatrix previousSegmentationSourceProduct, Dimension tileSize)
-                                             throws Exception {
+    private IntMatrix computeUnionMaskMatrix(IntSet currentSegmentationTrimmingRegionKeys, IntMatrix currentSegmentationSourceProduct,
+                                             IntSet previousSegmentationTrimmingRegionKeys, IntMatrix previousSegmentationSourceProduct)
+                                      throws Exception {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start running union mask");
         }
-
+        Dimension tileSize = getPreferredTileSize();
         UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceProduct, previousSegmentationSourceProduct,
                                                                                currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
                                                                                tileSize.width, tileSize.height);
         return tilesComputing.runTilesInParallel(threadCount, threadPool);
     }
 
-    private static ProductData runFinalMaskOp(int threadCount, Executor threadPool, IntMatrix differenceSegmentationMatrix,
-                                              IntMatrix unionMaskProduct, IntSet differenceTrimmingSet, Dimension tileSize)
+    private ProductData computeFinalMaskProductData(IntMatrix differenceSegmentationMatrix, IntMatrix unionMaskProduct, IntSet differenceTrimmingSet)
                                               throws Exception {
 
+        Dimension tileSize = getPreferredTileSize();
         FinalMasksTilesComputing tilesComputing = new FinalMasksTilesComputing(differenceSegmentationMatrix, unionMaskProduct, differenceTrimmingSet, tileSize.width, tileSize.height);
         return tilesComputing.runTilesInParallel(threadCount, threadPool);
     }

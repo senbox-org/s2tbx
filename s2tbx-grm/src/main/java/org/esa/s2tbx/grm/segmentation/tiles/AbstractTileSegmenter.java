@@ -164,8 +164,8 @@ public abstract class AbstractTileSegmenter {
         return numberOfIterationsRemaining;
     }
 
-    public final void runFirstSegmentationsInParallel(Product sourceProduct, String[] sourceBandNames) throws Exception {
-        FirstTileParallelComputing tileFirstSegmentationHelper = new FirstTileParallelComputing(sourceProduct, sourceBandNames, this);
+    public final void runFirstSegmentationsInParallel(SegmentationSourceProductPair[] segmentationSourcePairs) throws Exception {
+        FirstTileParallelComputing tileFirstSegmentationHelper = new FirstTileParallelComputing(segmentationSourcePairs, this);
         tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 

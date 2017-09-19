@@ -115,10 +115,12 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         return sourceTiles;
     }
 
-    public static IntMatrix runSegmentation(int threadCount, Executor threadPool, Product sourceProduct, String[] sourceBandNames,
+    public static IntMatrix runSegmentation(int threadCount, Executor threadPool, SegmentationSourceProductPair[] segmentationSourcePairs,
                                             String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
                                             float threshold, float spectralWeight, float shapeWeight, Dimension tileSize)
                                             throws Exception {
+
+        Product sourceProduct = segmentationSourcePairs[0].getSourceProduct();
 
         Dimension imageSize = new Dimension(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
 
@@ -128,7 +130,7 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         long startTime = System.currentTimeMillis();
         tileSegmenter.logStartSegmentation(startTime);
 
-        tileSegmenter.runFirstSegmentationsInParallel(sourceProduct, sourceBandNames);
+        tileSegmenter.runFirstSegmentationsInParallel(segmentationSourcePairs);
         AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
         IntMatrix result = segmenter.buildOutputMatrix();
 
