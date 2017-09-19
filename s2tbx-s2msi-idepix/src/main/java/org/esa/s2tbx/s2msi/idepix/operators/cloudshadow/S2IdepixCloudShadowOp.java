@@ -282,7 +282,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         if (counterTable != 0) {
             int[][] cloudShadowIdBorderRectangle =
                     PotentialCloudShadowAreasPathCentralPixel.
-                            makedCloudShadowArea(s2ClassifProduct, targetProduct, sourceRectangle,
+                            makeCloudShadowArea(s2ClassifProduct, targetProduct, sourceRectangle,
                                                 targetRectangle, sourceSunZenith, sourceSunAzimuth,
                                                 sourceLatitudes, sourceLongitudes, sourceAltitude,
                                                 flagArray, cloudShadowArray,
