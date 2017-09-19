@@ -134,8 +134,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             final HashMap<String, Product> sourceProducts = ioParametersPanel.createSourceProductsMap();
 
             this.forestCoverChange = new ForestCoverChange(sourceProducts.get("recentProduct"),
-                    sourceProducts.get("previousProduct"),
-                    parameterSupport.getParameterMap());
+                                                           sourceProducts.get("previousProduct"),
+                                                           this.parameterSupport.getParameterMap());
         } catch (Throwable t) {
             handleInitialisationError(t);
             return;
@@ -439,8 +439,10 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         private long saveTime;
         private final long createTargetProductTime;
         private final ForestCoverChange forestCoverChange;
+
         private TargetProductSwingWorker(ForestCoverChange forestCoverChange, long createTargetProductTime) {
             super(getJDialog(), "Run Forest Cover Change");
+
             this.forestCoverChange = forestCoverChange;
             this.createTargetProductTime = createTargetProductTime;
         }
@@ -451,11 +453,11 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             pm.beginTask("Running...", model.isOpenInAppSelected() ? 100 : 95);
             saveTime = 0L;
             Product product = null;
-            Product targetProduct = this.forestCoverChange.getOutputProduct();
+            Product targetProduct = this.forestCoverChange.getTargetProduct();
             try {
                 long t0 = System.currentTimeMillis();
 
-                forestCoverChange.doExecute();
+                this.forestCoverChange.doExecute();
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();
                     String formatName = model.getFormatName();

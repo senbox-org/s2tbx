@@ -46,7 +46,7 @@ public class ForestCoverChangeTest extends AbstractOpTest {
 
         ForestCoverChange forestCoverChange = new ForestCoverChange(currentSourceProduct, previousSourceProduct, parameters);
         forestCoverChange.doExecute();
-        Product targetProduct = forestCoverChange.getOutputProduct();
+        Product targetProduct = forestCoverChange.getTargetProduct();
 
         assertNotNull(targetProduct);
 

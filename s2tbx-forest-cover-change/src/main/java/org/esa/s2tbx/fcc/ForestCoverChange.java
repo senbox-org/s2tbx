@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.s2tbx.fcc.common.BandsExtractorOp;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
-import org.esa.s2tbx.fcc.trimming.*;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.trimming.ColorFillerTilesComputing;
@@ -22,7 +21,6 @@ import org.esa.s2tbx.fcc.trimming.UnionMasksTilesComputing;
 import org.esa.s2tbx.grm.DifferencePixelsRegionMergingOp;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.grm.segmentation.tiles.SegmentationSourceProductPair;
-import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -54,7 +52,6 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -153,6 +150,7 @@ public class ForestCoverChange extends Operator {
     public ForestCoverChange(Product currentSourceProduct, Product previousSourceProduct, Map<String, Object> parameters) {
         this.currentSourceProduct = currentSourceProduct;
         this.previousSourceProduct = previousSourceProduct;
+
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             if(entry.getKey().equals("forestCoverPercentage")) {
                 this.forestCoverPercentage = (float) entry.getValue();
@@ -181,6 +179,7 @@ public class ForestCoverChange extends Operator {
         initialize();
     }
 
+    @Override
     public void initialize() {
         validateSourceProducts();
 
@@ -234,19 +233,14 @@ public class ForestCoverChange extends Operator {
             }
         }
 
-        Dimension tileSize = this.targetProduct.getPreferredTileSize();
-//        int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
-//        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
-//        ExecutorService threadPool = Executors.newCachedThreadPool();
-//
         try {
             int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
 
-            ProductTrimmingResult currentResult = runTrimming(threadCount, threadPool, this.currentSourceProduct, this.currentProductBandsNames,
-                                                              trimmingSourceProductBandIndices, tileSize,  "previous");
+            ProductTrimmingResult currentResult = runTrimming(this.currentSourceProduct, this.currentProductBandsNames,
+                                                              trimmingSourceProductBandIndices,  "previous");
 
-            ProductTrimmingResult previousResult = runTrimming(threadCount, threadPool, this.previousSourceProduct, this.previousProductBandsNames,
-                                                               trimmingSourceProductBandIndices, tileSize, "current");
+            ProductTrimmingResult previousResult = runTrimming(this.previousSourceProduct, this.previousProductBandsNames,
+                                                               trimmingSourceProductBandIndices,  "current");
 
             Product currentProduct = currentResult.getProduct();
             IntSet currentSegmentationTrimmingRegionKeys = currentResult.getTrimmingRegionKeys();
@@ -267,7 +261,7 @@ public class ForestCoverChange extends Operator {
             IntMatrix unionMaskMatrix = computeUnionMaskMatrix(currentSegmentationTrimmingRegionKeys, currentProductColorFill,
                                                          previousSegmentationTrimmingRegionKeys, previousProductColorFill);
 
-            writeProduct(currentProduct.getSceneGeoCoding(), unionMaskMatrix, "UnionMaskProduct");
+            writeProduct(currentProduct.getSceneGeoCoding(), unionMaskMatrix, "unionMaskProduct");
 
             // reset the references
             WeakReference<IntSet> referenceCurrentTrimmingRegionKeys = new WeakReference<IntSet>(currentSegmentationTrimmingRegionKeys);
@@ -286,7 +280,7 @@ public class ForestCoverChange extends Operator {
 
             IntMatrix differenceSegmentationMatrix = computeDifferenceSegmentationMatrix(currentProduct, previousProduct);
 
-            writeProduct(currentProduct.getSceneGeoCoding(), differenceSegmentationMatrix, "DifferenceSegmentationMatrix");
+            writeProduct(currentProduct.getSceneGeoCoding(), differenceSegmentationMatrix, "differenceSegmentationMatrix");
 
             IntSet differenceTrimmingSet = computeDifferenceTrimmingSet(currentProduct, previousProduct, differenceSegmentationMatrix,
                                                                         unionMaskMatrix, trimmingSourceProductBandIndices);
@@ -609,10 +603,6 @@ public class ForestCoverChange extends Operator {
                     this.previousSourceProduct.getName());
             throw new OperatorException(message);
         }
-    }
-
-    public Product getTargetProduct() {
-        return this.targetProduct;
     }
 
     private static String[] findBandNames(Product product) {
