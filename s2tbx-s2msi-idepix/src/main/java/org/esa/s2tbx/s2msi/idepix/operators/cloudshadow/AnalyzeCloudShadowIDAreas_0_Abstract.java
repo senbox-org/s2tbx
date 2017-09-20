@@ -17,10 +17,9 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
     private int[][] cloudShadowIdBorderRectangle;
     private int sourceHeight;
     private AnalyzerMode analyzerMode;
+    private int arraySize;
 
     enum Mode {LAND_WATER, MULTI_BAND, SINGLE_BAND}
-
-    ;
 
     static int clusterCount = S2IdepixCloudShadowOp.clusterCountDefine;
     static final int maxIterCount = 30;
@@ -54,7 +53,8 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
             }
         }
 
-        analyzerMode.initArrays((maxRectangleWidth + 1) * (maxRectangleHeight + 1));
+        arraySize = (maxRectangleWidth + 1) * (maxRectangleHeight + 1);
+        analyzerMode.initArrays(arraySize);
 
         for (int cloudIndex = SegmentationCloud.NO_SHADOW + 1; cloudIndex < cloudIndexTable; cloudIndex++) {
             analyzerMode.resetCounters();
@@ -77,12 +77,13 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
     }
 
     private void analyseCloudShadows(float[][] sourceBands, int counter, int minNumberMemberCluster, double[][] arrayBands,
-                                        int[] arrayXPos, int[] arrayYPos, int cloudIndex, double[] minArrayBands) {
+                                     int[] arrayXPos, int[] arrayYPos, int cloudIndex, double[] minArrayBands,
+                                     PixelValidator pixelValidator) {
         // minimum number of potential shadow points for the cluster analysis per cluster
         if (counter > minNumberMemberCluster && counter < S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) {
             analysePotentialCloudShadowArea(counter, arrayBands, arrayXPos, arrayYPos);
         } else if (counter >= S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) {
-            analyseLongCloudShadows(cloudIndex, arrayBands, arrayXPos, arrayYPos, sourceBands, minNumberMemberCluster);
+            analyseLongCloudShadows(cloudIndex, sourceBands, minNumberMemberCluster, pixelValidator);
         } else {
             analyseSmallCloudShadows(arrayBands, minArrayBands, counter, arrayXPos, arrayYPos);
         }
@@ -104,22 +105,21 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         }
     }
 
-    private void analyseLongCloudShadows(int cloudIndex,
-                                         double[][] arrayBands, int[] arrayXPos, int[] arrayYPos,
-                                         float[][] sourceBands, int minNumberMemberCluster) {
+    private void analyseLongCloudShadows(int cloudIndex, float[][] sourceBands, int minNumberMemberCluster,
+                                         PixelValidator pixelValidator) {
         final int sourceLength = sourceWidth * sourceHeight;
         int[] dummyLongCloudShadowIDArray = new int[sourceLength];
         //will be filled in SegmentationLongCloudClass Arrays.fill(cloudIdArray, ....);
         Arrays.fill(dummyLongCloudShadowIDArray, sourceLength);
         //bc cloud shadow cloudIndexTable = max of ID
-        int counterTableLongShadow = SegmentationLongCloudShadow.computeLongCloudShadowID(
-                sourceWidth,
-                sourceHeight,
-                cloudShadowIDArray,
-                cloudShadowIdBorderRectangle,
-                dummyLongCloudShadowIDArray,
-                cloudIndex);
-
+        int counterTableLongShadow = SegmentationLongCloudShadow.computeLongCloudShadowID(sourceWidth, sourceHeight,
+                                                                                          cloudShadowIDArray,
+                                                                                          cloudShadowIdBorderRectangle,
+                                                                                          dummyLongCloudShadowIDArray,
+                                                                                          cloudIndex);
+        double[][] arrayBands = new double[sourceBands.length][arraySize];
+        int[] arrayXPos = new int[arraySize];
+        int[] arrayYPos = new int[arraySize];
         double[] minArrayBands = new double[arrayBands.length];
         for (int longCloudIndex = SegmentationLongCloudShadow.NO_SHADOW + 1; longCloudIndex < counterTableLongShadow; longCloudIndex++) {
             int counter = 0;
@@ -132,11 +132,11 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
             double minArrayBand = Double.MAX_VALUE;
             for (int j = cloudShadowIdBorderRectangle[cloudIndex][2]; j <= cloudShadowIdBorderRectangle[cloudIndex][3]; j++) {
                 for (int i = cloudShadowIdBorderRectangle[cloudIndex][0]; i <= cloudShadowIdBorderRectangle[cloudIndex][1]; i++) {
-                    if (dummyLongCloudShadowIDArray[j * (sourceWidth) + i] == longCloudIndex) {
-
+                    final int index = j * (sourceWidth) + i;
+                    if (dummyLongCloudShadowIDArray[index] == longCloudIndex && pixelValidator.isPixelValid(index)) {
                         double temp = 0;
                         for (int k = 0; k < arrayBands.length; k++) {
-                            arrayBands[k][counter] = sourceBands[k][j * (sourceWidth) + i];
+                            arrayBands[k][counter] = sourceBands[k][index];
                             temp += Math.pow(arrayBands[k][counter], Math.min(2, arrayBands.length));
                         }
                         if (temp < minArrayBand) {
@@ -450,11 +450,11 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         @Override
         public void modeAnalyseCloudShadows(int minNumberMemberCluster, int cloudIndex) {
             analyseCloudShadows(new float[][]{sourceBandA}, counterA, minNumberMemberCluster,
-                                    new double[][]{arrayBands[0]}, arrayXPoses[0], arrayYPoses[0], cloudIndex,
-                                    new double[]{minArrayBands[0]});
+                                new double[][]{arrayBands[0]}, arrayXPoses[0], arrayYPoses[0], cloudIndex,
+                                new double[]{minArrayBands[0]}, new LandPixelValidator());
             analyseCloudShadows(new float[][]{sourceBandB}, counterB, minNumberMemberCluster,
-                                    new double[][]{arrayBands[1]}, arrayXPoses[1], arrayYPoses[1], cloudIndex,
-                                    new double[]{minArrayBands[1]});
+                                new double[][]{arrayBands[1]}, arrayXPoses[1], arrayYPoses[1], cloudIndex,
+                                new double[]{minArrayBands[1]}, new WaterPixelValidator());
         }
 
         @Override
@@ -545,7 +545,7 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         public void modeAnalyseCloudShadows(int minNumberMemberCluster, int cloudIndex) {
             analyseCloudShadows(new float[][]{sourceBandA, sourceBandB}, counter, minNumberMemberCluster,
                                 new double[][]{arrayBandA, arrayBandB}, arrayXPos, arrayYPos, cloudIndex,
-                                new double[]{minArrayBandA, minArrayBandB});
+                                new double[]{minArrayBandA, minArrayBandB}, new EmptyPixelValidator());
         }
 
         @Override
@@ -624,7 +624,7 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         @Override
         public void modeAnalyseCloudShadows(int minNumberMemberCluster, int cloudIndex) {
             analyseCloudShadows(new float[][]{sourceBandA}, counter, minNumberMemberCluster, new double[][]{arrayBandA},
-                                arrayXPos, arrayYPos, cloudIndex, new double[]{minArrayBandA});
+                                arrayXPos, arrayYPos, cloudIndex, new double[]{minArrayBandA}, new EmptyPixelValidator());
         }
 
         @Override
@@ -664,6 +664,31 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
             throw new IllegalArgumentException("Unknown analyzer mode");
         }
 
+    }
+
+    private interface PixelValidator {
+        boolean isPixelValid(int index);
+    }
+
+    private class EmptyPixelValidator implements PixelValidator {
+        @Override
+        public boolean isPixelValid(int index) {
+            return true;
+        }
+    }
+
+    private class LandPixelValidator implements PixelValidator {
+        @Override
+        public boolean isPixelValid(int index) {
+            return flagArray[index] == PreparationMaskBand.LAND_FLAG;
+        }
+    }
+
+    private class WaterPixelValidator implements PixelValidator {
+        @Override
+        public boolean isPixelValid(int index) {
+            return flagArray[index] == PreparationMaskBand.WATER_FLAG;
+        }
     }
 
 }
