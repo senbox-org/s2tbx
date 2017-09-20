@@ -66,16 +66,16 @@ public class FinalMasksTilesComputingTest extends AbstractOpTest {
 
         assertEquals(0, targetBand.getSampleInt(64, 84));
         assertEquals(0, targetBand.getSampleInt(143, 160));
-        assertEquals(1, targetBand.getSampleInt(48, 241));
-        assertEquals(1, targetBand.getSampleInt(235, 152));
+        assertEquals(255, targetBand.getSampleInt(48, 241));
+        assertEquals(255, targetBand.getSampleInt(235, 152));
         assertEquals(0, targetBand.getSampleInt(214, 274));
-        assertEquals(1, targetBand.getSampleInt(253, 474));
-        assertEquals(1, targetBand.getSampleInt(21, 505));
-        assertEquals(1, targetBand.getSampleInt(36, 437));
+        assertEquals(100, targetBand.getSampleInt(253, 474));
+        assertEquals(50, targetBand.getSampleInt(21, 505));
+        assertEquals(50, targetBand.getSampleInt(36, 437));
         assertEquals(0, targetBand.getSampleInt(510, 53));
-        assertEquals(1, targetBand.getSampleInt(210, 380));
+        assertEquals(100, targetBand.getSampleInt(210, 380));
         assertEquals(0, targetBand.getSampleInt(146, 277));
-        assertEquals(1, targetBand.getSampleInt(467, 286));
+        assertEquals(50, targetBand.getSampleInt(467, 286));
     }
 
     private static IntSet buildDifferenceTrimmingSet() {

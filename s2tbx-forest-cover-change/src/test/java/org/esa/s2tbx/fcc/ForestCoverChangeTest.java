@@ -53,31 +53,30 @@ public class ForestCoverChangeTest extends AbstractOpTest {
         assertEquals(1, targetProduct.getNumBands());
         assertEquals(549, targetProduct.getSceneRasterWidth());
         assertEquals(549, targetProduct.getSceneRasterHeight());
-
         chechTargetProduct(targetProduct);
     }
 
     private static void chechTargetProduct(Product targetProduct) {
         Band band = checkTargetBand(targetProduct);
 
-        assertEquals(1, band.getSampleInt(134, 165));
+        assertEquals(0, band.getSampleInt(134, 165));
         assertEquals(1, band.getSampleInt(504, 220));
-        assertEquals(1, band.getSampleInt(223, 384));
+        assertEquals(3, band.getSampleInt(223, 384));
         assertEquals(1, band.getSampleInt(29, 434));
-        assertEquals(1, band.getSampleInt(16, 507));
-        assertEquals(1, band.getSampleInt(219, 384));
+        assertEquals(3, band.getSampleInt(16, 507));
+        assertEquals(3, band.getSampleInt(219, 384));
         assertEquals(1, band.getSampleInt(138, 163));
-        assertEquals(1, band.getSampleInt(244, 156));
+        assertEquals(3, band.getSampleInt(244, 156));
         assertEquals(1, band.getSampleInt(93, 358));
-        assertEquals(1, band.getSampleInt(241, 155));
-        assertEquals(1, band.getSampleInt(198, 161));
+        assertEquals(3, band.getSampleInt(241, 155));
+        assertEquals(3, band.getSampleInt(198, 161));
         assertEquals(1, band.getSampleInt(39, 509));
 
         assertEquals(0, band.getSampleInt(46, 366));
         assertEquals(0, band.getSampleInt(61, 47));
         assertEquals(0, band.getSampleInt(214, 240));
-        assertEquals(1, band.getSampleInt(207, 386));
-        assertEquals(1, band.getSampleInt(175, 166));
+        assertEquals(2, band.getSampleInt(207, 386));
+        assertEquals(2, band.getSampleInt(175, 166));
         assertEquals(0, band.getSampleInt(202, 137));
         assertEquals(0, band.getSampleInt(57, 367));
         assertEquals(0, band.getSampleInt(31, 480));
