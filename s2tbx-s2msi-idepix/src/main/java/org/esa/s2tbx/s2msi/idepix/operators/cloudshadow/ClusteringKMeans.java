@@ -14,8 +14,8 @@ import java.util.List;
 class ClusteringKMeans {
 
     static double[][] computedKMeansCluster(double[]... images) {
-        AdaptedIsoClustering clusterer = new AdaptedIsoClustering(AnalyzeCloudShadowIDAreas.clusterCount,
-                                                                  AnalyzeCloudShadowIDAreas.maxIterCount);
+        AdaptedIsoClustering clusterer = new AdaptedIsoClustering(CloudShadowIDAnalyzer.clusterCount,
+                                                                  CloudShadowIDAnalyzer.maxIterCount);
         List<Clusterable> list = new ArrayList<>();
         for (int xyPos = 0; xyPos < images[0].length; xyPos++) {
             double[] values = new double[images.length];
@@ -25,12 +25,12 @@ class ClusteringKMeans {
             list.add(new DoublePoint(values));
         }
         List<CentroidCluster<Clusterable>> clusters = clusterer.cluster(list);
-        double[][] clusterCentroidArray = new double[AnalyzeCloudShadowIDAreas.clusterCount][S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING];
+        double[][] clusterCentroidArray = new double[CloudShadowIDAnalyzer.clusterCount][images.length];
 
         int countClusterNumber = 0;
         for (CentroidCluster<Clusterable> centroidCluster : clusters) {
-            for (int ii = 0; ii < S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING; ii++) {
-                clusterCentroidArray[countClusterNumber][ii] = centroidCluster.getCenter().getPoint()[ii];
+            for (int i = 0; i < images.length; i++) {
+                clusterCentroidArray[countClusterNumber][i] = centroidCluster.getCenter().getPoint()[i];
             }
             countClusterNumber++;
         }

@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * @author Tonio Fincke
  */
-public class AnalyzeCloudShadowIDAreas_0_Abstract {
+class CloudShadowIDAnalyzer {
 
     private int[] flagArray;
     private int sourceWidth;
@@ -18,22 +18,19 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
     private int sourceHeight;
     private int arraySize;
 
-    enum Mode {LAND_WATER, MULTI_BAND, SINGLE_BAND}
-
     static int clusterCount = S2IdepixCloudShadowOp.clusterCountDefine;
     static final int maxIterCount = 30;
 
-    void identifyCloudShadowArea(Product sourceProduct, Rectangle sourceRectangle, float[] sourceBandA,
-                                 float[] sourceBandB, int[] flagArray, int[] cloudShadowIDArray,
-                                 int[] cloudLongShadowIDArray, int[][] cloudShadowIdBorderRectangle,
-                                 int cloudIndexTable, Mode mode) {
+    void identifyCloudShadowAreas(Product sourceProduct, Rectangle sourceRectangle, float[][] sourceBands,
+                                  int[] flagArray, int[] cloudShadowIDArray, int[] cloudLongShadowIDArray,
+                                  int[][] cloudShadowIdBorderRectangle, int cloudIndexTable, Mode mode) {
 
         this.flagArray = flagArray;
         this.cloudShadowIDArray = cloudShadowIDArray;
         this.cloudLongShadowIDArray = cloudLongShadowIDArray;
         this.cloudShadowIdBorderRectangle = cloudShadowIdBorderRectangle;
 
-        AnalyzerMode analyzerMode = new AnalyzerModeFactory().getAnalyzerMode(mode, sourceBandA, sourceBandB);
+        AnalyzerMode analyzerMode = new AnalyzerModeFactory().getAnalyzerMode(mode, sourceBands);
 
         sourceWidth = sourceRectangle.width;
         sourceHeight = sourceRectangle.height;
@@ -172,8 +169,8 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
             }
             if (band[i] < darkestBand) {
                 darkestBand = band[i];
-                for (double[] arrayBand : arrayBands) {
-                    darkestBands[i] = arrayBand[i];
+                for (int j = 0; j < arrayBands.length; j++) {
+                    darkestBands[j] = arrayBands[j][i];
                 }
             }
         }
@@ -267,8 +264,7 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
     private class LandWaterAnalyzerMode implements AnalyzerMode {
 
-        private final float[] sourceBandA;
-        private final float[] sourceBandB;
+        private final float[][] sourceBands;
         int counterA;
         int counterB;
         private double[][] arrayBands;
@@ -276,9 +272,11 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         private int[][] arrayYPoses;
         private double[] minArrayBands;
 
-        LandWaterAnalyzerMode(float[] sourceBandA, float[] sourceBandB) {
-            this.sourceBandA = sourceBandA;
-            this.sourceBandB = sourceBandB;
+        LandWaterAnalyzerMode(float[][] sourceBands) {
+            if (sourceBands.length != 2) {
+                throw new IllegalArgumentException("Two Band required for land water analysis mode");
+            }
+            this.sourceBands = sourceBands;
         }
 
         @Override
@@ -308,13 +306,13 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         @Override
         public void doIterationStep(int index, int i, int j) {
             final int flag = flagArray[index];
-            arrayBands[0][counterA] = sourceBandA[index];
-            arrayBands[1][counterB] = sourceBandB[index];
+            arrayBands[0][counterA] = sourceBands[0][index];
+            arrayBands[1][counterB] = sourceBands[1][index];
 
             if (arrayBands[0][counterA] >= 1e-8 && !Double.isNaN(arrayBands[0][counterA]) &&
                     (flag & PreparationMaskBand.LAND_FLAG) == PreparationMaskBand.LAND_FLAG) {
                 arrayXPoses[0][counterA] = i;
-                arrayYPoses[1][counterA] = j;
+                arrayYPoses[0][counterA] = j;
 
                 if (arrayBands[0][counterA] < minArrayBands[0]) {
                     minArrayBands[0] = arrayBands[0][counterA];
@@ -334,10 +332,10 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
         @Override
         public void doCloudShadowAnalysis(int minNumberMemberCluster, int cloudIndex) {
-            analyseCloudShadows(new float[][]{sourceBandA}, counterA, minNumberMemberCluster,
+            analyseCloudShadows(new float[][]{sourceBands[0]}, counterA, minNumberMemberCluster,
                                 new double[][]{arrayBands[0]}, arrayXPoses[0], arrayYPoses[0], cloudIndex,
                                 new double[]{minArrayBands[0]}, new LandPixelValidator());
-            analyseCloudShadows(new float[][]{sourceBandB}, counterB, minNumberMemberCluster,
+            analyseCloudShadows(new float[][]{sourceBands[1]}, counterB, minNumberMemberCluster,
                                 new double[][]{arrayBands[1]}, arrayXPoses[1], arrayYPoses[1], cloudIndex,
                                 new double[]{minArrayBands[1]}, new WaterPixelValidator());
         }
@@ -346,9 +344,8 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
     private class MultiBandAnalyzerMode implements AnalyzerMode {
 
+        private final float[][] sourceBands;
         int counter;
-        private final float[] sourceBandA;
-        private final float[] sourceBandB;
         private double[] arrayBandA;
         private double[] arrayBandB;
         private int[] arrayXPos;
@@ -357,9 +354,8 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         private double minArrayBandB = Double.MAX_VALUE;
         private double minArrayBandAB = Double.MAX_VALUE;
 
-        MultiBandAnalyzerMode(float[] sourceBandA, float[] sourceBandB) {
-            this.sourceBandA = sourceBandA;
-            this.sourceBandB = sourceBandB;
+        MultiBandAnalyzerMode(float[][] sourceBands) {
+            this.sourceBands = sourceBands;
         }
 
         @Override
@@ -388,8 +384,8 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
         @Override
         public void doIterationStep(int index, int i, int j) {
-            arrayBandA[counter] = sourceBandA[index];
-            arrayBandB[counter] = sourceBandB[index];
+            arrayBandA[counter] = sourceBands[0][index];
+            arrayBandB[counter] = sourceBands[1][index];
 
             if (arrayBandA[counter] < -0.99 || arrayBandB[counter] < -0.99) {
                 arrayBandA[counter] = 1.0; //Double.NaN;
@@ -407,7 +403,7 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
         @Override
         public void doCloudShadowAnalysis(int minNumberMemberCluster, int cloudIndex) {
-            analyseCloudShadows(new float[][]{sourceBandA, sourceBandB}, counter, minNumberMemberCluster,
+            analyseCloudShadows(sourceBands, counter, minNumberMemberCluster,
                                 new double[][]{arrayBandA, arrayBandB}, arrayXPos, arrayYPos, cloudIndex,
                                 new double[]{minArrayBandA, minArrayBandB}, new EmptyPixelValidator());
         }
@@ -417,14 +413,14 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
     private class SingleBandAnalyzerMode implements AnalyzerMode {
 
         int counter;
-        private final float[] sourceBandA;
+        private final float[] sourceBand;
         private double[] arrayBandA;
         private int[] arrayXPos;
         private int[] arrayYPos;
         private double minArrayBandA;
 
-        SingleBandAnalyzerMode(float[] sourceBandA) {
-            this.sourceBandA = sourceBandA;
+        SingleBandAnalyzerMode(float[][] sourceBands) {
+            this.sourceBand = sourceBands[0];
         }
 
         @Override
@@ -449,7 +445,7 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
         @Override
         public void doIterationStep(int index, int i, int j) {
-            arrayBandA[counter] = sourceBandA[index];
+            arrayBandA[counter] = sourceBand[index];
 
             if (arrayBandA[counter] < -0.99) arrayBandA[counter] = 1.0; //Double.NaN;
 
@@ -464,7 +460,7 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
         @Override
         public void doCloudShadowAnalysis(int minNumberMemberCluster, int cloudIndex) {
-            analyseCloudShadows(new float[][]{sourceBandA}, counter, minNumberMemberCluster, new double[][]{arrayBandA},
+            analyseCloudShadows(new float[][]{sourceBand}, counter, minNumberMemberCluster, new double[][]{arrayBandA},
                                 arrayXPos, arrayYPos, cloudIndex, new double[]{minArrayBandA}, new EmptyPixelValidator());
         }
 
@@ -472,14 +468,14 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
     private class AnalyzerModeFactory {
 
-        AnalyzerMode getAnalyzerMode(Mode mode, float[] sourceBandA, float[] sourceBandB) {
+        AnalyzerMode getAnalyzerMode(Mode mode, float[][] sourceBands) {
             switch (mode) {
                 case LAND_WATER:
-                    return new LandWaterAnalyzerMode(sourceBandA, sourceBandB);
+                    return new LandWaterAnalyzerMode(sourceBands);
                 case MULTI_BAND:
-                    return new MultiBandAnalyzerMode(sourceBandA, sourceBandB);
+                    return new MultiBandAnalyzerMode(sourceBands);
                 case SINGLE_BAND:
-                    return new SingleBandAnalyzerMode(sourceBandA);
+                    return new SingleBandAnalyzerMode(sourceBands);
             }
             throw new IllegalArgumentException("Unknown analyzer mode");
         }
