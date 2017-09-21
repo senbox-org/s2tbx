@@ -16,7 +16,6 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
     private int[] cloudLongShadowIDArray;
     private int[][] cloudShadowIdBorderRectangle;
     private int sourceHeight;
-    private AnalyzerMode analyzerMode;
     private int arraySize;
 
     enum Mode {LAND_WATER, MULTI_BAND, SINGLE_BAND}
@@ -34,7 +33,7 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         this.cloudLongShadowIDArray = cloudLongShadowIDArray;
         this.cloudShadowIdBorderRectangle = cloudShadowIdBorderRectangle;
 
-        analyzerMode = new AnalyzerModeFactory().getAnalyzerMode(mode, sourceBandA, sourceBandB);
+        AnalyzerMode analyzerMode = new AnalyzerModeFactory().getAnalyzerMode(mode, sourceBandA, sourceBandB);
 
         sourceWidth = sourceRectangle.width;
         sourceHeight = sourceRectangle.height;
@@ -71,14 +70,14 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
                         }
                     }
                 }
+                analyzerMode.doCloudShadowAnalysis(clusterCount * 2 + 1, cloudIndex);
             }
-            analyzerMode.modeAnalyseCloudShadows(clusterCount * 2 + 1, cloudIndex);
         }
     }
 
-    private void analyseCloudShadows(float[][] sourceBands, int counter, int minNumberMemberCluster, double[][] arrayBands,
-                                     int[] arrayXPos, int[] arrayYPos, int cloudIndex, double[] minArrayBands,
-                                     PixelValidator pixelValidator) {
+    private void analyseCloudShadows(float[][] sourceBands, int counter, int minNumberMemberCluster,
+                                     double[][] arrayBands, int[] arrayXPos, int[] arrayYPos, int cloudIndex,
+                                     double[] minArrayBands, PixelValidator pixelValidator) {
         // minimum number of potential shadow points for the cluster analysis per cluster
         if (counter > minNumberMemberCluster && counter < S2IdepixCloudShadowOp.CloudShadowFragmentationThreshold) {
             analysePotentialCloudShadowArea(counter, arrayBands, arrayXPos, arrayYPos);
@@ -163,86 +162,80 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         }
     }
 
-    private void analysePotentialCloudShadowArea(int counter,
-                                                 double[][] arrayBands,
-                                                 int[] arrayXPos,
-                                                 int[] arrayYPos) {
-        if (arrayBands.length == 1) {
-            analysePotentialCloudShadowArea(counter, arrayBands[0], arrayXPos, arrayYPos);
-        } else if (arrayBands.length == 2) {
-            analysePotentialCloudShadowArea(counter, arrayBands[0], arrayBands[1], arrayXPos, arrayYPos);
+    private void analysePotentialCloudShadowArea(int counter, double[][] arrayBands, int[] arrayXPos, int[] arrayYPos) {
+        double[] band = new double[counter];
+        double darkestBand = Double.MAX_VALUE;
+        double[] darkestBands = new double[arrayBands.length];
+        for (int i = 0; i < counter; i++) {
+            for (double[] arrayBand : arrayBands) {
+                band[i] += Math.pow(arrayBand[i], Math.min(2, arrayBands.length));
+            }
+            if (band[i] < darkestBand) {
+                darkestBand = band[i];
+                for (double[] arrayBand : arrayBands) {
+                    darkestBands[i] = arrayBand[i];
+                }
+            }
         }
-    }
-
-    private void analysePotentialCloudShadowArea(int counter,
-                                                 double[] arrayBand,
-                                                 int[] arrayXPos,
-                                                 int[] arrayYPos) {
-        double darkness;
-        int darkestClusterNumber;
-        double whiteness;
-        int containerNumber;
-        int index;
-
-        double distance;
-        double temp; // sort bandA (ascending) and select the element (94% of the sorted values)
-        double[] arraySortedBand = new double[counter];
-
-        // todo adaption to more bands for all sensors
-        System.arraycopy(arrayBand, 0, arraySortedBand, 0, counter);
-
-        Arrays.sort(arraySortedBand);
         int counterWhiteness = (int) (Math.floor(counter * S2IdepixCloudShadowOp.OUTLIER_THRESHOLD));
         if (counterWhiteness >= counter) counterWhiteness = counter - 1;
-        double thresholdWhiteness = arraySortedBand[counterWhiteness];
-        double darkestBandA = arraySortedBand[0];
+        double[] sortedBand = band.clone();
+        Arrays.sort(sortedBand);
+        double thresholdWhiteness = sortedBand[counterWhiteness];
 
+        //todo 0.5% or 2.5% ?
         // add 2.5% of darkest values to shadow array but at least one pixel is added
         int addedDarkValues = 1 + (int) Math.floor(0.025 * counterWhiteness + 0.5);
 
-        double[] arrayClusterableBandA = new double[counterWhiteness + addedDarkValues];
-        Arrays.fill(arrayClusterableBandA, darkestBandA);
-
-        double[] arrayClusterableBandB = new double[counterWhiteness + addedDarkValues];
-
+        double[][] arrayClusterableBands = new double[arrayBands.length][counterWhiteness + addedDarkValues];
+        for (int i = 0; i < arrayClusterableBands.length; i++) {
+            Arrays.fill(arrayClusterableBands[i], darkestBands[i]);
+        }
         int countIntern = 0;
-        for (int dd = 0; dd < counter; dd++) {
-            if (arrayBand[dd] < thresholdWhiteness && countIntern < counterWhiteness) {
-                arrayClusterableBandA[countIntern] = arrayBand[dd];
-//                arrayClusterableBandB[countIntern] = arrayBandB[dd];
+        int index = 0;
+        while (index < counter && countIntern < counterWhiteness) {
+            if (band[index] < thresholdWhiteness) {
+                for (int j = 0; j < arrayClusterableBands.length; j++) {
+                    arrayClusterableBands[j][countIntern] = arrayBands[j][index];
+                }
                 countIntern++;
             }
+            index++;
         }
 
-        double[][] imageData = new double[S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING][counter];
-        imageData[0] = arrayClusterableBandA; //band1data;
-        imageData[1] = arrayClusterableBandB;
+        double[][] clusterCentroidArray = ClusteringKMeans.computedKMeansCluster(arrayClusterableBands);
 
-        double[][] clusterCentroidArray = ClusteringKMeans.computedKMeansCluster(imageData);
-
-        darkness = Double.MAX_VALUE;
-        darkestClusterNumber = -1;
-        whiteness = Double.MIN_VALUE;
-        // todo adaption for more bands required
+        double darkness = Double.MAX_VALUE;
+        int darkestClusterNumber = -1;
+        double whiteness = Double.MIN_VALUE;
 
         // search for a darkest cluster
-        for (int kk = 0; kk < clusterCount; kk++) {
-            if ((clusterCentroidArray[kk][0] < darkness)) {
-                darkness = clusterCentroidArray[kk][0];
-                darkestClusterNumber = kk;
+        for (int i = 0; i < clusterCount; i++) {
+            double candidate = 0;
+            for (int j = 0; j < arrayBands.length; j++) {
+                candidate += Math.pow(clusterCentroidArray[i][j], 2);
             }
-            if ((clusterCentroidArray[kk][0] > whiteness)) {
-                whiteness = clusterCentroidArray[kk][0];
+            candidate = Math.sqrt(candidate);
+            if (candidate < darkness) {
+                darkness = candidate;
+                darkestClusterNumber = i;
+            }
+            if (candidate > whiteness) {
+                whiteness = candidate;
             }
         }
 
         // distance analysis BandValue in relation to the CentroidValue
         // assign membership of BandValue to Cluster
-        containerNumber = -1;
+        int containerNumber = -1;
         for (int gg = 0; gg < counter; gg++) {
-            distance = Double.MAX_VALUE;
+            double distance = Double.MAX_VALUE;
             for (int ff = 0; ff < clusterCount; ff++) {
-                temp = Math.abs(clusterCentroidArray[ff][0] - arrayBand[gg]);
+                double temp = 0;
+                for (int i = 0; i < arrayBands.length; i++) {
+                    temp += Math.pow(clusterCentroidArray[ff][i] - arrayBands[i][gg], 2);
+                }
+                temp = Math.sqrt(temp);
                 if (temp < distance) {
                     distance = temp;
                     containerNumber = ff;
@@ -250,115 +243,9 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
             }
 
             if (containerNumber == darkestClusterNumber && whiteness - darkness > S2IdepixCloudShadowOp.Threshold_Whiteness_Darkness) {
-                index = (arrayYPos[gg] * sourceWidth + arrayXPos[gg]);
-                if (!((flagArray[index] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG)) {
-                    flagArray[index] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
-                }
-            }
-        }
-    }
-
-    private void analysePotentialCloudShadowArea(int counter,
-                                                 double[] arrayBandA,
-                                                 double[] arrayBandB,
-                                                 int[] arrayXPos,
-                                                 int[] arrayYPos) {
-        double darkness;
-        int darkestClusterNumber;
-        double whiteness;
-        int containerNumber;
-        int index;
-
-        double distance;
-        double temp;
-        double tempA;
-        double tempB;
-
-        // sort bandAB (ascending) and select the element (94% of the sorted values)
-        double[] arraySortedBandAB = new double[counter];
-        double[] arrayBandAB = new double[counter];
-
-        for (int z = 0; z < counter; z++) {
-            arrayBandAB[z] = Math.pow(arrayBandA[z], 2) + Math.pow(arrayBandA[z], 2);
-        }
-
-        // todo adaption to more bands for all sensors
-        System.arraycopy(arrayBandAB, 0, arraySortedBandAB, 0, counter);
-        Arrays.sort(arraySortedBandAB);
-
-        int counterWhiteness = (int) (Math.floor(counter * S2IdepixCloudShadowOp.OUTLIER_THRESHOLD));
-        if (counterWhiteness >= counter) counterWhiteness = counter - 1;
-        double thresholdWhiteness = arraySortedBandAB[counterWhiteness];
-        double darkestBandAB = arraySortedBandAB[0];
-        double darkestBandA = 0.;
-        double darkestBandB = 0.;
-
-        // add 0.5% of darkest values to shadow array but at least one pixel is added
-        int addedDarkValues = 1 + (int) Math.floor(0.005 * counterWhiteness + 0.5);
-        double[] arrayClusterableBandA = new double[counterWhiteness + addedDarkValues];
-        double[] arrayClusterableBandB = new double[counterWhiteness + addedDarkValues];
-
-        int countIntern = 0;
-        for (int dd = 0; dd < counter; dd++) {
-            if (arrayBandAB[dd] < thresholdWhiteness && countIntern < counterWhiteness) {
-                arrayClusterableBandA[countIntern] = arrayBandA[dd];
-                arrayClusterableBandB[countIntern] = arrayBandB[dd];
-                countIntern++;
-                if (arrayBandAB[dd] <= darkestBandAB + 1.e-8) {
-                    darkestBandA = arrayBandA[dd];
-                    darkestBandB = arrayBandB[dd];
-                }
-            }
-        }
-        for (int dd = countIntern; dd < counterWhiteness + addedDarkValues; dd++) {
-            arrayClusterableBandA[countIntern] = darkestBandA;
-            arrayClusterableBandB[countIntern] = darkestBandB;
-        }
-
-        double[][] imageData = new double[S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING][counter];
-        imageData[0] = arrayClusterableBandA; //band1data;
-        imageData[1] = arrayClusterableBandB; //band2data;
-
-        double[][] clusterCentroidArray = ClusteringKMeans.computedKMeansCluster(imageData);
-
-        darkness = Double.MAX_VALUE;
-        darkestClusterNumber = -1;
-        whiteness = Double.MIN_VALUE;
-
-        // search for a darkest cluster
-        for (int kk = 0; kk < clusterCount; kk++) {
-            if (((Math.pow(clusterCentroidArray[kk][0], 2) + Math.pow(clusterCentroidArray[kk][1], 2)) < darkness)) {
-                darkness = (Math.pow(clusterCentroidArray[kk][0], 2) + Math.pow(clusterCentroidArray[kk][1], 2));
-                darkestClusterNumber = kk;
-            }
-            if (((Math.pow(clusterCentroidArray[kk][0], 2) + Math.pow(clusterCentroidArray[kk][1], 2)) > whiteness)) {
-                whiteness = (Math.pow(clusterCentroidArray[kk][0], 2) + Math.pow(clusterCentroidArray[kk][1], 2));
-            }
-        }
-
-
-        darkness = Math.sqrt(darkness);
-        whiteness = Math.sqrt(whiteness);
-
-        // distance analysis BandValue in relation to the CentroidValue
-        // assign membership of BandValue to Cluster
-        containerNumber = -1;
-        for (int gg = 0; gg < counter; gg++) {
-            distance = Double.MAX_VALUE;
-            for (int ff = 0; ff < clusterCount; ff++) {
-                tempA = Math.pow((clusterCentroidArray[ff][0] - arrayBandA[gg]), 2);
-                tempB = Math.pow((clusterCentroidArray[ff][1] - arrayBandB[gg]), 2);
-                temp = Math.sqrt(tempA + tempB);
-                if (temp < distance) {
-                    distance = temp;
-                    containerNumber = ff;
-                }
-            }
-
-            if (containerNumber == darkestClusterNumber && whiteness - darkness > S2IdepixCloudShadowOp.Threshold_Whiteness_Darkness) {
-                index = (arrayYPos[gg] * sourceWidth + arrayXPos[gg]);
-                if (!((flagArray[index] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG)) {
-                    flagArray[index] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
+                int flagIndex = (arrayYPos[gg] * sourceWidth + arrayXPos[gg]);
+                if (!((flagArray[flagIndex] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG)) {
+                    flagArray[flagIndex] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
                 }
             }
         }
@@ -374,9 +261,7 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
 
         void doIterationStep(int index, int i, int j);
 
-        void modeAnalyseCloudShadows(int minNumberMemberCluster, int cloudIndex);
-
-        int getDarkestClusterNumber(double[][] clusterCentroidArray);
+        void doCloudShadowAnalysis(int minNumberMemberCluster, int cloudIndex);
 
     }
 
@@ -448,34 +333,13 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         }
 
         @Override
-        public void modeAnalyseCloudShadows(int minNumberMemberCluster, int cloudIndex) {
+        public void doCloudShadowAnalysis(int minNumberMemberCluster, int cloudIndex) {
             analyseCloudShadows(new float[][]{sourceBandA}, counterA, minNumberMemberCluster,
                                 new double[][]{arrayBands[0]}, arrayXPoses[0], arrayYPoses[0], cloudIndex,
                                 new double[]{minArrayBands[0]}, new LandPixelValidator());
             analyseCloudShadows(new float[][]{sourceBandB}, counterB, minNumberMemberCluster,
                                 new double[][]{arrayBands[1]}, arrayXPoses[1], arrayYPoses[1], cloudIndex,
                                 new double[]{minArrayBands[1]}, new WaterPixelValidator());
-        }
-
-        @Override
-        public int getDarkestClusterNumber(double[][] clusterCentroidArray) {
-            double darkness = Double.MAX_VALUE;
-            double whiteness = Double.MIN_VALUE;
-            int darkestClusterNumber = -1;
-            // search for a darkest cluster
-            for (int kk = 0; kk < clusterCount; kk++) {
-                if ((clusterCentroidArray[kk][0] < darkness)) {
-                    darkness = clusterCentroidArray[kk][0];
-                    darkestClusterNumber = kk;
-                }
-                if ((clusterCentroidArray[kk][0] > whiteness)) {
-                    whiteness = clusterCentroidArray[kk][0];
-                }
-            }
-            if (whiteness - darkness > S2IdepixCloudShadowOp.Threshold_Whiteness_Darkness) {
-                return -1;
-            }
-            return darkestClusterNumber;
         }
 
     }
@@ -542,35 +406,12 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         }
 
         @Override
-        public void modeAnalyseCloudShadows(int minNumberMemberCluster, int cloudIndex) {
+        public void doCloudShadowAnalysis(int minNumberMemberCluster, int cloudIndex) {
             analyseCloudShadows(new float[][]{sourceBandA, sourceBandB}, counter, minNumberMemberCluster,
                                 new double[][]{arrayBandA, arrayBandB}, arrayXPos, arrayYPos, cloudIndex,
                                 new double[]{minArrayBandA, minArrayBandB}, new EmptyPixelValidator());
         }
 
-        @Override
-        public int getDarkestClusterNumber(double[][] clusterCentroidArray) {
-            double darkness = Double.MAX_VALUE;
-            double whiteness = Double.MIN_VALUE;
-            int darkestClusterNumber = -1;
-            // search for a darkest cluster
-            for (int kk = 0; kk < clusterCount; kk++) {
-                if (((Math.pow(clusterCentroidArray[kk][0], 2) + Math.pow(clusterCentroidArray[kk][1], 2)) < darkness)) {
-                    darkness = (Math.pow(clusterCentroidArray[kk][0], 2) + Math.pow(clusterCentroidArray[kk][1], 2));
-                    darkestClusterNumber = kk;
-                }
-                if (((Math.pow(clusterCentroidArray[kk][0], 2) + Math.pow(clusterCentroidArray[kk][1], 2)) > whiteness)) {
-                    whiteness = (Math.pow(clusterCentroidArray[kk][0], 2) + Math.pow(clusterCentroidArray[kk][1], 2));
-                }
-            }
-            darkness = Math.sqrt(darkness);
-            whiteness = Math.sqrt(whiteness);
-//            return whiteness - darkness > S2IdepixCloudShadowOp.Threshold_Whiteness_Darkness;
-            if (whiteness - darkness > S2IdepixCloudShadowOp.Threshold_Whiteness_Darkness) {
-                return -1;
-            }
-            return darkestClusterNumber;
-        }
     }
 
     private class SingleBandAnalyzerMode implements AnalyzerMode {
@@ -622,32 +463,11 @@ public class AnalyzeCloudShadowIDAreas_0_Abstract {
         }
 
         @Override
-        public void modeAnalyseCloudShadows(int minNumberMemberCluster, int cloudIndex) {
+        public void doCloudShadowAnalysis(int minNumberMemberCluster, int cloudIndex) {
             analyseCloudShadows(new float[][]{sourceBandA}, counter, minNumberMemberCluster, new double[][]{arrayBandA},
                                 arrayXPos, arrayYPos, cloudIndex, new double[]{minArrayBandA}, new EmptyPixelValidator());
         }
 
-        @Override
-        public int getDarkestClusterNumber(double[][] clusterCentroidArray) {
-            double darkness = Double.MAX_VALUE;
-            double whiteness = Double.MIN_VALUE;
-            int darkestClusterNumber = -1;
-
-            // search for a darkest cluster
-            for (int kk = 0; kk < clusterCount; kk++) {
-                if ((clusterCentroidArray[kk][0] < darkness)) {
-                    darkness = clusterCentroidArray[kk][0];
-                    darkestClusterNumber = kk;
-                }
-                if ((clusterCentroidArray[kk][0] > whiteness)) {
-                    whiteness = clusterCentroidArray[kk][0];
-                }
-            }
-            if (whiteness - darkness > S2IdepixCloudShadowOp.Threshold_Whiteness_Darkness) {
-                return -1;
-            }
-            return darkestClusterNumber;
-        }
     }
 
     private class AnalyzerModeFactory {
