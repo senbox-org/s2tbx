@@ -1,25 +1,17 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
-
 import java.util.Arrays;
 
 /**
  * todo: add comment
- *
  */
 class SegmentationLongCloudShadow {
 
     static final int NO_SHADOW = 0;
 
-    private SegmentationLongCloudShadow() {
-    }
-
-    static int computeLongCloudShadowID(int sourceWidth,
-                                               int sourceHeight,
-                                               int [] cloudShadowIDArray,
-                                               int[][] cloudShadowIdBorderRectangle,
-                                               int [] longCloudShadowIDArray,
-                                               int bc) {
+    static int computeLongCloudShadowID(int sourceWidth, int sourceHeight, int[] cloudShadowIDArray,
+                                        int[][] cloudShadowIdBorderRectangle, int[] longCloudShadowIDArray,
+                                        int cloudIndex) {
 
 
         int counterID = 1;
@@ -40,13 +32,11 @@ class SegmentationLongCloudShadow {
         // todo segmentation without border and after this applying own cloud-border processing
         Arrays.fill(longCloudShadowIDArray, sourceLength);
 
-        //System.out.printf("LongCloudShadowID:  %d\n", bc);
-        for (int j = cloudShadowIdBorderRectangle[bc][2]; j <= cloudShadowIdBorderRectangle[bc][3]; j++) {
-            for (int i = cloudShadowIdBorderRectangle[bc][0]; i <= cloudShadowIdBorderRectangle[bc][1]; i++) {
+        for (int j = cloudShadowIdBorderRectangle[cloudIndex][2]; j <= cloudShadowIdBorderRectangle[cloudIndex][3]; j++) {
+            for (int i = cloudShadowIdBorderRectangle[cloudIndex][0]; i <= cloudShadowIdBorderRectangle[cloudIndex][1]; i++) {
                 index = j * sourceWidth + i;
-                if (cloudShadowIDArray[index] == bc) {
-                   //System.out.printf("LongCloudShadowPixel:  %d %d\n",i-30, j-30);
-                   if (i != 0) leftNeighbour = longCloudShadowIDArray[index - 1];
+                if (cloudShadowIDArray[index] == cloudIndex) {
+                    if (i != 0) leftNeighbour = longCloudShadowIDArray[index - 1];
                     if (j != 0) upperNeighbour = longCloudShadowIDArray[index - sourceWidth];
                     if (leftNeighbour == sourceLength && upperNeighbour == sourceLength) {
                         longCloudShadowIDArray[index] = counterID;
@@ -62,8 +52,6 @@ class SegmentationLongCloudShadow {
                 }
             }
         }
-
-
 
 
         int[] assignmentLongCloudArray = new int[counterID + 1];
@@ -129,8 +117,8 @@ class SegmentationLongCloudShadow {
 //            }
 //        }
 //        System.arraycopy(preparedArray, 0, cloudIdArray, 0, sourceHeight * sourceWidth);
-        //System.out.printf("LongCloudShadowID counterTable  counterID:  %d %d %d\n", bc, counterTable,counterID);
-        return Math.max(counterTable,counterID);
+        //System.out.printf("LongCloudShadowID counterTable  counterID:  %d %d %d\n", cloudIndex, counterTable,counterID);
+        return Math.max(counterTable, counterID);
     }
 }
 
