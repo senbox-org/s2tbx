@@ -51,7 +51,8 @@ public class S2IdepixCloudShadowOp extends Operator {
             "or Single Band", valueSet = {"LandWater", "MultiBand", "SingleBand"})
     private String mode;
 
-    public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
+    @Parameter(description = "Whether to also compute mountain shadow", defaultValue = "true")
+    private boolean computeMountainShadow;
 
     private final static double MAX_CLOUD_HEIGHT = 8000.;
     private final static int MAX_TILE_DIMENSION = 1400;
@@ -84,6 +85,12 @@ public class S2IdepixCloudShadowOp extends Operator {
     private static final String sourceSunAzimuthName = "sun_azimuth";
     private static final String sourceAltitudeName = "elevation";
     private static final String sourceFlagName1 = "pixel_classif_flags";
+    public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
+    private final static String BAND_NAME_TEST_A = "ShadowMask_TestA";
+    private final static String BAND_NAME_TEST_B = "CloudID_TestB";
+    private final static String BAND_NAME_TEST_C = "ShadowID_TestC";
+    private final static String BAND_NAME_TEST_D = "LongShadowID_TestC";
+    private final static String BAND_NAME_TEST_E = "MountainShadow";
     private Mode analysisMode;
 
     public static final String F_INVALID_DESCR_TEXT = "Invalid pixels";
@@ -101,6 +108,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     static final int F_CLOUD_SHADOW = 4;
     static final int F_MOUNTAIN_SHADOW = 5;
     static final int F_INVALID = 6;
+    private Band targetBandTestE;
 
     @Override
     public void initialize() throws OperatorException {
@@ -158,6 +166,9 @@ public class S2IdepixCloudShadowOp extends Operator {
                 break;
             default:
                 throw new OperatorException("Invalid analysis mode. Must be LandWater, MultiBand or SingleBand.");
+        }
+        if (computeMountainShadow) {
+            targetBandTestE = targetProduct.addBand(BAND_NAME_TEST_E, ProductData.TYPE_INT32);
         }
     }
 
@@ -277,6 +288,15 @@ public class S2IdepixCloudShadowOp extends Operator {
         PreparationMaskBand.prepareMaskBand(s2ClassifProduct.getSceneRasterWidth(),
                                             s2ClassifProduct.getSceneRasterHeight(), sourceRectangle, flagArray,
                                             flagDetector);
+
+        if (computeMountainShadow) {
+            final int[] makeMountainShadowArea =
+                    MountainShadowAreasPathCentralPixel.makeMountainShadowArea(
+                    s2ClassifProduct, targetProduct, sourceRectangle, targetRectangle, sunZenith, sunAzimuth,
+                    sourceLatitudes, sourceLongitudes, altitude, flagArray);
+            Tile targetTileTestE = targetTiles.get(targetBandTestE);
+            makeFilledBand(makeMountainShadowArea, targetRectangle, targetTileTestE, searchBorderRadius);
+        }
 
         int counterTable = SegmentationCloud.computeCloudID(sourceWidth, sourceHeight, flagArray, cloudIDArray);
 
