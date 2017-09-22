@@ -6,7 +6,9 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 
 /**
+ * @author Grit Kirches
  * @author Tonio Fincke
+ * @author Michael Paperin
  */
 class CloudShadowIDAnalyzer {
 
