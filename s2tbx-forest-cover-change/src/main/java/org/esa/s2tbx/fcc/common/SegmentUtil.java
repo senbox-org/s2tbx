@@ -7,18 +7,10 @@ package org.esa.s2tbx.fcc.common;
 public class SegmentUtil {
 
     int segmentId;
-    int numberOfPixels;
     int validSegmentState;
 
     public SegmentUtil(int segmentId) {
         this.segmentId = segmentId;
-    }
-
-    public void setNumberOfPixels( int numberOfPixels){
-        this.numberOfPixels = numberOfPixels;
-    }
-    public int getNumberOfPixels(){
-        return this.numberOfPixels;
     }
 
     public void incrementValidSegmentState() {
