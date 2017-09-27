@@ -40,11 +40,11 @@ public abstract class AbstractImageTilesParallelComputing extends AbstractMatrix
         runTile(localTileLeftX, localTileTopY, localTileWidth, localTileHeight, localRowIndex, localColumnIndex);
     }
 
-    private int getImageHeight() {
+    protected final int getImageHeight() {
         return imageHeight;
     }
 
-    private int getImageWidth() {
+    protected final int getImageWidth() {
         return imageWidth;
     }
 

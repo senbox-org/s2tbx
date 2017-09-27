@@ -28,7 +28,6 @@ public abstract class AbstractRegionParallelComputing extends AbstractImageTiles
     protected AbstractRegionParallelComputing(int imageWidth, int imageHeight, int tileWidth, int tileHeight) {
         super(imageWidth, imageHeight, tileWidth, tileHeight);
 
-
         this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<>();
     }
 

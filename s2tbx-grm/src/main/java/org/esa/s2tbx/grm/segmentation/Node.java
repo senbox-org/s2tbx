@@ -251,6 +251,8 @@ public abstract class Node {
             reference.clear();
         }
         this.edges.clearItems(); // remove all the edges
+        WeakReference<ArrayListExtended<Edge>> reference = new WeakReference<ArrayListExtended<Edge>>(this.edges);
+        reference.clear();
     }
 
     private void updateNeighbors(Node neighborToRemove) {

@@ -117,7 +117,7 @@ public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
             int tileWidth = this.tileSegmenter.getTileWidth();
             int tileHeight = this.tileSegmenter.getTileHeight();
             int tileMargin = this.tileSegmenter.computeTileMargin();
-            int firstNumberOfIterations = this.tileSegmenter.getIterationsForEachFirstSegmentation();
+            int firstNumberOfIterations = this.tileSegmenter.computeIterationsForEachFirstSegmentation();
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", first number of iterations: " + firstNumberOfIterations + ", start time: " + new Date(startTime));
         }
@@ -198,5 +198,23 @@ public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
             throw new IllegalArgumentException("Unknown merging cost criterion '" + mergingCostCriterion + "'.");
         }
         return tileSegmenter;
+    }
+
+    protected static void logStartSegmentation(long startTime, int imageWidth, int imageHeight, int tileWidth, int tileHeight, int threadCount) {
+        if (logger.isLoggable(Level.FINE)) {
+            int tileMargin = AbstractTileSegmenter.computeTileMargin(tileWidth, tileHeight);
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", thread count: " + threadCount + ", start time: " + new Date(startTime));
+        }
+    }
+
+    protected static void logFinishSegmentation(long startTime, int imageWidth, int imageHeight, int tileWidth, int tileHeight, int graphNodeCount) {
+        if (logger.isLoggable(Level.FINE)) {
+            long finishTime = System.currentTimeMillis();
+            long totalSeconds = (finishTime - startTime) / 1000;
+            int tileMargin = AbstractTileSegmenter.computeTileMargin(tileWidth, tileHeight);
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+        }
     }
 }

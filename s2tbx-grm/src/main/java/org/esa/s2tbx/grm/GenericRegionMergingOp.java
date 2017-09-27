@@ -1,11 +1,9 @@
 package org.esa.s2tbx.grm;
 
-import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.SubProgressMonitor;
 import org.esa.s2tbx.grm.segmentation.AbstractSegmenter;
-import org.esa.s2tbx.grm.segmentation.BaatzSchapeNode;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
-import org.esa.s2tbx.grm.segmentation.Graph;
+import org.esa.s2tbx.grm.segmentation.OutputMarkerMatrixHelper;
+import org.esa.s2tbx.grm.segmentation.OutputMaskMatrixHelper;
 import org.esa.s2tbx.grm.segmentation.TileDataSource;
 import org.esa.s2tbx.grm.segmentation.TileDataSourceImpl;
 import org.esa.s2tbx.grm.segmentation.tiles.*;
@@ -16,24 +14,12 @@ import org.esa.snap.core.gpf.*;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
-import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.util.ProductUtils;
-import org.esa.snap.core.util.math.MathUtils;
-import org.esa.snap.utils.ObjectMemory;
 import org.esa.snap.utils.matrix.IntMatrix;
 
-import javax.media.jai.JAI;
 import java.awt.*;
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author  Jean Coravu
@@ -115,31 +101,66 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         return sourceTiles;
     }
 
-    public static IntMatrix runSegmentation(int threadCount, Executor threadPool, SegmentationSourceProductPair[] segmentationSourcePairs,
-                                            String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
-                                            float threshold, float spectralWeight, float shapeWeight, Dimension tileSize)
+    private static OutputMaskMatrixHelper computeOutputMaskMatrix(int threadCount, Executor threadPool, RegionMergingInputParameters inputParameters,
+                                                                  SegmentationSourceProductPair segmentationSourceProducts, Dimension imageSize, Dimension tileSize)
+                                                                  throws Exception {
+
+        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, inputParameters.getMergingCostCriterion(),
+                                                        inputParameters.getRegionMergingCriterion(), inputParameters.getTotalIterationsForSecondSegmentation(),
+                                                        inputParameters.getThreshold(), inputParameters.getSpectralWeight(),
+                                                        inputParameters.getShapeWeight(), imageSize, tileSize);
+
+        tileSegmenter.runFirstSegmentationsInParallel(segmentationSourceProducts);
+        AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
+
+        tileSegmenter.doClose();
+        WeakReference<AbstractTileSegmenter> referenceTileSegmenter = new WeakReference<AbstractTileSegmenter>(tileSegmenter);
+        referenceTileSegmenter.clear();
+
+        OutputMaskMatrixHelper outputMaskMatrixHelper = segmenter.buildOutputMaskMatrixHelper();
+
+        segmenter.doClose();
+        WeakReference<AbstractSegmenter> referenceSegmenter = new WeakReference<AbstractSegmenter>(segmenter);
+        referenceSegmenter.clear();
+
+        return outputMaskMatrixHelper;
+    }
+
+    private static OutputMarkerMatrixHelper computeOutputMarkerMatrix(int threadCount, Executor threadPool, RegionMergingInputParameters inputParameters,
+                                                                    SegmentationSourceProductPair segmentationSourceProducts, Dimension imageSize, Dimension tileSize)
+                                                                           throws Exception {
+
+        OutputMaskMatrixHelper outputMaskMatrixHelper = computeOutputMaskMatrix(threadCount, threadPool, inputParameters, segmentationSourceProducts, imageSize, tileSize);
+
+        OutputMarkerMatrixHelper outputMarkerMatrix = outputMaskMatrixHelper.buildMaskMatrix();
+
+        outputMaskMatrixHelper.doClose();
+        WeakReference<OutputMaskMatrixHelper> referenceMaskMatrix = new WeakReference<OutputMaskMatrixHelper>(outputMaskMatrixHelper);
+        referenceMaskMatrix.clear();
+
+        return outputMarkerMatrix;
+    }
+
+    public static IntMatrix computeSegmentation(int threadCount, Executor threadPool, RegionMergingInputParameters segmentationInputParameters,
+                                            SegmentationSourceProductPair segmentationSourceProducts, Dimension imageSize, Dimension tileSize)
                                             throws Exception {
 
-        Product sourceProduct = segmentationSourcePairs[0].getSourceProduct();
-
-        Dimension imageSize = new Dimension(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-
-        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
-                                                                 threshold, spectralWeight, shapeWeight, imageSize, tileSize);
-
         long startTime = System.currentTimeMillis();
-        tileSegmenter.logStartSegmentation(startTime);
 
-        tileSegmenter.runFirstSegmentationsInParallel(segmentationSourcePairs);
-        AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
-        IntMatrix result = segmenter.buildOutputMatrix();
+        // log the start message
+        logStartSegmentation(startTime, imageSize.width, imageSize.height, tileSize.width, tileSize.height, threadCount);
 
-        tileSegmenter.logFinishSegmentation(startTime, segmenter);
+        OutputMarkerMatrixHelper outputMarkerMatrix = computeOutputMarkerMatrix(threadCount, threadPool, segmentationInputParameters, segmentationSourceProducts, imageSize, tileSize);
 
-        segmenter.getGraph().doClose();
-        segmenter = null;
-        tileSegmenter = null;
-        System.gc();
+        IntMatrix result = outputMarkerMatrix.buildOutputMatrix();
+        int graphNodeCount = outputMarkerMatrix.getGraphNodeCount();
+
+        outputMarkerMatrix.doClose();
+        WeakReference<OutputMarkerMatrixHelper> referenceMarkerMatrix = new WeakReference<OutputMarkerMatrixHelper>(outputMarkerMatrix);
+        referenceMarkerMatrix.clear();
+
+        // log the final message
+        logFinishSegmentation(startTime, result.getColumnCount(), result.getRowCount(), tileSize.width, tileSize.height, graphNodeCount);
 
         return result;
     }
