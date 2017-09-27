@@ -435,9 +435,9 @@ public class ForestCoverChange extends Operator {
         Dimension tileSize = getPreferredTileSize();
 
         SegmentationSourceProductPair[] segmentationSourcePairs = new SegmentationSourceProductPair[3];
-        segmentationSourcePairs[0] = new SegmentationSourceProductPair(extractedBandsProduct, sourceBandNames);
-        segmentationSourcePairs[1] = new SegmentationSourceProductPair(ndviProduct, ndviSourceBandNames);
-        segmentationSourcePairs[2] = new SegmentationSourceProductPair(ndwiProduct, ndwiSourceBandNames);
+//        segmentationSourcePairs[0] = new SegmentationSourceProductPair(extractedBandsProduct, sourceBandNames);
+//        segmentationSourcePairs[1] = new SegmentationSourceProductPair(ndviProduct, ndviSourceBandNames);
+//        segmentationSourcePairs[2] = new SegmentationSourceProductPair(ndwiProduct, ndwiSourceBandNames);
 
         IntMatrix productColorFill = generateColorFill(segmentationSourcePairs, extractedBandsProduct, tileSize, prefixFileName);
 
@@ -460,13 +460,14 @@ public class ForestCoverChange extends Operator {
                                         Dimension tileSize, String prefixFileName)
             throws Exception {
 
-        IntMatrix segmentationMatrix = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, segmentationSourcePairs,
-                mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
-                threshold, spectralWeight, shapeWeight, tileSize);
-
-        writeProduct(extractedBandsSourceProduct.getSceneGeoCoding(), segmentationMatrix, prefixFileName + "SegmentationMatrix");
-
-        return runColorFillerOp(extractedBandsSourceProduct, segmentationMatrix, forestCoverPercentage, tileSize);
+//        IntMatrix segmentationMatrix = GenericRegionMergingOp.runSegmentation(threadCount, threadPool, segmentationSourcePairs,
+//                mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+//                threshold, spectralWeight, shapeWeight, tileSize);
+//
+//        writeProduct(extractedBandsSourceProduct.getSceneGeoCoding(), segmentationMatrix, prefixFileName + "SegmentationMatrix");
+//
+//        return runColorFillerOp(extractedBandsSourceProduct, segmentationMatrix, forestCoverPercentage, tileSize);
+        return null;
     }
 
     private IntMatrix runColorFillerOp(Product extractedBandsSourceProduct,

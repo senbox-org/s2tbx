@@ -117,7 +117,8 @@ public class DifferencePixelsRegionMergingOp extends AbstractRegionMergingOp {
         AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
         IntMatrix result = segmenter.buildOutputMatrix();
 
-        tileSegmenter.logFinishSegmentation(startTime, segmenter);
+        int graphNodeCount = segmenter.getGraph().getNodeCount();
+        tileSegmenter.logFinishSegmentation(startTime, graphNodeCount);
 
         segmenter.getGraph().doClose();
         segmenter = null;

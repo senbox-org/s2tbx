@@ -228,6 +228,8 @@ public class Graph {
             WeakReference<Node> reference = new WeakReference<Node>(node);
             reference.clear();
         }
-        this.nodes.removeItems(0, nodeCount);
+        this.nodes.clearItems(); // remove all the nodes
+        WeakReference<ArrayListExtended<Node>> reference = new WeakReference<ArrayListExtended<Node>>(this.nodes);
+        reference.clear();
     }
 }

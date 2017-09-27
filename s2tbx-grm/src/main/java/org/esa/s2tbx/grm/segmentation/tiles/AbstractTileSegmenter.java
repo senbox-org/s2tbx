@@ -11,6 +11,7 @@ import org.esa.snap.utils.ObjectMemory;
 
 import java.awt.*;
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
@@ -31,7 +32,6 @@ public abstract class AbstractTileSegmenter {
     private final int imageWidth;
     private final int imageHeight;
     private final int totalIterationsForSecondSegmentation;
-    private final int iterationsForEachFirstSegmentation;
     private final int tileWidth;
     private final int tileHeight;
     private final int iterationsForEachSecondSegmentation;
@@ -48,7 +48,6 @@ public abstract class AbstractTileSegmenter {
         this.tileWidth = tileSize.width;
         this.tileHeight = tileSize.height;
         this.totalIterationsForSecondSegmentation = totalIterationsForSecondSegmentation;
-        this.iterationsForEachFirstSegmentation = computeNumberOfFirstIterations(this.tileWidth, this.tileHeight);
         this.fastSegmentation = fastSegmentation;
         this.threshold = threshold;
 
@@ -68,7 +67,7 @@ public abstract class AbstractTileSegmenter {
     public abstract AbstractSegmenter buildSegmenter(float threshold);
 
     public final int computeTileMargin() {
-        return (int) (Math.pow(2, this.iterationsForEachFirstSegmentation + 1) - 2);
+        return computeTileMargin(this.tileWidth, this.tileHeight);
     }
 
     public final int getImageHeight() {
@@ -87,9 +86,9 @@ public abstract class AbstractTileSegmenter {
         return this.tileWidth;
     }
 
-    public final ProcessingTile buildTile(int tileLeftX, int tileTopY, int tileSizeX, int tileSizeY) {
+    public final ProcessingTile buildTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight) {
         int margin = computeTileMargin();
-        return AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileSizeX, tileSizeY, margin, this.imageWidth, this.imageHeight);
+        return AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileWidth, tileHeight, margin, this.imageWidth, this.imageHeight);
     }
 
     public final void checkTemporaryTileFiles(int iteration, int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int rowIndex, int columnIndex) throws IOException {
@@ -98,8 +97,6 @@ public abstract class AbstractTileSegmenter {
         }
 
         ProcessingTile tileToCheck = buildTile(tileLeftX, tileTopY, tileWidth, tileHeight);
-        //readGraph(tileToCheck.getNodeFileName(), tileToCheck.getEdgeFileName());
-        //readGraphMarginsFromTile(tileToCheck);
 
         StringBuilder exceptionMessage = new StringBuilder();
 
@@ -164,8 +161,8 @@ public abstract class AbstractTileSegmenter {
         return numberOfIterationsRemaining;
     }
 
-    public final void runFirstSegmentationsInParallel(SegmentationSourceProductPair[] segmentationSourcePairs) throws Exception {
-        FirstTileParallelComputing tileFirstSegmentationHelper = new FirstTileParallelComputing(segmentationSourcePairs, this);
+    public final void runFirstSegmentationsInParallel(SegmentationSourceProductPair segmentationSourceProducts) throws Exception {
+        FirstTileParallelComputing tileFirstSegmentationHelper = new FirstTileParallelComputing(segmentationSourceProducts, this);
         tileFirstSegmentationHelper.executeInParallel(this.threadCount, this.threadPool);
     }
 
@@ -222,6 +219,14 @@ public abstract class AbstractTileSegmenter {
         tileSecondSegmentationHelper.executeInParallel(threadCount, threadPool);
     }
 
+    public final void doClose() {
+        // reset the references
+        WeakReference<File> referenceTemporaryFolder = new WeakReference<File>(this.temporaryFolder);
+        referenceTemporaryFolder.clear();
+        WeakReference<TileSegmenterMetadata> referenceMetadata = new WeakReference<TileSegmenterMetadata>(this.tileSegmenterMetadata);
+        referenceMetadata.clear();
+    }
+
     public final AbstractSegmenter runSecondSegmentationsAndMergeGraphs() throws Exception {
         try {
             int numberOfRemainingIterations = runSecondSegmentationsInParallel();
@@ -235,9 +240,10 @@ public abstract class AbstractTileSegmenter {
                                          throws IllegalAccessException, IOException, InterruptedException {
 
         if (logger.isLoggable(Level.FINE)) {
+            int iterationsForEachFirstSegmentation = computeNumberOfFirstIterations(this.tileWidth, this.tileHeight);
             int tileMargin = computeTileMargin();
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "First tile segmentation: row index: " + tileRowIndex + ", column index: " + tileColumnIndex + ", margin: " + tileMargin + ", bounds: " + tileRegionToString(tileToProcess.getRegion()) + ", first number of iterations: " + this.iterationsForEachFirstSegmentation);
+            logger.log(Level.FINE, "First tile segmentation: row index: " + tileRowIndex + ", column index: " + tileColumnIndex + ", margin: " + tileMargin + ", bounds: " + tileRegionToString(tileToProcess.getRegion()) + ", first number of iterations: " + iterationsForEachFirstSegmentation);
         }
 
         ProcessingTile existingTile = null;
@@ -252,7 +258,9 @@ public abstract class AbstractTileSegmenter {
                 int numberOfNeighborLayers = computeNumberOfNeighborLayers();
 
                 AbstractSegmenter segmenter = buildSegmenter(this.threshold);
-                boolean complete = segmenter.update(sourceTiles, tileToProcess.getRegion(), this.iterationsForEachFirstSegmentation, this.fastSegmentation, this.addFourNeighbors);
+                int iterationsForEachFirstSegmentation = computeNumberOfFirstIterations(this.tileWidth, this.tileHeight);
+
+                boolean complete = segmenter.update(sourceTiles, tileToProcess.getRegion(), iterationsForEachFirstSegmentation, this.fastSegmentation, this.addFourNeighbors);
                 Graph graph = segmenter.getGraph();
 
                 if (logger.isLoggable(Level.FINEST)) {
@@ -296,11 +304,22 @@ public abstract class AbstractTileSegmenter {
                 }
 
                 graph.doClose();
-                segmenter = null;
-                graph = null;
-                nodesToIterate = null;
-                borderNodes = null;
-                System.gc();
+
+                // reset the references
+                WeakReference<AbstractSegmenter> referenceSegmenter = new WeakReference<AbstractSegmenter>(segmenter);
+                referenceSegmenter.clear();
+                WeakReference<Graph> referenceGraph = new WeakReference<Graph>(graph);
+                referenceGraph.clear();
+                WeakReference<List<Node>> referenceNodesToIterate = new WeakReference<List<Node>>(nodesToIterate);
+                referenceNodesToIterate.clear();
+                WeakReference<Int2ObjectMap<Node>> referenceBorderNodes = new WeakReference<Int2ObjectMap<Node>>(borderNodes);
+                referenceBorderNodes.clear();
+
+//                segmenter = null;
+//                graph = null;
+//                nodesToIterate = null;
+//                borderNodes = null;
+//                System.gc();
 
                 success = true;
             } finally {
@@ -317,8 +336,8 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    public final int getIterationsForEachFirstSegmentation() {
-        return iterationsForEachFirstSegmentation;
+    public final int computeIterationsForEachFirstSegmentation() {
+        return computeNumberOfFirstIterations(this.tileWidth, this.tileHeight);
     }
 
     protected void writeNode(BufferedOutputStreamWrapper nodesFileStream, Node nodeToWrite) throws IOException {
@@ -443,12 +462,25 @@ public abstract class AbstractTileSegmenter {
         }
 
         graph.doClose();
-        segmenter = null;
-        graph = null;
-        borderPixelMap = null;
-        nodesToIterate = null;
-        borderNodes = null;
-        System.gc();
+
+        // reset the references
+        WeakReference<AbstractSegmenter> referenceSegmenter = new WeakReference<AbstractSegmenter>(segmenter);
+        referenceSegmenter.clear();
+        WeakReference<Graph> referenceGraph = new WeakReference<Graph>(graph);
+        referenceGraph.clear();
+        WeakReference<Int2ObjectMap<List<Node>>> referenceBorderPixelMap = new WeakReference<Int2ObjectMap<List<Node>>>(borderPixelMap);
+        referenceBorderPixelMap.clear();
+        WeakReference<List<Node>> referenceNodesToIterate = new WeakReference<List<Node>>(nodesToIterate);
+        referenceNodesToIterate.clear();
+        WeakReference<Int2ObjectMap<Node>> referenceBorderNodes = new WeakReference<Int2ObjectMap<Node>>(borderNodes);
+        referenceBorderNodes.clear();
+
+//        segmenter = null;
+//        graph = null;
+//        borderPixelMap = null;
+//        nodesToIterate = null;
+//        borderNodes = null;
+//        System.gc();
     }
 
     public final void runTileStabilityMarginSecondSegmentation(int iteration, int rowIndex, int columnIndex, int numberOfNeighborLayers) throws IOException, InterruptedException {
@@ -484,10 +516,18 @@ public abstract class AbstractTileSegmenter {
 
         graph.doClose();
 
-        graph = null;
-        nodesToIterate = null;
-        borderNodes = null;
-        System.gc();
+        // reset the references
+        WeakReference<Graph> referenceGraph = new WeakReference<Graph>(graph);
+        referenceGraph.clear();
+        WeakReference<List<Node>> referenceNodesToIterate = new WeakReference<List<Node>>(nodesToIterate);
+        referenceNodesToIterate.clear();
+        WeakReference<Int2ObjectMap<Node>> referenceBorderNodes = new WeakReference<Int2ObjectMap<Node>>(borderNodes);
+        referenceBorderNodes.clear();
+
+//        graph = null;
+//        nodesToIterate = null;
+//        borderNodes = null;
+//        System.gc();
     }
 
     private AbstractSegmenter mergeGraphsAndAchieveSegmentation(int numberOfRemainingIterations) throws IOException, InterruptedException {
@@ -509,6 +549,10 @@ public abstract class AbstractTileSegmenter {
 
                 Graph subgraph = readGraph(currentTile.getNodeFileName(), currentTile.getEdgeFileName());
                 graph.addNodes(subgraph);
+
+                // reset the reference
+                WeakReference<Graph> referenceSubgraph = new WeakReference<Graph>(subgraph);
+                referenceSubgraph.clear();
 
                 if (logger.isLoggable(Level.FINE)) {
                     if (rowIndex ==0 && columnIndex == 0) {
@@ -537,7 +581,7 @@ public abstract class AbstractTileSegmenter {
                     logger.log(Level.FINE, "Merge graphs (build border pixel map): row index: "+rowIndex+", column index: "+columnIndex+", graph node count: " +graph.getNodeCount()+", tile region: " +tileRegionToString(currentTile.getRegion()));
                 }
 
-                Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapInParallel(threadCount, threadPool, currentTile, rowIndex, columnIndex, tileCountX, tileCountY, this.imageWidth);
+                Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapInParallel(this.threadCount, this.threadPool, currentTile, rowIndex, columnIndex, tileCountX, tileCountY, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Merge graphs (after building border pixel map): row index: " + rowIndex + ", column index: " + columnIndex+", graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size());
@@ -557,6 +601,10 @@ public abstract class AbstractTileSegmenter {
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Merge graphs (after updating neighbors): row index: " + rowIndex + ", column index: " + columnIndex+", graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size());
                 }
+
+                // reset the reference
+                WeakReference<Int2ObjectMap<List<Node>>> referenceBorderPixelMap = new WeakReference<Int2ObjectMap<List<Node>>>(borderPixelMap);
+                referenceBorderPixelMap.clear();
             }
         }
 
@@ -804,11 +852,16 @@ public abstract class AbstractTileSegmenter {
         return this.temporaryFolder.getAbsolutePath();
     }
 
-    public static ProcessingTile buildTile(int tileLeftX, int tileTopY, int tileSizeX, int tileSizeY, int tileMargin, int imageWidth, int imageHeight) {
+    public static int computeTileMargin(int tileWidth, int tileHeight) {
+        int iterationsForEachFirstSegmentation = computeNumberOfFirstIterations(tileWidth, tileHeight);
+        return (int) (Math.pow(2, iterationsForEachFirstSegmentation + 1) - 2);
+    }
+
+    public static ProcessingTile buildTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int tileMargin, int imageWidth, int imageHeight) {
         // compute current tile start and size
         ProcessingTile tile = new ProcessingTile();
-        int finishX = tileLeftX + tileSizeX;
-        int finishY = tileTopY + tileSizeY;
+        int finishX = tileLeftX + tileWidth;
+        int finishY = tileTopY + tileHeight;
         // margin at the top
         if (tileTopY > 0) { //(row > 0) {
             tile.setTopMargin(tileMargin);
@@ -822,7 +875,7 @@ public abstract class AbstractTileSegmenter {
         // margin at the right
         if (finishX < imageWidth) { //(col < nbTilesX - 1) {
             tile.setRightMargin(tileMargin);
-            tile.setImageRightX(tileLeftX + tileSizeX - 1); // tile.columns[1] = startX + sizeX - 1; //sizeX
+            tile.setImageRightX(tileLeftX + tileWidth - 1); // tile.columns[1] = startX + sizeX - 1; //sizeX
         } else {
             // the tile is on the right column --> no right margin
             tile.setRightMargin(0);
@@ -832,7 +885,7 @@ public abstract class AbstractTileSegmenter {
         // margin at the bottom
         if (finishY < imageHeight) { // (row < nbTilesY - 1) {
             tile.setBottomMargin(tileMargin);
-            tile.setImageBottomY(tileTopY + tileSizeY - 1); // tile.rows[1] = startY + sizeY - 1; // sizeY
+            tile.setImageBottomY(tileTopY + tileHeight - 1); // tile.rows[1] = startY + sizeY - 1; // sizeY
         } else {
             // the tile is on the bottom --> no bottom margin
             tile.setBottomMargin(0);
@@ -852,8 +905,8 @@ public abstract class AbstractTileSegmenter {
         // store the tile region
         int regionLeftX = tileLeftX - tile.getLeftMargin();
         int regionTopY = tileTopY - tile.getTopMargin();
-        int regionWidth = tileSizeX + tile.getLeftMargin() + tile.getRightMargin();
-        int regionHeight = tileSizeY + tile.getTopMargin() + tile.getBottomMargin();
+        int regionWidth = tileWidth + tile.getLeftMargin() + tile.getRightMargin();
+        int regionHeight = tileHeight + tile.getTopMargin() + tile.getBottomMargin();
         tile.setRegion(new BoundingBox(regionLeftX, regionTopY, regionWidth, regionHeight));
 
         String temporaryFilesPrefix = "";
@@ -1002,6 +1055,8 @@ public abstract class AbstractTileSegmenter {
         return numberOfFirstIterations;
     }
 
+    //TODO Jean remove
+    @Deprecated
     public void logStartSegmentation(long startTime) {
         if (logger.isLoggable(Level.FINE)) {
             int tileMargin = computeTileMargin();
@@ -1011,12 +1066,13 @@ public abstract class AbstractTileSegmenter {
         }
     }
 
-    public void logFinishSegmentation(long startTime, AbstractSegmenter segmenter) {
+    //TODO Jean remove
+    @Deprecated
+    public void logFinishSegmentation(long startTime, int graphNodeCount) {
         if (logger.isLoggable(Level.FINE)) {
             int tileMargin = computeTileMargin();
             long finishTime = System.currentTimeMillis();
             long totalSeconds = (finishTime - startTime) / 1000;
-            int graphNodeCount = segmenter.getGraph().getNodeCount();
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
         }

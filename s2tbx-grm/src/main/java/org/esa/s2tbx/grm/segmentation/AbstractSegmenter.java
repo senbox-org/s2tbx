@@ -3,9 +3,9 @@ package org.esa.s2tbx.grm.segmentation;
 import it.unimi.dsi.fastutil.ints.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.utils.matrix.IntMatrix;
 
+import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,16 +42,21 @@ public abstract class AbstractSegmenter {
         return !merged;
     }
 
-    public void setGraph(Graph graph, int imageWidth, int imageHeight) {
+    public final void setGraph(Graph graph, int imageWidth, int imageHeight) {
         this.graph = graph;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
     }
 
-    public final Band buildBandData(String bandName) {
-        Band targetBand = new Band(bandName, ProductData.TYPE_INT32, this.imageWidth, this.imageHeight);
-        fillBandData(targetBand);
-        return targetBand;
+    public final void doClose() {
+        this.graph.doClose();
+
+        WeakReference<Graph> reference = new WeakReference<Graph>(this.graph);
+        reference.clear();
+    }
+
+    public final OutputMaskMatrixHelper buildOutputMaskMatrixHelper() {
+        return new OutputMaskMatrixHelper(this.graph, this.imageWidth, this.imageHeight);
     }
 
     public final IntMatrix buildOutputMatrix() {
@@ -259,7 +264,6 @@ public abstract class AbstractSegmenter {
 
     private int[][] buildMarkerMatrix(int widthCount, int heightCount) {
         int[][] mask = new int[heightCount][widthCount];
-        int[][] marker = new int[heightCount][widthCount];
 
         int nodeCount = this.graph.getNodeCount();
         IntSet borderCells = new IntOpenHashSet();
@@ -314,6 +318,7 @@ public abstract class AbstractSegmenter {
         }
 
         // copy the first two rows and the last two rows in the marker matrix
+        int[][] marker = new int[heightCount][widthCount];
         for (int x = 0; x < widthCount; x++) {
             marker[0][x] = mask[0][x];
             marker[1][x] = mask[1][x];
@@ -447,6 +452,8 @@ public abstract class AbstractSegmenter {
         return merged;
     }
 
+    //TODO Jean remove
+    @Deprecated
     private static void addToQueue(int[][] marker, int[][] mask, int markerCurrentPixel, int x, int y, int widthCount, IntPriorityQueue queue) {
         int markerNeighborPixel = marker[y][x];
         int maskNeighborPixel = mask[y][x];
@@ -456,6 +463,8 @@ public abstract class AbstractSegmenter {
         }
     }
 
+    //TODO Jean remove
+    @Deprecated
     private static int convertPointToId(int x, int y, int width) {
         return (y * width) + x;
     }
