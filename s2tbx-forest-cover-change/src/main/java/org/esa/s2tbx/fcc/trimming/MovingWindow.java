@@ -45,72 +45,83 @@ public class MovingWindow {
             for (int column = tileLeftX; column < tileRightX; column++) {
                 int pixelValue = this.colorFillerMatrix.getValueAt(row, column);
                 if (pixelValue != ForestCoverChangeConstants.NO_DATA_VALUE) {
-                    if (row == tileTopY || row == tileBottomY || column == tileLeftX || column == tileRightX) {
-                        if (row == tileTopY && tileTopY != 0) {
-                            int localPixelValue = this.colorFillerMatrix.getValueAt(row - 1, column);
-                            if (localPixelValue == pixelValue) {
-                                invalidSegmentList.add(pixelValue);
+                    if (!invalidSegmentList.contains(pixelValue)) {
+                        if (row == tileTopY || row == tileBottomY || column == tileLeftX || column == tileRightX) {
+                            if (row == tileTopY && tileTopY != 0) {
+                                int localPixelValue = this.colorFillerMatrix.getValueAt(row - 1, column);
+                                if (localPixelValue == pixelValue) {
+                                    invalidSegmentList.add(pixelValue);
+                                }
+                                if (!invalidSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
+                            } else if (row == tileTopY && tileTopY == 0) {
+                                if (!invalidSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
                             }
-                            if (!invalidSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
+                            if (row == tileBottomY && tileBottomY != this.extractedBandsProduct.getSceneRasterHeight()) {
+                                int localPixelValue = this.colorFillerMatrix.getValueAt(row + 1, column);
+                                if (localPixelValue == pixelValue) {
+                                    invalidSegmentList.add(pixelValue);
+                                }
+                                if (!invalidSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
+                            } else if (row == tileBottomY && tileBottomY != this.extractedBandsProduct.getSceneRasterHeight()) {
+                                if (!invalidSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
                             }
-                        } else if (row == tileTopY && tileTopY == 0) {
+                            if (column == tileLeftX && tileLeftX != 0) {
+                                int localPixelValue = this.colorFillerMatrix.getValueAt(row, column - 1);
+                                if (localPixelValue == pixelValue) {
+                                    invalidSegmentList.add(pixelValue);
+                                }
+                                if (!invalidSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
+                            } else if (column == tileLeftX && tileLeftX == 0) {
+                                if (!invalidSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
+                            }
+                            if (column == tileRightX && tileLeftX != this.extractedBandsProduct.getSceneRasterWidth()) {
+                                int localPixelValue = this.colorFillerMatrix.getValueAt(row, column + 1);
+                                if (localPixelValue == pixelValue) {
+                                    invalidSegmentList.add(pixelValue);
+                                }
+                                if (!invalidSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
+                            } else if (column == tileLeftX && tileLeftX == this.extractedBandsProduct.getSceneRasterWidth()) {
+                                if (!invalidSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
+                            }
+                        } else {
                             if (!invalidSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
+                                if (!validSegmentList.contains(pixelValue)) {
+                                    validSegmentList.add(pixelValue);
+                                }
+                            }
+                            while (column < tileRightX - 1) {
+                                column++;
+                                int localPixelValue = this.colorFillerMatrix.getValueAt(row, column);
+                                if (localPixelValue != pixelValue) {
+                                    column--;
+                                    break;
+                                }
                             }
                         }
-                        if (row == tileBottomY && tileBottomY != this.extractedBandsProduct.getSceneRasterHeight()) {
-                            int localPixelValue = this.colorFillerMatrix.getValueAt(row + 1, column);
-                            if (localPixelValue == pixelValue) {
-                                invalidSegmentList.add(pixelValue);
-                            }
-                            if (!invalidSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
-                            }
-                        } else if (row == tileBottomY && tileBottomY != this.extractedBandsProduct.getSceneRasterHeight()) {
-                            if (!invalidSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
-                            }
-                        }
-                        if (column == tileLeftX && tileLeftX != 0) {
-                            int localPixelValue = this.colorFillerMatrix.getValueAt(row, column - 1);
-                            if (localPixelValue == pixelValue) {
-                                invalidSegmentList.add(pixelValue);
-                            }
-                            if (!invalidSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
-                            }
-                        } else if (column == tileLeftX && tileLeftX == 0) {
-                            if (!invalidSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
-                            }
-                        }
-                        if (column == tileRightX && tileLeftX != this.extractedBandsProduct.getSceneRasterWidth()) {
-                            int localPixelValue = this.colorFillerMatrix.getValueAt(row, column + 1);
-                            if (localPixelValue == pixelValue) {
-                                invalidSegmentList.add(pixelValue);
-                            }
-                            if (!invalidSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
-                            }
-                        } else if (column == tileLeftX && tileLeftX == this.extractedBandsProduct.getSceneRasterWidth()) {
-                            if (!invalidSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
-                            }
-                        }
-                    } else {
-                        if (!invalidSegmentList.contains(pixelValue)) {
-                            if (!validSegmentList.contains(pixelValue)) {
-                                validSegmentList.add(pixelValue);
-                            }
-                        }
-                        while (column < tileRightX - 1) {
-                            column++;
-                            int localPixelValue = this.colorFillerMatrix.getValueAt(row, column);
-                            if (localPixelValue != pixelValue) {
-                                column--;
-                                break;
-                            }
+                    }
+                } else {
+                    while (column < tileRightX - 1) {
+                        column++;
+                        int localPixelValue = this.colorFillerMatrix.getValueAt(row, column);
+                        if (localPixelValue != pixelValue) {
+                            column--;
+                            break;
                         }
                     }
                 }
