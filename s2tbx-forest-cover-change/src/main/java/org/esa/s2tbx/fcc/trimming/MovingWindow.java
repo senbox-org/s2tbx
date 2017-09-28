@@ -10,16 +10,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by rdumitrascu on 9/27/2017.
+ * @author Razvan Dumitrascu
+ * @author Jean Coravu
  */
-public class MovingWindow {
+
+public class MovingWindow extends MovingWindowRegionParallelComputing {
     private static final Logger logger = Logger.getLogger(MovingWindow.class.getName());
 
     private final IntMatrix colorFillerMatrix;
     private final IntSet validSegmentList;
     private final IntSet invalidSegmentList;
 
-    public MovingWindow(IntMatrix colorFillerMatrix) {
+    public MovingWindow(IntMatrix colorFillerMatrix,  int tileWidth, int tileHeight) {
+        super(colorFillerMatrix.getColumnCount(),colorFillerMatrix.getRowCount(),tileWidth, tileHeight);
         this.colorFillerMatrix = colorFillerMatrix;
         this.validSegmentList = new IntOpenHashSet();
         this.invalidSegmentList = new IntOpenHashSet();
@@ -27,8 +30,6 @@ public class MovingWindow {
 
     public IntSet runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int imageWidth, int imageHeight)
             throws IOException, IllegalAccessException, InterruptedException {
-        this.validSegmentList.clear();
-        this.invalidSegmentList.clear();
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Compute moving window for tile region starting at : row index: bounds [x=" + tileLeftX + ", y=" + tileTopY + ", width=" + tileWidth + ", height=" + tileHeight + "]");
@@ -77,7 +78,7 @@ public class MovingWindow {
                 }
             }
         }
-        return validSegmentList;
+        return this.validSegmentList;
     }
 
     private void validateElementBottom(int pixelValueBottom, int tileBottomY, int imageHeight, int column) {
