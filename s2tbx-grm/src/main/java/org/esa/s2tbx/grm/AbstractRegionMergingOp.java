@@ -19,6 +19,7 @@ import org.esa.snap.utils.AbstractTilesComputingOp;
 import javax.media.jai.JAI;
 import java.awt.*;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -161,41 +162,48 @@ public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
     protected void initTargetProduct(int sceneWidth, int sceneHeight, String productName, String productType, String bandName, int bandDataType) {
         super.initTargetProduct(sceneWidth, sceneHeight, productName, productType, bandName, bandDataType);
 
-        Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
-        Dimension tileSize = this.targetProduct.getPreferredTileSize();
-        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
-        Executor threadPool = Executors.newCachedThreadPool();
-        try {
-            this.tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
-                                                    this.threshold, spectralWeight, shapeWeight, imageSize, tileSize);
-        } catch (IOException e) {
-            throw new OperatorException(e);
-        }
+        //TODO Jean uncomment
+//        Dimension imageSize = new Dimension(this.targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
+//        Dimension tileSize = this.targetProduct.getPreferredTileSize();
+//        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
+//        Executor threadPool = Executors.newCachedThreadPool();
+//        try {
+//            this.tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
+//                                                    this.threshold, spectralWeight, shapeWeight, imageSize, tileSize);
+//        } catch (IOException e) {
+//            throw new OperatorException(e);
+//        }
     }
 
     protected void finishSegmentation(AbstractSegmenter segmenter) {
     }
 
-    protected static AbstractTileSegmenter buildTileSegmenter(int threadCount, Executor threadPool, String mergingCostCriterion, String regionMergingCriterion,
-                                                              int totalIterationsForSecondSegmentation, float threshold, float spectralWeight,
-                                                              float shapeWeight, Dimension imageSize, Dimension tileSize)
-            throws IOException {
+    protected static AbstractTileSegmenter buildTileSegmenter(RegionMergingProcessingParameters processingParameters, RegionMergingInputParameters inputParameters,
+                                                              Path temporaryParentFolder)
+                                                              throws IOException {
 
         AbstractTileSegmenter tileSegmenter = null;
         boolean fastSegmentation = false;
-        if (GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(regionMergingCriterion)) {
+        if (GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(inputParameters.getRegionMergingCriterion())) {
             fastSegmentation = true;
-        } else if (GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(regionMergingCriterion)) {
+        } else if (GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION.equalsIgnoreCase(inputParameters.getRegionMergingCriterion())) {
             fastSegmentation = false;
         }
-        if (GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
-            tileSegmenter = new SpringTileSegmenter(threadCount, threadPool, imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
-        } else if (GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
-            tileSegmenter = new BaatzSchapeTileSegmenter(threadCount, threadPool, imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation, spectralWeight, shapeWeight);
-        } else if (GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(mergingCostCriterion)) {
-            tileSegmenter = new FullLambdaScheduleTileSegmenter(threadCount, threadPool, imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+        if (GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(inputParameters.getMergingCostCriterion())) {
+            tileSegmenter = new SpringTileSegmenter(processingParameters, inputParameters.getTotalIterationsForSecondSegmentation(),
+                                                    inputParameters.getThreshold(), fastSegmentation, temporaryParentFolder);
+
+        } else if (GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(inputParameters.getMergingCostCriterion())) {
+            tileSegmenter = new BaatzSchapeTileSegmenter(processingParameters, inputParameters.getTotalIterationsForSecondSegmentation(),
+                                                         inputParameters.getThreshold(), fastSegmentation, inputParameters.getSpectralWeight(),
+                                                         inputParameters.getShapeWeight(), temporaryParentFolder);
+
+        } else if (GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION.equalsIgnoreCase(inputParameters.getMergingCostCriterion())) {
+            tileSegmenter = new FullLambdaScheduleTileSegmenter(processingParameters, inputParameters.getTotalIterationsForSecondSegmentation(),
+                                                                inputParameters.getThreshold(), fastSegmentation, temporaryParentFolder);
+
         } else {
-            throw new IllegalArgumentException("Unknown merging cost criterion '" + mergingCostCriterion + "'.");
+            throw new IllegalArgumentException("Unknown merging cost criterion '" + inputParameters.getMergingCostCriterion() + "'.");
         }
         return tileSegmenter;
     }

@@ -107,8 +107,9 @@ public class DifferencePixelsRegionMergingOp extends AbstractRegionMergingOp {
 
         Dimension imageSize = new Dimension(currentSourceProduct.getSceneRasterWidth(), currentSourceProduct.getSceneRasterHeight());
 
-        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion,
-                                                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight, imageSize, tileSize);
+//        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, mergingCostCriterion, regionMergingCriterion,
+//                                                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight, imageSize, tileSize);
+        AbstractTileSegmenter tileSegmenter = null;
 
         long startTime = System.currentTimeMillis();
         tileSegmenter.logStartSegmentation(startTime);
