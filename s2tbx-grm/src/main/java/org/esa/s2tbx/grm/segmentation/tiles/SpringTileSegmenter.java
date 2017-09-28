@@ -1,11 +1,13 @@
 package org.esa.s2tbx.grm.segmentation.tiles;
 
+import org.esa.s2tbx.grm.RegionMergingProcessingParameters;
 import org.esa.s2tbx.grm.segmentation.*;
 import org.esa.snap.utils.BufferedInputStreamWrapper;
 import org.esa.snap.utils.BufferedOutputStreamWrapper;
 
 import java.awt.*;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.concurrent.Executor;
 
 /**
@@ -13,11 +15,11 @@ import java.util.concurrent.Executor;
  */
 public class SpringTileSegmenter extends AbstractTileSegmenter {
 
-    public SpringTileSegmenter(int threadCount, Executor threadPool, Dimension imageSize, Dimension tileSize,
-                               int totalIterationsForSecondSegmentation, float threshold, boolean fastSegmentation)
+    public SpringTileSegmenter(RegionMergingProcessingParameters processingParameters, int totalIterationsForSecondSegmentation,
+                               float threshold, boolean fastSegmentation, Path temporaryParentFolder)
                                throws IOException {
 
-        super(threadCount, threadPool, imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+        super(processingParameters, totalIterationsForSecondSegmentation, threshold, fastSegmentation, temporaryParentFolder);
     }
 
     @Override

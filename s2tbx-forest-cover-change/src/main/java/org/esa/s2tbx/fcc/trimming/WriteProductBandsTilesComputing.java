@@ -1,22 +1,20 @@
 package org.esa.s2tbx.fcc.trimming;
 
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
-import org.esa.s2tbx.grm.segmentation.Edge;
-import org.esa.s2tbx.grm.segmentation.Node;
 import org.esa.s2tbx.grm.segmentation.tiles.AbstractTileSegmenter;
 import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
+import org.esa.s2tbx.grm.segmentation.tiles.SegmentationSourceProductPair;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 import org.esa.snap.utils.BufferedOutputStreamWrapper;
-import org.esa.snap.utils.matrix.FloatMatrix;
-import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,22 +22,22 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class CopyProductBandsTilesComputing extends AbstractImageTilesParallelComputing {
-    private static final Logger logger = Logger.getLogger(CopyProductBandsTilesComputing.class.getName());
+public class WriteProductBandsTilesComputing extends AbstractImageTilesParallelComputing {
+    private static final Logger logger = Logger.getLogger(WriteProductBandsTilesComputing.class.getName());
 
     private final Product sourceProduct;
     private final String[] sourceBandNames;
-    private final File temporaryFolder;
     private final int segmentationTileMargin;
+    private final Path temporaryFolder;
 
-    public CopyProductBandsTilesComputing(Product sourceProduct, String[] sourceBandNames, int tileWidth, int tileHeight) throws IOException {
+    public WriteProductBandsTilesComputing(Product sourceProduct, String[] sourceBandNames, int tileWidth, int tileHeight, Path temporaryParentFolder) throws IOException {
         super(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.sourceProduct = sourceProduct;
         this.sourceBandNames = sourceBandNames;
 
-        String temporaryFolderName = "_temp" + Long.toString(System.currentTimeMillis());
-        this.temporaryFolder = Files.createTempDirectory(temporaryFolderName).toFile();
+        String temporaryFolderName = "product-bands" + Long.toString(System.currentTimeMillis());
+        this.temporaryFolder = Files.createDirectories(temporaryParentFolder.resolve(temporaryFolderName));
 
         this.segmentationTileMargin = AbstractTileSegmenter.computeTileMargin(tileWidth, tileHeight);
     }
@@ -50,15 +48,15 @@ public class CopyProductBandsTilesComputing extends AbstractImageTilesParallelCo
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Copy bands values for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
+            logger.log(Level.FINE, "Write band values for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
         int imageWidth = getImageWidth();
         int imageHeight = getImageHeight();
         ProcessingTile segmentationProcessingTile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileWidth, tileHeight, this.segmentationTileMargin, imageWidth, imageHeight);
         BoundingBox segmentationTileBounds = segmentationProcessingTile.getRegion();
-        String tileFileName = "segmentationTile-"+segmentationTileBounds.getLeftX()+"-"+segmentationTileBounds.getTopY()+"-"+segmentationTileBounds.getWidth()+"-"+segmentationTileBounds.getHeight()+".bin";
-        File nodesFile = new File(this.temporaryFolder, tileFileName);
+        String tileFileName = SegmentationSourceProductPair.buildSegmentationTileFileName(segmentationTileBounds);
+        File nodesFile = this.temporaryFolder.resolve(tileFileName).toFile();
 
         BufferedOutputStreamWrapper outputFileStream = null;
         try {
@@ -87,7 +85,15 @@ public class CopyProductBandsTilesComputing extends AbstractImageTilesParallelCo
         }
     }
 
-    public File runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
+    public Path runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
+        long startTime = System.currentTimeMillis();
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Start writing the product bands intto local disk files: source product: '"+this.sourceProduct.getName()+"', image width: "+getImageWidth()+", image height: "+getImageHeight() + ", start time: " + new Date(startTime));
+            logger.log(Level.FINE, "Temporary folder path to store the binary files: '" + this.temporaryFolder.toFile().getAbsolutePath()+"'");
+        }
+
         boolean success = false;
         try {
             super.executeInParallel(threadCount, threadPool);
@@ -95,9 +101,17 @@ public class CopyProductBandsTilesComputing extends AbstractImageTilesParallelCo
         } finally {
             if (!success) {
                 // failed to copy the data and delete the folder
-                FileUtils.deleteTree(this.temporaryFolder);
+                FileUtils.deleteTree(this.temporaryFolder.toFile());
             }
         }
+
+        if (logger.isLoggable(Level.FINE)) {
+            long finishTime = System.currentTimeMillis();
+            long totalSeconds = (finishTime - startTime) / 1000;
+            logger.log(Level.FINE, ""); // add an empty line
+            logger.log(Level.FINE, "Finish writing product bands into local disk files: source product: '"+this.sourceProduct.getName()+"', image width: "+getImageWidth()+", image height: "+getImageHeight()+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
+        }
+
         return this.temporaryFolder;
     }
 }

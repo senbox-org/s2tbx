@@ -19,6 +19,7 @@ import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.awt.*;
 import java.lang.ref.WeakReference;
+import java.nio.file.Path;
 import java.util.concurrent.Executor;
 
 /**
@@ -101,15 +102,11 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         return sourceTiles;
     }
 
-    private static OutputMaskMatrixHelper computeOutputMaskMatrix(int threadCount, Executor threadPool, RegionMergingInputParameters inputParameters,
-                                                                  SegmentationSourceProductPair segmentationSourceProducts, Dimension imageSize, Dimension tileSize)
+    private static OutputMaskMatrixHelper computeOutputMaskMatrix(RegionMergingProcessingParameters processingParameters, RegionMergingInputParameters inputParameters,
+                                                                  SegmentationSourceProductPair segmentationSourceProducts, Path temporaryParentFolder)
                                                                   throws Exception {
 
-        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(threadCount, threadPool, inputParameters.getMergingCostCriterion(),
-                                                        inputParameters.getRegionMergingCriterion(), inputParameters.getTotalIterationsForSecondSegmentation(),
-                                                        inputParameters.getThreshold(), inputParameters.getSpectralWeight(),
-                                                        inputParameters.getShapeWeight(), imageSize, tileSize);
-
+        AbstractTileSegmenter tileSegmenter = buildTileSegmenter(processingParameters, inputParameters, temporaryParentFolder);
         tileSegmenter.runFirstSegmentationsInParallel(segmentationSourceProducts);
         AbstractSegmenter segmenter = tileSegmenter.runSecondSegmentationsAndMergeGraphs();
 
@@ -126,11 +123,11 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         return outputMaskMatrixHelper;
     }
 
-    private static OutputMarkerMatrixHelper computeOutputMarkerMatrix(int threadCount, Executor threadPool, RegionMergingInputParameters inputParameters,
-                                                                    SegmentationSourceProductPair segmentationSourceProducts, Dimension imageSize, Dimension tileSize)
-                                                                           throws Exception {
+    private static OutputMarkerMatrixHelper computeOutputMarkerMatrix(RegionMergingProcessingParameters processingParameters, RegionMergingInputParameters inputParameters,
+                                                                      SegmentationSourceProductPair segmentationSourceProducts, Path temporaryParentFolder)
+                                                                      throws Exception {
 
-        OutputMaskMatrixHelper outputMaskMatrixHelper = computeOutputMaskMatrix(threadCount, threadPool, inputParameters, segmentationSourceProducts, imageSize, tileSize);
+        OutputMaskMatrixHelper outputMaskMatrixHelper = computeOutputMaskMatrix(processingParameters, inputParameters, segmentationSourceProducts, temporaryParentFolder);
 
         OutputMarkerMatrixHelper outputMarkerMatrix = outputMaskMatrixHelper.buildMaskMatrix();
 
@@ -141,16 +138,17 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         return outputMarkerMatrix;
     }
 
-    public static IntMatrix computeSegmentation(int threadCount, Executor threadPool, RegionMergingInputParameters segmentationInputParameters,
-                                            SegmentationSourceProductPair segmentationSourceProducts, Dimension imageSize, Dimension tileSize)
-                                            throws Exception {
+    public static IntMatrix computeSegmentation(RegionMergingProcessingParameters processingParameters, RegionMergingInputParameters inputParameters,
+                                                SegmentationSourceProductPair segmentationSourceProducts, Path temporaryParentFolder)
+                                                throws Exception {
 
         long startTime = System.currentTimeMillis();
 
         // log the start message
-        logStartSegmentation(startTime, imageSize.width, imageSize.height, tileSize.width, tileSize.height, threadCount);
+        logStartSegmentation(startTime, processingParameters.getImageWidth(), processingParameters.getImageHeight(),
+                             processingParameters.getTileWidth(), processingParameters.getTileHeight(), processingParameters.getThreadCount());
 
-        OutputMarkerMatrixHelper outputMarkerMatrix = computeOutputMarkerMatrix(threadCount, threadPool, segmentationInputParameters, segmentationSourceProducts, imageSize, tileSize);
+        OutputMarkerMatrixHelper outputMarkerMatrix = computeOutputMarkerMatrix(processingParameters, inputParameters, segmentationSourceProducts, temporaryParentFolder);
 
         IntMatrix result = outputMarkerMatrix.buildOutputMatrix();
         int graphNodeCount = outputMarkerMatrix.getGraphNodeCount();
@@ -160,7 +158,7 @@ public class GenericRegionMergingOp extends AbstractRegionMergingOp {
         referenceMarkerMatrix.clear();
 
         // log the final message
-        logFinishSegmentation(startTime, result.getColumnCount(), result.getRowCount(), tileSize.width, tileSize.height, graphNodeCount);
+        logFinishSegmentation(startTime, result.getColumnCount(), result.getRowCount(), processingParameters.getTileWidth(), processingParameters.getTileHeight(), graphNodeCount);
 
         return result;
     }

@@ -13,6 +13,7 @@ import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,10 +25,10 @@ public class TrimmingRegionTilesComputingNew extends AbstractRegionParallelCompu
 
     private final IntMatrix colorFillerMatrix;
     private final int[] sourceBandIndices;
-    private final File temporarySourceSegmentationTilesFolder;
+    private final Path temporarySourceSegmentationTilesFolder;
     private final int segmentationTileMargin;
 
-    public TrimmingRegionTilesComputingNew(IntMatrix colorFillerMatrix, File temporarySourceSegmentationTilesFolder, int[] sourceBandIndices, int tileWidth, int tileHeight) {
+    public TrimmingRegionTilesComputingNew(IntMatrix colorFillerMatrix, Path temporarySourceSegmentationTilesFolder, int[] sourceBandIndices, int tileWidth, int tileHeight) {
         super(colorFillerMatrix.getColumnCount(), colorFillerMatrix.getRowCount(), tileWidth, tileHeight);
 
         this.colorFillerMatrix = colorFillerMatrix;
@@ -50,7 +51,7 @@ public class TrimmingRegionTilesComputingNew extends AbstractRegionParallelCompu
         int imageHeight = getImageHeight();
         ProcessingTile segmentationProcessingTile = AbstractTileSegmenter.buildTile(tileLeftX, tileTopY, tileWidth, tileHeight, this.segmentationTileMargin, imageWidth, imageHeight);
         BoundingBox segmentationTileBounds = segmentationProcessingTile.getRegion();
-        TileDataSource[] output = SegmentationSourceProductPair.buildSourceTiles(segmentationTileBounds, temporarySourceSegmentationTilesFolder);
+        TileDataSource[] output = SegmentationSourceProductPair.buildSourceTiles(segmentationTileBounds, this.temporarySourceSegmentationTilesFolder);
 
         TileDataSource firstBand = output[this.sourceBandIndices[0]];
         TileDataSource secondBand = output[this.sourceBandIndices[1]];

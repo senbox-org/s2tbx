@@ -7,6 +7,7 @@ import org.esa.snap.utils.matrix.FloatMatrix;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,10 +17,10 @@ import java.util.logging.Logger;
 public class SegmentationSourceProductPair {
     private static final Logger logger = Logger.getLogger(SegmentationSourceProductPair.class.getName());
 
-    private File currentTemporaryFolder;
-    private File previousTemporaryFolder;
+    private final Path currentTemporaryFolder;
+    private final Path previousTemporaryFolder;
 
-    public SegmentationSourceProductPair(File currentTemporaryFolder, File previousTemporaryFolder) {
+    public SegmentationSourceProductPair(Path currentTemporaryFolder, Path previousTemporaryFolder) {
         this.currentTemporaryFolder = currentTemporaryFolder;
         this.previousTemporaryFolder = previousTemporaryFolder;
     }
@@ -45,9 +46,13 @@ public class SegmentationSourceProductPair {
         return output;
     }
 
-    public static TileDataSource[] buildSourceTiles(BoundingBox segmentationTileBounds, File temporaryFolder) throws IOException {
-        String tileFileName = "segmentationTile-"+segmentationTileBounds.getLeftX()+"-"+segmentationTileBounds.getTopY()+"-"+segmentationTileBounds.getWidth()+"-"+segmentationTileBounds.getHeight()+".bin";
-        File nodesFile = new File(temporaryFolder, tileFileName);
+    public static String buildSegmentationTileFileName(BoundingBox segmentationTileBounds) {
+        return "segmentationTile-"+segmentationTileBounds.getLeftX()+"-"+segmentationTileBounds.getTopY()+"-"+segmentationTileBounds.getWidth()+"-"+segmentationTileBounds.getHeight()+".bin";
+    }
+
+    public static TileDataSource[] buildSourceTiles(BoundingBox segmentationTileBounds, Path temporaryFolder) throws IOException {
+        String tileFileName = buildSegmentationTileFileName(segmentationTileBounds);
+        File nodesFile = temporaryFolder.resolve(tileFileName).toFile();
 
         BufferedInputStreamWrapper inputFileStream = null;
         try {

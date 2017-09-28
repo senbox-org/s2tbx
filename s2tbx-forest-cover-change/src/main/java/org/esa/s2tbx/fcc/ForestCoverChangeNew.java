@@ -10,13 +10,14 @@ import org.esa.s2tbx.fcc.common.BandsExtractorOp;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.fcc.trimming.ColorFillerTilesComputing;
-import org.esa.s2tbx.fcc.trimming.CopyProductBandsTilesComputing;
+import org.esa.s2tbx.fcc.trimming.WriteProductBandsTilesComputing;
 import org.esa.s2tbx.fcc.trimming.ObjectsSelectionTilesComputing;
 import org.esa.s2tbx.fcc.trimming.PixelStatistic;
 import org.esa.s2tbx.fcc.trimming.TrimmingRegionTilesComputingNew;
 import org.esa.s2tbx.fcc.trimming.UnionMasksTilesComputingNew;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.grm.RegionMergingInputParameters;
+import org.esa.s2tbx.grm.RegionMergingProcessingParameters;
 import org.esa.s2tbx.grm.segmentation.tiles.SegmentationSourceProductPair;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -42,6 +43,7 @@ import javax.media.jai.JAI;
 import java.awt.Dimension;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -187,40 +189,20 @@ public class ForestCoverChangeNew extends Operator{
     public void doExecute() throws OperatorException {
         long startTime = System.currentTimeMillis();
 
+        String folderPath = System.getProperty("java.io.tmpdir");
+        String temporaryFolderName = "forest-cover-change" + Long.toString(System.currentTimeMillis());
+        Path temporaryFolder = Paths.get(folderPath, temporaryFolderName);
+
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start Forest Cover Change: image width: "+this.targetProduct.getSceneRasterWidth()+", image height: "+this.targetProduct.getSceneRasterHeight() + ", start time: " + new Date(startTime));
+            logger.log(Level.FINE, "Temporary folder path to store the binary files: '" + temporaryFolder.toFile().getAbsolutePath()+"'");
         }
 
         try {
-            ProductData productData = null;
+            Files.createDirectories(temporaryFolder);
 
-            File currentSourceSegmentationTilesFolder = extractBands(this.currentSourceProduct, this.currentProductBandsNames);
-            try {
-                File previousSourceSegmentationTilesFolder = extractBands(this.previousSourceProduct, this.previousProductBandsNames);
-                try {
-                    IntMatrix colorFillerMatrix = computeColorFillerMatrix(currentSourceSegmentationTilesFolder, previousSourceSegmentationTilesFolder);
-
-                    int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
-                    IntSet currentTrimmingRegionKeys = computeTrimming(colorFillerMatrix, currentSourceSegmentationTilesFolder, trimmingSourceProductBandIndices);
-                    IntSet previousTrimmingRegionKeys = computeTrimming(colorFillerMatrix, previousSourceSegmentationTilesFolder, trimmingSourceProductBandIndices);
-
-                    // run union masks
-                    productData = computeUnionMask(currentTrimmingRegionKeys, colorFillerMatrix, previousTrimmingRegionKeys, colorFillerMatrix);
-
-                    // reset the references
-                    WeakReference<IntSet> referenceCurrentTrimmingRegionKeys = new WeakReference<IntSet>(currentTrimmingRegionKeys);
-                    referenceCurrentTrimmingRegionKeys.clear();
-                    WeakReference<IntSet> referencePreviousTrimmingRegionKeys = new WeakReference<IntSet>(previousTrimmingRegionKeys);
-                    referencePreviousTrimmingRegionKeys.clear();
-                    WeakReference<IntMatrix> referenceProductColorFill = new WeakReference<IntMatrix>(colorFillerMatrix);
-                    referenceProductColorFill.clear();
-                } finally {
-                    FileUtils.deleteTree(previousSourceSegmentationTilesFolder);
-                }
-            } finally {
-                FileUtils.deleteTree(currentSourceSegmentationTilesFolder);
-            }
+            ProductData productData = computeFinalProductData(temporaryFolder);
 
             Band targetBand = this.targetProduct.getBandAt(0);
             targetBand.setData(productData);
@@ -248,22 +230,56 @@ public class ForestCoverChangeNew extends Operator{
             throw new OperatorException(ex);
         } finally {
             this.threadPool.shutdown();
+            FileUtils.deleteTree(temporaryFolder.toFile());
         }
     }
 
-    private IntMatrix computeColorFillerMatrix(File currentTemporaryFolder, File previousTemporaryFolder) throws Exception {
-        Dimension imageSize = buildImageSize();
+    private ProductData computeFinalProductData(Path temporaryFolder) throws Exception {
+        Path currentSourceSegmentationTilesFolder = extractBands(this.currentSourceProduct, this.currentProductBandsNames, temporaryFolder);
+        try {
+            Path previousSourceSegmentationTilesFolder = extractBands(this.previousSourceProduct, this.previousProductBandsNames, temporaryFolder);
+            try {
+                IntMatrix colorFillerMatrix = computeColorFillerMatrix(temporaryFolder, currentSourceSegmentationTilesFolder, previousSourceSegmentationTilesFolder);
+
+                int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
+                IntSet currentTrimmingRegionKeys = computeTrimming(colorFillerMatrix, currentSourceSegmentationTilesFolder, trimmingSourceProductBandIndices);
+                IntSet previousTrimmingRegionKeys = computeTrimming(colorFillerMatrix, previousSourceSegmentationTilesFolder, trimmingSourceProductBandIndices);
+
+                // run union masks
+                ProductData productData = computeUnionMask(currentTrimmingRegionKeys, colorFillerMatrix, previousTrimmingRegionKeys, colorFillerMatrix);
+
+                // reset the references
+                WeakReference<IntSet> referenceCurrentTrimmingRegionKeys = new WeakReference<IntSet>(currentTrimmingRegionKeys);
+                referenceCurrentTrimmingRegionKeys.clear();
+                WeakReference<IntSet> referencePreviousTrimmingRegionKeys = new WeakReference<IntSet>(previousTrimmingRegionKeys);
+                referencePreviousTrimmingRegionKeys.clear();
+                WeakReference<IntMatrix> referenceProductColorFill = new WeakReference<IntMatrix>(colorFillerMatrix);
+                referenceProductColorFill.clear();
+
+                return productData;
+            } finally {
+                FileUtils.deleteTree(previousSourceSegmentationTilesFolder.toFile());
+            }
+        } finally {
+            FileUtils.deleteTree(currentSourceSegmentationTilesFolder.toFile());
+        }
+    }
+
+    private IntMatrix computeColorFillerMatrix(Path temporaryParentFolder, Path currentTemporaryFolder, Path previousTemporaryFolder) throws Exception {
         Dimension tileSize = getPreferredTileSize();
 
-        RegionMergingInputParameters segmentationInputParameters = new RegionMergingInputParameters(mergingCostCriterion, regionMergingCriterion,
+        RegionMergingProcessingParameters processingParameters = new RegionMergingProcessingParameters(this.threadCount, this.threadPool, this.targetProduct.getSceneRasterWidth(),
+                                                                                            this.targetProduct.getSceneRasterHeight(), tileSize.width, tileSize.height);
+
+        RegionMergingInputParameters inputParameters = new RegionMergingInputParameters(mergingCostCriterion, regionMergingCriterion,
                                                                                 totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
         SegmentationSourceProductPair segmentationSourcePairs = new SegmentationSourceProductPair(currentTemporaryFolder, previousTemporaryFolder);
 
-        IntMatrix segmentationMatrix = GenericRegionMergingOp.computeSegmentation(this.threadCount, this.threadPool, segmentationInputParameters, segmentationSourcePairs, imageSize, tileSize);
+        IntMatrix segmentationMatrix = GenericRegionMergingOp.computeSegmentation(processingParameters, inputParameters, segmentationSourcePairs, temporaryParentFolder);
 
         // reset the references
-        WeakReference<RegionMergingInputParameters> referenceInputParameters = new WeakReference<RegionMergingInputParameters>(segmentationInputParameters);
+        WeakReference<RegionMergingInputParameters> referenceInputParameters = new WeakReference<RegionMergingInputParameters>(inputParameters);
         referenceInputParameters.clear();
         WeakReference<SegmentationSourceProductPair> referenceSourcePairs = new WeakReference<SegmentationSourceProductPair>(segmentationSourcePairs);
         referenceSourcePairs.clear();
@@ -286,12 +302,8 @@ public class ForestCoverChangeNew extends Operator{
         return this.targetProduct.getPreferredTileSize();
     }
 
-    private Dimension buildImageSize() {
-        return new Dimension(this.targetProduct.getSceneRasterWidth(), this.targetProduct.getSceneRasterHeight());
-    }
-
-    private IntSet computeTrimming(IntMatrix colorFillerMatrix, File sourceSegmentationTilesFolder, int[] trimmingSourceProductBandIndices)
-            throws Exception {
+    private IntSet computeTrimming(IntMatrix colorFillerMatrix, Path sourceSegmentationTilesFolder, int[] trimmingSourceProductBandIndices)
+                                   throws Exception {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
@@ -340,7 +352,7 @@ public class ForestCoverChangeNew extends Operator{
         return landCoverProduct;
     }
 
-    private File extractBands(Product sourceProduct, String[] sourceBandNames) throws Exception {
+    private Path extractBands(Product sourceProduct, String[] sourceBandNames, Path temporaryFolderPath) throws Exception {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Extract "+sourceBandNames.length+" bands for source product '" + sourceProduct.getName()+"'");
@@ -350,14 +362,9 @@ public class ForestCoverChangeNew extends Operator{
 
         Product resampleProduct = resampleAllBands(extractedProduct);
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Copy the resampled bands to local disk files for resampled source product '" + resampleProduct.getName()+"': image width: " + resampleProduct.getSceneRasterWidth()+", image height:"+resampleProduct.getSceneRasterHeight());
-        }
-
         Dimension tileSize = getPreferredTileSize();
-        CopyProductBandsTilesComputing bandsTilesComputing = new CopyProductBandsTilesComputing(resampleProduct, sourceBandNames, tileSize.width, tileSize.height);
-        File temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+        WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampleProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryFolderPath);
+        Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
         // reset the references
         WeakReference<Product> referenceExtractedProduct = new WeakReference<Product>(extractedProduct);
