@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  */
 
-public class MovingWindow extends MovingWindowRegionParallelComputing {
+public class MovingWindow extends MovingWindowImageTileParallelComputing {
     private static final Logger logger = Logger.getLogger(MovingWindow.class.getName());
 
     private final IntMatrix colorFillerMatrix;

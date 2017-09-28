@@ -8,70 +8,28 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public abstract class AbstractMatrixCellsParallelComputing {
+public abstract class AbstractMatrixCellsParallelComputing extends AbstractParallelComputing {
+
     private final int columnCount;
     private final int rowCount;
 
     private int currentRowIndex;
     private int currentColumnIndex;
-    private int threadCounter;
-    private Exception threadException;
 
     protected AbstractMatrixCellsParallelComputing(int columnCount, int rowCount) {
+        super();
+
         this.columnCount = columnCount;
         this.rowCount = rowCount;
 
         this.currentRowIndex = 0;
         this.currentColumnIndex = 0;
-        this.threadCounter = 0;
     }
 
     protected abstract void runTile(int localRowIndex, int localColumnIndex) throws IOException, IllegalAccessException, InterruptedException;
 
-    public final void executeInParallel(int threadCount, Executor threadPool) throws Exception {
-        for (int i=0; i<threadCount; i++) {
-            MatrixCellRunnable segmentationRunnable = new MatrixCellRunnable(this);
-            threadPool.execute(segmentationRunnable);
-        }
-        try {
-            execute();
-        } catch (Exception exception) {
-            synchronized (this) {
-                this.threadException = exception;
-            }
-        } catch (Throwable throwable) {
-            synchronized (this) {
-                this.threadException = new Exception(throwable);
-            }
-        } finally {
-            waitToFinish();
-        }
-    }
-
-    private synchronized void incrementThreadCounter() {
-        this.threadCounter++;
-    }
-
-    private synchronized void decrementThreadCounter(Exception threadException) {
-        this.threadCounter--;
-        if (this.threadException == null) {
-            this.threadException = threadException;
-        }
-        if (this.threadCounter <= 0) {
-            notifyAll();
-        }
-    }
-
-    private synchronized void waitToFinish() throws Exception {
-        if (this.threadCounter > 0) {
-            wait();
-        }
-        if (this.threadException != null) {
-            throw this.threadException;
-        }
-    }
-
-    private void execute() throws Exception {
+    @Override
+    protected final void execute() throws Exception {
         int localRowIndex = -1;
         int localColumnIndex = -1;
         do {
@@ -101,32 +59,5 @@ public abstract class AbstractMatrixCellsParallelComputing {
                 runTile(localRowIndex, localColumnIndex);
             }
         } while (localRowIndex >= 0 && localColumnIndex >= 0);
-    }
-
-    private static class MatrixCellRunnable implements Runnable {
-        private static final Logger logger = Logger.getLogger(MatrixCellRunnable.class.getName());
-
-        private final AbstractMatrixCellsParallelComputing imageTilesHelper;
-
-        public MatrixCellRunnable(AbstractMatrixCellsParallelComputing imageTilesHelper) {
-            this.imageTilesHelper = imageTilesHelper;
-            this.imageTilesHelper.incrementThreadCounter();
-        }
-
-        @Override
-        public void run() {
-            Exception threadException = null;
-            try {
-                this.imageTilesHelper.execute();
-            } catch (Exception exception) {
-                threadException = exception;
-                logger.log(Level.SEVERE, "Failed to execute the image tiles.", threadException);
-            } catch (Throwable throwable) {
-                threadException = new Exception(throwable);
-                logger.log(Level.SEVERE, "Failed to execute the image tiles.", threadException);
-            } finally {
-                this.imageTilesHelper.decrementThreadCounter(threadException);
-            }
-        }
     }
 }

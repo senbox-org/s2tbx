@@ -1,4 +1,4 @@
-package org.esa.s2tbx.fcc.trimming;
+package org.esa.s2tbx.grm.segmentation.product;
 
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
 import org.esa.s2tbx.grm.segmentation.tiles.AbstractTileSegmenter;
@@ -30,7 +30,9 @@ public class WriteProductBandsTilesComputing extends AbstractImageTilesParallelC
     private final int segmentationTileMargin;
     private final Path temporaryFolder;
 
-    public WriteProductBandsTilesComputing(Product sourceProduct, String[] sourceBandNames, int tileWidth, int tileHeight, Path temporaryParentFolder) throws IOException {
+    public WriteProductBandsTilesComputing(Product sourceProduct, String[] sourceBandNames, int tileWidth, int tileHeight, Path temporaryParentFolder)
+                                           throws IOException {
+
         super(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight(), tileWidth, tileHeight);
 
         this.sourceProduct = sourceProduct;
@@ -90,7 +92,7 @@ public class WriteProductBandsTilesComputing extends AbstractImageTilesParallelC
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start writing the product bands intto local disk files: source product: '"+this.sourceProduct.getName()+"', image width: "+getImageWidth()+", image height: "+getImageHeight() + ", start time: " + new Date(startTime));
+            logger.log(Level.FINE, "Start writing the product bands into local disk files: source product: '"+this.sourceProduct.getName()+"', image width: "+getImageWidth()+", image height: "+getImageHeight() + ", start time: " + new Date(startTime));
             logger.log(Level.FINE, "Temporary folder path to store the binary files: '" + this.temporaryFolder.toFile().getAbsolutePath()+"'");
         }
 

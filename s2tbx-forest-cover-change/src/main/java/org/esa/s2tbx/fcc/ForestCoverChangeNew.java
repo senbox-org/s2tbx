@@ -10,7 +10,7 @@ import org.esa.s2tbx.fcc.common.BandsExtractorOp;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.fcc.trimming.ColorFillerTilesComputing;
-import org.esa.s2tbx.fcc.trimming.WriteProductBandsTilesComputing;
+import org.esa.s2tbx.grm.segmentation.product.WriteProductBandsTilesComputing;
 import org.esa.s2tbx.fcc.trimming.ObjectsSelectionTilesComputing;
 import org.esa.s2tbx.fcc.trimming.PixelStatistic;
 import org.esa.s2tbx.fcc.trimming.TrimmingRegionTilesComputingNew;
@@ -121,7 +121,6 @@ public class ForestCoverChangeNew extends Operator{
 
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
-    private File destinationWritingFolder;
     private int threadCount;
     private ExecutorService threadPool;
 
@@ -168,16 +167,6 @@ public class ForestCoverChangeNew extends Operator{
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
 
-        String destinationFolderPath = System.getProperty("destination.folder.path");
-        this.destinationWritingFolder = null;
-        if (destinationFolderPath != null) {
-            Path path = Paths.get(destinationFolderPath);
-            this.destinationWritingFolder = path.resolve(this.targetProduct.getName()).toFile();
-            if (!this.destinationWritingFolder.exists()) {
-                this.destinationWritingFolder.mkdirs();
-            }
-        }
-
         this.threadCount = Runtime.getRuntime().availableProcessors() - 1;
         this.threadPool = Executors.newCachedThreadPool();
     }
@@ -189,7 +178,10 @@ public class ForestCoverChangeNew extends Operator{
     public void doExecute() throws OperatorException {
         long startTime = System.currentTimeMillis();
 
-        String folderPath = System.getProperty("java.io.tmpdir");
+        String folderPath = System.getProperty("fcc.temp.folder.path");
+        if (folderPath == null) {
+            folderPath = System.getProperty("java.io.tmpdir");
+        }
         String temporaryFolderName = "forest-cover-change" + Long.toString(System.currentTimeMillis());
         Path temporaryFolder = Paths.get(folderPath, temporaryFolderName);
 
@@ -200,6 +192,7 @@ public class ForestCoverChangeNew extends Operator{
         }
 
         try {
+            // create the temporary folder
             Files.createDirectories(temporaryFolder);
 
             ProductData productData = computeFinalProductData(temporaryFolder);
@@ -316,7 +309,7 @@ public class ForestCoverChangeNew extends Operator{
     }
 
     private IntSet computeObjectsSelection(IntMatrix originalSegmentationMatrix, Product extractedBandsSourceProduct, float percentagePixels, Dimension tileSize)
-            throws Exception {
+                                           throws Exception {
 
         Product landCover = buildLandCoverProduct(extractedBandsSourceProduct);
         Map<String, Object> parameters = new HashMap<>();

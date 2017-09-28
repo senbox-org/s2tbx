@@ -25,7 +25,8 @@ public class SegmentationSourceProductPair {
         this.previousTemporaryFolder = previousTemporaryFolder;
     }
 
-    public TileDataSource[] buildSourceTiles(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex, int localColumnIndex, BoundingBox segmentationTileBounds)
+    public TileDataSource[] buildSourceTiles(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int localRowIndex,
+                                             int localColumnIndex, BoundingBox segmentationTileBounds)
                                              throws IOException {
 
         if (logger.isLoggable(Level.FINE)) {
