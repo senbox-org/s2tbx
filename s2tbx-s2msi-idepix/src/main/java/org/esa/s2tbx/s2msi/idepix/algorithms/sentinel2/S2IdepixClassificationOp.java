@@ -632,6 +632,7 @@ public class S2IdepixClassificationOp extends Operator {
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_WHITE, s2Algorithm.isWhite());
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_BRIGHTWHITE, s2Algorithm.isBrightWhite());
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_VEG_RISK, s2Algorithm.isVegRisk());
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW, false); //not computed here
     }
 
     /**

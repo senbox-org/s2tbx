@@ -10,7 +10,7 @@ import static org.junit.Assert.assertArrayEquals;
 /**
  * @author Tonio Fincke
  */
-public class MountainShadowAreasPathCentralPixel_2Test {
+public class MountainShadowFlaggerTest {
 
     @Test
     public void testIdentifyMountainShadowArea_saa_27() throws Exception {
@@ -127,9 +127,9 @@ public class MountainShadowAreasPathCentralPixel_2Test {
         final float[] longitude = createSmoothGrid(-7.945212f, -7.932560f, -7.945334f, -7.932683f, 20, 20);
         final float[] elevation = createConicalGrid(5000, 20, 20);
         int[] flagArray = new int[20 * 20];
-        MountainShadowAreasPathCentralPixel_2.identifyMountainShadowArea(20, 20, sourceRectangle, targetRectangle,
-                                                                         sunZenith, sunAzimuth,
-                                                                         latitude, longitude, elevation, flagArray);
+        MountainShadowFlagger.flagMountainShadowArea(20, 20, sourceRectangle, targetRectangle,
+                                                     sunZenith, sunAzimuth,
+                                                     latitude, longitude, elevation, flagArray);
         assertArrayEquals(expectedFlagArray, flagArray);
     }
 
@@ -159,7 +159,6 @@ public class MountainShadowAreasPathCentralPixel_2Test {
             }
         }
         return grid;
-
     }
 
 }

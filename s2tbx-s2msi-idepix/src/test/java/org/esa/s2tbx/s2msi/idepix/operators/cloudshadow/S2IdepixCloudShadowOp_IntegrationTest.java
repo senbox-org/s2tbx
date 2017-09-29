@@ -58,7 +58,6 @@ public class S2IdepixCloudShadowOp_IntegrationTest {
             final String targetFilePath = targetDirectory.getPath() + File.separator + "largeTestScene" + mode + ".dim";
             ProductIO.writeProduct(cloudShadowProduct, targetFilePath, "BEAM-DIMAP");
         }
-        int x = 1;
     }
 
 }

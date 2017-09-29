@@ -9,7 +9,8 @@ import java.awt.Rectangle;
  */
 class MountainVerticalExtent {
 
-    static double[] getMountainVerticalExtent(Rectangle sourceRectangle, float[] sourceAltitude, int yPosition, int xPosition ) {
+    static double[] getMountainVerticalExtent(Rectangle sourceRectangle, float[] sourceAltitude,
+                                              int yPosition, int xPosition) {
 
         double[] mountainExtent = new double[2];
         double mountainBase;
@@ -19,17 +20,17 @@ class MountainVerticalExtent {
         // todo cloud height properties
         mountainBase = 0; // [m]
         if (temp <= 0 || Double.isNaN(temp))
-            mountainTop  = Double.NaN; // [m]
+            mountainTop = Double.NaN; // [m]
         else {
-            mountainTop  = temp
+            mountainTop = temp
             ; // [m]
         }
 
         //cloud top and cloud base height in [m]
-        mountainExtent[0]= mountainBase;
-        mountainExtent[1]= mountainTop;
+        mountainExtent[0] = mountainBase;
+        mountainExtent[1] = mountainTop;
 
-    return mountainExtent;
+        return mountainExtent;
     }
 
 
