@@ -2,18 +2,15 @@ package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.esa.snap.utils.matrix.IntMatrix;
-
-import java.util.Iterator;
 
 /**
- * Created by rdumitrascu on 9/29/2017.
+ * Class used for the operation of majority voting for a set of segments representing the total number
+ * of segments validated after colorFiller operation
+ *
+ * @author Razvan Dumitrascu
  */
+
 public class MajorityVotingValidSegments {
     private final Int2IntMap validSegmentsMap;
 
@@ -21,81 +18,57 @@ public class MajorityVotingValidSegments {
         this.validSegmentsMap = new Int2IntOpenHashMap();
     }
 
-    public void clearMap(){
-        if (this.validSegmentsMap.size() != 0) {
-            this.validSegmentsMap.clear();
-        }
-    }
-
-    public void computeWindowSegments(IntSet MovingWindowSegments, IntSet afterTrimmingSegments) {
-        IntSet invalidSegmentsAfterTrimming = computeDifferenceIntSet(MovingWindowSegments,afterTrimmingSegments );
-        addSegmentsToMap(MovingWindowSegments);
-        updateSegmentsValidity(invalidSegmentsAfterTrimming, afterTrimmingSegments);
-
-    }
-
-    private void updateSegmentsValidity(IntSet invalidSegmentsAfterTrimming, IntSet afterTrimmingSegments) {
-        addSegmentValidity(afterTrimmingSegments);
-        decrementSegmentValidity(invalidSegmentsAfterTrimming);
-    }
-
+    /**
+     *
+     * @return returns the Int2IntMap containing the valid segments after color Filler and the times they have been validated
+     */
     public Int2IntMap getValidSegmentsMap() {
         return validSegmentsMap;
     }
 
-
-    private void decrementSegmentValidity(IntSet invalidSegmentsAfterTrimming) {
-        Iterator it = invalidSegmentsAfterTrimming.iterator();
-        while (it.hasNext()) {
-            int segmentValue = (int) it.next();
-            ObjectIterator<Int2IntMap.Entry> iter = this.validSegmentsMap.int2IntEntrySet().iterator();
-            while(iter.hasNext()) {
-                Int2IntMap.Entry entry= iter.next();
-                if(entry.getKey() == segmentValue) {
-                    int valid = entry.getIntValue();
-                    this.validSegmentsMap.replace(segmentValue, valid, valid-1);
-                }
-
+    /**
+     *
+     * @return returns a specific value, representing the number of times the segment  has been validated, for a specific key(segment)
+     */
+    public int getValidSegmentsValue(int key) {
+        int value = 0;
+        for (Int2IntMap.Entry entry : this.validSegmentsMap.int2IntEntrySet()) {
+            if (entry.getKey() == key) {
+                value = entry.getValue();
             }
-
         }
+        return value;
     }
 
-    private void addSegmentValidity(IntSet afterTrimmingSegments) {
-        Iterator it = afterTrimmingSegments.iterator();
-        while (it.hasNext()) {
-            int segmentValue = (int) it.next();
-            ObjectIterator<Int2IntMap.Entry> iter = this.validSegmentsMap.int2IntEntrySet().iterator();
-            while(iter.hasNext()) {
-                Int2IntMap.Entry entry= iter.next();
-                if(entry.getKey() == segmentValue) {
-                    int valid = entry.getIntValue();
-                    this.validSegmentsMap.replace(segmentValue, valid, valid+1);
-                }
+    /**
+     *
+     * @param MovingWindowSegments a IntSet containing a list of segments from a tile
+     * @param afterTrimmingSegments a IntSet containing a list of valid segments after trimming operation from a tile
+     */
+    public void computeWindowSegments(IntSet MovingWindowSegments, IntSet afterTrimmingSegments) {
+        addSegmentsToMap(MovingWindowSegments);
+        updateSegmentsValidity(MovingWindowSegments, afterTrimmingSegments);
 
-            }
-
-        }
     }
 
-
-    private IntSet computeDifferenceIntSet(IntSet movingWindowSegments, IntSet afterTrimmingSegments) {
-        IntSet diffSet  = new IntOpenHashSet();
-        Iterator it = movingWindowSegments.iterator();
-        while(it.hasNext()) {
-            int value = (int)it.next();
-            if(!afterTrimmingSegments.contains(value)) {
-                diffSet.add(value);
-            }
+    private void updateSegmentsValidity(IntSet MovingWindowSegments, IntSet afterTrimmingSegments) {
+        for (Object MovingWindowSegment : MovingWindowSegments) {
+            int segmentValue = (int) MovingWindowSegment;
+            this.validSegmentsMap.int2IntEntrySet().stream().filter(entry -> entry.getKey() == segmentValue).forEach(entry -> {
+                int valid = entry.getIntValue();
+                if (afterTrimmingSegments.contains(segmentValue)) {
+                    entry.setValue(valid + 1);
+                } else {
+                    entry.setValue(valid - 1);
+                }
+            });
         }
-        return diffSet;
     }
 
     private void addSegmentsToMap(IntSet movingWindowSegments) {
-        Iterator it = movingWindowSegments.iterator();
-        while(it.hasNext()) {
-            int value = (int)it.next();
-            if (!this.validSegmentsMap.containsKey(value)){
+        for (Object movingWindowSegment : movingWindowSegments) {
+            int value = (int) movingWindowSegment;
+            if (!this.validSegmentsMap.containsKey(value)) {
                 this.validSegmentsMap.put(value, 0);
             }
         }
