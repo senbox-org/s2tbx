@@ -141,9 +141,9 @@ class PotentialCloudShadowAreaIdentifier {
                 break;
             }
             int index1 = y1 * width + x1;
-            // todo add function to not
             if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
-                    (!((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG))) {
+                    (!((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) &&
+                    cloudShadowIDArray[index1] != cloudIDArray[index0]) {
 
                 double[] cloudExtent = CloudVerticalExtent.getCloudVerticalExtentSentinal2();
 
