@@ -19,12 +19,9 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import javax.media.jai.*;
 import javax.media.jai.operator.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
+import java.awt.color.ColorSpace;
+import java.awt.image.*;
 import java.awt.image.DataBufferFloat;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.util.Hashtable;
@@ -81,12 +78,12 @@ public class CoregistrationOp extends Operator {
         //IMPROVEMENT: if necessary, JAI dithering operation compresses the three bands of an RGB image to a single-banded byte image.
 
         int levelMaster = sourceMasterProduct.getBandAt(bandIndex).getMultiLevelModel().getLevelCount();
-        RenderedImage sourceMasterImage = sourceMasterProduct.getBandAt(bandIndex).getSourceImage().getImage(levelMaster - 1);
+        RenderedImage sourceMasterImage = sourceMasterProduct.getBandAt(bandIndex).getSourceImage().getImage(0);
         RenderedImage processedMasterImage = sourceMasterImage;
 
         Band originalSlaveBand = sourceSlaveProduct.getBandAt(bandIndex);
         int levelSlave = originalSlaveBand.getMultiLevelModel().getLevelCount();
-        RenderedImage sourceSlaveImage = originalSlaveBand.getSourceImage().getImage(levelSlave - 1);
+        RenderedImage sourceSlaveImage = originalSlaveBand.getSourceImage().getImage(0);
         RenderedImage processedSlaveImage = sourceSlaveImage;
 
         if (contrast) {
@@ -99,7 +96,7 @@ public class CoregistrationOp extends Operator {
 
         RenderedImage u = null, v = null, meshRow, meshCol;
 
-        for (int k = pyramidMaster.length - 1; k >= 0; k++) {
+        for (int k = pyramidMaster.length - 1; k >= 0; k--) {
             RenderedImage levelMasterImage = pyramidMaster[k];
             RenderedImage levelSlaveImage = pyramidSlave[k];
             RenderedImage levelMasterImageEq, levelSlaveImageEq;
@@ -120,18 +117,10 @@ public class CoregistrationOp extends Operator {
                 u = createConstImage(levelMasterImage.getHeight(), levelMasterImage.getWidth(), 0);
                 v = createConstImage(levelMasterImage.getHeight(), levelMasterImage.getWidth(), 0);
             } else {
-                ParameterBlock pbRescale = new ParameterBlock();
-                pbRescale.add(2);
-                pbRescale.add(0);
-                pbRescale.addSource(u);
-                u = (PlanarImage) JAI.create("rescale", pbRescale);
+                u = rescale(2, 0, u);
                 u = addBorder(u, 0, levelMasterImage.getWidth() - u.getWidth(), 0, levelMasterImage.getHeight() - u.getHeight());
 
-                pbRescale = new ParameterBlock();
-                pbRescale.add(2);
-                pbRescale.add(0);
-                pbRescale.addSource(v);
-                v = (PlanarImage) JAI.create("rescale", pbRescale);
+                v = rescale(2, 0, v);
                 v = addBorder(v, 0, levelMasterImage.getWidth() - v.getWidth(), 0, levelMasterImage.getHeight() - v.getHeight());
 
             }
@@ -145,12 +134,7 @@ public class CoregistrationOp extends Operator {
             } else {
                 I0 = levelMasterImage;
                 I1sup = levelSlaveImage;
-
-                ParameterBlock pbRescale = new ParameterBlock();
-                pbRescale.add(-1);
-                pbRescale.add(1);
-                pbRescale.addSource(levelSlaveImage);
-                I1inf = (PlanarImage) JAI.create("rescale", pbRescale);
+                I1inf = rescale(-1, 1, levelSlaveImage);
 
             }
 
@@ -181,7 +165,9 @@ public class CoregistrationOp extends Operator {
                     pb.addSource(v);
                     RenderedImage dy = (RenderedImage) JAI.create("add", pb);
 
-                    restrictBounds(dx, dy);
+                    //TODO suppose width=height
+                    dx = ClampDescriptor.create(dx, new double[]{0}, new double[]{dx.getWidth()}, null);
+                    dy = ClampDescriptor.create(dy, new double[]{0}, new double[]{dy.getWidth()}, null);
 
                     RenderedImage I1w = interpolate(I1sup, dx, dy);
 
@@ -204,14 +190,8 @@ public class CoregistrationOp extends Operator {
                                 wid, null);
                         RenderedImage crit2 = doubleConvolve(Hinvert, wi);
                         RenderedImage I1w_inf = interpolate(I1inf, dx, dy);
-                        //I1w =
-                        ComputeCompareOp op2 = new ComputeCompareOp(I1w, I1w_inf, crit1, crit2, null, null);
-                        I1w = op2.getAsBufferedImage();
-                        //interpolate H1 with dx and dy
-                        //convolve H0-H1
-                        //convolve 1-H0-H1
-                        //interpolate I1_inf with dx and dy
-                        //check convolution values and fill in with last interpolation
+                        ComputeCompareOp compareOp = new ComputeCompareOp(I1w, I1w_inf, crit1, crit2, null, null);
+                        I1w = compareOp.getAsBufferedImage();
                     }
 
                     RenderedImage I0I1 = SubtractDescriptor.create(processedMasterImage, I1w, null);
@@ -263,16 +243,7 @@ public class CoregistrationOp extends Operator {
         double max = minMax[1][0];
         double dif = max - min;
 
-        double[] multiplyByThis = new double[1];
-        multiplyByThis[0] = 1.0 / (max - min);
-        double[] addThis = new double[1];
-        addThis[0] = min / (max - min);
-        ParameterBlock pbRescale = new ParameterBlock();
-        pbRescale.add(multiplyByThis);
-        pbRescale.add(addThis);
-        pbRescale.addSource(inputImage);
-        PlanarImage outImage = (PlanarImage) JAI.create("rescale", pbRescale);
-        return outImage;
+        return rescale(1.0 / (max - min), min / (max - min), inputImage);
     }
 
     private RenderedImage[] pyramid(RenderedImage inputImage, int level) {
@@ -286,9 +257,7 @@ public class CoregistrationOp extends Operator {
 
 
     private RenderedImage pyramBurt(RenderedImage inputImage) {
-        int radius = 2;
-        RenderedImage borderedImage = addBorder(inputImage, radius, radius, radius, radius);
-        RenderedImage convolvedImg = doubleConvolve(borderedImage, burt1D);
+        RenderedImage convolvedImg = doubleConvolve(inputImage, burt1D);
 
         //resize with 1/2 factor:
         RenderingHints hints = new RenderingHints(RenderingHints.KEY_RENDERING,
@@ -304,27 +273,38 @@ public class CoregistrationOp extends Operator {
 
     private RenderedImage doubleConvolve(RenderedImage input, float[] factor) {
         int kernelSize = factor.length;
+        int rad = (kernelSize - 1) / 2;
+        RenderedImage borderedImage = addBorder(input, rad, rad, rad, rad);
         KernelJAI kernel = new KernelJAI(kernelSize, 1, factor);
-        RenderedImage convolvedImg = JAI.create("convolve", input, kernel);
-        RenderedImage secondConvImg = JAI.create("convolve", convolvedImg, kernel);
-        return secondConvImg;
+        RenderedImage convolvedImg = JAI.create("convolve", borderedImage, kernel);
+        kernel = new KernelJAI(1, kernelSize, factor);
+        RenderedImage secondConvolvedImg = JAI.create("convolve", convolvedImg, kernel);
+        int mrad = (-1)*rad;
+        RenderedImage finalImage = addBorder(secondConvolvedImg, mrad, mrad, mrad, mrad);
+        return finalImage;
     }
 
     private BufferedImage imageFromMatrix(int[][] input) {
-        int rows = input.length;
-        int cols = input[0].length;
-        int[] inputArray = new int[rows * cols];
-        for (int i = 0; i < input.length; i++) {
-            for (int j = 0; j < input[0].length; j++) {
-                inputArray[i * cols + j] = input[i][j];
+        int width = input[0].length;
+        int height = input.length;
+
+        int[] inputArray = new int[width * height];
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                inputArray[i * width + j] = input[i][j];
             }
         }
-        BufferedImage nImg = new BufferedImage(rows, cols,
-                BufferedImage.TYPE_INT_RGB);
-        WritableRaster er = nImg.getRaster();
-        er.setDataElements(0, 0, inputArray);
-        nImg.setData(er);
-        return nImg;
+        return imageFromArray(inputArray, width, height);
+    }
+
+    private static BufferedImage imageFromArray(int[] input, int width, int height) {
+        SampleModel sampleModel = new PixelInterleavedSampleModel(DataBuffer.TYPE_FLOAT, width, height, 1, width, new int[]{0});
+        ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+        ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.TRANSLUCENT, DataBuffer.TYPE_FLOAT);
+        DataBuffer buffer = new DataBufferFloat(width * height * 1);
+        WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
+        raster.setPixels(0, 0, width, height, input);
+        return new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
     }
 
     private float[][] matrixFromImage(BufferedImage img) {
@@ -338,7 +318,7 @@ public class CoregistrationOp extends Operator {
         return imgData;
     }
 
-    private RenderedImage addBorder(RenderedImage inputImage, int left, int right, int top, int bottom) {
+    private static RenderedImage addBorder(RenderedImage inputImage, int left, int right, int top, int bottom) {
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(inputImage);
         pb.add(left);
@@ -394,7 +374,7 @@ public class CoregistrationOp extends Operator {
         return nImg;
     }
 
-    public static BufferedImage convertRenderedImage(RenderedImage img) {
+    private BufferedImage convertRenderedImage(RenderedImage img) {
         if (img instanceof BufferedImage) {
             return (BufferedImage) img;
         }
@@ -417,32 +397,15 @@ public class CoregistrationOp extends Operator {
         return result;
     }
 
-    private void restrictBounds(RenderedImage colsImage, RenderedImage rowsImage) {
-            /*for (int ii = 0; ii < dx.length; ii++) {
-                            for (int jj = 0; jj < dx[0].length; jj++) {
-                                if (dx[ii][jj] < 1) {
-                                    dx[ii][jj] = 1;
-                                } else if (dx[ii][jj] > levelMasterImage.getWidth()) {
-                                    dx[ii][jj] = levelMasterImage.getWidth();
-                                }
-                                if (dy[ii][jj] < 1) {
-                                    dy[ii][jj] = 1;
-                                } else if (dy[ii][jj] > levelMasterImage.getHeight()) {
-                                    dy[ii][jj] = levelMasterImage.getWidth();
-                                }
-                            }
-                        }*/
-    }
-
     private RenderedImage interpolate(RenderedImage img, RenderedImage dx, RenderedImage dy) {
         int xStep = 1;
         int xNumCells = (int) img.getWidth();
         int yStep = 1;
         int yNumCells = (int) img.getHeight();
         float[] warpPositions = new float[2 * (xNumCells + 1) * (yNumCells + 1)];
-        for (int y = 0; y <= yNumCells; y++) {
-            for (int x = 0; x <= xNumCells; x++) {
-                int pos = 2 * (y * (xNumCells + 1) + x);
+        for (int y = 0; y < yNumCells; y++) {
+            for (int x = 0; x < xNumCells; x++) {
+                int pos = 2 * (y * (xNumCells + 1) + x + 1);
                 warpPositions[pos] = dx.getData().getSampleFloat(x, y, 0);
                 warpPositions[pos + 1] = dy.getData().getSampleFloat(x, y, 0);
             }
@@ -480,27 +443,64 @@ public class CoregistrationOp extends Operator {
     }
 
     private RenderedImage createMeshRowImage(int width, int height) {
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        int[] values = new int[width * height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                img.setRGB(i, j, (new Color(i + 1, 0, 0)).getRGB());
+                values[i * height + j] = i;
             }
         }
-        return img;
+        return imageFromArray(values, width, height);
     }
 
     private RenderedImage createMeshColImage(int width, int height) {
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        int[] values = new int[width * height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                img.setRGB(i, j, (new Color(j + 1, 0, 0)).getRGB());
+                values[i * height + j] = j;
             }
         }
-        return img;
+        return imageFromArray(values, width, height);
+    }
+
+    private RenderedImage rescale(double multiplyFactor, double addFactor, RenderedImage sourceImage) {
+        int bands = sourceImage.getData().getNumBands();
+        double[] multiplyParam = new double[bands], addParam = new double[bands];
+        for (int i = 0; i < bands; i++) {
+            multiplyParam[i] = multiplyFactor;
+            addParam[i] = addFactor;
+        }
+        ParameterBlock pbRescale = new ParameterBlock();
+        pbRescale.add(multiplyParam);
+        pbRescale.add(addParam);
+        pbRescale.addSource(sourceImage);
+        return (PlanarImage) JAI.create("rescale", pbRescale);
+
     }
 
     public static void main(String args[]) {
         try {
+
+            /*File file = new File("D:\\temp\\SBC_unp-907-13.tif");
+            SeekableStream s = new FileSeekableStream(file);
+
+            TIFFDecodeParam param = null;
+
+            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", s, param);
+
+            NullOpImage op1 =
+                    new NullOpImage(dec.decodeAsRenderedImage(0),
+                            null,
+                            OpImage.OP_IO_BOUND,
+                            null);
+
+            BufferedImage pg1 =  op1.getAsBufferedImage();
+
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(pg1);
+            pb.addSource(pg1);
+            RenderedImage dx = (RenderedImage) JAI.create("add", pb);*/
+
+
             Sentinel2L2AProductReader reader = new Sentinel2L2AProductReader(null, "EPSG:32632");
             Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\S2A_MSIL2A_20170805T102031_N0205_R065_T32TNQ_20170805T102535.SAFE\\MTD_MSIL2A.xml"), null);
             prod1.getBandAt(0).getData();
