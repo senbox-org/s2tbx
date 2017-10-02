@@ -88,7 +88,7 @@ public class mainFCC {
         matrix.setValueAt(7, 19, 10);
         matrix.setValueAt(8, 19, 10);
 
-        MovingWindow movingWindow = new MovingWindow(matrix, 10, 10);
+        MovingWindow movingWindow = new MovingWindow(matrix);
         int imageWidth = matrix.getColumnCount();
         int imageHeight = matrix.getRowCount();
         int movingWindowHeight = 10;
@@ -108,59 +108,35 @@ public class mainFCC {
         int rows = MathUtils.ceilInt(imageHeight / movingWindowHeight);
         for (int row = 0; row <= rows; row++) {
             for (int col = 0; col <= columns; col++) {
-                try {
-                    IntSet validRegions = movingWindow.runTile(movingStep * col, movingStep * row, movingWindowWidth, movingWindowHeight, imageWidth, imageHeight);
+                    IntSet validRegions = movingWindow.runTile(movingStep * col, movingStep * row, movingWindowWidth, movingWindowHeight);
                     Iterator it = validRegions.iterator();
                     System.out.println("Tile start " + movingStep * row + " and " + movingStep * col);
                     while (it.hasNext()) {
                         System.out.println(" values: " + it.next());
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         }
         if (rows * movingWindowHeight < imageHeight) {
             int tempMovingWindowHeight = imageHeight - (rows+1) * movingStep;
             for (int col = 0; col <= columns; col++) {
-                try {
-                    IntSet validRegions = movingWindow.runTile(movingStep * col, movingStep * (rows + 1), movingWindowWidth, tempMovingWindowHeight, imageWidth, imageHeight);
+                    IntSet validRegions = movingWindow.runTile(movingStep * col, movingStep * (rows + 1), movingWindowWidth, tempMovingWindowHeight);
                     Iterator it = validRegions.iterator();
                     System.out.println("Tile start " + movingStep * (rows + 1) + " and " + movingStep * col);
                     while (it.hasNext()) {
                         System.out.println(" values: " + it.next());
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         }
 
         if (columns * movingWindowWidth < imageWidth) {
             int tempMovingWindowWidth = imageWidth - (columns+1) * movingStep;
             for (int row = 0; row <= rows; row++) {
-                try {
-                    IntSet validRegions = movingWindow.runTile(movingStep * (columns + 1), movingStep * row, tempMovingWindowWidth, movingWindowHeight, imageWidth, imageHeight);
+                    IntSet validRegions = movingWindow.runTile(movingStep * (columns + 1), movingStep * row, tempMovingWindowWidth, movingWindowHeight);
                     Iterator it = validRegions.iterator();
                     System.out.println("Tile start " + movingStep * row + " and " + movingStep * (columns + 1));
                     while (it.hasNext()) {
                         System.out.println(" values: " + it.next());
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         }
 
@@ -169,20 +145,12 @@ public class mainFCC {
                 int tempMovingWindowWidth = imageWidth - ( rows + 1) * movingStep;
                 int tempMovingWindowHeight = imageHeight - (columns + 1) * movingStep;
                 if ((tempMovingWindowWidth != 0) && (tempMovingWindowHeight != 0)) {
-                    try {
-                        IntSet validRegions = movingWindow.runTile(movingStep * (columns + 1), movingStep * (rows + 1), tempMovingWindowWidth, tempMovingWindowHeight, imageWidth, imageHeight);
+                        IntSet validRegions = movingWindow.runTile(movingStep * (columns + 1), movingStep * (rows + 1), tempMovingWindowWidth, tempMovingWindowHeight);
                         Iterator it = validRegions.iterator();
                         System.out.println("Tile start " + movingStep * (rows + 1) + " and " + movingStep * (columns + 1));
                         while (it.hasNext()) {
                             System.out.println(" values: " + it.next());
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }

@@ -5,84 +5,70 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.utils.matrix.IntMatrix;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * @author Razvan Dumitrascu
  * @author Jean Coravu
  */
 
-public class MovingWindow extends MovingWindowImageTileParallelComputing {
-    private static final Logger logger = Logger.getLogger(MovingWindow.class.getName());
-
+public class MovingWindow {
     private final IntMatrix colorFillerMatrix;
-    private final IntSet validSegmentList;
-    private final IntSet invalidSegmentList;
+    private final IntSet validSegmentIds;
+    private final IntSet invalidSegmentIds;
 
-    public MovingWindow(IntMatrix colorFillerMatrix,  int tileWidth, int tileHeight) {
-        super(colorFillerMatrix.getColumnCount(),colorFillerMatrix.getRowCount(),tileWidth, tileHeight);
+    public MovingWindow(IntMatrix colorFillerMatrix) {
         this.colorFillerMatrix = colorFillerMatrix;
-        this.validSegmentList = new IntOpenHashSet();
-        this.invalidSegmentList = new IntOpenHashSet();
+
+        this.validSegmentIds = new IntOpenHashSet();
+        this.invalidSegmentIds = new IntOpenHashSet();
     }
 
-    public IntSet runTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int imageWidth, int imageHeight)
-            throws IOException, IllegalAccessException, InterruptedException {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute moving window for tile region starting at : row index: bounds [x=" + tileLeftX + ", y=" + tileTopY + ", width=" + tileWidth + ", height=" + tileHeight + "]");
-        }
-        int tileBottomY = tileTopY + tileHeight;
-        int tileRightX = tileLeftX + tileWidth;
-
-        for (int row = tileTopY; row < tileBottomY; row++) {
-            int pixelValueLeft = this.colorFillerMatrix.getValueAt(row, tileLeftX);
-            int pixelValueRight = this.colorFillerMatrix.getValueAt(row, tileRightX - 1);
+    public IntSet runTile(int tileLeftX, int tileTopY, int tileRightX, int tileBottomY) {
+        for (int rowIndex = tileTopY; rowIndex < tileBottomY; rowIndex++) {
+            int pixelValueLeft = this.colorFillerMatrix.getValueAt(rowIndex, tileLeftX);
+            int pixelValueRight = this.colorFillerMatrix.getValueAt(rowIndex, tileRightX - 1);
 
             if (pixelValueLeft != ForestCoverChangeConstants.NO_DATA_VALUE) {
-                if (!invalidSegmentList.contains(pixelValueLeft)) {
-                    validateElementLeft(pixelValueLeft, tileLeftX, row);
+                if (!invalidSegmentIds.contains(pixelValueLeft)) {
+                    validateElementLeft(pixelValueLeft, tileLeftX, rowIndex);
                 }
             }
             if (pixelValueRight != ForestCoverChangeConstants.NO_DATA_VALUE) {
-                if (!invalidSegmentList.contains(pixelValueRight)) {
-                    validateElementRight(pixelValueRight, tileRightX, imageWidth, row);
+                if (!invalidSegmentIds.contains(pixelValueRight)) {
+                    validateElementRight(pixelValueRight, tileRightX, rowIndex);
                 }
             }
         }
 
-        for (int column = tileLeftX; column < tileRightX ; column++) {
+        for (int column = tileLeftX; column < tileRightX; column++) {
             int pixelValueTop = this.colorFillerMatrix.getValueAt(tileTopY, column);
             int pixelValueBottom = this.colorFillerMatrix.getValueAt(tileBottomY - 1, column);
-            if (pixelValueTop != ForestCoverChangeConstants.NO_DATA_VALUE ) {
-                if (!invalidSegmentList.contains(pixelValueTop)) {
+            if (pixelValueTop != ForestCoverChangeConstants.NO_DATA_VALUE) {
+                if (!invalidSegmentIds.contains(pixelValueTop)) {
                     validateElementTop(pixelValueTop, tileTopY, column);
                 }
             }
-            if(pixelValueBottom != ForestCoverChangeConstants.NO_DATA_VALUE ) {
-               if (!invalidSegmentList.contains(pixelValueBottom)) {
-                   validateElementBottom(pixelValueBottom, tileBottomY, imageHeight, column);
-               }
+            if (pixelValueBottom != ForestCoverChangeConstants.NO_DATA_VALUE) {
+                if (!invalidSegmentIds.contains(pixelValueBottom)) {
+                    validateElementBottom(pixelValueBottom, tileBottomY, column);
+                }
             }
-       }
+        }
 
-        for (int row = tileTopY+1; row < tileBottomY-1; row++) {
-            for (int column = tileLeftX+1; column < tileRightX-1; column++) {
+        for (int row = tileTopY + 1; row < tileBottomY - 1; row++) {
+            for (int column = tileLeftX + 1; column < tileRightX - 1; column++) {
                 int pixelValue = this.colorFillerMatrix.getValueAt(row, column);
                 if (pixelValue != ForestCoverChangeConstants.NO_DATA_VALUE) {
-                    if (!invalidSegmentList.contains(pixelValue)) {
-                        validSegmentList.add(pixelValue);
+                    if (!invalidSegmentIds.contains(pixelValue)) {
+                        validSegmentIds.add(pixelValue);
                     }
                 }
             }
         }
-        return this.validSegmentList;
+        return this.validSegmentIds;
     }
 
-    private void validateElementBottom(int pixelValueBottom, int tileBottomY, int imageHeight, int column) {
-        if (tileBottomY < imageHeight) {
+    private void validateElementBottom(int pixelValueBottom, int tileBottomY, int column) {
+        if (tileBottomY < this.colorFillerMatrix.getRowCount()) {
             int localPixelValue = this.colorFillerMatrix.getValueAt(tileBottomY, column);
             processPixelValue(pixelValueBottom, localPixelValue);
         } else {
@@ -107,8 +93,8 @@ public class MovingWindow extends MovingWindowImageTileParallelComputing {
             addValidElement(pixelValueLeft);
         }
     }
-    private void validateElementRight(int pixelValueRight, int tileRightX, int imageWidth, int row) {
-        if (tileRightX < imageWidth) {
+    private void validateElementRight(int pixelValueRight, int tileRightX, int row) {
+        if (tileRightX < this.colorFillerMatrix.getColumnCount()) {
             int localPixelValue = this.colorFillerMatrix.getValueAt(row, tileRightX);
             processPixelValue(pixelValueRight, localPixelValue);
         } else {
@@ -116,21 +102,21 @@ public class MovingWindow extends MovingWindowImageTileParallelComputing {
         }
     }
 
-    private void processPixelValue(int pixelValue, int comparablePixelValue){
+    private void processPixelValue(int pixelValue, int comparablePixelValue) {
         if (comparablePixelValue == pixelValue) {
-            invalidSegmentList.add(pixelValue);
+            invalidSegmentIds.add(pixelValue);
             removeFromValidElementList(pixelValue);
         } else {
             addValidElement(pixelValue);
         }
     }
 
-    private void addValidElement(int pixelValueTop) {
-            validSegmentList.add(pixelValueTop);
+    private void addValidElement(int pixelToAdd) {
+        validSegmentIds.add(pixelToAdd);
     }
 
-    private void removeFromValidElementList(int pixelValueTop) {
-            validSegmentList.rem(pixelValueTop);
+    private void removeFromValidElementList(int pixelToRemove) {
+        validSegmentIds.rem(pixelToRemove);
     }
 }
 

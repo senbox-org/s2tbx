@@ -23,124 +23,23 @@ import java.util.logging.Logger;
 public abstract class AbstractRegionParallelComputing extends AbstractImageTilesParallelComputing {
     private static final Logger logger = Logger.getLogger(AbstractRegionParallelComputing.class.getName());
 
-    private final Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap;
+    private final TrimmingValidSegments trimmingValidSegments;
 
     protected AbstractRegionParallelComputing(int imageWidth, int imageHeight, int tileWidth, int tileHeight) {
         super(imageWidth, imageHeight, tileWidth, tileHeight);
 
-        this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<>();
+        this.trimmingValidSegments = new TrimmingValidSegments();
     }
 
     protected final void addPixelValuesBands(int segmentationPixelValue, float valueB4Band, float valueB8Band, float valueB11Band) {
-        synchronized (this.validRegionsMap) {
-            AveragePixelsSourceBands value = this.validRegionsMap.get(segmentationPixelValue);
-            if (value == null) {
-                value = new AveragePixelsSourceBands();
-                this.validRegionsMap.put(segmentationPixelValue, value);
-            }
-            value.addPixelValuesBands(valueB4Band, valueB8Band, valueB11Band);
+        synchronized (this.trimmingValidSegments) {
+            this.trimmingValidSegments.addPixelValuesBands(segmentationPixelValue, valueB4Band, valueB8Band, valueB11Band);
         }
     }
 
     public final IntSet runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
         super.executeInParallel(threadCount, threadPool);
 
-        return processResult(threadCount, threadPool);
-    }
-
-    public final IntSet processResult(int threadCount, Executor threadPool) throws Exception {
-        Int2ObjectMap<PixelSourceBands> differenceRegionsTrimming = computeStatisticsPerRegion(this.validRegionsMap);
-
-        doClose();
-
-        IntSet differenceTrimmingSet = doTrimming(threadCount, threadPool, differenceRegionsTrimming);
-
-        ObjectIterator<PixelSourceBands> it = differenceRegionsTrimming.values().iterator();
-        while (it.hasNext()) {
-            PixelSourceBands value = it.next();
-            WeakReference<PixelSourceBands> reference = new WeakReference<PixelSourceBands>(value);
-            reference.clear();
-        }
-        differenceRegionsTrimming.clear();
-
-        return differenceTrimmingSet;
-    }
-
-    private void doClose() {
-        ObjectIterator<AveragePixelsSourceBands> it = this.validRegionsMap.values().iterator();
-        while (it.hasNext()) {
-            AveragePixelsSourceBands value = it.next();
-            WeakReference<AveragePixelsSourceBands> reference = new WeakReference<>(value);
-            reference.clear();
-        }
-        this.validRegionsMap.clear();
-    }
-
-    private static IntSet doTrimming(int threadCount, Executor threadPool, Int2ObjectMap<PixelSourceBands> validRegionStatistics) throws Exception {
-        int initialValidRegionCount = validRegionStatistics.size();
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start applying trimming: valid region count: "+ initialValidRegionCount);
-        }
-
-        ChiSquaredDistribution chi = new ChiSquaredDistribution(ForestCoverChangeConstants.DEGREES_OF_FREEDOM);
-
-        float[] confidenceLevels = new float[]{ForestCoverChangeConstants.CONFIDENCE_LEVEL_99, ForestCoverChangeConstants.CONFIDENCE_LEVEL_95, ForestCoverChangeConstants.CONFIDENCE_LEVEL_90};
-        for (int i=0; i<confidenceLevels.length; i++) {
-            double cumulativeProbability = chi.inverseCumulativeProbability(confidenceLevels[i]);
-
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, ""); // add an empty line
-                logger.log(Level.FINE, "Start applying the trimming on the valid regions: iteration: "+(i+1)+", Chi distribution: " + cumulativeProbability+", valid region count: " + validRegionStatistics.size());
-            }
-
-            boolean continueRunning = true;
-            while (continueRunning) {
-                Int2ObjectMap<PixelSourceBands> validStatistics = MahalanobisDistance.computeValidRegionsInParallel(threadCount, threadPool, validRegionStatistics, cumulativeProbability);
-                if (validStatistics == null) {
-                    continueRunning = false;
-                } else {
-                    if (validStatistics.size() == 0 || validRegionStatistics.size() == validStatistics.size()) {
-                        continueRunning = false;
-                    } else {
-                        validRegionStatistics = validStatistics;
-                    }
-                }
-            }
-        }
-
-        if (logger.isLoggable(Level.FINE)) {
-            int removedValidRegionCount = initialValidRegionCount - validRegionStatistics.size();
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish applying trimming: valid region count: "+ validRegionStatistics.size()+", removed region count: " + removedValidRegionCount);
-        }
-
-        return new IntOpenHashSet(validRegionStatistics.keySet());
-    }
-
-    private static Int2ObjectMap<PixelSourceBands> computeStatisticsPerRegion(Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Compute the average pixel values per region of "+validRegionsMap.size()+" valid regions before trimming");
-        }
-
-        Int2ObjectMap<PixelSourceBands> statistics = new Int2ObjectLinkedOpenHashMap<PixelSourceBands>();
-
-        ObjectIterator<Int2ObjectMap.Entry<AveragePixelsSourceBands>> it = validRegionsMap.int2ObjectEntrySet().iterator();
-        while (it.hasNext()) {
-            Int2ObjectMap.Entry<AveragePixelsSourceBands> entry = it.next();
-            AveragePixelsSourceBands averagePixelValues = entry.getValue();
-
-            float averageB4PixelValue = averagePixelValues.getMeanValueB4Band();
-            float averageB8PixelValue = averagePixelValues.getMeanValueB8Band();
-            float averageB11PixelValue = averagePixelValues.getMeanValueB11Band();
-            float averageStandardDeviationB8PixelValue = averagePixelValues.getMeanStandardDeviationB8Band();
-
-            PixelSourceBands averagePerBand = new PixelSourceBands(averageB4PixelValue, averageB8PixelValue, averageB11PixelValue, averageStandardDeviationB8PixelValue);
-            statistics.put(entry.getIntKey(), averagePerBand);
-        }
-
-        return statistics;
+        return this.trimmingValidSegments.processResult(threadCount, threadPool);
     }
 }

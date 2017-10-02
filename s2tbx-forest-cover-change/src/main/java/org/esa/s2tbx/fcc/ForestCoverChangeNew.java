@@ -10,6 +10,8 @@ import org.esa.s2tbx.fcc.common.BandsExtractorOp;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.fcc.trimming.ColorFillerTilesComputing;
+import org.esa.s2tbx.fcc.trimming.MajorityVotingValidSegments;
+import org.esa.s2tbx.fcc.trimming.MovingWindowTileParallelComputing;
 import org.esa.s2tbx.grm.segmentation.product.WriteProductBandsTilesComputing;
 import org.esa.s2tbx.fcc.trimming.ObjectsSelectionTilesComputing;
 import org.esa.s2tbx.fcc.trimming.PixelStatistic;
@@ -74,6 +76,14 @@ public class ForestCoverChangeNew extends Operator{
             Logger logger = Logger.getLogger(propertyName);
             logger.setLevel(Level.parse(logLevel));
         }
+
+
+//        Logger logger1 = Logger.getLogger("org.esa.s2tbx.fcc.trimming.MovingWindowTileParallelComputing");
+//        logger1.setLevel(Level.FINE);
+//
+//            Logger logger = Logger.getLogger("org.esa.s2tbx.fcc");
+//            logger.setLevel(Level.OFF);
+
     }
 
     private static final Logger logger = Logger.getLogger(ForestCoverChange.class.getName());
@@ -234,9 +244,22 @@ public class ForestCoverChangeNew extends Operator{
             try {
                 IntMatrix colorFillerMatrix = computeColorFillerMatrix(temporaryFolder, currentSourceSegmentationTilesFolder, previousSourceSegmentationTilesFolder);
 
-                int[] trimmingSourceProductBandIndices = new int[] {0, 1, 2};
-                IntSet currentTrimmingRegionKeys = computeTrimming(colorFillerMatrix, currentSourceSegmentationTilesFolder, trimmingSourceProductBandIndices);
-                IntSet previousTrimmingRegionKeys = computeTrimming(colorFillerMatrix, previousSourceSegmentationTilesFolder, trimmingSourceProductBandIndices);
+                int[] sourceBandIndices = new int[] {0, 1, 2};
+                Dimension tileSize = getPreferredTileSize();
+
+                int movingWindowWidth = 1500;//tileSize.width;
+                int movingWindowHeight = 1500;//tileSize.height;
+                Dimension movingWindowSize = new Dimension(movingWindowWidth, movingWindowHeight);
+
+                int movingStepWidth = 500;//tileSize.width / 2;
+                int movingStepHeight = 500;//tileSize.height / 2;
+                Dimension movingStepSize = new Dimension(movingStepWidth, movingStepHeight);
+
+                IntSet currentTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, currentSourceSegmentationTilesFolder, sourceBandIndices);
+                IntSet previousTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, previousSourceSegmentationTilesFolder, sourceBandIndices);
+
+//                IntSet currentTrimmingRegionKeys = computeTrimming(colorFillerMatrix, currentSourceSegmentationTilesFolder, sourceBandIndices);
+//                IntSet previousTrimmingRegionKeys = computeTrimming(colorFillerMatrix, previousSourceSegmentationTilesFolder, sourceBandIndices);
 
                 // run union masks
                 ProductData productData = computeUnionMask(currentTrimmingRegionKeys, colorFillerMatrix, previousTrimmingRegionKeys, colorFillerMatrix);
@@ -256,6 +279,15 @@ public class ForestCoverChangeNew extends Operator{
         } finally {
             FileUtils.deleteTree(currentSourceSegmentationTilesFolder.toFile());
         }
+    }
+
+    private IntSet computeMovingTrimming(IntMatrix colorFillerMatrix, Dimension movingWindowSize, Dimension movingStepSize, Dimension tileSize,
+                                       Path temporarySourceSegmentationTilesFolder, int[] sourceBandIndices)
+                                       throws Exception {
+
+        MovingWindowTileParallelComputing movingWindowTiles = new MovingWindowTileParallelComputing(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize,
+                                                                                                temporarySourceSegmentationTilesFolder, sourceBandIndices);
+        return movingWindowTiles.runTilesInParallel(this.threadCount, this.threadPool);
     }
 
     private IntMatrix computeColorFillerMatrix(Path temporaryParentFolder, Path currentTemporaryFolder, Path previousTemporaryFolder) throws Exception {
