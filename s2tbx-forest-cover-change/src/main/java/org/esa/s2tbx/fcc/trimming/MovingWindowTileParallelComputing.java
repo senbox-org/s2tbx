@@ -1,6 +1,7 @@
 package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.esa.s2tbx.grm.RegionMergingInputParameters;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
 import org.esa.s2tbx.grm.segmentation.TileDataSource;
 import org.esa.s2tbx.grm.segmentation.tiles.AbstractTileSegmenter;
@@ -10,6 +11,7 @@ import org.esa.snap.utils.AbstractParallelComputing;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.awt.Dimension;
+import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,11 +59,10 @@ public class MovingWindowTileParallelComputing extends AbstractParallelComputing
     protected void execute() throws Exception {
         int imageWidth = this.colorFillerMatrix.getColumnCount();
         int imageHeight = this.colorFillerMatrix.getRowCount();
-        int movingLocalTileTopY = -1;
-        int movingLocalTileLeftX = -1;
+        boolean canContinue = false;
         do {
-            movingLocalTileTopY = -1;
-            movingLocalTileLeftX = -1;
+            int movingLocalTileTopY = -1;
+            int movingLocalTileLeftX = -1;
             synchronized (this) {
                 if (this.threadException != null) {
                     return;
@@ -83,18 +84,22 @@ public class MovingWindowTileParallelComputing extends AbstractParallelComputing
                     this.currentLeftX += this.movingStepSize.width; // increment the column index
                 }
             }
-            if (movingLocalTileTopY >= 0 && movingLocalTileLeftX >= 0) {
+            canContinue = false;
+            if (movingLocalTileTopY >= 0 && movingLocalTileTopY < imageHeight && movingLocalTileLeftX >= 0 && movingLocalTileLeftX < imageWidth) {
+                canContinue = true;
                 int movingLocalTileBottomY = movingLocalTileTopY + this.movingWindowSize.height;
-                int movingLocalTileRightX = movingLocalTileLeftX + this.movingWindowSize.width;
                 if (movingLocalTileBottomY > imageHeight) {
                     movingLocalTileBottomY = imageHeight;
                 }
+
+                int movingLocalTileRightX = movingLocalTileLeftX + this.movingWindowSize.width;
                 if (movingLocalTileRightX > imageWidth) {
                     movingLocalTileRightX = imageWidth;
                 }
+
                 runMovingTile(movingLocalTileTopY, movingLocalTileLeftX, movingLocalTileBottomY, movingLocalTileRightX);
             }
-        } while (movingLocalTileTopY >= 0 && movingLocalTileLeftX >= 0);
+        } while (canContinue);
     }
 
     public final IntSet runTilesInParallel(int threadCount, Executor threadPool) throws Exception {
@@ -154,6 +159,18 @@ public class MovingWindowTileParallelComputing extends AbstractParallelComputing
         synchronized (this.majorityVotingValidSegments) {
             this.majorityVotingValidSegments.processMovingWindowValidSegments(movingWindowValidSegmentIds, validSegmentIdsAfterTrimming);
         }
+
+        // reset the references
+        WeakReference<MovingWindow> referenceMovingWindow = new WeakReference<MovingWindow>(movingWindow);
+        referenceMovingWindow.clear();
+        WeakReference<TrimmingValidSegments> referenceTrimmingValidSegments = new WeakReference<TrimmingValidSegments>(trimmingValidSegments);
+        referenceTrimmingValidSegments.clear();
+        WeakReference<Map<String, TileDataSource[]>> referenceInputProductBandsMap = new WeakReference<Map<String, TileDataSource[]>>(inputProductBandsMap);
+        referenceInputProductBandsMap.clear();
+        WeakReference<IntSet> referenceMovingWindowValidSegmentIds = new WeakReference<IntSet>(movingWindowValidSegmentIds);
+        referenceMovingWindowValidSegmentIds.clear();
+        WeakReference<IntSet> referenceValidSegmentIdsAfterTrimming = new WeakReference<IntSet>(validSegmentIdsAfterTrimming);
+        referenceValidSegmentIdsAfterTrimming.clear();
 
         if (logger.isLoggable(Level.FINE)) {
             int localTileWidth = movingLocalTileRightX - movingLocalTileLeftX;

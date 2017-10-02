@@ -70,15 +70,6 @@ import java.util.logging.Logger;
         authors = "Jean Coravu, Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class ForestCoverChange extends Operator {
-    static {
-        String propertyName = "org.esa.s2tbx.fcc";
-        String logLevel = System.getProperty(propertyName);
-        if (logLevel != null) {
-            Logger logger = Logger.getLogger(propertyName);
-            logger.setLevel(Level.parse(logLevel));
-        }
-    }
-
     private static final Logger logger = Logger.getLogger(ForestCoverChange.class.getName());
 
     @SourceProduct(alias = "recentProduct", label = "Recent Date Product", description = "The source product to be modified.")

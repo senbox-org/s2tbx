@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -68,25 +69,8 @@ import java.util.logging.Logger;
         description = "Creates forrest change masks out of two source products",
         authors = "Jean Coravu, Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
-public class ForestCoverChangeNew extends Operator{
-    static {
-        String propertyName = "org.esa.s2tbx.fcc";
-        String logLevel = System.getProperty(propertyName);
-        if (logLevel != null) {
-            Logger logger = Logger.getLogger(propertyName);
-            logger.setLevel(Level.parse(logLevel));
-        }
-
-
-//        Logger logger1 = Logger.getLogger("org.esa.s2tbx.fcc.trimming.MovingWindowTileParallelComputing");
-//        logger1.setLevel(Level.FINE);
-//
-//            Logger logger = Logger.getLogger("org.esa.s2tbx.fcc");
-//            logger.setLevel(Level.OFF);
-
-    }
-
-    private static final Logger logger = Logger.getLogger(ForestCoverChange.class.getName());
+public class ForestCoverChangeNew extends Operator {
+    private static final Logger logger = Logger.getLogger(ForestCoverChangeNew.class.getName());
 
     @SourceProduct(alias = "recentProduct", label = "Recent Date Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
@@ -258,9 +242,6 @@ public class ForestCoverChangeNew extends Operator{
                 IntSet currentTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, currentSourceSegmentationTilesFolder, sourceBandIndices);
                 IntSet previousTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, previousSourceSegmentationTilesFolder, sourceBandIndices);
 
-//                IntSet currentTrimmingRegionKeys = computeTrimming(colorFillerMatrix, currentSourceSegmentationTilesFolder, sourceBandIndices);
-//                IntSet previousTrimmingRegionKeys = computeTrimming(colorFillerMatrix, previousSourceSegmentationTilesFolder, sourceBandIndices);
-
                 // run union masks
                 ProductData productData = computeUnionMask(currentTrimmingRegionKeys, colorFillerMatrix, previousTrimmingRegionKeys, colorFillerMatrix);
 
@@ -325,19 +306,6 @@ public class ForestCoverChangeNew extends Operator{
 
     private Dimension getPreferredTileSize() {
         return this.targetProduct.getPreferredTileSize();
-    }
-
-    private IntSet computeTrimming(IntMatrix colorFillerMatrix, Path sourceSegmentationTilesFolder, int[] trimmingSourceProductBandIndices)
-                                   throws Exception {
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start trimming for source product");// '" + extractSourceProduct.getName()+"'");
-        }
-
-        Dimension tileSize = getPreferredTileSize();
-        TrimmingRegionTilesComputingNew helper = new TrimmingRegionTilesComputingNew(colorFillerMatrix, sourceSegmentationTilesFolder, trimmingSourceProductBandIndices, tileSize.width, tileSize.height);
-        return helper.runTilesInParallel(this.threadCount, this.threadPool);
     }
 
     private IntSet computeObjectsSelection(IntMatrix originalSegmentationMatrix, Product extractedBandsSourceProduct, float percentagePixels, Dimension tileSize)

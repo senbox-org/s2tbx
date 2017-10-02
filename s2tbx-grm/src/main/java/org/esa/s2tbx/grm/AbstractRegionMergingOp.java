@@ -31,15 +31,6 @@ import java.util.logging.Logger;
  * @author  Jean Coravu
  */
 public abstract class AbstractRegionMergingOp extends AbstractTilesComputingOp {
-    static {
-        String propertyName = "org.esa.s2tbx.grm";
-        String logLevel = System.getProperty(propertyName);
-        if (logLevel != null) {
-            Logger logger = Logger.getLogger(propertyName);
-            logger.setLevel(Level.parse(logLevel));
-        }
-    }
-
     private static final Logger logger = Logger.getLogger(AbstractRegionMergingOp.class.getName());
 
     public static final String SPRING_MERGING_COST_CRITERION = "Spring";
