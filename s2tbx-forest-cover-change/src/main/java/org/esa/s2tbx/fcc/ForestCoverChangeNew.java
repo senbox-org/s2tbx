@@ -119,31 +119,9 @@ public class ForestCoverChangeNew extends Operator {
     private ExecutorService threadPool;
 
     public ForestCoverChangeNew() {
+        super();
     }
 
-    public ForestCoverChangeNew(Product currentSourceProduct, Product previousSourceProduct, Map<String, Object> parameters) {
-        this.currentSourceProduct = currentSourceProduct;
-        this.previousSourceProduct = previousSourceProduct;
-
-        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-            if(entry.getKey().equals("forestCoverPercentage")) {
-                this.forestCoverPercentage = (float) entry.getValue();
-            } else if(entry.getKey().equals("totalIterationsForSecondSegmentation")) {
-                this.totalIterationsForSecondSegmentation = (int) entry.getValue();
-            } else if(entry.getKey().equals("regionMergingCriterion")) {
-                this.regionMergingCriterion = (String) entry.getValue();
-            } else if(entry.getKey().equals("shapeWeight")) {
-                this.shapeWeight = (float) entry.getValue();
-            } else if(entry.getKey().equals("spectralWeight")) {
-                this.spectralWeight = (float) entry.getValue();
-            } else if(entry.getKey().equals("threshold")) {
-                this.threshold = (float) entry.getValue();
-            } else if(entry.getKey().equals("mergingCostCriterion")) {
-                this.mergingCostCriterion = (String) entry.getValue();
-            }
-        }
-        initialize();
-    }
     @Override
     public void initialize() {
         validateSourceProducts();
@@ -164,12 +142,9 @@ public class ForestCoverChangeNew extends Operator {
         this.threadCount = Runtime.getRuntime().availableProcessors() - 1;
         this.threadPool = Executors.newCachedThreadPool();
     }
+
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
-        doExecute();
-    }
-
-    public void doExecute() throws OperatorException {
         long startTime = System.currentTimeMillis();
 
         String folderPath = System.getProperty("fcc.temp.folder.path");
@@ -192,7 +167,11 @@ public class ForestCoverChangeNew extends Operator {
             ProductData productData = computeFinalProductData(temporaryFolder);
 
             Band targetBand = this.targetProduct.getBandAt(0);
+
+            // reset the source image of the target product
+            targetBand.setSourceImage(null);
             targetBand.setData(productData);
+            targetBand.getSourceImage();
 
             FCCLandCoverModelDescriptor descriptor = new FCCLandCoverModelDescriptor();
             IndexCoding indexCoding = descriptor.getIndexCoding();
@@ -202,10 +181,6 @@ public class ForestCoverChangeNew extends Operator {
             ImageInfo imageInfo = descriptor.getImageInfo();
             imageInfo.getColorPaletteDef().setNumColors(256);
             targetBand.setImageInfo(imageInfo);
-
-            // reset the source image of the target product
-            targetBand.setSourceImage(null);
-            targetBand.getSourceImage();
 
             if (logger.isLoggable(Level.FINE)) {
                 long finishTime = System.currentTimeMillis();
@@ -481,7 +456,7 @@ public class ForestCoverChangeNew extends Operator {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(ForestCoverChange.class);
+            super(ForestCoverChangeNew.class);
         }
     }
 }
