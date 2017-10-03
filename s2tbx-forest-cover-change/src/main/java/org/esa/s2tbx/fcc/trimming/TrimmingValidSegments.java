@@ -23,8 +23,10 @@ public class TrimmingValidSegments {
     private static final Logger logger = Logger.getLogger(TrimmingValidSegments.class.getName());
 
     private final Int2ObjectMap<AveragePixelsSourceBands> validRegionsMap;
+    private final double degreesOfFreedom;
 
-    public TrimmingValidSegments() {
+    public TrimmingValidSegments(double degreesOfFreedom) {
+        this.degreesOfFreedom = degreesOfFreedom;
         this.validRegionsMap = new Int2ObjectLinkedOpenHashMap<>();
     }
 
@@ -44,7 +46,7 @@ public class TrimmingValidSegments {
 
         doClose();
 
-        IntSet validRegionIds = doTrimming(threadCount, threadPool, averagePixelsPerSegment);
+        IntSet validRegionIds = doTrimming(threadCount, threadPool, averagePixelsPerSegment, this.degreesOfFreedom);
 
         // reset the references
         ObjectIterator<PixelSourceBands> it = averagePixelsPerSegment.values().iterator();
@@ -70,7 +72,7 @@ public class TrimmingValidSegments {
         this.validRegionsMap.clear();
     }
 
-    private static IntSet doTrimming(int threadCount, Executor threadPool, Int2ObjectMap<PixelSourceBands> validRegionStatistics) throws Exception {
+    private static IntSet doTrimming(int threadCount, Executor threadPool, Int2ObjectMap<PixelSourceBands> validRegionStatistics, double degreesOfFreedom) throws Exception {
         int initialValidRegionCount = validRegionStatistics.size();
 
         if (logger.isLoggable(Level.FINE)) {
@@ -78,7 +80,7 @@ public class TrimmingValidSegments {
             logger.log(Level.FINE, "Start applying trimming: valid region count: "+ initialValidRegionCount);
         }
 
-        ChiSquaredDistribution chi = new ChiSquaredDistribution(ForestCoverChangeConstants.DEGREES_OF_FREEDOM);
+        ChiSquaredDistribution chi = new ChiSquaredDistribution(degreesOfFreedom);
 
         float[] confidenceLevels = new float[]{ForestCoverChangeConstants.CONFIDENCE_LEVEL_99, ForestCoverChangeConstants.CONFIDENCE_LEVEL_95, ForestCoverChangeConstants.CONFIDENCE_LEVEL_90};
         for (int i=0; i<confidenceLevels.length; i++) {

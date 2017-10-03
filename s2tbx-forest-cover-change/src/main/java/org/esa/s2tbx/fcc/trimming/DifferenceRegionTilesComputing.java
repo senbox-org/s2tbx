@@ -23,9 +23,9 @@ public class DifferenceRegionTilesComputing extends AbstractRegionParallelComput
     private final int[] sourceBandIndices;
 
     public DifferenceRegionTilesComputing(IntMatrix differenceSegmentationMatrix, Product currentSourceProduct, Product previousSourceProduct,
-                                          IntMatrix unionMaskMatrix, int[] sourceBandIndices, Dimension tileSize) {
+                                          IntMatrix unionMaskMatrix, int[] sourceBandIndices, Dimension tileSize, double degreesOfFreedom) {
 
-        super(differenceSegmentationMatrix.getColumnCount(), differenceSegmentationMatrix.getRowCount(), tileSize.width, tileSize.height);
+        super(differenceSegmentationMatrix.getColumnCount(), differenceSegmentationMatrix.getRowCount(), tileSize.width, tileSize.height, degreesOfFreedom);
 
         this.differenceSegmentationMatrix = differenceSegmentationMatrix;
         this.currentSourceProduct = currentSourceProduct;

@@ -129,6 +129,10 @@ public class ForestCoverChange extends Operator {
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
     private float ndwiNirFactor;
 
+    @ParameterGroup(alias = "Trimming")
+    @Parameter(label = "Degrees of freedom", defaultValue = "2.8" , description = "Degrees of freedom used for the Chi distribution trimming process")
+    private double degreesOfFreedom;
+
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
     private File destinationWritingFolder;
@@ -165,6 +169,8 @@ public class ForestCoverChange extends Operator {
                 this.ndwiMirFactor = (float) entry.getValue();
             } else if(entry.getKey().equals("ndwiNirFactor")) {
                 this.ndwiNirFactor = (float) entry.getValue();
+            }else if(entry.getKey().equals("degreesOfFreedom")) {
+                this.degreesOfFreedom = (float) entry.getValue();
             }
         }
         initialize();
@@ -339,7 +345,7 @@ public class ForestCoverChange extends Operator {
         Dimension tileSize = getPreferredTileSize();
 
         DifferenceRegionTilesComputing helper = new DifferenceRegionTilesComputing(differenceSegmentationMatrix, currentSourceProduct, previousSourceProduct,
-                                                                                     unionMaskMatrix, sourceBandIndices, tileSize);
+                                                                                     unionMaskMatrix, sourceBandIndices, tileSize, degreesOfFreedom);
         IntSet differenceTrimmingSet = helper.runTilesInParallel(threadCount, threadPool);
 
         helper = null;
@@ -439,7 +445,7 @@ public class ForestCoverChange extends Operator {
             logger.log(Level.FINE, "Start trimming for source product '" + sourceProduct.getName()+"'");
         }
 
-        TrimmingRegionTilesComputing helper = new TrimmingRegionTilesComputing(productColorFill, extractedBandsProduct, trimmingSourceProductBandIndices, tileSize.width, tileSize.height);
+        TrimmingRegionTilesComputing helper = new TrimmingRegionTilesComputing(productColorFill, extractedBandsProduct, trimmingSourceProductBandIndices, tileSize.width, tileSize.height, degreesOfFreedom);
         IntSet segmentationTrimmingRegionKeys = helper.runTilesInParallel(threadCount, threadPool);
         helper = null;
         System.gc();

@@ -32,14 +32,14 @@ public class TrimmingRegionTilesComputingNew extends AbstractImageTilesParallelC
     private final int segmentationTileMargin;
     private final TrimmingValidSegments trimmingValidSegments;
 
-    public TrimmingRegionTilesComputingNew(IntMatrix colorFillerMatrix, Path temporarySourceSegmentationTilesFolder, int[] sourceBandIndices, int tileWidth, int tileHeight) {
+    public TrimmingRegionTilesComputingNew(IntMatrix colorFillerMatrix, Path temporarySourceSegmentationTilesFolder, int[] sourceBandIndices, int tileWidth, int tileHeight, double degreesOfFreedom) {
         super(colorFillerMatrix.getColumnCount(), colorFillerMatrix.getRowCount(), tileWidth, tileHeight);
 
         this.colorFillerMatrix = colorFillerMatrix;
         this.temporarySourceSegmentationTilesFolder = temporarySourceSegmentationTilesFolder;
         this.sourceBandIndices = sourceBandIndices;
 
-        this.trimmingValidSegments = new TrimmingValidSegments();
+        this.trimmingValidSegments = new TrimmingValidSegments(degreesOfFreedom);
         this.segmentationTileMargin = AbstractTileSegmenter.computeTileMargin(tileWidth, tileHeight);
     }
 

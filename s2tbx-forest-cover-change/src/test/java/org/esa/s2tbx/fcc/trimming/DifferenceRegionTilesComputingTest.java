@@ -53,9 +53,9 @@ public class DifferenceRegionTilesComputingTest extends AbstractOpTest {
 
         ProductBandToMatrixConverter converter2 = new ProductBandToMatrixConverter(unionMaskProduct, tileSize.width, tileSize.height);
         IntMatrix unionMaskMatrix = converter2.runTilesInParallel(threadCount, threadPool);
-
+        double degreesOfFreedom = 2.8;
         DifferenceRegionTilesComputing tilesComputing = new DifferenceRegionTilesComputing(differenceSegmentationMatrix, currentSourceProduct, previousSourceProduct,
-                                                                                           unionMaskMatrix, sourceBandIndices, tileSize);
+                                                                                           unionMaskMatrix, sourceBandIndices, tileSize, degreesOfFreedom);
         IntSet differenceTrimmingSet = tilesComputing.runTilesInParallel(threadCount, threadPool);
 
         assertNotNull(differenceTrimmingSet);

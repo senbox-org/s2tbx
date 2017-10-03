@@ -25,10 +25,10 @@ public abstract class AbstractRegionParallelComputing extends AbstractImageTiles
 
     private final TrimmingValidSegments trimmingValidSegments;
 
-    protected AbstractRegionParallelComputing(int imageWidth, int imageHeight, int tileWidth, int tileHeight) {
+    protected AbstractRegionParallelComputing(int imageWidth, int imageHeight, int tileWidth, int tileHeight, double degreesOfFreedom) {
         super(imageWidth, imageHeight, tileWidth, tileHeight);
 
-        this.trimmingValidSegments = new TrimmingValidSegments();
+        this.trimmingValidSegments = new TrimmingValidSegments(degreesOfFreedom);
     }
 
     protected final void addPixelValuesBands(int segmentationPixelValue, float valueB4Band, float valueB8Band, float valueB11Band) {

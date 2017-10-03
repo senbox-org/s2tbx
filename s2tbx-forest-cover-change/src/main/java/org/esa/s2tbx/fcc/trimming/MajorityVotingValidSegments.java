@@ -27,7 +27,7 @@ public class MajorityVotingValidSegments {
         ObjectIterator<Int2IntMap.Entry> it = this.validSegmentsMap.int2IntEntrySet().iterator();
         while (it.hasNext()) {
             Int2IntMap.Entry entry = it.next();
-            if (entry.getIntValue() >= 0) {
+            if (entry.getIntValue() > 0) {
                 validSegmentIds.add(entry.getIntKey());
             }
         }

@@ -19,8 +19,8 @@ public class TrimmingRegionTilesComputing extends AbstractRegionParallelComputin
     private final Product sourceProduct;
     private final int[] sourceBandIndices;
 
-    public TrimmingRegionTilesComputing(IntMatrix segmentationMatrix, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight) {
-        super(segmentationMatrix.getColumnCount(), segmentationMatrix.getRowCount(), tileWidth, tileHeight);
+    public TrimmingRegionTilesComputing(IntMatrix segmentationMatrix, Product sourceProduct, int[] sourceBandIndices, int tileWidth, int tileHeight, double degreesOfFreedom) {
+        super(segmentationMatrix.getColumnCount(), segmentationMatrix.getRowCount(), tileWidth, tileHeight, degreesOfFreedom);
 
         this.segmentationSourceProduct = segmentationMatrix;
         this.sourceProduct = sourceProduct;

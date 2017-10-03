@@ -113,6 +113,10 @@ public class ForestCoverChangeNew extends Operator {
     @Parameter(label = "Shape weight", defaultValue = "0.5" , description = "The shape weight.")
     private float shapeWeight;
 
+    @ParameterGroup(alias = "Trimming")
+    @Parameter(label = "Degrees of freedom", defaultValue = "2.8" , description = "Degrees of freedom used for the Chi distribution trimming process")
+    private double degreesOfFreedom;
+
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
     private int threadCount;
@@ -206,8 +210,8 @@ public class ForestCoverChangeNew extends Operator {
                 int[] sourceBandIndices = new int[] {0, 1, 2};
                 Dimension tileSize = getPreferredTileSize();
 
-                int movingWindowWidth = 1500;//tileSize.width;
-                int movingWindowHeight = 1500;//tileSize.height;
+                int movingWindowWidth = 1000;//tileSize.width;
+                int movingWindowHeight = 1000;//tileSize.height;
                 Dimension movingWindowSize = new Dimension(movingWindowWidth, movingWindowHeight);
 
                 int movingStepWidth = 500;//tileSize.width / 2;
@@ -242,7 +246,7 @@ public class ForestCoverChangeNew extends Operator {
                                        throws Exception {
 
         MovingWindowTileParallelComputing movingWindowTiles = new MovingWindowTileParallelComputing(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize,
-                                                                                                temporarySourceSegmentationTilesFolder, sourceBandIndices);
+                                                                                                temporarySourceSegmentationTilesFolder, sourceBandIndices, degreesOfFreedom);
         return movingWindowTiles.runTilesInParallel(this.threadCount, this.threadPool);
     }
 

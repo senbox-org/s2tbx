@@ -33,12 +33,12 @@ public class MovingWindowTileParallelComputing extends AbstractParallelComputing
     private final Dimension movingStepSize;
     private final Dimension movingWindowSize;
     private final Dimension tileSize;
-
+    private final double degreesOfFreedom;
     private int currentTopY;
     private int currentLeftX;
 
     public MovingWindowTileParallelComputing(IntMatrix colorFillerMatrix, Dimension movingWindowSize, Dimension movingStepSize, Dimension tileSize,
-                                             Path temporarySourceSegmentationTilesFolder, int[] sourceBandIndices) {
+                                             Path temporarySourceSegmentationTilesFolder, int[] sourceBandIndices, double degreesOfFreedom) {
 
         this.colorFillerMatrix = colorFillerMatrix;
         this.movingWindowSize = movingWindowSize;
@@ -47,6 +47,8 @@ public class MovingWindowTileParallelComputing extends AbstractParallelComputing
 
         this.temporarySourceSegmentationTilesFolder = temporarySourceSegmentationTilesFolder;
         this.sourceBandIndices = sourceBandIndices;
+
+        this.degreesOfFreedom = degreesOfFreedom;
 
         this.majorityVotingValidSegments = new MajorityVotingValidSegments();
         this.segmentationTileMargin = AbstractTileSegmenter.computeTileMargin(this.tileSize.width, this.tileSize.height);
@@ -121,7 +123,7 @@ public class MovingWindowTileParallelComputing extends AbstractParallelComputing
 
         int imageWidth = this.colorFillerMatrix.getColumnCount();
         int imageHeight = this.colorFillerMatrix.getRowCount();
-        TrimmingValidSegments trimmingValidSegments = new TrimmingValidSegments();
+        TrimmingValidSegments trimmingValidSegments = new TrimmingValidSegments(this.degreesOfFreedom);
 
         Map<String, TileDataSource[]> inputProductBandsMap = new HashMap<String, TileDataSource[]>();
         for (int y = movingLocalTileTopY; y < movingLocalTileBottomY; y++) {

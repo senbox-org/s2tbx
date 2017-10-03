@@ -44,8 +44,8 @@ public class TrimmingRegionTilesComputingTest extends AbstractOpTest {
 
         ProductBandToMatrixConverter converter = new ProductBandToMatrixConverter(segmentationSourceProduct, tileSize.width, tileSize.height);
         IntMatrix segmentationMatrix = converter.runTilesInParallel(threadCount, threadPool);
-
-        TrimmingRegionTilesComputing trimming = new TrimmingRegionTilesComputing(segmentationMatrix, sourceProduct, sourceBandIndices, tileSize.width, tileSize.height);
+        double degreesOfFreedom  = 2.8;
+        TrimmingRegionTilesComputing trimming = new TrimmingRegionTilesComputing(segmentationMatrix, sourceProduct, sourceBandIndices, tileSize.width, tileSize.height, degreesOfFreedom);
         IntSet trimmingSet = trimming.runTilesInParallel(threadCount, threadPool);
 
         assertNotNull(trimmingSet);
