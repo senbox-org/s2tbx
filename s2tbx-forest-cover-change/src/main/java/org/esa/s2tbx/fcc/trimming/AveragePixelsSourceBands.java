@@ -1,4 +1,4 @@
-package org.esa.s2tbx.fcc.common;
+package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 
@@ -8,23 +8,25 @@ import it.unimi.dsi.fastutil.floats.FloatArrayList;
  */
 
 public class AveragePixelsSourceBands {
-
     //list containing the values used to compute standard deviation
-    FloatArrayList standardDeviationPixelValues;
+    private final FloatArrayList standardDeviationPixelValues;
 
-    private  float sumValueB4Band;
-    private  float sumValueB8Band;
-    private  float sumValueB11Band;
+    private float sumValueB4Band;
+    private float sumValueB8Band;
+    private float sumValueB11Band;
 
-    public AveragePixelsSourceBands(){
-        standardDeviationPixelValues = new FloatArrayList();
+    public AveragePixelsSourceBands() {
+        this.standardDeviationPixelValues = new FloatArrayList();
+        this.sumValueB4Band = 0.0f;
+        this.sumValueB8Band = 0.0f;
+        this.sumValueB11Band = 0.0f;
     }
 
     public void addPixelValuesBands(float valueB4Band, float valueB8Band, float valueB11Band){
-        sumValueB4Band += valueB4Band;
-        sumValueB8Band += valueB8Band;
-        sumValueB11Band += valueB11Band;
-        standardDeviationPixelValues.add(valueB8Band);
+        this.sumValueB4Band += valueB4Band;
+        this.sumValueB8Band += valueB8Band;
+        this.sumValueB11Band += valueB11Band;
+        this.standardDeviationPixelValues.add(valueB8Band);
     }
 
     public float getMeanValueB4Band(){

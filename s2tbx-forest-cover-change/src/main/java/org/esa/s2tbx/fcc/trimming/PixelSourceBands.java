@@ -1,4 +1,4 @@
-package org.esa.s2tbx.fcc.common;
+package org.esa.s2tbx.fcc.trimming;
 
 /**
  * @author Razvan Dumitrascu

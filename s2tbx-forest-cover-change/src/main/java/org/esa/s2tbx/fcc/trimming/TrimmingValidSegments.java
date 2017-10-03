@@ -6,9 +6,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
-import org.esa.s2tbx.fcc.common.PixelSourceBands;
 import org.esa.s2tbx.fcc.mahalanobis.MahalanobisDistance;
 
 import java.lang.ref.WeakReference;

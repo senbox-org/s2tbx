@@ -34,6 +34,7 @@ public class MovingWindowTileParallelComputing extends AbstractParallelComputing
     private final Dimension movingWindowSize;
     private final Dimension tileSize;
     private final double degreesOfFreedom;
+
     private int currentTopY;
     private int currentLeftX;
 

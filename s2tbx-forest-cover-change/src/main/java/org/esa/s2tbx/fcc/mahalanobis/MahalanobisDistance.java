@@ -2,8 +2,7 @@ package org.esa.s2tbx.fcc.mahalanobis;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import org.esa.s2tbx.fcc.common.AveragePixelsSourceBands;
-import org.esa.s2tbx.fcc.common.PixelSourceBands;
+import org.esa.s2tbx.fcc.trimming.PixelSourceBands;
 import org.esa.snap.utils.AbstractArrayCellsParallelComputing;
 import org.esa.snap.utils.AbstractMatrixCellsParallelComputing;
 

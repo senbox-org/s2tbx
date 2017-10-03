@@ -14,7 +14,6 @@ import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.Selection;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
-import org.apache.commons.collections.map.HashedMap;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Product;
@@ -23,7 +22,6 @@ import org.esa.snap.core.datamodel.ProductNodeListener;
 import org.esa.snap.core.datamodel.RasterDataNode;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
-import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
@@ -54,7 +52,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -91,7 +88,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         this.operatorName = operatorName;
         this.targetProductNameSuffix = "";
 
-        processAnnotationsRec(ForestCoverChangeNew.class);
+        processAnnotationsRec(ForestCoverChangeOp.class);
         this.operatorDescriptor = new OperatorDescriptorClass( this.parameterDescriptors.toArray(new ParameterDescriptor[0]),
                 this.sourceProductDescriptors.toArray(new SourceProductDescriptor[0]));
         this.ioParametersPanel = new DefaultIOParametersPanel(getAppContext(), this.operatorDescriptor, getTargetProductSelector(), true);
@@ -466,7 +463,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 sourceProducts.put("previousProduct", this.previousSourceProduct);
 
                 // create the operator
-                Operator operator = GPF.getDefaultInstance().createOperator("ForrestChangeNewOp", this.parameters, sourceProducts, null);
+                Operator operator = GPF.getDefaultInstance().createOperator("ForestCoverChangeOp", this.parameters, sourceProducts, null);
 
                 // execute the operator
                 operator.execute(ProgressMonitor.NULL);

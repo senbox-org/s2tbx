@@ -10,12 +10,10 @@ import org.esa.s2tbx.fcc.common.BandsExtractorOp;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.fcc.trimming.ColorFillerTilesComputing;
-import org.esa.s2tbx.fcc.trimming.MajorityVotingValidSegments;
 import org.esa.s2tbx.fcc.trimming.MovingWindowTileParallelComputing;
 import org.esa.s2tbx.grm.segmentation.product.WriteProductBandsTilesComputing;
 import org.esa.s2tbx.fcc.trimming.ObjectsSelectionTilesComputing;
 import org.esa.s2tbx.fcc.trimming.PixelStatistic;
-import org.esa.s2tbx.fcc.trimming.TrimmingRegionTilesComputingNew;
 import org.esa.s2tbx.fcc.trimming.UnionMasksTilesComputingNew;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.grm.RegionMergingInputParameters;
@@ -43,7 +41,6 @@ import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,7 +51,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -63,14 +59,14 @@ import java.util.logging.Logger;
  * @since 5.0.6
  */
 @OperatorMetadata(
-        alias = "ForrestChangeNewOp",
+        alias = "ForestCoverChangeOp",
         version="1.0",
         category = "",
         description = "Creates forrest change masks out of two source products",
         authors = "Jean Coravu, Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
-public class ForestCoverChangeNew extends Operator {
-    private static final Logger logger = Logger.getLogger(ForestCoverChangeNew.class.getName());
+public class ForestCoverChangeOp extends Operator {
+    private static final Logger logger = Logger.getLogger(ForestCoverChangeOp.class.getName());
 
     @SourceProduct(alias = "recentProduct", label = "Recent Date Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
@@ -122,7 +118,7 @@ public class ForestCoverChangeNew extends Operator {
     private int threadCount;
     private ExecutorService threadPool;
 
-    public ForestCoverChangeNew() {
+    public ForestCoverChangeOp() {
         super();
     }
 
@@ -246,7 +242,7 @@ public class ForestCoverChangeNew extends Operator {
                                        throws Exception {
 
         MovingWindowTileParallelComputing movingWindowTiles = new MovingWindowTileParallelComputing(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize,
-                                                                                                temporarySourceSegmentationTilesFolder, sourceBandIndices, degreesOfFreedom);
+                                                                                                temporarySourceSegmentationTilesFolder, sourceBandIndices, this.degreesOfFreedom);
         return movingWindowTiles.runTilesInParallel(this.threadCount, this.threadPool);
     }
 
@@ -460,7 +456,7 @@ public class ForestCoverChangeNew extends Operator {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(ForestCoverChangeNew.class);
+            super(ForestCoverChangeOp.class);
         }
     }
 }

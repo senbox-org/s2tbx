@@ -1056,27 +1056,4 @@ public abstract class AbstractTileSegmenter {
         numberOfFirstIterations--;
         return numberOfFirstIterations;
     }
-
-    //TODO Jean remove
-    @Deprecated
-    public void logStartSegmentation(long startTime) {
-        if (logger.isLoggable(Level.FINE)) {
-            int tileMargin = computeTileMargin();
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Start Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", thread count: " + this.threadCount + ", start time: " + new Date(startTime));
-            logger.log(Level.FINE, "Temporary folder path to store the binary files: '" + getTemporaryFolderPath()+"'");
-        }
-    }
-
-    //TODO Jean remove
-    @Deprecated
-    public void logFinishSegmentation(long startTime, int graphNodeCount) {
-        if (logger.isLoggable(Level.FINE)) {
-            int tileMargin = computeTileMargin();
-            long finishTime = System.currentTimeMillis();
-            long totalSeconds = (finishTime - startTime) / 1000;
-            logger.log(Level.FINE, ""); // add an empty line
-            logger.log(Level.FINE, "Finish Segmentation: image width: " +imageWidth+", image height: "+imageHeight+", tile width: "+tileWidth+", tile height: "+tileHeight+", margin: "+tileMargin+", graph node count: "+graphNodeCount+", total seconds: "+totalSeconds+", finish time: "+new Date(finishTime));
-        }
-    }
 }
