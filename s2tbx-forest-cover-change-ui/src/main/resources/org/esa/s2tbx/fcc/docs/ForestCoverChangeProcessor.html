@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2016 by CS ROMANIA
+  ~ Copyright (C) 2017 by CS ROMANIA
   ~
   ~ This program is free software; you can redistribute it and/or modify it
   ~ under the terms of the GNU General Public License as published by the Free
@@ -32,7 +32,7 @@
 
 <p><br/></p>
 <p>
-    The Forest Cover Change Processor is a multi-steps iterative process that transform two date images into two forest/non forest products and an independent tropical forest change one.
+    The Forest Cover Change Processor is a multi-steps iterative process that transform two date images into two forest/non forest products and an independent forest change one.
     The overall principle of the algorithm is to identify the forest objects showing higher reflectance differences between the two images than the other forest objects.
 </p>
 <p>
@@ -82,7 +82,7 @@
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    (i) A forest training set is created with the objects covered by 95% of Tree cover class excrated from a reference map
+    (i) A forest training set is created with the objects covered by 95% of Tree cover class extracted from a reference map
     (<a href="http://maps.elie.ucl.ac.be/CCI/viewer/index.php">originally CCI Land Cover map</a>):
 </p>
 <p>
@@ -99,7 +99,9 @@
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    (ii) The training set will be updated using the a trimming procedure based on the Mahalanobis distance to remove the extreme values that behave like outliers.
+    (ii) The training set will be updated using the a trimming procedure based on the Mahalanobis distance to remove the extreme values that behave like outliers with a treshold based on the chi distribution algorithm
+     with 3 levels of confidence 0.9, 0.95 and 0.99. The trimming is done repetitive on smaller windows using the method of moving window algorithm (a small window that moves to cover the hole image and overlaps itself
+    over a portion on both directions) so that te overall result is more precise.
 </p>
 
 <h4>I/O Parameters</h4>
@@ -188,6 +190,11 @@
             <p class="i1">
                 <b>Shape weight:</b>
                 Specify the shape weight.
+            </p>
+
+            <p class="i1">
+                <b>Degrees of freedom:</b>
+               Specifies the degrees of freedom for the chi distribution algorithm. The smaller the value the more segments are eliminated on the trimming process.
             </p>
             <p>
                 <b>NOTE:</b> The threshold, spectral weight, shape weight may vary according to the pixel values of the raster. The standard values for spectral weight, shape weight is 0.5
