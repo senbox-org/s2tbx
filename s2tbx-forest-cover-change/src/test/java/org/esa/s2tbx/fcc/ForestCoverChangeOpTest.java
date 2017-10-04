@@ -56,12 +56,7 @@ public class ForestCoverChangeOpTest extends AbstractOpTest {
         Operator operator = GPF.getDefaultInstance().createOperator("ForestCoverChangeOp", parameters, sourceProducts, null);
 
         // execute the operator
-        try {
-            operator.execute(ProgressMonitor.NULL);
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
+        operator.execute(ProgressMonitor.NULL);
 
         // get the operator target product
         Product targetProduct = operator.getTargetProduct();

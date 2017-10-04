@@ -2,6 +2,7 @@ package org.esa.s2tbx.grm.segmentation;
 
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import it.unimi.dsi.fastutil.ints.IntPriorityQueue;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.lang.ref.WeakReference;
@@ -42,6 +43,28 @@ public class OutputMarkerMatrixHelper {
         referenceMarkerMatrix.clear();
 
         return result;
+    }
+
+    public final ProductData buildOutputProductData() {
+        int widthCount = this.imageWidth + 2;
+        int heightCount = this.imageHeight + 2;
+        int[][] marker = buildMarkerMatrix(widthCount, heightCount);
+
+        int elementCount = this.imageWidth * this.imageHeight;
+        ProductData data = ProductData.createInstance(ProductData.TYPE_INT32, elementCount);
+
+        for (int y = 1; y < heightCount - 1; y++) {
+            for (int x = 1; x < widthCount - 1; x++) {
+                int elementIndex = (this.imageWidth * (y - 1)) + (x - 1);
+                data.setElemIntAt(elementIndex, marker[y][x]);
+                //result.setValueAt(y-1, x-1, marker[y][x]);
+            }
+        }
+
+        WeakReference<int[][]> referenceMarkerMatrix = new WeakReference<int[][]>(marker);
+        referenceMarkerMatrix.clear();
+
+        return data;
     }
 
     public final void doClose() {

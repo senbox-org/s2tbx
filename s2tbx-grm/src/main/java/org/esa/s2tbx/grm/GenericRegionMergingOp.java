@@ -86,6 +86,7 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
 
     protected AbstractTileSegmenter tileSegmenter;
     protected long startTime;
+    private AbstractSegmenter segmenter;
 
     public GenericRegionMergingOp() {
     }
@@ -147,11 +148,26 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
 
     @Override
     protected void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
-        AbstractSegmenter segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
+        this.segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
+
+        OutputMaskMatrixHelper outputMaskMatrixHelper = this.segmenter.buildOutputMaskMatrixHelper();
+
+        OutputMarkerMatrixHelper outputMarkerMatrix = outputMaskMatrixHelper.buildMaskMatrix();
+
+        outputMaskMatrixHelper.doClose();
+        WeakReference<OutputMaskMatrixHelper> referenceMaskMatrix = new WeakReference<OutputMaskMatrixHelper>(outputMaskMatrixHelper);
+        referenceMaskMatrix.clear();
+
+        ProductData data = outputMarkerMatrix.buildOutputProductData();
+        int graphNodeCount = outputMarkerMatrix.getGraphNodeCount();
+
+        outputMarkerMatrix.doClose();
+        WeakReference<OutputMarkerMatrixHelper> referenceMarkerMatrix = new WeakReference<OutputMarkerMatrixHelper>(outputMarkerMatrix);
+        referenceMarkerMatrix.clear();
 
         Band productTargetBand = this.targetProduct.getBandAt(0);
         productTargetBand.setSourceImage(null); // reset the source image
-        segmenter.fillBandData(productTargetBand);
+        productTargetBand.setData(data);
         productTargetBand.getSourceImage();
 
         if (logger.isLoggable(Level.FINE)) {
@@ -163,12 +179,9 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
 
             long finishTime = System.currentTimeMillis();
             long totalSeconds = (finishTime - this.startTime) / 1000;
-            int graphNodeCount = segmenter.getGraph().getNodeCount();
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Finish Segmentation: image width: " + imageWidth + ", image height: " + imageHeight + ", tile width: " + tileWidth + ", tile height: " + tileHeight + ", margin: " + tileMargin + ", graph node count: " + graphNodeCount + ", total seconds: " + totalSeconds + ", finish time: " + new Date(finishTime));
         }
-
-        finishSegmentation(segmenter);
     }
 
     @Override
@@ -204,7 +217,8 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
         }
     }
 
-    protected void finishSegmentation(AbstractSegmenter segmenter) {
+    public AbstractSegmenter getSegmenter() {
+        return this.segmenter;
     }
 
     public String getMergingCostCriterion() {

@@ -13,6 +13,7 @@ import org.junit.Test;
 import javax.media.jai.JAI;
 
 import java.awt.*;
+import java.lang.ref.WeakReference;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -253,7 +254,10 @@ public class SegmenterTest {
         GenericRegionMergingOpTest.checkGraphNode(node, nodeExpectedMeansValues, 1, 25, 18, 1, 76, 1);
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-        segmenter.fillBandData(targetBand);
+        OutputMaskMatrixHelper outputMaskMatrixHelper = segmenter.buildOutputMaskMatrixHelper();
+        OutputMarkerMatrixHelper outputMarkerMatrix = outputMaskMatrixHelper.buildMaskMatrix();
+        ProductData data = outputMarkerMatrix.buildOutputProductData();
+        targetBand.setData(data);
 
         int bandValue = targetBand.getSampleInt(12, 14);
         assertEquals(1, bandValue);
@@ -323,7 +327,10 @@ public class SegmenterTest {
         GenericRegionMergingOpTest.checkGraphNode(node, nodeExpectedMeansValues, 1, 25, 18, 1, 76, 1);
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-        segmenter.fillBandData(targetBand);
+        OutputMaskMatrixHelper outputMaskMatrixHelper = segmenter.buildOutputMaskMatrixHelper();
+        OutputMarkerMatrixHelper outputMarkerMatrix = outputMaskMatrixHelper.buildMaskMatrix();
+        ProductData data = outputMarkerMatrix.buildOutputProductData();
+        targetBand.setData(data);
 
         int bandValue = targetBand.getSampleInt(12, 14);
         assertEquals(1, bandValue);

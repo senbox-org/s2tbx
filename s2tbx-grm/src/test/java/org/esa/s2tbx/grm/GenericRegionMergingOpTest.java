@@ -10,6 +10,8 @@ import org.esa.snap.core.dataio.rgb.ImageProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.gpf.GPF;
+import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
@@ -22,6 +24,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -60,7 +64,7 @@ public class GenericRegionMergingOpTest {
         int totalIterationsForSecondSegmentation = 250;
         float threshold = 8600.0f;
 
-        GenericRegionMergingExtendedOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
+        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
                                                           totalIterationsForSecondSegmentation, threshold, null, null);
 
         Product targetProduct = operator.getTargetProduct();
@@ -99,7 +103,7 @@ public class GenericRegionMergingOpTest {
         int totalIterationsForSecondSegmentation = 1750;
         float threshold = 8650.0f;
 
-        GenericRegionMergingExtendedOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
+        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
                                                           totalIterationsForSecondSegmentation, threshold, null, null);
 
         Product targetProduct = operator.getTargetProduct();
@@ -140,7 +144,7 @@ public class GenericRegionMergingOpTest {
         float spectralWeight = 0.5f;
         float shapeWeight = 0.3f;
 
-        GenericRegionMergingExtendedOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
         Product targetProduct = operator.getTargetProduct();
         AbstractSegmenter segmenter = operator.getSegmenter();
@@ -184,7 +188,7 @@ public class GenericRegionMergingOpTest {
         float spectralWeight = 0.5f;
         float shapeWeight = 0.3f;
 
-        GenericRegionMergingExtendedOp operator = executeOperator(this.largeSourceProduct, mergingCostCriterion, regionMergingCriterion,
+        GenericRegionMergingOp operator = executeOperator(this.largeSourceProduct, mergingCostCriterion, regionMergingCriterion,
                                                           totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
         Product targetProduct = operator.getTargetProduct();
@@ -229,7 +233,7 @@ public class GenericRegionMergingOpTest {
         float spectralWeight = 0.5f;
         float shapeWeight = 0.3f;
 
-        GenericRegionMergingExtendedOp operator = executeOperator(this.largeSourceProduct, mergingCostCriterion, regionMergingCriterion,
+        GenericRegionMergingOp operator = executeOperator(this.largeSourceProduct, mergingCostCriterion, regionMergingCriterion,
                                                           totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
         Product targetProduct = operator.getTargetProduct();
@@ -279,26 +283,30 @@ public class GenericRegionMergingOpTest {
         }
     }
 
-    private static GenericRegionMergingExtendedOp executeOperator(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion,
-                                                                  int totalIterationsForSecondSegmentation, float threshold, Float spectralWeight, Float shapeWeight )
-                                                                  throws IOException {
+    private static GenericRegionMergingOp executeOperator(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion,
+                                                          int totalIterationsForSecondSegmentation, float threshold, Float spectralWeight, Float shapeWeight )
+                                                          throws IOException {
 
         String[] sourceBandNames = new String[]{"red", "blue", "green"};
 
-        GenericRegionMergingExtendedOp operator = new GenericRegionMergingExtendedOp();
-        operator.setSourceProduct(sourceProduct);
-
-        operator.setParameter("mergingCostCriterion", mergingCostCriterion);
-        operator.setParameter("regionMergingCriterion", regionMergingCriterion);
-        operator.setParameter("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
-        operator.setParameter("threshold", threshold);
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("mergingCostCriterion", mergingCostCriterion);
+        parameters.put("regionMergingCriterion", regionMergingCriterion);
+        parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
+        parameters.put("threshold", threshold);
+        parameters.put("sourceBandNames", sourceBandNames);
         if (spectralWeight != null) {
-            operator.setParameter("spectralWeight", spectralWeight.floatValue());
+            parameters.put("spectralWeight", spectralWeight.floatValue());
         }
         if (shapeWeight != null) {
-            operator.setParameter("shapeWeight", shapeWeight.floatValue());
+            parameters.put("shapeWeight", shapeWeight.floatValue());
         }
-        operator.setParameter("sourceBandNames", sourceBandNames);
+
+        Map<String, Product> sourceProducts = new HashMap<String, Product>();
+        sourceProducts.put("source", sourceProduct);
+
+        // create the operator
+        GenericRegionMergingOp operator = (GenericRegionMergingOp)GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
 
         Product targetProduct = operator.getTargetProduct(); // initialize the operator
 
@@ -500,22 +508,5 @@ public class GenericRegionMergingOpTest {
         assertEquals(size, targetBand.getNumDataElems());
 
         return targetBand;
-    }
-
-    private static class GenericRegionMergingExtendedOp extends GenericRegionMergingOp {
-        private AbstractSegmenter segmenter;
-
-        private GenericRegionMergingExtendedOp() {
-        }
-
-        @Override
-        protected void finishSegmentation(AbstractSegmenter segmenter) {
-            this.segmenter = segmenter;
-        }
-
-        public AbstractSegmenter getSegmenter() {
-            return this.segmenter;
-        }
-
     }
 }
