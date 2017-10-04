@@ -8,7 +8,7 @@ import org.esa.snap.utils.matrix.IntMatrix;
 import org.junit.Test;
 
 import javax.media.jai.JAI;
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
@@ -16,19 +16,18 @@ import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- * @author Razvan Dumitrascu
- * @since 5.0.6
+ * @author Jean Coravu
  */
+public class MovingWindowTest extends AbstractOpTest {
 
-public class ColorFillerTilesComputingTest extends AbstractOpTest {
-
-    public ColorFillerTilesComputingTest() {
+    public MovingWindowTest() {
     }
 
     @Test
-    public void testColorFillerTileComputing() throws Exception {
+    public void testMovingWindow() throws Exception {
         Dimension tileSize = JAI.getDefaultTileSize();
         int threadCount = Runtime.getRuntime().availableProcessors() - 1;
         ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -57,21 +56,27 @@ public class ColorFillerTilesComputingTest extends AbstractOpTest {
         assertEquals(549, colorFillerMatrix.getColumnCount());
         assertEquals(549, colorFillerMatrix.getRowCount());
 
-        assertEquals(1, colorFillerMatrix.getValueAt(3, 5));
-        assertEquals(10, colorFillerMatrix.getValueAt(6, 133));
-        assertEquals(12, colorFillerMatrix.getValueAt(6, 167));
+        MovingWindow movingWindow = new MovingWindow(colorFillerMatrix);
+        IntSet validSegmentIds = movingWindow.runTile(0, 0, 512, 512);
 
-        assertEquals(20, colorFillerMatrix.getValueAt(3, 305));
-        assertEquals(34, colorFillerMatrix.getValueAt(12, 239));
-        assertEquals(45, colorFillerMatrix.getValueAt(19, 415));
-        assertEquals(53, colorFillerMatrix.getValueAt(14, 406));
-        assertEquals(63, colorFillerMatrix.getValueAt(31, 441));
-        assertEquals(117, colorFillerMatrix.getValueAt(41, 440));
-        assertEquals(293, colorFillerMatrix.getValueAt(123, 88));
-        assertEquals(402, colorFillerMatrix.getValueAt(161, 414));
-        assertEquals(800, colorFillerMatrix.getValueAt(305, 231));
-        assertEquals(1005, colorFillerMatrix.getValueAt(384, 399));
-        assertEquals(1200, colorFillerMatrix.getValueAt(454, 93));
+        assertNotNull(validSegmentIds);
+
+        assertEquals(14, validSegmentIds.size());
+
+        assertTrue(validSegmentIds.contains(293));
+        assertTrue(validSegmentIds.contains(1200));
+        assertTrue(validSegmentIds.contains(800));
+        assertTrue(validSegmentIds.contains(402));
+        assertTrue(validSegmentIds.contains(1));
+        assertTrue(validSegmentIds.contains(12));
+        assertTrue(validSegmentIds.contains(10));
+        assertTrue(validSegmentIds.contains(34));
+        assertTrue(validSegmentIds.contains(117));
+        assertTrue(validSegmentIds.contains(45));
+        assertTrue(validSegmentIds.contains(63));
+        assertTrue(validSegmentIds.contains(1005));
+        assertTrue(validSegmentIds.contains(53));
+        assertTrue(validSegmentIds.contains(20));
     }
 
     private static IntSet buildValidRegions() {

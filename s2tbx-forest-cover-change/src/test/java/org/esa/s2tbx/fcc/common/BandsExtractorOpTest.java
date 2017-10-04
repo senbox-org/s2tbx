@@ -1,19 +1,21 @@
 package org.esa.s2tbx.fcc.common;
 
+import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.esa.snap.core.gpf.GPF;
+import org.esa.snap.core.gpf.Operator;
 import org.junit.Test;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.operation.TransformException;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Razvan Dumitrascu
@@ -22,51 +24,57 @@ import static org.junit.Assert.assertEquals;
 
 public class BandsExtractorOpTest {
 
-    private static final int WIDTH = 10;
-    private static final int HEIGHT = 10;
-
+    public BandsExtractorOpTest() {
+    }
 
     @Test
-    public void testBandsExtractorOp() throws IOException {
-        Product product = createProduct("P1");
-        final BandsExtractorOp op = new BandsExtractorOp();
-        op.setParameterDefaultValues();
-        op.setSourceProduct(product);
+    public void testBandsExtractorOp() {
+        int sceneRasterWidth = 100;
+        int sceneRasterHeight = 100;
+
+        Product product = new Product("P1", "bandsExtractor", sceneRasterWidth, sceneRasterHeight);
+        product.addBand("b1", ProductData.TYPE_FLOAT32);
+        product.addBand("b2", ProductData.TYPE_FLOAT64);
+        product.addBand("b3", ProductData.TYPE_INT16);
+
         String[] bandNames = { "b2", "b3" };
-        op.setParameter("sourceBandNames", bandNames);
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("sourceBandNames", bandNames);
 
-        final Product productExtractedBands = op.getTargetProduct();
-        assertEquals(productExtractedBands.getName(), "P1");
-        assertEquals(productExtractedBands.getProductType(), "bandsExtractor");
-        assertEquals(productExtractedBands.getSceneRasterSize(), new Dimension(WIDTH, HEIGHT));
-        assertEquals(productExtractedBands.getNumBands(), 2);
-        assertEquals(productExtractedBands.getStartTime(), product.getStartTime());
-        assertEquals(productExtractedBands.getEndTime(), product.getEndTime());
-        assertEquals(productExtractedBands.getNumResolutionsMax(), product.getNumResolutionsMax());
-        assertEquals(productExtractedBands.getSceneGeoCoding(), product.getSceneGeoCoding());
+        Map<String, Product> sourceProducts = new HashMap<String, Product>();
+        sourceProducts.put("sourceProduct", product);
 
-        Band b0 = productExtractedBands.getBandAt(0);
-        Band b1 = productExtractedBands.getBandAt(1);
-        testBand(b0,ProductData.TYPE_FLOAT64, "b2");
-        testBand(b1, ProductData.TYPE_INT16, "b3");
+        Operator operator = GPF.getDefaultInstance().createOperator("BandsExtractorOp", parameters, sourceProducts, null);
+
+        // execute the operator
+        operator.execute(ProgressMonitor.NULL);
+
+        // get the operator target product
+        Product targetProduct = operator.getTargetProduct();
+
+        assertNotNull(targetProduct);
+
+        assertEquals(targetProduct.getName(), "P1");
+        assertEquals(targetProduct.getProductType(), "bandsExtractor");
+        assertEquals(targetProduct.getSceneRasterWidth(), sceneRasterWidth);
+        assertEquals(targetProduct.getSceneRasterHeight(), sceneRasterHeight);
+        assertEquals(targetProduct.getNumBands(), 2);
+        assertEquals(targetProduct.getStartTime(), product.getStartTime());
+        assertEquals(targetProduct.getEndTime(), product.getEndTime());
+        assertEquals(targetProduct.getNumResolutionsMax(), product.getNumResolutionsMax());
+        assertEquals(targetProduct.getSceneGeoCoding(), product.getSceneGeoCoding());
+
+        Band b0 = targetProduct.getBandAt(0);
+        testBand(b0,ProductData.TYPE_FLOAT64, "b2", sceneRasterWidth, sceneRasterHeight);
+
+        Band b1 = targetProduct.getBandAt(1);
+        testBand(b1, ProductData.TYPE_INT16, "b3", sceneRasterWidth, sceneRasterHeight);
     }
 
-    private void testBand(Band band,int dataType, String bandName) {
+    private void testBand(Band band, int dataType, String bandName, int sceneRasterWidth, int sceneRasterHeight) {
         assertEquals(band.getName(), bandName);
         assertEquals(band.getDataType(), dataType);
-        assertEquals(band.getRasterHeight(), HEIGHT);
-        assertEquals(band.getRasterWidth(), WIDTH);
+        assertEquals(band.getRasterWidth(), sceneRasterWidth);
+        assertEquals(band.getRasterHeight(), sceneRasterHeight);
     }
-
-    private static Product createProduct(final String name) {
-        final Product product = new Product(name, "bandsExtractor", WIDTH, HEIGHT);
-        final Band band1 = new Band("b1", ProductData.TYPE_FLOAT32, WIDTH, HEIGHT);
-        product.addBand(band1);
-        final Band band2 = new Band("b2", ProductData.TYPE_FLOAT64, WIDTH, HEIGHT);
-        product.addBand(band2);
-        final Band band3 = new Band("b3", ProductData.TYPE_INT16, WIDTH, HEIGHT);
-        product.addBand(band3);
-        return product;
-    }
-
 }

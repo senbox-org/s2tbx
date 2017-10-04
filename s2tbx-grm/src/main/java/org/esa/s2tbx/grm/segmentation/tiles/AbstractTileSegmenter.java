@@ -862,8 +862,17 @@ public abstract class AbstractTileSegmenter {
     public static ProcessingTile buildTile(int tileLeftX, int tileTopY, int tileWidth, int tileHeight, int tileMargin, int imageWidth, int imageHeight) {
         // compute current tile start and size
         ProcessingTile tile = new ProcessingTile();
+
         int finishX = tileLeftX + tileWidth;
+        if (finishX > imageWidth) {
+            finishX = imageWidth;
+        }
+
         int finishY = tileTopY + tileHeight;
+        if (finishY > imageHeight) {
+            finishY = imageHeight;
+        }
+
         // margin at the top
         if (tileTopY > 0) { //(row > 0) {
             tile.setTopMargin(tileMargin);
@@ -909,6 +918,15 @@ public abstract class AbstractTileSegmenter {
         int regionTopY = tileTopY - tile.getTopMargin();
         int regionWidth = tileWidth + tile.getLeftMargin() + tile.getRightMargin();
         int regionHeight = tileHeight + tile.getTopMargin() + tile.getBottomMargin();
+        int regionRightX = regionLeftX + regionWidth;
+        if (regionRightX > imageWidth) {
+            regionWidth = imageWidth - regionLeftX;
+        }
+        int regionBottomY = regionTopY + regionHeight;
+        if (regionBottomY > imageHeight) {
+            regionHeight = imageHeight - regionTopY;
+        }
+
         tile.setRegion(new BoundingBox(regionLeftX, regionTopY, regionWidth, regionHeight));
 
         String temporaryFilesPrefix = "";

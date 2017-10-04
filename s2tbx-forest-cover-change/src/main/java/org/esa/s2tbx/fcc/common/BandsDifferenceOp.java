@@ -8,12 +8,10 @@ import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
-import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 
 import javax.media.jai.JAI;
-import javax.sound.midi.SysexMessage;
 import java.awt.*;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,19 +20,20 @@ import java.util.Map;
  * @author Jean Coravu
  */
 @OperatorMetadata(
-        alias = "DifferenceProductsOp",
+        alias = "BandsDifferenceOp",
         version="1.0",
         category = "",
         description = "",
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
-public class DifferenceProductsOp extends Operator {
+public class BandsDifferenceOp extends Operator {
     @SourceProducts(alias = "Source", description = "The first source product.")
     private Product[] sourceProducts;
+
     @TargetProduct
     private Product targetProduct;
 
-    public DifferenceProductsOp() {
+    public BandsDifferenceOp() {
     }
 
     @Override
@@ -122,7 +121,7 @@ public class DifferenceProductsOp extends Operator {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(DifferenceProductsOp.class);
+            super(BandsDifferenceOp.class);
         }
     }
 }

@@ -3,7 +3,9 @@ package org.esa.s2tbx.fcc.trimming;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.matrix.IntMatrix;
 import org.junit.Test;
 
@@ -51,29 +53,35 @@ public class UnionMasksTilesComputingTest extends AbstractOpTest {
         ProductBandToMatrixConverter converter2 = new ProductBandToMatrixConverter(previousSegmentationSourceProduct, tileSize.width, tileSize.height);
         IntMatrix previousSegmentationSourceMatrix = converter2.runTilesInParallel(threadCount, threadPool);
 
-//        UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceMatrix, previousSegmentationSourceMatrix,
-//                                                                               currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
-//                                                                               tileSize.width, tileSize.height);
-//        IntMatrix resultMatrix = tilesComputing.runTilesInParallel(threadCount, threadPool);
-//
-//        assertNotNull(resultMatrix);
-//
-//        assertEquals(3, resultMatrix.getValueAt(163, 147));
-//
-//        assertEquals(3, resultMatrix.getValueAt(237, 57));
-//        assertEquals(1, resultMatrix.getValueAt(434, 33));
-//        assertEquals(0, resultMatrix.getValueAt(51, 478));
-//        assertEquals(2, resultMatrix.getValueAt(212, 509));
-//        assertEquals(2, resultMatrix.getValueAt(533, 209));
-//        assertEquals(3, resultMatrix.getValueAt(508, 10));
-//        assertEquals(2, resultMatrix.getValueAt(476, 254));
-//        assertEquals(3, resultMatrix.getValueAt(343, 84));
-//        assertEquals(0, resultMatrix.getValueAt(468, 14));
-//        assertEquals(0, resultMatrix.getValueAt(139, 205));
-//        assertEquals(0, resultMatrix.getValueAt(325, 22));
-//        assertEquals(1, resultMatrix.getValueAt(397, 196));
-//        assertEquals(2, resultMatrix.getValueAt(433, 3));
-//        assertEquals(2, resultMatrix.getValueAt(214, 506));
+        UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceMatrix, previousSegmentationSourceMatrix,
+                                                                               currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
+                                                                               tileSize.width, tileSize.height);
+        ProductData productData = tilesComputing.runTilesInParallel(threadCount, threadPool);
+
+        assertNotNull(productData);
+
+        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, currentSegmentationSourceProduct.getSceneRasterWidth(), currentSegmentationSourceProduct.getSceneRasterHeight());
+        targetBand.setData(productData);
+        // reset the source image of the target product
+        targetBand.setSourceImage(null);
+        targetBand.getSourceImage();
+
+        assertEquals(3, targetBand.getSampleInt(147, 163));
+
+        assertEquals(3, targetBand.getSampleInt(57, 237));
+        assertEquals(1, targetBand.getSampleInt(33, 434));
+        assertEquals(0, targetBand.getSampleInt(478, 51));
+        assertEquals(2, targetBand.getSampleInt(509, 212));
+        assertEquals(2, targetBand.getSampleInt(209, 533));
+        assertEquals(3, targetBand.getSampleInt(10, 508));
+        assertEquals(2, targetBand.getSampleInt(254, 476));
+        assertEquals(3, targetBand.getSampleInt(84, 343));
+        assertEquals(0, targetBand.getSampleInt(14, 468));
+        assertEquals(0, targetBand.getSampleInt(205, 139));
+        assertEquals(0, targetBand.getSampleInt(22, 325));
+        assertEquals(1, targetBand.getSampleInt(196, 397));
+        assertEquals(2, targetBand.getSampleInt(3, 433));
+        assertEquals(2, targetBand.getSampleInt(506, 214));
     }
 
     private static IntSet buildCurrentSegmentationTrimmingRegionKeys() {

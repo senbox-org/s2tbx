@@ -14,7 +14,7 @@ import org.esa.s2tbx.fcc.trimming.MovingWindowTileParallelComputing;
 import org.esa.s2tbx.grm.segmentation.product.WriteProductBandsTilesComputing;
 import org.esa.s2tbx.fcc.trimming.ObjectsSelectionTilesComputing;
 import org.esa.s2tbx.fcc.trimming.PixelStatistic;
-import org.esa.s2tbx.fcc.trimming.UnionMasksTilesComputingNew;
+import org.esa.s2tbx.fcc.trimming.UnionMasksTilesComputing;
 import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.grm.RegionMergingInputParameters;
 import org.esa.s2tbx.grm.RegionMergingProcessingParameters;
@@ -366,7 +366,7 @@ public class ForestCoverChangeOp extends Operator {
             logger.log(Level.FINE, "Start running union mask");
         }
         Dimension tileSize = getPreferredTileSize();
-        UnionMasksTilesComputingNew tilesComputing = new UnionMasksTilesComputingNew(currentSegmentationSourceProduct, previousSegmentationSourceProduct,
+        UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceProduct, previousSegmentationSourceProduct,
                                                                                      currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
                                                                                      tileSize.width, tileSize.height);
         return tilesComputing.runTilesInParallel(threadCount, threadPool);

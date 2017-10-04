@@ -468,7 +468,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 // execute the operator
                 operator.execute(ProgressMonitor.NULL);
 
-                // get the operator targe product
+                // get the operator target product
                 operatorTargetProduct = operator.getTargetProduct();
 
                 if (model.isSaveToFileSelected()) {

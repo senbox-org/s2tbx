@@ -18,7 +18,7 @@ public class MatrixTest {
     }
 
     @Test
-    public void testMatrix() throws Exception {
+    public void testMatrix() {
         StorageMatrix matrix = new StorageMatrix(4, 5);
         matrix.setValueAt(0, 0, 1f);
         matrix.setValueAt(0, 1, 2f);
@@ -56,7 +56,7 @@ public class MatrixTest {
     }
 
     @Test
-    public void testMultiplyByConstantMatrix() throws Exception {
+    public void testMultiplyByConstantMatrix() {
         StorageMatrix matrix = new StorageMatrix(4, 5);
         matrix.setValueAt(0, 0, 1f);
         matrix.setValueAt(0, 1, 2f);
@@ -99,7 +99,7 @@ public class MatrixTest {
     }
 
     @Test
-    public void testMultiplyMatrix() throws Exception {
+    public void testMultiplyMatrix() {
         StorageMatrix firstMatrix = new StorageMatrix(2, 3);
         firstMatrix.setValueAt(0, 0, 1f);
         firstMatrix.setValueAt(0, 1, 2f);
@@ -145,7 +145,7 @@ public class MatrixTest {
     }
 
     @Test
-    public void testTransposeMatrix() throws Exception {
+    public void testTransposeMatrix() {
         StorageMatrix matrix = new StorageMatrix(3, 4);
         matrix.setValueAt(0, 0, 1f);
         matrix.setValueAt(0, 1, 2f);
@@ -181,7 +181,7 @@ public class MatrixTest {
     }
 
     @Test
-    public void testSubMatrix() throws Exception {
+    public void testSubMatrix() {
         StorageMatrix matrix = new StorageMatrix(3, 4);
         matrix.setValueAt(0, 0, 1f);
         matrix.setValueAt(0, 1, 2f);
