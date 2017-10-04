@@ -276,7 +276,7 @@ class CloudShadowIDAnalyzer {
 
         LandWaterAnalyzerMode(float[][] sourceBands) {
             if (sourceBands.length != 2) {
-                throw new IllegalArgumentException("Two Band required for land water analysis mode");
+                throw new IllegalArgumentException("Two bands required for land water analysis mode");
             }
             this.sourceBands = sourceBands;
         }
@@ -498,14 +498,14 @@ class CloudShadowIDAnalyzer {
     private class LandPixelValidator implements PixelValidator {
         @Override
         public boolean isPixelValid(int index) {
-            return flagArray[index] == PreparationMaskBand.LAND_FLAG;
+            return (flagArray[index] & PreparationMaskBand.LAND_FLAG) == PreparationMaskBand.LAND_FLAG;
         }
     }
 
     private class WaterPixelValidator implements PixelValidator {
         @Override
         public boolean isPixelValid(int index) {
-            return flagArray[index] == PreparationMaskBand.WATER_FLAG;
+            return (flagArray[index] & PreparationMaskBand.WATER_FLAG) == PreparationMaskBand.WATER_FLAG;
         }
     }
 
