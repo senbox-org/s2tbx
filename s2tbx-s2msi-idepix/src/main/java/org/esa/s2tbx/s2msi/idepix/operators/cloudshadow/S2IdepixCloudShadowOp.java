@@ -315,7 +315,6 @@ public class S2IdepixCloudShadowOp extends Operator {
             cloudShadowIDAnalyzer.identifyCloudShadowAreas(s2ClassifProduct, sourceRectangle, clusterData, flagArray,
                                                            cloudShadowIDArray, cloudLongShadowIDArray,
                                                            cloudShadowIdBorderRectangle, numClouds, analysisMode);
-            GrowingCloudShadow.computeCloudShadowBorder(sourceWidth, sourceHeight, flagArray);
             fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
         }
     }
