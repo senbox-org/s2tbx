@@ -27,6 +27,7 @@ import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.dataop.resamp.ResamplingFactory;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -37,10 +38,12 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.landcover.gpf.AddLandCoverOp;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
 import java.awt.Dimension;
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,6 +81,9 @@ public class ForestCoverChangeOp extends Operator {
 
     @Parameter(defaultValue = "95.0", label = "Forest cover percentage", itemAlias = "percentage", description = "Specifies the percentage of forest cover per segment")
     private float forestCoverPercentage;
+
+    @Parameter(label = "Land cover file", description = "")
+    private File landCoverExternalFile;
 
     @ParameterGroup(alias = "Segmentation")
     @Parameter(label = "Merging cost criterion",
@@ -125,6 +131,18 @@ public class ForestCoverChangeOp extends Operator {
     @Override
     public void initialize() {
         validateSourceProducts();
+
+        if (this.landCoverExternalFile != null) {
+            if (this.landCoverExternalFile.exists()) {
+                if (!this.landCoverExternalFile.isFile()) {
+                    String message = String.format("The land cover file '%s' does not denote a file.", this.landCoverExternalFile.getAbsolutePath());
+                    throw new OperatorException(message);
+                }
+            } else {
+                String message = String.format("The land cover file '%s' does not exist.", this.landCoverExternalFile.getAbsolutePath());
+                throw new OperatorException(message);
+            }
+        }
 
         this.currentProductBandsNames = findBandNames(this.currentSourceProduct);
         this.previousProductBandsNames = findBandNames(this.previousSourceProduct);
@@ -286,13 +304,14 @@ public class ForestCoverChangeOp extends Operator {
     private IntSet computeObjectsSelection(IntMatrix originalSegmentationMatrix, Product extractedBandsSourceProduct, float percentagePixels, Dimension tileSize)
                                            throws Exception {
 
-        Product landCover = buildLandCoverProduct(extractedBandsSourceProduct);
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("landCoverNames", ForestCoverChangeConstants.LAND_COVER_NAME);
-        Product landCoverProduct = GPF.createProduct("AddLandCover", parameters, landCover);
+        Product landCoverProduct = buildLandCoverProduct(extractedBandsSourceProduct, this.landCoverExternalFile);
 
         ObjectsSelectionTilesComputing tilesComputing = new ObjectsSelectionTilesComputing(originalSegmentationMatrix, landCoverProduct, tileSize.width, tileSize.height);
         Int2ObjectMap<PixelStatistic> statistics = tilesComputing.runTilesInParallel(threadCount, threadPool);
+
+        // reset the reference
+        WeakReference<Product> referenceLandCoverProduct = new WeakReference<Product>(landCoverProduct);
+        referenceLandCoverProduct.clear();
 
         IntSet validRegions = new IntOpenHashSet();
         ObjectIterator<Int2ObjectMap.Entry<PixelStatistic>> it = statistics.int2ObjectEntrySet().iterator();
@@ -306,9 +325,8 @@ public class ForestCoverChangeOp extends Operator {
         return validRegions;
     }
 
-    private static Product buildLandCoverProduct(Product sourceProduct) {
-        Product landCoverProduct = new Product(sourceProduct.getName(), sourceProduct.getProductType(),
-                                                    sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+    private static Product buildLandCoverProduct(Product sourceProduct, File landCoverExternalFile) throws Exception {
+        Product landCoverProduct = new Product(sourceProduct.getName(), sourceProduct.getProductType(), sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
         landCoverProduct.setStartTime(sourceProduct.getStartTime());
         landCoverProduct.setEndTime(sourceProduct.getEndTime());
         landCoverProduct.setNumResolutionsMax(sourceProduct.getNumResolutionsMax());
@@ -317,6 +335,15 @@ public class ForestCoverChangeOp extends Operator {
         ProductUtils.copyGeoCoding(sourceProduct, landCoverProduct);
         ProductUtils.copyTiePointGrids(sourceProduct, landCoverProduct);
         ProductUtils.copyVectorData(sourceProduct, landCoverProduct);
+
+        AddLandCoverOp.LandCoverParameters param = null;
+        if (landCoverExternalFile == null) {
+            param = new AddLandCoverOp.LandCoverParameters(ForestCoverChangeConstants.LAND_COVER_NAME, ResamplingFactory.NEAREST_NEIGHBOUR_NAME);
+        } else {
+            param = new AddLandCoverOp.LandCoverParameters(ForestCoverChangeConstants.LAND_COVER_NAME, landCoverExternalFile, ResamplingFactory.NEAREST_NEIGHBOUR_NAME);
+        }
+        AddLandCoverOp.AddLandCover(landCoverProduct, param);
+
         return landCoverProduct;
     }
 
