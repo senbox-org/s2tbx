@@ -5,9 +5,13 @@ import org.esa.snap.core.util.math.MathUtils;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Tonio Fincke
@@ -16,12 +20,11 @@ class PotentialCloudShadowAreaIdentifier {
 
     private static final double MAXCLOUD_TOP = S2IdepixCloudShadowOp.maxcloudTop;
 
-    static int[][] identifyPotentialCloudShadows(int productHeight, int productWidth, Rectangle sourceRectangle,
-                                                 Rectangle targetRectangle, float[] sourceSunZenith,
-                                                 float[] sourceSunAzimuth, float[] sourceLatitude,
-                                                 float[] sourceLongitude, float[] sourceAltitude,
-                                                 int[] flagArray, int[] cloudIDArray, int[] cloudShadowIDArray,
-                                                 int numClouds) {
+    static Collection<List<Integer>> identifyPotentialCloudShadows(int productHeight, int productWidth, Rectangle sourceRectangle,
+                                                                     Rectangle targetRectangle, float[] sourceSunZenith,
+                                                                     float[] sourceSunAzimuth, float[] sourceLatitude,
+                                                                     float[] sourceLongitude, float[] sourceAltitude,
+                                                                     int[] flagArray, int[] cloudIDArray) {
         int x0SourceCenter = sourceRectangle.width / 2;
         int y0SourceCenter = sourceRectangle.height / 2;
         int sourceCenterIndex = y0SourceCenter * sourceRectangle.width + x0SourceCenter;
@@ -38,14 +41,7 @@ class PotentialCloudShadowAreaIdentifier {
                                                                MAXCLOUD_TOP, sourceRectangle, targetRectangle,
                                                                productHeight, productWidth,
                                                                S2IdepixCloudShadowOp.spatialResolution, true, false);
-        int[][] cloudShadowIdBorderRectangle = new int[numClouds][4];
-        for (int i = 0; i < numClouds; i++) {
-            cloudShadowIdBorderRectangle[i][0] = productWidth + 1;
-            cloudShadowIdBorderRectangle[i][1] = -1;
-            cloudShadowIdBorderRectangle[i][2] = productHeight + 1;
-            cloudShadowIdBorderRectangle[i][3] = -1;
-        }
-
+        final Map<Integer, List<Integer>> indexToPositions = new HashMap<>();
         int i = 0;
         int sourceWidth = sourceRectangle.width;
         int sourceHeight = sourceRectangle.height;
@@ -59,9 +55,9 @@ class PotentialCloudShadowAreaIdentifier {
                 int x = Math.max(xOffset, sourceWidth - 1 - i);
                 int y = Math.max(0, i - yLimit + 1);
                 while (x < sourceWidth && y < yLimit) {
-                    identifyPotentialCloudShadow(x, y, sourceHeight, sourceWidth, cloudPath, sourceLongitude, sourceLatitude,
-                                                 sourceAltitude, flagArray, sunZenithCloudRad, cloudIDArray,
-                                                 cloudShadowIDArray, cloudShadowIdBorderRectangle);
+                    identifyPotentialCloudShadow(x, y, sourceHeight, sourceWidth, cloudPath, sourceLongitude,
+                                                 sourceLatitude, sourceAltitude, flagArray, sunZenithCloudRad,
+                                                 cloudIDArray, indexToPositions);
                     x++;
                     y++;
                 }
@@ -78,9 +74,9 @@ class PotentialCloudShadowAreaIdentifier {
                 int x = Math.max(xOffset, sourceWidth - 1 - i);
                 int y = sourceHeight + Math.min(-1, yLimit - 2 - i);
                 while (x < sourceWidth && y >= yOffset) {
-                    identifyPotentialCloudShadow(x, y, sourceHeight, sourceWidth, cloudPath, sourceLongitude, sourceLatitude,
-                                                 sourceAltitude, flagArray, sunZenithCloudRad, cloudIDArray,
-                                                 cloudShadowIDArray, cloudShadowIdBorderRectangle);
+                    identifyPotentialCloudShadow(x, y, sourceHeight, sourceWidth, cloudPath, sourceLongitude,
+                                                 sourceLatitude, sourceAltitude, flagArray, sunZenithCloudRad,
+                                                 cloudIDArray, indexToPositions);
                     x++;
                     y--;
                 }
@@ -96,9 +92,9 @@ class PotentialCloudShadowAreaIdentifier {
                 int x = Math.min(i, xLimit - 1);
                 int y = sourceHeight + Math.min(-1, yLimit - 2 - i);
                 while (x >= 0 && y >= yOffset) {
-                    identifyPotentialCloudShadow(x, y, sourceHeight, sourceWidth, cloudPath, sourceLongitude, sourceLatitude,
-                                                 sourceAltitude, flagArray, sunZenithCloudRad, cloudIDArray,
-                                                 cloudShadowIDArray, cloudShadowIdBorderRectangle);
+                    identifyPotentialCloudShadow(x, y, sourceHeight, sourceWidth, cloudPath, sourceLongitude,
+                                                 sourceLatitude, sourceAltitude, flagArray, sunZenithCloudRad,
+                                                 cloudIDArray, indexToPositions);
                     x--;
                     y--;
                 }
@@ -113,26 +109,34 @@ class PotentialCloudShadowAreaIdentifier {
                 int x = Math.min(i, xLimit - 1);
                 int y = Math.max(0, i - yLimit + 1);
                 while (x >= 0 && y < yLimit) {
-                    identifyPotentialCloudShadow(x, y, sourceHeight, sourceWidth, cloudPath, sourceLongitude, sourceLatitude,
-                                                 sourceAltitude, flagArray, sunZenithCloudRad, cloudIDArray,
-                                                 cloudShadowIDArray, cloudShadowIdBorderRectangle);
+                    identifyPotentialCloudShadow(x, y, sourceHeight, sourceWidth, cloudPath, sourceLongitude,
+                                                 sourceLatitude, sourceAltitude, flagArray, sunZenithCloudRad,
+                                                 cloudIDArray, indexToPositions);
                     x--;
                     y++;
                 }
                 i++;
             }
         }
-        return cloudShadowIdBorderRectangle;
+//        final List<Integer>[] positions = new List<Integer>[indexToPositions.size()];
+//        return indexToPositions.values().toArray(new List<Integer>[indexToPositions.size()]);
+        return indexToPositions.values();
     }
 
-    private static void identifyPotentialCloudShadow(int x0, int y0, int height, int width,
-                                                     Point2D[] cloudPath, float[] longitude, float[] latitude,
-                                                     float[] altitude, int[] flagArray, double sunZenithRad,
-                                                     int[] cloudIDArray, int[] cloudShadowIDArray,
-                                                     int[][] cloudShadowIdBorderRectangle) {
+    private static void identifyPotentialCloudShadow(int x0, int y0, int height, int width, Point2D[] cloudPath,
+                                                     float[] longitude, float[] latitude, float[] altitude,
+                                                     int[] flagArray, double sunZenithRad, int[] cloudIDArray,
+                                                     Map<Integer, List<Integer>> indexToPositions) {
         int index0 = y0 * width + x0;
         if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
             return;
+        }
+        List<Integer> positions;
+        if (indexToPositions.containsKey(cloudIDArray[index0])) {
+            positions = indexToPositions.get(cloudIDArray[index0]);
+        } else {
+            positions = new ArrayList<>();
+            indexToPositions.put(cloudIDArray[index0], positions);
         }
         for (int i = 1; i < cloudPath.length; i++) {
             int x1 = x0 + (int) cloudPath[i].getX();
@@ -143,8 +147,7 @@ class PotentialCloudShadowAreaIdentifier {
             int index1 = y1 * width + x1;
             if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
                     (!((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) &&
-                    cloudShadowIDArray[index1] != cloudIDArray[index0]) {
-
+                    !positions.contains(index1)) {
                 double[] cloudExtent = CloudVerticalExtent.getCloudVerticalExtentSentinal2();
 
                 double[] distAltArray = CloudShadowUtils.computeDistance(index0, index1, longitude, latitude, altitude);
@@ -154,17 +157,7 @@ class PotentialCloudShadowAreaIdentifier {
                 double cloudSearchPointHeight = dist * Math.tan(((Math.PI / 2. - sunZenithRad)));
                 cloudSearchPointHeight = cloudSearchPointHeight + (altitude[index1] - minAltitude);
                 if (cloudExtent[0] <= cloudSearchPointHeight && cloudSearchPointHeight <= cloudExtent[1]) {
-                    cloudShadowIDArray[index1] = cloudIDArray[index0];
-
-                    int minX0 = Math.min(cloudShadowIdBorderRectangle[cloudShadowIDArray[index1]][0], x1);
-                    int maxX0 = Math.max(cloudShadowIdBorderRectangle[cloudShadowIDArray[index1]][1], x1);
-                    int minY0 = Math.min(cloudShadowIdBorderRectangle[cloudShadowIDArray[index1]][2], y1);
-                    int maxY0 = Math.max(cloudShadowIdBorderRectangle[cloudShadowIDArray[index1]][3], y1);
-
-                    cloudShadowIdBorderRectangle[cloudShadowIDArray[index1]][0] = Math.min(minX0, maxX0);
-                    cloudShadowIdBorderRectangle[cloudShadowIDArray[index1]][1] = Math.max(minX0, maxX0);
-                    cloudShadowIdBorderRectangle[cloudShadowIDArray[index1]][2] = Math.min(minY0, maxY0);
-                    cloudShadowIdBorderRectangle[cloudShadowIDArray[index1]][3] = Math.max(minY0, maxY0);
+                    positions.add(index1);
                 }
             }
         }

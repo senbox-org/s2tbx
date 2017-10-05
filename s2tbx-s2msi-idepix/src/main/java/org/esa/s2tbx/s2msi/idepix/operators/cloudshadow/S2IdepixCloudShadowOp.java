@@ -25,6 +25,8 @@ import javax.media.jai.BorderExtenderConstant;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -257,8 +259,6 @@ public class S2IdepixCloudShadowOp extends Operator {
         final int[] flagArray = new int[sourceLength];
         //will be filled in SegmentationCloudClass Arrays.fill(cloudIdArray, ....);
         final int[] cloudIDArray = new int[sourceLength];
-        final int[] cloudShadowIDArray = new int[sourceLength];
-        final int[] cloudLongShadowIDArray = new int[sourceLength];
 
         final float[] sunZenith = getSamples(sourceSunZenith, sourceRectangle);
         final float[] sunAzimuth = getSamples(sourceSunAzimuth, sourceRectangle);
@@ -293,7 +293,8 @@ public class S2IdepixCloudShadowOp extends Operator {
                     sourceLongitudes, altitude, flagArray);
         }
 
-        int numClouds = SegmentationCloud.computeCloudID(sourceWidth, sourceHeight, flagArray, cloudIDArray);
+        final CloudIdentifier cloudIdentifier = new CloudIdentifier(flagArray);
+        int numClouds = cloudIdentifier.computeCloudID(sourceWidth, sourceHeight, cloudIDArray);
 
         //todo assessment of the order of processing steps
             /*double solarFluxNir = sourceBandHazeNir.getSolarFlux();
@@ -307,23 +308,23 @@ public class S2IdepixCloudShadowOp extends Operator {
                     solarFluxNir);   */
 
         if (numClouds > 0) {
-            int[][] cloudShadowIdBorderRectangle = PotentialCloudShadowAreaIdentifier.identifyPotentialCloudShadows(
-                    s2ClassifProduct.getSceneRasterHeight(), s2ClassifProduct.getSceneRasterWidth(), sourceRectangle,
-                    targetRectangle, sunZenith, sunAzimuth, sourceLatitudes, sourceLongitudes, altitude, flagArray,
-                    cloudIDArray, cloudShadowIDArray, numClouds);
+            final Collection<List<Integer>> potentialShadowPositions =
+                    PotentialCloudShadowAreaIdentifier.identifyPotentialCloudShadows(
+                            s2ClassifProduct.getSceneRasterHeight(), s2ClassifProduct.getSceneRasterWidth(),
+                            sourceRectangle, targetRectangle, sunZenith, sunAzimuth, sourceLatitudes, sourceLongitudes,
+                            altitude, flagArray, cloudIDArray);
             final CloudShadowIDAnalyzer cloudShadowIDAnalyzer = new CloudShadowIDAnalyzer();
-            cloudShadowIDAnalyzer.identifyCloudShadowAreas(s2ClassifProduct, sourceRectangle, clusterData, flagArray,
-                                                           cloudShadowIDArray, cloudLongShadowIDArray,
-                                                           cloudShadowIdBorderRectangle, numClouds, analysisMode);
-            fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
+            cloudShadowIDAnalyzer.identifyCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
         }
+        fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
     }
 
     private void attachFlagCoding(Band targetBandCloudShadow) {
         FlagCoding cloudCoding = new FlagCoding("cloudCoding");
-        cloudCoding.addFlag("water", BitSetter.setFlag(0, F_WATER), F_WATER_DESCR_TEXT);;
+        cloudCoding.addFlag("water", BitSetter.setFlag(0, F_WATER), F_WATER_DESCR_TEXT);
+        ;
         cloudCoding.addFlag("land", BitSetter.setFlag(0, F_LAND), F_LAND_DESCR_TEXT);
-        cloudCoding.addFlag("cloud",BitSetter.setFlag(0, F_CLOUD), F_CLOUD_DESCR_TEXT);
+        cloudCoding.addFlag("cloud", BitSetter.setFlag(0, F_CLOUD), F_CLOUD_DESCR_TEXT);
         cloudCoding.addFlag("pot_haze", BitSetter.setFlag(0, F_HAZE), F_HAZE_DESCR_TEXT);
         cloudCoding.addFlag("cloudShadow", BitSetter.setFlag(0, F_CLOUD_SHADOW), F_CLOUD_SHADOW_DESCR_TEXT);
         cloudCoding.addFlag("mountain_shadow", BitSetter.setFlag(0, F_MOUNTAIN_SHADOW), F_MOUNTAIN_SHADOW_DESCR_TEXT);
