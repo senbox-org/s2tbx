@@ -34,8 +34,8 @@ class CloudShadowUtils {
         double y1 = y0 + deltaProjY + 0.5;
         double minX = Math.max(0, sourceRectangle.getX());
         double minY = Math.max(0, sourceRectangle.getY());
-        double maxX = Math.min(productWidth, sourceRectangle.getX() + sourceRectangle.getWidth() - 1);
-        double maxY = Math.min(productHeight, sourceRectangle.getY() + sourceRectangle.getHeight() - 1);
+        double maxX = Math.min(productWidth - 1, sourceRectangle.getX() + sourceRectangle.getWidth() - 1);
+        double maxY = Math.min(productHeight -1, sourceRectangle.getY() + sourceRectangle.getHeight() - 1);
         if (sinSaa + QUARTER_DIVIDER < 1e-8) {
             //upper border
             if (y1 < minY) { //intersection exists
