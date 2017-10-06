@@ -129,7 +129,7 @@ import java.util.OptionalDouble;
         authors = "Marco Zühlke, Marco Peters, Ralf Quast, Norman Fomferra, Razvan Dumitrascu",
         copyright = "(c) 2009 by Brockmann Consult, 2017 by CS Romania",
         description = "Reprojection of a source product to a target Coordinate Reference System.",
-        internal = false)
+        internal = true)
 @SuppressWarnings({"UnusedDeclaration"})
 
 public final class S2tbxReprojectionOp extends Operator {
