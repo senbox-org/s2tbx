@@ -16,7 +16,6 @@ public class ForestCoverChangeConstants {
     public static final float CONFIDENCE_LEVEL_90 = 0.9f;
     public static final float CONFIDENCE_LEVEL_95 = 0.95f;
     public static final float CONFIDENCE_LEVEL_99 = 0.99f;
-    public static final double DEGREES_OF_FREEDOM = 2.8;
     public static final float MINIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND = 630.0f;
     public static final float MAXIMUM_SPECTRAL_WAVE_LENGTH_RED_BAND = 690.0f;
     public static final float MINIMUM_SPECTRAL_WAVE_LENGTH_NIR_BAND = 760.0f;
