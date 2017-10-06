@@ -9,15 +9,15 @@ import java.util.List;
  * @author Tonio Fincke
  * @author Michael Paperin
  */
-class CloudShadowIDAnalyzer {
+class CloudShadowIDFlagger {
 
     private int[] flagArray;
 
     static int clusterCount = S2IdepixCloudShadowOp.clusterCountDefine;
     static final int maxIterCount = 30;
 
-    void identifyCloudShadowAreas(float[][] sourceBands, int[] flagArray,
-                                  Collection<List<Integer>> potentialShadowPositions, Mode mode) {
+    void flagCloudShadowAreas(float[][] sourceBands, int[] flagArray, Collection<List<Integer>> potentialShadowPositions,
+                              Mode mode) {
 
         this.flagArray = flagArray;
 

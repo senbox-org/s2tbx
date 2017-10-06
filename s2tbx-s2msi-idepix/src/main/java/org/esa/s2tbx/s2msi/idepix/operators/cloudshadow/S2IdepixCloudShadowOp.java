@@ -313,8 +313,8 @@ public class S2IdepixCloudShadowOp extends Operator {
                             s2ClassifProduct.getSceneRasterHeight(), s2ClassifProduct.getSceneRasterWidth(),
                             sourceRectangle, targetRectangle, sunZenith, sunAzimuth, sourceLatitudes, sourceLongitudes,
                             altitude, flagArray, cloudIDArray);
-            final CloudShadowIDAnalyzer cloudShadowIDAnalyzer = new CloudShadowIDAnalyzer();
-            cloudShadowIDAnalyzer.identifyCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
+            final CloudShadowIDFlagger cloudShadowIDFlagger = new CloudShadowIDFlagger();
+            cloudShadowIDFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
         }
         fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
     }
