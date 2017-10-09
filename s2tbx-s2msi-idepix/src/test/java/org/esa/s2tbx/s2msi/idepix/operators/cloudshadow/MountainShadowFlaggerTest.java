@@ -127,8 +127,15 @@ public class MountainShadowFlaggerTest {
         final float[] longitude = createSmoothGrid(-7.945212f, -7.932560f, -7.945334f, -7.932683f, 20, 20);
         final float[] elevation = createConicalGrid(5000, 20, 20);
         int[] flagArray = new int[20 * 20];
+        final int sourceWidth = sourceRectangle.width;
+        final int sourceHeight = sourceRectangle.height;
+        int xCenter = targetRectangle.x - sourceRectangle.x + (targetRectangle.width / 2);
+        int yCenter = targetRectangle.y - sourceRectangle.y + (targetRectangle.height / 2);
+        int sourceCenterIndex = yCenter * sourceWidth + xCenter;
+        float sunZenithDegree = sunZenith[sourceCenterIndex];
+        final float sunAzimuthDegree = sunAzimuth[sourceCenterIndex];
         MountainShadowFlagger.flagMountainShadowArea(20, 20, sourceRectangle, targetRectangle,
-                                                     sunZenith, sunAzimuth,
+                                                     sunZenithDegree, sunAzimuthDegree,
                                                      latitude, longitude, elevation, flagArray);
         assertArrayEquals(expectedFlagArray, flagArray);
     }

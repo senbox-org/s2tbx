@@ -18,26 +18,21 @@ class MountainShadowFlagger {
 
     static void flagMountainShadowArea(int productWidth, int productHeight,
                                        Rectangle sourceRectangle, Rectangle targetRectangle,
-                                       float[] sourceSunZenith, float[] sourceSunAzimuth,
+                                       float sourceSunZenith, float sourceSunAzimuth,
                                        float[] sourceLatitude, float[] sourceLongitude, float[] sourceAltitude,
                                        int[] flagArray) {
         final int sourceWidth = sourceRectangle.width;
         final int sourceHeight = sourceRectangle.height;
-        int xCenter = targetRectangle.x - sourceRectangle.x + (targetRectangle.width / 2);
-        int yCenter = targetRectangle.y - sourceRectangle.y + (targetRectangle.height / 2);
-        int sourceCenterIndex = yCenter * sourceWidth + xCenter;
 
-        double sunZenithDegree = sourceSunZenith[sourceCenterIndex];
         double sunZenithIntermediate;
         if (SHADOW_ADAPTER_SZA) {
-            sunZenithIntermediate = sunZenithDegree * (2. * Math.pow(((90. - sunZenithDegree) / 90), 3) + 1.);
+            sunZenithIntermediate = (double) sourceSunZenith * (2. * Math.pow(((90. - (double) sourceSunZenith) / 90), 3) + 1.);
         } else {
-            sunZenithIntermediate = sunZenithDegree;
+            sunZenithIntermediate = (double) sourceSunZenith;
         }
         double sunZenithRad = Math.min(89.0, sunZenithIntermediate) * MathUtils.DTOR;
 
-        final float sunAzimuth = sourceSunAzimuth[sourceCenterIndex];
-        double sunAzimuthRad = sunAzimuth * MathUtils.DTOR;
+        double sunAzimuthRad = sourceSunAzimuth * MathUtils.DTOR;
 
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(sourceAltitude));
         float maxAltitude = Collections.max(altitudes);
@@ -56,7 +51,7 @@ class MountainShadowFlagger {
         int yLimit = yOffset + height;
         int max = width + height - 1;
         int i = 0;
-        if (sunAzimuth < 90) {
+        if (sourceSunAzimuth < 90) {
             while (i < max) {
                 int x = xOffset + Math.min(i, width - 1);
                 int y = yLimit + Math.min(-1, height - 2 - i);
@@ -68,7 +63,7 @@ class MountainShadowFlagger {
                 }
                 i++;
             }
-        } else if (sunAzimuth < 180) {
+        } else if (sourceSunAzimuth < 180) {
             while (i < max) {
                 int x = xOffset + Math.min(i, width - 1);
                 int y = yOffset + Math.max(0, i - height + 1);
@@ -80,7 +75,7 @@ class MountainShadowFlagger {
                 }
                 i++;
             }
-        } else if (sunAzimuth < 270) {
+        } else if (sourceSunAzimuth < 270) {
             while (i < max) {
                 int x = xOffset + Math.max(0, width - 1 - i);
                 int y = yOffset + Math.max(0, i - height + 1);

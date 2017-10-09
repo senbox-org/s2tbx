@@ -21,31 +21,41 @@ class PotentialCloudShadowAreaIdentifier {
     private static final double MAXCLOUD_TOP = S2IdepixCloudShadowOp.maxcloudTop;
 
     static Collection<List<Integer>> identifyPotentialCloudShadows(int productHeight, int productWidth, Rectangle sourceRectangle,
-                                                                     Rectangle targetRectangle, float[] sourceSunZenith,
-                                                                     float[] sourceSunAzimuth, float[] sourceLatitude,
-                                                                     float[] sourceLongitude, float[] sourceAltitude,
-                                                                     int[] flagArray, int[] cloudIDArray) {
+                                                                   Rectangle targetRectangle, float[] sourceSunZenith,
+                                                                   float[] sourceSunAzimuth, float[] sourceLatitude,
+                                                                   float[] sourceLongitude, float[] sourceAltitude,
+                                                                   int[] flagArray, int[] cloudIDArray) {
         int x0SourceCenter = sourceRectangle.width / 2;
         int y0SourceCenter = sourceRectangle.height / 2;
         int sourceCenterIndex = y0SourceCenter * sourceRectangle.width + x0SourceCenter;
 
         final float sunAzimuth = sourceSunAzimuth[sourceCenterIndex];
         double sunAzimuthRad = sunAzimuth * MathUtils.DTOR;
-        double sunZenithDegree = sourceSunZenith[sourceCenterIndex];
-
+        float sunZenithDegree = sourceSunZenith[sourceCenterIndex];
+        double sunZenithCloudRad = sunZenithDegree * MathUtils.DTOR;
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(sourceAltitude));
         float minAltitude = Collections.min(altitudes);
-
-        double sunZenithCloudRad = sunZenithDegree * MathUtils.DTOR;
         Point2D[] cloudPath = CloudShadowUtils.getRelativePath(minAltitude, sunZenithCloudRad, sunAzimuthRad,
                                                                MAXCLOUD_TOP, sourceRectangle, targetRectangle,
                                                                productHeight, productWidth,
                                                                S2IdepixCloudShadowOp.spatialResolution, true, false);
+        return identifyPotentialCloudShadows(sourceRectangle, targetRectangle, sunZenithDegree, sunAzimuth,
+                                             sourceLatitude, sourceLongitude, sourceAltitude, flagArray, cloudIDArray,
+                                             cloudPath);
+    }
+
+    static Collection<List<Integer>> identifyPotentialCloudShadows(Rectangle sourceRectangle,
+                                                                   Rectangle targetRectangle, float sourceSunZenith,
+                                                                   float sourceSunAzimuth, float[] sourceLatitude,
+                                                                   float[] sourceLongitude, float[] sourceAltitude,
+                                                                   int[] flagArray, int[] cloudIDArray,
+                                                                   Point2D[] cloudPath) {
+        double sunZenithCloudRad = (double) sourceSunZenith * MathUtils.DTOR;
         final Map<Integer, List<Integer>> indexToPositions = new HashMap<>();
         int i = 0;
         int sourceWidth = sourceRectangle.width;
         int sourceHeight = sourceRectangle.height;
-        if (sunAzimuth < 90) {
+        if (sourceSunAzimuth < 90) {
             //start at upper right
             int xOffset = targetRectangle.x - sourceRectangle.x;
             int xLimit = sourceRectangle.x + sourceWidth - targetRectangle.x;
@@ -63,7 +73,7 @@ class PotentialCloudShadowAreaIdentifier {
                 }
                 i++;
             }
-        } else if (sunAzimuth < 180) {
+        } else if (sourceSunAzimuth < 180) {
             //start at lower right
             int xOffset = targetRectangle.x - sourceRectangle.x;
             int yOffset = targetRectangle.y - sourceRectangle.y;
@@ -82,7 +92,7 @@ class PotentialCloudShadowAreaIdentifier {
                 }
                 i++;
             }
-        } else if (sunAzimuth < 270) {
+        } else if (sourceSunAzimuth < 270) {
             //start at lower left
             int yOffset = targetRectangle.y - sourceRectangle.y;
             int xLimit = targetRectangle.x - sourceRectangle.x + targetRectangle.width;

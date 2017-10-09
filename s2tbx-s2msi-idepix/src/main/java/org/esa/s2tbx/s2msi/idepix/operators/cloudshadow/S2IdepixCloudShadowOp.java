@@ -1,6 +1,7 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.apache.commons.lang.ArrayUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.FlagCoding;
@@ -19,13 +20,17 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.BitSetter;
 import org.esa.snap.core.util.ProductUtils;
+import org.esa.snap.core.util.math.MathUtils;
 import org.opengis.referencing.operation.MathTransform;
 
 import javax.media.jai.BorderExtenderConstant;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -74,11 +79,9 @@ public class S2IdepixCloudShadowOp extends Operator {
     static int mincloudBase = 100;
     static int maxcloudTop = 10000;
     static double spatialResolution;  //[m]
-    static int SENSOR_BAND_CLUSTERING = 2;
     static int clusterCountDefine = 4;
     static double OUTLIER_THRESHOLD = 0.94;
     static double Threshold_Whiteness_Darkness = -1000;
-    static int CloudShadowFragmentationThreshold = 500000;
     static int GROWING_CLOUD = 1;
     static int searchBorderRadius;
     private static final String sourceBandNameClusterA = "B8A";
@@ -237,19 +240,41 @@ public class S2IdepixCloudShadowOp extends Operator {
         return tile.getSamplesFloat();
     }
 
-    private Rectangle getSourceRectangle(Rectangle targetRectangle, int verticalExtension, int horizontalExtension) {
+    private Rectangle getSourceRectangle(Rectangle targetRectangle, Point2D[] relativePath) {
         final int productWidth = getSourceProduct().getSceneRasterWidth();
         final int productHeight = getSourceProduct().getSceneRasterHeight();
-        int x0 = Math.max(0, targetRectangle.x - horizontalExtension);
-        int y0 = Math.max(0, targetRectangle.y - verticalExtension);
-        int x1 = Math.min(productWidth, targetRectangle.x + targetRectangle.width + horizontalExtension);
-        int y1 = Math.min(productHeight, targetRectangle.y + targetRectangle.height + verticalExtension);
+        int x0 = Math.max(0, targetRectangle.x + (int) relativePath[relativePath.length - 1].getX());
+        int y0 = Math.max(0, targetRectangle.y + (int) relativePath[relativePath.length - 1].getY());
+        int x1 = Math.min(productWidth, targetRectangle.x + targetRectangle.width -
+                (int) relativePath[relativePath.length - 1].getX());
+        int y1 = Math.min(productHeight, targetRectangle.y + targetRectangle.height -
+                (int) relativePath[relativePath.length - 1].getY());
         return new Rectangle(x0, y0, x1 - x0, y1 - y0);
+    }
+
+    private static float mean(float[] values) {
+        float mean = 0f;
+        for (float value : values) {
+            mean += value;
+        }
+        return mean / values.length;
     }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
-        final Rectangle sourceRectangle = getSourceRectangle(targetRectangle, searchBorderRadius, searchBorderRadius);
+
+        final float sunZenithMean = mean(getSamples(sourceSunZenith, targetRectangle));
+        final float sunAzimuththMean = mean(getSamples(sourceSunAzimuth, targetRectangle));
+        final float[] targetAltitude = getSamples(sourceAltitude, targetRectangle);
+
+        final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(targetAltitude));
+        float minAltitude = Collections.min(altitudes);
+        final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
+                minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuththMean * MathUtils.DTOR, maxcloudTop,
+                targetRectangle, targetRectangle, getSourceProduct().getSceneRasterHeight(),
+                getSourceProduct().getSceneRasterWidth(), spatialResolution, true, false);
+        final Rectangle sourceRectangle = getSourceRectangle(targetRectangle, cloudShadowRelativePath);
+
         int sourceWidth = sourceRectangle.width;
         int sourceHeight = sourceRectangle.height;
         int sourceLength = sourceRectangle.width * sourceRectangle.height;
@@ -260,8 +285,6 @@ public class S2IdepixCloudShadowOp extends Operator {
         //will be filled in SegmentationCloudClass Arrays.fill(cloudIdArray, ....);
         final int[] cloudIDArray = new int[sourceLength];
 
-        final float[] sunZenith = getSamples(sourceSunZenith, sourceRectangle);
-        final float[] sunAzimuth = getSamples(sourceSunAzimuth, sourceRectangle);
         final float[] altitude = getSamples(sourceAltitude, sourceRectangle);
         final float[][] clusterData = {getSamples(sourceBandClusterA, sourceRectangle),
                 getSamples(sourceBandClusterB, sourceRectangle)};
@@ -289,7 +312,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         if (computeMountainShadow) {
             MountainShadowFlagger.flagMountainShadowArea(
                     s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight(),
-                    sourceRectangle, targetRectangle, sunZenith, sunAzimuth, sourceLatitudes,
+                    sourceRectangle, targetRectangle, sunZenithMean, sunAzimuththMean, sourceLatitudes,
                     sourceLongitudes, altitude, flagArray);
         }
 
@@ -310,14 +333,32 @@ public class S2IdepixCloudShadowOp extends Operator {
         if (numClouds > 0) {
             final Collection<List<Integer>> potentialShadowPositions =
                     PotentialCloudShadowAreaIdentifier.identifyPotentialCloudShadows(
-                            s2ClassifProduct.getSceneRasterHeight(), s2ClassifProduct.getSceneRasterWidth(),
-                            sourceRectangle, targetRectangle, sunZenith, sunAzimuth, sourceLatitudes, sourceLongitudes,
-                            altitude, flagArray, cloudIDArray);
+                            sourceRectangle, targetRectangle, sunZenithMean, sunAzimuththMean, sourceLatitudes, sourceLongitudes,
+                            altitude, flagArray, cloudIDArray, cloudShadowRelativePath);
             final CloudShadowIDFlagger cloudShadowIDFlagger = new CloudShadowIDFlagger();
             cloudShadowIDFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
+//            final CloudShadowFlagger cloudShadowFlagger = new CloudShadowFlagger();
+//            cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
         }
         fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
     }
+
+//    private static float[] nonCloudMeans(float[][] clusterData, int[] flagArray) {
+//        float[] means = new float[clusterData.length];
+//        int validCounter = 0;
+//        for (int i = 0; i < clusterData[0].length; i++) {
+//            if ((flagArray[i] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) {
+//                for (int j = 0; j < clusterData.length; j++) {
+//                    means[j] += clusterData[j][i];
+//                }
+//                validCounter++;
+//            }
+//        }
+//        for (int j = 0; j < clusterData.length; j++) {
+//            means[j] /= validCounter;
+//        }
+//        return means;
+//    }
 
     private void attachFlagCoding(Band targetBandCloudShadow) {
         FlagCoding cloudCoding = new FlagCoding("cloudCoding");
