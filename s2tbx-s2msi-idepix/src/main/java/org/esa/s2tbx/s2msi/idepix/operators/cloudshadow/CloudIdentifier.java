@@ -25,6 +25,7 @@ class CloudIdentifier {
         //first pixel
         if (isCloud(0)) {
             cloudIdArray[0] = ++id;
+            idToOffset.put(id, 0);
         }
 
         // first row
