@@ -15,6 +15,7 @@ class PreparationMaskBand {
     static final int CLOUD_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD)+ 0.1);
     static final int LAND_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_LAND)+ 0.1);
     static final int WATER_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_WATER) + 0.1);
+    static final int CLOUD_BUFFER_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD_BUFFER) + 0.1);
 
     static void prepareMaskBand(int productWidth, int productHeight, Rectangle tileSourceRectangle, int[] flagArray,
                                        FlagDetector flagDetector) {
@@ -63,6 +64,7 @@ class PreparationMaskBand {
                             temp = index + iw + jw * sourceWidth;
                             if (!((flagArray[temp] & CLOUD_FLAG) == CLOUD_FLAG)) {
                                 preparedArray[temp] = flagArray[temp] + CLOUD_FLAG;
+                                preparedArray[temp] = flagArray[temp] + CLOUD_BUFFER_FLAG;
                             }
                         }
                     }

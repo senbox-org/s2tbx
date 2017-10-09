@@ -129,20 +129,21 @@ public class S2IdepixPostProcessOp extends Operator {
         }
 
         if (computeCloudShadow) {
-            final Tile cloudShadowFlagTile = getSourceTile(cloudShadowFlagBand, targetRectangle);
+            final Tile flagTile = getSourceTile(cloudShadowFlagBand, targetRectangle);
             int cloudShadowFlag = (int) Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD_SHADOW);
             int mountainShadowFlag = (int) Math.pow(2, S2IdepixCloudShadowOp.F_MOUNTAIN_SHADOW);
+            int cloudBufferFlag = (int) Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD_BUFFER);
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
                 checkForCancellation();
                 for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
-                    final int cloudShadowFlagValue = cloudShadowFlagTile.getSampleInt(x, y);
-                    if ((cloudShadowFlagValue & cloudShadowFlag) == cloudShadowFlag) {
+                    final int flagValue = flagTile.getSampleInt(x, y);
+                    if ((flagValue & cloudShadowFlag) == cloudShadowFlag) {
                         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, true);
+                    } else if ((flagValue & cloudBufferFlag) == cloudBufferFlag) {
+                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_BUFFER, true);
                     }
-                    if (computeMountainShadow) {
-                        if ((cloudShadowFlagValue & mountainShadowFlag) == mountainShadowFlag) {
-                            targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW, true);
-                        }
+                    if (computeMountainShadow && (flagValue & mountainShadowFlag) == mountainShadowFlag) {
+                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW, true);
                     }
                 }
             }

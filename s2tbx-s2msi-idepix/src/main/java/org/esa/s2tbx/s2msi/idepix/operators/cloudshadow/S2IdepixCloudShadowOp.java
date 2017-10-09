@@ -108,6 +108,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     public static final int F_CLOUD_SHADOW = 4;
     public static final int F_MOUNTAIN_SHADOW = 5;
     public static final int F_INVALID = 6;
+    public static final int F_CLOUD_BUFFER = 6;
 
     @Override
     public void initialize() throws OperatorException {
@@ -264,13 +265,13 @@ public class S2IdepixCloudShadowOp extends Operator {
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
 
         final float sunZenithMean = mean(getSamples(sourceSunZenith, targetRectangle));
-        final float sunAzimuththMean = mean(getSamples(sourceSunAzimuth, targetRectangle));
+        final float sunAzimuthMean = mean(getSamples(sourceSunAzimuth, targetRectangle));
         final float[] targetAltitude = getSamples(sourceAltitude, targetRectangle);
 
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(targetAltitude));
         float minAltitude = Collections.min(altitudes);
         final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
-                minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuththMean * MathUtils.DTOR, maxcloudTop,
+                minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, maxcloudTop,
                 targetRectangle, targetRectangle, getSourceProduct().getSceneRasterHeight(),
                 getSourceProduct().getSceneRasterWidth(), spatialResolution, true, false);
         final Rectangle sourceRectangle = getSourceRectangle(targetRectangle, cloudShadowRelativePath);
@@ -312,7 +313,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         if (computeMountainShadow) {
             MountainShadowFlagger.flagMountainShadowArea(
                     s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight(),
-                    sourceRectangle, targetRectangle, sunZenithMean, sunAzimuththMean, sourceLatitudes,
+                    sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, sourceLatitudes,
                     sourceLongitudes, altitude, flagArray);
         }
 
@@ -333,7 +334,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         if (numClouds > 0) {
             final Collection<List<Integer>> potentialShadowPositions =
                     PotentialCloudShadowAreaIdentifier.identifyPotentialCloudShadows(
-                            sourceRectangle, targetRectangle, sunZenithMean, sunAzimuththMean, sourceLatitudes, sourceLongitudes,
+                            sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, sourceLatitudes, sourceLongitudes,
                             altitude, flagArray, cloudIDArray, cloudShadowRelativePath);
             final CloudShadowIDFlagger cloudShadowIDFlagger = new CloudShadowIDFlagger();
             cloudShadowIDFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
