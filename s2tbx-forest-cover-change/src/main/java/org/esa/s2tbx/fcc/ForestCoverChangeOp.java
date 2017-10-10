@@ -7,6 +7,8 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.s2tbx.fcc.common.BandsExtractorOp;
+import org.esa.s2tbx.fcc.common.ReadMaskTilesComputing;
+import org.esa.s2tbx.fcc.common.WriteMaskTilesComputing;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.fcc.trimming.ColorFillerTilesComputing;
@@ -24,6 +26,7 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.ImageInfo;
 import org.esa.snap.core.datamodel.IndexCoding;
+import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -145,12 +148,10 @@ public class ForestCoverChangeOp extends Operator {
         }
 
         this.currentProductBandsNames = findBandNames(this.currentSourceProduct);
-        this.previousProductBandsNames = findBandNames(this.previousSourceProduct);
 
         int sceneWidth = this.currentSourceProduct.getSceneRasterWidth();
         int sceneHeight = this.currentSourceProduct.getSceneRasterHeight();
         Dimension tileSize = JAI.getDefaultTileSize();
-
         this.targetProduct = new Product("ForestCoverChange", this.currentSourceProduct.getProductType(), sceneWidth, sceneHeight);
         this.targetProduct.setPreferredTileSize(tileSize);
         ProductUtils.copyGeoCoding(this.currentSourceProduct, this.targetProduct);
@@ -215,14 +216,16 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private ProductData computeFinalProductData(Path temporaryFolder) throws Exception {
-        Path currentSourceSegmentationTilesFolder = extractBands(this.currentSourceProduct, this.currentProductBandsNames, temporaryFolder);
+        FolderPathsResults currentResult = extractBands(this.currentSourceProduct, this.currentProductBandsNames, temporaryFolder);
+        Path currentSourceSegmentationTilesFolder = currentResult.getTemporaryBandsFolder();
+        Dimension tileSize = getPreferredTileSize();
         try {
-            Path previousSourceSegmentationTilesFolder = extractBands(this.previousSourceProduct, this.previousProductBandsNames, temporaryFolder);
+            FolderPathsResults previousResult = extractBands(this.previousSourceProduct, this.previousProductBandsNames, temporaryFolder);
+            Path previousSourceSegmentationTilesFolder = previousResult.getTemporaryBandsFolder();
             try {
                 IntMatrix colorFillerMatrix = computeColorFillerMatrix(temporaryFolder, currentSourceSegmentationTilesFolder, previousSourceSegmentationTilesFolder);
 
                 int[] sourceBandIndices = new int[] {0, 1, 2};
-                Dimension tileSize = getPreferredTileSize();
 
                 int movingWindowWidth = 1000;//tileSize.width;
                 int movingWindowHeight = 1000;//tileSize.height;
@@ -246,6 +249,23 @@ public class ForestCoverChangeOp extends Operator {
                 WeakReference<IntMatrix> referenceProductColorFill = new WeakReference<IntMatrix>(colorFillerMatrix);
                 referenceProductColorFill.clear();
 
+                int imageWidth = this.targetProduct.getSceneRasterWidth();
+                int imageHeight = this.targetProduct.getSceneRasterHeight();
+
+                ReadMaskTilesComputing readMaskTilesComputingCurrent = new ReadMaskTilesComputing(imageWidth, imageHeight,
+                        tileSize.width, tileSize.height, currentResult.getTemporaryMaskFolder());
+                ProductData currentMaskProductData = readMaskTilesComputingCurrent.runTilesInParallel(this.threadCount, this.threadPool);
+                final Mask currentMask = new Mask("currentProductCloudMask", imageWidth, imageHeight, Mask.BandMathsType.INSTANCE);
+                currentMask.setData(currentMaskProductData);
+                this.targetProduct.addMask(currentMask);
+
+                ReadMaskTilesComputing readMaskTilesComputingPrevious = new ReadMaskTilesComputing(imageWidth, imageHeight,
+                        tileSize.width, tileSize.height, previousResult.getTemporaryMaskFolder());
+                ProductData previousMaskProductData = readMaskTilesComputingPrevious.runTilesInParallel(this.threadCount, this.threadPool);
+                final Mask previousMask = new Mask("previousProductCloudMask", imageWidth, imageHeight, Mask.BandMathsType.INSTANCE);
+                previousMask.setData(previousMaskProductData);
+                this.targetProduct.addMask(previousMask);
+
                 return productData;
             } finally {
                 FileUtils.deleteTree(previousSourceSegmentationTilesFolder.toFile());
@@ -253,6 +273,8 @@ public class ForestCoverChangeOp extends Operator {
         } finally {
             FileUtils.deleteTree(currentSourceSegmentationTilesFolder.toFile());
         }
+
+
     }
 
     private IntSet computeMovingTrimming(IntMatrix colorFillerMatrix, Dimension movingWindowSize, Dimension movingStepSize, Dimension tileSize,
@@ -347,7 +369,7 @@ public class ForestCoverChangeOp extends Operator {
         return landCoverProduct;
     }
 
-    private Path extractBands(Product sourceProduct, String[] sourceBandNames, Path temporaryFolderPath) throws Exception {
+    private FolderPathsResults extractBands(Product sourceProduct, String[] sourceBandNames, Path temporaryFolderPath) throws Exception {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Extract "+sourceBandNames.length+" bands for source product '" + sourceProduct.getName()+"'");
@@ -361,13 +383,17 @@ public class ForestCoverChangeOp extends Operator {
         WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampleProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryFolderPath);
         Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
+        Mask mask = resampleProduct.getMaskGroup().get("opaque_clouds_20m");
+        WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(mask, tileSize.width, tileSize.height, temporaryFolderPath);
+        Path temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+
         // reset the references
         WeakReference<Product> referenceExtractedProduct = new WeakReference<Product>(extractedProduct);
         referenceExtractedProduct.clear();
         WeakReference<Product> referenceResampleProduct = new WeakReference<Product>(resampleProduct);
         referenceResampleProduct.clear();
 
-        return temporaryFolder;
+        return new FolderPathsResults(temporaryFolder, temporaryMaskFolder);
     }
 
     private static Product resampleAllBands(Product sourceProduct) {
@@ -478,6 +504,25 @@ public class ForestCoverChangeOp extends Operator {
             throw new OperatorException(message);
         }
         return bestBand;
+    }
+
+    private static class FolderPathsResults {
+
+        private final Path temporaryBandsFolder;
+        private final Path temporaryMaskFolder;
+
+        FolderPathsResults(Path temporaryBandsFolder, Path temporaryMaskFolder) {
+            this.temporaryBandsFolder = temporaryBandsFolder;
+            this.temporaryMaskFolder = temporaryMaskFolder;
+        }
+
+        public Path getTemporaryBandsFolder() {
+            return temporaryBandsFolder;
+        }
+
+        public Path getTemporaryMaskFolder() {
+            return temporaryMaskFolder;
+        }
     }
 
     public static class Spi extends OperatorSpi {
