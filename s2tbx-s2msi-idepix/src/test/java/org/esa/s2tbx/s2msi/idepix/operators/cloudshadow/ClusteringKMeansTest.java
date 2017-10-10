@@ -52,9 +52,7 @@ public class ClusteringKMeansTest {
 
     @Test
     public void computedKMeansCluster_singleBand() throws Exception {
-        S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING = 1;
-
-        final double[][] doubles = clusteringKMeans.computedKMeansCluster(band1Values);
+        final double[][] doubles = clusteringKMeans.computedKMeansCluster(3, band1Values);
 
         double[] expectedDoubles = new double[]{0.027628395223507175, 0.26682499796152115, 0.1585571425301688};
 
@@ -65,9 +63,7 @@ public class ClusteringKMeansTest {
 
     @Test
     public void computedKMeansCluster_multiBand() throws Exception {
-        S2IdepixCloudShadowOp.SENSOR_BAND_CLUSTERING = 2;
-
-        final double[][] doubles = clusteringKMeans.computedKMeansCluster(band1Values, band2Values);
+        final double[][] doubles = clusteringKMeans.computedKMeansCluster(3, band1Values, band2Values);
 
         final double[][] expectedDoubles = new double[][]{{0.030700000090291724, 0.09508749999999999},
                 {0.24001764549928553, 0.08908823529411765}, {0.0265578951098417, 0.19064210526315792}};

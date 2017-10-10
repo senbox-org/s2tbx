@@ -336,30 +336,11 @@ public class S2IdepixCloudShadowOp extends Operator {
                     PotentialCloudShadowAreaIdentifier.identifyPotentialCloudShadows(
                             sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, sourceLatitudes, sourceLongitudes,
                             altitude, flagArray, cloudIDArray, cloudShadowRelativePath);
-            final CloudShadowIDFlagger cloudShadowIDFlagger = new CloudShadowIDFlagger();
-            cloudShadowIDFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
-//            final CloudShadowFlagger cloudShadowFlagger = new CloudShadowFlagger();
-//            cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
+            final CloudShadowFlagger cloudShadowFlagger = new CloudShadowFlagger();
+            cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
         }
         fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
     }
-
-//    private static float[] nonCloudMeans(float[][] clusterData, int[] flagArray) {
-//        float[] means = new float[clusterData.length];
-//        int validCounter = 0;
-//        for (int i = 0; i < clusterData[0].length; i++) {
-//            if ((flagArray[i] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) {
-//                for (int j = 0; j < clusterData.length; j++) {
-//                    means[j] += clusterData[j][i];
-//                }
-//                validCounter++;
-//            }
-//        }
-//        for (int j = 0; j < clusterData.length; j++) {
-//            means[j] /= validCounter;
-//        }
-//        return means;
-//    }
 
     private void attachFlagCoding(Band targetBandCloudShadow) {
         FlagCoding cloudCoding = new FlagCoding("cloudCoding");
