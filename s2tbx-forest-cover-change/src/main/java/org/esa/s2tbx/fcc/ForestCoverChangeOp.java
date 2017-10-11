@@ -252,22 +252,13 @@ public class ForestCoverChangeOp extends Operator {
                 WeakReference<IntMatrix> referenceProductColorFill = new WeakReference<IntMatrix>(colorFillerMatrix);
                 referenceProductColorFill.clear();
 
-                int imageWidth = this.targetProduct.getSceneRasterWidth();
-                int imageHeight = this.targetProduct.getSceneRasterHeight();
+                if (currentResult.getTemporaryMaskFolder() != null) {
+                    addMask(previousResult.getTemporaryMaskFolder(), tileSize, this.currentSourceProduct, "currentProductCloudMask");
+                }
 
-                ReadMaskTilesComputing readMaskTilesComputingCurrent = new ReadMaskTilesComputing(imageWidth, imageHeight,
-                        tileSize.width, tileSize.height, currentResult.getTemporaryMaskFolder());
-                ProductData currentMaskProductData = readMaskTilesComputingCurrent.runTilesInParallel(this.threadCount, this.threadPool);
-                final Mask currentMask = new Mask("currentProductCloudMask", imageWidth, imageHeight, Mask.VectorDataType.INSTANCE);
-                currentMask.setData(currentMaskProductData);
-                this.targetProduct.addMask(currentMask);
-
-                ReadMaskTilesComputing readMaskTilesComputingPrevious = new ReadMaskTilesComputing(imageWidth, imageHeight,
-                        tileSize.width, tileSize.height, previousResult.getTemporaryMaskFolder());
-                ProductData previousMaskProductData = readMaskTilesComputingPrevious.runTilesInParallel(this.threadCount, this.threadPool);
-                final Mask previousMask = new Mask("previousProductCloudMask", imageWidth, imageHeight, Mask.VectorDataType.INSTANCE);
-                previousMask.setData(previousMaskProductData);
-                this.targetProduct.addMask(previousMask);
+                if (previousResult.getTemporaryMaskFolder() != null) {
+                    addMask(previousResult.getTemporaryMaskFolder(), tileSize, this.previousSourceProduct, "previousProductCloudMask");
+                }
 
                 return productData;
             } finally {
@@ -276,8 +267,22 @@ public class ForestCoverChangeOp extends Operator {
         } finally {
             FileUtils.deleteTree(currentSourceSegmentationTilesFolder.toFile());
         }
+    }
 
+    private void addMask(Path temporaryFolder, Dimension tileSize, Product sourceProduct, String maskName) throws Exception {
+        int imageWidth = this.targetProduct.getSceneRasterWidth();
+        int imageHeight = this.targetProduct.getSceneRasterHeight();
+        ReadMaskTilesComputing readMaskTilesComputingPrevious = new ReadMaskTilesComputing(imageWidth, imageHeight,
+                        tileSize.width, tileSize.height, temporaryFolder);
+        ProductData previousMaskProductData = readMaskTilesComputingPrevious.runTilesInParallel(this.threadCount, this.threadPool);
 
+        Mask sourceMask = sourceProduct.getMaskGroup().get(ForestCoverChangeConstants.SENTINEL2_CLOUD_MASK);
+        VectorDataNode sourceVectorMask = Mask.VectorDataType.getVectorData(sourceMask);
+
+        Mask targetMask = new Mask(maskName, imageWidth, imageHeight, sourceMask.getImageType());
+        Mask.VectorDataType.setVectorData(targetMask, sourceVectorMask);
+        targetMask.setData(previousMaskProductData);
+        this.targetProduct.addMask(targetMask);
     }
 
     private IntSet computeMovingTrimming(IntMatrix colorFillerMatrix, Dimension movingWindowSize, Dimension movingStepSize, Dimension tileSize,
@@ -380,28 +385,31 @@ public class ForestCoverChangeOp extends Operator {
 
         Product extractedProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames);
 
-//            public CopyBandPixelsTilesComputing(Band bandToCopy, int tileWidth, int tileHeight) {
-
         Dimension tileSize = getPreferredTileSize();
-        Mask mask = sourceProduct.getMaskGroup().get("opaque_clouds_20m");
-        CopyBandPixelsTilesComputing bandPixelsTilesComputing = new CopyBandPixelsTilesComputing(mask, tileSize.width, tileSize.height);
-        ProductData productData = bandPixelsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
-//            public Mask(String name, int width, int height, ImageType imageType) {
 
-        Mask newMask = new Mask(mask.getName(), mask.getRasterWidth(), mask.getRasterHeight(), mask.getImageType());
-        VectorDataNode vectorMask = Mask.VectorDataType.getVectorData(mask);
-        Mask.VectorDataType.setVectorData(newMask, vectorMask);
+        Mask sourceMask = sourceProduct.getMaskGroup().get(ForestCoverChangeConstants.SENTINEL2_CLOUD_MASK);
+        if (sourceMask != null) {
+            CopyBandPixelsTilesComputing bandPixelsTilesComputing = new CopyBandPixelsTilesComputing(sourceMask, tileSize.width, tileSize.height);
+            ProductData sourceMaskProductData = bandPixelsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
-        newMask.setData(productData);
-        extractedProduct.addMask(newMask);
+            Mask newMask = new Mask(sourceMask.getName(), sourceMask.getRasterWidth(), sourceMask.getRasterHeight(), sourceMask.getImageType());
+            VectorDataNode vectorMask = Mask.VectorDataType.getVectorData(sourceMask);
+            Mask.VectorDataType.setVectorData(newMask, vectorMask);
+            newMask.setData(sourceMaskProductData);
+            extractedProduct.addMask(newMask);
+        }
+
         Product resampleProduct = resampleAllBands(extractedProduct);
 
         WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampleProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryParentFolder);
         Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
-        Mask mask2 = resampleProduct.getMaskGroup().get("opaque_clouds_20m");
-        WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(mask2, tileSize.width, tileSize.height, temporaryParentFolder);
-        Path temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+        Mask resampledMask = resampleProduct.getMaskGroup().get(ForestCoverChangeConstants.SENTINEL2_CLOUD_MASK);
+        Path temporaryMaskFolder = null;
+        if (resampledMask != null) {
+            WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(resampledMask, tileSize.width, tileSize.height, temporaryParentFolder);
+            temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+        }
 
         // reset the references
         WeakReference<Product> referenceExtractedProduct = new WeakReference<Product>(extractedProduct);
