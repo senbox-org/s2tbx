@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 public class WriteMaskTilesComputing extends AbstractImageTilesParallelComputing {
     private static final Logger logger = Logger.getLogger(WriteMaskTilesComputing.class.getName());
 
-     private final Path temporaryFolder;
+    private final Path temporaryFolder;
     private final Mask maskToWrite;
 
     public WriteMaskTilesComputing(Mask maskToWrite, int tileWidth, int tileHeight, Path temporaryParentFolder) throws IOException {
@@ -57,7 +57,7 @@ public class WriteMaskTilesComputing extends AbstractImageTilesParallelComputing
             int tileRightX = tileLeftX + tileWidth;
             for (int y = tileTopY; y < tileBottomY; y++) {
                 for (int x = tileLeftX; x < tileRightX; x++) {
-                        outputFileStream.writeFloat(this.maskToWrite.getSampleFloat(x, y));
+                    outputFileStream.writeInt(this.maskToWrite.getSampleInt(x, y));
                 }
             }
         } finally {

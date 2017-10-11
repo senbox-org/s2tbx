@@ -30,7 +30,7 @@ public class ReadMaskTilesComputing extends AbstractImageTilesParallelComputing 
 
         this.temporaryFolder = temporaryFolder;
         this.imageWidth = imageWidth;
-        this.productData = ProductData.createInstance(ProductData.TYPE_FLOAT32, imageWidth * imageHeight);
+        this.productData = ProductData.createInstance(ProductData.TYPE_UINT8, imageWidth * imageHeight);
     }
 
     @Override
@@ -53,9 +53,9 @@ public class ReadMaskTilesComputing extends AbstractImageTilesParallelComputing 
             int tileRightX = tileLeftX + tileWidth;
             for (int y = tileTopY; y < tileBottomY; y++) {
                 for (int x = tileLeftX; x < tileRightX; x++) {
-                    float pixelValue = inputFileStream.readFloat();
+                    int pixelValue = inputFileStream.readInt();
                     synchronized (this.productData) {
-                        this.productData.setElemFloatAt(this.imageWidth * y + x, pixelValue);
+                        this.productData.setElemIntAt(this.imageWidth * y + x, pixelValue);
                     }
                 }
             }
