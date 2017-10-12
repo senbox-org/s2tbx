@@ -2,6 +2,7 @@ package org.esa.s2tbx.fcc.common;
 
 import com.vividsolutions.jts.geom.Geometry;
 import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductNodeGroup;
@@ -14,6 +15,7 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
+import org.esa.snap.utils.ProductHelper;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -48,15 +50,19 @@ public class BandsExtractorOp extends Operator {
     @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
     private String[] sourceBandNames;
 
+    @Parameter(label = "Source masks", description = "The source masks for the computation.", rasterDataNodeType = Mask.class)
+    private String[] sourceMaskNames;
+
     @Override
     public void initialize() throws OperatorException {
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
             throw new OperatorException("Please select at least one band.");
         }
-        this.targetProduct = extractBands(this.sourceProduct, this.sourceBandNames);
+
+        this.targetProduct = extractBands(this.sourceProduct, this.sourceBandNames, this.sourceMaskNames);
     }
 
-    public static Product extractBands(Product sourceProduct, String[] sourceBandNames) {
+    public static Product extractBands(Product sourceProduct, String[] sourceBandNames, String[] sourceMaskNames) {
         Product product = new Product(sourceProduct.getName(), sourceProduct.getProductType(), sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
         product.setStartTime(sourceProduct.getStartTime());
         product.setEndTime(sourceProduct.getEndTime());
@@ -66,7 +72,10 @@ public class BandsExtractorOp extends Operator {
         ProductUtils.copyGeoCoding(sourceProduct, product);
         ProductUtils.copyTiePointGrids(sourceProduct, product);
         ProductUtils.copyVectorData(sourceProduct, product);
-        ProductUtils.copyMasks(sourceProduct, product);
+        if (sourceMaskNames != null && sourceMaskNames.length > 0) {
+            ProductHelper.copyMasks(sourceProduct, product, sourceMaskNames);
+        }
+
         for (int i=0; i<sourceBandNames.length; i++) {
             Band sourceBand = sourceProduct.getBand(sourceBandNames[i]);
             String sourceBandName = sourceBand.getName();
@@ -79,7 +88,6 @@ public class BandsExtractorOp extends Operator {
 
         return product;
     }
-
 
     public static class Spi extends OperatorSpi {
 

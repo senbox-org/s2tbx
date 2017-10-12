@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.s2tbx.fcc.common.BandsExtractorOp;
-import org.esa.s2tbx.fcc.common.CopyBandPixelsTilesComputing;
 import org.esa.s2tbx.fcc.common.ReadMaskTilesComputing;
 import org.esa.s2tbx.fcc.common.WriteMaskTilesComputing;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
@@ -31,7 +30,6 @@ import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.dataop.resamp.ResamplingFactory;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
@@ -44,6 +42,7 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.landcover.gpf.AddLandCoverOp;
+import org.esa.snap.utils.ProductHelper;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
@@ -124,8 +123,17 @@ public class ForestCoverChangeOp extends Operator {
     @Parameter(label = "Degrees of freedom", defaultValue = "2.8" , description = "Degrees of freedom used for the Chi distribution trimming process")
     private double degreesOfFreedom;
 
+    @ParameterGroup(alias = "Product masks")
+    @Parameter(label = "Recent date product mask", description = "The recent date source product masks for the computation.")
+    public String currentProductMask;
+
+    @ParameterGroup(alias = "Product masks")
+    @Parameter(label = "Previous date product mask", description = "The previous date source product masks for the computation.")
+    public String previousProductMask;
+
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
+
     private int threadCount;
     private ExecutorService threadPool;
 
@@ -161,6 +169,10 @@ public class ForestCoverChangeOp extends Operator {
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
 
+        //TODO Jean remove
+        this.currentProductMask = "opaque_clouds_10m";
+        this.previousProductMask = "opaque_clouds_10m";
+
         this.threadCount = Runtime.getRuntime().availableProcessors() - 1;
         this.threadPool = Executors.newCachedThreadPool();
     }
@@ -179,7 +191,7 @@ public class ForestCoverChangeOp extends Operator {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start Forest Cover Change: image width: "+this.targetProduct.getSceneRasterWidth()+", image height: "+this.targetProduct.getSceneRasterHeight() + ", start time: " + new Date(startTime));
-            logger.log(Level.FINE, "Temporary folder path to store the binary files: '" + temporaryFolder.toFile().getAbsolutePath()+"'");
+            logger.log(Level.FINE, "Temporary folder path to store the binary files: '" + temporaryFolder.toFile().getAbsolutePath() + "'");
         }
 
         try {
@@ -219,70 +231,60 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private ProductData computeFinalProductData(Path temporaryParentFolder) throws Exception {
-        FolderPathsResults currentResult = extractBands(this.currentSourceProduct, this.currentProductBandsNames, temporaryParentFolder);
+        FolderPathsResults currentResult = extractBands(this.currentSourceProduct, this.currentProductBandsNames, this.currentProductMask, temporaryParentFolder);
+        FolderPathsResults previousResult = extractBands(this.previousSourceProduct, this.previousProductBandsNames, this.previousProductMask, temporaryParentFolder);
+
         Path currentSourceSegmentationTilesFolder = currentResult.getTemporaryBandsFolder();
-        try {
-            FolderPathsResults previousResult = extractBands(this.previousSourceProduct, this.previousProductBandsNames, temporaryParentFolder);
-            Path previousSourceSegmentationTilesFolder = previousResult.getTemporaryBandsFolder();
-            try {
-                IntMatrix colorFillerMatrix = computeColorFillerMatrix(temporaryParentFolder, currentSourceSegmentationTilesFolder, previousSourceSegmentationTilesFolder);
+        Path previousSourceSegmentationTilesFolder = previousResult.getTemporaryBandsFolder();
+        IntMatrix colorFillerMatrix = computeColorFillerMatrix(temporaryParentFolder, currentSourceSegmentationTilesFolder, previousSourceSegmentationTilesFolder);
 
-                int[] sourceBandIndices = new int[] {0, 1, 2};
-                Dimension tileSize = getPreferredTileSize();
+        int[] sourceBandIndices = new int[]{0, 1, 2};
+        Dimension tileSize = getPreferredTileSize();
 
-                int movingWindowWidth = 1000;//tileSize.width;
-                int movingWindowHeight = 1000;//tileSize.height;
-                Dimension movingWindowSize = new Dimension(movingWindowWidth, movingWindowHeight);
+        int movingWindowWidth = 1000;//tileSize.width;
+        int movingWindowHeight = 1000;//tileSize.height;
+        Dimension movingWindowSize = new Dimension(movingWindowWidth, movingWindowHeight);
 
-                int movingStepWidth = 500;//tileSize.width / 2;
-                int movingStepHeight = 500;//tileSize.height / 2;
-                Dimension movingStepSize = new Dimension(movingStepWidth, movingStepHeight);
+        int movingStepWidth = 500;//tileSize.width / 2;
+        int movingStepHeight = 500;//tileSize.height / 2;
+        Dimension movingStepSize = new Dimension(movingStepWidth, movingStepHeight);
 
-                IntSet currentTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, currentSourceSegmentationTilesFolder, sourceBandIndices);
-                IntSet previousTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, previousSourceSegmentationTilesFolder, sourceBandIndices);
+        IntSet currentTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, currentSourceSegmentationTilesFolder, sourceBandIndices);
+        IntSet previousTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, previousSourceSegmentationTilesFolder, sourceBandIndices);
 
-                // run union masks
-                ProductData productData = computeUnionMask(currentTrimmingRegionKeys, colorFillerMatrix, previousTrimmingRegionKeys, colorFillerMatrix);
+        // run union masks
+        ProductData productData = computeUnionMask(currentTrimmingRegionKeys, colorFillerMatrix, previousTrimmingRegionKeys, colorFillerMatrix);
 
-                // reset the references
-                WeakReference<IntSet> referenceCurrentTrimmingRegionKeys = new WeakReference<IntSet>(currentTrimmingRegionKeys);
-                referenceCurrentTrimmingRegionKeys.clear();
-                WeakReference<IntSet> referencePreviousTrimmingRegionKeys = new WeakReference<IntSet>(previousTrimmingRegionKeys);
-                referencePreviousTrimmingRegionKeys.clear();
-                WeakReference<IntMatrix> referenceProductColorFill = new WeakReference<IntMatrix>(colorFillerMatrix);
-                referenceProductColorFill.clear();
+        // reset the references
+        WeakReference<IntSet> referenceCurrentTrimmingRegionKeys = new WeakReference<IntSet>(currentTrimmingRegionKeys);
+        referenceCurrentTrimmingRegionKeys.clear();
+        WeakReference<IntSet> referencePreviousTrimmingRegionKeys = new WeakReference<IntSet>(previousTrimmingRegionKeys);
+        referencePreviousTrimmingRegionKeys.clear();
+        WeakReference<IntMatrix> referenceProductColorFill = new WeakReference<IntMatrix>(colorFillerMatrix);
+        referenceProductColorFill.clear();
 
-                if (currentResult.getTemporaryMaskFolder() != null) {
-                    addMask(previousResult.getTemporaryMaskFolder(), tileSize, this.currentSourceProduct, "currentProductCloudMask");
-                }
-
-                if (previousResult.getTemporaryMaskFolder() != null) {
-                    addMask(previousResult.getTemporaryMaskFolder(), tileSize, this.previousSourceProduct, "previousProductCloudMask");
-                }
-
-                return productData;
-            } finally {
-                FileUtils.deleteTree(previousSourceSegmentationTilesFolder.toFile());
-            }
-        } finally {
-            FileUtils.deleteTree(currentSourceSegmentationTilesFolder.toFile());
+        if (currentResult.getTemporaryMaskFolder() != null) {
+            addMask(currentResult.getTemporaryMaskFolder(), tileSize, this.currentSourceProduct, this.currentProductMask, "currentProductCloudMask");
         }
+
+        if (previousResult.getTemporaryMaskFolder() != null) {
+            addMask(previousResult.getTemporaryMaskFolder(), tileSize, this.previousSourceProduct, this.previousProductMask, "previousProductCloudMask");
+        }
+
+        return productData;
     }
 
-    private void addMask(Path temporaryFolder, Dimension tileSize, Product sourceProduct, String maskName) throws Exception {
+    private void addMask(Path temporaryFolder, Dimension tileSize, Product sourceProduct, String sourceMaskName, String maskName) throws Exception {
         int imageWidth = this.targetProduct.getSceneRasterWidth();
         int imageHeight = this.targetProduct.getSceneRasterHeight();
-        ReadMaskTilesComputing readMaskTilesComputingPrevious = new ReadMaskTilesComputing(imageWidth, imageHeight,
-                        tileSize.width, tileSize.height, temporaryFolder);
-        ProductData previousMaskProductData = readMaskTilesComputingPrevious.runTilesInParallel(this.threadCount, this.threadPool);
+        ReadMaskTilesComputing readMaskTilesComputing = new ReadMaskTilesComputing(imageWidth, imageHeight, tileSize.width, tileSize.height, temporaryFolder);
+        ProductData maskProductData = readMaskTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
-        Mask sourceMask = sourceProduct.getMaskGroup().get(ForestCoverChangeConstants.SENTINEL2_CLOUD_MASK);
-        VectorDataNode sourceVectorMask = Mask.VectorDataType.getVectorData(sourceMask);
-
-        Mask targetMask = new Mask(maskName, imageWidth, imageHeight, sourceMask.getImageType());
-        Mask.VectorDataType.setVectorData(targetMask, sourceVectorMask);
-        targetMask.setData(previousMaskProductData);
-        this.targetProduct.addMask(targetMask);
+        String[] sourceMaskNames = new String[]{ sourceMaskName };
+        ProductHelper.copyMasks(sourceProduct, this.targetProduct, sourceMaskNames);
+        Mask targetMask = this.targetProduct.getMaskGroup().get(sourceMaskName);
+        targetMask.setName(maskName);
+        targetMask.setData(maskProductData);
     }
 
     private IntSet computeMovingTrimming(IntMatrix colorFillerMatrix, Dimension movingWindowSize, Dimension movingStepSize, Dimension tileSize,
@@ -377,44 +379,41 @@ public class ForestCoverChangeOp extends Operator {
         return landCoverProduct;
     }
 
-    private FolderPathsResults extractBands(Product sourceProduct, String[] sourceBandNames, Path temporaryParentFolder) throws Exception {
+    private FolderPathsResults extractBands(Product sourceProduct, String[] sourceBandNames, String sourceMaskName, Path temporaryParentFolder) throws Exception {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Extract "+sourceBandNames.length+" bands for source product '" + sourceProduct.getName()+"'");
         }
 
-        Product extractedProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames);
+        Mask sourceMask = sourceProduct.getMaskGroup().get(sourceMaskName);
+        String[] sourceMaskNamesToExtract = null;
+        if (sourceMask != null) {
+            sourceMaskNamesToExtract = new String[]{ sourceMaskName };
+        }
+        Product extractedProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames, sourceMaskNamesToExtract);
+
+        Product resampledProduct = resampleAllBands(extractedProduct);
 
         Dimension tileSize = getPreferredTileSize();
 
-        Mask sourceMask = sourceProduct.getMaskGroup().get(ForestCoverChangeConstants.SENTINEL2_CLOUD_MASK);
-        if (sourceMask != null) {
-            CopyBandPixelsTilesComputing bandPixelsTilesComputing = new CopyBandPixelsTilesComputing(sourceMask, tileSize.width, tileSize.height);
-            ProductData sourceMaskProductData = bandPixelsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
-
-            Mask newMask = new Mask(sourceMask.getName(), sourceMask.getRasterWidth(), sourceMask.getRasterHeight(), sourceMask.getImageType());
-            VectorDataNode vectorMask = Mask.VectorDataType.getVectorData(sourceMask);
-            Mask.VectorDataType.setVectorData(newMask, vectorMask);
-            newMask.setData(sourceMaskProductData);
-            extractedProduct.addMask(newMask);
-        }
-
-        Product resampleProduct = resampleAllBands(extractedProduct);
-
-        WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampleProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryParentFolder);
+        WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampledProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryParentFolder);
         Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
-        Mask resampledMask = resampleProduct.getMaskGroup().get(ForestCoverChangeConstants.SENTINEL2_CLOUD_MASK);
+        Mask resampledMask = resampledProduct.getMaskGroup().get(sourceMaskName);
         Path temporaryMaskFolder = null;
         if (resampledMask != null) {
             WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(resampledMask, tileSize.width, tileSize.height, temporaryParentFolder);
             temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+
+            // reset the reference
+            WeakReference<Mask> referenceResampledMask = new WeakReference<Mask>(resampledMask);
+            referenceResampledMask.clear();
         }
 
         // reset the references
         WeakReference<Product> referenceExtractedProduct = new WeakReference<Product>(extractedProduct);
         referenceExtractedProduct.clear();
-        WeakReference<Product> referenceResampleProduct = new WeakReference<Product>(resampleProduct);
+        WeakReference<Product> referenceResampleProduct = new WeakReference<Product>(resampledProduct);
         referenceResampleProduct.clear();
 
         return new FolderPathsResults(temporaryFolder, temporaryMaskFolder);
@@ -531,7 +530,6 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private static class FolderPathsResults {
-
         private final Path temporaryBandsFolder;
         private final Path temporaryMaskFolder;
 
