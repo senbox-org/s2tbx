@@ -169,10 +169,6 @@ public class ForestCoverChangeOp extends Operator {
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         this.targetProduct.addBand(targetBand);
 
-        //TODO Jean remove
-        this.currentProductMask = "opaque_clouds_10m";
-        this.previousProductMask = "opaque_clouds_10m";
-
         this.threadCount = Runtime.getRuntime().availableProcessors() - 1;
         this.threadPool = Executors.newCachedThreadPool();
     }

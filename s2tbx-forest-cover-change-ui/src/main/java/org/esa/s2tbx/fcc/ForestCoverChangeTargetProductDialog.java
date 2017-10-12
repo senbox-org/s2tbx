@@ -2,24 +2,19 @@ package org.esa.s2tbx.fcc;
 
 import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertyContainer;
-import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
-import com.bc.ceres.binding.ValidationException;
-import com.bc.ceres.binding.ValueSet;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyPane;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
-import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
-import com.bc.ceres.swing.selection.Selection;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
+import com.bc.ceres.swing.selection.SelectionChangeListener;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.snap.core.dataio.ProductIO;
+import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductNodeEvent;
-import org.esa.snap.core.datamodel.ProductNodeListener;
-import org.esa.snap.core.datamodel.RasterDataNode;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.annotations.Parameter;
@@ -34,7 +29,6 @@ import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
 import org.esa.snap.core.gpf.descriptor.ParameterDescriptor;
 import org.esa.snap.core.gpf.descriptor.SourceProductDescriptor;
 import org.esa.snap.core.gpf.descriptor.TargetPropertyDescriptor;
-import org.esa.snap.core.gpf.internal.RasterDataNodeValues;
 import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
 import org.esa.snap.core.gpf.ui.OperatorMenu;
 import org.esa.snap.core.gpf.ui.OperatorParameterSupport;
@@ -45,9 +39,10 @@ import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
-import org.esa.snap.ui.UIUtils;
-
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -72,16 +67,14 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private final OperatorParameterSupport parameterSupport;
     private final BindingContext bindingContext;
     private final DefaultIOParametersPanel ioParametersPanel;
-    private final ProductChangedHandler productChangedHandler;
-
     private List<ParameterDescriptor> parameterDescriptors;
     private List<SourceProductDescriptor> sourceProductDescriptors;
     private List<TargetPropertyDescriptor> targetPropertyDescriptors;
     private Map<String, List<String>> parameterGroupDescriptors;
     private JTabbedPane form;
-    private PropertyDescriptor[] rasterDataNodeTypeProperties;
     private String targetProductNameSuffix;
-
+    private JComboBox<String> currentProductMaskComboBox;
+    private JComboBox<String> previousProductMaskComboBox;
     public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
 
@@ -96,25 +89,50 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         this.parameterSupport = new OperatorParameterSupport(this.operatorDescriptor);
         ArrayList<SourceProductSelector> sourceProductSelectorList = this.ioParametersPanel.getSourceProductSelectorList();
         PropertySet propertySet = this.parameterSupport.getPropertySet();
-
         this.bindingContext = new BindingContext(propertySet);
 
-        if (propertySet.getProperties().length > 0) {
-            if (!sourceProductSelectorList.isEmpty()) {
-                Property[] properties = propertySet.getProperties();
-                List<PropertyDescriptor> rdnTypeProperties = new ArrayList<>(properties.length);
-                for (Property property : properties) {
-                    PropertyDescriptor parameterDescriptor = property.getDescriptor();
-                    if (parameterDescriptor.getAttribute(RasterDataNodeValues.ATTRIBUTE_NAME) != null) {
-                        rdnTypeProperties.add(parameterDescriptor);
+        SelectionChangeListener currentListenerProduct = new SelectionChangeListener() {
+            public void selectionChanged(SelectionChangeEvent event) {
+                processCurrentSelectedProduct(sourceProductSelectorList.get(0).getSelectedProduct());
+            }
+            public void selectionContextChanged(SelectionChangeEvent event) {
+            }
+        };
+        SelectionChangeListener previousListenerProduct = new SelectionChangeListener() {
+            public void selectionChanged(SelectionChangeEvent event) {
+                processPreviousSelectedProduct(sourceProductSelectorList.get(1).getSelectedProduct());
+            }
+            public void selectionContextChanged(SelectionChangeEvent event) {
+            }
+        };
+        sourceProductSelectorList.get(0).addSelectionChangeListener(currentListenerProduct);
+        sourceProductSelectorList.get(1).addSelectionChangeListener(previousListenerProduct);
+
+    }
+
+    private void processPreviousSelectedProduct(Product product) {
+        processComboBox(product,previousProductMaskComboBox );
+
+    }
+
+    private void processCurrentSelectedProduct(Product product) {
+        processComboBox(product,currentProductMaskComboBox );
+        if (product != null) {
+            updateTargetProductName(product);
+        }
+    }
+    private void processComboBox(Product selectedProduct, JComboBox<String> productMaskComboBox) {
+        if(productMaskComboBox != null) {
+            productMaskComboBox.removeAllItems();
+            if(selectedProduct != null) {
+                ProductNodeGroup<Mask> prod = selectedProduct.getMaskGroup();
+                if (prod != null) {
+                    productMaskComboBox.addItem(" ");
+                    for (int index = 0; index < prod.getNodeCount(); index++) {
+                        productMaskComboBox.addItem(prod.get(index).getName());
                     }
                 }
-                this.rasterDataNodeTypeProperties = rdnTypeProperties.toArray(new PropertyDescriptor[rdnTypeProperties.size()]);
             }
-        }
-        this.productChangedHandler = new ProductChangedHandler();
-        if (!sourceProductSelectorList.isEmpty()) {
-            sourceProductSelectorList.get(0).addSelectionChangeListener(productChangedHandler);
         }
     }
 
@@ -132,7 +150,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             Product currentSourceProduct = sourceProducts.get("recentProduct");
             Product previousSourceProduct = sourceProducts.get("previousProduct");
             TargetProductSwingWorker worker = new TargetProductSwingWorker(currentSourceProduct, previousSourceProduct,
-                                                        this.parameterSupport.getParameterMap());
+                    this.parameterSupport.getParameterMap());
             worker.executeWithBlocking(); // start the thread
         } catch (Throwable t) {
             handleInitialisationError(t);
@@ -150,13 +168,13 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 getJDialog().setJMenuBar(operatorMenu.createDefaultMenu());
             }
         }
+
         setContent(this.form);
         return super.show();
     }
 
     @Override
     public void hide() {
-        productChangedHandler.releaseProduct();
         ioParametersPanel.releaseSourceProductSelectors();
         super.hide();
     }
@@ -167,12 +185,21 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         return GPF.createProduct(this.operatorName, this.parameterSupport.getParameterMap(), sourceProducts);
     }
 
-    public String getTargetProductNameSuffix() {
-        return this.targetProductNameSuffix;
+    void setTargetProductNameSuffix(String suffix) {
+        this.targetProductNameSuffix = suffix;
     }
 
-    public void setTargetProductNameSuffix(String suffix) {
-        this.targetProductNameSuffix = suffix;
+    private void updateTargetProductName(Product product) {
+        String productName = "";
+        if (product != null) {
+            productName = product.getName();
+        }
+        final TargetProductSelectorModel targetProductSelectorModel = getTargetProductSelector().getModel();
+        targetProductSelectorModel.setProductName(productName + getTargetProductNameSuffix());
+    }
+
+    private  String getTargetProductNameSuffix() {
+        return targetProductNameSuffix;
     }
 
     private void initForm() {
@@ -185,7 +212,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         layout.setTableWeightY(0.0);
         layout.setRowWeightY(2, 1.0);
         layout.setTablePadding(3, 3);
-
+        ArrayList<SourceProductSelector> sourceProductSelectorList = this.ioParametersPanel.getSourceProductSelectorList();
         if (this.bindingContext.getPropertySet().getProperties().length > 0) {
             PropertyContainer container = new PropertyContainer();
             container.addProperties(this.bindingContext.getPropertySet().getProperties());
@@ -203,10 +230,41 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             form.add("Processing Parameters", new JScrollPane(parametersPanel));
             if (this.parameterGroupDescriptors != null) {
                 for (Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
-                    parametersPanel.add(createPanel(pair.getKey() + " parameters", this.bindingContext, pair.getValue()));
+                    if (pair.getKey().equals("Product masks")) {
+                        JPanel panel = new JPanel(layout);
+                        panel.setBorder(BorderFactory.createTitledBorder(pair.getKey()));
+                        for (String value : pair.getValue())
+                            if (value .equals("currentProductMask")) {
+                                final Product selectedProduct = sourceProductSelectorList.get(0).getSelectedProduct();
+                                currentProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
+                                setComponentsPanel("Recent Product Mask", currentProductMaskComboBox, selectedProduct, panel, "currentProductMask");
+                            } else if (value.equals("previousProductMask")) {
+                                final Product selectedProduct = sourceProductSelectorList.get(1).getSelectedProduct();
+                                previousProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
+                                setComponentsPanel("Previous Product Mask", previousProductMaskComboBox, selectedProduct, panel, "previousProductMask");
+                            }
+                        parametersPanel.add(panel);
+                    } else {
+                        parametersPanel.add(createPanel(pair.getKey() + " parameters", this.bindingContext, pair.getValue()));
+                    }
                 }
             }
-            updateSourceProduct();
+        }
+    }
+
+    private void setComponentsPanel(String labelString, JComboBox<String> productMaskComboBox, Product selectedProduct, JPanel panel, String bindingProperty) {
+        JLabel label = new JLabel(labelString);
+        panel.add(label);
+        this.bindingContext.bind(bindingProperty, productMaskComboBox);
+        panel.add(productMaskComboBox);
+        if (selectedProduct != null) {
+            ProductNodeGroup<Mask> prod = selectedProduct.getMaskGroup();
+            if(prod != null) {
+                productMaskComboBox.addItem(" ");
+                for (int index = 0; index < prod.getNodeCount(); index++) {
+                    productMaskComboBox.addItem(prod.get(index).getName());
+                }
+            }
         }
     }
 
@@ -329,108 +387,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         return new OperatorMenu(getJDialog(), operatorDescriptor, parameterSupport, getAppContext(), getHelpID());
     }
 
-    private void updateSourceProduct() {
-        try {
-            Property property = bindingContext.getPropertySet().getProperty(UIUtils.PROPERTY_SOURCE_PRODUCT);
-            if (property != null) {
-                property.setValue(productChangedHandler.currentProduct);
-            }
-        } catch (ValidationException e) {
-            throw new IllegalStateException("Property '" + UIUtils.PROPERTY_SOURCE_PRODUCT + "' must be of type " + Product.class + ".", e);
-        }
-    }
-
-    private class ProductChangedHandler extends AbstractSelectionChangeListener implements ProductNodeListener {
-
-        private Product currentProduct;
-
-        public void releaseProduct() {
-            if (currentProduct != null) {
-                currentProduct.removeProductNodeListener(this);
-                currentProduct = null;
-                updateSourceProduct();
-            }
-        }
-
-        @Override
-        public void selectionChanged(SelectionChangeEvent event) {
-            Selection selection = event.getSelection();
-            if (selection != null) {
-                final Product selectedProduct = (Product) selection.getSelectedValue();
-                if (selectedProduct != currentProduct) {
-                    if (currentProduct != null) {
-                        currentProduct.removeProductNodeListener(this);
-                    }
-                    currentProduct = selectedProduct;
-                    if (currentProduct != null) {
-                        currentProduct.addProductNodeListener(this);
-                    }
-                    if(getTargetProductSelector() != null){
-                        updateTargetProductName();
-                    }
-                    updateValueSets(currentProduct);
-                    updateSourceProduct();
-                }
-            }
-        }
-
-        @Override
-        public void nodeAdded(ProductNodeEvent event) {
-            handleProductNodeEvent();
-        }
-
-        @Override
-        public void nodeChanged(ProductNodeEvent event) {
-            handleProductNodeEvent();
-        }
-
-        @Override
-        public void nodeDataChanged(ProductNodeEvent event) {
-            handleProductNodeEvent();
-        }
-
-        @Override
-        public void nodeRemoved(ProductNodeEvent event) {
-            handleProductNodeEvent();
-        }
-
-        private void updateTargetProductName() {
-            String productName = "";
-            if (currentProduct != null) {
-                productName = currentProduct.getName();
-            }
-            final TargetProductSelectorModel targetProductSelectorModel = getTargetProductSelector().getModel();
-            targetProductSelectorModel.setProductName(productName + getTargetProductNameSuffix());
-        }
-
-        private void handleProductNodeEvent() {
-            updateValueSets(currentProduct);
-        }
-
-        private void updateValueSets(Product product) {
-            if (rasterDataNodeTypeProperties != null) {
-                for (PropertyDescriptor propertyDescriptor : rasterDataNodeTypeProperties) {
-                    updateValueSet(propertyDescriptor, product);
-                }
-            }
-        }
-    }
-
-    private static void updateValueSet(PropertyDescriptor propertyDescriptor, Product product) {
-        String[] values = new String[0];
-        if (product != null) {
-            Object object = propertyDescriptor.getAttribute(RasterDataNodeValues.ATTRIBUTE_NAME);
-            if (object != null) {
-                @SuppressWarnings("unchecked")
-                Class<? extends RasterDataNode> rasterDataNodeType = (Class<? extends RasterDataNode>) object;
-                boolean includeEmptyValue = !propertyDescriptor.isNotNull() && !propertyDescriptor.isNotEmpty() &&
-                        !propertyDescriptor.getType().isArray();
-                values = RasterDataNodeValues.getNames(product, rasterDataNodeType, includeEmptyValue);
-            }
-        }
-        propertyDescriptor.setValueSet(new ValueSet(values));
-    }
-
     private class TargetProductSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
         private final long createTargetProductTime;
         private final Product currentSourceProduct;
@@ -474,9 +430,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 if (model.isSaveToFileSelected()) {
                     File file = model.getProductFile();
                     String formatName = model.getFormatName();
-                    boolean clearCacheAfterRowWrite = false;
-                    boolean incremental = false;
-                    GPF.writeProduct(operatorTargetProduct, file, formatName, clearCacheAfterRowWrite, incremental, ProgressMonitor.NULL);
+                    GPF.writeProduct(operatorTargetProduct, file, formatName, false, false, ProgressMonitor.NULL);
                 }
 
                 product = operatorTargetProduct;
@@ -532,4 +486,5 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             }
         }
     }
+
 }
