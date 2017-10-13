@@ -1,5 +1,7 @@
 package org.esa.s2tbx.coregistration;
 
+import javax.media.jai.InterpolationBilinear;
+
 /**
  * @author R. Manda
  */
@@ -49,10 +51,10 @@ public class MatrixUtils {
         return m;
     }
 
-    public static int[][] rank_sup(float[][] I, int rank) {
+    public static float[][] rank_sup(float[][] I, int rank) {
         int nl = I.length;
         int nc = I[0].length;
-        int[][] R = new int[nl][nc];
+        float[][] R = new float[nl][nc];
         float[][] tmp;// = new float[nl][nc];
 
         //int range_rad = max(rad)-min(rad);
@@ -76,10 +78,10 @@ public class MatrixUtils {
                 }
 
                 tmp = new float[nl][nc];
-                for (int i1 = 0; i1 < nl - i; i1++) {
+                for (int i1 = 0; i1 < nl - i - 1; i1++) {
                     for (int j1 = 0; j1 < nc - j - 1; j1++) {
 
-                        int iw = i1 + i;
+                        int iw = i1 + i + 1;
                         int jw = j1 + j + 1;
                         tmp[iw][jw] = I[i1][j1];
 
@@ -125,10 +127,21 @@ public class MatrixUtils {
         return R;
     }
 
-    public static int[][] rank_inf(float[][] I, int rank) {
+    private static void printMatrix(float[][] tmp){
+        /*
+        System.out.println(tmp.length+" X "+tmp[0].length);
+        for(int i=0;i<tmp.length;i++){
+            for (int j=0;j<tmp[i].length;j++){
+                System.out.print(tmp[i][j]+"  ");
+            }
+            System.out.println();
+        }*/
+    }
+
+    public static float[][] rank_inf(float[][] I, int rank) {
         int nl = I.length;
         int nc = I[0].length;
-        int[][] R = new int[nl][nc];
+        float[][] R = new float[nl][nc];
         float[][] tmp = new float[nl][nc];
         for (int i = 0; i < nl; i++) {
             for (int j = 0; j < nc; j++) {
@@ -149,25 +162,43 @@ public class MatrixUtils {
                         int jw = j1 - j - 1;
                         tmp[iw][jw] = I[i1][j1];
 
-                        if (tmp[iw][jw] < I[iw][jw]) {
+                        /*if (tmp[iw][jw] < I[iw][jw]) {
                             R[iw][jw] = R[iw][jw] + 1;
+                        }*/
+                    }
+                }
+                for (int i1 = 0; i1 < nl; i1++) {
+                    for (int j1 = 0; j1 < nc; j1++) {
+                        if (tmp[i1][j1] < I[i1][j1]) {
+                            R[i1][j1] = R[i1][j1] + 1;
                         }
                     }
                 }
+                //System.out.println("i="+i+"   j="+j);
+                printMatrix(tmp);
 
                 tmp = new float[nl][nc];
-                for (int i1 = 0; i1 < nl - i; i1++) {
+                for (int i1 = 0; i1 < nl - i - 1; i1++) {
                     for (int j1 = 0; j1 < nc - j - 1; j1++) {
 
-                        int iw = i1 + i;
+                        int iw = i1 + i + 1;
                         int jw = j1 + j + 1;
                         tmp[iw][jw] = I[i1][j1];
 
-                        if (tmp[iw][jw] < I[iw][jw]) {
+                        /*if (tmp[iw][jw] < I[iw][jw]) {
                             R[iw][jw] = R[iw][jw] + 1;
+                        }*/
+                    }
+                }
+
+                for (int i1 = 0; i1 < nl; i1++) {
+                    for (int j1 = 0; j1 < nc; j1++) {
+                        if (tmp[i1][j1] < I[i1][j1]) {
+                            R[i1][j1] = R[i1][j1] + 1;
                         }
                     }
                 }
+                //printMatrix(tmp);
             }
         }
         for (int i = -1; i < rank; i++) {//range(1,rad+1)
@@ -181,11 +212,21 @@ public class MatrixUtils {
                         int jw = j1 - j - 1;
                         tmp[iw][jw] = I[i1][j1];
 
-                        if (tmp[iw][jw] < I[iw][jw]) {
+                        /*if (tmp[iw][jw] < I[iw][jw]) {
                             R[iw][jw] = R[iw][jw] + 1;
+                        }*/
+                    }
+                }
+
+                for (int i1 = 0; i1 < nl; i1++) {
+                    for (int j1 = 0; j1 < nc; j1++) {
+                        if (tmp[i1][j1] < I[i1][j1]) {
+                            R[i1][j1] = R[i1][j1] + 1;
                         }
                     }
                 }
+                //System.out.println("i="+i+"   j="+j);
+                //printMatrix(tmp);
 
                 tmp = new float[nl][nc];
                 for (int i1 = i + 1; i1 < nl; i1++) {
@@ -195,14 +236,122 @@ public class MatrixUtils {
                         int jw = j1 + j + 1;
                         tmp[iw][jw] = I[i1][j1];
 
-                        if (tmp[iw][jw] < I[iw][jw]) {
+                        /*if (tmp[iw][jw] < I[iw][jw]) {
                             R[iw][jw] = R[iw][jw] + 1;
+                        }*/
+                    }
+                }
+
+                for (int i1 = 0; i1 < nl; i1++) {
+                    for (int j1 = 0; j1 < nc; j1++) {
+                        if (tmp[i1][j1] < I[i1][j1]) {
+                            R[i1][j1] = R[i1][j1] + 1;
                         }
                     }
                 }
+                printMatrix(tmp);
             }
         }
         return R;
+    }
+
+    public static float[][] subsample(float[][] source){
+        int sourceWidth = source[0].length;
+        int sourceHeight = source.length;
+        int destWidth = (sourceWidth + 1) / 2;
+        int destHeight = (sourceHeight + 1) / 2;
+        float[][] result = new float[destHeight][destWidth];
+        for(int i = 0; i < destHeight; i++) {
+            for (int j = 0; j < destWidth; j++) {
+                result[i][j] = source[i * 2][j * 2];
+            }
+        }
+        return result;
+    }
+
+    public static float[][] interp2(float[][] source, float[][] xq, float[][] yq){
+        InterpolationBilinear interpolation = new InterpolationBilinear();
+
+        int width = xq[0].length;
+        int height = xq.length;
+        float[][] result = new float[height][width];
+        for(int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                float srcX = xq[i][j];
+                float srcY = yq[i][j];
+
+                if (srcX < 0 || srcX >= width || srcY < 0 || srcY >= height) {
+                    result[i][j] = Float.NaN;
+                    continue;
+                }
+
+                int x0 = (int)srcX;
+                int y0 = (int)srcY;
+                int x1 = x0 + 1;
+                int y1 = y0 + 1;
+
+                float fracX = srcX - (int)srcX;
+                float fracY = srcY - (int)srcY;
+
+                if (fracX == 0.0 && fracY == 0.0) {
+                    result[i][j] = source[x0][y0];
+                    continue;
+                }
+
+                if (fracX == 0.0) {
+                    x1 = x0;
+                }
+                if (fracY == 0.0) {
+                    y1 = y0;
+                }
+
+                if (x1 >= width || y1 >= height) {
+                    result[i][j] = Float.NaN;
+                    continue;
+                }
+
+                float s00 = source[y0][x0];
+                float s01 = source[y0][x1];
+                float s10 = source[y1][x0];
+                float s11 = source[y1][x1];
+
+                result[i][j] = interpolation.interpolate(s00, s01, s10, s11, fracX, fracY);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] gradientrow(float[][] source){
+        // TODO check width == 1
+        int width = source[0].length;
+        int height = source.length;
+        float[][] result = new float[height][width];
+        for(int i = 0; i < height; i++) {
+            for (int j = 1; j < width - 1; j++) {
+                result[i][j] = (source[i][j + 1] - source[i][j - 1]) / 2;
+            }
+            result[i][0] = (source[i][1] - source[i][0]);
+            result[i][width - 1] = (source[i][width - 1] - source[i][width - 2]);
+        }
+        return result;
+    }
+
+    public static float[][] gradientcol(float[][] source){
+        // TODO check height == 1
+        int width = source[0].length;
+        int height = source.length;
+        float[][] result = new float[height][width];
+        for(int i = 1; i < height - 1; i++) {
+            for (int j = 0; j < width; j++) {
+                result[i][j] = (source[i + 1][j] - source[i - 1][j]) / 2;
+            }
+        }
+        for(int j = 0; j < width; j++) {
+            result[0][j] = (source[1][j] - source[0][j]);
+            result[height - 1][j] = (source[height - 1][j] - source[height - 2][j]);
+        }
+        return result;
     }
 
     public static float[][] gradientRow(float[][] I) {
