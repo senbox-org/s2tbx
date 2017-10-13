@@ -14,6 +14,7 @@ import org.esa.s2tbx.fcc.annotation.ParameterGroup;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductManager;
 import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
@@ -47,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
+import java.awt.Component;
 import java.awt.Toolkit;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -75,6 +77,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private String targetProductNameSuffix;
     private JComboBox<String> currentProductMaskComboBox;
     private JComboBox<String> previousProductMaskComboBox;
+
     public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
 
@@ -107,33 +110,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         };
         sourceProductSelectorList.get(0).addSelectionChangeListener(currentListenerProduct);
         sourceProductSelectorList.get(1).addSelectionChangeListener(previousListenerProduct);
-
-    }
-
-    private void processPreviousSelectedProduct(Product product) {
-        processComboBox(product,previousProductMaskComboBox );
-
-    }
-
-    private void processCurrentSelectedProduct(Product product) {
-        processComboBox(product,currentProductMaskComboBox );
-        if (product != null) {
-            updateTargetProductName(product);
-        }
-    }
-    private void processComboBox(Product selectedProduct, JComboBox<String> productMaskComboBox) {
-        if(productMaskComboBox != null) {
-            productMaskComboBox.removeAllItems();
-            if(selectedProduct != null) {
-                ProductNodeGroup<Mask> prod = selectedProduct.getMaskGroup();
-                if (prod != null) {
-                    productMaskComboBox.addItem(" ");
-                    for (int index = 0; index < prod.getNodeCount(); index++) {
-                        productMaskComboBox.addItem(prod.get(index).getName());
-                    }
-                }
-            }
-        }
     }
 
     @Override
@@ -149,8 +125,10 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             HashMap<String, Product> sourceProducts = ioParametersPanel.createSourceProductsMap();
             Product currentSourceProduct = sourceProducts.get("recentProduct");
             Product previousSourceProduct = sourceProducts.get("previousProduct");
-            TargetProductSwingWorker worker = new TargetProductSwingWorker(currentSourceProduct, previousSourceProduct,
-                    this.parameterSupport.getParameterMap());
+            ProductManager productManager = appContext.getProductManager();
+            Component parentComponent = getJDialog();
+            TargetProductSwingWorker worker = new TargetProductSwingWorker(parentComponent, productManager, model, currentSourceProduct,
+                                                                           previousSourceProduct, this.parameterSupport.getParameterMap());
             worker.executeWithBlocking(); // start the thread
         } catch (Throwable t) {
             handleInitialisationError(t);
@@ -234,7 +212,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                         JPanel panel = new JPanel(layout);
                         panel.setBorder(BorderFactory.createTitledBorder(pair.getKey()));
                         for (String value : pair.getValue())
-                            if (value .equals("currentProductMask")) {
+                            if (value.equals("currentProductMask")) {
                                 final Product selectedProduct = sourceProductSelectorList.get(0).getSelectedProduct();
                                 currentProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
                                 setComponentsPanel("Recent Product Mask", currentProductMaskComboBox, selectedProduct, panel, "currentProductMask");
@@ -257,12 +235,34 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         panel.add(label);
         this.bindingContext.bind(bindingProperty, productMaskComboBox);
         panel.add(productMaskComboBox);
+        addComboBoxItems(selectedProduct, productMaskComboBox);
+    }
+
+    private void processPreviousSelectedProduct(Product product) {
+        processComboBox(product, this.previousProductMaskComboBox);
+    }
+
+    private void processCurrentSelectedProduct(Product product) {
+        processComboBox(product, this.currentProductMaskComboBox);
+        if (product != null) {
+            updateTargetProductName(product);
+        }
+    }
+    private void processComboBox(Product selectedProduct, JComboBox<String> productMaskComboBox) {
+        if (productMaskComboBox != null) {
+            productMaskComboBox.removeAllItems();
+            addComboBoxItems(selectedProduct, productMaskComboBox);
+        }
+    }
+
+    private void addComboBoxItems(Product selectedProduct, JComboBox<String> productMaskComboBox) {
         if (selectedProduct != null) {
             ProductNodeGroup<Mask> prod = selectedProduct.getMaskGroup();
-            if(prod != null) {
-                productMaskComboBox.addItem(" ");
+            if (prod != null) {
+                productMaskComboBox.addItem(null);
                 for (int index = 0; index < prod.getNodeCount(); index++) {
-                    productMaskComboBox.addItem(prod.get(index).getName());
+                    Mask mask = prod.get(index);
+                    productMaskComboBox.addItem(mask.getName());
                 }
             }
         }
@@ -388,31 +388,35 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     }
 
     private class TargetProductSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
-        private final long createTargetProductTime;
+        private final ProductManager productManager;
+        private final TargetProductSelectorModel model;
         private final Product currentSourceProduct;
         private final Product previousSourceProduct;
         private final Map<String, Object> parameters;
 
-        private long saveTime;
+        private long totalTime;
 
-        private TargetProductSwingWorker(Product currentSourceProduct, Product previousSourceProduct, Map<String, Object> parameters) {
-            super(getJDialog(), "Run Forest Cover Change");
+        private TargetProductSwingWorker(Component parentComponent, ProductManager productManager, TargetProductSelectorModel model, Product currentSourceProduct,
+                                         Product previousSourceProduct, Map<String, Object> parameters) {
 
+            super(parentComponent, "Run Forest Cover Change");
+
+            this.productManager = productManager;
+            this.model = model;
             this.currentSourceProduct = currentSourceProduct;
             this.previousSourceProduct = previousSourceProduct;
             this.parameters = parameters;
-            this.createTargetProductTime = 0;
+            this.totalTime = 0L;
         }
 
         @Override
         protected Product doInBackground(ProgressMonitor pm) throws Exception {
-            final TargetProductSelectorModel model = getTargetProductSelector().getModel();
-            pm.beginTask("Running...", model.isOpenInAppSelected() ? 100 : 95);
-            saveTime = 0L;
-            Product product = null;
+            pm.beginTask("Running...", this.model.isOpenInAppSelected() ? 100 : 95);
+
+            Product productToReturn = null;
             Product operatorTargetProduct = null;
             try {
-                long t0 = System.currentTimeMillis();
+                long startTime = System.currentTimeMillis();
 
                 Map<String, Product> sourceProducts = new HashMap<String, Product>();
                 sourceProducts.put("recentProduct", this.currentSourceProduct);
@@ -427,55 +431,41 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 // get the operator target product
                 operatorTargetProduct = operator.getTargetProduct();
 
-                if (model.isSaveToFileSelected()) {
-                    File file = model.getProductFile();
-                    String formatName = model.getFormatName();
-                    GPF.writeProduct(operatorTargetProduct, file, formatName, false, false, ProgressMonitor.NULL);
-                }
+                productToReturn = operatorTargetProduct;
 
-                product = operatorTargetProduct;
+                if (this.model.isSaveToFileSelected()) {
+                    File targetFile = this.model.getProductFile();
+                    String formatName = this.model.getFormatName();
+                    GPF.writeProduct(operatorTargetProduct, targetFile, formatName, false, false, ProgressMonitor.NULL);
 
-                saveTime = System.currentTimeMillis() - t0;
-                if (model.isOpenInAppSelected()) {
-                    File targetFile = model.getProductFile();
-                    if (targetFile == null || !targetFile.exists()) {
-                        targetFile = operatorTargetProduct.getFileLocation();
-                    }
-                    if (targetFile != null && targetFile.exists()) {
-                        product = ProductIO.readProduct(targetFile);
-                        if (product == null) {
-                            product = operatorTargetProduct; // todo - check - this cannot be ok!!! (nf)
-                        }
-                    }
-                    pm.worked(5);
-                }
-            } finally {
-                pm.done();
-                if (product != operatorTargetProduct) {
+                    productToReturn = ProductIO.readProduct(targetFile);
+
                     operatorTargetProduct.dispose();
                 }
+
+                this.totalTime = System.currentTimeMillis() - startTime;
+            } finally {
+                pm.done();
                 Preferences preferences = SnapApp.getDefault().getPreferences();
                 if (preferences.getBoolean(GPF.BEEP_AFTER_PROCESSING_PROPERTY, false)) {
                     Toolkit.getDefaultToolkit().beep();
                 }
             }
-            return product;
+            return productToReturn;
         }
 
         @Override
         protected void done() {
-            final TargetProductSelectorModel model = getTargetProductSelector().getModel();
-            long totalSaveTime = saveTime + createTargetProductTime;
             try {
                 final Product targetProduct = get();
-                if (model.isSaveToFileSelected() && model.isOpenInAppSelected()) {
-                    appContext.getProductManager().addProduct(targetProduct);
-                    showSaveAndOpenInAppInfo(totalSaveTime);
-                } else if (model.isOpenInAppSelected()) {
-                    appContext.getProductManager().addProduct(targetProduct);
+                if (this.model.isSaveToFileSelected() && this.model.isOpenInAppSelected()) {
+                    this.productManager.addProduct(targetProduct);
+                    showSaveAndOpenInAppInfo(this.totalTime);
+                } else if (this.model.isOpenInAppSelected()) {
+                    this.productManager.addProduct(targetProduct);
                     showOpenInAppInfo();
                 } else {
-                    showSaveInfo(totalSaveTime);
+                    showSaveInfo(this.totalTime);
                 }
             } catch (InterruptedException e) {
                 // ignore
@@ -486,5 +476,4 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             }
         }
     }
-
 }

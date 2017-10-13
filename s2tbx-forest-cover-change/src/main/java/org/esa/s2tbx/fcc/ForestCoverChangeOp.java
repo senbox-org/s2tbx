@@ -40,6 +40,7 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.landcover.gpf.AddLandCoverOp;
 import org.esa.snap.utils.ProductHelper;
@@ -381,7 +382,10 @@ public class ForestCoverChangeOp extends Operator {
             logger.log(Level.FINE, "Extract "+sourceBandNames.length+" bands for source product '" + sourceProduct.getName()+"'");
         }
 
-        Mask sourceMask = sourceProduct.getMaskGroup().get(sourceMaskName);
+        Mask sourceMask = null;
+        if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
+            sourceMask = sourceProduct.getMaskGroup().get(sourceMaskName);
+        }
         String[] sourceMaskNamesToExtract = null;
         if (sourceMask != null) {
             sourceMaskNamesToExtract = new String[]{ sourceMaskName };
@@ -395,7 +399,10 @@ public class ForestCoverChangeOp extends Operator {
         WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampledProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryParentFolder);
         Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
-        Mask resampledMask = resampledProduct.getMaskGroup().get(sourceMaskName);
+        Mask resampledMask = null;
+        if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
+            resampledMask = resampledProduct.getMaskGroup().get(sourceMaskName);
+        }
         Path temporaryMaskFolder = null;
         if (resampledMask != null) {
             WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(resampledMask, tileSize.width, tileSize.height, temporaryParentFolder);
