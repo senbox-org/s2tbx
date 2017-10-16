@@ -2,12 +2,7 @@ package org.esa.s2tbx.coregistration;
 
 import com.bc.ceres.jai.GeneralFilterFunction;
 import com.bc.ceres.jai.opimage.GeneralFilterOpImage;
-import it.geosolutions.jaiext.border.*;
 import org.esa.s2tbx.coregistration.operators.ComputeCompareOp;
-import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
-import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
-import org.esa.s3tbx.dataio.landsat.geotiff.LandsatGeotiffReader;
-import org.esa.snap.core.dataio.dimap.DimapProductReader;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Operator;
@@ -16,10 +11,6 @@ import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
-import org.esa.snap.dataio.geotiff.GeoTiffProductReaderPlugIn;
-import org.esa.snap.dataio.geotiff.GeoTiffProductWriter;
-import org.esa.snap.dataio.geotiff.GeoTiffProductWriterPlugIn;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.*;
@@ -31,7 +22,6 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.util.Hashtable;
 
 /**
@@ -98,11 +88,11 @@ public class CoregistrationOp extends Operator {
             processedMasterImage = applyContrast(sourceMasterImage);
             processedSlaveImage = applyContrast(sourceSlaveImage);
         }
-//
-//        BufferedImage[] pyramidMaster = pyramid(processedMasterImage, levels);
-//        BufferedImage[] pyramidSlave = pyramid(processedSlaveImage, levels);
-        BufferedImage[] pyramidMaster = pyramid2("D:\\Sentinel2_PROJECT\\p_down\\output\\in\\pyram_0_", levels);
-        BufferedImage[] pyramidSlave = pyramid2("D:\\Sentinel2_PROJECT\\p_down\\output\\in\\pyram_1_", levels);
+
+        BufferedImage[] pyramidMaster = pyramid(processedMasterImage, levels);
+        BufferedImage[] pyramidSlave = pyramid(processedSlaveImage, levels);
+//        BufferedImage[] pyramidMaster = pyramid2("D:\\Sentinel2_PROJECT\\p_down\\output\\in\\pyram_0_", levels);
+//        BufferedImage[] pyramidSlave = pyramid2("D:\\Sentinel2_PROJECT\\p_down\\output\\in\\pyram_1_", levels);
 
         BufferedImage u = null, v = null, meshRow = null, meshCol = null;
 
@@ -343,18 +333,19 @@ public class CoregistrationOp extends Operator {
         return imagePyramid;
     }
 
+    //TODO only for tests
     private BufferedImage[] pyramid2(String prefix, int level) {
         BufferedImage[] imagePyramid = new BufferedImage[level + 1];
 
         for (int k = 0; k <= level; k++) {
-            try {
-                GeoTiffProductReader reader = new GeoTiffProductReader(new GeoTiffProductReaderPlugIn());
-                Product prod;
-                prod = reader.readProductNodes(new File(prefix + (k + 1) + ".tif"), null);
-                imagePyramid[k] = convertBufferedImage(prod.getBandAt(0).getSourceImage().getImage(0));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                GeoTiffProductReader reader = new GeoTiffProductReader(new GeoTiffProductReaderPlugIn());
+//                Product prod;
+//                prod = reader.readProductNodes(new File(prefix + (k + 1) + ".tif"), null);
+//                imagePyramid[k] = convertBufferedImage(prod.getBandAt(0).getSourceImage().getImage(0));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
         return imagePyramid;
     }
@@ -389,7 +380,7 @@ public class CoregistrationOp extends Operator {
         return finalImage;
     }
 
-    private static BufferedImage imageFromMatrix(float[][] input) {
+    private BufferedImage imageFromMatrix(float[][] input) {
         int width = input[0].length;
         int height = input.length;
 
@@ -402,7 +393,7 @@ public class CoregistrationOp extends Operator {
         return imageFromArray(inputArray, width, height);
     }
 
-    private static BufferedImage imageFromArray(float[] input, int width, int height) {
+    private BufferedImage imageFromArray(float[] input, int width, int height) {
         SampleModel sampleModel = new PixelInterleavedSampleModel(DataBuffer.TYPE_FLOAT, width, height, 1, width, new int[]{0});
         ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
         ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.TRANSLUCENT, DataBuffer.TYPE_FLOAT);
@@ -412,7 +403,7 @@ public class CoregistrationOp extends Operator {
         return new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
     }
 
-    private static float[][] matrixFromImage(BufferedImage img) {
+    private float[][] matrixFromImage(BufferedImage img) {
         int imgHeight = img.getHeight();
         int imgWidth = img.getWidth();
         float[][] imgData = new float[imgHeight][imgWidth];
@@ -462,7 +453,7 @@ public class CoregistrationOp extends Operator {
         return imgData;
     }
 
-    private static BufferedImage addBorder(BufferedImage inputImage, int left, int right, int top, int bottom) {
+    private BufferedImage addBorder(BufferedImage inputImage, int left, int right, int top, int bottom) {
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(inputImage);
         pb.add(left);
@@ -541,7 +532,8 @@ public class CoregistrationOp extends Operator {
         return result;
     }
 
-    private static BufferedImage interpolate(BufferedImage img, BufferedImage dy, BufferedImage dx) {
+    //TODO not used
+    private BufferedImage interpolate4(BufferedImage img, BufferedImage dy, BufferedImage dx) {
         assert img.getWidth() == dx.getWidth();
         assert img.getHeight() == dx.getHeight();
         assert img.getWidth() == dy.getWidth();
@@ -589,7 +581,7 @@ public class CoregistrationOp extends Operator {
         return result;
     }
 
-    private static BufferedImage interpolate5(BufferedImage img, BufferedImage dx, BufferedImage dy) {
+    private BufferedImage interpolate(BufferedImage img, BufferedImage dx, BufferedImage dy) {
         float[][] mimg = matrixFromImage(img);
         float[][] mdx = matrixFromImage(dx);
         float[][] mdy = matrixFromImage(dy);
@@ -601,7 +593,7 @@ public class CoregistrationOp extends Operator {
         return rimg;
     }
 
-    private static BufferedImage interpolate() {
+    private BufferedImage interpolate() {
 
         float[][] A = new float[3][3];
         float[][] x = new float[3][3];
@@ -747,86 +739,84 @@ public class CoregistrationOp extends Operator {
         return ScaleDescriptor.create(sourceImage, rescaleXfactor, rescaleYfactor, 0.0f, 0.0f, interp, null).getAsBufferedImage();
     }
 
-    public static void main(String args[]) {
-        try {
-            //interpolate();
-            int length = 200;
-            float[][] A = new float[length][length];
-            float[][] x = new float[length][length];
-            float[][] y = new float[length][length];
-            for (int i = 0; i < length; i++) {
-                for (int j = 0; j < length; j++) {
-                    A[i][j] = i * length + j + 1;
-                    x[i][j] = j;
-                    y[i][j] = i;
-                }
-            }
-            //MatrixUtils.rank_inf(A, 1);
-            BufferedImage result = interpolate(imageFromMatrix(A), imageFromMatrix(x), imageFromMatrix(y));
-            int i = 9;
-            /*float[] values = new float[25];
-            float[] x = new float[25];
-            float[] y = new float[25];
-            for(int i=0;i<25;i++){
-                values[i]=i+1;
-                x[i]=i/5;
-                y[i]=i%5;
-            }
-            BufferedImage ri = interpolate(imageFromArray(values, 5, 5), imageFromArray(x, 5, 5), imageFromArray(y, 5, 5));
-            ri.getData();*/
-
-            /*File file = new File("D:\\temp\\SBC_unp-907-13.tif");
-            SeekableStream s = new FileSeekableStream(file);
-
-            TIFFDecodeParam param = null;
-
-            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", s, param);
-
-            NullOpImage op1 =
-                    new NullOpImage(dec.decodeAsBufferedImage(0),
-                            null,
-                            OpImage.OP_IO_BOUND,
-                            null);
-
-            BufferedImage pg1 =  op1.getAsBufferedImage();
-
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(pg1);
-            pb.addSource(pg1);
-            BufferedImage dx = (BufferedImage) JAI.create("add", pb);*/
-
-
-            /*Sentinel2L2AProductReader reader = new Sentinel2L2AProductReader(null, "EPSG:32632");
-            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\S2A_MSIL2A_20170805T102031_N0205_R065_T32TNQ_20170805T102535.SAFE\\MTD_MSIL2A.xml"), null);
-            prod1.getBandAt(0).getData();
-
-            LandsatGeotiffReader reader2 = new LandsatGeotiffReader(null);
-            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\LC08_L1TP_193029_20170805_20170812_01_T1.tar.gz"), null);
-            prod2.getBandAt(0).getData();*/
-
-            /*GeoTiffProductReader reader = new GeoTiffProductReader(null);
-            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\1000prod\\subset_B2_of_S2A_resampled1000.tif"), null);
-            GeoTiffProductReader reader2 = new GeoTiffProductReader(null);
-            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\1000prod\\subset_blue_of_landsat1000.tif"), null);*/
-
-
-            GeoTiffProductReader reader = new GeoTiffProductReader(new GeoTiffProductReaderPlugIn());
-//            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\1000prod\\subset_B2_of_S2A_resampled1000.dim"), null);
-            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\gefolki\\datasets\\radar_bandep.tif"), null);
-            GeoTiffProductReader reader2 = new GeoTiffProductReader(new GeoTiffProductReaderPlugIn());
-//            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\1000prod\\subset_B2_of_S2A_resampled1000.dim"), null);
-            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\gefolki\\datasets\\lidar_georef.tif"), null);
-
-            CoregistrationOp op = new CoregistrationOp();
-            op.setSourceProducts(prod1, prod2);
-            op.initialize();
-
-            op.targetProduct.getBandAt(0).getData();
-            //write target product
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
+//    public static void main(String args[]) {
+//        try {
+//            //interpolate();
+//            int length = 200;
+//            float[][] A = new float[length][length];
+//            float[][] x = new float[length][length];
+//            float[][] y = new float[length][length];
+//            for (int i = 0; i < length; i++) {
+//                for (int j = 0; j < length; j++) {
+//                    A[i][j] = i * length + j + 1;
+//                    x[i][j] = j;
+//                    y[i][j] = i;
+//                }
+//            }
+//            //MatrixUtils.rank_inf(A, 1);
+//            BufferedImage result = interpolate(imageFromMatrix(A), imageFromMatrix(x), imageFromMatrix(y));
+//            int i = 9;
+//            /*float[] values = new float[25];
+//            float[] x = new float[25];
+//            float[] y = new float[25];
+//            for(int i=0;i<25;i++){
+//                values[i]=i+1;
+//                x[i]=i/5;
+//                y[i]=i%5;
+//            }
+//            BufferedImage ri = interpolate(imageFromArray(values, 5, 5), imageFromArray(x, 5, 5), imageFromArray(y, 5, 5));
+//            ri.getData();*/
+//
+//            /*File file = new File("D:\\temp\\SBC_unp-907-13.tif");
+//            SeekableStream s = new FileSeekableStream(file);
+//
+//            TIFFDecodeParam param = null;
+//
+//            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", s, param);
+//
+//            NullOpImage op1 =
+//                    new NullOpImage(dec.decodeAsBufferedImage(0),
+//                            null,
+//                            OpImage.OP_IO_BOUND,
+//                            null);
+//
+//            BufferedImage pg1 =  op1.getAsBufferedImage();
+//
+//            ParameterBlock pb = new ParameterBlock();
+//            pb.addSource(pg1);
+//            pb.addSource(pg1);
+//            BufferedImage dx = (BufferedImage) JAI.create("add", pb);*/
+//
+//
+//            /*Sentinel2L2AProductReader reader = new Sentinel2L2AProductReader(null, "EPSG:32632");
+//            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\S2A_MSIL2A_20170805T102031_N0205_R065_T32TNQ_20170805T102535.SAFE\\MTD_MSIL2A.xml"), null);
+//            prod1.getBandAt(0).getData();
+//
+//            LandsatGeotiffReader reader2 = new LandsatGeotiffReader(null);
+//            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\LC08_L1TP_193029_20170805_20170812_01_T1.tar.gz"), null);
+//            prod2.getBandAt(0).getData();*/
+//
+//            GeoTiffProductReader reader = new GeoTiffProductReader(null);
+//            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\1000prod\\subset_B2_of_S2A_resampled_resampled1000.tif"), null);
+//            GeoTiffProductReader reader2 = new GeoTiffProductReader(null);
+//            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\1000prod\\subset_blue_of_landsat_resampled1000.tif"), null);
+//
+//
+////            GeoTiffProductReader reader = new GeoTiffProductReader(new GeoTiffProductReaderPlugIn());
+////            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\gefolki\\datasets\\radar_bandep.tif"), null);
+////            GeoTiffProductReader reader2 = new GeoTiffProductReader(new GeoTiffProductReaderPlugIn());
+////            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\gefolki\\datasets\\lidar_georef.tif"), null);
+//
+//            CoregistrationOp op = new CoregistrationOp();
+//            op.setSourceProducts(prod1, prod2);
+//            op.initialize();
+//
+//            op.targetProduct.getBandAt(0).getData();
+//            //write target product
+//
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//    }
 
 }
