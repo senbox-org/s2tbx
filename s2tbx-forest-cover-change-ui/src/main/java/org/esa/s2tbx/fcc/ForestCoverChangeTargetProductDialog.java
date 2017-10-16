@@ -35,6 +35,7 @@ import org.esa.snap.core.gpf.ui.OperatorMenu;
 import org.esa.snap.core.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.core.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
+import org.esa.snap.core.gpf.ui.TargetProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelectorModel;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.rcp.SnapApp;
@@ -83,7 +84,9 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
 
         this.operatorName = operatorName;
         this.targetProductNameSuffix = "";
-
+        final TargetProductSelector selector = getTargetProductSelector();
+        selector.getModel().setSaveToFileSelected(false);
+        selector.getSaveToFileCheckBox().setEnabled(true);
         processAnnotationsRec(ForestCoverChangeOp.class);
         this.operatorDescriptor = new OperatorDescriptorClass( this.parameterDescriptors.toArray(new ParameterDescriptor[0]),
                 this.sourceProductDescriptors.toArray(new SourceProductDescriptor[0]));
@@ -128,7 +131,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             ProductManager productManager = appContext.getProductManager();
             Component parentComponent = getJDialog();
             TargetProductSwingWorker worker = new TargetProductSwingWorker(parentComponent, productManager, model, currentSourceProduct,
-                                                                           previousSourceProduct, this.parameterSupport.getParameterMap());
+                    previousSourceProduct, this.parameterSupport.getParameterMap());
             worker.executeWithBlocking(); // start the thread
         } catch (Throwable t) {
             handleInitialisationError(t);
