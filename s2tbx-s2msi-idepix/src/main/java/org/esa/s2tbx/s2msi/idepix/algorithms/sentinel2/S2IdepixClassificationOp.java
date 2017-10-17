@@ -3,14 +3,8 @@ package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.FlagCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.GeoPos;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.PixelPos;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
+import org.esa.s2tbx.s2msi.idepix.util.SchillerNeuralNetWrapper;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -23,6 +17,8 @@ import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.dem.gpf.AddElevationOp;
 
 import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -100,41 +96,30 @@ public class S2IdepixClassificationOp extends Operator {
 
     // NN stuff is deactivated unless we have a better net
 
-    //    @Parameter(defaultValue = "1.95",
-//            label = " NN cloud ambiguous lower boundary",
-//            description = " NN cloud ambiguous lower boundary")
-//    private double nnCloudAmbiguousLowerBoundaryValue;
-    private double nnCloudAmbiguousLowerBoundaryValue = 1.95;
-
-    //    @Parameter(defaultValue = "3.45",
-//            label = " NN cloud ambiguous/sure separation value",
-//            description = " NN cloud ambiguous cloud ambiguous/sure separation value")
-//    private double nnCloudAmbiguousSureSeparationValue;
-    private double nnCloudAmbiguousSureSeparationValue = 3.45;
-
-    //    @Parameter(defaultValue = "4.3",
-//            label = " NN cloud sure/snow separation value",
-//            description = " NN cloud ambiguous cloud sure/snow separation value")
-//    private double nnCloudSureSnowSeparationValue;
-    private double nnCloudSureSnowSeparationValue = 4.3;
+    private double nnClearSnowIceLowerBoundaryValue = 1.44;
+    private double nnCloudSureAmbiguousSeparationValue = 2.4;
+    private double nnCloudAmbiguousClearLandSeparationValue = 3.48;
+    private double nnClearWaterUpperBoundaryValue = 4.48;
 
     //    @Parameter(defaultValue = "false",
 //            label = " Apply NN for pixel classification purely (not combined with feature value approach)",
 //            description = " Apply NN for pixelclassification purely (not combined with feature value  approach)")
 //    private boolean applyNNPure;
-    private boolean applyNNPure = false;
+//    private boolean applyNNPure = false;
+    private boolean applyNNPure = true;  // NEW Schiller NN, Oct. 2017
 
     //    @Parameter(defaultValue = "false",
 //            label = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)",
 //            description = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)")
 //    private boolean ignoreNN;
-    boolean ignoreNN = true;       // currently bad results. Wait for better S2 NN.
+//    boolean ignoreNN = true;       // currently bad results. Wait for better S2 NN.
+    boolean ignoreNN = false;       // NEW Schiller NN, Oct. 2017
 
     //    @Parameter(defaultValue = "true",
 //            label = " Write NN output value to the target product",
 //            description = " Write NN output value to the target product")
-//    private boolean copyNNValue = true;
-    private boolean copyNNValue = false;
+    private boolean copyNNValue = true;
+//    private boolean copyNNValue = false;
 
 
     @SourceProduct(alias = "l1c", description = "The MSI L1C source product.")
@@ -177,8 +162,8 @@ public class S2IdepixClassificationOp extends Operator {
     private Product elevationProduct;
 
 
-//    public static final String NN_NAME = "20x4x2_1012.9.net";    // Landsat 'all' NN
-//    ThreadLocal<SchillerNeuralNetWrapper> neuralNet;
+    public static final String NN_NAME = "20x4x2_1012.9.net";    // Landsat 'all' NN
+    ThreadLocal<SchillerNeuralNetWrapper> neuralNet;
 
 
     @Override
@@ -192,7 +177,7 @@ public class S2IdepixClassificationOp extends Operator {
                                                    Color.GREEN, 0.0);
         validPixelMask.setOwner(getSourceProduct());
 
-//        readSchillerNeuralNets();
+        readSchillerNeuralNets();
         createTargetProduct();
 
         if (waterMaskProduct != null) {
@@ -270,59 +255,54 @@ public class S2IdepixClassificationOp extends Operator {
                                                                             y,
                                                                             x);
 
-                    setCloudFlag(cloudFlagTargetTile, y, x, s2MsiAlgorithm);
+                    if (ignoreNN) {
+                        // JM/GK ideas
+                        setCloudFlag(cloudFlagTargetTile, y, x, s2MsiAlgorithm);
+                    } else {
+                        // we want Schiller now (20171017)
+                        final double[] nnOutput = s2MsiAlgorithm.getNnOutput();
 
-                    // apply improvement from NN approach...
-                    final double[] nnOutput = s2MsiAlgorithm.getNnOutput();
+                        // 'pure Schiller'
+                        // 0 < nn < 1.44: clear snow/ice
+                        // 1.44 < nn < 2.4: opaque cloud
+                        // 2.4 < nn < 3.48: semi-transp.
+                        // 3.48 < nn < 4.48: clear land
+                        // nn > 4.48: clear water
+                        if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_INVALID)) {
+                            cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, false);
+                            cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, false);
+                            cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, false);
+                            cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, false);
 
-                    if (!ignoreNN) {
-                        if (applyNNPure) {
-                            // 'pure Schiller'
-                            if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_INVALID)) {
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, false);
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, false);
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, false);
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, false);
-                                if (nnOutput[0] > nnCloudAmbiguousLowerBoundaryValue &&
-                                        nnOutput[0] <= nnCloudAmbiguousSureSeparationValue) {
-                                    // this would be as 'CLOUD_AMBIGUOUS'...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, true);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
-                                }
-                                if (nnOutput[0] > nnCloudAmbiguousSureSeparationValue &&
-                                        nnOutput[0] <= nnCloudSureSnowSeparationValue) {
-                                    // this would be as 'CLOUD_SURE'...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, true);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
-                                }
-                                if (nnOutput[0] > nnCloudSureSnowSeparationValue) {
-                                    // this would be as 'SNOW/ICE'...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, true);
-                                }
+                            if (nnOutput[0] < nnClearSnowIceLowerBoundaryValue) {
+                                // this would be as 'CLOUD_AMBIGUOUS'...
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, true);
                             }
-                        } else {
-                            // just 'refinement with Schiller', as with old net. // todo: what do we want??
-                            if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_CLOUD) &&
-                                    !cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE)) {
-                                if (nnOutput[0] > nnCloudAmbiguousLowerBoundaryValue &&
-                                        nnOutput[0] <= nnCloudAmbiguousSureSeparationValue) {
-                                    // this would be as 'CLOUD_AMBIGUOUS' in CC and makes many coastlines as cloud...
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, true);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
-                                }
-                                if (nnOutput[0] > nnCloudAmbiguousSureSeparationValue &&
-                                        nnOutput[0] <= nnCloudSureSnowSeparationValue) {
-                                    //   'CLOUD_SURE' as in CC (20140424, OD)
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, true);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, false);
-                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
-                                }
+                            if (nnOutput[0] > nnClearSnowIceLowerBoundaryValue &&
+                                    nnOutput[0] <= nnCloudSureAmbiguousSeparationValue) {
+                                // this would be as 'CLOUD_SURE'...
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, true);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
+                            }
+                            if (nnOutput[0] > nnCloudSureAmbiguousSeparationValue &&
+                                    nnOutput[0] <= nnCloudAmbiguousClearLandSeparationValue) {
+                                // this would be as 'CLOUD_AMBIGUOUS'...
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, true);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
+                            }
+                            if (nnOutput[0] > nnCloudAmbiguousClearLandSeparationValue &&
+                                    nnOutput[0] <= nnClearWaterUpperBoundaryValue) {
+                                // this would be as 'CLEAR_LAND'...
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_LAND, true);
+                            }
+                            if (nnOutput[0] > nnCloudAmbiguousClearLandSeparationValue) {
+                                // this would be as 'CLEAR_WATER'...
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_WATER, true);
                             }
                         }
-
-                    }
-                    if (nnTargetTile != null) {
-                        nnTargetTile.setSample(x, y, nnOutput[0]);
+                        if (nnTargetTile != null) {
+                            nnTargetTile.setSample(x, y, nnOutput[0]);
+                        }
                     }
 
                     // for given instrument, compute more pixel properties and write to distinct band
@@ -424,13 +404,13 @@ public class S2IdepixClassificationOp extends Operator {
         final boolean isValid = validPixelTile.getSampleBoolean(x, y);
         s2MsiAlgorithm.setInvalid(!isValid);
 
-//        SchillerNeuralNetWrapper nnWrapper = neuralNet.get();
-//        double[] inputVector = nnWrapper.getInputVector();
+        SchillerNeuralNetWrapper nnWrapper = neuralNet.get();
+        double[] inputVector = nnWrapper.getInputVector();
 //        float[] s2ToLandsatReflectances = mapToLandsatReflectances(s2MsiReflectances, inputVector);
-//        for (int i = 0; i < inputVector.length; i++) {
-//            inputVector[i] = Math.sqrt(s2ToLandsatReflectances[i]);
-//        }
-//        s2MsiAlgorithm.setNnOutput(nnWrapper.getNeuralNet().calc(inputVector));
+        for (int i = 0; i < inputVector.length; i++) {
+            inputVector[i] = Math.sqrt(s2MsiReflectances[i]);
+        }
+        s2MsiAlgorithm.setNnOutput(nnWrapper.getNeuralNet().calc(inputVector));
 
 //        final boolean isLand = watermaskFraction < WATERMASK_FRACTION_THRESH;
 //        s2MsiAlgorithm.setL1FlagLand(isLand);
@@ -462,39 +442,6 @@ public class S2IdepixClassificationOp extends Operator {
         return geoPos;
     }
 
-//    private float[] mapToLandsatReflectances(float[] s2MsiReflectances, double[] inputVector) {
-//        //        the net has 8 inputs:
-//        //        input  1 is SQRT_coastal_aerosol in [0.255898,1.388849]
-//        //        input  2 is SQRT_blue in [0.221542,1.479245]
-//        //        input  3 is SQRT_green in [0.170573,1.543012]
-//        //        input  4 is SQRT_red in [0.125654,1.678217]
-//        //        input  5 is SQRT_near_infrared in [0.082347,1.775742]
-//        //        input  6 is SQRT_swir_1 in [0.032031,1.356978]
-//        //        input  7 is SQRT_swir_2 in [0.008660,1.840141]
-//        //        input  8 is SQRT_cirrus in [0.000000,0.878521]
-//
-//        // L1 --> B1         440/443
-//        // L2 --> B2         480/490
-//        // L3 --> B3         560/560
-//        // L4 --> B4         655/665
-//        // L5 --> B8A        865/865
-//        // L6 --> B11        1610/1610
-//        // L7 --> B12        2200/2190
-//        // L9 --> B10        1370/1375
-//
-//        float[] mappedToLandsatReflectances = new float[inputVector.length];
-//        if (inputVector.length < 8) {
-//            throw new OperatorException("Incompatible NN: " + NN_NAME + " - cannot continue.");
-//        }
-//        System.arraycopy(s2MsiReflectances, 0, mappedToLandsatReflectances, 0, 4);
-//        mappedToLandsatReflectances[4] = s2MsiReflectances[8];
-//        mappedToLandsatReflectances[5] = s2MsiReflectances[11];
-//        mappedToLandsatReflectances[6] = s2MsiReflectances[12];
-//        mappedToLandsatReflectances[7] = s2MsiReflectances[10];
-//
-//        return mappedToLandsatReflectances;
-//    }
-
     private double calcRhoToa442ThresholdTerm(double sza, double vza, double saa, double vaa) {
         //final double thetaScatt = IdepixUtils.calcScatteringAngle(sza, vza, saa, vaa) * MathUtils.DTOR;
         //double cosThetaScatt = Math.cos(thetaScatt);
@@ -503,13 +450,13 @@ public class S2IdepixClassificationOp extends Operator {
     }
 
 
-//    private void readSchillerNeuralNets() {
-//        try (InputStream merisLandIS = getClass().getResourceAsStream(NN_NAME)) {
-//            neuralNet = SchillerNeuralNetWrapper.create(merisLandIS);
-//        } catch (IOException e) {
-//            throw new OperatorException("Cannot read Neural Nets: " + e.getMessage());
-//        }
-//    }
+    private void readSchillerNeuralNets() {
+        try (InputStream inputStream = getClass().getResourceAsStream(NN_NAME)) {
+            neuralNet = SchillerNeuralNetWrapper.create(inputStream);
+        } catch (IOException e) {
+            throw new OperatorException("Cannot read Neural Nets: " + e.getMessage());
+        }
+    }
 
     void createTargetProduct() throws OperatorException {
         int sceneWidth = sourceProduct.getSceneRasterWidth();
