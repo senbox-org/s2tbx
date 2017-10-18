@@ -304,6 +304,10 @@ public class S2IdepixAlgorithm {
         this.clThresh = clThresh;
     }
 
+    public void setNnOutput(double[] nnOutput) {
+        this.nnOutput = nnOutput;
+    }
+
     // GETTERS
     public float getNdsiThreshold() {
         return NDSI_THRESH;

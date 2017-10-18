@@ -71,11 +71,10 @@ public class S2IdepixOp extends Operator {
 //    private boolean applyNNPure;
     private boolean applyNNPure = false;
 
-    //    @Parameter(defaultValue = "false",
-//            label = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)",
-//            description = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)")
-//    private boolean ignoreNN;
-    boolean ignoreNN = true;       // currently bad results. Wait for better S2 NN.
+    @Parameter(defaultValue = "false",
+            label = " Ignore NN and only use feature value approach for pixel classification",
+            description = " Ignore NN and only use feature value approach for pixel classification")
+    private boolean ignoreNN;
 
     //    @Parameter(defaultValue = "true",
 //            label = " Write NN output value to the target product",
