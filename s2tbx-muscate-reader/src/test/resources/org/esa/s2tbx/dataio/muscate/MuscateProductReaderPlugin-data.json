@@ -1,0 +1,9 @@
+{
+  "testProducts": [
+    {
+      "id": "MUSCATE-Zip-31TFK",
+      "relativePath": "S2/MUSCATE/SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0.zip",
+      "description": "Muscate product in an archive"
+    }
+  ]
+}
