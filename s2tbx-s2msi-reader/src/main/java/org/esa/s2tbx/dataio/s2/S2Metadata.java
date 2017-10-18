@@ -779,7 +779,20 @@ public abstract class S2Metadata {
             AnglesGrid anglesGrid= S2Metadata.wrapAngles(zenAnglesString, azAnglesString);
             anglesGrid.setBandId(Integer.parseInt(viewingAnglesElement.getAttributeString("bandId")));
             anglesGrid.setDetectorId(Integer.parseInt(viewingAnglesElement.getAttributeString("detectorId")));
-            anglesGrids.add(anglesGrid);
+            //Compute index for adding in order by band and by detector
+            int index = 0;
+            if(anglesGrids.size() > 0) {
+                int currentBand = anglesGrid.bandId;
+                int currentDetector = anglesGrid.detectorId;
+                while(index < anglesGrids.size() && anglesGrids.get(index).getBandId() < currentBand) {
+                    index++;
+                }
+                while(index < anglesGrids.size() && anglesGrids.get(index).getBandId() == currentBand && anglesGrids.get(index).getDetectorId() < currentDetector) {
+                    index++;
+                }
+            }
+
+            anglesGrids.add(index,anglesGrid);
         }
         return anglesGrids.toArray(new AnglesGrid[anglesGrids.size()]);
     }
