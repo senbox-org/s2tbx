@@ -5,6 +5,7 @@ import com.bc.ceres.jai.opimage.GeneralFilterOpImage;
 import org.esa.s2tbx.coregistration.operators.ComputeCompareOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -31,7 +32,7 @@ import java.util.Hashtable;
  * @since 6.0.0
  */
 @OperatorMetadata(
-        alias = "S2tbx-CoregistrationOp",
+        alias = "CoregistrationOp",
         version = "1.0",
         category = "Optical",
         description = "The 'Coregistration Processor' operator ...",
@@ -297,7 +298,7 @@ public class CoregistrationOp extends Operator {
         writeImage(targetImage, "D:\\Sentinel2_PROJECT\\p_down\\output\\targetImage.tif");
 
         Band targetBand = new Band(originalSlaveBand.getName(),
-                originalSlaveBand.getDataType(),
+                ProductData.TYPE_FLOAT32,
                 originalSlaveBand.getRasterWidth(),
                 originalSlaveBand.getRasterHeight());
         targetBand.setSourceImage(targetImage);
