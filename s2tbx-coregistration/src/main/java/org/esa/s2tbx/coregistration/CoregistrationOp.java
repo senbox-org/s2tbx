@@ -69,6 +69,7 @@ public class CoregistrationOp extends Operator {
                     slaveProduct.getSceneRasterWidth(),
                     slaveProduct.getSceneRasterHeight());
             targetProduct.setDescription(slaveProduct.getDescription());
+            targetProduct.setSceneGeoCoding(slaveProduct.getSceneGeoCoding());
             doExecute(masterProduct, slaveProduct, 0);
         }
     }
