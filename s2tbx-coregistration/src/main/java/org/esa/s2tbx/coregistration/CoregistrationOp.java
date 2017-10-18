@@ -10,8 +10,10 @@ import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
+import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.ArrayUtils;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.*;
@@ -23,6 +25,7 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -50,31 +53,52 @@ public class CoregistrationOp extends Operator {
     private Product targetProduct;
 
     public boolean contrast = false;
+
+    @Parameter(label = "Band Index", defaultValue = "0", description = "Band Index!!!")
+    public int bandIndex = 0;
+
+    @Parameter(label = "Number of levels", defaultValue = "6", description = "The number of levels to process the images.")
     public int levels = 6;
+
+    @Parameter(label = "Rank number", defaultValue = "4", description = "Value used to compute the rank.")
     public int rank = 4;
-    public int iterations = 1;
+
+    @Parameter(label = "Number of interations", defaultValue = "2", description = "The number of interations for each level and for each radius.")
+    public int iterations = 2;
+
     private static final float[] burt1D = new float[]{0.05f, 0.25f, 0.4f, 0.25f, 0.05f};
-    private static final int[] radius = new int[]{32, 28, 24, 20, 16, 12, 8};
+
+    @Parameter(label = "Radius values", defaultValue = "32, 28, 24, 20, 16, 12, 8", description = "The radius integer values splitted by comma.")
+    public static final String radius = "32, 28, 24, 20, 16, 12, 8";
+
+    @Parameter(label = "Temp save location", defaultValue = "D:\\Sentinel2_PROJECT\\p_down\\output", description = "....")
+    public static final String saveLocation = "D:\\Sentinel2_PROJECT\\p_down\\output";
+
 
     public CoregistrationOp() {
     }
 
     @Override
     public void initialize() throws OperatorException {
-        if (getSourceProducts().length == 2) {
-            masterProduct = getSourceProducts()[0];
-            slaveProduct = getSourceProducts()[1];
+        int[] radArray;
+        try {
+            radArray = Arrays.stream(radius.split(","))
+                    .map(String::trim).mapToInt(Integer::parseInt).toArray();
+        }catch (Exception ex){
+            throw new OperatorException("Radius parameter not valid. Provide a list of integer values separated by comma!");
+        }
+        if(radArray != null && radArray.length > 0) {
             targetProduct = new Product("coregistered_" + slaveProduct.getName(),
-                    slaveProduct.getProductType(),
-                    slaveProduct.getSceneRasterWidth(),
-                    slaveProduct.getSceneRasterHeight());
+            slaveProduct.getProductType(),
+            slaveProduct.getSceneRasterWidth(),
+            slaveProduct.getSceneRasterHeight());
             targetProduct.setDescription(slaveProduct.getDescription());
             targetProduct.setSceneGeoCoding(slaveProduct.getSceneGeoCoding());
-            doExecute(masterProduct, slaveProduct, 0);
+            doExecute(masterProduct, slaveProduct, radArray);
         }
     }
 
-    public void doExecute(Product sourceMasterProduct, Product sourceSlaveProduct, int bandIndex) {
+    public void doExecute(Product sourceMasterProduct, Product sourceSlaveProduct, int[] radArray) {
         //IMPROVEMENT: if necessary, JAI dithering operation compresses the three bands of an RGB image to a single-banded byte image.
         long startTime = System.currentTimeMillis();
         int levelMaster = sourceMasterProduct.getBandAt(bandIndex).getMultiLevelModel().getLevelCount();
@@ -84,7 +108,16 @@ public class CoregistrationOp extends Operator {
         Band originalSlaveBand = sourceSlaveProduct.getBandAt(bandIndex);
         int levelSlave = originalSlaveBand.getMultiLevelModel().getLevelCount();
         BufferedImage sourceSlaveImage = convertBufferedImage(originalSlaveBand.getSourceImage().getImage(0));
+        float xFactor = (float) sourceMasterImage.getWidth() / sourceSlaveImage.getWidth();
+        float yFactor = (float) sourceMasterImage.getWidth() / sourceSlaveImage.getWidth();
         BufferedImage processedSlaveImage = sourceSlaveImage;
+        if(xFactor != 1f || yFactor != 1f) {
+            processedSlaveImage = resize(sourceSlaveImage, xFactor, yFactor,
+                    Interpolation.getInstance(Interpolation.INTERP_BICUBIC));
+        }
+        if(processedMasterImage.getWidth() != processedSlaveImage.getWidth() || processedMasterImage.getHeight() != processedSlaveImage.getHeight()){
+            throw new OperatorException("Slave image dimensions different from master image dimensions. Cannot apply algorithm!");
+        }
 
         if (contrast) {
             processedMasterImage = applyContrast(sourceMasterImage);
@@ -172,8 +205,8 @@ public class CoregistrationOp extends Operator {
             writeImage(Ixy, "D:\\Sentinel2_PROJECT\\p_down\\output\\IXY_" + (k + 1) + ".tif");
 
 
-            for (int rad = 0; rad < radius.length; rad++) {
-                int r = radius[rad];
+            for (int rad = 0; rad < radArray.length; rad++) {
+                int r = radArray[rad];
                 float[] fen = new float[2 * r + 1];
                 for (int j = 0; j < fen.length; j++) {
                     fen[j] = 1;
@@ -297,6 +330,13 @@ public class CoregistrationOp extends Operator {
 
         BufferedImage targetImage = interpolate(sourceSlaveImage, dx, dy);
         writeImage(targetImage, "D:\\Sentinel2_PROJECT\\p_down\\output\\targetImage.tif");
+
+        xFactor = sourceSlaveImage.getWidth() / targetImage.getWidth();
+        yFactor = sourceSlaveImage.getWidth() / targetImage.getWidth();
+        if(xFactor != 1f || yFactor != 1f) {
+            targetImage = resize(targetImage, xFactor, yFactor,
+                    Interpolation.getInstance(Interpolation.INTERP_BICUBIC));
+        }
 
         Band targetBand = new Band(originalSlaveBand.getName(),
                 ProductData.TYPE_FLOAT32,
