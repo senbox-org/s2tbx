@@ -108,12 +108,12 @@ public class S2IdepixClassificationOp extends Operator {
 //    private boolean applyNNPure = false;
     private boolean applyNNPure = true;  // NEW Schiller NN, Oct. 2017
 
-    //    @Parameter(defaultValue = "false",
-//            label = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)",
-//            description = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)")
-//    private boolean ignoreNN;
+    @Parameter(defaultValue = "false",
+            label = " Ignore NN and only use feature value approach for pixel classification ",
+            description = " Ignore NN and only use feature value approach for pixel classification ")
+    private boolean ignoreNN;
 //    boolean ignoreNN = true;       // currently bad results. Wait for better S2 NN.
-    boolean ignoreNN = false;       // NEW Schiller NN, Oct. 2017
+//    boolean ignoreNN = false;       // NEW Schiller NN, Oct. 2017
 
     //    @Parameter(defaultValue = "true",
 //            label = " Write NN output value to the target product",
@@ -171,10 +171,10 @@ public class S2IdepixClassificationOp extends Operator {
         setBands();
 
         validPixelMask = Mask.BandMathsType.create("__valid_pixel_mask", null,
-                                                   getSourceProduct().getSceneRasterWidth(),
-                                                   getSourceProduct().getSceneRasterHeight(),
-                                                   VALID_PIXEL_EXPRESSION,
-                                                   Color.GREEN, 0.0);
+                getSourceProduct().getSceneRasterWidth(),
+                getSourceProduct().getSceneRasterHeight(),
+                VALID_PIXEL_EXPRESSION,
+                Color.GREEN, 0.0);
         validPixelMask.setOwner(getSourceProduct());
 
         readSchillerNeuralNets();
@@ -247,13 +247,13 @@ public class S2IdepixClassificationOp extends Operator {
 
                     // set up pixel properties for given instruments...
                     S2IdepixAlgorithm s2MsiAlgorithm = createS2MsiAlgorithm(s2ReflectanceTiles,
-                                                                            szaTile, vzaTile, saaTile, vaaTile,
-                                                                            waterFractionTile,
-                                                                            elevationTile,
-                                                                            validPixelTile,
-                                                                            s2MsiReflectance,
-                                                                            y,
-                                                                            x);
+                            szaTile, vzaTile, saaTile, vaaTile,
+                            waterFractionTile,
+                            elevationTile,
+                            validPixelTile,
+                            s2MsiReflectance,
+                            y,
+                            x);
 
                     if (ignoreNN) {
                         // JM/GK ideas
@@ -361,7 +361,7 @@ public class S2IdepixClassificationOp extends Operator {
     private void copyReflectances() {
         for (int i = 0; i < S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
             final Band b = ProductUtils.copyBand(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[i], sourceProduct,
-                                                 targetProduct, true);
+                    targetProduct, true);
             b.setUnit("dl");
         }
     }
@@ -483,12 +483,12 @@ public class S2IdepixClassificationOp extends Operator {
             S2IdepixUtils.setNewBandProperties(whiteBand, "Whiteness", "dl", S2IdepixConstants.NO_DATA_VALUE, true);
             brightWhiteBand = targetProduct.addBand("bright_white_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(brightWhiteBand, "Brightwhiteness", "dl", S2IdepixConstants.NO_DATA_VALUE,
-                                               true);
+                    true);
 //            temperatureBand = targetProduct.addBand("temperature_value", ProductData.TYPE_FLOAT32);
 //            IdepixUtils.setNewBandProperties(temperatureBand, "Temperature", "K", IdepixConstants.NO_DATA_VALUE, true);
             spectralFlatnessBand = targetProduct.addBand("spectral_flatness_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(spectralFlatnessBand, "Spectral Flatness", "dl",
-                                               S2IdepixConstants.NO_DATA_VALUE, true);
+                    S2IdepixConstants.NO_DATA_VALUE, true);
             ndviBand = targetProduct.addBand("ndvi_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(ndviBand, "NDVI", "dl", S2IdepixConstants.NO_DATA_VALUE, true);
             ndsiBand = targetProduct.addBand("ndsi_value", ProductData.TYPE_FLOAT32);
@@ -497,30 +497,30 @@ public class S2IdepixClassificationOp extends Operator {
 //            IdepixUtils.setNewBandProperties(glintRiskBand, "GLINT_RISK", "dl", IdepixConstants.NO_DATA_VALUE, true);
             radioLandBand = targetProduct.addBand("radiometric_land_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(radioLandBand, "Radiometric Land Value", "", S2IdepixConstants.NO_DATA_VALUE,
-                                               true);
+                    true);
             radioWaterBand = targetProduct.addBand("radiometric_water_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(radioWaterBand, "Radiometric Water Value", "",
-                                               S2IdepixConstants.NO_DATA_VALUE, true);
+                    S2IdepixConstants.NO_DATA_VALUE, true);
 
             b3b11Band = targetProduct.addBand("b3b11_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(b3b11Band, "B3 B11 Value", "",
-                                               S2IdepixConstants.NO_DATA_VALUE, true);
+                    S2IdepixConstants.NO_DATA_VALUE, true);
 
             tc1Band = targetProduct.addBand("tc1_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(tc1Band, "TC1 Value", "",
-                                               S2IdepixConstants.NO_DATA_VALUE, true);
+                    S2IdepixConstants.NO_DATA_VALUE, true);
 
             tc4Band = targetProduct.addBand("tc4_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(tc4Band, "TC4 Value", "",
-                                               S2IdepixConstants.NO_DATA_VALUE, true);
+                    S2IdepixConstants.NO_DATA_VALUE, true);
 
             tc4CirrusBand = targetProduct.addBand("tc4cirrus_water_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(tc4CirrusBand, "TC4 Cirrus Value", "",
-                                               S2IdepixConstants.NO_DATA_VALUE, true);
+                    S2IdepixConstants.NO_DATA_VALUE, true);
 
             ndwiBand = targetProduct.addBand("ndwi_value", ProductData.TYPE_FLOAT32);
             S2IdepixUtils.setNewBandProperties(ndwiBand, "NDWI Value", "",
-                                               S2IdepixConstants.NO_DATA_VALUE, true);
+                    S2IdepixConstants.NO_DATA_VALUE, true);
 
         }
 
