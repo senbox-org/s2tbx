@@ -416,7 +416,14 @@ public class S2IdepixClassificationOp extends Operator {
         double[] inputVector = nnWrapper.getInputVector();
 //        float[] s2ToLandsatReflectances = mapToLandsatReflectances(s2MsiReflectances, inputVector);
         for (int i = 0; i < inputVector.length; i++) {
-            inputVector[i] = Math.sqrt(s2MsiReflectances[i]);
+            if (NN_NAME.equals("20x4x2_1012.9.net")) {
+                // todo -  only for this NN the reflectances need to be scaled
+                inputVector[i] = Math.sqrt(s2MsiReflectances[i]) * 100;
+            }else {
+                throw new OperatorException("Code needs to be changed!");
+                // this is the code which is needed for the new NNN
+                // inputVector[i] = Math.sqrt(s2MsiReflectances[i]);
+            }
         }
         s2MsiAlgorithm.setNnOutput(nnWrapper.getNeuralNet().calc(inputVector));
 
