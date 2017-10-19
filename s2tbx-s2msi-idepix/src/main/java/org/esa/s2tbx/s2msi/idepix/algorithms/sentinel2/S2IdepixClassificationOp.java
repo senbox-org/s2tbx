@@ -170,7 +170,7 @@ public class S2IdepixClassificationOp extends Operator {
     private Product elevationProduct;
 
 
-    public static final String NN_NAME = "20x4x2_1012.9.net";    // Landsat 'all' NN
+    public static final String NN_NAME = "11x9x6x4x3x2_54.4.net";    // S2 NN
     ThreadLocal<SchillerNeuralNetWrapper> neuralNet;
 
 
@@ -416,7 +416,7 @@ public class S2IdepixClassificationOp extends Operator {
         double[] inputVector = nnWrapper.getInputVector();
 //        float[] s2ToLandsatReflectances = mapToLandsatReflectances(s2MsiReflectances, inputVector);
         for (int i = 0; i < inputVector.length; i++) {
-            if (NN_NAME.equals("20x4x2_1012.9.net")) {
+            if (NN_NAME.equals("11x9x6x4x3x2_54.4.net")) {
                 // todo -  only for this NN the reflectances need to be scaled
                 inputVector[i] = Math.sqrt(s2MsiReflectances[i]) * 100;
             }else {
