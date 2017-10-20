@@ -143,7 +143,7 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
                             tileSize.width, tileSize.height,
                             levels,band.getGeoCoding() != null? targetBand.getGeoCoding() != null ?
                             Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                            targetBand.getImageToModelTransform():
+                            Product.findImageToModelTransform(product.getSceneGeoCoding()):
                             targetBand.getImageToModelTransform());
             targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
             System.out.println(targetBand.canBeOrthorectified());
@@ -276,5 +276,4 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
 
         return inputFile;
     }
-
 }
