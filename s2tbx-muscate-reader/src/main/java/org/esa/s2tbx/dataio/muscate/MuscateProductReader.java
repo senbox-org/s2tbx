@@ -148,8 +148,8 @@ public class MuscateProductReader extends AbstractProductReader {
         }
 
 
-        //add quicklook
-        addQuicklooks(product);
+        //TODO check add quicklook
+        //addQuicklooks(product);
 
         return product;
     }

@@ -12,6 +12,10 @@ import java.util.Locale;
  */
 public class MuscateProductReaderPlugin extends BaseProductReaderPlugIn {
 
+    public MuscateProductReaderPlugin() {
+        super(null);
+    }
+
     @Override
     public Class[] getInputTypes() {
         return MuscateConstants.MUSCATE_READER_INPUT_TYPES;

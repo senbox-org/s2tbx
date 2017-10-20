@@ -306,8 +306,8 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-land-cover</artifactId>
-        <version>${project.version}</version>
-    </dependency>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
