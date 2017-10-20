@@ -3,6 +3,7 @@ package org.esa.s2tbx.coregistration;
 import com.bc.ceres.jai.GeneralFilterFunction;
 import com.bc.ceres.jai.opimage.GeneralFilterOpImage;
 import org.esa.s2tbx.coregistration.operators.ComputeCompareOp;
+import org.esa.s2tbx.coregistration.operators.ReplaceValueOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -25,6 +26,7 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -308,6 +310,11 @@ public class CoregistrationOp extends Operator {
                                     null).getAsBufferedImage(),
                             D, null).getAsBufferedImage();
 
+                    //NoDataReplacerOpImage.register(JAI.getDefaultInstance());
+
+                    u = replace(u, Float.NaN, 0.0f);
+                    v = replace(v, Float.NaN, 0.0f);
+
                     writeImage(u, "D:\\Sentinel2_PROJECT\\p_down\\output\\U_" + (k + 1) + "_" + r + ".tif");
                     writeImage(v, "D:\\Sentinel2_PROJECT\\p_down\\output\\V_" + (k + 1) + "_" + r + ".tif");
 
@@ -354,6 +361,11 @@ public class CoregistrationOp extends Operator {
         }*/
 
         System.out.println("FINISH");
+    }
+
+    private BufferedImage replace(BufferedImage img, float val, float replace){
+        return (new ReplaceValueOp(img, null, null, null, Float.NaN, null, new double[]{val}, new double[]{replace})).getAsBufferedImage();
+        //JAI.create("org.geotools.gce.gtopo30.NoDataReplacer", pb).getAsBufferedImage();
     }
 
     private BufferedImage applyContrast(BufferedImage inputImage) {
