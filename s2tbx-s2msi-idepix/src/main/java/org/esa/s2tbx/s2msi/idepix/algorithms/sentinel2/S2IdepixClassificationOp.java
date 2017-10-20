@@ -102,12 +102,6 @@ public class S2IdepixClassificationOp extends Operator {
     @Parameter(description = "The digital elevation model.", defaultValue = "SRTM 3Sec", label = "Digital Elevation Model")
     private String demName = "SRTM 3Sec";
 
-    // NN stuff is deactivated unless we have a better net
-
-    private double nnClearSnowIceLowerBoundaryValue = 1.44;
-    private double nnCloudSureAmbiguousSeparationValue = 2.4;
-    private double nnCloudAmbiguousClearLandSeparationValue = 3.48;
-    private double nnClearWaterUpperBoundaryValue = 4.48;
 
     //    @Parameter(defaultValue = "false",
 //            label = " Apply NN for pixel classification purely (not combined with feature value approach)",
@@ -170,8 +164,24 @@ public class S2IdepixClassificationOp extends Operator {
     private Product elevationProduct;
 
 
-    public static final String NN_NAME = "11x9x6x4x3x2_54.4.net";    // S2 NN
+    private static final String SCHILLER_CLASSORDER_NN_NAME = "scaled_11x9x6x4x3x2_35.0.net";    // S2 NN with target order classes as defined by Schiller
+    private static final String BC_CLASSORDER_NN_NAME = "scaled_11x9x6x4x3x2_54.4.net";    // S2 NN with target order classes as defined by BC
+
+    // cuts for BC_CLASSORDER_NN_NAME
+    private double nnClearSnowIceLowerBoundaryValue = 1.44;
+    private double nnCloudSureAmbiguousSeparationValue = 2.4;
+    private double nnCloudAmbiguousClearLandSeparationValue = 3.48;
+    private double nnClearWaterUpperBoundaryValue = 4.48;
+
+    // cuts for SCHILLER_CLASSORDER_NN_NAME
+    private double nnOpaqueCloudBoundaryValue = 1.56;
+    private double nnClearSnowIceSeparationValue = 2.44;
+    private double nnClearLandSeparationValue = 3.56;
+    private double nnSemiTransparentCloud = 4.44;
+
+    private static final String NN_NAME = SCHILLER_CLASSORDER_NN_NAME;
     ThreadLocal<SchillerNeuralNetWrapper> neuralNet;
+
 
 
     @Override
@@ -282,31 +292,60 @@ public class S2IdepixClassificationOp extends Operator {
                             cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, false);
                             cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, false);
 
-                            if (nnOutput[0] < nnClearSnowIceLowerBoundaryValue) {
-                                // this would be as 'CLOUD_AMBIGUOUS'...
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, true);
-                            }
-                            if (nnOutput[0] > nnClearSnowIceLowerBoundaryValue &&
-                                    nnOutput[0] <= nnCloudSureAmbiguousSeparationValue) {
+                            // Tests for BC_CLASSORDER_NN_NAME
+//                            if (nnOutput[0] < nnClearSnowIceLowerBoundaryValue) {
+//                                // this would be as 'CLOUD_AMBIGUOUS'...
+//                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, true);
+//                            }
+//                            if (nnOutput[0] > nnClearSnowIceLowerBoundaryValue &&
+//                                    nnOutput[0] <= nnCloudSureAmbiguousSeparationValue) {
+//                                // this would be as 'CLOUD_SURE'...
+//                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, true);
+//                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
+//                            }
+//                            if (nnOutput[0] > nnCloudSureAmbiguousSeparationValue &&
+//                                    nnOutput[0] <= nnCloudAmbiguousClearLandSeparationValue) {
+//                                // this would be as 'CLOUD_AMBIGUOUS'...
+//                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, true);
+//                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
+//                            }
+//                            if (nnOutput[0] > nnCloudAmbiguousClearLandSeparationValue &&
+//                                    nnOutput[0] <= nnClearWaterUpperBoundaryValue) {
+//                                // this would be as 'CLEAR_LAND'...
+//                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_LAND, true);
+//                            }
+//                            if (nnOutput[0] > nnCloudAmbiguousClearLandSeparationValue) {
+//                                // this would be as 'CLEAR_WATER'...
+//                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_WATER, true);
+//                            }
+
+                            // Tests for SCHILLER_CLASSORDER_NN_NAME
+                            if (nnOutput[0] < nnOpaqueCloudBoundaryValue) {
                                 // this would be as 'CLOUD_SURE'...
                                 cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SURE, true);
                                 cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
                             }
-                            if (nnOutput[0] > nnCloudSureAmbiguousSeparationValue &&
-                                    nnOutput[0] <= nnCloudAmbiguousClearLandSeparationValue) {
+                            if (nnOutput[0] > nnOpaqueCloudBoundaryValue &&
+                                nnOutput[0] <= nnClearSnowIceSeparationValue) {
+                                // this would be as 'SNOW_ICE'...
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_SNOW_ICE, true);
+                            }
+                            if (nnOutput[0] > nnClearSnowIceSeparationValue &&
+                                nnOutput[0] <= nnClearLandSeparationValue) {
+                                // this would be as 'CLEAR_LAND'...
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_LAND, true);
+                            }
+                            if (nnOutput[0] > nnClearLandSeparationValue &&
+                                nnOutput[0] <= nnSemiTransparentCloud) {
                                 // this would be as 'CLOUD_AMBIGUOUS'...
                                 cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_AMBIGUOUS, true);
                                 cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD, true);
                             }
-                            if (nnOutput[0] > nnCloudAmbiguousClearLandSeparationValue &&
-                                    nnOutput[0] <= nnClearWaterUpperBoundaryValue) {
-                                // this would be as 'CLEAR_LAND'...
-                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_LAND, true);
-                            }
-                            if (nnOutput[0] > nnCloudAmbiguousClearLandSeparationValue) {
+                            if (nnOutput[0] > nnSemiTransparentCloud) {
                                 // this would be as 'CLEAR_WATER'...
                                 cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLEAR_WATER, true);
                             }
+
                         }
                         if (nnTargetTile != null) {
                             nnTargetTile.setSample(x, y, nnOutput[0]);
@@ -416,8 +455,8 @@ public class S2IdepixClassificationOp extends Operator {
         double[] inputVector = nnWrapper.getInputVector();
 //        float[] s2ToLandsatReflectances = mapToLandsatReflectances(s2MsiReflectances, inputVector);
         for (int i = 0; i < inputVector.length; i++) {
-            if (NN_NAME.equals("11x9x6x4x3x2_54.4.net")) {
-                // todo -  only for this NN the reflectances need to be scaled
+            if (NN_NAME.startsWith("scaled_11x9x6x4x3x2")) {
+                // todo -  only for these two NN the reflectances need to be scaled
                 inputVector[i] = Math.sqrt(s2MsiReflectances[i]) * 100;
             }else {
                 throw new OperatorException("Code needs to be changed!");
