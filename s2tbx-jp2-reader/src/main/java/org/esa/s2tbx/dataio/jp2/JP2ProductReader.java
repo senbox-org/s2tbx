@@ -186,6 +186,9 @@ public class JP2ProductReader extends AbstractProductReader {
                 metadataRoot.addElement(imageInfo.toMetadataElement());
                 metadataRoot.addElement(csInfo.toMetadataElement());
                 Jp2XmlMetadata metadata = new Jp2XmlMetadataReader(inputFile).read();
+                String[] bandNames = null;
+                double[] bandScales = null;
+                double[] bandOffsets = null;
                 if (metadata != null) {
                     metadata.setFileName(inputFile.toAbsolutePath().toString());
                     metadataRoot.addElement(metadata.getRootElement());
@@ -238,12 +241,15 @@ public class JP2ProductReader extends AbstractProductReader {
                     if (geoCoding != null) {
                         product.setSceneGeoCoding(geoCoding);
                     }
+                    bandNames = metadata.getBandNames();
+                    bandScales = metadata.getBandScaleFactors();
+                    bandOffsets = metadata.getBandOffsets();
                 }
                 List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
                 int numBands = componentTilesInfo.size();
                 for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
                     int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
-                    Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1),
+                    Band virtualBand = new Band(bandNames != null ? bandNames[bandIdx] : "band_" + String.valueOf(bandIdx + 1),
                             precisionTypeMap.get(precision),
                             imageWidth,
                             imageHeight);
@@ -258,6 +264,10 @@ public class JP2ProductReader extends AbstractProductReader {
                             csInfo.getNumResolutions(), dataTypeMap.get(precision),
                             product.getSceneGeoCoding());
                     virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
+                    if (bandScales != null && bandOffsets != null) {
+                        virtualBand.setScalingFactor(bandScales[bandIdx]);
+                        virtualBand.setScalingOffset(bandOffsets[bandIdx]);
+                    }
                     product.addBand(virtualBand);
                 }
                 product.setPreferredTileSize(JAI.getDefaultTileSize());

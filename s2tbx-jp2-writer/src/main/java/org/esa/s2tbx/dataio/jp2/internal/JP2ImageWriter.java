@@ -4,13 +4,13 @@ import org.esa.s2tbx.dataio.jp2.Box;
 import org.esa.s2tbx.dataio.jp2.BoxReader;
 import org.esa.s2tbx.dataio.jp2.metadata.JP2Metadata;
 import org.esa.s2tbx.dataio.openjp2.OpenJP2Encoder;
+
 import javax.imageio.IIOImage;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.FileImageInputStream;
-import javax.xml.stream.XMLStreamException;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -64,7 +64,7 @@ public class JP2ImageWriter extends ImageWriter {
 
     @Override
     public IIOMetadata getDefaultStreamMetadata(ImageWriteParam param) {
-        return new JP2Metadata(param, this);
+        return new JP2Metadata(param, null);
     }
 
     @Override
@@ -83,6 +83,12 @@ public class JP2ImageWriter extends ImageWriter {
     @Override
     public IIOMetadata convertImageMetadata(IIOMetadata inData, ImageTypeSpecifier imageType, ImageWriteParam param) {
         return null;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        this.renderedImage = null;
     }
 
     @Override
@@ -118,6 +124,7 @@ public class JP2ImageWriter extends ImageWriter {
             Path outputStreamPath = FileSystems.getDefault().getPath(this.fileOutput.getPath());
             jp2Encoder.write(outputStreamPath, getNumberResolutions());
         } catch (Exception e) {
+            e.printStackTrace();
             logger.warning(e.getMessage());
         }
         //if the streamMetadata is not null a gml geoCoding XML will be introduced before the continuous code stream
@@ -134,9 +141,9 @@ public class JP2ImageWriter extends ImageWriter {
                     file.read(ccStream, 0, fileLength - this.headerSize);
                     file.setLength(0);
                     try (FileOutputStream fop = new FileOutputStream(this.fileOutput, true)) {
-                        JP2XMLBoxWriter xmlWriter = new JP2XMLBoxWriter();
-                        xmlWriter.setResources(fop, this.createdStreamMetadata.jp2resources);
-                    } catch (XMLStreamException e) {
+                        fop.write(this.createdStreamMetadata.toString().getBytes());
+                        fop.write(0);
+                    } catch (IOException e) {
                         logger.warning(e.getMessage());
                     }
                     byte[] xmlStream = new byte[(int) file.length()];
@@ -189,13 +196,14 @@ public class JP2ImageWriter extends ImageWriter {
         try (FileImageInputStream file = new FileImageInputStream(this.fileOutput)) {
             this.boxReader = new BoxReader(file, file.length(), new BoxListener());
             this.boxReader.getFileLength();
-            Box box =null;
+            Box box;
             do {
                 box = this.boxReader.readBox();
-                if(box.getSymbol().equals(CONTIGUOUS_CODESTREAM))
-                    headerSize = (int)box.getPosition();
+                if (box.getSymbol().equals(CONTIGUOUS_CODESTREAM)) {
+                    headerSize = (int) box.getPosition();
+                }
             }
-            while (!box.getSymbol().equals(CONTIGUOUS_CODESTREAM)) ;
+            while (!box.getSymbol().equals(CONTIGUOUS_CODESTREAM));
         } catch (IOException e) {
             logger.warning(e.getMessage());
         }
