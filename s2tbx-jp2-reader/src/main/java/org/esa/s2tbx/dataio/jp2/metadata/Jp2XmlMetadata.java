@@ -23,7 +23,9 @@ import org.esa.snap.core.datamodel.ProductData;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.DoubleStream;
 
 /**
  * Metadata extracted from JP2 XML blocks.
@@ -59,6 +61,28 @@ public class Jp2XmlMetadata extends XmlMetadata {
     @Override
     public String getMetadataProfile() {
         return null;
+    }
+
+    public String[] getBandNames() {
+        return getAttributeValues(JP2ProductReaderConstants.TAG_BAND_NAME);
+    }
+
+    public double[] getBandScaleFactors() {
+        String[] scales = getAttributeValues(JP2ProductReaderConstants.TAG_BAND_SCALE);
+        double[] values = null;
+        if (scales != null) {
+            values = Arrays.stream(scales).flatMapToDouble(s -> DoubleStream.of(Double.parseDouble(s))).toArray();
+        }
+        return values;
+    }
+
+    public double[] getBandOffsets() {
+        String[] offsets = getAttributeValues(JP2ProductReaderConstants.TAG_BAND_OFFSET);
+        double[] values = null;
+        if (offsets != null) {
+            values = Arrays.stream(offsets).flatMapToDouble(s -> DoubleStream.of(Double.parseDouble(s))).toArray();
+        }
+        return values;
     }
 
     @Override
