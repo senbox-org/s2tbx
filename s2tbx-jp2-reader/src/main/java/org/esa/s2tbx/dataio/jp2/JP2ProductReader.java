@@ -218,14 +218,14 @@ public class JP2ProductReader extends AbstractProductReader {
                             } else {
                                 List<Point2D> polygonPositions = metadata.getPolygonPositions();
                                 if (polygonPositions != null) {
-                                    latPoints = new float[]{(float) polygonPositions.get(0).getY(),
-                                            (float) polygonPositions.get(1).getY(),
-                                            (float) polygonPositions.get(3).getY(),
-                                            (float) polygonPositions.get(2).getY()};
-                                    lonPoints = new float[]{(float) polygonPositions.get(0).getX(),
+                                    latPoints = new float[]{(float) polygonPositions.get(0).getX(),
                                             (float) polygonPositions.get(1).getX(),
                                             (float) polygonPositions.get(3).getX(),
                                             (float) polygonPositions.get(2).getX()};
+                                    lonPoints = new float[]{(float) polygonPositions.get(0).getY(),
+                                            (float) polygonPositions.get(1).getY(),
+                                            (float) polygonPositions.get(3).getY(),
+                                            (float) polygonPositions.get(2).getY()};
                                 }
                             }
                             if(latPoints != null ) {
@@ -241,9 +241,6 @@ public class JP2ProductReader extends AbstractProductReader {
                     if (geoCoding != null) {
                         product.setSceneGeoCoding(geoCoding);
                     }
-                    bandNames = metadata.getBandNames();
-                    bandScales = metadata.getBandScaleFactors();
-                    bandOffsets = metadata.getBandOffsets();
                 }
                 List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
                 int numBands = componentTilesInfo.size();

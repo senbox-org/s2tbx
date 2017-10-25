@@ -65,7 +65,11 @@ public class JP2ProductWriter extends AbstractProductWriter {
     @Override
     protected void writeProductNodesImpl() throws IOException {
         this.outputFile = null;
-
+        Product sourceProduct = getSourceProduct();
+        if (sourceProduct.getNumBands() > 4) {
+            String message = "Source product " + sourceProduct.getName() + " has more than 4 bands. The product can not be exported due to OpenJpeg library limitations";
+            throw new IOException(message);
+        }
         final File file;
         if (getOutput() instanceof String) {
             file = new File((String) getOutput());
@@ -81,7 +85,7 @@ public class JP2ProductWriter extends AbstractProductWriter {
 
     private void ensureNamingConvention() {
         if (this.outputFile != null) {
-            getSourceProduct().setName(FileUtils.getFilenameWithoutExtension(this.outputFile)+ JP2Constants.FILE_EXTENSIONS[0]);
+            getSourceProduct().setName(FileUtils.getFilenameWithoutExtension(this.outputFile));
         }
     }
 
@@ -141,11 +145,21 @@ public class JP2ProductWriter extends AbstractProductWriter {
                         e.printStackTrace();
                     }
                 } else {
-                    this.metadata.setEnvelope(new GmlEnvelope<>(geoCoding.getGeoPos(new PixelPos(0, 0), null).getLat(),
-                                                                geoCoding.getGeoPos(new PixelPos(0, 0), null).getLon(),
-                                                                geoCoding.getGeoPos(new PixelPos(width - 1, height - 1), null).getLat(),
-                                                                geoCoding.getGeoPos(new PixelPos(width - 1, height - 1), null).getLon(),
-                                                                "Envelope"));
+                    GmlEnvelope<Double> gmlEnvelope = new GmlEnvelope<>(geoCoding.getGeoPos(new PixelPos(0, 0), null).getLat(),
+                            geoCoding.getGeoPos(new PixelPos(0, 0), null).getLon(),
+                            geoCoding.getGeoPos(new PixelPos(width - 1, height - 1), null).getLat(),
+                            geoCoding.getGeoPos(new PixelPos(width - 1, height - 1), null).getLon(),
+                            "Envelope");
+                    gmlEnvelope.setPolygonCorners(geoCoding.getGeoPos(new PixelPos(0, 0), null).getLat(),
+                            geoCoding.getGeoPos(new PixelPos(0, 0), null).getLon(),
+                            geoCoding.getGeoPos(new PixelPos(width - 1, 0), null).getLat(),
+                            geoCoding.getGeoPos(new PixelPos(width - 1, 0), null).getLon(),
+                            geoCoding.getGeoPos(new PixelPos(width, height), null).getLat(),
+                            geoCoding.getGeoPos(new PixelPos(width, height), null).getLon(),
+                            geoCoding.getGeoPos(new PixelPos(0, height - 1), null).getLat(),
+                            geoCoding.getGeoPos(new PixelPos(0, height - 1), null).getLon());
+                    gmlEnvelope.setPolygonUse(true);
+                    this.metadata.setEnvelope(gmlEnvelope);
                 }
                 final JP2Metadata jp2Metadata = new JP2Metadata(null, this.metadata);
                 imageWriter.write(jp2Metadata, outputImage, null);
