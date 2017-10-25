@@ -52,7 +52,11 @@ public class GmlFeatureCollection {
         builder.append("<gml:FeatureCollection xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengeospatial.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/gmlJP2Profile/1.0.0/gmlJP2Profile.xsd\">\n");
         builder.append("<gml:boundedBy>\n");
         if (this.envelope != null) {
-            builder.append(this.envelope.toString());
+            if(this.envelope.isPolygonUsed()){
+                builder.append(this.envelope.getPolygon());
+            } else {
+                builder.append(this.envelope.toString());
+            }
         } else {
             builder.append("<gml:Null>withheld</gml:Null>\n");
         }

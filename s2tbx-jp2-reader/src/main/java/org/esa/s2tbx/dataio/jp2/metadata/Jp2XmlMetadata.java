@@ -172,11 +172,11 @@ public class Jp2XmlMetadata extends XmlMetadata {
 
     public List<Point2D> getPolygonPositions() {
         List<Point2D> positions = new ArrayList<>();
-        String[] values = getAttributeValues(JP2ProductReaderConstants.TAG_POLYGON_POSITIONS);
-        for(int i = 0; i< values.length; i++){
-            String[] splits = values[i].split(" ");
-            positions.add(new Point2D.Double(Double.parseDouble(splits[0]),
-                    Double.parseDouble(splits[1])));
+        String tiePointGridPointsString = getAttributeValue(JP2ProductReaderConstants.TAG_POLYGON_POSITIONS, "");
+        String[] values = tiePointGridPointsString.split(" ");
+        for(int index = 0; index < values.length; index+=2) {
+            positions.add(new Point2D.Double(Double.parseDouble(values[index]),
+                    Double.parseDouble(values[index+1])));
         }
         return positions;
     }
