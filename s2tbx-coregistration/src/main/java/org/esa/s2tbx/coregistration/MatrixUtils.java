@@ -294,7 +294,7 @@ public class MatrixUtils {
                 float fracY = srcY - (int)srcY;
 
                 if (fracX == 0.0 && fracY == 0.0) {
-                    result[i][j] = source[x0][y0];
+                    result[i][j] = source[y0][x0];
                     continue;
                 }
 

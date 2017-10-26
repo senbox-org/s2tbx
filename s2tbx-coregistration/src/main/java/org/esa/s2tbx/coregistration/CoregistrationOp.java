@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
- * Coregistration
+ * Coregistration.... [TODO]
  *
  * @author Ramona Manda
  * @since 6.0.0
@@ -56,8 +56,11 @@ public class CoregistrationOp extends Operator {
 
     public boolean contrast = false;
 
-    @Parameter(label = "Band Index", defaultValue = "0", description = "Band Index!!!")
-    public int bandIndex = 0;
+    @Parameter(label = "Band Index of Master product", defaultValue = "0", description = "Band Index!!!")
+    public int masterBandIndex = 0;
+
+    @Parameter(label = "Band Index of Slave product", defaultValue = "0", description = "Band Index!!!")
+    public int slaveBandIndex = 0;
 
     @Parameter(label = "Number of levels", defaultValue = "6", description = "The number of levels to process the images.")
     public int levels = 6;
@@ -103,15 +106,15 @@ public class CoregistrationOp extends Operator {
     public void doExecute(Product sourceMasterProduct, Product sourceSlaveProduct, int[] radArray) {
         //IMPROVEMENT: if necessary, JAI dithering operation compresses the three bands of an RGB image to a single-banded byte image.
         long startTime = System.currentTimeMillis();
-        int levelMaster = sourceMasterProduct.getBandAt(bandIndex).getMultiLevelModel().getLevelCount();
-        BufferedImage sourceMasterImage = convertBufferedImage(sourceMasterProduct.getBandAt(bandIndex).getSourceImage().getImage(0));
+        int levelMaster = sourceMasterProduct.getBandAt(masterBandIndex).getMultiLevelModel().getLevelCount();
+        BufferedImage sourceMasterImage = convertBufferedImage(sourceMasterProduct.getBandAt(masterBandIndex).getSourceImage().getImage(0));
         BufferedImage processedMasterImage = sourceMasterImage;
 
-        Band originalSlaveBand = sourceSlaveProduct.getBandAt(bandIndex);
+        Band originalSlaveBand = sourceSlaveProduct.getBandAt(slaveBandIndex);
         int levelSlave = originalSlaveBand.getMultiLevelModel().getLevelCount();
         BufferedImage sourceSlaveImage = convertBufferedImage(originalSlaveBand.getSourceImage().getImage(0));
         float xFactor = (float) sourceMasterImage.getWidth() / sourceSlaveImage.getWidth();
-        float yFactor = (float) sourceMasterImage.getWidth() / sourceSlaveImage.getWidth();
+        float yFactor = (float) sourceMasterImage.getHeight() / sourceSlaveImage.getHeight();
         BufferedImage processedSlaveImage = sourceSlaveImage;
         if(xFactor != 1f || yFactor != 1f) {
             processedSlaveImage = resize(sourceSlaveImage, xFactor, yFactor,
@@ -134,7 +137,7 @@ public class CoregistrationOp extends Operator {
         BufferedImage u = null, v = null, meshRow = null, meshCol = null;
 
         for (int k = pyramidMaster.length - 1; k >= 0; k--) {
-            System.out.println(System.currentTimeMillis() - startTime);
+            System.out.println("Start level " + k + "-" + (System.currentTimeMillis() - startTime));
             BufferedImage levelMasterImage = pyramidMaster[k];
             BufferedImage levelSlaveImage = pyramidSlave[k];
 
@@ -151,16 +154,20 @@ public class CoregistrationOp extends Operator {
                 levelSlaveImageEq = levelSlaveImage;
             }
             //init meshgrid and u/v
-            meshRow = createMeshRowImage(levelMasterImage.getHeight(), levelMasterImage.getWidth());
-            meshCol = createMeshColImage(levelMasterImage.getHeight(), levelMasterImage.getWidth());
+            //meshRow = createMeshRowImage(levelMasterImage.getHeight(), levelMasterImage.getWidth());
+            //meshCol = createMeshColImage(levelMasterImage.getHeight(), levelMasterImage.getWidth());
+            meshRow = createMeshRowImage(levelMasterImage.getWidth(), levelMasterImage.getHeight());
+            meshCol = createMeshColImage(levelMasterImage.getWidth(), levelMasterImage.getHeight());
 
             writeImage(meshRow, "D:\\Sentinel2_PROJECT\\p_down\\output\\meshRow_" + (k + 1) + ".tif");
             writeImage(meshCol, "D:\\Sentinel2_PROJECT\\p_down\\output\\meshCol_" + (k + 1) + ".tif");
 
             if (k == pyramidMaster.length - 1) {
                 //createMesh(levelMasterImage.getWidth(), levelMasterImage.getHeight(), u, v);
-                u = createConstImage(levelMasterImage.getHeight(), levelMasterImage.getWidth(), 0);
-                v = createConstImage(levelMasterImage.getHeight(), levelMasterImage.getWidth(), 0);
+                //u = createConstImage(levelMasterImage.getHeight(), levelMasterImage.getWidth(), 0);
+                //v = createConstImage(levelMasterImage.getHeight(), levelMasterImage.getWidth(), 0);
+                u = createConstImage(levelMasterImage.getWidth(), levelMasterImage.getHeight(), 0);
+                v = createConstImage(levelMasterImage.getWidth(), levelMasterImage.getHeight(), 0);
             } else {
                 u = resize(u, (float) levelMasterImage.getWidth() / u.getWidth(),
                         (float) levelMasterImage.getHeight() / u.getHeight(), Interpolation.getInstance(Interpolation.INTERP_BICUBIC));
@@ -225,14 +232,14 @@ public class CoregistrationOp extends Operator {
                     ParameterBlock pb = new ParameterBlock();
                     pb.addSource(meshCol);
                     pb.addSource(u);
-                    BufferedImage dx = (BufferedImage) JAI.create("add", pb).getAsBufferedImage();
+                    BufferedImage dx = JAI.create("add", pb).getAsBufferedImage();
 
                     writeImage(dx, "D:\\Sentinel2_PROJECT\\p_down\\output\\dx_" + (k + 1) + "_" + r + ".tif");
 
                     pb = new ParameterBlock();
                     pb.addSource(meshRow);
                     pb.addSource(v);
-                    BufferedImage dy = (BufferedImage) JAI.create("add", pb).getAsBufferedImage();
+                    BufferedImage dy = JAI.create("add", pb).getAsBufferedImage();
 
                     writeImage(dy, "D:\\Sentinel2_PROJECT\\p_down\\output\\dy_" + (k + 1) + "_" + r + ".tif");
 
@@ -335,11 +342,11 @@ public class CoregistrationOp extends Operator {
         pb.addSource(v);
         BufferedImage dy = (BufferedImage) JAI.create("add", pb).getAsBufferedImage();
 
-        BufferedImage targetImage = interpolate(sourceSlaveImage, dx, dy);
+        BufferedImage targetImage = interpolate(processedSlaveImage, dx, dy);
         writeImage(targetImage, "D:\\Sentinel2_PROJECT\\p_down\\output\\targetImage.tif");
 
-        xFactor = sourceSlaveImage.getWidth() / targetImage.getWidth();
-        yFactor = sourceSlaveImage.getWidth() / targetImage.getWidth();
+        xFactor = (float) sourceSlaveImage.getWidth() / targetImage.getWidth();
+        yFactor = (float) sourceSlaveImage.getHeight() / targetImage.getHeight();
         if(xFactor != 1f || yFactor != 1f) {
             targetImage = resize(targetImage, xFactor, yFactor,
                     Interpolation.getInstance(Interpolation.INTERP_BICUBIC));
@@ -434,6 +441,19 @@ public class CoregistrationOp extends Operator {
         return finalImage;
     }
 
+    private RenderedImage doubleConvolve(RenderedImage input, float[] factor) {
+        int kernelSize = factor.length;
+        int rad = (kernelSize - 1) / 2;
+        RenderedImage borderedImage = addBorder(input, rad, rad, rad, rad);
+        KernelJAI kernel = new KernelJAI(kernelSize, 1, factor);
+        RenderedImage convolvedImg = JAI.create("convolve", borderedImage, kernel);//.getAsBufferedImage();
+        kernel = new KernelJAI(1, kernelSize, factor);
+        RenderedImage secondConvolvedImg = JAI.create("convolve", convolvedImg, kernel);//.getAsBufferedImage();
+        int mrad = (-1) * rad;
+        RenderedImage finalImage = addBorder(secondConvolvedImg, mrad, mrad, mrad, mrad);
+        return finalImage;
+    }
+
     private BufferedImage imageFromMatrix(float[][] input) {
         int width = input[0].length;
         int height = input.length;
@@ -508,6 +528,17 @@ public class CoregistrationOp extends Operator {
     }
 
     private BufferedImage addBorder(BufferedImage inputImage, int left, int right, int top, int bottom) {
+        ParameterBlock pb = new ParameterBlock();
+        pb.addSource(inputImage);
+        pb.add(left);
+        pb.add(right);
+        pb.add(top);
+        pb.add(bottom);
+        pb.add(BorderExtender.createInstance(BorderExtender.BORDER_ZERO));
+        return JAI.create("border", pb).getAsBufferedImage();
+    }
+
+    private RenderedImage addBorder(RenderedImage inputImage, int left, int right, int top, int bottom) {
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(inputImage);
         pb.add(left);
@@ -747,9 +778,9 @@ public class CoregistrationOp extends Operator {
 
     private BufferedImage createMeshColImage(int width, int height) {
         float[] values = new float[width * height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                values[i * height + j] = j;
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                values[i * width + j] = j;
             }
         }
         return imageFromArray(values, width, height);
@@ -757,9 +788,9 @@ public class CoregistrationOp extends Operator {
 
     private BufferedImage createMeshRowImage(int width, int height) {
         float[] values = new float[width * height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                values[i * height + j] = i;
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                values[i * width + j] = i;
             }
         }
         return imageFromArray(values, width, height);
@@ -781,12 +812,21 @@ public class CoregistrationOp extends Operator {
     }
 
     private void writeImage(BufferedImage img, String fileLocation) {
-        File fileImg = new File(fileLocation);
+        /*File fileImg = new File(fileLocation);
         try {
             ImageIO.write(img, "tif", fileImg);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
+    }
+
+    private void writeImage(RenderedImage img, String fileLocation) {
+        /*File fileImg = new File(fileLocation);
+        try {
+            ImageIO.write(img, "tif", fileImg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 
     private BufferedImage resize(BufferedImage sourceImage, float rescaleXfactor, float rescaleYfactor, Interpolation interp) {
