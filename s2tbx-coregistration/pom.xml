@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>${project.version}</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
         <dependency>
@@ -32,29 +32,24 @@
             <version>3.2.0-1</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-s2msi-reader</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-jai</artifactId>
-            <version>${project.version}</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-glayer</artifactId>
-            <version>${project.version}</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>
-            <version>${project.version}</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-gpf</artifactId>
-            <version>${project.version}</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
 
         <!-- JUnit -->
@@ -62,28 +57,35 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>it.geosolutions.jaiext.utilities</groupId>
+            <artifactId>jt-utilities</artifactId>
+            <version>1.0.13</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>nbm-maven-plugin</artifactId>
-                <configuration>
-                    <publicPackages>
-                        <publicPackage>org.esa.s2tbx.coregistration.*</publicPackage>
-                    </publicPackages>
-                </configuration>
+                <artifactId>build-helper-maven-plugin</artifactId>
             </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
+                <artifactId>nbm-maven-plugin</artifactId>
+                <version>4.1</version>
+                <extensions>true</extensions>
+                <configuration combine.self="override">
+                    <moduleType>normal</moduleType>
+                    <licenseName>GPL 3</licenseName>
+                    <licenseFile>${project.basedir}/../../../LICENSE.html</licenseFile>
+                    <useOSGiDependencies>false</useOSGiDependencies>
+                    <requiresRestart>false</requiresRestart>
+                    <keystore>${project.basedir}/../../../keystore/s2tbx.ks</keystore>
+                    <keystorealias>snap</keystorealias>
+                    <keystorepassword>snap-123</keystorepassword>
+                </configuration>
             </plugin>
         </plugins>
     </build>
