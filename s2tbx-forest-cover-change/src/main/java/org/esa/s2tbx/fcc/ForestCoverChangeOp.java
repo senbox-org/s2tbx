@@ -69,7 +69,7 @@ import java.util.logging.Logger;
 @OperatorMetadata(
         alias = "ForestCoverChangeOp",
         version="1.0",
-        category = "",
+        category = "Optical/Thematic Land Processing",
         description = "Creates forrest change masks out of two source products",
         authors = "Jean Coravu, Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")

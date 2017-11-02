@@ -24,11 +24,13 @@
     </folder>
 
     <folder name="Menu">
-        <folder name="Raster">
-            <file name="org-esa-s2tbx-fcc-Action.shadow">
-                <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-fcc-Action.instance"/>
-                <attr name="position" intvalue="10010"/>
-            </file>
+        <folder name="Optical">
+            <folder name="Thematic Land Processing">
+                <file name="org-esa-s2tbx-fcc-Action.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-fcc-Action.instance"/>
+                    <attr name="position" intvalue="10010"/>
+                </file>
+            </folder>
             <file name="org-esa-s2tbx-extractor-Action.shadow">
                 <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-extractor-Action.instance"/>
                 <attr name="position" intvalue="10011"/>
