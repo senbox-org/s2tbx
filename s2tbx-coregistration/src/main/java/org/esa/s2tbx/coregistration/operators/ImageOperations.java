@@ -28,6 +28,11 @@ public class ImageOperations {
         //JAI.create("org.geotools.gce.gtopo30.NoDataReplacer", pb).getAsBufferedImage();
     }
 
+    public static RenderedImage replace(RenderedImage img, float val, float replace){
+        return (new ReplaceValueOp(img, null, null, null, Float.NaN, null, new double[]{val}, new double[]{replace}));
+        //JAI.create("org.geotools.gce.gtopo30.NoDataReplacer", pb).getAsBufferedImage();
+    }
+
     public static BufferedImage applyContrast(BufferedImage inputImage) {
         final BufferedImage extrema = ExtremaDescriptor.create(inputImage, null, 1, 1, false, 1, null).getAsBufferedImage();
         double[][] minMax = (double[][]) extrema.getProperty("Extrema");
@@ -156,7 +161,7 @@ public class ImageOperations {
         pb.add(top);
         pb.add(bottom);
         pb.add(BorderExtender.createInstance(BorderExtender.BORDER_ZERO));
-        return JAI.create("border", pb).getAsBufferedImage();
+        return JAI.create("border", pb);
     }
 
     public static BufferedImage equalize(BufferedImage src) {
@@ -195,6 +200,10 @@ public class ImageOperations {
         }
         nImg.setData(er);
         return nImg;
+    }
+
+    public static RenderedImage equalize(RenderedImage src){
+        return src;
     }
 
     public static BufferedImage convertBufferedImage(RenderedImage img) {
@@ -306,7 +315,11 @@ public class ImageOperations {
         return imageFromMatrix(MatrixUtils.gradientcol(matrixFromImage(source)));
     }
 
-    public static BufferedImage createConstImage(int width, int height, Integer n) {
+    public static BufferedImage createConstImage2(int width, int height, Integer n) {
+        return ConstantDescriptor.create((float) width, (float) height, new Integer[]{n}, null).getAsBufferedImage();
+    }
+
+    public static RenderedImage createConstImage(int width, int height, Integer n) {
         return ConstantDescriptor.create((float) width, (float) height, new Integer[]{n}, null).getAsBufferedImage();
     }
 
@@ -345,6 +358,21 @@ public class ImageOperations {
 
     }
 
+    public static RenderedImage rescale(double multiplyFactor, double addFactor, RenderedImage sourceImage) {
+        int bands = sourceImage.getData().getNumBands();
+        double[] multiplyParam = new double[bands], addParam = new double[bands];
+        for (int i = 0; i < bands; i++) {
+            multiplyParam[i] = multiplyFactor;
+            addParam[i] = addFactor;
+        }
+        ParameterBlock pbRescale = new ParameterBlock();
+        pbRescale.add(multiplyParam);
+        pbRescale.add(addParam);
+        pbRescale.addSource(sourceImage);
+        return JAI.create("rescale", pbRescale);
+
+    }
+
     public static void writeImage(BufferedImage img, String fileLocation) {
         /*File fileImg = new File(fileLocation);
         try {
@@ -365,5 +393,9 @@ public class ImageOperations {
 
     public static BufferedImage resize(BufferedImage sourceImage, float rescaleXfactor, float rescaleYfactor, Interpolation interp) {
         return ScaleDescriptor.create(sourceImage, rescaleXfactor, rescaleYfactor, 0.0f, 0.0f, interp, null).getAsBufferedImage();
+    }
+
+    public static RenderedImage resize(RenderedImage sourceImage, float rescaleXfactor, float rescaleYfactor, Interpolation interp) {
+        return ScaleDescriptor.create(sourceImage, rescaleXfactor, rescaleYfactor, 0.0f, 0.0f, interp, null);
     }
 }
