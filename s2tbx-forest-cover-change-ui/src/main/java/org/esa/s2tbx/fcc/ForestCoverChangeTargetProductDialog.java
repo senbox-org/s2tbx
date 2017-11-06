@@ -43,6 +43,7 @@ import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -65,6 +66,12 @@ import java.util.prefs.Preferences;
  * @since 5.0.6
  */
 public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDialog {
+
+    private static final int CURRENT_PRODUCT = 0;
+    private static final int CURRENT_PRODUCT_OPTIONAL_MASK = 1;
+    private static final int PREVIOUS_PRODUCT = 2;
+    private static final int PREVIOUS_PRODUCT_OPTIONAL_MASK = 3;
+
     private final String operatorName;
     private final OperatorDescriptor operatorDescriptor;
     private final OperatorParameterSupport parameterSupport;
@@ -78,6 +85,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private String targetProductNameSuffix;
     private JComboBox<String> currentProductMaskComboBox;
     private JComboBox<String> previousProductMaskComboBox;
+
 
     public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
@@ -99,20 +107,54 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
 
         SelectionChangeListener currentListenerProduct = new SelectionChangeListener() {
             public void selectionChanged(SelectionChangeEvent event) {
-                processCurrentSelectedProduct(sourceProductSelectorList.get(0).getSelectedProduct());
+                Product product = sourceProductSelectorList.get(CURRENT_PRODUCT).getSelectedProduct();
+                processCurrentSelectedProduct(product);
+                if (product != null) {
+                    updateTargetProductName(product);
+                }
             }
             public void selectionContextChanged(SelectionChangeEvent event) {
             }
         };
+
+        SelectionChangeListener currentListenerProductOptionalMask = new SelectionChangeListener() {
+            public void selectionChanged(SelectionChangeEvent event) {
+                Product selectedProduct =  sourceProductSelectorList.get(CURRENT_PRODUCT_OPTIONAL_MASK).getSelectedProduct();
+                if(selectedProduct == null) {
+                    processCurrentSelectedProduct(sourceProductSelectorList.get(CURRENT_PRODUCT).getSelectedProduct());
+                } else {
+                    processCurrentSelectedProduct(selectedProduct);
+                }
+            }
+            public void selectionContextChanged(SelectionChangeEvent event) {
+            }
+        };
+
         SelectionChangeListener previousListenerProduct = new SelectionChangeListener() {
             public void selectionChanged(SelectionChangeEvent event) {
-                processPreviousSelectedProduct(sourceProductSelectorList.get(1).getSelectedProduct());
+                processPreviousSelectedProduct(sourceProductSelectorList.get(PREVIOUS_PRODUCT).getSelectedProduct());
             }
             public void selectionContextChanged(SelectionChangeEvent event) {
             }
         };
-        sourceProductSelectorList.get(0).addSelectionChangeListener(currentListenerProduct);
-        sourceProductSelectorList.get(1).addSelectionChangeListener(previousListenerProduct);
+
+        SelectionChangeListener previousListenerProductOptionalMask = new SelectionChangeListener() {
+            public void selectionChanged(SelectionChangeEvent event) {
+                Product selectedProduct =  sourceProductSelectorList.get(PREVIOUS_PRODUCT_OPTIONAL_MASK).getSelectedProduct();
+                if(selectedProduct == null) {
+                    processPreviousSelectedProduct(sourceProductSelectorList.get(PREVIOUS_PRODUCT).getSelectedProduct());
+                } else {
+                    processPreviousSelectedProduct(selectedProduct);
+                }
+            }
+            public void selectionContextChanged(SelectionChangeEvent event) {
+            }
+        };
+
+        sourceProductSelectorList.get(CURRENT_PRODUCT).addSelectionChangeListener(currentListenerProduct);
+        sourceProductSelectorList.get(CURRENT_PRODUCT_OPTIONAL_MASK).addSelectionChangeListener(currentListenerProductOptionalMask);
+        sourceProductSelectorList.get(PREVIOUS_PRODUCT).addSelectionChangeListener(previousListenerProduct);
+        sourceProductSelectorList.get(PREVIOUS_PRODUCT_OPTIONAL_MASK).addSelectionChangeListener(previousListenerProductOptionalMask);
     }
 
     @Override
@@ -218,9 +260,10 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                             if (value.equals("currentProductMask")) {
                                 final Product selectedProduct = sourceProductSelectorList.get(0).getSelectedProduct();
                                 currentProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
+
                                 setComponentsPanel("Recent Product Mask", currentProductMaskComboBox, selectedProduct, panel, "currentProductMask");
                             } else if (value.equals("previousProductMask")) {
-                                final Product selectedProduct = sourceProductSelectorList.get(1).getSelectedProduct();
+                                final Product selectedProduct = sourceProductSelectorList.get(2).getSelectedProduct();
                                 previousProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
                                 setComponentsPanel("Previous Product Mask", previousProductMaskComboBox, selectedProduct, panel, "previousProductMask");
                             }
@@ -233,12 +276,14 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         }
     }
 
+
     private void setComponentsPanel(String labelString, JComboBox<String> productMaskComboBox, Product selectedProduct, JPanel panel, String bindingProperty) {
         JLabel label = new JLabel(labelString);
         panel.add(label);
         this.bindingContext.bind(bindingProperty, productMaskComboBox);
         panel.add(productMaskComboBox);
         addComboBoxItems(selectedProduct, productMaskComboBox);
+
     }
 
     private void processPreviousSelectedProduct(Product product) {
@@ -247,9 +292,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
 
     private void processCurrentSelectedProduct(Product product) {
         processComboBox(product, this.currentProductMaskComboBox);
-        if (product != null) {
-            updateTargetProductName(product);
-        }
+
     }
     private void processComboBox(Product selectedProduct, JComboBox<String> productMaskComboBox) {
         if (productMaskComboBox != null) {

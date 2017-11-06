@@ -78,8 +78,15 @@ public class ForestCoverChangeOp extends Operator {
 
     @SourceProduct(alias = "recentProduct", label = "Recent Date Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
+
+    @SourceProduct(alias = "recentProductFileMask", label = "Current product mask from file", description = "The recent date source product masks for the computation.", optional = true)
+    private Product currentProductMaskExternalFile;
+
     @SourceProduct(alias = "previousProduct", label = "Previous Date Product", description = "The source product to be modified.")
     private Product previousSourceProduct;
+
+    @SourceProduct(alias = "previousProductFileMask", label = "Previous product mask from file", description = "The previous date source product masks for the computation.", optional = true)
+    private Product previousProductMaskExternalFile;
 
     @TargetProduct
     private Product targetProduct;
