@@ -5,7 +5,7 @@
             <file name="org-esa-s2tbx-coregistration-CoregistrationOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
-                <attr name="displayName" stringvalue="Coregistration Processor"/>
+                <attr name="displayName" stringvalue="Coregistration"/>
                 <attr name="operatorName" stringvalue="CoregistrationOp"/>
                 <attr name="dialogTitle" stringvalue="Coregistration"/>
                 <!--attr name="helpId" stringvalue="CoregistrationOperator"/-->
