@@ -67,10 +67,6 @@ public class CoregistrationOp extends Operator {
     @Parameter(label = "Radius values", defaultValue = "32, 28, 24, 20, 16, 12, 8", description = "The radius integer values splitted by comma.")
     public static final String radius = "32, 28, 24, 20, 16, 12, 8";
 
-    @Parameter(label = "Temp save location", defaultValue = "D:\\Sentinel2_PROJECT\\p_down\\output", description = "....")
-    public static final String saveLocation = "D:\\Sentinel2_PROJECT\\p_down\\output";
-
-
     public CoregistrationOp() {
     }
 
@@ -190,8 +186,6 @@ public class CoregistrationOp extends Operator {
                 }
                 ImagePyramidCache.writeImage(u.get(), "u");
                 ImagePyramidCache.writeImage(v.get(), "v");
-                //ImageOperations.writeImage(u, "D:\\Sentinel2_PROJECT\\p_down\\output\\U_" + (k + 1) + ".tif");
-                //ImageOperations.writeImage(v, "D:\\Sentinel2_PROJECT\\p_down\\output\\V_" + (k + 1) + ".tif");
 
                 BufferedImage I0, I1sup, I1inf;
 
@@ -219,14 +213,6 @@ public class CoregistrationOp extends Operator {
                 ImagePyramidCache.writeImage(Iyy.get(), "Iyy");
                 WeakReference<RenderedImage> Ixy = new WeakReference<>(MultiplyDescriptor.create(Ix.get(), Iy.get(), null));
                 ImagePyramidCache.writeImage(Ixy.get(), "Ixy");
-
-
-                /*ImageOperations.writeImage(Ix, "D:\\Sentinel2_PROJECT\\p_down\\output\\IX_" + (k + 1) + ".tif");
-                ImageOperations.writeImage(Iy, "D:\\Sentinel2_PROJECT\\p_down\\output\\IY_" + (k + 1) + ".tif");
-                ImageOperations.writeImage(Ixx, "D:\\Sentinel2_PROJECT\\p_down\\output\\IXX_" + (k + 1) + ".tif");
-                ImageOperations.writeImage(Iyy, "D:\\Sentinel2_PROJECT\\p_down\\output\\IYY_" + (k + 1) + ".tif");
-                ImageOperations.writeImage(Ixy, "D:\\Sentinel2_PROJECT\\p_down\\output\\IXY_" + (k + 1) + ".tif");*/
-
 
                 for (int rad = 0; rad < radArray.length; rad++) {
                     int r = radArray[rad];
@@ -268,7 +254,6 @@ public class CoregistrationOp extends Operator {
                         RenderedImage dy = ClampDescriptor.create(JAI.create("add", pb), new double[]{0}, new double[]{height - 1}, null);
 
                         BufferedImage I1w = ImageOperations.interpolate(I1sup, ((RenderedOp) dx).getAsBufferedImage(), ((RenderedOp) dy).getAsBufferedImage());
-                        //ImageOperations.writeImage(I1w, "D:\\Sentinel2_PROJECT\\p_down\\output\\I1W_" + (k + 1) + "_" + r + ".tif");
 
                         if (contrast) {
                             BufferedImage H1w = ImageOperations.interpolate(levelSlaveImageEq, ((RenderedOp) dx).getAsBufferedImage(),
@@ -304,24 +289,11 @@ public class CoregistrationOp extends Operator {
                         WeakReference<RenderedImage> P2 = new WeakReference(MultiplyDescriptor.create(vload.get(), Iyload.get(), null));
                         WeakReference<RenderedImage> It = new WeakReference(AddDescriptor.create(AddDescriptor.create(I0I1.get(), P1.get(), null), P2.get(), null));
 
-                        //ImageOperations.writeImage(I0I1, "D:\\Sentinel2_PROJECT\\p_down\\output\\I0I1_" + (k + 1) + "_" + r + ".tif");
-                        //ImageOperations.writeImage(P1, "D:\\Sentinel2_PROJECT\\p_down\\output\\P1_" + (k + 1) + "_" + r + ".tif");
-                        //ImageOperations.writeImage(P2, "D:\\Sentinel2_PROJECT\\p_down\\output\\P2_" + (k + 1) + "_" + r + ".tif");
-                        //ImageOperations.writeImage(It, "D:\\Sentinel2_PROJECT\\p_down\\output\\It_" + (k + 1) + "_" + r + ".tif");
-
                         RenderedImage G = MultiplyDescriptor.create(It.get(), Ixload.get(), null);
                         RenderedImage H = MultiplyDescriptor.create(It.get(), Iyload.get(), null);
 
-                        //ImageOperations.writeImage(G, "D:\\Sentinel2_PROJECT\\p_down\\output\\G_" + (k + 1) + "_" + r + ".tif");
-                        //ImageOperations.writeImage(H, "D:\\Sentinel2_PROJECT\\p_down\\output\\H_" + (k + 1) + "_" + r + ".tif");
-
                         G = ImageOperations.doubleConvolve(G, fen);
                         H = ImageOperations.doubleConvolve(H, fen);
-
-                        //ImageOperations.writeImage(G, "D:\\Sentinel2_PROJECT\\p_down\\output\\G_conv_" + (k + 1) + "_" + r + ".tif");
-                        //ImageOperations.writeImage(H, "D:\\Sentinel2_PROJECT\\p_down\\output\\H_conv_" + (k + 1) + "_" + r + ".tif");
-
-                        //ImageOperations.writeImage(D, "D:\\Sentinel2_PROJECT\\p_down\\output\\D_" + (k + 1) + "_" + r + ".tif");
 
                         RenderedImage u1 = DivideDescriptor.create(
                                 SubtractDescriptor.create(
@@ -342,9 +314,6 @@ public class CoregistrationOp extends Operator {
                         ImagePyramidCache.writeImage(((PlanarImage)v1).getAsBufferedImage(), "v");
 
                         Runtime.getRuntime().gc();
-
-                        //ImageOperations.writeImage(u, "D:\\Sentinel2_PROJECT\\p_down\\output\\U_" + (k + 1) + "_" + r + ".tif");
-                        //ImageOperations.writeImage(v, "D:\\Sentinel2_PROJECT\\p_down\\output\\V_" + (k + 1) + "_" + r + ".tif");
 
                     }
                 }
