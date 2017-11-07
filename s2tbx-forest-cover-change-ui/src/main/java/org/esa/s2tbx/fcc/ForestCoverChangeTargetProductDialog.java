@@ -43,7 +43,6 @@ import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,18 +55,25 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
 
 /**
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
 public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDialog {
+
+    private static final String RECENT_PRODUCT_PROPERTY = "recentProduct";
+    private static final String PREVIOUS_PRODUCT_PROPERTY = "previousProduct";
+    private static final String LAND_COVER_EXTERNAL_FILE_PROPERTY ="landCoverExternalFile";
+    private static final String LAND_COVER_MAP_INDICES_PROPERTY = "landCoverMapIndices";
+    private static final String CURRENT_PRODUCT_MASK_PROPERTY = "currentProductMask";
+    private static final String PREVIOUS_PRODUCT_MASK_PROPERTY = "previousProductMask";
 
     private static final int CURRENT_PRODUCT = 0;
     private static final int CURRENT_PRODUCT_OPTIONAL_MASK = 1;
@@ -170,8 +176,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         appContext.getPreferences().setPropertyString(SaveProductAsAction.PREFERENCES_KEY_LAST_PRODUCT_DIR, productDirPath);
         try {
             HashMap<String, Product> sourceProducts = ioParametersPanel.createSourceProductsMap();
-            Product currentSourceProduct = sourceProducts.get("recentProduct");
-            Product previousSourceProduct = sourceProducts.get("previousProduct");
+            Product currentSourceProduct = sourceProducts.get(RECENT_PRODUCT_PROPERTY);
+            Product previousSourceProduct = sourceProducts.get(PREVIOUS_PRODUCT_PROPERTY);
             ProductManager productManager = appContext.getProductManager();
             Component parentComponent = getJDialog();
             TargetProductSwingWorker worker = new TargetProductSwingWorker(parentComponent, productManager, model, currentSourceProduct,
@@ -187,12 +193,12 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     protected boolean verifyUserInput(){
         final PropertySet propertySet = bindingContext.getPropertySet();
         String pattern = "[0-9]+([ ]*,[ ]*[0-9]*)*";
-        if(propertySet.getValue("landCoverExternalFile") != null && propertySet.getValue("landCoverMapIndices") == null) {
+        if(propertySet.getValue(LAND_COVER_EXTERNAL_FILE_PROPERTY) != null && propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY) == null) {
             showErrorDialog("No land cover map forest indices specified ");
             return false;
         }
-        if(propertySet.getValue("landCoverMapIndices") != null){
-            String indices = propertySet.getValue("landCoverMapIndices").toString();
+        if(propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY) != null){
+            String indices = propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY).toString();
             if(!indices.matches(pattern)) {
                 showErrorDialog("Invalid indices input");
                 return false;
@@ -277,15 +283,15 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                         JPanel panel = new JPanel(layout);
                         panel.setBorder(BorderFactory.createTitledBorder(pair.getKey()));
                         for (String value : pair.getValue())
-                            if (value.equals("currentProductMask")) {
+                            if (value.equals(CURRENT_PRODUCT_MASK_PROPERTY)) {
                                 final Product selectedProduct = sourceProductSelectorList.get(0).getSelectedProduct();
                                 currentProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
 
-                                setComponentsPanel("Recent Product Mask", currentProductMaskComboBox, selectedProduct, panel, "currentProductMask");
-                            } else if (value.equals("previousProductMask")) {
+                                setComponentsPanel("Recent Product Mask", currentProductMaskComboBox, selectedProduct, panel, CURRENT_PRODUCT_MASK_PROPERTY);
+                            } else if (value.equals(PREVIOUS_PRODUCT_MASK_PROPERTY)) {
                                 final Product selectedProduct = sourceProductSelectorList.get(2).getSelectedProduct();
                                 previousProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
-                                setComponentsPanel("Previous Product Mask", previousProductMaskComboBox, selectedProduct, panel, "previousProductMask");
+                                setComponentsPanel("Previous Product Mask", previousProductMaskComboBox, selectedProduct, panel, PREVIOUS_PRODUCT_MASK_PROPERTY);
                             }
                         parametersPanel.add(panel);
                     } else {
@@ -322,15 +328,18 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     }
 
     private void addComboBoxItems(Product selectedProduct, JComboBox<String> productMaskComboBox) {
+        List<String> maskNames = new ArrayList<>();
         if (selectedProduct != null) {
             ProductNodeGroup<Mask> prod = selectedProduct.getMaskGroup();
             if (prod != null) {
                 productMaskComboBox.addItem(null);
                 for (int index = 0; index < prod.getNodeCount(); index++) {
                     Mask mask = prod.get(index);
-                    productMaskComboBox.addItem(mask.getName());
+                    maskNames.add(mask.getName());
                 }
             }
+            maskNames.sort(String::compareTo);
+            maskNames.forEach(productMaskComboBox::addItem);
         }
     }
 
@@ -485,8 +494,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                 long startTime = System.currentTimeMillis();
 
                 Map<String, Product> sourceProducts = new HashMap<String, Product>();
-                sourceProducts.put("recentProduct", this.currentSourceProduct);
-                sourceProducts.put("previousProduct", this.previousSourceProduct);
+                sourceProducts.put(RECENT_PRODUCT_PROPERTY, this.currentSourceProduct);
+                sourceProducts.put(PREVIOUS_PRODUCT_PROPERTY, this.previousSourceProduct);
 
                 // create the operator
                 Operator operator = GPF.getDefaultInstance().createOperator("ForestCoverChangeOp", this.parameters, sourceProducts, null);
