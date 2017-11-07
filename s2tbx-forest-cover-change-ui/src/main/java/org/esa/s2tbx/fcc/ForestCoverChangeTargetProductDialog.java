@@ -193,14 +193,15 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     protected boolean verifyUserInput(){
         final PropertySet propertySet = bindingContext.getPropertySet();
         String pattern = "[0-9]+([ ]*,[ ]*[0-9]*)*";
-        if(propertySet.getValue(LAND_COVER_EXTERNAL_FILE_PROPERTY) != null && propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY) == null) {
-            showErrorDialog("No land cover map forest indices specified ");
+        Object landCoverIndicesProperty = propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY);
+        if (propertySet.getValue(LAND_COVER_EXTERNAL_FILE_PROPERTY) != null && landCoverIndicesProperty == null) {
+            showErrorDialog("No land cover map forest indices specified.");
             return false;
         }
-        if(propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY) != null){
-            String indices = propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY).toString();
+        if (landCoverIndicesProperty != null){
+            String indices = landCoverIndicesProperty.toString();
             if(!indices.matches(pattern)) {
-                showErrorDialog("Invalid indices input");
+                showErrorDialog("Invalid land cover map forest indices.");
                 return false;
             }
         }
@@ -279,7 +280,7 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             form.add("Processing Parameters", new JScrollPane(parametersPanel));
             if (this.parameterGroupDescriptors != null) {
                 for (Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
-                    if (pair.getKey().equals("Product masks")) {
+                    if (pair.getKey().equals("Product Masks")) {
                         JPanel panel = new JPanel(layout);
                         panel.setBorder(BorderFactory.createTitledBorder(pair.getKey()));
                         for (String value : pair.getValue())

@@ -48,7 +48,7 @@ public class MovingWindowTest extends AbstractOpTest {
 
         assertNotNull(segmentationMatrix);
 
-        ColorFillerTilesComputing tilesComputing = new ColorFillerTilesComputing(segmentationMatrix, validRegions, tileSize.width, tileSize.height);
+        ColorFillerTilesComputing tilesComputing = new ColorFillerTilesComputing(segmentationMatrix, validRegions, null, null, tileSize.width, tileSize.height);
         IntMatrix colorFillerMatrix = tilesComputing.runTilesInParallel(threadCount, threadPool);
 
         assertNotNull(colorFillerMatrix);

@@ -46,8 +46,7 @@ public class WriteMaskTilesComputing extends AbstractImageTilesParallelComputing
             logger.log(Level.FINE, "Write band values for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
-        String tileFileName =  "maskTile-"+ tileLeftX +"-"+tileTopY+"-"+tileWidth+"-"+tileHeight+".bin";
-        File nodesFile = this.temporaryFolder.resolve(tileFileName).toFile();
+        File nodesFile = ReadMaskTilesComputing.computeMaskTilePath(this.temporaryFolder, tileLeftX, tileTopY, tileWidth, tileHeight).toFile();
 
         BufferedOutputStreamWrapper outputFileStream = null;
         try {

@@ -2,6 +2,7 @@ package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -17,19 +18,22 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  */
 public class ObjectsSelectionTilesComputing extends AbstractImageTilesParallelComputing {
+
     private static final Logger logger = Logger.getLogger(ObjectsSelectionTilesComputing.class.getName());
 
     private final IntMatrix segmentationMatrix;
     private final Product landCoverProduct;
+    private final IntSet landCoverValidPixels;
     private final Int2ObjectMap<PixelStatistic> statistics;
 
-    public ObjectsSelectionTilesComputing(IntMatrix segmentationMatrix, Product landCoverProduct, int tileWidth, int tileHeight) {
+    public ObjectsSelectionTilesComputing(IntMatrix segmentationMatrix, Product landCoverProduct, IntSet landCoverValidPixels, int tileWidth, int tileHeight) {
         super(segmentationMatrix.getColumnCount(), segmentationMatrix.getRowCount(), tileWidth, tileHeight);
 
         this.segmentationMatrix = segmentationMatrix;
-        this.statistics = new Int2ObjectLinkedOpenHashMap<PixelStatistic>();
-
         this.landCoverProduct = landCoverProduct;
+        this.landCoverValidPixels = landCoverValidPixels;
+
+        this.statistics = new Int2ObjectLinkedOpenHashMap<PixelStatistic>();
     }
 
     @Override
@@ -56,10 +60,8 @@ public class ObjectsSelectionTilesComputing extends AbstractImageTilesParallelCo
                         this.statistics.put(segmentationPixelValue, pixel);
                     }
                     pixel.incrementTotalNumberPixels();
-                    for (int index : ForestCoverChangeConstants.COVER_LABElS) {
-                        if (index == landCoverPixelValue) {
-                            pixel.incrementPixelsInRange();
-                        }
+                    if (this.landCoverValidPixels.contains(landCoverPixelValue)) {
+                        pixel.incrementPixelsInRange();
                     }
                 }
             }

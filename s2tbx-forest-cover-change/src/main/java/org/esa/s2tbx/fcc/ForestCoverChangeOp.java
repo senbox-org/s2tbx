@@ -56,6 +56,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -79,40 +80,40 @@ public class ForestCoverChangeOp extends Operator {
     @SourceProduct(alias = "recentProduct", label = "Recent Date Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
 
-    @SourceProduct(alias = "recentProductFileMask", label = "Current product mask from file", description = "The recent date source product masks for the computation.", optional = true)
-    private Product currentProductMaskExternalFile;
+    @SourceProduct(alias = "recentProductFileMask", label = "Recent Date Product Mask", description = "The recent date source product masks for the computation.", optional = true)
+    private Product currentSourceProductMask;
 
     @SourceProduct(alias = "previousProduct", label = "Previous Date Product", description = "The source product to be modified.")
     private Product previousSourceProduct;
 
-    @SourceProduct(alias = "previousProductFileMask", label = "Previous product mask from file", description = "The previous date source product masks for the computation.", optional = true)
-    private Product previousProductMaskExternalFile;
+    @SourceProduct(alias = "previousProductFileMask", label = "Previous Date Product Mask", description = "The previous date source product masks for the computation.", optional = true)
+    private Product previousSourceProductMask;
 
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(defaultValue = "95.0", label = "Forest cover percentage", itemAlias = "percentage", description = "Specifies the percentage of forest cover per segment")
+    @Parameter(defaultValue = "95.0", label = "Forest Cover Percentage", itemAlias = "percentage", description = "Specifies the percentage of forest cover per segment")
     private float forestCoverPercentage;
 
-    @Parameter(label = "Land cover file", description = "")
+    @Parameter(label = "Land Cover File", description = "")
     private File landCoverExternalFile;
 
     @ParameterGroup(alias = "Segmentation")
-    @Parameter(label = "Merging cost criterion",
+    @Parameter(label = "Merging Cost Criterion",
             defaultValue = GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION,
             description = "The method to compute the region merging.",
             valueSet = {GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION, GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION, GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION})
     private String mergingCostCriterion;
 
     @ParameterGroup(alias = "Segmentation")
-    @Parameter(label = "Region merging criterion",
+    @Parameter(label = "Region Merging Criterion",
             defaultValue = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION,
             description = "The method to check the region merging.",
             valueSet = {GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION, GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION})
     private String regionMergingCriterion;
 
     @ParameterGroup(alias = "Segmentation")
-    @Parameter(label = "Total iterations", defaultValue = "10", description = "The total number of iterations.")
+    @Parameter(label = "Total Iterations", defaultValue = "10", description = "The total number of iterations.")
     private int totalIterationsForSecondSegmentation;
 
     @ParameterGroup(alias = "Segmentation")
@@ -120,24 +121,27 @@ public class ForestCoverChangeOp extends Operator {
     private float threshold;
 
     @ParameterGroup(alias = "Segmentation")
-    @Parameter(label = "Spectral weight", defaultValue = "0.5", description = "The spectral weight.")
+    @Parameter(label = "Spectral Weight", defaultValue = "0.5", description = "The spectral weight.")
     private float spectralWeight;
 
     @ParameterGroup(alias = "Segmentation")
-    @Parameter(label = "Shape weight", defaultValue = "0.5" , description = "The shape weight.")
+    @Parameter(label = "Shape Weight", defaultValue = "0.5" , description = "The shape weight.")
     private float shapeWeight;
 
     @ParameterGroup(alias = "Trimming")
-    @Parameter(label = "Degrees of freedom", defaultValue = "2.8" , description = "Degrees of freedom used for the Chi distribution trimming process")
+    @Parameter(label = "Degrees Of Freedom", defaultValue = "2.8" , description = "Degrees of freedom used for the Chi distribution trimming process")
     private double degreesOfFreedom;
 
-    @ParameterGroup(alias = "Product masks")
-    @Parameter(label = "Recent date product mask", description = "The recent date source product masks for the computation.")
-    public String currentProductMask;
+    @ParameterGroup(alias = "Product Masks")
+    @Parameter(label = "Recent Date Product Mask", description = "The recent date source product masks for the computation.")
+    private String currentProductMask;
 
-    @ParameterGroup(alias = "Product masks")
-    @Parameter(label = "Previous date product mask", description = "The previous date source product masks for the computation.")
-    public String previousProductMask;
+    @ParameterGroup(alias = "Product Masks")
+    @Parameter(label = "Previous Date Product Mask", description = "The previous date source product masks for the computation.")
+    private String previousProductMask;
+
+    @Parameter(label = "Land Cover Map Forest Indices", description = "The indices of forest color from the new added land cover map")
+    private String landCoverMapIndices;
 
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
@@ -235,14 +239,15 @@ public class ForestCoverChangeOp extends Operator {
     }
 
     private ProductData computeFinalProductData(Path temporaryParentFolder) throws Exception {
-        FolderPathsResults currentResult = extractBands(this.currentSourceProduct, this.currentProductBandsNames, this.currentProductMask, temporaryParentFolder);
-        FolderPathsResults previousResult = extractBands(this.previousSourceProduct, this.previousProductBandsNames, this.previousProductMask, temporaryParentFolder);
+        FolderPathsResults currentFolderPathsResult = extractBands(this.currentSourceProduct, this.currentProductBandsNames, this.currentProductMask,
+                                                        temporaryParentFolder, this.currentSourceProductMask);
 
-        Path currentSourceSegmentationTilesFolder = currentResult.getTemporaryBandsFolder();
-        Path previousSourceSegmentationTilesFolder = previousResult.getTemporaryBandsFolder();
-        IntMatrix colorFillerMatrix = computeColorFillerMatrix(temporaryParentFolder, currentSourceSegmentationTilesFolder, previousSourceSegmentationTilesFolder);
+        FolderPathsResults previousFolderPathsResult = extractBands(this.previousSourceProduct, this.previousProductBandsNames, this.previousProductMask,
+                                                         temporaryParentFolder, this.previousSourceProductMask);
 
-        int[] sourceBandIndices = new int[]{0, 1, 2};
+        IntMatrix colorFillerMatrix = computeColorFillerMatrix(temporaryParentFolder, currentFolderPathsResult, previousFolderPathsResult);
+
+        int[] sourceBandIndices = new int[] {0, 1, 2};
         Dimension tileSize = getPreferredTileSize();
 
         int movingWindowWidth = 1000;//tileSize.width;
@@ -253,7 +258,10 @@ public class ForestCoverChangeOp extends Operator {
         int movingStepHeight = 500;//tileSize.height / 2;
         Dimension movingStepSize = new Dimension(movingStepWidth, movingStepHeight);
 
+        Path currentSourceSegmentationTilesFolder = currentFolderPathsResult.getTemporaryBandsFolder();
         IntSet currentTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, currentSourceSegmentationTilesFolder, sourceBandIndices);
+
+        Path previousSourceSegmentationTilesFolder = previousFolderPathsResult.getTemporaryBandsFolder();
         IntSet previousTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, previousSourceSegmentationTilesFolder, sourceBandIndices);
 
         // run union masks
@@ -267,12 +275,12 @@ public class ForestCoverChangeOp extends Operator {
         WeakReference<IntMatrix> referenceProductColorFill = new WeakReference<IntMatrix>(colorFillerMatrix);
         referenceProductColorFill.clear();
 
-        if (currentResult.getTemporaryMaskFolder() != null) {
-            addMask(currentResult.getTemporaryMaskFolder(), tileSize, this.currentSourceProduct, this.currentProductMask, "currentProductCloudMask");
+        if (currentFolderPathsResult.getTemporaryMaskFolder() != null) {
+            addMask(currentFolderPathsResult.getTemporaryMaskFolder(), tileSize, this.currentSourceProduct, this.currentProductMask, "currentProductCloudMask");
         }
 
-        if (previousResult.getTemporaryMaskFolder() != null) {
-            addMask(previousResult.getTemporaryMaskFolder(), tileSize, this.previousSourceProduct, this.previousProductMask, "previousProductCloudMask");
+        if (previousFolderPathsResult.getTemporaryMaskFolder() != null) {
+            addMask(previousFolderPathsResult.getTemporaryMaskFolder(), tileSize, this.previousSourceProduct, this.previousProductMask, "previousProductCloudMask");
         }
 
         return productData;
@@ -300,7 +308,12 @@ public class ForestCoverChangeOp extends Operator {
         return movingWindowTiles.runTilesInParallel(this.threadCount, this.threadPool);
     }
 
-    private IntMatrix computeColorFillerMatrix(Path temporaryParentFolder, Path currentTemporaryFolder, Path previousTemporaryFolder) throws Exception {
+    private IntMatrix computeColorFillerMatrix(Path temporaryParentFolder, FolderPathsResults currentFolderPathsResult, FolderPathsResults previousFolderPathsResult)
+                                               throws Exception {
+
+        Path currentSourceSegmentationTilesFolder = currentFolderPathsResult.getTemporaryBandsFolder();
+        Path previousSourceSegmentationTilesFolder = previousFolderPathsResult.getTemporaryBandsFolder();
+
         Dimension tileSize = getPreferredTileSize();
 
         RegionMergingProcessingParameters processingParameters = new RegionMergingProcessingParameters(this.threadCount, this.threadPool, this.targetProduct.getSceneRasterWidth(),
@@ -309,7 +322,7 @@ public class ForestCoverChangeOp extends Operator {
         RegionMergingInputParameters inputParameters = new RegionMergingInputParameters(mergingCostCriterion, regionMergingCriterion,
                                                                                 totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
-        SegmentationSourceProductPair segmentationSourcePairs = new SegmentationSourceProductPair(currentTemporaryFolder, previousTemporaryFolder);
+        SegmentationSourceProductPair segmentationSourcePairs = new SegmentationSourceProductPair(currentSourceSegmentationTilesFolder, previousSourceSegmentationTilesFolder);
 
         IntMatrix segmentationMatrix = GenericRegionMergingOp.computeSegmentation(processingParameters, inputParameters, segmentationSourcePairs, temporaryParentFolder);
 
@@ -321,7 +334,12 @@ public class ForestCoverChangeOp extends Operator {
 
         IntSet validRegionsWith95Percentage = computeObjectsSelection(segmentationMatrix, this.currentSourceProduct, this.forestCoverPercentage, tileSize);
 
-        ColorFillerTilesComputing tilesComputing = new ColorFillerTilesComputing(segmentationMatrix, validRegionsWith95Percentage, tileSize.width, tileSize.height);
+        Path currentMaskTilesFolder = currentFolderPathsResult.getTemporaryMaskFolder();
+        Path previousMaskTilesFolder = previousFolderPathsResult.getTemporaryMaskFolder();
+
+        ColorFillerTilesComputing tilesComputing = new ColorFillerTilesComputing(segmentationMatrix, validRegionsWith95Percentage, currentMaskTilesFolder,
+                                                                                 previousMaskTilesFolder, tileSize.width, tileSize.height);
+
         IntMatrix colorFillerMatrix = tilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
         // reset the references
@@ -340,10 +358,35 @@ public class ForestCoverChangeOp extends Operator {
     private IntSet computeObjectsSelection(IntMatrix originalSegmentationMatrix, Product extractedBandsSourceProduct, float percentagePixels, Dimension tileSize)
                                            throws Exception {
 
+        IntSet landCoverValidPixels = new IntOpenHashSet();
+        if (this.landCoverExternalFile == null) {
+            landCoverValidPixels.add(40);
+            landCoverValidPixels.add(50);
+            landCoverValidPixels.add(60);
+            landCoverValidPixels.add(61);
+            landCoverValidPixels.add(62);
+            landCoverValidPixels.add(70);
+            landCoverValidPixels.add(71);
+            landCoverValidPixels.add(72);
+            landCoverValidPixels.add(80);
+            landCoverValidPixels.add(81);
+            landCoverValidPixels.add(82);
+            landCoverValidPixels.add(90);
+            landCoverValidPixels.add(100);
+            landCoverValidPixels.add(110);
+            landCoverValidPixels.add(160);
+            landCoverValidPixels.add(170);
+        } else {
+            StringTokenizer str = new StringTokenizer(this.landCoverMapIndices, ", ");
+            while (str.hasMoreElements()) {
+                int pixelValue = Integer.parseInt(str.nextToken().trim());
+                landCoverValidPixels.add(pixelValue);
+            }
+        }
         Product landCoverProduct = buildLandCoverProduct(extractedBandsSourceProduct, this.landCoverExternalFile);
 
-        ObjectsSelectionTilesComputing tilesComputing = new ObjectsSelectionTilesComputing(originalSegmentationMatrix, landCoverProduct, tileSize.width, tileSize.height);
-        Int2ObjectMap<PixelStatistic> statistics = tilesComputing.runTilesInParallel(threadCount, threadPool);
+        ObjectsSelectionTilesComputing tilesComputing = new ObjectsSelectionTilesComputing(originalSegmentationMatrix, landCoverProduct, landCoverValidPixels, tileSize.width, tileSize.height);
+        Int2ObjectMap<PixelStatistic> statistics = tilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
         // reset the reference
         WeakReference<Product> referenceLandCoverProduct = new WeakReference<Product>(landCoverProduct);
@@ -383,11 +426,22 @@ public class ForestCoverChangeOp extends Operator {
         return landCoverProduct;
     }
 
-    private FolderPathsResults extractBands(Product sourceProduct, String[] sourceBandNames, String sourceMaskName, Path temporaryParentFolder) throws Exception {
+    private FolderPathsResults extractBands(Product sourceProduct, String[] sourceBandNames, String sourceMaskName,
+                                            Path temporaryParentFolder, Product optionalMaskSourceProduct) throws Exception {
+
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Extract "+sourceBandNames.length+" bands for source product '" + sourceProduct.getName()+"'");
         }
+
+        if (optionalMaskSourceProduct == null) {
+            return writeBandsAndMask(sourceProduct, sourceBandNames, sourceMaskName, temporaryParentFolder);
+        }
+        return writeBandsAndMask(sourceProduct, sourceBandNames, sourceMaskName, temporaryParentFolder, optionalMaskSourceProduct);
+    }
+
+    private FolderPathsResults writeBandsAndMask(Product sourceProduct, String[] sourceBandNames, String sourceMaskName,
+                                              Path temporaryParentFolder) throws Exception {
 
         Mask sourceMask = null;
         if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
@@ -399,25 +453,24 @@ public class ForestCoverChangeOp extends Operator {
         }
         Product extractedProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames, sourceMaskNamesToExtract);
 
-        Product resampledProduct = resampleAllBands(extractedProduct);
+        Product resampledProduct = resampleAllBands(extractedProduct, extractedProduct.getSceneRasterWidth(), extractedProduct.getSceneRasterHeight());
 
         Dimension tileSize = getPreferredTileSize();
 
         WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampledProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryParentFolder);
         Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
-        Mask resampledMask = null;
-        if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
-            resampledMask = resampledProduct.getMaskGroup().get(sourceMaskName);
-        }
         Path temporaryMaskFolder = null;
-        if (resampledMask != null) {
-            WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(resampledMask, tileSize.width, tileSize.height, temporaryParentFolder);
-            temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+        if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
+            Mask resampledMask = resampledProduct.getMaskGroup().get(sourceMaskName);
+            if (resampledMask != null) {
+                WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(resampledMask, tileSize.width, tileSize.height, temporaryParentFolder);
+                temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
-            // reset the reference
-            WeakReference<Mask> referenceResampledMask = new WeakReference<Mask>(resampledMask);
-            referenceResampledMask.clear();
+                // reset the reference
+                WeakReference<Mask> referenceResampledMask = new WeakReference<Mask>(resampledMask);
+                referenceResampledMask.clear();
+            }
         }
 
         // reset the references
@@ -429,15 +482,64 @@ public class ForestCoverChangeOp extends Operator {
         return new FolderPathsResults(temporaryFolder, temporaryMaskFolder);
     }
 
-    private static Product resampleAllBands(Product sourceProduct) {
+    private FolderPathsResults writeBandsAndMask(Product sourceProduct, String[] sourceBandNames, String sourceMaskName,
+                                                 Path temporaryParentFolder, Product optionalMaskSourceProduct) throws Exception {
+
+        Product extractedSourceProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames, null);
+
+        Product resampledSourceProduct = resampleAllBands(extractedSourceProduct, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+
+        Dimension tileSize = getPreferredTileSize();
+
+        WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampledSourceProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryParentFolder);
+        Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+
+        // reset the references
+        WeakReference<Product> referenceExtractedProduct = new WeakReference<Product>(extractedSourceProduct);
+        referenceExtractedProduct.clear();
+        WeakReference<Product> referenceResampleProduct = new WeakReference<Product>(resampledSourceProduct);
+        referenceResampleProduct.clear();
+
+        Path temporaryMaskFolder = null;
+        if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
+            Mask sourceMask = optionalMaskSourceProduct.getMaskGroup().get(sourceMaskName);
+            if (sourceMask != null) {
+                String[] sourceMaskNamesToExtract = new String[]{ sourceMaskName };
+
+                Product extractedMaskProduct = BandsExtractorOp.extractBands(optionalMaskSourceProduct, null, sourceMaskNamesToExtract);
+
+                Product resampledMaskProduct = resampleAllBands(extractedMaskProduct, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+
+                Mask resampledMask = resampledMaskProduct.getMaskGroup().get(sourceMaskName);
+                if (resampledMask != null) {
+                    WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(resampledMask, tileSize.width, tileSize.height, temporaryParentFolder);
+                    temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+
+                    // reset the reference
+                    WeakReference<Mask> referenceResampledMask = new WeakReference<Mask>(resampledMask);
+                    referenceResampledMask.clear();
+                }
+
+                // reset the references
+                WeakReference<Product> referenceExtractedMaskProduct = new WeakReference<Product>(extractedMaskProduct);
+                referenceExtractedProduct.clear();
+                WeakReference<Product> referenceResampleMaskProduct = new WeakReference<Product>(resampledMaskProduct);
+                referenceResampleProduct.clear();
+            }
+        }
+
+        return new FolderPathsResults(temporaryFolder, temporaryMaskFolder);
+    }
+
+    private static Product resampleAllBands(Product sourceProduct, int targetWidth, int targetHeight) {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Resample the bands for source product '" + sourceProduct.getName()+"'");
         }
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("targetWidth", sourceProduct.getSceneRasterWidth());
-        parameters.put("targetHeight", sourceProduct.getSceneRasterHeight());
+        parameters.put("targetWidth", targetWidth);
+        parameters.put("targetHeight", targetHeight);
         Product targetProduct = GPF.createProduct("Resample", parameters, sourceProduct);
         targetProduct.setName(sourceProduct.getName());
         return targetProduct;

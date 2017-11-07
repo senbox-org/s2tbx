@@ -1,6 +1,8 @@
 package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -48,7 +50,24 @@ public class ObjectSelectionTilesComputingTest extends AbstractOpTest {
         ProductBandToMatrixConverter converter = new ProductBandToMatrixConverter(segmentationProduct, tileSize.width, tileSize.height);
         IntMatrix segmentationMatrix = converter.runTilesInParallel(threadCount, threadPool);
 
-        ObjectsSelectionTilesComputing tilesComputing = new ObjectsSelectionTilesComputing(segmentationMatrix, landCoverProduct, tileSize.width, tileSize.height);
+        IntSet landCoverValidPixels = new IntOpenHashSet();
+        landCoverValidPixels.add(40);
+        landCoverValidPixels.add(50);
+        landCoverValidPixels.add(60);
+        landCoverValidPixels.add(61);
+        landCoverValidPixels.add(62);
+        landCoverValidPixels.add(70);
+        landCoverValidPixels.add(71);
+        landCoverValidPixels.add(80);
+        landCoverValidPixels.add(81);
+        landCoverValidPixels.add(82);
+        landCoverValidPixels.add(90);
+        landCoverValidPixels.add(100);
+        landCoverValidPixels.add(110);
+        landCoverValidPixels.add(160);
+        landCoverValidPixels.add(170);
+
+        ObjectsSelectionTilesComputing tilesComputing = new ObjectsSelectionTilesComputing(segmentationMatrix, landCoverProduct, landCoverValidPixels, tileSize.width, tileSize.height);
         Int2ObjectMap<PixelStatistic> statistics = tilesComputing.runTilesInParallel(threadCount, threadPool);
 
         checkStatistics(statistics);

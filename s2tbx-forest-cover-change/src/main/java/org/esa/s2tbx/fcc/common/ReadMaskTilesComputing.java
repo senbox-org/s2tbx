@@ -6,8 +6,10 @@ import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.AbstractImageTilesParallelComputing;
 import org.esa.snap.utils.BufferedInputStreamWrapper;
 import org.esa.snap.utils.BufferedOutputStreamWrapper;
+import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,8 +44,7 @@ public class ReadMaskTilesComputing extends AbstractImageTilesParallelComputing 
             logger.log(Level.FINE, "Write band values for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
-        String tileFileName =  "maskTile-"+ tileLeftX +"-"+tileTopY+"-"+tileWidth+"-"+tileHeight+".bin";
-        File nodesFile = this.temporaryFolder.resolve(tileFileName).toFile();
+        File nodesFile = ReadMaskTilesComputing.computeMaskTilePath(this.temporaryFolder, tileLeftX, tileTopY, tileWidth, tileHeight).toFile();
 
         BufferedInputStreamWrapper inputFileStream = null;
         try {
@@ -74,5 +75,41 @@ public class ReadMaskTilesComputing extends AbstractImageTilesParallelComputing 
         super.executeInParallel(threadCount, threadPool);
 
         return this.productData;
+    }
+
+    public static IntMatrix readMaskTile(Path parentFolderPath, int tileLeftX, int tileTopY, int tileWidth, int tileHeight)
+                                         throws IOException {
+
+        File nodesFile = ReadMaskTilesComputing.computeMaskTilePath(parentFolderPath, tileLeftX, tileTopY, tileWidth, tileHeight).toFile();
+
+        BufferedInputStreamWrapper inputFileStream = null;
+        try {
+            inputFileStream = new BufferedInputStreamWrapper(nodesFile);
+
+            IntMatrix maskTilePixels = new IntMatrix(tileHeight, tileWidth);
+
+            int tileBottomY = tileTopY + tileHeight;
+            int tileRightX = tileLeftX + tileWidth;
+            for (int y = tileTopY; y < tileBottomY; y++) {
+                for (int x = tileLeftX; x < tileRightX; x++) {
+                    maskTilePixels.setValueAt(y-tileTopY, x-tileLeftX, inputFileStream.readInt());
+                }
+            }
+
+            return maskTilePixels;
+        } finally {
+            if (inputFileStream != null) {
+                try {
+                    inputFileStream.close();
+                } catch (IOException exception) {
+                    // ignore exception
+                }
+            }
+        }
+    }
+
+    public static Path computeMaskTilePath(Path parentFolderPath, int tileLeftX, int tileTopY, int tileWidth, int tileHeight) {
+        String tileFileName = "maskTile-"+ tileLeftX +"-"+tileTopY+"-"+tileWidth+"-"+tileHeight+".bin";
+        return parentFolderPath.resolve(tileFileName);
     }
 }
