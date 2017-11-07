@@ -61,6 +61,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
+
 /**
  * @author Razvan Dumitrascu
  * @since 5.0.6
@@ -179,6 +181,24 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             handleInitialisationError(t);
             return;
         }
+    }
+
+    @Override
+    protected boolean verifyUserInput(){
+        final PropertySet propertySet = bindingContext.getPropertySet();
+        String pattern = "[0-9]+([ ]*,[ ]*[0-9]*)*";
+        if(propertySet.getValue("landCoverExternalFile") != null && propertySet.getValue("landCoverMapIndices") == null) {
+            showErrorDialog("No land cover map forest indices specified ");
+            return false;
+        }
+        if(propertySet.getValue("landCoverMapIndices") != null){
+            String indices = propertySet.getValue("landCoverMapIndices").toString();
+            if(!indices.matches(pattern)) {
+                showErrorDialog("Invalid indices input");
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
