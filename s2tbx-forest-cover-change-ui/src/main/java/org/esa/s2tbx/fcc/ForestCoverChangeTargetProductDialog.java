@@ -72,13 +72,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private static final String PREVIOUS_PRODUCT_PROPERTY = "previousProduct";
     private static final String LAND_COVER_EXTERNAL_FILE_PROPERTY ="landCoverExternalFile";
     private static final String LAND_COVER_MAP_INDICES_PROPERTY = "landCoverMapIndices";
-    private static final String CURRENT_PRODUCT_MASK_PROPERTY = "currentProductMask";
-    private static final String PREVIOUS_PRODUCT_MASK_PROPERTY = "previousProductMask";
 
     private static final int CURRENT_PRODUCT = 0;
-    private static final int CURRENT_PRODUCT_OPTIONAL_MASK = 1;
-    private static final int PREVIOUS_PRODUCT = 2;
-    private static final int PREVIOUS_PRODUCT_OPTIONAL_MASK = 3;
 
     private final String operatorName;
     private final OperatorDescriptor operatorDescriptor;
@@ -91,8 +86,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private Map<String, List<String>> parameterGroupDescriptors;
     private JTabbedPane form;
     private String targetProductNameSuffix;
-    private JComboBox<String> currentProductMaskComboBox;
-    private JComboBox<String> previousProductMaskComboBox;
 
 
     public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
@@ -116,7 +109,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         SelectionChangeListener currentListenerProduct = new SelectionChangeListener() {
             public void selectionChanged(SelectionChangeEvent event) {
                 Product product = sourceProductSelectorList.get(CURRENT_PRODUCT).getSelectedProduct();
-                processCurrentSelectedProduct(product);
                 if (product != null) {
                     updateTargetProductName(product);
                 }
@@ -125,44 +117,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             }
         };
 
-        SelectionChangeListener currentListenerProductOptionalMask = new SelectionChangeListener() {
-            public void selectionChanged(SelectionChangeEvent event) {
-                Product selectedProduct =  sourceProductSelectorList.get(CURRENT_PRODUCT_OPTIONAL_MASK).getSelectedProduct();
-                if(selectedProduct == null) {
-                    processCurrentSelectedProduct(sourceProductSelectorList.get(CURRENT_PRODUCT).getSelectedProduct());
-                } else {
-                    processCurrentSelectedProduct(selectedProduct);
-                }
-            }
-            public void selectionContextChanged(SelectionChangeEvent event) {
-            }
-        };
-
-        SelectionChangeListener previousListenerProduct = new SelectionChangeListener() {
-            public void selectionChanged(SelectionChangeEvent event) {
-                processPreviousSelectedProduct(sourceProductSelectorList.get(PREVIOUS_PRODUCT).getSelectedProduct());
-            }
-            public void selectionContextChanged(SelectionChangeEvent event) {
-            }
-        };
-
-        SelectionChangeListener previousListenerProductOptionalMask = new SelectionChangeListener() {
-            public void selectionChanged(SelectionChangeEvent event) {
-                Product selectedProduct =  sourceProductSelectorList.get(PREVIOUS_PRODUCT_OPTIONAL_MASK).getSelectedProduct();
-                if(selectedProduct == null) {
-                    processPreviousSelectedProduct(sourceProductSelectorList.get(PREVIOUS_PRODUCT).getSelectedProduct());
-                } else {
-                    processPreviousSelectedProduct(selectedProduct);
-                }
-            }
-            public void selectionContextChanged(SelectionChangeEvent event) {
-            }
-        };
-
         sourceProductSelectorList.get(CURRENT_PRODUCT).addSelectionChangeListener(currentListenerProduct);
-        sourceProductSelectorList.get(CURRENT_PRODUCT_OPTIONAL_MASK).addSelectionChangeListener(currentListenerProductOptionalMask);
-        sourceProductSelectorList.get(PREVIOUS_PRODUCT).addSelectionChangeListener(previousListenerProduct);
-        sourceProductSelectorList.get(PREVIOUS_PRODUCT_OPTIONAL_MASK).addSelectionChangeListener(previousListenerProductOptionalMask);
+
     }
 
     @Override
@@ -280,69 +236,14 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             form.add("Processing Parameters", new JScrollPane(parametersPanel));
             if (this.parameterGroupDescriptors != null) {
                 for (Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
-                    if (pair.getKey().equals("Product Masks")) {
-                        JPanel panel = new JPanel(layout);
-                        panel.setBorder(BorderFactory.createTitledBorder(pair.getKey()));
-                        for (String value : pair.getValue())
-                            if (value.equals(CURRENT_PRODUCT_MASK_PROPERTY)) {
-                                final Product selectedProduct = sourceProductSelectorList.get(0).getSelectedProduct();
-                                currentProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
-
-                                setComponentsPanel("Recent Product Mask", currentProductMaskComboBox, selectedProduct, panel, CURRENT_PRODUCT_MASK_PROPERTY);
-                            } else if (value.equals(PREVIOUS_PRODUCT_MASK_PROPERTY)) {
-                                final Product selectedProduct = sourceProductSelectorList.get(2).getSelectedProduct();
-                                previousProductMaskComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
-                                setComponentsPanel("Previous Product Mask", previousProductMaskComboBox, selectedProduct, panel, PREVIOUS_PRODUCT_MASK_PROPERTY);
-                            }
-                        parametersPanel.add(panel);
-                    } else {
                         parametersPanel.add(createPanel(pair.getKey() + " parameters", this.bindingContext, pair.getValue()));
-                    }
+
                 }
             }
         }
     }
 
 
-    private void setComponentsPanel(String labelString, JComboBox<String> productMaskComboBox, Product selectedProduct, JPanel panel, String bindingProperty) {
-        JLabel label = new JLabel(labelString);
-        panel.add(label);
-        this.bindingContext.bind(bindingProperty, productMaskComboBox);
-        panel.add(productMaskComboBox);
-        addComboBoxItems(selectedProduct, productMaskComboBox);
-
-    }
-
-    private void processPreviousSelectedProduct(Product product) {
-        processComboBox(product, this.previousProductMaskComboBox);
-    }
-
-    private void processCurrentSelectedProduct(Product product) {
-        processComboBox(product, this.currentProductMaskComboBox);
-
-    }
-    private void processComboBox(Product selectedProduct, JComboBox<String> productMaskComboBox) {
-        if (productMaskComboBox != null) {
-            productMaskComboBox.removeAllItems();
-            addComboBoxItems(selectedProduct, productMaskComboBox);
-        }
-    }
-
-    private void addComboBoxItems(Product selectedProduct, JComboBox<String> productMaskComboBox) {
-        List<String> maskNames = new ArrayList<>();
-        if (selectedProduct != null) {
-            ProductNodeGroup<Mask> prod = selectedProduct.getMaskGroup();
-            if (prod != null) {
-                productMaskComboBox.addItem(null);
-                for (int index = 0; index < prod.getNodeCount(); index++) {
-                    Mask mask = prod.get(index);
-                    maskNames.add(mask.getName());
-                }
-            }
-            maskNames.sort(String::compareTo);
-            maskNames.forEach(productMaskComboBox::addItem);
-        }
-    }
 
     private void showSaveInfo(long saveTime) {
         File productFile = getTargetProductSelector().getModel().getProductFile();
