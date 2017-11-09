@@ -4,14 +4,19 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import org.esa.snap.core.util.SystemUtils;
 
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.Rectangle;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -451,13 +456,14 @@ public class RasterUtils {
         }
         int width = raster.getWidth();
         int height = raster.getHeight();
-        IntBuffer buffer = IntBuffer.allocate(width * height);
+        //IntBuffer buffer = IntBuffer.allocate(width * height);
         SampleModel sampleModel = raster.getSampleModel();
         DataBuffer dataBuffer = raster.getDataBuffer();
-        for (int y = 0; y < height; y++) {
+        /*for (int y = 0; y < height; y++) {
             buffer.put(sampleModel.getSamples(0, y, width, 1, bandIndex, (int[])null, dataBuffer));
         }
-        return buffer.array();
+        return buffer.array();*/
+        return sampleModel.getSamples(0, 0, width, height, bandIndex, (int[])null, dataBuffer);
     }
 
     static int getFileFormat(Path file) {
