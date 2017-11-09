@@ -41,6 +41,8 @@ import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
+import org.esa.snap.utils.StringHelper;
+
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -72,8 +74,11 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private static final String PREVIOUS_PRODUCT_PROPERTY = "previousProduct";
     private static final String LAND_COVER_EXTERNAL_FILE_PROPERTY ="landCoverExternalFile";
     private static final String LAND_COVER_MAP_INDICES_PROPERTY = "landCoverMapIndices";
+    private static final String CURRENT_PRODUCT_SOURCE_MASK = "currentProductSourceMask";
+    private static final String PREVIOUS_PRODUCT_SOURCE_MASK = "previousProductSourceMask";
 
     private static final int CURRENT_PRODUCT = 0;
+    private static final int PREVIOUS_PRODUCT = 1;
 
     private final String operatorName;
     private final OperatorDescriptor operatorDescriptor;
@@ -148,6 +153,26 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     @Override
     protected boolean verifyUserInput(){
         final PropertySet propertySet = bindingContext.getPropertySet();
+        ArrayList<SourceProductSelector> sourceProductSelectorList = this.ioParametersPanel.getSourceProductSelectorList();
+        Product currentProduct = sourceProductSelectorList.get(CURRENT_PRODUCT).getSelectedProduct();
+        Product previousProduct = sourceProductSelectorList.get(PREVIOUS_PRODUCT).getSelectedProduct();
+        Object currentProductSourceMask = propertySet.getValue(CURRENT_PRODUCT_SOURCE_MASK);
+        Object previousProductSourceMask = propertySet.getValue(PREVIOUS_PRODUCT_SOURCE_MASK);
+        String message;
+        if ((isSentinelProduct(currentProduct) && (currentProductSourceMask == null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
+            message ="Products " + currentProduct.getName() + " and " + previousProduct.getName() + " are of type Sentinel 2. " +
+                    "The forest cover change output product  will take in consideration the cloud masks from these products";
+            showInformationDialog(message);
+        } else if ((isSentinelProduct(currentProduct) && (currentProductSourceMask == null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask != null)) {
+            message ="Product " + currentProduct.getName() + " is of type Sentinel 2. " +
+                    "The forest cover change output product  will take in consideration the cloud masks from this product";
+            showInformationDialog(message);
+        } else if ((isSentinelProduct(currentProduct) && (currentProductSourceMask != null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
+            message ="Product " + previousProduct.getName() + " is of type Sentinel 2. " +
+                    "The forest cover change output product  will take in consideration the cloud masks from this product";
+            showInformationDialog(message);
+        }
+
         String pattern = "[0-9]+([ ]*,[ ]*[0-9]*)*";
         Object landCoverIndicesProperty = propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY);
         if (propertySet.getValue(LAND_COVER_EXTERNAL_FILE_PROPERTY) != null && landCoverIndicesProperty == null) {
@@ -164,6 +189,9 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         return true;
     }
 
+    private boolean isSentinelProduct(Product product) {
+        return StringHelper.startsWithIgnoreCase(product.getProductType(), "S2_MSI_Level");
+    }
     @Override
     public int show() {
         this.ioParametersPanel.initSourceProductSelectors();
