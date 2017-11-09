@@ -4,6 +4,7 @@ import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
+import com.bc.ceres.binding.ValidationException;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
@@ -14,6 +15,7 @@ import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import com.bc.ceres.swing.selection.SelectionChangeListener;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
@@ -41,6 +43,7 @@ import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelectorModel;
 import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.landcover.dataio.LandCoverFactory;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
@@ -54,14 +57,19 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import java.awt.Component;
 import java.awt.Toolkit;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +90,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private static final String LAND_COVER_MAP_INDICES_PROPERTY = "landCoverMapIndices";
     private static final String CURRENT_PRODUCT_SOURCE_MASK = "currentProductSourceMaskFile";
     private static final String PREVIOUS_PRODUCT_SOURCE_MASK = "previousProductSourceMaskFile";
+    private static final String LAND_COVER_NAME = "landCoverName";
+    private static final String LAND_COVER_MAP_INDICES = "landCoverMapIndices";
 
     private static final int CURRENT_PRODUCT = 0;
     private static final int PREVIOUS_PRODUCT = 1;
@@ -97,7 +107,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private Map<String, List<String>> parameterGroupDescriptors;
     private JTabbedPane form;
     private String targetProductNameSuffix;
-
+    private JComboBox<String> landCoverNamesComboBox;
+    private JTextField landCoverMapIndices;
 
     public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
@@ -129,7 +140,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         };
 
         sourceProductSelectorList.get(CURRENT_PRODUCT).addSelectionChangeListener(currentListenerProduct);
-
     }
 
     @Override
@@ -274,14 +284,50 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             form.add("Processing Parameters", new JScrollPane(parametersPanel));
             if (this.parameterGroupDescriptors != null) {
                 for (Map.Entry<String, List<String>> pair : this.parameterGroupDescriptors.entrySet()) {
-                        parametersPanel.add(createPanel(pair.getKey() + " parameters", this.bindingContext, pair.getValue()));
+                    if (pair.getKey().equals("Land Cover")) {
+                        List<String> names = Arrays.asList(LandCoverFactory.getNameList());
+                        Comparator<String> comparator = new Comparator<String>() {
+                            @Override
+                            public int compare(String o1, String o2) {
+                                return o1.compareToIgnoreCase(o2);
+                            }
+                        };
+                        Collections.sort(names, comparator);
+                        String[] landCoverNames = names.toArray(new String[names.size()]);
+                        DefaultComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<String>(landCoverNames);
+                        this.landCoverNamesComboBox = new JComboBox<String>(comboBoxModel);
+                        this.bindingContext.bind(LAND_COVER_NAME, this.landCoverNamesComboBox);
 
+                        this.landCoverMapIndices = new JTextField();
+                        this.bindingContext.bind(LAND_COVER_MAP_INDICES, this.landCoverMapIndices);
+
+                        this.landCoverNamesComboBox.addItemListener(new ItemListener() {
+                            @Override
+                            public void itemStateChanged(ItemEvent event) {
+                                try {
+                                    bindingContext.getPropertySet().getProperty(LAND_COVER_MAP_INDICES).setValue("");
+                                } catch (ValidationException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+
+                        List<JComponent[]> componentsList = new ArrayList<>();
+                        JComponent[] firstRow = new JComponent[] {this.landCoverNamesComboBox, new JLabel("Name")};
+                        JComponent[] secondRow = new JComponent[] {this.landCoverMapIndices, new JLabel("Map Indices")};
+                        componentsList.add(firstRow);
+                        componentsList.add(secondRow);
+                        ParametersPanel panel = new ParametersPanel();
+                        panel.populate(componentsList);
+                        panel.setBorder(BorderFactory.createTitledBorder(pair.getKey()));
+                        parametersPanel.add(panel);
+                    } else {
+                        parametersPanel.add(createPanel(pair.getKey() + " parameters", this.bindingContext, pair.getValue()));
+                    }
                 }
             }
         }
     }
-
-
 
     private void showSaveInfo(long saveTime) {
         File productFile = getTargetProductSelector().getModel().getProductFile();
@@ -323,20 +369,17 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     }
 
     private JPanel createPanel(String name, BindingContext bindingContext, List<String> parameters) {
-        PropertyContainer container = new PropertyContainer();
+        PropertyContainer propertyContainer = new PropertyContainer();
         for (String parameter: parameters) {
             Property prop = bindingContext.getPropertySet().getProperty(parameter);
-            container.addProperty(prop);
+            propertyContainer.addProperty(prop);
         }
 
-        final JPanel panel = createPanel(container);
+        boolean displayUnitColumn = ParametersPanel.wantDisplayUnitColumn(propertyContainer.getProperties());
+        ParametersPanel panel = new ParametersPanel(displayUnitColumn);
+        panel.populate(propertyContainer);
         panel.setBorder(BorderFactory.createTitledBorder(name));
         return panel;
-
-//        final PropertyPane parametersPane = new PropertyPane(container);
-//        final JPanel panel = parametersPane.createPanel();
-//        panel.setBorder(BorderFactory.createTitledBorder(name));
-//        return panel;
     }
 
     private void processAnnotationsRec(Class<?> operatorClass) {
@@ -407,74 +450,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         return new OperatorMenu(getJDialog(), this.operatorDescriptor, this.parameterSupport, getAppContext(), getHelpID());
     }
 
-    private static JPanel createPanel(PropertySet propertyContainer) {
-        Property[] properties = propertyContainer.getProperties();
-        BindingContext bindingContext = new BindingContext((propertyContainer));
-
-        boolean displayUnitColumn = wantDisplayUnitColumn(properties);
-        TableLayout layout = new TableLayout(displayUnitColumn ? 3 : 2);
-        layout.setTableAnchor(TableLayout.Anchor.WEST);
-        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        layout.setTablePadding(3, 3);
-        final JPanel panel = new JPanel(layout);
-
-        int rowIndex = 0;
-        final PropertyEditorRegistry registry = PropertyEditorRegistry.getInstance();
-        for (Property property : properties) {
-            PropertyDescriptor descriptor = property.getDescriptor();
-            if (isInvisible(descriptor)) {
-                continue;
-            }
-            PropertyEditor propertyEditor = registry.findPropertyEditor(descriptor);
-            JComponent[] components = propertyEditor.createComponents(descriptor, bindingContext);
-            if (components.length == 2) {
-                layout.setCellWeightX(rowIndex, 0, 0.0);
-                panel.add(components[1], cell(rowIndex, 0));
-                layout.setCellWeightX(rowIndex, 1, 1.0);
-                if(components[0] instanceof JScrollPane) {
-                    layout.setRowWeightY(rowIndex, 1.0);
-                    layout.setRowFill(rowIndex, TableLayout.Fill.BOTH);
-                }
-                panel.add(components[0], cell(rowIndex, 1));
-            } else {
-                layout.setCellColspan(rowIndex, 0, 2);
-                layout.setCellWeightX(rowIndex, 0, 1.0);
-                panel.add(components[0], cell(rowIndex, 0));
-            }
-            if (displayUnitColumn) {
-                final JLabel label = new JLabel("");
-                if (descriptor.getUnit() != null) {
-                    label.setText(descriptor.getUnit());
-                }
-                layout.setCellWeightX(rowIndex, 2, 0.0);
-                panel.add(label, cell(rowIndex, 2));
-            }
-            rowIndex++;
-        }
-        layout.setCellColspan(rowIndex, 0, 2);
-        layout.setCellWeightX(rowIndex, 0, 1.0);
-        layout.setCellWeightY(rowIndex, 0, 0.5);
-        return panel;
-    }
-
     private static boolean isInvisible(PropertyDescriptor descriptor) {
         return Boolean.FALSE.equals(descriptor.getAttribute("visible")) || descriptor.isDeprecated();
-    }
-
-    private static boolean wantDisplayUnitColumn(Property[] models) {
-        boolean showUnitColumn = false;
-        for (Property model : models) {
-            PropertyDescriptor descriptor = model.getDescriptor();
-            if (isInvisible(descriptor)) {
-                continue;
-            }
-            String unit = descriptor.getUnit();
-            if (!(unit == null || unit.length() == 0)) {
-                showUnitColumn = true;
-                break;
-            }
-        }
-        return showUnitColumn;
     }
 
     private class TargetProductSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
