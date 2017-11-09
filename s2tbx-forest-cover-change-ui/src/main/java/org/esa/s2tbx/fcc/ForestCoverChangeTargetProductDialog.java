@@ -86,8 +86,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
 
     private static final String RECENT_PRODUCT_PROPERTY = "recentProduct";
     private static final String PREVIOUS_PRODUCT_PROPERTY = "previousProduct";
-    private static final String LAND_COVER_EXTERNAL_FILE_PROPERTY ="landCoverExternalFile";
-    private static final String LAND_COVER_MAP_INDICES_PROPERTY = "landCoverMapIndices";
     private static final String CURRENT_PRODUCT_SOURCE_MASK = "currentProductSourceMaskFile";
     private static final String PREVIOUS_PRODUCT_SOURCE_MASK = "previousProductSourceMaskFile";
     private static final String LAND_COVER_NAME = "landCoverName";
@@ -167,8 +165,16 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     }
 
     @Override
-    protected boolean verifyUserInput(){
-        final PropertySet propertySet = bindingContext.getPropertySet();
+    protected boolean verifyUserInput() {
+        PropertySet propertySet = bindingContext.getPropertySet();
+        String pattern = "[0-9]+([ ]*,[ ]*[0-9]*)*";
+        Object landCoverIndicesProperty = propertySet.getValue(LAND_COVER_MAP_INDICES);
+        String indices = landCoverIndicesProperty.toString();
+        if (!indices.matches(pattern)) {
+            showErrorDialog("Invalid land cover map forest indices.");
+            return false;
+        }
+
         ArrayList<SourceProductSelector> sourceProductSelectorList = this.ioParametersPanel.getSourceProductSelectorList();
         Product currentProduct = sourceProductSelectorList.get(CURRENT_PRODUCT).getSelectedProduct();
         Product previousProduct = sourceProductSelectorList.get(PREVIOUS_PRODUCT).getSelectedProduct();
@@ -176,37 +182,24 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         Object previousProductSourceMask = propertySet.getValue(PREVIOUS_PRODUCT_SOURCE_MASK);
         String message;
         if ((currentProduct != null) && (previousProduct != null)) {
-            if ((ForestCoverChangeOp.isSentinelProduct(currentProduct) && (currentProductSourceMask == null)
-                    && (ForestCoverChangeOp.isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
+            if (ForestCoverChangeOp.isSentinelProduct(currentProduct) && currentProductSourceMask == null
+                    && ForestCoverChangeOp.isSentinelProduct(previousProduct) && previousProductSourceMask == null) {
 
                 message = "Products " + currentProduct.getName() + " and " + previousProduct.getName() + " are of type Sentinel 2.\n" +
                         "The forest cover change output product  will take in consideration the cloud masks from these products.";
                 showInformationDialog(message);
-            } else if ((ForestCoverChangeOp.isSentinelProduct(currentProduct) && (currentProductSourceMask == null)
-                    && (ForestCoverChangeOp.isSentinelProduct(previousProduct))) && (previousProductSourceMask != null)) {
+            } else if (ForestCoverChangeOp.isSentinelProduct(currentProduct) && currentProductSourceMask == null
+                    && ForestCoverChangeOp.isSentinelProduct(previousProduct) && previousProductSourceMask != null) {
 
                 message = "Product " + currentProduct.getName() + " is of type Sentinel 2.\n" +
                         "The forest cover change output product  will take in consideration the cloud masks from this product.";
                 showInformationDialog(message);
-            } else if ((ForestCoverChangeOp.isSentinelProduct(currentProduct) && (currentProductSourceMask != null)
-                    && (ForestCoverChangeOp.isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
+            } else if (ForestCoverChangeOp.isSentinelProduct(currentProduct) && currentProductSourceMask != null
+                    && ForestCoverChangeOp.isSentinelProduct(previousProduct) && previousProductSourceMask == null) {
 
                 message = "Product " + previousProduct.getName() + " is of type Sentinel 2.\n" +
                         "The forest cover change output product  will take in consideration the cloud masks from this product.";
                 showInformationDialog(message);
-            }
-        }
-        String pattern = "[0-9]+([ ]*,[ ]*[0-9]*)*";
-        Object landCoverIndicesProperty = propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY);
-        if (propertySet.getValue(LAND_COVER_EXTERNAL_FILE_PROPERTY) != null && landCoverIndicesProperty == null) {
-            showErrorDialog("No land cover map forest indices specified.");
-            return false;
-        }
-        if (landCoverIndicesProperty != null){
-            String indices = landCoverIndicesProperty.toString();
-            if(!indices.matches(pattern)) {
-                showErrorDialog("Invalid land cover map forest indices.");
-                return false;
             }
         }
         return true;
@@ -266,7 +259,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         layout.setTableWeightY(0.0);
         layout.setRowWeightY(2, 1.0);
         layout.setTablePadding(3, 3);
-        ArrayList<SourceProductSelector> sourceProductSelectorList = this.ioParametersPanel.getSourceProductSelectorList();
         if (this.bindingContext.getPropertySet().getProperties().length > 0) {
             PropertyContainer container = new PropertyContainer();
             container.addProperties(this.bindingContext.getPropertySet().getProperties());
@@ -305,9 +297,9 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
                             @Override
                             public void itemStateChanged(ItemEvent event) {
                                 try {
+                                    landCoverMapIndices.setText("");
                                     bindingContext.getPropertySet().getProperty(LAND_COVER_MAP_INDICES).setValue("");
                                 } catch (ValidationException e) {
-                                    e.printStackTrace();
                                 }
                             }
                         });
@@ -448,10 +440,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
 
     private OperatorMenu createDefaultMenuBar() {
         return new OperatorMenu(getJDialog(), this.operatorDescriptor, this.parameterSupport, getAppContext(), getHelpID());
-    }
-
-    private static boolean isInvisible(PropertyDescriptor descriptor) {
-        return Boolean.FALSE.equals(descriptor.getAttribute("visible")) || descriptor.isDeprecated();
     }
 
     private class TargetProductSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
