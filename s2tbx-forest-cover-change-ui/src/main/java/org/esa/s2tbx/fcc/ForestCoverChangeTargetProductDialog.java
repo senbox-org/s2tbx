@@ -159,20 +159,21 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         Object currentProductSourceMask = propertySet.getValue(CURRENT_PRODUCT_SOURCE_MASK);
         Object previousProductSourceMask = propertySet.getValue(PREVIOUS_PRODUCT_SOURCE_MASK);
         String message;
-        if ((isSentinelProduct(currentProduct) && (currentProductSourceMask == null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
-            message ="Products " + currentProduct.getName() + " and " + previousProduct.getName() + " are of type Sentinel 2. " +
-                    "The forest cover change output product  will take in consideration the cloud masks from these products";
-            showInformationDialog(message);
-        } else if ((isSentinelProduct(currentProduct) && (currentProductSourceMask == null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask != null)) {
-            message ="Product " + currentProduct.getName() + " is of type Sentinel 2. " +
-                    "The forest cover change output product  will take in consideration the cloud masks from this product";
-            showInformationDialog(message);
-        } else if ((isSentinelProduct(currentProduct) && (currentProductSourceMask != null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
-            message ="Product " + previousProduct.getName() + " is of type Sentinel 2. " +
-                    "The forest cover change output product  will take in consideration the cloud masks from this product";
-            showInformationDialog(message);
+        if ((currentProduct != null) && (previousProduct !=null)) {
+            if ((isSentinelProduct(currentProduct) && (currentProductSourceMask == null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
+                message = "Products " + currentProduct.getName() + " and " + previousProduct.getName() + " are of type Sentinel 2. " +
+                        "The forest cover change output product  will take in consideration the cloud masks from these products";
+                showInformationDialog(message);
+            } else if ((isSentinelProduct(currentProduct) && (currentProductSourceMask == null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask != null)) {
+                message = "Product " + currentProduct.getName() + " is of type Sentinel 2. " +
+                        "The forest cover change output product  will take in consideration the cloud masks from this product";
+                showInformationDialog(message);
+            } else if ((isSentinelProduct(currentProduct) && (currentProductSourceMask != null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
+                message = "Product " + previousProduct.getName() + " is of type Sentinel 2. " +
+                        "The forest cover change output product  will take in consideration the cloud masks from this product";
+                showInformationDialog(message);
+            }
         }
-
         String pattern = "[0-9]+([ ]*,[ ]*[0-9]*)*";
         Object landCoverIndicesProperty = propertySet.getValue(LAND_COVER_MAP_INDICES_PROPERTY);
         if (propertySet.getValue(LAND_COVER_EXTERNAL_FILE_PROPERTY) != null && landCoverIndicesProperty == null) {
