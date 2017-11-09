@@ -47,25 +47,25 @@ public class CoregistrationOp extends Operator {
     @TargetProduct(description = "The target product which will use the master's location.")
     private Product targetProduct;
 
-    public boolean contrast = false;
+    private boolean contrast = false;
 
     @Parameter(label = "Band Index of Master product", defaultValue = "0", description = "Band Index!!!")
-    public int masterBandIndex = 0;
+    private int masterBandIndex = 0;
 
     @Parameter(label = "Band Index of Slave product", defaultValue = "0", description = "Band Index!!!")
-    public int slaveBandIndex = 0;
+    private int slaveBandIndex = 0;
 
     @Parameter(label = "Number of levels", defaultValue = "6", description = "The number of levels to process the images.")
-    public int levels = 6;
+    private int levels = 6;
 
     @Parameter(label = "Rank number", defaultValue = "4", description = "Value used to compute the rank.")
-    public int rank = 4;
+    private int rank = 4;
 
     @Parameter(label = "Number of interations", defaultValue = "2", description = "The number of interations for each level and for each radius.")
-    public int iterations = 2;
+    private int iterations = 2;
 
     @Parameter(label = "Radius values", defaultValue = "32, 28, 24, 20, 16, 12, 8", description = "The radius integer values splitted by comma.")
-    public static final String radius = "32, 28, 24, 20, 16, 12, 8";
+    private static final String radius = "32, 28, 24, 20, 16, 12, 8";
 
     public CoregistrationOp() {
     }
@@ -91,6 +91,14 @@ public class CoregistrationOp extends Operator {
     }
 
     public void doExecute(Product sourceMasterProduct, Product sourceSlaveProduct, int[] radArray) {
+        if (masterBandIndex >= sourceMasterProduct.getNumBands()) {
+            throw new OperatorException("Band index " + masterBandIndex + " wrong for master product " +
+                    sourceMasterProduct.getName() + " having " + sourceMasterProduct.getNumBands() + " bands");
+        }
+        if (slaveBandIndex >= sourceSlaveProduct.getNumBands()) {
+            throw new OperatorException("Band index " + slaveBandIndex + " wrong for slave product " +
+                    sourceSlaveProduct.getName() + " having " + sourceSlaveProduct.getNumBands() + " bands");
+        }
         try {
             getLogger().info("Started coregistration of products " + sourceMasterProduct.getName()
                     + "(" + sourceMasterProduct.getSceneRasterWidth() + "X" + sourceMasterProduct.getSceneRasterHeight() + ")"
@@ -122,13 +130,7 @@ public class CoregistrationOp extends Operator {
             }
 
             ImagePyramidCache pyramidMaster = new ImagePyramidCache(processedMasterImage, levels);
-            pyramidMaster.compute();
             ImagePyramidCache pyramidSlave = new ImagePyramidCache(processedSlaveImage, levels);
-
-            //BufferedImage[] pyramidMaster = pyramid(processedMasterImage, levels);
-            //BufferedImage[] pyramidSlave = pyramid(processedSlaveImage, levels);
-            //BufferedImage[] pyramidMaster = pyramid2("D:\\Sentinel2_PROJECT\\p_down\\output\\in\\pyram_0_", levels);
-            //BufferedImage[] pyramidSlave = pyramid2("D:\\Sentinel2_PROJECT\\p_down\\output\\in\\pyram_1_", levels);
 
             for (int k = levels; k >= 0; k--) {
                 getLogger().info("Start level " + k + " after " + (System.currentTimeMillis() - startTime) / 1000f + "sec from start.");
@@ -136,9 +138,6 @@ public class CoregistrationOp extends Operator {
                 BufferedImage levelSlaveImage = pyramidSlave.getImage(k);
                 int width = levelSlaveImage.getWidth();
                 int height = levelSlaveImage.getHeight();
-
-                ImageOperations.writeImage(levelMasterImage, "D:\\Sentinel2_PROJECT\\p_down\\output\\level_master_" + (k + 1) + ".tif");
-                ImageOperations.writeImage(levelSlaveImage, "D:\\Sentinel2_PROJECT\\p_down\\output\\level_slave_" + (k + 1) + ".tif");
 
                 BufferedImage levelMasterImageEq, levelSlaveImageEq;
                 if (contrast) {
@@ -157,9 +156,6 @@ public class CoregistrationOp extends Operator {
                 ImagePyramidCache.writeImage(meshRow.get(), "meshRow");
                 WeakReference<BufferedImage> meshCol = new WeakReference<>(ImageOperations.createMeshColImage(levelMasterImage.getWidth(), levelMasterImage.getHeight()));
                 ImagePyramidCache.writeImage(meshCol.get(), "meshCol");
-
-                //ImageOperations.writeImage(meshRow, "D:\\Sentinel2_PROJECT\\p_down\\output\\meshRow_" + (k + 1) + ".tif");
-                //ImageOperations.writeImage(meshCol, "D:\\Sentinel2_PROJECT\\p_down\\output\\meshCol_" + (k + 1) + ".tif");
 
                 SoftReference<RenderedImage> u, v;
                 if (k == levels) {
@@ -199,10 +195,6 @@ public class CoregistrationOp extends Operator {
                     I1inf = ImageOperations.rescale(-1, 1, levelSlaveImage);//TODO invers image
                 }
 
-                ImageOperations.writeImage(I0, "D:\\Sentinel2_PROJECT\\p_down\\output\\I0_sup_" + (k + 1) + ".tif");
-                ImageOperations.writeImage(I1sup, "D:\\Sentinel2_PROJECT\\p_down\\output\\I1_sup_" + (k + 1) + ".tif");
-                ImageOperations.writeImage(I1inf, "D:\\Sentinel2_PROJECT\\p_down\\output\\I1_inf_" + (k + 1) + ".tif");
-
                 SoftReference<BufferedImage> Ix = new SoftReference<>(ImageOperations.gradientRow2(I0));
                 ImagePyramidCache.writeImage(Ix.get(), "Ix");
                 SoftReference<BufferedImage> Iy = new SoftReference<>(ImageOperations.gradientCol2(I0));
@@ -216,9 +208,7 @@ public class CoregistrationOp extends Operator {
 
                 for (int rad = 0; rad < radArray.length; rad++) {
                     int r = radArray[rad];
-                    if (k == 0) {
-                        getLogger().info("rad=" + r);
-                    }
+                    getLogger().info("rad=" + r);
                     float[] fen = new float[2 * r + 1];
                     for (int j = 0; j < fen.length; j++) {
                         fen[j] = 1;
@@ -232,10 +222,6 @@ public class CoregistrationOp extends Operator {
                     RenderedImage D = SubtractDescriptor.create(
                             MultiplyDescriptor.create(A, B, null),
                             MultiplyDescriptor.create(C, C, null), null);
-
-                    ImageOperations.writeImage(A, "D:\\Sentinel2_PROJECT\\p_down\\output\\A_" + (k + 1) + "_" + r + ".tif");
-                    ImageOperations.writeImage(B, "D:\\Sentinel2_PROJECT\\p_down\\output\\B_" + (k + 1) + "_" + r + ".tif");
-                    ImageOperations.writeImage(C, "D:\\Sentinel2_PROJECT\\p_down\\output\\C_" + (k + 1) + "_" + r + ".tif");
 
                     for (int iter = 0; iter < iterations; iter++) {
 
@@ -254,6 +240,7 @@ public class CoregistrationOp extends Operator {
                         RenderedImage dy = ClampDescriptor.create(JAI.create("add", pb), new double[]{0}, new double[]{height - 1}, null);
 
                         BufferedImage I1w = ImageOperations.interpolate(I1sup, ((RenderedOp) dx).getAsBufferedImage(), ((RenderedOp) dy).getAsBufferedImage());
+                        //ImageOperations.writeImage(I1w, "D:\\Sentinel2_PROJECT\\p_down\\output\\I1W_" + (k + 1) + "_" + r + ".tif");
 
                         if (contrast) {
                             BufferedImage H1w = ImageOperations.interpolate(levelSlaveImageEq, ((RenderedOp) dx).getAsBufferedImage(),
@@ -302,7 +289,7 @@ public class CoregistrationOp extends Operator {
                                         null),
                                 D, null);
                         u1 = ImageOperations.replace(u1, Float.NaN, 0.0f);
-                        ImagePyramidCache.writeImage(((PlanarImage)u1).getAsBufferedImage(), "u");
+                        ImagePyramidCache.writeImage(((PlanarImage) u1).getAsBufferedImage(), "u");
 
                         RenderedImage v1 = DivideDescriptor.create(
                                 SubtractDescriptor.create(
@@ -311,10 +298,9 @@ public class CoregistrationOp extends Operator {
                                         null).getAsBufferedImage(),
                                 D, null).getAsBufferedImage();
                         v1 = ImageOperations.replace(v1, Float.NaN, 0.0f);
-                        ImagePyramidCache.writeImage(((PlanarImage)v1).getAsBufferedImage(), "v");
+                        ImagePyramidCache.writeImage(((PlanarImage) v1).getAsBufferedImage(), "v");
 
                         Runtime.getRuntime().gc();
-
                     }
                 }
             }
@@ -330,7 +316,6 @@ public class CoregistrationOp extends Operator {
             BufferedImage dy = (BufferedImage) JAI.create("add", pb).getAsBufferedImage();
 
             BufferedImage targetImage = ImageOperations.interpolate(processedSlaveImage, dx, dy);
-            ImageOperations.writeImage(targetImage, "D:\\Sentinel2_PROJECT\\p_down\\output\\targetImage.tif");
 
             pyramidMaster.cleanPyramid();
             pyramidSlave.cleanPyramid();
@@ -349,14 +334,6 @@ public class CoregistrationOp extends Operator {
             targetBand.setSourceImage(targetImage);
             targetProduct.addBand(targetBand);
 
-        /*try {
-            GeoTiffProductWriter writer = new GeoTiffProductWriter(new GeoTiffProductWriterPlugIn());
-            writer.writeProductNodes(targetProduct, new File("D:\\Sentinel2_PROJECT\\p_down\\output\\landsat1000proc.tif"));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
             getLogger().info("Finished coregistration in " + (System.currentTimeMillis() - startTime) / 1000f + "sec");
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -371,90 +348,9 @@ public class CoregistrationOp extends Operator {
     }
 
     public static class Spi extends OperatorSpi {
-
         public Spi() {
             super(CoregistrationOp.class);
         }
     }
-
-//    public static void main(String args[]) {
-//        try {
-//            //interpolate();
-//            int length = 200;
-//            float[][] A = new float[length][length];
-//            float[][] x = new float[length][length];
-//            float[][] y = new float[length][length];
-//            for (int i = 0; i < length; i++) {
-//                for (int j = 0; j < length; j++) {
-//                    A[i][j] = i * length + j + 1;
-//                    x[i][j] = j;
-//                    y[i][j] = i;
-//                }
-//            }
-//            //MatrixUtils.rank_inf(A, 1);
-//            BufferedImage result = interpolate(imageFromMatrix(A), imageFromMatrix(x), imageFromMatrix(y));
-//            int i = 9;
-//            /*float[] values = new float[25];
-//            float[] x = new float[25];
-//            float[] y = new float[25];
-//            for(int i=0;i<25;i++){
-//                values[i]=i+1;
-//                x[i]=i/5;
-//                y[i]=i%5;
-//            }
-//            BufferedImage ri = interpolate(imageFromArray(values, 5, 5), imageFromArray(x, 5, 5), imageFromArray(y, 5, 5));
-//            ri.getData();*/
-//
-//            /*File file = new File("D:\\temp\\SBC_unp-907-13.tif");
-//            SeekableStream s = new FileSeekableStream(file);
-//
-//            TIFFDecodeParam param = null;
-//
-//            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", s, param);
-//
-//            NullOpImage op1 =
-//                    new NullOpImage(dec.decodeAsBufferedImage(0),
-//                            null,
-//                            OpImage.OP_IO_BOUND,
-//                            null);
-//
-//            BufferedImage pg1 =  op1.getAsBufferedImage();
-//
-//            ParameterBlock pb = new ParameterBlock();
-//            pb.addSource(pg1);
-//            pb.addSource(pg1);
-//            BufferedImage dx = (BufferedImage) JAI.create("add", pb);*/
-//
-//
-//            /*Sentinel2L2AProductReader reader = new Sentinel2L2AProductReader(null, "EPSG:32632");
-//            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\S2A_MSIL2A_20170805T102031_N0205_R065_T32TNQ_20170805T102535.SAFE\\MTD_MSIL2A.xml"), null);
-//            prod1.getBandAt(0).getData();
-//
-//            LandsatGeotiffReader reader2 = new LandsatGeotiffReader(null);
-//            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\LC08_L1TP_193029_20170805_20170812_01_T1.tar.gz"), null);
-//            prod2.getBandAt(0).getData();*/
-//
-//            GeoTiffProductReader reader = new GeoTiffProductReader(null);
-//            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\1000prod\\subset_B2_of_S2A_resampled_resampled1000.tif"), null);
-//            GeoTiffProductReader reader2 = new GeoTiffProductReader(null);
-//            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\1000prod\\subset_blue_of_landsat_resampled1000.tif"), null);
-//
-//
-////            GeoTiffProductReader reader = new GeoTiffProductReader(new GeoTiffProductReaderPlugIn());
-////            Product prod1 = reader.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\gefolki\\datasets\\radar_bandep.tif"), null);
-////            GeoTiffProductReader reader2 = new GeoTiffProductReader(new GeoTiffProductReaderPlugIn());
-////            Product prod2 = reader2.readProductNodes(new File("D:\\Sentinel2_PROJECT\\p_down\\gefolki\\datasets\\lidar_georef.tif"), null);
-//
-//            CoregistrationOp op = new CoregistrationOp();
-//            op.setSourceProducts(prod1, prod2);
-//            op.initialize();
-//
-//            op.targetProduct.getBandAt(0).getData();
-//            //write target product
-//
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//    }
 
 }
