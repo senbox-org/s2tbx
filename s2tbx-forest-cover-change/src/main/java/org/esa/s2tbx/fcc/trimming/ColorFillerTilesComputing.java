@@ -1,9 +1,10 @@
 package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.esa.s2tbx.fcc.common.AbstractWriteMasksTilesComputing;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
-import org.esa.s2tbx.fcc.common.ReadMaskTilesComputing;
 import org.esa.snap.utils.AbstractImageTilesParallelComputing;
+import org.esa.snap.utils.matrix.ByteMatrix;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.io.IOException;
@@ -49,13 +50,13 @@ public class ColorFillerTilesComputing extends AbstractImageTilesParallelComputi
             logger.log(Level.FINE, "Color filler for tile region: row index: "+ localRowIndex+", column index: "+localColumnIndex+", bounds [x=" + tileLeftX+", y="+tileTopY+", width="+tileWidth+", height="+tileHeight+"]");
         }
 
-        IntMatrix currentMaskTilePixels = null;
+        ByteMatrix currentMaskTilePixels = null;
         if (this.currentMaskTilesFolder != null) {
-            currentMaskTilePixels = ReadMaskTilesComputing.readMaskTile(this.currentMaskTilesFolder, tileLeftX, tileTopY, tileWidth, tileHeight);
+            currentMaskTilePixels = AbstractWriteMasksTilesComputing.readMaskTile(this.currentMaskTilesFolder, tileLeftX, tileTopY, tileWidth, tileHeight);
         }
-        IntMatrix previousMaskTilePixels = null;
+        ByteMatrix previousMaskTilePixels = null;
         if (this.previousMaskTilesFolder != null) {
-            previousMaskTilePixels = ReadMaskTilesComputing.readMaskTile(this.previousMaskTilesFolder, tileLeftX, tileTopY, tileWidth, tileHeight);
+            previousMaskTilePixels = AbstractWriteMasksTilesComputing.readMaskTile(this.previousMaskTilesFolder, tileLeftX, tileTopY, tileWidth, tileHeight);
         }
 
         int tileBottomY = tileTopY + tileHeight;

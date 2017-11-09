@@ -6,8 +6,8 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
-import org.esa.s2tbx.fcc.common.BandsExtractorOp;
-import org.esa.s2tbx.fcc.common.ReadMaskTilesComputing;
+import org.esa.s2tbx.fcc.common.AbstractWriteMasksTilesComputing;
+import org.esa.s2tbx.fcc.common.WriteCombinedMasksTilesComputing;
 import org.esa.s2tbx.fcc.common.WriteMaskTilesComputing;
 import org.esa.s2tbx.fcc.descriptor.FCCLandCoverModelDescriptor;
 import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
@@ -21,6 +21,7 @@ import org.esa.s2tbx.grm.GenericRegionMergingOp;
 import org.esa.s2tbx.grm.RegionMergingInputParameters;
 import org.esa.s2tbx.grm.RegionMergingProcessingParameters;
 import org.esa.s2tbx.grm.segmentation.tiles.SegmentationSourceProductPair;
+import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
@@ -30,6 +31,7 @@ import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.dataop.resamp.ResamplingFactory;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
@@ -44,6 +46,7 @@ import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.landcover.gpf.AddLandCoverOp;
 import org.esa.snap.utils.ProductHelper;
+import org.esa.snap.utils.StringHelper;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import javax.media.jai.JAI;
@@ -75,19 +78,14 @@ import java.util.logging.Logger;
         authors = "Jean Coravu, Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class ForestCoverChangeOp extends Operator {
+
     private static final Logger logger = Logger.getLogger(ForestCoverChangeOp.class.getName());
 
     @SourceProduct(alias = "recentProduct", label = "Recent Date Product", description = "The source product to be modified.")
     private Product currentSourceProduct;
 
-    @SourceProduct(alias = "recentProductFileMask", label = "Recent Date Product Mask", description = "The recent date source product masks for the computation.", optional = true)
-    private Product currentSourceProductMask;
-
     @SourceProduct(alias = "previousProduct", label = "Previous Date Product", description = "The source product to be modified.")
     private Product previousSourceProduct;
-
-    @SourceProduct(alias = "previousProductFileMask", label = "Previous Date Product Mask", description = "The previous date source product masks for the computation.", optional = true)
-    private Product previousSourceProductMask;
 
     @TargetProduct
     private Product targetProduct;
@@ -95,8 +93,13 @@ public class ForestCoverChangeOp extends Operator {
     @Parameter(defaultValue = "95.0", label = "Forest Cover Percentage", itemAlias = "percentage", description = "Specifies the percentage of forest cover per segment")
     private float forestCoverPercentage;
 
-    @Parameter(label = "Land Cover File", description = "")
+    @ParameterGroup(alias = "Land Cover")
+    @Parameter(label = "File", description = "")
     private File landCoverExternalFile;
+
+    @ParameterGroup(alias = "Land Cover")
+    @Parameter(label = "Map Forest Indices", description = "The indices of forest color from the new added land cover map")
+    private String landCoverMapIndices;
 
     @ParameterGroup(alias = "Segmentation")
     @Parameter(label = "Merging Cost Criterion",
@@ -133,15 +136,12 @@ public class ForestCoverChangeOp extends Operator {
     private double degreesOfFreedom;
 
     @ParameterGroup(alias = "Product Masks")
-    @Parameter(label = "Recent Date Product Mask", description = "The recent date source product masks for the computation.")
-    private String currentProductMask;
+    @Parameter(label = "Recent Date Product Mask", description = "A binary raster file to be added as mask to the output product")
+    private File currentProductSourceMaskFile;
 
     @ParameterGroup(alias = "Product Masks")
-    @Parameter(label = "Previous Date Product Mask", description = "The previous date source product masks for the computation.")
-    private String previousProductMask;
-
-    @Parameter(label = "Land Cover Map Forest Indices", description = "The indices of forest color from the new added land cover map")
-    private String landCoverMapIndices;
+    @Parameter(label = "Previous Date Product Mask", description = "A binary raster file to be added as mask to the output product")
+    private File previousProductSourceMaskFile;
 
     private String[] currentProductBandsNames;
     private String[] previousProductBandsNames;
@@ -203,10 +203,25 @@ public class ForestCoverChangeOp extends Operator {
         }
 
         try {
+            Product currentExternalMaskProduct = null;
+            Product previousExternalMaskProduct = null;
+            if (this.currentProductSourceMaskFile != null) {
+                currentExternalMaskProduct = ProductIO.readProduct(this.currentProductSourceMaskFile);
+                if (currentExternalMaskProduct.getNumBands() != 1) {
+                    throw new IllegalArgumentException("The current mask product '"+currentExternalMaskProduct.getName()+"' must contain only one raster.");
+                }
+            }
+            if (this.previousProductSourceMaskFile != null) {
+                previousExternalMaskProduct = ProductIO.readProduct(this.previousProductSourceMaskFile);
+                if (previousExternalMaskProduct.getNumBands() != 1) {
+                    throw new IllegalArgumentException("The previous mask product '"+previousExternalMaskProduct.getName()+"' must contain only one raster.");
+                }
+            }
+
             // create the temporary folder
             Files.createDirectories(temporaryFolder);
 
-            ProductData productData = computeFinalProductData(temporaryFolder);
+            ProductData productData = computeFinalProductData(currentExternalMaskProduct, previousExternalMaskProduct, temporaryFolder);
 
             Band targetBand = this.targetProduct.getBandAt(0);
 
@@ -238,12 +253,10 @@ public class ForestCoverChangeOp extends Operator {
         }
     }
 
-    private ProductData computeFinalProductData(Path temporaryParentFolder) throws Exception {
-        FolderPathsResults currentFolderPathsResult = extractBands(this.currentSourceProduct, this.currentProductBandsNames, this.currentProductMask,
-                                                        temporaryParentFolder, this.currentSourceProductMask);
+    private ProductData computeFinalProductData(Product currentExternalMaskProduct, Product previousExternalMaskProduct, Path temporaryParentFolder) throws Exception {
+        FolderPathsResults currentFolderPathsResult = extractBands(this.currentSourceProduct, this.currentProductBandsNames, currentExternalMaskProduct, temporaryParentFolder);
 
-        FolderPathsResults previousFolderPathsResult = extractBands(this.previousSourceProduct, this.previousProductBandsNames, this.previousProductMask,
-                                                         temporaryParentFolder, this.previousSourceProductMask);
+        FolderPathsResults previousFolderPathsResult = extractBands(this.previousSourceProduct, this.previousProductBandsNames, previousExternalMaskProduct, temporaryParentFolder);
 
         IntMatrix colorFillerMatrix = computeColorFillerMatrix(temporaryParentFolder, currentFolderPathsResult, previousFolderPathsResult);
 
@@ -275,28 +288,7 @@ public class ForestCoverChangeOp extends Operator {
         WeakReference<IntMatrix> referenceProductColorFill = new WeakReference<IntMatrix>(colorFillerMatrix);
         referenceProductColorFill.clear();
 
-        if (currentFolderPathsResult.getTemporaryMaskFolder() != null) {
-            addMask(currentFolderPathsResult.getTemporaryMaskFolder(), tileSize, this.currentSourceProduct, this.currentProductMask, "currentProductCloudMask");
-        }
-
-        if (previousFolderPathsResult.getTemporaryMaskFolder() != null) {
-            addMask(previousFolderPathsResult.getTemporaryMaskFolder(), tileSize, this.previousSourceProduct, this.previousProductMask, "previousProductCloudMask");
-        }
-
         return productData;
-    }
-
-    private void addMask(Path temporaryFolder, Dimension tileSize, Product sourceProduct, String sourceMaskName, String maskName) throws Exception {
-        int imageWidth = this.targetProduct.getSceneRasterWidth();
-        int imageHeight = this.targetProduct.getSceneRasterHeight();
-        ReadMaskTilesComputing readMaskTilesComputing = new ReadMaskTilesComputing(imageWidth, imageHeight, tileSize.width, tileSize.height, temporaryFolder);
-        ProductData maskProductData = readMaskTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
-
-        String[] sourceMaskNames = new String[]{ sourceMaskName };
-        ProductHelper.copyMasks(sourceProduct, this.targetProduct, sourceMaskNames);
-        Mask targetMask = this.targetProduct.getMaskGroup().get(sourceMaskName);
-        targetMask.setName(maskName);
-        targetMask.setData(maskProductData);
     }
 
     private IntSet computeMovingTrimming(IntMatrix colorFillerMatrix, Dimension movingWindowSize, Dimension movingStepSize, Dimension tileSize,
@@ -358,25 +350,8 @@ public class ForestCoverChangeOp extends Operator {
     private IntSet computeObjectsSelection(IntMatrix originalSegmentationMatrix, Product extractedBandsSourceProduct, float percentagePixels, Dimension tileSize)
                                            throws Exception {
 
-        IntSet landCoverValidPixels = new IntOpenHashSet();
-        if (this.landCoverExternalFile == null) {
-            landCoverValidPixels.add(40);
-            landCoverValidPixels.add(50);
-            landCoverValidPixels.add(60);
-            landCoverValidPixels.add(61);
-            landCoverValidPixels.add(62);
-            landCoverValidPixels.add(70);
-            landCoverValidPixels.add(71);
-            landCoverValidPixels.add(72);
-            landCoverValidPixels.add(80);
-            landCoverValidPixels.add(81);
-            landCoverValidPixels.add(82);
-            landCoverValidPixels.add(90);
-            landCoverValidPixels.add(100);
-            landCoverValidPixels.add(110);
-            landCoverValidPixels.add(160);
-            landCoverValidPixels.add(170);
-        } else {
+        IntSet landCoverValidPixels = ForestCoverChangeConstants.LAND_COVER_VALID_PIXELS;
+        if (this.landCoverExternalFile != null) {
             StringTokenizer str = new StringTokenizer(this.landCoverMapIndices, ", ");
             while (str.hasMoreElements()) {
                 int pixelValue = Integer.parseInt(str.nextToken().trim());
@@ -426,109 +401,53 @@ public class ForestCoverChangeOp extends Operator {
         return landCoverProduct;
     }
 
-    private FolderPathsResults extractBands(Product sourceProduct, String[] sourceBandNames, String sourceMaskName,
-                                            Path temporaryParentFolder, Product optionalMaskSourceProduct) throws Exception {
-
+    private FolderPathsResults extractBands(Product sourceProduct, String[] sourceBandNames, Product externalMaskProduct, Path temporaryParentFolder) throws Exception {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Extract "+sourceBandNames.length+" bands for source product '" + sourceProduct.getName()+"'");
         }
 
-        if (optionalMaskSourceProduct == null) {
-            return writeBandsAndMask(sourceProduct, sourceBandNames, sourceMaskName, temporaryParentFolder);
-        }
-        return writeBandsAndMask(sourceProduct, sourceBandNames, sourceMaskName, temporaryParentFolder, optionalMaskSourceProduct);
-    }
-
-    private FolderPathsResults writeBandsAndMask(Product sourceProduct, String[] sourceBandNames, String sourceMaskName,
-                                              Path temporaryParentFolder) throws Exception {
-
-        Mask sourceMask = null;
-        if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
-            sourceMask = sourceProduct.getMaskGroup().get(sourceMaskName);
-        }
-        String[] sourceMaskNamesToExtract = null;
-        if (sourceMask != null) {
-            sourceMaskNamesToExtract = new String[]{ sourceMaskName };
-        }
-        Product extractedProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames, sourceMaskNamesToExtract);
-
-        Product resampledProduct = resampleAllBands(extractedProduct, extractedProduct.getSceneRasterWidth(), extractedProduct.getSceneRasterHeight());
-
-        Dimension tileSize = getPreferredTileSize();
-
-        WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampledProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryParentFolder);
-        Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
-
-        Path temporaryMaskFolder = null;
-        if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
-            Mask resampledMask = resampledProduct.getMaskGroup().get(sourceMaskName);
-            if (resampledMask != null) {
-                WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(resampledMask, tileSize.width, tileSize.height, temporaryParentFolder);
-                temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
-
-                // reset the reference
-                WeakReference<Mask> referenceResampledMask = new WeakReference<Mask>(resampledMask);
-                referenceResampledMask.clear();
-            }
-        }
-
-        // reset the references
-        WeakReference<Product> referenceExtractedProduct = new WeakReference<Product>(extractedProduct);
-        referenceExtractedProduct.clear();
-        WeakReference<Product> referenceResampleProduct = new WeakReference<Product>(resampledProduct);
-        referenceResampleProduct.clear();
-
-        return new FolderPathsResults(temporaryFolder, temporaryMaskFolder);
-    }
-
-    private FolderPathsResults writeBandsAndMask(Product sourceProduct, String[] sourceBandNames, String sourceMaskName,
-                                                 Path temporaryParentFolder, Product optionalMaskSourceProduct) throws Exception {
-
-        Product extractedSourceProduct = BandsExtractorOp.extractBands(sourceProduct, sourceBandNames, null);
-
-        Product resampledSourceProduct = resampleAllBands(extractedSourceProduct, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        Product resampledSourceProduct = resampleAllBands(sourceProduct, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
 
         Dimension tileSize = getPreferredTileSize();
 
         WriteProductBandsTilesComputing bandsTilesComputing = new WriteProductBandsTilesComputing(resampledSourceProduct, sourceBandNames, tileSize.width, tileSize.height, temporaryParentFolder);
         Path temporaryFolder = bandsTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
 
-        // reset the references
-        WeakReference<Product> referenceExtractedProduct = new WeakReference<Product>(extractedSourceProduct);
-        referenceExtractedProduct.clear();
-        WeakReference<Product> referenceResampleProduct = new WeakReference<Product>(resampledSourceProduct);
-        referenceResampleProduct.clear();
-
         Path temporaryMaskFolder = null;
-        if (!StringUtils.isNullOrEmpty(sourceMaskName)) {
-            Mask sourceMask = optionalMaskSourceProduct.getMaskGroup().get(sourceMaskName);
-            if (sourceMask != null) {
-                String[] sourceMaskNamesToExtract = new String[]{ sourceMaskName };
-
-                Product extractedMaskProduct = BandsExtractorOp.extractBands(optionalMaskSourceProduct, null, sourceMaskNamesToExtract);
-
-                Product resampledMaskProduct = resampleAllBands(extractedMaskProduct, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-
-                Mask resampledMask = resampledMaskProduct.getMaskGroup().get(sourceMaskName);
-                if (resampledMask != null) {
-                    WriteMaskTilesComputing masksTilesComputing = new WriteMaskTilesComputing(resampledMask, tileSize.width, tileSize.height, temporaryParentFolder);
-                    temporaryMaskFolder = masksTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
-
-                    // reset the reference
-                    WeakReference<Mask> referenceResampledMask = new WeakReference<Mask>(resampledMask);
-                    referenceResampledMask.clear();
-                }
-
-                // reset the references
-                WeakReference<Product> referenceExtractedMaskProduct = new WeakReference<Product>(extractedMaskProduct);
-                referenceExtractedProduct.clear();
-                WeakReference<Product> referenceResampleMaskProduct = new WeakReference<Product>(resampledMaskProduct);
-                referenceResampleProduct.clear();
+        if (externalMaskProduct == null) {
+            if (isSentinelProduct(sourceProduct)) {
+                WriteCombinedMasksTilesComputing writeMaskTilesComputing = new WriteCombinedMasksTilesComputing(resampledSourceProduct, ForestCoverChangeConstants.SENTINEL_MASK_NAMES,
+                                                                                                                tileSize.width, tileSize.height, temporaryParentFolder);
+                temporaryMaskFolder = writeMaskTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
             }
+
+            // reset the reference
+            WeakReference<Product> referenceResampleSourceProduct = new WeakReference<Product>(resampledSourceProduct);
+            referenceResampleSourceProduct.clear();
+        } else {
+            // reset the reference
+            WeakReference<Product> referenceResampleSourceProduct = new WeakReference<Product>(resampledSourceProduct);
+            referenceResampleSourceProduct.clear();
+
+            Product resampledMaskProduct = resampleAllBands(externalMaskProduct, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+
+            Band band = resampledMaskProduct.getBandGroup().get(0);
+            WriteMaskTilesComputing writeMaskTilesComputing = new WriteMaskTilesComputing(band, tileSize.width, tileSize.height, temporaryParentFolder);
+            temporaryMaskFolder = writeMaskTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+
+            // reset the references
+            WeakReference<Product> referenceExternalMaskProduct = new WeakReference<Product>(externalMaskProduct);
+            referenceExternalMaskProduct.clear();
+            WeakReference<Product> referenceResampleMaskProduct = new WeakReference<Product>(resampledMaskProduct);
+            referenceResampleMaskProduct.clear();
         }
 
         return new FolderPathsResults(temporaryFolder, temporaryMaskFolder);
+    }
+
+    public static boolean isSentinelProduct(Product product) {
+        return StringHelper.startsWithIgnoreCase(product.getProductType(), "S2_MSI_Level");
     }
 
     private static Product resampleAllBands(Product sourceProduct, int targetWidth, int targetHeight) {

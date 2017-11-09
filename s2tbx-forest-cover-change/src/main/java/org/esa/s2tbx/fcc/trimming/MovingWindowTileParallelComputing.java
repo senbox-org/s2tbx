@@ -1,6 +1,7 @@
 package org.esa.s2tbx.fcc.trimming;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.s2tbx.grm.RegionMergingInputParameters;
 import org.esa.s2tbx.grm.segmentation.BoundingBox;
 import org.esa.s2tbx.grm.segmentation.TileDataSource;
@@ -130,7 +131,7 @@ public class MovingWindowTileParallelComputing extends AbstractParallelComputing
         for (int y = movingLocalTileTopY; y < movingLocalTileBottomY; y++) {
             for (int x = movingLocalTileLeftX; x < movingLocalTileRightX; x++) {
                 int segmentationPixelValue = this.colorFillerMatrix.getValueAt(y, x);
-                if (movingWindowValidSegmentIds.contains(segmentationPixelValue)) {
+                if (segmentationPixelValue != ForestCoverChangeConstants.NO_DATA_VALUE && movingWindowValidSegmentIds.contains(segmentationPixelValue)) {
                     int localTileTopY = computeLocalTileTopY(y);
                     int localTileLeftX = computeLocalTileLeftX(x);
                     int localTileWidth = computeLocalTileWidth(localTileLeftX);

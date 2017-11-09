@@ -2,10 +2,13 @@ package org.esa.s2tbx.fcc;
 
 import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertyContainer;
+import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
+import com.bc.ceres.swing.binding.PropertyEditor;
+import com.bc.ceres.swing.binding.PropertyEditorRegistry;
 import com.bc.ceres.swing.binding.PropertyPane;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
@@ -46,6 +49,7 @@ import org.esa.snap.utils.StringHelper;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -64,6 +68,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
+import static com.bc.ceres.swing.TableLayout.cell;
+
 /**
  * @author Razvan Dumitrascu
  * @since 5.0.6
@@ -74,8 +80,8 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     private static final String PREVIOUS_PRODUCT_PROPERTY = "previousProduct";
     private static final String LAND_COVER_EXTERNAL_FILE_PROPERTY ="landCoverExternalFile";
     private static final String LAND_COVER_MAP_INDICES_PROPERTY = "landCoverMapIndices";
-    private static final String CURRENT_PRODUCT_SOURCE_MASK = "currentProductSourceMask";
-    private static final String PREVIOUS_PRODUCT_SOURCE_MASK = "previousProductSourceMask";
+    private static final String CURRENT_PRODUCT_SOURCE_MASK = "currentProductSourceMaskFile";
+    private static final String PREVIOUS_PRODUCT_SOURCE_MASK = "previousProductSourceMaskFile";
 
     private static final int CURRENT_PRODUCT = 0;
     private static final int PREVIOUS_PRODUCT = 1;
@@ -159,18 +165,24 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         Object currentProductSourceMask = propertySet.getValue(CURRENT_PRODUCT_SOURCE_MASK);
         Object previousProductSourceMask = propertySet.getValue(PREVIOUS_PRODUCT_SOURCE_MASK);
         String message;
-        if ((currentProduct != null) && (previousProduct !=null)) {
-            if ((isSentinelProduct(currentProduct) && (currentProductSourceMask == null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
-                message = "Products " + currentProduct.getName() + " and " + previousProduct.getName() + " are of type Sentinel 2. " +
-                        "The forest cover change output product  will take in consideration the cloud masks from these products";
+        if ((currentProduct != null) && (previousProduct != null)) {
+            if ((ForestCoverChangeOp.isSentinelProduct(currentProduct) && (currentProductSourceMask == null)
+                    && (ForestCoverChangeOp.isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
+
+                message = "Products " + currentProduct.getName() + " and " + previousProduct.getName() + " are of type Sentinel 2.\n" +
+                        "The forest cover change output product  will take in consideration the cloud masks from these products.";
                 showInformationDialog(message);
-            } else if ((isSentinelProduct(currentProduct) && (currentProductSourceMask == null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask != null)) {
-                message = "Product " + currentProduct.getName() + " is of type Sentinel 2. " +
-                        "The forest cover change output product  will take in consideration the cloud masks from this product";
+            } else if ((ForestCoverChangeOp.isSentinelProduct(currentProduct) && (currentProductSourceMask == null)
+                    && (ForestCoverChangeOp.isSentinelProduct(previousProduct))) && (previousProductSourceMask != null)) {
+
+                message = "Product " + currentProduct.getName() + " is of type Sentinel 2.\n" +
+                        "The forest cover change output product  will take in consideration the cloud masks from this product.";
                 showInformationDialog(message);
-            } else if ((isSentinelProduct(currentProduct) && (currentProductSourceMask != null) && (isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
-                message = "Product " + previousProduct.getName() + " is of type Sentinel 2. " +
-                        "The forest cover change output product  will take in consideration the cloud masks from this product";
+            } else if ((ForestCoverChangeOp.isSentinelProduct(currentProduct) && (currentProductSourceMask != null)
+                    && (ForestCoverChangeOp.isSentinelProduct(previousProduct))) && (previousProductSourceMask == null)) {
+
+                message = "Product " + previousProduct.getName() + " is of type Sentinel 2.\n" +
+                        "The forest cover change output product  will take in consideration the cloud masks from this product.";
                 showInformationDialog(message);
             }
         }
@@ -190,9 +202,6 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         return true;
     }
 
-    private boolean isSentinelProduct(Product product) {
-        return StringHelper.startsWithIgnoreCase(product.getProductType(), "S2_MSI_Level");
-    }
     @Override
     public int show() {
         this.ioParametersPanel.initSourceProductSelectors();
@@ -319,10 +328,15 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
             Property prop = bindingContext.getPropertySet().getProperty(parameter);
             container.addProperty(prop);
         }
-        final PropertyPane parametersPane = new PropertyPane(container);
-        final JPanel panel = parametersPane.createPanel();
+
+        final JPanel panel = createPanel(container);
         panel.setBorder(BorderFactory.createTitledBorder(name));
         return panel;
+
+//        final PropertyPane parametersPane = new PropertyPane(container);
+//        final JPanel panel = parametersPane.createPanel();
+//        panel.setBorder(BorderFactory.createTitledBorder(name));
+//        return panel;
     }
 
     private void processAnnotationsRec(Class<?> operatorClass) {
@@ -390,7 +404,77 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     }
 
     private OperatorMenu createDefaultMenuBar() {
-        return new OperatorMenu(getJDialog(), operatorDescriptor, parameterSupport, getAppContext(), getHelpID());
+        return new OperatorMenu(getJDialog(), this.operatorDescriptor, this.parameterSupport, getAppContext(), getHelpID());
+    }
+
+    private static JPanel createPanel(PropertySet propertyContainer) {
+        Property[] properties = propertyContainer.getProperties();
+        BindingContext bindingContext = new BindingContext((propertyContainer));
+
+        boolean displayUnitColumn = wantDisplayUnitColumn(properties);
+        TableLayout layout = new TableLayout(displayUnitColumn ? 3 : 2);
+        layout.setTableAnchor(TableLayout.Anchor.WEST);
+        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        layout.setTablePadding(3, 3);
+        final JPanel panel = new JPanel(layout);
+
+        int rowIndex = 0;
+        final PropertyEditorRegistry registry = PropertyEditorRegistry.getInstance();
+        for (Property property : properties) {
+            PropertyDescriptor descriptor = property.getDescriptor();
+            if (isInvisible(descriptor)) {
+                continue;
+            }
+            PropertyEditor propertyEditor = registry.findPropertyEditor(descriptor);
+            JComponent[] components = propertyEditor.createComponents(descriptor, bindingContext);
+            if (components.length == 2) {
+                layout.setCellWeightX(rowIndex, 0, 0.0);
+                panel.add(components[1], cell(rowIndex, 0));
+                layout.setCellWeightX(rowIndex, 1, 1.0);
+                if(components[0] instanceof JScrollPane) {
+                    layout.setRowWeightY(rowIndex, 1.0);
+                    layout.setRowFill(rowIndex, TableLayout.Fill.BOTH);
+                }
+                panel.add(components[0], cell(rowIndex, 1));
+            } else {
+                layout.setCellColspan(rowIndex, 0, 2);
+                layout.setCellWeightX(rowIndex, 0, 1.0);
+                panel.add(components[0], cell(rowIndex, 0));
+            }
+            if (displayUnitColumn) {
+                final JLabel label = new JLabel("");
+                if (descriptor.getUnit() != null) {
+                    label.setText(descriptor.getUnit());
+                }
+                layout.setCellWeightX(rowIndex, 2, 0.0);
+                panel.add(label, cell(rowIndex, 2));
+            }
+            rowIndex++;
+        }
+        layout.setCellColspan(rowIndex, 0, 2);
+        layout.setCellWeightX(rowIndex, 0, 1.0);
+        layout.setCellWeightY(rowIndex, 0, 0.5);
+        return panel;
+    }
+
+    private static boolean isInvisible(PropertyDescriptor descriptor) {
+        return Boolean.FALSE.equals(descriptor.getAttribute("visible")) || descriptor.isDeprecated();
+    }
+
+    private static boolean wantDisplayUnitColumn(Property[] models) {
+        boolean showUnitColumn = false;
+        for (Property model : models) {
+            PropertyDescriptor descriptor = model.getDescriptor();
+            if (isInvisible(descriptor)) {
+                continue;
+            }
+            String unit = descriptor.getUnit();
+            if (!(unit == null || unit.length() == 0)) {
+                showUnitColumn = true;
+                break;
+            }
+        }
+        return showUnitColumn;
     }
 
     private class TargetProductSwingWorker extends ProgressMonitorSwingWorker<Product, Object> {
