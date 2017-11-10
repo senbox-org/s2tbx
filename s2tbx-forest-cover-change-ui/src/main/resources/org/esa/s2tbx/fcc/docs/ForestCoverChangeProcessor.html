@@ -82,7 +82,7 @@
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    (i) A forest training set is created with the objects covered by 95% of Tree cover class extracted from a reference map
+    (i) A forest training set is created with the objects covered by a percentage (95% by default) of Tree cover class extracted from a reference map (by default CCI Land Cover Map)
     (<a href="http://maps.elie.ucl.ac.be/CCI/viewer/index.php">originally CCI Land Cover map</a>):
 </p>
 <p>
@@ -95,7 +95,7 @@
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    - Areas statistics are then computed and objects with at least 95% Tree cover are selected for the forest/non forest mask training set. This method allows to have set of homogeneous tree cover objects.</p>
+    - Areas statistics are then computed and objects with at least 95% (be default, the percentage can be modified) Tree cover are selected for the forest/non forest mask training set. This method allows to have set of homogeneous tree cover objects.</p>
 </p>
 <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -158,11 +158,7 @@
                 Specify the  forest cover percentage for each segmentation object. It represents the percent of pixels from a segmentation
                 object that are marked as forest in the CCI Land Cover map.
             </p>
-            <p class="i1">
-                <b>Land cover file:</b>
-                Specify the path to a new land cover map different than the default one (CCI Land Cover 2015). If no path is specified than the default land
-                cover map is used.
-            </p>
+
             <p class="i1">
                 <b>Merging cost criterion:</b>
                 Specify the type to compute the cost between adjacent segments. The merging costs are based on a homogeneity criterion and can represent
@@ -197,9 +193,26 @@
                 Specify the shape weight.
             </p>
             <p class="i1">
-                <b>Recent Product Mask and Previous Product Mask:</b>
-                Specify a mask to be added to the target product. In general the opaque cloud masks can be used to
-                mitigate the effects of false positive results
+                <b>Name :</b>
+                Specify the name of the Land Cover Map to be used from a list of land cover maps integrated in the application. The default land cover map is  CCI Land Cover map
+            </p>
+
+            <p class="i1">
+                <b>Map Indices:</b>
+                Specify the indices from the selected land cover map,  to be used as a mask of forest for the Forest cover change processor. An example is:
+                40, 50, 60, 61, 62, 70, 71, 72, 80,81, 82,  90,100, 110,160, 170. All indices must be integers and separated by a comma.
+            </p>
+            <p class="nospace">
+                <b>NOTE:</b> The indices filed must not be empty.
+            </p>
+            <p class="i1">
+                <b>Recent Date Product Mask and Previous Date Product Mask:</b>
+                Specify a raster mask to be added to the target product. If no masks are introduced and the input products are of type sentinel 2, the output product will be influenced by
+                scl_dark_feature_shadow, scl_cloud_shadow, scl_water, scl_cloud_low_proba, scl_cloud_medium_proba, scl_cloud_high_proba, scl_thin_cirrus, scl_snow_ice masks from the source products in order
+                to reduce the false positives from the output.
+            </p>
+            <p class="nospace">
+                <b>NOTE:</b> Input masks must be a binary raster and contain only one band.
             </p>
             <p class="i1">
                 <b>Degrees of freedom:</b>

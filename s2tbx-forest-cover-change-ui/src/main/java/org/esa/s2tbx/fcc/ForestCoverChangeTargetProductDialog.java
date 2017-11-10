@@ -2,25 +2,19 @@ package org.esa.s2tbx.fcc;
 
 import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertyContainer;
-import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.binding.ValidationException;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
-import com.bc.ceres.swing.binding.PropertyEditor;
-import com.bc.ceres.swing.binding.PropertyEditorRegistry;
 import com.bc.ceres.swing.binding.PropertyPane;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import com.bc.ceres.swing.selection.SelectionChangeListener;
 import org.esa.s2tbx.fcc.annotation.ParameterGroup;
-import org.esa.s2tbx.fcc.common.ForestCoverChangeConstants;
 import org.esa.snap.core.dataio.ProductIO;
-import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductManager;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.annotations.Parameter;
@@ -47,8 +41,7 @@ import org.esa.snap.landcover.dataio.LandCoverFactory;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.SaveProductAsAction;
 import org.esa.snap.ui.AppContext;
-import org.esa.snap.utils.StringHelper;
-
+import org.esa.snap.ui.ModalDialog;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -181,28 +174,58 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
         Object currentProductSourceMask = propertySet.getValue(CURRENT_PRODUCT_SOURCE_MASK);
         Object previousProductSourceMask = propertySet.getValue(PREVIOUS_PRODUCT_SOURCE_MASK);
         String message;
+        String information;
+        ModalDialog modalDialog = new ModalDialog(null, "Forest Cover Change Information", ModalDialog.ID_OK_CANCEL, "");
         if ((currentProduct != null) && (previousProduct != null)) {
             if (ForestCoverChangeOp.isSentinelProduct(currentProduct) && currentProductSourceMask == null
                     && ForestCoverChangeOp.isSentinelProduct(previousProduct) && previousProductSourceMask == null) {
 
-                message = "Products " + currentProduct.getName() + " and " + previousProduct.getName() + " are of type Sentinel 2.\n" +
-                        "The forest cover change output product  will take in consideration the cloud masks from these products.";
-                showInformationDialog(message);
+                message = "Products " + currentProduct.getName() + " and " + previousProduct.getName() + " are of type Sentinel 2." ;
+                information =  "The forest cover change output product  will take in consideration the cloud masks from these products.";
+
+                modalDialog.setContent(getModalDialogContent(message, information));
+                final int show = modalDialog.show();
+                if (show == ModalDialog.ID_CANCEL) {
+                    return false;
+                }
             } else if (ForestCoverChangeOp.isSentinelProduct(currentProduct) && currentProductSourceMask == null
                     && ForestCoverChangeOp.isSentinelProduct(previousProduct) && previousProductSourceMask != null) {
 
-                message = "Product " + currentProduct.getName() + " is of type Sentinel 2.\n" +
-                        "The forest cover change output product  will take in consideration the cloud masks from this product.";
-                showInformationDialog(message);
+                message = "Product " + currentProduct.getName() + " is of type Sentinel 2.";
+                information = "The forest cover change output product  will take in consideration the cloud masks from this product.";
+                modalDialog.setContent(getModalDialogContent(message, information));
+                final int show = modalDialog.show();
+                if (show == ModalDialog.ID_CANCEL) {
+                    return false;
+                }
             } else if (ForestCoverChangeOp.isSentinelProduct(currentProduct) && currentProductSourceMask != null
                     && ForestCoverChangeOp.isSentinelProduct(previousProduct) && previousProductSourceMask == null) {
 
-                message = "Product " + previousProduct.getName() + " is of type Sentinel 2.\n" +
-                        "The forest cover change output product  will take in consideration the cloud masks from this product.";
-                showInformationDialog(message);
+                message = "Product " + previousProduct.getName() + " is of type Sentinel 2.";
+                information = "The forest cover change output product  will take in consideration the cloud masks from this product.";
+                modalDialog.setContent(getModalDialogContent(message, information));
+                final int show = modalDialog.show();
+                if (show == ModalDialog.ID_CANCEL) {
+                    return false;
+                }
             }
         }
         return true;
+    }
+
+    private JPanel getModalDialogContent(String message, String information){
+        final TableLayout layout = new TableLayout(1);
+        layout.setTableAnchor(TableLayout.Anchor.WEST);
+        layout.setTableFill(TableLayout.Fill.BOTH);
+        layout.setTableWeightX(1.0);
+        layout.setTableWeightY(0.0);
+        layout.setRowWeightY(1, 1.0);
+        layout.setTablePadding(3, 3);
+        JPanel content = new JPanel(layout);
+        content.setBorder(new EmptyBorder(4, 4, 4, 4));
+        content.add(new JLabel(message));
+        content.add(new JLabel(information));
+        return content;
     }
 
     @Override

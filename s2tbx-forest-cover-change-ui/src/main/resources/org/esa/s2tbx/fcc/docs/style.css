@@ -195,3 +195,9 @@ hr {
     border-style: solid;
     border-width: 1;
 }
+
+.nospace {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    margin: 0pt;
+    margin-left: 30;
+}
