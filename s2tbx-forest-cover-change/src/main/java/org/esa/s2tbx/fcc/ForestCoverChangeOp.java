@@ -57,8 +57,10 @@ import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
@@ -411,9 +413,11 @@ public class ForestCoverChangeOp extends Operator {
         Path temporaryMaskFolder = null;
         if (externalMaskProduct == null) {
             if (isSentinelProduct(sourceProduct)) {
-                WriteCombinedMasksTilesComputing writeMaskTilesComputing = new WriteCombinedMasksTilesComputing(resampledSourceProduct, ForestCoverChangeConstants.SENTINEL_MASK_NAMES,
-                                                                                                                tileSize.width, tileSize.height, temporaryParentFolder);
-                temporaryMaskFolder = writeMaskTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+                if(productContainsMasks(sourceProduct)) {
+                    WriteCombinedMasksTilesComputing writeMaskTilesComputing = new WriteCombinedMasksTilesComputing(resampledSourceProduct, ForestCoverChangeConstants.SENTINEL_MASK_NAMES,
+                            tileSize.width, tileSize.height, temporaryParentFolder);
+                    temporaryMaskFolder = writeMaskTilesComputing.runTilesInParallel(this.threadCount, this.threadPool);
+                }
             }
 
             // reset the reference
@@ -438,6 +442,16 @@ public class ForestCoverChangeOp extends Operator {
         }
 
         return new FolderPathsResults(temporaryFolder, temporaryMaskFolder);
+    }
+
+    private static boolean productContainsMasks(Product sourceProduct) {
+        for(int k = 0; k < ForestCoverChangeConstants.SENTINEL_MASK_NAMES.length; k++) {
+            Mask sourceMask = sourceProduct.getMaskGroup().get(ForestCoverChangeConstants.SENTINEL_MASK_NAMES[k]);
+            if(sourceMask == null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean isSentinelProduct(Product product) {
