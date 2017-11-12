@@ -16,15 +16,16 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 
 import javax.media.jai.*;
 import javax.media.jai.operator.*;
+import java.awt.*;
 import java.awt.image.*;
 import java.awt.image.renderable.ParameterBlock;
-import java.awt.image.renderable.RenderedImageFactory;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
- * Coregistration.... [TODO]
+ * Coregistration operation based on rasters.
  *
  * @author Ramona Manda
  * @since 6.0.0
@@ -32,28 +33,28 @@ import java.util.Arrays;
 @OperatorMetadata(
         alias = "CoregistrationOp",
         version = "1.0",
-        category = "Optical",
-        description = "The 'Coregistration Processor' operator ...",
-        authors = "RM",
-        copyright = "Copyright (C) 2016 by CS ROMANIA")
+        category = "Raster/Geometric",
+        description = "Coregisters two rasters, not considering their location",
+        authors = "Ramona M",
+        copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class CoregistrationOp extends Operator {
 
-    @SourceProduct(alias = "master", description = "The source product which serves as master.")
+    @SourceProduct(alias = "Master", description = "The source product which serves as master.")
     private Product masterProduct;
 
-    @SourceProduct(alias = "slave", description = "The source product which serves as slave.")
+    @SourceProduct(alias = "Slave", description = "The source product which serves as slave.")
     private Product slaveProduct;
 
     @TargetProduct(description = "The target product which will use the master's location.")
     private Product targetProduct;
 
+    @Parameter(label = "Master band", description = "The band...", rasterDataNodeType = Band.class)
+    private String masterSourceBand;
+
+    @Parameter(label = "Slave band", description = "The band...", valueSet = {""})
+    private String slaveSourceBand;
+
     private boolean contrast = false;
-
-    @Parameter(label = "Band Index of Master product", defaultValue = "0", description = "Band Index!!!")
-    private int masterBandIndex = 0;
-
-    @Parameter(label = "Band Index of Slave product", defaultValue = "0", description = "Band Index!!!")
-    private int slaveBandIndex = 0;
 
     @Parameter(label = "Number of levels", defaultValue = "6", description = "The number of levels to process the images.")
     private int levels = 6;
@@ -67,8 +68,31 @@ public class CoregistrationOp extends Operator {
     @Parameter(label = "Radius values", defaultValue = "32, 28, 24, 20, 16, 12, 8", description = "The radius integer values splitted by comma.")
     private static final String radius = "32, 28, 24, 20, 16, 12, 8";
 
+    public String hiddenSlaveBand;
+
     public CoregistrationOp() {
     }
+
+    @Override
+    public Dimension ensureSingleRasterSize(Product... products) throws OperatorException {
+        //no need to consider only single-size products.
+        Product p;
+        if (products.length > 0 && (p = products[0]) != null) {
+            return new Dimension(p.getSceneRasterWidth(), p.getSceneRasterHeight());
+        } else {
+            return new Dimension(0, 0);
+        }
+    }
+
+    @Override
+    public void setParameter(String name, Object value) {
+        if (name.equals("slaveSourceBand")) {
+            hiddenSlaveBand = value.toString();
+        } else {
+            super.setParameter(name, value);
+        }
+    }
+
 
     @Override
     public void initialize() throws OperatorException {
@@ -91,13 +115,15 @@ public class CoregistrationOp extends Operator {
     }
 
     public void doExecute(Product sourceMasterProduct, Product sourceSlaveProduct, int[] radArray) {
-        if (masterBandIndex >= sourceMasterProduct.getNumBands()) {
-            throw new OperatorException("Band index " + masterBandIndex + " wrong for master product " +
-                    sourceMasterProduct.getName() + " having " + sourceMasterProduct.getNumBands() + " bands");
+        if (masterSourceBand == null || masterSourceBand.isEmpty() ||
+                sourceMasterProduct.getBand(masterSourceBand) == null) {
+            throw new OperatorException("Band name " + masterSourceBand + " wrong for master product " +
+                    sourceMasterProduct.getName() + " having bands : " + Arrays.toString(sourceMasterProduct.getBandGroup().toArray()));
         }
-        if (slaveBandIndex >= sourceSlaveProduct.getNumBands()) {
-            throw new OperatorException("Band index " + slaveBandIndex + " wrong for slave product " +
-                    sourceSlaveProduct.getName() + " having " + sourceSlaveProduct.getNumBands() + " bands");
+        if (hiddenSlaveBand == null || hiddenSlaveBand.isEmpty() ||
+                sourceSlaveProduct.getBand(hiddenSlaveBand) == null) {
+            throw new OperatorException("Band name " + hiddenSlaveBand + " wrong for slave product " +
+                    sourceSlaveProduct.getName() + " having bands : " + Arrays.toString(sourceSlaveProduct.getBandGroup().toArray()));
         }
         try {
             getLogger().info("Started coregistration of products " + sourceMasterProduct.getName()
@@ -106,11 +132,12 @@ public class CoregistrationOp extends Operator {
                     + "(" + sourceSlaveProduct.getSceneRasterWidth() + "X" + sourceSlaveProduct.getSceneRasterHeight() + ")");
             long startTime = System.currentTimeMillis();
 
-            int levelMaster = sourceMasterProduct.getBandAt(masterBandIndex).getMultiLevelModel().getLevelCount();
-            BufferedImage sourceMasterImage = ImageOperations.convertBufferedImage(sourceMasterProduct.getBandAt(masterBandIndex).getSourceImage().getImage(0));
+            Band originalMasterBand = sourceMasterProduct.getBand(masterSourceBand);
+            int levelMaster = originalMasterBand.getMultiLevelModel().getLevelCount();
+            BufferedImage sourceMasterImage = ImageOperations.convertBufferedImage(originalMasterBand.getSourceImage().getImage(0));
             BufferedImage processedMasterImage = sourceMasterImage;
 
-            Band originalSlaveBand = sourceSlaveProduct.getBandAt(slaveBandIndex);
+            Band originalSlaveBand = sourceSlaveProduct.getBand(hiddenSlaveBand);
             int levelSlave = originalSlaveBand.getMultiLevelModel().getLevelCount();
             BufferedImage sourceSlaveImage = ImageOperations.convertBufferedImage(originalSlaveBand.getSourceImage().getImage(0));
             float xFactor = (float) processedMasterImage.getWidth() / sourceSlaveImage.getWidth();
@@ -141,7 +168,7 @@ public class CoregistrationOp extends Operator {
 
                 BufferedImage levelMasterImageEq, levelSlaveImageEq;
                 if (contrast) {
-                    //clahe should be applied directly on BufferedImage, to avoid transferng from/to image
+                    //clahe should be applied directly on BufferedImage, to avoid transfering from/to image
                     levelMasterImageEq = ImageOperations.equalize(levelMasterImage);
                     levelSlaveImageEq = ImageOperations.equalize(levelSlaveImage);
                 } else {
@@ -225,10 +252,6 @@ public class CoregistrationOp extends Operator {
 
                     for (int iter = 0; iter < iterations; iter++) {
 
-                        if (k == 0) {
-                            getLogger().info("iter=" + iter);
-                        }
-
                         ParameterBlock pb = new ParameterBlock();
                         pb.addSource(ImagePyramidCache.readImage("meshCol"));
                         pb.addSource(ImagePyramidCache.readImage("u"));
@@ -305,27 +328,32 @@ public class CoregistrationOp extends Operator {
                 }
             }
 
+
+            xFactor = (float) sourceSlaveImage.getWidth() / processedSlaveImage.getWidth();
+            yFactor = (float) sourceSlaveImage.getHeight() / processedSlaveImage.getHeight();
+
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(ImagePyramidCache.readImage("meshCol"));
             pb.addSource(ImagePyramidCache.readImage("u"));
             BufferedImage dx = (BufferedImage) JAI.create("add", pb).getAsBufferedImage();
+            if (xFactor != 1f || yFactor != 1f) {
+                dx = ImageOperations.resize(dx, xFactor, yFactor,
+                        Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            }
 
             pb = new ParameterBlock();
             pb.addSource(ImagePyramidCache.readImage("meshRow"));
             pb.addSource(ImagePyramidCache.readImage("v"));
             BufferedImage dy = (BufferedImage) JAI.create("add", pb).getAsBufferedImage();
+            if (xFactor != 1f || yFactor != 1f) {
+                dy = ImageOperations.resize(dy, xFactor, yFactor,
+                        Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            }
 
-            BufferedImage targetImage = ImageOperations.interpolate(processedSlaveImage, dx, dy);
+            BufferedImage targetImage = ImageOperations.interpolate(sourceSlaveImage, dx, dy);
 
             pyramidMaster.cleanPyramid();
             pyramidSlave.cleanPyramid();
-
-            xFactor = (float) sourceSlaveImage.getWidth() / targetImage.getWidth();
-            yFactor = (float) sourceSlaveImage.getHeight() / targetImage.getHeight();
-            if (xFactor != 1f || yFactor != 1f) {
-                targetImage = ImageOperations.resize(targetImage, xFactor, yFactor,
-                        Interpolation.getInstance(Interpolation.INTERP_BICUBIC));
-            }
 
             Band targetBand = new Band(originalSlaveBand.getName(),
                     ProductData.TYPE_FLOAT32,
@@ -333,6 +361,23 @@ public class CoregistrationOp extends Operator {
                     originalSlaveBand.getRasterHeight());
             targetBand.setSourceImage(targetImage);
             targetProduct.addBand(targetBand);
+
+            for (Band b : Arrays.asList(sourceSlaveProduct.getBands())) {
+                if (b.getName() != hiddenSlaveBand) {
+
+                    BufferedImage bImage = ImageOperations.interpolate(
+                            ImageOperations.convertBufferedImage(b.getSourceImage().getImage(0))
+                            , dx, dy);
+
+                    Band btBand = new Band(b.getName(),
+                            ProductData.TYPE_FLOAT32,
+                            b.getRasterWidth(),
+                            b.getRasterHeight());
+                    btBand.setSourceImage(targetImage);
+                    targetProduct.addBand(btBand);
+
+                }
+            }
 
             getLogger().info("Finished coregistration in " + (System.currentTimeMillis() - startTime) / 1000f + "sec");
         } catch (Exception ex) {
@@ -350,6 +395,19 @@ public class CoregistrationOp extends Operator {
     public static class Spi extends OperatorSpi {
         public Spi() {
             super(CoregistrationOp.class);
+        }
+
+        @Override
+        public Operator createOperator(Map<String, Object> parameters,
+                                       Map<String, Product> sourceProducts,
+                                       RenderingHints renderingHints) throws OperatorException {
+            String slaveBand = parameters.get("slaveSourceBand").toString();
+            parameters.remove("slaveSourceBand");
+            Operator op = super.createOperator(parameters, sourceProducts, renderingHints);
+            if (op instanceof CoregistrationOp) {
+                ((CoregistrationOp) op).hiddenSlaveBand = slaveBand;
+            }
+            return op;
         }
     }
 

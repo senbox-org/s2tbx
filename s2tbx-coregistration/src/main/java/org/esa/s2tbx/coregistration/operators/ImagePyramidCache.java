@@ -12,14 +12,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
- *
+ * Class utility for saving/loading/computing images from pyramid, and also for saving and deleting other temporary images
  */
 public class ImagePyramidCache {
-
-    //private BufferedImage sourceImage;
-    //private List<BufferedImage> levelImages;
     private Map<Integer, String> imagesLocation;
     private int levels;
     private boolean computed = false;
@@ -30,12 +28,13 @@ public class ImagePyramidCache {
         try {
             tmpDir = VirtualDir.createUniqueTempDir();
         } catch (Exception ex) {
+            ex.printStackTrace();
+            Logger.getLogger("ImagePyramidCache").warning("Error on  creating temporary folder " + ex.getMessage());
             //TODO other dir
         }
     }
 
     public ImagePyramidCache(BufferedImage image, int levels) {
-        //this.sourceImage = image;
         this.levels = levels;
         try {
             String levelTmpFile = "L0img" + System.currentTimeMillis();

@@ -20,51 +20,84 @@ import javax.media.jai.RasterFormatTag;
 
 import com.sun.media.jai.util.ImageUtil;
 
+/*
+ * JAI operator for replacing a float value with another float value, in a given input image.
+ */
 public class ReplaceValueOp extends PointOpImage {
 
-    /** The upper bound, one for each band. */
+    /**
+     * The upper bound, one for each band.
+     */
     private final double[] target;
 
-    /** The upper bound, one for each band. */
+    /**
+     * The upper bound, one for each band.
+     */
     private final double[] surrogate;
 
-    /** List of ColorModels required for IndexColorModel support */
+    /**
+     * List of ColorModels required for IndexColorModel support
+     */
     ColorModel colorModel;
 
-    /** Array containing all the No Data Ranges */
+    /**
+     * Array containing all the No Data Ranges
+     */
     private Range noData;
 
-    /** Boolean indicating if ROI is present */
+    /**
+     * Boolean indicating if ROI is present
+     */
     private final boolean hasROI;
 
-    /** ROI bounds as a Shape */
+    /**
+     * ROI bounds as a Shape
+     */
     private Rectangle roiBounds;
 
-    /** Boolean indicating if No Data are present */
+    /**
+     * Boolean indicating if No Data are present
+     */
     private final boolean hasNoData;
 
-    /** Destination No Data value used for Byte images */
+    /**
+     * Destination No Data value used for Byte images
+     */
     private byte destNoDataByte;
 
-    /** Destination No Data value used for Short/Unsigned Short images */
+    /**
+     * Destination No Data value used for Short/Unsigned Short images
+     */
     private short destNoDataShort;
 
-    /** Destination No Data value used for Integer images */
+    /**
+     * Destination No Data value used for Integer images
+     */
     private int destNoDataInt;
 
-    /** Destination No Data value used for Float images */
+    /**
+     * Destination No Data value used for Float images
+     */
     private float destNoDataFloat;
 
-    /** Destination No Data value used for Double images */
+    /**
+     * Destination No Data value used for Double images
+     */
     private double destNoDataDouble;
 
-    /** Boolean indicating if No Data and ROI are not used */
+    /**
+     * Boolean indicating if No Data and ROI are not used
+     */
     protected boolean caseA;
 
-    /** Boolean indicating if only the ROI is used */
+    /**
+     * Boolean indicating if only the ROI is used
+     */
     protected boolean caseB;
 
-    /** Boolean indicating if only the No Data are used */
+    /**
+     * Boolean indicating if only the No Data are used
+     */
     protected boolean caseC;
 
     private ROI roi;
@@ -149,8 +182,8 @@ public class ReplaceValueOp extends PointOpImage {
     }
 
     /**
-     * @param sources Cobbled sources, guaranteed to provide all the source data necessary for computing the rectangle.
-     * @param dest The tile containing the rectangle to be computed.
+     * @param sources  Cobbled sources, guaranteed to provide all the source data necessary for computing the rectangle.
+     * @param dest     The tile containing the rectangle to be computed.
      * @param destRect The rectangle within the tile to be computed.
      */
     protected void computeRect(Raster[] sources, WritableRaster dest, Rectangle destRect) {
@@ -500,7 +533,7 @@ public class ReplaceValueOp extends PointOpImage {
 
                             short sample = ImageUtil.clampRoundUShort(srcData[b][srcPixelOffset
                                     + srcBandOffsets[b]]);
-                            if (sample ==ft) {
+                            if (sample == ft) {
                                 dstData[b][dstPixelOffset + dstBandOffsets[b]] = fs;
                             } else {
                                 dstData[b][dstPixelOffset + dstBandOffsets[b]] = sample;
@@ -745,7 +778,7 @@ public class ReplaceValueOp extends PointOpImage {
                             short sample = srcData[b][srcPixelOffset + srcBandOffsets[b]];
                             if (!noData.contains(sample)) {
                                 double t = target[b];
-                                double s = surrogate[b]; 
+                                double s = surrogate[b];
 
                                 short ft = (short) t;
                                 short fs = (short) s;
@@ -805,7 +838,7 @@ public class ReplaceValueOp extends PointOpImage {
 
                     for (int b = 0; b < dstBands; b++) {
                         double t = target[b];
-                        double s = surrogate[b]; 
+                        double s = surrogate[b];
 
                         int ft = (int) t;
                         int fs = (int) s;
@@ -844,7 +877,7 @@ public class ReplaceValueOp extends PointOpImage {
                     } else {
                         for (int b = 0; b < dstBands; b++) {
                             double t = target[b];
-                            double s = surrogate[b]; 
+                            double s = surrogate[b];
 
                             int ft = (int) t;
                             int fs = (int) s;
@@ -877,7 +910,7 @@ public class ReplaceValueOp extends PointOpImage {
                         int sample = srcData[b][srcPixelOffset + srcBandOffsets[b]];
                         if (!noData.contains(sample)) {
                             double t = target[b];
-                            double s = surrogate[b]; 
+                            double s = surrogate[b];
 
                             int ft = (int) t;
                             int fs = (int) s;
@@ -919,7 +952,7 @@ public class ReplaceValueOp extends PointOpImage {
                             int sample = srcData[b][srcPixelOffset + srcBandOffsets[b]];
                             if (!noData.contains(sample)) {
                                 double t = target[b];
-                                double s = surrogate[b]; 
+                                double s = surrogate[b];
 
                                 int ft = (int) t;
                                 int fs = (int) s;
@@ -979,7 +1012,7 @@ public class ReplaceValueOp extends PointOpImage {
 
                     for (int b = 0; b < dstBands; b++) {
                         double t = target[b];
-                        double s = surrogate[b]; 
+                        double s = surrogate[b];
 
                         float ft = (float) t;
                         float fs = (float) s;
@@ -1018,7 +1051,7 @@ public class ReplaceValueOp extends PointOpImage {
                     } else {
                         for (int b = 0; b < dstBands; b++) {
                             double t = target[b];
-                            double s = surrogate[b]; 
+                            double s = surrogate[b];
 
                             float ft = (float) t;
                             float fs = (float) s;
@@ -1051,7 +1084,7 @@ public class ReplaceValueOp extends PointOpImage {
                         float sample = srcData[b][srcPixelOffset + srcBandOffsets[b]];
                         if (!noData.contains(sample)) {
                             double t = target[b];
-                            double s = surrogate[b]; 
+                            double s = surrogate[b];
 
                             float ft = (float) t;
                             float fs = (float) s;
@@ -1095,7 +1128,7 @@ public class ReplaceValueOp extends PointOpImage {
                             float sample = srcData[b][srcPixelOffset + srcBandOffsets[b]];
                             if (!noData.contains(sample)) {
                                 double t = target[b];
-                                double s = surrogate[b]; 
+                                double s = surrogate[b];
 
                                 float ft = (float) t;
                                 float fs = (float) s;
@@ -1155,7 +1188,7 @@ public class ReplaceValueOp extends PointOpImage {
 
                     for (int b = 0; b < dstBands; b++) {
                         double t = target[b];
-                        double s = surrogate[b]; 
+                        double s = surrogate[b];
 
                         double ft = (double) t;
                         double fs = (double) s;
@@ -1194,7 +1227,7 @@ public class ReplaceValueOp extends PointOpImage {
                     } else {
                         for (int b = 0; b < dstBands; b++) {
                             double t = target[b];
-                            double s = surrogate[b]; 
+                            double s = surrogate[b];
 
                             double ft = (double) t;
                             double fs = (double) s;
@@ -1227,7 +1260,7 @@ public class ReplaceValueOp extends PointOpImage {
                         double sample = srcData[b][srcPixelOffset + srcBandOffsets[b]];
                         if (!noData.contains(sample)) {
                             double t = target[b];
-                            double s = surrogate[b]; 
+                            double s = surrogate[b];
 
                             double ft = (double) t;
                             double fs = (double) s;
@@ -1269,7 +1302,7 @@ public class ReplaceValueOp extends PointOpImage {
                             double sample = srcData[b][srcPixelOffset + srcBandOffsets[b]];
                             if (!noData.contains(sample)) {
                                 double t = target[b];
-                                double s = surrogate[b]; 
+                                double s = surrogate[b];
 
                                 double ft = (double) t;
                                 double fs = (double) s;

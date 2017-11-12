@@ -17,18 +17,16 @@ import java.awt.image.renderable.ParameterBlock;
 import java.util.Hashtable;
 
 /**
- *
+ * Utility class for image-based operations
  */
 public class ImageOperations {
 
-
-
-    public static BufferedImage replace(BufferedImage img, float val, float replace){
+    public static BufferedImage replace(BufferedImage img, float val, float replace) {
         return (new ReplaceValueOp(img, null, null, null, Float.NaN, null, new double[]{val}, new double[]{replace})).getAsBufferedImage();
         //JAI.create("org.geotools.gce.gtopo30.NoDataReplacer", pb).getAsBufferedImage();
     }
 
-    public static RenderedImage replace(RenderedImage img, float val, float replace){
+    public static RenderedImage replace(RenderedImage img, float val, float replace) {
         return (new ReplaceValueOp(img, null, null, null, Float.NaN, null, new double[]{val}, new double[]{replace}));
         //JAI.create("org.geotools.gce.gtopo30.NoDataReplacer", pb).getAsBufferedImage();
     }
@@ -202,7 +200,7 @@ public class ImageOperations {
         return nImg;
     }
 
-    public static RenderedImage equalize(RenderedImage src){
+    public static RenderedImage equalize(RenderedImage src) {
         return src;
     }
 
@@ -231,7 +229,7 @@ public class ImageOperations {
 
     //TODO not used
     public static BufferedImage interpolate4(BufferedImage img, BufferedImage dy, BufferedImage dx) {
-       
+
 
         DataBuffer dyBuffer = dy.getData().getDataBuffer();
         DataBuffer dxBuffer = dx.getData().getDataBuffer();

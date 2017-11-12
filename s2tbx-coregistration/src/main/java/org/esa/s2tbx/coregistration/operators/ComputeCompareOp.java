@@ -17,7 +17,9 @@ import java.awt.image.WritableRaster;
 import java.util.Map;
 
 /**
- * Created by ramonag on 8/18/2017.
+ * JAI operator for exctracting pixels from 2 rasters as follows: the input consists in 4 raster and the results'pixel value is as follows:
+ * <br>- pixel value from raster 1 if the same pixel value of raster 4 is bigger then the pixel value from raster 3.
+ * <br>- pixel value from raster 2 if the same pixel value of raster 3 is bigger or equal with the pixel value from raster 4.
  */
 public class ComputeCompareOp extends PointOpImage {
 
@@ -50,7 +52,9 @@ public class ComputeCompareOp extends PointOpImage {
      * argument are set to the same value as that of <code>source1</code>.
      *
      * @param source1 The first source image.
-     * @param source2 The second source image.
+     * @param source2 The second source image.     *
+     * @param comp1   The first compare image.
+     * @param comp2   The second compare image.
      * @param layout  The destination image layout.
      */
     public ComputeCompareOp(RenderedImage source1,

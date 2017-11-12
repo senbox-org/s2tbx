@@ -3,7 +3,7 @@ package org.esa.s2tbx.coregistration;
 import javax.media.jai.InterpolationBilinear;
 
 /**
- * @author R. Manda
+ * Utility class for matrix-based operations.
  */
 public class MatrixUtils {
 
@@ -127,7 +127,7 @@ public class MatrixUtils {
         return R;
     }
 
-    private static void printMatrix(float[][] tmp){
+    private static void printMatrix(float[][] tmp) {
         /*
         System.out.println(tmp.length+" X "+tmp[0].length);
         for(int i=0;i<tmp.length;i++){
@@ -255,13 +255,13 @@ public class MatrixUtils {
         return R;
     }
 
-    public static float[][] subsample(float[][] source){
+    public static float[][] subsample(float[][] source) {
         int sourceWidth = source[0].length;
         int sourceHeight = source.length;
         int destWidth = (sourceWidth + 1) / 2;
         int destHeight = (sourceHeight + 1) / 2;
         float[][] result = new float[destHeight][destWidth];
-        for(int i = 0; i < destHeight; i++) {
+        for (int i = 0; i < destHeight; i++) {
             for (int j = 0; j < destWidth; j++) {
                 result[i][j] = source[i * 2][j * 2];
             }
@@ -269,13 +269,13 @@ public class MatrixUtils {
         return result;
     }
 
-    public static float[][] interp2(float[][] source, float[][] xq, float[][] yq){
+    public static float[][] interp2(float[][] source, float[][] xq, float[][] yq) {
         InterpolationBilinear interpolation = new InterpolationBilinear();
 
         int width = xq[0].length;
         int height = xq.length;
         float[][] result = new float[height][width];
-        for(int i = 0; i < height; i++) {
+        for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 float srcX = xq[i][j];
                 float srcY = yq[i][j];
@@ -285,13 +285,13 @@ public class MatrixUtils {
                     continue;
                 }
 
-                int x0 = (int)srcX;
-                int y0 = (int)srcY;
+                int x0 = (int) srcX;
+                int y0 = (int) srcY;
                 int x1 = x0 + 1;
                 int y1 = y0 + 1;
 
-                float fracX = srcX - (int)srcX;
-                float fracY = srcY - (int)srcY;
+                float fracX = srcX - (int) srcX;
+                float fracY = srcY - (int) srcY;
 
                 if (fracX == 0.0 && fracY == 0.0) {
                     result[i][j] = source[y0][x0];
@@ -322,12 +322,12 @@ public class MatrixUtils {
         return result;
     }
 
-    public static float[][] gradientrow(float[][] source){
+    public static float[][] gradientrow(float[][] source) {
         // TODO check width == 1
         int width = source[0].length;
         int height = source.length;
         float[][] result = new float[height][width];
-        for(int i = 0; i < height; i++) {
+        for (int i = 0; i < height; i++) {
             for (int j = 1; j < width - 1; j++) {
                 result[i][j] = (source[i][j + 1] - source[i][j - 1]) / 2;
             }
@@ -337,17 +337,17 @@ public class MatrixUtils {
         return result;
     }
 
-    public static float[][] gradientcol(float[][] source){
+    public static float[][] gradientcol(float[][] source) {
         // TODO check height == 1
         int width = source[0].length;
         int height = source.length;
         float[][] result = new float[height][width];
-        for(int i = 1; i < height - 1; i++) {
+        for (int i = 1; i < height - 1; i++) {
             for (int j = 0; j < width; j++) {
                 result[i][j] = (source[i + 1][j] - source[i - 1][j]) / 2;
             }
         }
-        for(int j = 0; j < width; j++) {
+        for (int j = 0; j < width; j++) {
             result[0][j] = (source[1][j] - source[0][j]);
             result[height - 1][j] = (source[height - 1][j] - source[height - 2][j]);
         }
