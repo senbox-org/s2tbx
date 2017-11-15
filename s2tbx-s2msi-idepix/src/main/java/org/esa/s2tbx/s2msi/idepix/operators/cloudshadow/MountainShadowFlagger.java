@@ -35,8 +35,8 @@ class MountainShadowFlagger {
         double sunAzimuthRad = sourceSunAzimuth * MathUtils.DTOR;
 
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(sourceAltitude));
-        float maxAltitude = Collections.max(altitudes);
-        float minAltitude = Collections.min(altitudes);
+        float maxAltitude = Math.max(0, Collections.max(altitudes));
+        float minAltitude = Math.max(0, Collections.min(altitudes));
 
         final Point2D[] relativePath = CloudShadowUtils.getRelativePath(minAltitude, sunZenithRad, sunAzimuthRad,
                                                                         maxAltitude, sourceRectangle, targetRectangle,
@@ -125,7 +125,11 @@ class MountainShadowFlagger {
                                                                      sourceAltitude);
             double minAltitude = distAltArray[1];
             double mountainSearchPointHeight = distAltArray[0] * Math.tan(((Math.PI / 2. - sunZenith)));
-            mountainSearchPointHeight = mountainSearchPointHeight + (sourceAltitude[index0] - minAltitude);
+            if (sourceAltitude[index0] < 0 || Double.isNaN(sourceAltitude[index0])) {
+                mountainSearchPointHeight -= minAltitude;
+            } else {
+                mountainSearchPointHeight = mountainSearchPointHeight + (sourceAltitude[index0] - minAltitude);
+            }
             if (mountainBase <= mountainSearchPointHeight && mountainSearchPointHeight <= (mountainTop - minAltitude)) {
                 flagArray[index0] += PreparationMaskBand.MOUNTAIN_SHADOW_FLAG;
                 for (int j = 1; j < i; j++) {

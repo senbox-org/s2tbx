@@ -92,6 +92,9 @@ class CloudShadowUtils {
         double geoPos2Lon = sourceLongitude[indexPath];
         double geoPos2Lat = sourceLatitude[indexPath];
         double minAltitude = (double) Math.min(sourceAltitude[index0], sourceAltitude[indexPath]);
+        if (minAltitude < 0 || Double.isNaN(minAltitude)) {
+            minAltitude = 0.0;
+        }
 
         double cosPos1Lat = Math.cos(geoPos1Lat * k);
         double cosPos2Lat = Math.cos(geoPos2Lat * k);

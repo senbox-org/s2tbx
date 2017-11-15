@@ -16,7 +16,8 @@ class MountainVerticalExtent {
         // todo cloud height properties
         mountainBase = 0; // [m]
         if (temp <= 0 || Double.isNaN(temp))
-            mountainTop = Double.NaN; // [m]
+//            mountainTop = Double.NaN; // [m]
+            mountainTop = 0.0; // [m]
         else {
             mountainTop = temp
             ; // [m]

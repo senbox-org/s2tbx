@@ -108,7 +108,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     public static final int F_CLOUD_SHADOW = 4;
     public static final int F_MOUNTAIN_SHADOW = 5;
     public static final int F_INVALID = 6;
-    public static final int F_CLOUD_BUFFER = 6;
+    public static final int F_CLOUD_BUFFER = 7;
 
     @Override
     public void initialize() throws OperatorException {
@@ -255,10 +255,14 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     private static float mean(float[] values) {
         float mean = 0f;
+        int valueCount = 0;
         for (float value : values) {
-            mean += value;
+            if (!Double.isNaN(value)) {
+                mean += value;
+                valueCount++;
+            }
         }
-        return mean / values.length;
+        return mean / valueCount;
     }
 
     @Override
@@ -269,7 +273,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         final float[] targetAltitude = getSamples(sourceAltitude, targetRectangle);
 
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(targetAltitude));
-        float minAltitude = Collections.min(altitudes);
+        float minAltitude = Math.max(0, Collections.min(altitudes));
         final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
                 minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, maxcloudTop,
                 targetRectangle, targetRectangle, getSourceProduct().getSceneRasterHeight(),

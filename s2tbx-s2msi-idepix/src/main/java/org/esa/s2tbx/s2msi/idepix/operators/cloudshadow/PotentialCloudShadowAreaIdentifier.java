@@ -165,7 +165,11 @@ class PotentialCloudShadowAreaIdentifier {
                 double minAltitude = distAltArray[1];
 
                 double cloudSearchPointHeight = dist * Math.tan(((Math.PI / 2. - sunZenithRad)));
-                cloudSearchPointHeight = cloudSearchPointHeight + (altitude[index1] - minAltitude);
+                if (altitude[index1] < 0 || Double.isNaN(altitude[index1])) {
+                    cloudSearchPointHeight -= minAltitude;
+                } else {
+                    cloudSearchPointHeight = cloudSearchPointHeight + (altitude[index1] - minAltitude);
+                }
                 if (cloudExtent[0] <= cloudSearchPointHeight && cloudSearchPointHeight <= cloudExtent[1]) {
                     positions.add(index1);
                 }
