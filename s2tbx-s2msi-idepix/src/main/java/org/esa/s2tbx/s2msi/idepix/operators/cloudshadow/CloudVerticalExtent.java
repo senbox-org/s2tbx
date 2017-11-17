@@ -6,7 +6,7 @@ package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
  */
 public class CloudVerticalExtent {
 
-    static double[] getCloudVerticalExtentSentinal2() {
+    static double[] getCloudVerticalExtentSentinel2() {
 
         double[] cloudExtent = new double[2];
         double cloudBase;

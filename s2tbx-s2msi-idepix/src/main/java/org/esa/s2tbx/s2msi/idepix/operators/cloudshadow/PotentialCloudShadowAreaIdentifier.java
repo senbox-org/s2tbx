@@ -164,7 +164,7 @@ class PotentialCloudShadowAreaIdentifier {
             if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
                     (!((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) &&
                     !positions.contains(index1)) {
-                double[] cloudExtent = CloudVerticalExtent.getCloudVerticalExtentSentinal2();
+                double[] cloudExtent = CloudVerticalExtent.getCloudVerticalExtentSentinel2();
 
                 double[] distAltArray = CloudShadowUtils.computeDistance(index0, index1, longitude, latitude, altitude);
                 double dist = distAltArray[0];
