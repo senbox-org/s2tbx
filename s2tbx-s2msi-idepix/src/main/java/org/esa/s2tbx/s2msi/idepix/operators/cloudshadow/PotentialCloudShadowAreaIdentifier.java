@@ -148,9 +148,15 @@ class PotentialCloudShadowAreaIdentifier {
             positions = new ArrayList<>();
             indexToPositions.put(cloudIDArray[index0], positions);
         }
+        int x1 = x0 + (int) cloudPath[1].getX();
+        int y1 = y0 + (int) cloudPath[1].getY();
+        if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0 ||
+                (flagArray[y1 * width + x1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) {
+            return;
+        }
         for (int i = 1; i < cloudPath.length; i++) {
-            int x1 = x0 + (int) cloudPath[i].getX();
-            int y1 = y0 + (int) cloudPath[i].getY();
+            x1 = x0 + (int) cloudPath[i].getX();
+            y1 = y0 + (int) cloudPath[i].getY();
             if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0) {
                 break;
             }
