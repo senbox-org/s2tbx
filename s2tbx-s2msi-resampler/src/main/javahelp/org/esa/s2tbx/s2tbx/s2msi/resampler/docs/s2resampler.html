@@ -1,0 +1,106 @@
+<html>
+<head>
+    <title>Sentinel-2 Resampler</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">Resample Sentinel-2 Products</td>
+        <td class="header" align="right"><img src="images/snap_header.jpg" border=0></td>
+    </tr>
+</table>
+
+
+<p>
+    This option allows to resample Sentinel-2 products having into account
+    the particularities of the angle bands.
+</p>
+<p>
+    Because of the discontinuity of the angles when the detector changes,
+    the result of the resampling of the azimuth angle bands is not good from the
+    physics point of view, since it blurs the border between detectors when we use
+    a bilinear method. It is needed an specific processor to carry out the resampling
+    of these bands in a "special" way.
+</p>
+
+<IMG SRC="./images/bilinearGenericInterpolation.png">
+<p>
+    This operator uses not only the angles bands but also the detector footprints.
+    By using the footprints, it is possible to "isolate" the angles of each detector and
+    interpolate them without using the angle information of the adjacent detectors (which causes
+    the blurring). In the pixels closest to the border detector-detector, it is necessary to
+    extrapolate the data since not all data is available to carry out the interpolation with
+    bilinear method. Finally, the angles are joined again.
+</p>
+
+<p>
+    An approximation has to be made for applying this method: currently the detector footprints
+    overlap and in these overlapping regions the algorithm has to decide which detector is used
+    to compute the angles: it selects always the higher one.
+</p>
+
+<IMG SRC="./images/s2resampler.png">
+<p>
+    For extrapolating the angles, a simple algorithm is used. The angle matrix is analysed line
+    by line and if a NaN is found next to two valid values, an linear extrapolation is made.
+    After the processing line by line, the same step is made by columns. In the case that only one
+    value is available, the surrounding pixels are set to the same value.
+</p>
+
+<p>
+    The standard resampling algorithm is applied to the rest of the bands and it is possible for
+    these bands to select the resampling methods, as we can do in the generic resampling operator.
+</p>
+
+<h5>S2 resampler parameters</h5>
+<table border="0" cellpadding="1" cellspacing="1">
+    <thead>
+    <tr>
+        <th>Parameter</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><strong>Output resolution</strong></td>
+        <td>The output resolution.</td>
+    </tr>
+
+    <tr>
+        <td><strong>Upsampling method</strong></td>
+        <td>The method used for interpolation (upsampling to a finer resolution).
+            Value must be one of {"Nearest", "Bilinear", "Bicubic"} </td>
+    </tr>
+    <tr>
+        <td><strong>Downsampling method</strong></td>
+        <td>The method used for aggregation (downsampling to a coarser resolution).
+            Value must be one of {"First", "Min", "Max", "Mean", "Median"}
+        </td>
+    </tr>
+    <tr>
+        <td><strong>Flag downsampling method</strong></td>
+        <td>The method used for aggregation (downsampling to a coarser resolution) of flags.
+            Value must be one of {"First", "FlagAnd", "FlagOr", "FlagMedianAnd", "FlagMedianOr"}
+        </td>
+    </tr>
+    <tr>
+        <td><strong>Resample on pyramid levels</strong></td>
+        <td>This setting will increase performance when viewing the image, but accurate
+            resamplings are only retrieved when zooming in on a pixel.
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h5>S2 Resampler User Interface</h5>
+<p>
+    The parameters described above can be set through the graphical user interface designed in the SNAP Desktop component:
+</p>
+<IMG SRC="./images/s2resamplerGUI.png">
+<br>
+<hr>
+</body>
+</html>
