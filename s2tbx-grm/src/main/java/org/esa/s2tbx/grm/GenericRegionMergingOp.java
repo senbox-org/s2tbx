@@ -15,18 +15,23 @@ import org.esa.snap.core.gpf.*;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
+import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
-import org.esa.snap.utils.AbstractTilesComputingOp;
+import org.esa.snap.core.util.math.MathUtils;
 import org.esa.snap.utils.matrix.IntMatrix;
 
+import javax.media.jai.JAI;
 import java.awt.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +45,8 @@ import java.util.logging.Logger;
         description = "The 'Generic Region Merging' operator computes the distinct regions from a product",
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
-public class GenericRegionMergingOp extends AbstractTilesComputingOp {
+public class GenericRegionMergingOp extends Operator {
+
     private static final Logger logger = Logger.getLogger(GenericRegionMergingOp.class.getName());
 
     public static final String SPRING_MERGING_COST_CRITERION = "Spring";
@@ -84,8 +90,16 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
     @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
     private String[] sourceBandNames;
 
-    protected AbstractTileSegmenter tileSegmenter;
-    protected long startTime;
+    @TargetProduct
+    private Product targetProduct;
+
+    private AtomicInteger processingTileCount;
+    private AtomicInteger processedTileCount;
+    private int totalTileCount;
+    private Set<String> processedTiles;
+
+    private AbstractTileSegmenter tileSegmenter;
+    private long startTime;
     private AbstractSegmenter segmenter;
 
     public GenericRegionMergingOp() {
@@ -127,12 +141,110 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
 
         int sceneWidth = this.sourceProduct.getSceneRasterWidth();
         int sceneHeight = this.sourceProduct.getSceneRasterHeight();
-        initTargetProduct(sceneWidth, sceneHeight, this.sourceProduct.getName() + "_grm", this.sourceProduct.getProductType(), "band_1", ProductData.TYPE_INT32);
+        String productName = this.sourceProduct.getName() + "_grm";
+        String productType = this.sourceProduct.getProductType();
+
+        this.targetProduct = new Product(productName, productType, sceneWidth, sceneHeight);
+        this.targetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
+
+        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
+        this.targetProduct.addBand(targetBand);
+
         ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
+
+        initTiles();
     }
 
     @Override
-    protected void beforeProcessingFirstTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
+    public final void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+        Rectangle targetRectangle = targetTile.getRectangle();
+        Dimension tileSize = this.targetProduct.getPreferredTileSize();
+        int tileRowIndex = targetRectangle.y / tileSize.height;
+        int tileColumnIndex = targetRectangle.x / tileSize.width;
+
+        String key = tileRowIndex+"|"+tileColumnIndex;
+        boolean canProcessTile = false;
+        synchronized (this.processedTiles) {
+            canProcessTile = this.processedTiles.add(key);
+        }
+        if (canProcessTile) {
+            int startProcessingTileCount = this.processingTileCount.incrementAndGet();
+            if (startProcessingTileCount == 1) {
+                beforeProcessingFirstTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+            }
+
+            try {
+                processTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+            } catch (Exception ex) {
+                throw new OperatorException(ex);
+            } finally {
+                synchronized (this.processedTileCount) {
+                    int finishProcessingTileCount = this.processedTileCount.incrementAndGet();
+                    if (finishProcessingTileCount == this.totalTileCount) {
+                        this.processedTileCount.notifyAll();
+                    }
+                }
+            }
+
+            if (startProcessingTileCount == this.totalTileCount) {
+                synchronized (this.processedTileCount) {
+                    if (this.processedTileCount.get() < this.totalTileCount) {
+                        try {
+                            this.processedTileCount.wait();
+                        } catch (InterruptedException e) {
+                            throw new OperatorException(e);
+                        }
+                    }
+                }
+
+                try {
+                    afterProcessedLastTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+                } catch (Exception e) {
+                    throw new OperatorException(e);
+                }
+            }
+        } else {
+            // tile already computed
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, ""); // add an empty line
+                logger.log(Level.FINE, "Tile already computed: row index: "+tileRowIndex+", column index: "+tileColumnIndex+", bounds [x=" + targetRectangle.x+", y="+targetRectangle.y+", width="+targetRectangle.width+", height="+targetRectangle.height+"]");
+            }
+        }
+    }
+
+    public AbstractSegmenter getSegmenter() {
+        return this.segmenter;
+    }
+
+    public String getMergingCostCriterion() {
+        return mergingCostCriterion;
+    }
+
+    public String getRegionMergingCriterion() {
+        return regionMergingCriterion;
+    }
+
+    public int getTotalIterationsForSecondSegmentation() {
+        return totalIterationsForSecondSegmentation;
+    }
+
+    public float getThreshold() {
+        return threshold;
+    }
+
+    public float getShapeWeight() {
+        return shapeWeight;
+    }
+
+    public float getSpectralWeight() {
+        return spectralWeight;
+    }
+
+    public String[] getSourceBandNames() {
+        return sourceBandNames;
+    }
+
+    private void beforeProcessingFirstTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
         this.startTime = System.currentTimeMillis();
         if (logger.isLoggable(Level.FINE)) {
             int imageWidth = this.tileSegmenter.getImageWidth();
@@ -146,8 +258,7 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
         }
     }
 
-    @Override
-    protected void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
+    private void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
         this.segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
 
         OutputMaskMatrixHelper outputMaskMatrixHelper = this.segmenter.buildOutputMaskMatrixHelper();
@@ -184,27 +295,37 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
         }
     }
 
-    @Override
-    protected void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
+    private void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
         Rectangle targetRectangle = targetTile.getRectangle();
         ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
         TileDataSource[] sourceTiles = getSourceTiles(currentTile.getRegion());
         this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile, tileRowIndex, tileColumnIndex);
     }
 
-    @Override
-    protected void initTargetProduct(int sceneWidth, int sceneHeight, String productName, String productType, String bandName, int bandDataType) {
-        super.initTargetProduct(sceneWidth, sceneHeight, productName, productType, bandName, bandDataType);
+    private final void initTiles() {
+        this.processedTiles = new HashSet<String>();
 
-        int imageWidth = this.targetProduct.getSceneRasterWidth();
-        int imageHeight = this.targetProduct.getSceneRasterHeight();
+        this.processingTileCount = new AtomicInteger(0);
+        this.processedTileCount = new AtomicInteger(0);
+
+        int sceneWidth = this.targetProduct.getSceneRasterWidth();
+        int sceneHeight = this.targetProduct.getSceneRasterHeight();
         Dimension tileSize = this.targetProduct.getPreferredTileSize();
+
+        int tileCountX = MathUtils.ceilInt(sceneWidth / (double) tileSize.width);
+        int tileCountY = MathUtils.ceilInt(sceneHeight / (double) tileSize.height);
+        this.totalTileCount = tileCountX * tileCountY;
+
         int threadCount = Runtime.getRuntime().availableProcessors() - 1;
         Executor threadPool = Executors.newCachedThreadPool();
-        String folderPath = System.getProperty("java.io.tmpdir");
+
+        String folderPath = System.getProperty("grm.temp.folder.path");
+        if (folderPath == null) {
+            folderPath = System.getProperty("java.io.tmpdir");
+        }
         Path temporaryParentFolder = Paths.get(folderPath);
 
-        RegionMergingProcessingParameters processingParameters = new RegionMergingProcessingParameters(threadCount, threadPool, imageWidth, imageHeight,
+        RegionMergingProcessingParameters processingParameters = new RegionMergingProcessingParameters(threadCount, threadPool, sceneWidth, sceneHeight,
                 tileSize.width, tileSize.height);
 
         RegionMergingInputParameters inputParameters = new RegionMergingInputParameters(mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation,
@@ -215,38 +336,6 @@ public class GenericRegionMergingOp extends AbstractTilesComputingOp {
         } catch (IOException e) {
             throw new OperatorException(e);
         }
-    }
-
-    public AbstractSegmenter getSegmenter() {
-        return this.segmenter;
-    }
-
-    public String getMergingCostCriterion() {
-        return mergingCostCriterion;
-    }
-
-    public String getRegionMergingCriterion() {
-        return regionMergingCriterion;
-    }
-
-    public int getTotalIterationsForSecondSegmentation() {
-        return totalIterationsForSecondSegmentation;
-    }
-
-    public float getThreshold() {
-        return threshold;
-    }
-
-    public float getShapeWeight() {
-        return shapeWeight;
-    }
-
-    public float getSpectralWeight() {
-        return spectralWeight;
-    }
-
-    public String[] getSourceBandNames() {
-        return sourceBandNames;
     }
 
     private TileDataSource[] getSourceTiles(BoundingBox tileRegion) {
