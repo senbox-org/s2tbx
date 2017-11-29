@@ -332,6 +332,12 @@
             <artifactId>org-openide-modules</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-worldview2-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
 </project>

@@ -18,7 +18,6 @@ public class Kompsat2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     private static final String COLOR_PALETTE_FILE_NAME = "Kompsat_color_palette.cpd";
     public Kompsat2ProductReaderPlugin() {
-
         super("org/esa/s2tbx/dataio/kompsat2/" + Kompsat2ProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
         this.folderDepth = 1;
     }

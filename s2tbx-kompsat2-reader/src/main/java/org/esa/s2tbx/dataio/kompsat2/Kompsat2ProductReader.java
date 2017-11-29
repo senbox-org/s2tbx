@@ -69,85 +69,85 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
         } else {
             fileName = productFilePath.substring(productFilePath.lastIndexOf("\\")+1,productFilePath.lastIndexOf("."));
         }
-        this.metadata = Kompsat2Metadata.create(this.productDirectory.getFile(fileName+Kompsat2Constants.METADATA_FILE_SUFFIX).toPath());
-        this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + Kompsat2Constants.ARCHIVE_FILE_EXTENSION).toPath().toString());
-        this.metadata.createBandMetadata();
-        List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
-        BandMetadataUtil bUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
-        int width = bUtil.getMaxNumColumns();
-        int height = bUtil.getMaxNumLines();
-        this.product = new Product(this.metadata.getProductName(),Kompsat2Constants.KOMPSAT2_PRODUCT, width, height);
-        this.product.setFileLocation(new File (this.metadata.getPath()));
-        this.product.setStartTime(this.metadata.getProductStartTime());
-        this.product.setEndTime(this.metadata.getProductEndTime());
-        this.product.setDescription(this.metadata.getProductDescription());
-        this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
-        this.product.setFileLocation(inputFile);
-        this.product.setProductReader(this);
-        String dirPath = this.metadata.getImageDirectoryPath();
-        String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
-        String dirName = dirNameExtension.substring(0,dirNameExtension.lastIndexOf("."));
-        int levels;
-        for (BandMetadata aBandMetadataList : bandMetadataList) {
-            String imageFileName = aBandMetadataList.getImageFileName();
-            this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + Kompsat2Constants.IMAGE_EXTENSION).toFile()));
-            this.tiffImageIndex++;
-            Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
-            if(this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding() == null &&
-                    this.product.getSceneGeoCoding() == null){
-                initProductTiePointGeoCoding(this.metadata, this.product);
-                initPointingFactory(this.product);
-            }
-            levels = band.getSourceImage().getModel().getLevelCount();
-            final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
-            String bandName = null;
-            for (int bandNameIndex = 0; bandNameIndex < Kompsat2Constants.BAND_NAMES.length - 1; bandNameIndex++) {
-                if (imageFileName.contains(Kompsat2Constants.FILE_NAMES[bandNameIndex])) {
-                    bandName = Kompsat2Constants.BAND_NAMES[bandNameIndex];
+        if(metadata != null) {
+            this.metadata = Kompsat2Metadata.create(this.productDirectory.getFile(fileName + Kompsat2Constants.METADATA_FILE_SUFFIX).toPath());
+            this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + Kompsat2Constants.ARCHIVE_FILE_EXTENSION).toPath().toString());
+            this.metadata.createBandMetadata();
+            List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
+            BandMetadataUtil bUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
+            int width = bUtil.getMaxNumColumns();
+            int height = bUtil.getMaxNumLines();
+            this.product = new Product(this.metadata.getProductName(), Kompsat2Constants.KOMPSAT2_PRODUCT, width, height);
+            this.product.setStartTime(this.metadata.getProductStartTime());
+            this.product.setEndTime(this.metadata.getProductEndTime());
+            this.product.setDescription(this.metadata.getProductDescription());
+            this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
+            this.product.setFileLocation(inputFile);
+            this.product.setProductReader(this);
+            String dirPath = this.metadata.getImageDirectoryPath();
+            String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
+            String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
+            int levels;
+            for (BandMetadata aBandMetadataList : bandMetadataList) {
+                String imageFileName = aBandMetadataList.getImageFileName();
+                this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + Kompsat2Constants.IMAGE_EXTENSION).toFile()));
+                this.tiffImageIndex++;
+                Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
+                if (this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding() == null &&
+                        this.product.getSceneGeoCoding() == null) {
+                    initProductTiePointGeoCoding(this.metadata, this.product);
+                    initPointingFactory(this.product);
                 }
-            }
-            if (bandName == null) {
-                bandName = Kompsat2Constants.BAND_NAMES[4];
-                GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
-                if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
-                    this.product.setSceneGeoCoding(bandGeoCoding);
+                levels = band.getSourceImage().getModel().getLevelCount();
+                final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
+                String bandName = null;
+                for (int bandNameIndex = 0; bandNameIndex < Kompsat2Constants.BAND_NAMES.length - 1; bandNameIndex++) {
+                    if (imageFileName.contains(Kompsat2Constants.FILE_NAMES[bandNameIndex])) {
+                        bandName = Kompsat2Constants.BAND_NAMES[bandNameIndex];
+                    }
                 }
-            }
-            Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
-            targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
-            targetBand.setSpectralWavelength(band.getSpectralWavelength());
-            targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
-            targetBand.setSolarFlux(band.getSolarFlux());
-            targetBand.setUnit(band.getUnit());
-            targetBand.setNoDataValue(band.getNoDataValue());
-            targetBand.setNoDataValueUsed(true);
-            targetBand.setScalingFactor(band.getScalingFactor());
-            targetBand.setScalingOffset(band.getScalingOffset());
-            targetBand.setUnit(band.getUnit());
-            targetBand.setDescription(band.getDescription());
-            if (band.getGeoCoding() != null) {
-                targetBand.setGeoCoding(band.getGeoCoding());
-            } else {
-                if (width != band.getRasterWidth()) {
-                    AffineTransform2D transform2D =
-                            new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
-                                    (float) height / band.getRasterHeight(), 0.0, 0.0);
-                    targetBand.setGeoCoding(addTiePointGridGeo(this.metadata, targetBand));
-                    targetBand.setImageToModelTransform(transform2D);
+                if (bandName == null) {
+                    bandName = Kompsat2Constants.BAND_NAMES[4];
+                    GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
+                    if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
+                        this.product.setSceneGeoCoding(bandGeoCoding);
+                    }
                 }
-            }
+                Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
+                targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
+                targetBand.setSpectralWavelength(band.getSpectralWavelength());
+                targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
+                targetBand.setSolarFlux(band.getSolarFlux());
+                targetBand.setUnit(band.getUnit());
+                targetBand.setNoDataValue(band.getNoDataValue());
+                targetBand.setNoDataValueUsed(true);
+                targetBand.setScalingFactor(band.getScalingFactor());
+                targetBand.setScalingOffset(band.getScalingOffset());
+                targetBand.setUnit(band.getUnit());
+                targetBand.setDescription(band.getDescription());
+                if (band.getGeoCoding() != null) {
+                    targetBand.setGeoCoding(band.getGeoCoding());
+                } else {
+                    if (width != band.getRasterWidth()) {
+                        AffineTransform2D transform2D =
+                                new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
+                                        (float) height / band.getRasterHeight(), 0.0, 0.0);
+                        targetBand.setGeoCoding(addTiePointGridGeo(this.metadata, targetBand));
+                        targetBand.setImageToModelTransform(transform2D);
+                    }
+                }
 
-            MosaicMultiLevelSource bandSource =
-                    new MosaicMultiLevelSource(band,
-                            band.getRasterWidth(), band.getRasterHeight(),
-                            tileSize.width, tileSize.height,
-                            levels,band.getGeoCoding() != null? targetBand.getGeoCoding() != null ?
-                            Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                            Product.findImageToModelTransform(product.getSceneGeoCoding()):
-                            targetBand.getImageToModelTransform());
-            targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-            System.out.println(targetBand.canBeOrthorectified());
-            this.product.addBand(targetBand);
+                MosaicMultiLevelSource bandSource =
+                        new MosaicMultiLevelSource(band,
+                                band.getRasterWidth(), band.getRasterHeight(),
+                                tileSize.width, tileSize.height,
+                                levels, band.getGeoCoding() != null ? targetBand.getGeoCoding() != null ?
+                                Product.findImageToModelTransform(targetBand.getGeoCoding()) :
+                                Product.findImageToModelTransform(product.getSceneGeoCoding()) :
+                                targetBand.getImageToModelTransform());
+                targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+                this.product.addBand(targetBand);
+            }
         }
         return this.product;
     }

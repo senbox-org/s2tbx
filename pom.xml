@@ -64,6 +64,7 @@
         <module>s2tbx-land-cover</module>
         <module>s2tbx-kompsat2-reader</module>
         <module>s2tbx-pleiades-reader</module>
+        <module>s2tbx-worldview2-reader</module>
     </modules>
 
     <packaging>pom</packaging>
