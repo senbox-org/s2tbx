@@ -241,15 +241,20 @@ public class S2IdepixCloudShadowOp extends Operator {
         return tile.getSamplesFloat();
     }
 
-    private Rectangle getSourceRectangle(Rectangle targetRectangle, Point2D[] relativePath) {
+    /*
+    package local for testing
+     */
+    @SuppressWarnings("WeakerAccess")
+    Rectangle getSourceRectangle(Rectangle targetRectangle, Point2D[] relativePath) {
         final int productWidth = getSourceProduct().getSceneRasterWidth();
         final int productHeight = getSourceProduct().getSceneRasterHeight();
-        int x0 = Math.max(0, targetRectangle.x + (int) relativePath[relativePath.length - 1].getX());
-        int y0 = Math.max(0, targetRectangle.y + (int) relativePath[relativePath.length - 1].getY());
-        int x1 = Math.min(productWidth, targetRectangle.x + targetRectangle.width -
-                (int) relativePath[relativePath.length - 1].getX());
-        int y1 = Math.min(productHeight, targetRectangle.y + targetRectangle.height -
-                (int) relativePath[relativePath.length - 1].getY());
+        final int relativeX = (int) relativePath[relativePath.length - 1].getX();
+        final int relativeY = (int) relativePath[relativePath.length - 1].getY();
+
+        int x0 = Math.max(0, targetRectangle.x + Math.min(0, relativeX));
+        int y0 = Math.max(0, targetRectangle.y + Math.min(0, relativeY));
+        int x1 = Math.min(productWidth, targetRectangle.x + targetRectangle.width + Math.max(0, relativeX));
+        int y1 = Math.min(productHeight, targetRectangle.y + targetRectangle.height + Math.max(0, relativeY));
         return new Rectangle(x0, y0, x1 - x0, y1 - y0);
     }
 

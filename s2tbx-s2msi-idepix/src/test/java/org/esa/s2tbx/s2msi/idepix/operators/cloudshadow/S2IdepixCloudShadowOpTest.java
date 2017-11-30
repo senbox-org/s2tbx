@@ -1,7 +1,11 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
+import org.esa.snap.core.datamodel.Product;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -92,6 +96,84 @@ public class S2IdepixCloudShadowOpTest {
         assertEquals(915, cloudShadowOp.determineSourceTileSize(1830, 915, 0, 0));
     }
 
+    @Test
+    public void testGetSourceRectangle_normalTargetRectangle_5_5() {
+        cloudShadowOp.setSourceProduct(new Product("dummy", "dummy", 30, 30));
+        Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
+        Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, 5)};
+        Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
+        Rectangle expectedSourceRectangle = new Rectangle(10, 10, 15, 15);
+        assertEquals(expectedSourceRectangle, sourceRectangle);
+    }
 
+    @Test
+    public void testGetSourceRectangle_normalTargetRectangle_5_minus_5() {
+        cloudShadowOp.setSourceProduct(new Product("dummy", "dummy", 30, 30));
+        Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
+        Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, -5)};
+        Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
+        Rectangle expectedSourceRectangle = new Rectangle(10, 5, 15, 15);
+        assertEquals(expectedSourceRectangle, sourceRectangle);
+    }
+
+    @Test
+    public void testGetSourceRectangle_normalTargetRectangle_minus_5_5() {
+        cloudShadowOp.setSourceProduct(new Product("dummy", "dummy", 30, 30));
+        Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
+        Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, 5)};
+        Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 10, 15, 15);
+        assertEquals(expectedSourceRectangle, sourceRectangle);
+    }
+
+    @Test
+    public void testGetSourceRectangle_normalTargetRectangle_minus_5_minus_5() {
+        cloudShadowOp.setSourceProduct(new Product("dummy", "dummy", 30, 30));
+        Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
+        Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, -5)};
+        Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 15, 15);
+        assertEquals(expectedSourceRectangle, sourceRectangle);
+    }
+
+    @Test
+    public void testGetSourceRectangle_cutTargetRectangle_5_5() {
+        cloudShadowOp.setSourceProduct(new Product("dummy", "dummy", 10, 10));
+        Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
+        Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, 5)};
+        Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
+        Rectangle expectedSourceRectangle = new Rectangle(2, 2, 8, 8);
+        assertEquals(expectedSourceRectangle, sourceRectangle);
+    }
+
+    @Test
+    public void testGetSourceRectangle_cutTargetRectangle_5_minus_5() {
+        cloudShadowOp.setSourceProduct(new Product("dummy", "dummy", 10, 10));
+        Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
+        Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, -5)};
+        Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
+        Rectangle expectedSourceRectangle = new Rectangle(2, 0, 8, 8);
+        assertEquals(expectedSourceRectangle, sourceRectangle);
+    }
+
+    @Test
+    public void testGetSourceRectangle_cutTargetRectangle_minus_5_5() {
+        cloudShadowOp.setSourceProduct(new Product("dummy", "dummy", 10, 10));
+        Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
+        Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, 5)};
+        Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 2, 8, 8);
+        assertEquals(expectedSourceRectangle, sourceRectangle);
+    }
+
+    @Test
+    public void testGetSourceRectangle_cutTargetRectangle_minus_5_minus_5() {
+        cloudShadowOp.setSourceProduct(new Product("dummy", "dummy", 10, 10));
+        Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
+        Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, -5)};
+        Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 8, 8);
+        assertEquals(expectedSourceRectangle, sourceRectangle);
+    }
 
 }
