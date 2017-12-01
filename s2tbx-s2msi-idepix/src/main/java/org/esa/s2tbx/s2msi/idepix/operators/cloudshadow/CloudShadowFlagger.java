@@ -175,7 +175,7 @@ class CloudShadowFlagger {
             }
         }
         final double threshold = sortedBand[startIndex] + (sortedBand[endIndex] - sortedBand[startIndex]) / 2;
-        System.out.println("threshold = " + threshold);
+//        System.out.println("threshold = " + threshold);
         return threshold;
     }
 
@@ -266,11 +266,11 @@ class CloudShadowFlagger {
         }
 
         double maxDist = sortedCluster.get(sortedCluster.size() - 1) - sortedCluster.get(0);
-        double relativeVariation = maxDist / sortedCluster.get(sortedCluster.size() - 1);
-        if (relativeVariation < 0.4) {
+//        double relativeVariation = maxDist / sortedCluster.get(sortedCluster.size() - 1);
+//        if (relativeVariation < 0.4) {
 //             too little variation <- probably no cloud here
-            return;
-        }
+//            return;
+//        }
 
 
         double averageDistance = maxDist / (numberOfClusters - 1);
@@ -280,7 +280,8 @@ class CloudShadowFlagger {
                 break;
             }
         }
-        double threshold = sortedCluster.get(i) + (sortedCluster.get(i + 1) - sortedCluster.get(i)) / 2;
+//        double threshold = sortedCluster.get(i) + (sortedCluster.get(i + 1) - sortedCluster.get(i)) / 2;
+        double threshold = sortedCluster.get(0) + (sortedCluster.get(1) - sortedCluster.get(0)) / 2;
         for (int j = 0; j < counter; j++) {
             if (band[j] < threshold) {
                 int flagIndex = arrayIndexes[j];
