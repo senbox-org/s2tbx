@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -35,6 +36,7 @@ import java.util.logging.Logger;
 
 public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
     private final Band[] sourceBand;
+    private final String[] tilesNames;
     private final int imageWidth;
     private final int imageHeight;
     private final int tileWidth;
@@ -42,8 +44,8 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
     private final Logger logger;
     private final TileComponent tileComponent;
 
-    public MosaicMultiLevelSource(Band[] sourceBand, int imageWidth, int imageHeight,
-                                  int tileWidth, int tileHeight, int levels,TileComponent tileComponent,
+    public MosaicMultiLevelSource(Map<Band, String> sourceBand, int imageWidth, int imageHeight,
+                                  int tileWidth, int tileHeight, int levels, TileComponent tileComponent,
                                   AffineTransform transform) {
         super(new DefaultMultiLevelModel(levels,
                 transform,
@@ -52,7 +54,15 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         this.imageHeight = imageHeight;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
-        this.sourceBand = sourceBand;
+        List<Band> bands = new ArrayList<>();
+        List<String> tiles = new ArrayList<>();
+        for(Map.Entry<Band, String>entry: sourceBand.entrySet()) {
+            bands.add(entry.getKey());
+            tiles.add(entry.getValue());
+        }
+
+        this.sourceBand = bands.toArray(new Band[bands.size()]);
+        this.tilesNames = tiles.toArray(new String[tiles.size()]);
         this.tileComponent = tileComponent;
         this.logger = Logger.getLogger(MosaicMultiLevelSource.class.getName());
     }
@@ -67,20 +77,26 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         double scaleFactor = 1.0 / Math.pow(2, level);
         PlanarImage opImage;
         for(int index =0; index < sourceBand.length; index++) {
-            try {
-                opImage = createTileImage(level, index);
-                if (opImage != null) {
-                    opImage = TranslateDescriptor.create(opImage,
-                            (float)(tileComponent.getUpperLeftColumnOffset()[index]*scaleFactor),
-                            (float)(tileComponent.getUpperLeftRowOffset()[index]*scaleFactor),
-                            Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                            null);
+            int tileIndex = this.tileComponent.getTileIndex(tilesNames[index]);
+            if(tileIndex >= 0) {
+                try {
+                    opImage = createTileImage(level, index);
+                    if (opImage != null) {
+                        opImage = TranslateDescriptor.create(opImage,
+                                (float) (tileComponent.getUpperLeftColumnOffset()[tileIndex] * scaleFactor),
+                                (float) (tileComponent.getUpperLeftRowOffset()[tileIndex] * scaleFactor),
+                                Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                null);
+                    }
+                } catch (IOException ex) {
+                    opImage = ConstantDescriptor.create((float) tileWidth, (float) tileHeight, new Number[]{0}, null);
                 }
-            } catch (IOException ex) {
-                opImage = ConstantDescriptor.create((float) tileWidth, (float) tileHeight, new Number[]{0}, null);
-            }
 
-            tileImages.add(opImage);
+
+                tileImages.add(opImage);
+            } else {
+                logger.warning("No tile images for mosaic");
+            }
         }
         if (tileImages.isEmpty()) {
             logger.warning("No tile images for mosaic");

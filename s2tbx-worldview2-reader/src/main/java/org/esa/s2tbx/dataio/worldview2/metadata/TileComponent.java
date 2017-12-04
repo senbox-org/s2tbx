@@ -190,4 +190,14 @@ public class TileComponent {
         }
         return CRS;
     }
+    public int getTileIndex(String tileName){
+        int tileIndex = -1;
+       for(int index = 0; index < this.tileNames.length; index++) {
+           if(this.tileNames[index].equals(tileName)) {
+               tileIndex =  index;
+           }
+       }
+       return tileIndex;
+    }
+
 }
