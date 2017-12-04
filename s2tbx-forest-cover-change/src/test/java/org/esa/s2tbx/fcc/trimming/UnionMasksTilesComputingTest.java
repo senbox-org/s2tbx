@@ -41,21 +41,14 @@ public class UnionMasksTilesComputingTest extends AbstractOpTest {
         File currentSegmentationSourceProductFile = unionFolder.resolve("S2A_R093_T35UMP_20170628T092026_grm_fill.dim").toFile();
         Product currentSegmentationSourceProduct = productReaderPlugIn.createReaderInstance().readProductNodes(currentSegmentationSourceProductFile, null);
 
-        File previousSegmentationSourceProductFile = unionFolder.resolve("S2A_20160713T125925_A005524_T35UMP_grm_fill.dim").toFile();
-        Product previousSegmentationSourceProduct = productReaderPlugIn.createReaderInstance().readProductNodes(previousSegmentationSourceProductFile, null);
-
         IntSet currentSegmentationTrimmingRegionKeys = buildCurrentSegmentationTrimmingRegionKeys();
         IntSet previousSegmentationTrimmingRegionKeys = buildPreviousSegmentationTrimmingRegionKeys();
 
         ProductBandToMatrixConverter converter1 = new ProductBandToMatrixConverter(currentSegmentationSourceProduct, tileSize.width, tileSize.height);
         IntMatrix currentSegmentationSourceMatrix = converter1.runTilesInParallel(threadCount, threadPool);
 
-        ProductBandToMatrixConverter converter2 = new ProductBandToMatrixConverter(previousSegmentationSourceProduct, tileSize.width, tileSize.height);
-        IntMatrix previousSegmentationSourceMatrix = converter2.runTilesInParallel(threadCount, threadPool);
-
-        UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceMatrix, previousSegmentationSourceMatrix,
-                                                                               currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
-                                                                               tileSize.width, tileSize.height);
+        UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceMatrix, currentSegmentationTrimmingRegionKeys,
+                                                                               previousSegmentationTrimmingRegionKeys, tileSize.width, tileSize.height);
         ProductData productData = tilesComputing.runTilesInParallel(threadCount, threadPool);
 
         assertNotNull(productData);
@@ -66,20 +59,20 @@ public class UnionMasksTilesComputingTest extends AbstractOpTest {
         targetBand.setSourceImage(null);
         targetBand.getSourceImage();
 
-        assertEquals(3, targetBand.getSampleInt(147, 163));
+        assertEquals(2, targetBand.getSampleInt(147, 163));
 
-        assertEquals(3, targetBand.getSampleInt(57, 237));
-        assertEquals(1, targetBand.getSampleInt(33, 434));
+        assertEquals(2, targetBand.getSampleInt(57, 237));
+        assertEquals(0, targetBand.getSampleInt(33, 434));
         assertEquals(0, targetBand.getSampleInt(478, 51));
         assertEquals(2, targetBand.getSampleInt(509, 212));
         assertEquals(2, targetBand.getSampleInt(209, 533));
-        assertEquals(3, targetBand.getSampleInt(10, 508));
+        assertEquals(2, targetBand.getSampleInt(10, 508));
         assertEquals(2, targetBand.getSampleInt(254, 476));
-        assertEquals(3, targetBand.getSampleInt(84, 343));
+        assertEquals(2, targetBand.getSampleInt(84, 343));
         assertEquals(0, targetBand.getSampleInt(14, 468));
         assertEquals(0, targetBand.getSampleInt(205, 139));
         assertEquals(0, targetBand.getSampleInt(22, 325));
-        assertEquals(1, targetBand.getSampleInt(196, 397));
+        assertEquals(0, targetBand.getSampleInt(196, 397));
         assertEquals(2, targetBand.getSampleInt(3, 433));
         assertEquals(2, targetBand.getSampleInt(506, 214));
     }

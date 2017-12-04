@@ -67,9 +67,9 @@ public class ColorFillerTilesComputing extends AbstractImageTilesParallelComputi
                 if (!this.validRegions.contains(segmentationValue)) {
                     segmentationValue = ForestCoverChangeConstants.NO_DATA_VALUE;
                 } else if (currentMaskTilePixels != null && currentMaskTilePixels.getValueAt(y-tileTopY, x-tileLeftX) != ForestCoverChangeConstants.NO_DATA_VALUE) {
-                    segmentationValue = ForestCoverChangeConstants.NO_DATA_VALUE;
+                    segmentationValue = ForestCoverChangeConstants.CURRENT_MASK_NO_DATA_VALUE;
                 } else if (previousMaskTilePixels != null && previousMaskTilePixels.getValueAt(y-tileTopY, x-tileLeftX) != ForestCoverChangeConstants.NO_DATA_VALUE) {
-                    segmentationValue = ForestCoverChangeConstants.NO_DATA_VALUE;
+                    segmentationValue = ForestCoverChangeConstants.PREVIOUS_MASK_NO_DATA_VALUE;
                 }
                 synchronized (this.result) {
                     this.result.setValueAt(y, x, segmentationValue);

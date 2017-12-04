@@ -141,7 +141,7 @@ public class ForestCoverChangeOp extends Operator {
     private float shapeWeight;
 
     @ParameterGroup(alias = "Trimming")
-    @Parameter(label = "Degrees Of Freedom", defaultValue = "2.8" , description = "Degrees of freedom used for the Chi distribution trimming process")
+    @Parameter(label = "Degrees Of Freedom", defaultValue = "3.3" , description = "Degrees of freedom used for the Chi distribution trimming process")
     private double degreesOfFreedom;
 
     @ParameterGroup(alias = "Product Masks")
@@ -281,7 +281,7 @@ public class ForestCoverChangeOp extends Operator {
         IntSet previousTrimmingRegionKeys = computeMovingTrimming(colorFillerMatrix, movingWindowSize, movingStepSize, tileSize, previousSourceSegmentationTilesFolder, sourceBandIndices);
 
         // run union masks
-        ProductData productData = computeUnionMask(currentTrimmingRegionKeys, colorFillerMatrix, previousTrimmingRegionKeys, colorFillerMatrix);
+        ProductData productData = computeUnionMask(currentTrimmingRegionKeys, previousTrimmingRegionKeys, colorFillerMatrix);
 
         // reset the references
         WeakReference<IntSet> referenceCurrentTrimmingRegionKeys = new WeakReference<IntSet>(currentTrimmingRegionKeys);
@@ -472,18 +472,16 @@ public class ForestCoverChangeOp extends Operator {
         return targetProduct;
     }
 
-    private ProductData computeUnionMask(IntSet currentSegmentationTrimmingRegionKeys, IntMatrix currentSegmentationSourceProduct,
-                                         IntSet previousSegmentationTrimmingRegionKeys, IntMatrix previousSegmentationSourceProduct)
-            throws Exception {
+    private ProductData computeUnionMask(IntSet currentSegmentationTrimmingRegionKeys, IntSet previousSegmentationTrimmingRegionKeys, IntMatrix colorFillerMatrix)
+                                         throws Exception {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, ""); // add an empty line
             logger.log(Level.FINE, "Start running union mask");
         }
         Dimension tileSize = getPreferredTileSize();
-        UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(currentSegmentationSourceProduct, previousSegmentationSourceProduct,
-                                                                                     currentSegmentationTrimmingRegionKeys, previousSegmentationTrimmingRegionKeys,
-                                                                                     tileSize.width, tileSize.height);
+        UnionMasksTilesComputing tilesComputing = new UnionMasksTilesComputing(colorFillerMatrix, currentSegmentationTrimmingRegionKeys,
+                                                                               previousSegmentationTrimmingRegionKeys, tileSize.width, tileSize.height);
         return tilesComputing.runTilesInParallel(threadCount, threadPool);
     }
 
