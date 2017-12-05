@@ -167,8 +167,8 @@ public class TileComponent {
         return lowerRightColumnOffset;
     }
 
-    public void setLowerRightColumnOffset(int[] lowerRighttColumnOffset) {
-        this.lowerRightColumnOffset = lowerRighttColumnOffset;
+    public void setLowerRightColumnOffset(int[] lowerRightColumnOffset) {
+        this.lowerRightColumnOffset = lowerRightColumnOffset;
     }
 
     public int[] getLowerRightRowOffset() {
@@ -179,6 +179,10 @@ public class TileComponent {
         this.lowerRightRowOffset = lowerRightRowOffset;
     }
 
+    /**
+     * Mpas the corresponding CRS code for a respective UTM zone
+     * @return CRS code for a respective zone
+     */
     public String computeCRSCode() {
         String CRS = null;
         if (mapHemisphere !=  null) {
@@ -190,6 +194,7 @@ public class TileComponent {
         }
         return CRS;
     }
+
     public int getTileIndex(String tileName){
         int tileIndex = -1;
        for(int index = 0; index < this.tileNames.length; index++) {

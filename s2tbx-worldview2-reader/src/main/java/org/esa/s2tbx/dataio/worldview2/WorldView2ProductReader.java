@@ -36,11 +36,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -58,10 +56,10 @@ class WorldView2ProductReader extends AbstractProductReader {
     private WorldView2Metadata metadata;
     private Product product;
     private String productSelected ;
-    private WeakHashMap<Product, String> tilesMultispectral;
-    private WeakHashMap<Product, String> tilesPanchromatic;
+    private HashMap<Product, String> tilesMultispectral;
+    private HashMap<Product, String> tilesPanchromatic;
     private int bandDataType;
-    private int numMultispectralBands;
+    private int numMultiSpectralBands;
 
     /**
      * Constructs a new abstract product reader.
@@ -71,8 +69,8 @@ class WorldView2ProductReader extends AbstractProductReader {
      */
     WorldView2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        this.tilesMultispectral = new WeakHashMap<>();
-        tilesPanchromatic = new WeakHashMap<>();
+        this.tilesMultispectral = new HashMap<>();
+        tilesPanchromatic = new HashMap<>();
     }
 
     @Override
@@ -130,69 +128,38 @@ class WorldView2ProductReader extends AbstractProductReader {
                 this.product.setDescription(this.metadata.getProductDescription());
                 this.product.setProductReader(this);
                 this.product.setFileLocation(inputFile);
-                for(TileMetadata tileMetadata: tileMetadataList) {
+                for (TileMetadata tileMetadata: tileMetadataList) {
                     this.product.getMetadataRoot().addElement(tileMetadata.getRootElement());
-
                 }
-
                 try {
                     assert crsCode != null;
                     GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
                             width, height,
                             originX, originY,
                             stepSize, stepSize);
+
                     product.setSceneGeoCoding(geoCoding);
                 } catch (Exception e) {
                     logger.warning(e.getMessage());
                 }
                 generateProductLists(selectedProductFiles,tileMetadataList );
                 int levels = getProductLevels();
-                for(TileMetadata tileMetadata: tileMetadataList) {
+                for (TileMetadata tileMetadata: tileMetadataList) {
                     String[] bandNames;
-                    if(numMultispectralBands == 4){
+                    if(numMultiSpectralBands == 4){
                         bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_4_BANDS;
                     } else {
                         bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_8_BANDS;
                     }
                     if(tileMetadata.getTileComponent().getBandID().equals("MS1")) {
                         TileComponent tileComp = tileMetadata.getTileComponent();
-                        for (int index = 0; index < this.numMultispectralBands; index++) {
-                            Band targetBand = new Band(bandNames[index], this.bandDataType,
-                                    tileComp.getNumColumns(), tileComp.getNumRows());
-                            Band band = setInputSpecificationBand(this.tilesMultispectral);
-                            final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
-                            setBandProperties(targetBand, band);
-                            initBandsGeoCoding(targetBand,tileComp);
-                            Map<Band, String> srcBands = getBandTiles(this.tilesMultispectral, index);
-                            MosaicMultiLevelSource bandSource =
-                                    new MosaicMultiLevelSource(srcBands,
-                                            targetBand.getRasterWidth(), targetBand.getRasterHeight(),
-                                            tileSize.width, tileSize.height,
-                                            levels,tileComp,
-                                            targetBand.getGeoCoding() != null ?
-                                                            Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                                                            Product.findImageToModelTransform(product.getSceneGeoCoding()));
-                            targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+                        for (int index = 0; index < this.numMultiSpectralBands; index++) {
+                            Band targetBand = createTargetBand(levels,bandNames, index, this.tilesMultispectral, tileComp);
                             this.product.addBand(targetBand);
                         }
                     } else {
                         TileComponent tileComp = tileMetadata.getTileComponent();
-                        Band targetBand = new Band(bandNames[bandNames.length-1],this.bandDataType,
-                                tileComp.getNumColumns(), tileComp.getNumRows());
-                        Band band = setInputSpecificationBand(this.tilesPanchromatic);
-                        setBandProperties(targetBand, band);
-                        initBandsGeoCoding(targetBand,tileComp);
-                        Map<Band, String> srcBands = getBandTiles(this.tilesPanchromatic, 0);
-                        final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
-                        MosaicMultiLevelSource bandSource =
-                                new MosaicMultiLevelSource(srcBands,
-                                        targetBand.getRasterWidth(), targetBand.getRasterHeight(),
-                                        tileSize.width, tileSize.height,
-                                        levels,tileComp,
-                                        targetBand.getGeoCoding() != null ?
-                                                Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                                                Product.findImageToModelTransform(product.getSceneGeoCoding()));
-                        targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+                        Band targetBand = createTargetBand(levels,new String[] {bandNames[bandNames.length-1]}, 0, this.tilesPanchromatic, tileComp);
                         this.product.addBand(targetBand);
                     }
                 }
@@ -201,7 +168,33 @@ class WorldView2ProductReader extends AbstractProductReader {
         return this.product;
     }
 
-    private Map<Band,String> getBandTiles(WeakHashMap<Product, String> tiles, int index) {
+    private Band createTargetBand(int levels,String[] bandNames, int index, HashMap<Product, String> tiles, TileComponent tileComp) {
+        Band targetBand = new Band(bandNames[index], this.bandDataType,
+                tileComp.getNumColumns(), tileComp.getNumRows());
+        Band band = setInputSpecificationBand(tiles, index);
+        final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
+        setBandProperties(targetBand, band);
+        initBandsGeoCoding(targetBand,tileComp);
+        Map<Band, String> srcBands = getBandTiles(tiles, index);
+        MosaicMultiLevelSource bandSource =
+                new MosaicMultiLevelSource(srcBands,
+                        targetBand.getRasterWidth(), targetBand.getRasterHeight(),
+                        tileSize.width, tileSize.height,
+                        levels,tileComp,
+                        targetBand.getGeoCoding() != null ?
+                                Product.findImageToModelTransform(targetBand.getGeoCoding()) :
+                                Product.findImageToModelTransform(product.getSceneGeoCoding()));
+        targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+        return targetBand;
+    }
+
+    private Band setInputSpecificationBand(HashMap<Product, String> map, int index ) {
+        Map.Entry<Product, String> entry = map.entrySet().iterator().next();
+        Product p = entry.getKey();
+        return p.getBandAt(index);
+    }
+
+    private Map<Band,String> getBandTiles(HashMap<Product, String> tiles, int index) {
         HashMap<Band, String> map = new HashMap<>();
         for(Map.Entry<Product,String> entry: tiles.entrySet() ){
             map.put(entry.getKey().getBandAt(index), entry.getValue());
@@ -210,12 +203,33 @@ class WorldView2ProductReader extends AbstractProductReader {
     }
 
     private int  getProductLevels() {
-        Band band = setInputSpecificationBand(this.tilesMultispectral);
-        int levels = band.getSourceImage().getModel().getLevelCount();
+        Map.Entry<Product, String> entryFirst = this.tilesMultispectral.entrySet().iterator().next();
+        int levels = entryFirst.getKey().getBandAt(0).getSourceImage().getModel().getLevelCount();
+        int levelsMultiSpectral = getLevel(this.tilesMultispectral, levels);
+        int levelsPanchromatic = getLevel(this.tilesPanchromatic, levels);
+        if(levelsMultiSpectral< levels){
+            levels = levelsMultiSpectral;
+        } else if (levelsPanchromatic < levels) {
+            levels = levelsPanchromatic;
+        }
         if (levels > product.getNumResolutionsMax()) {
             product.setNumResolutionsMax(levels);
         }
         return levels;
+    }
+
+    private int getLevel(HashMap<Product, String> tiles, int levels) {
+        int level = levels;
+        for( Map.Entry<Product, String> entry : tiles.entrySet()) {
+            Product p = entry.getKey();
+            for (Band band : p.getBands()) {
+                int bandLevel = band.getSourceImage().getModel().getLevelCount();
+                if (bandLevel < level) {
+                    level = bandLevel;
+                }
+            }
+        }
+        return level;
     }
 
     private void initBandsGeoCoding(Band targetBand, TileComponent tileComp) {
@@ -269,8 +283,8 @@ class WorldView2ProductReader extends AbstractProductReader {
                     this.tilesPanchromatic.put(p, tileComponent.getTileNames()[filesIndex]);
                 } else {
                     this.tilesMultispectral.put(p, tileComponent.getTileNames()[filesIndex]);
-                    if (this.numMultispectralBands==0) {
-                        this.numMultispectralBands = p.getNumBands();
+                    if (this.numMultiSpectralBands ==0) {
+                        this.numMultiSpectralBands = p.getNumBands();
                     }
                 }
             }
@@ -334,9 +348,10 @@ class WorldView2ProductReader extends AbstractProductReader {
         if (!inputFile.exists()) {
             throw new FileNotFoundException(inputFile.getPath());
         }
-
         return inputFile;
     }
+
+
 
     @Override
     public void close() throws IOException {
@@ -357,12 +372,15 @@ class WorldView2ProductReader extends AbstractProductReader {
         if(this.metadata != null) {
             this.metadata = null;
         }
-        super.close();
-    }
+        if(this.tilesPanchromatic != null) {
+            this.tilesPanchromatic.clear();
+            this.tilesPanchromatic = null;
+        }
+        if(this.tilesMultispectral != null) {
+            this.tilesMultispectral.clear();
+            this.tilesMultispectral = null;
+        }
 
-    private Band setInputSpecificationBand(WeakHashMap<Product, String> map) {
-        Map.Entry<Product, String> entry = map.entrySet().iterator().next();
-        Product p = entry.getKey();
-        return p.getBandAt(0);
+        super.close();
     }
 }

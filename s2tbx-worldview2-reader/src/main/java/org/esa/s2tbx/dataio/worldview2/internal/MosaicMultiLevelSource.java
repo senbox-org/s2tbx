@@ -91,8 +91,6 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
                 } catch (IOException ex) {
                     opImage = ConstantDescriptor.create((float) tileWidth, (float) tileHeight, new Number[]{0}, null);
                 }
-
-
                 tileImages.add(opImage);
             } else {
                 logger.warning("No tile images for mosaic");
@@ -110,7 +108,6 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         imageLayout.setTileHeight(JAI.getDefaultTileSize().height);
         imageLayout.setTileGridXOffset(0);
         imageLayout.setTileGridYOffset(0);
-
 
         RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                 MosaicDescriptor.MOSAIC_TYPE_OVERLAY,

@@ -201,7 +201,6 @@ public class TileMetadata extends XmlMetadata {
                 lowerRightColumnOffsetInt[index] = Integer.parseInt(lowerRightColumnOffset[index]);
                 lowerRightRowOffsetInt[index] = Integer.parseInt(lowerRightRowOffset[index]);
             }
-
             tileComponent.setUpperLeftColumnOffset(upperLeftColumnOffsetInt);
             tileComponent.setUpperLeftRowOffset(upperLeftRowOffsetInt);
             tileComponent.setUpperRightColumnOffset(upperRightColumnOffsetInt);
