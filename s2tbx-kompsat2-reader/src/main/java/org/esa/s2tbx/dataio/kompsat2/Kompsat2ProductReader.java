@@ -69,8 +69,9 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
         } else {
             fileName = productFilePath.substring(productFilePath.lastIndexOf("\\")+1,productFilePath.lastIndexOf("."));
         }
+
+        this.metadata = Kompsat2Metadata.create(this.productDirectory.getFile(fileName + Kompsat2Constants.METADATA_FILE_SUFFIX).toPath());
         if(metadata != null) {
-            this.metadata = Kompsat2Metadata.create(this.productDirectory.getFile(fileName + Kompsat2Constants.METADATA_FILE_SUFFIX).toPath());
             this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + Kompsat2Constants.ARCHIVE_FILE_EXTENSION).toPath().toString());
             this.metadata.createBandMetadata();
             List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
