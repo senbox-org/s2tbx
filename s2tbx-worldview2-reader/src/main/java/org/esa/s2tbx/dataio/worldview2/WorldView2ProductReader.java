@@ -55,8 +55,8 @@ class WorldView2ProductReader extends AbstractProductReader {
     private VirtualDirEx productDirectory;
     private WorldView2Metadata metadata;
     private Product product;
-    private String productSelected ;
-    private HashMap<Product, String> tilesMultispectral;
+    private String productSelected;
+    private HashMap<Product, String> tilesMultiSpectral;
     private HashMap<Product, String> tilesPanchromatic;
     private int bandDataType;
     private int numMultiSpectralBands;
@@ -69,7 +69,7 @@ class WorldView2ProductReader extends AbstractProductReader {
      */
     WorldView2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        this.tilesMultispectral = new HashMap<>();
+        this.tilesMultiSpectral = new HashMap<>();
         tilesPanchromatic = new HashMap<>();
     }
 
@@ -79,17 +79,21 @@ class WorldView2ProductReader extends AbstractProductReader {
         final File inputFile = getInputFile();
         this.productDirectory = readerPlugin.getInput(getInput());
         this.metadata = WorldView2Metadata.create(inputFile.toPath());
-        ModalDialog dialog = new ModalDialog(null, "Product Selector",ModalDialog.ID_OK_CANCEL, "" );
         String[] products = getProductsFromMetadata(this.metadata);
-        dialog.setContent(createDialogContent(products));
-        final int show = dialog.show();
-        if (show == ModalDialog.ID_CANCEL) {
-            return null;
+        if (products.length > 1) {
+            ModalDialog dialog = new ModalDialog(null, "Product Selector", ModalDialog.ID_OK_CANCEL, "");
+            dialog.setContent(createDialogContent(products));
+            final int show = dialog.show();
+            if (show == ModalDialog.ID_CANCEL) {
+                return null;
+            }
+        } else {
+            this.productSelected = products[0];
         }
-        if(productSelected == null) {
+        if (productSelected == null) {
             throw new IOException("No product has been selected");
         }
-        if(metadata != null) {
+        if (metadata != null) {
             Set<String> selectedProductFiles = new HashSet<>();
             for (String file : metadata.getAttributeValues(WorldView2Constants.PATH_FILE_LIST)) {
                 if (file.contains(productSelected) && (file.contains(WorldView2Constants.METADATA_EXTENSION) ||
@@ -137,7 +141,6 @@ class WorldView2ProductReader extends AbstractProductReader {
                             width, height,
                             originX, originY,
                             stepSize, stepSize);
-
                     product.setSceneGeoCoding(geoCoding);
                 } catch (Exception e) {
                     logger.warning(e.getMessage());
@@ -146,15 +149,15 @@ class WorldView2ProductReader extends AbstractProductReader {
                 int levels = getProductLevels();
                 for (TileMetadata tileMetadata: tileMetadataList) {
                     String[] bandNames;
-                    if(numMultiSpectralBands == 4){
+                    if (numMultiSpectralBands == 4) {
                         bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_4_BANDS;
                     } else {
                         bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_8_BANDS;
                     }
-                    if(tileMetadata.getTileComponent().getBandID().equals("MS1")) {
+                    if (tileMetadata.getTileComponent().getBandID().equals("MS1")) {
                         TileComponent tileComp = tileMetadata.getTileComponent();
                         for (int index = 0; index < this.numMultiSpectralBands; index++) {
-                            Band targetBand = createTargetBand(levels,bandNames, index, this.tilesMultispectral, tileComp);
+                            Band targetBand = createTargetBand(levels,bandNames, index, this.tilesMultiSpectral, tileComp);
                             this.product.addBand(targetBand);
                         }
                     } else {
@@ -196,18 +199,18 @@ class WorldView2ProductReader extends AbstractProductReader {
 
     private Map<Band,String> getBandTiles(HashMap<Product, String> tiles, int index) {
         HashMap<Band, String> map = new HashMap<>();
-        for(Map.Entry<Product,String> entry: tiles.entrySet() ){
+        for (Map.Entry<Product,String> entry: tiles.entrySet() ) {
             map.put(entry.getKey().getBandAt(index), entry.getValue());
         }
         return map;
     }
 
     private int  getProductLevels() {
-        Map.Entry<Product, String> entryFirst = this.tilesMultispectral.entrySet().iterator().next();
+        Map.Entry<Product, String> entryFirst = this.tilesMultiSpectral.entrySet().iterator().next();
         int levels = entryFirst.getKey().getBandAt(0).getSourceImage().getModel().getLevelCount();
-        int levelsMultiSpectral = getLevel(this.tilesMultispectral, levels);
+        int levelsMultiSpectral = getLevel(this.tilesMultiSpectral, levels);
         int levelsPanchromatic = getLevel(this.tilesPanchromatic, levels);
-        if(levelsMultiSpectral< levels){
+        if (levelsMultiSpectral< levels){
             levels = levelsMultiSpectral;
         } else if (levelsPanchromatic < levels) {
             levels = levelsPanchromatic;
@@ -220,7 +223,7 @@ class WorldView2ProductReader extends AbstractProductReader {
 
     private int getLevel(HashMap<Product, String> tiles, int levels) {
         int level = levels;
-        for( Map.Entry<Product, String> entry : tiles.entrySet()) {
+        for ( Map.Entry<Product, String> entry : tiles.entrySet()) {
             Product p = entry.getKey();
             for (Band band : p.getBands()) {
                 int bandLevel = band.getSourceImage().getModel().getLevelCount();
@@ -270,7 +273,7 @@ class WorldView2ProductReader extends AbstractProductReader {
     private void generateProductLists( Set<String> selectedProductFiles, List<TileMetadata>tileMetadataList) throws IOException{
         for (TileMetadata tileMetadata : tileMetadataList) {
             TileComponent tileComponent = tileMetadata.getTileComponent();
-            for(int filesIndex = 0; filesIndex < tileComponent.getNumOfTiles(); filesIndex++) {
+            for (int filesIndex = 0; filesIndex < tileComponent.getNumOfTiles(); filesIndex++) {
                 String filePath = null;
                 for (String filePaths : selectedProductFiles) {
                     if (filePaths.contains(tileComponent.getTileNames()[filesIndex])) {
@@ -282,7 +285,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                 if (tileComponent.getBandID().equals("P")) {
                     this.tilesPanchromatic.put(p, tileComponent.getTileNames()[filesIndex]);
                 } else {
-                    this.tilesMultispectral.put(p, tileComponent.getTileNames()[filesIndex]);
+                    this.tilesMultiSpectral.put(p, tileComponent.getTileNames()[filesIndex]);
                     if (this.numMultiSpectralBands ==0) {
                         this.numMultiSpectralBands = p.getNumBands();
                     }
@@ -294,7 +297,7 @@ class WorldView2ProductReader extends AbstractProductReader {
     private String[] getProductsFromMetadata(WorldView2Metadata metadata) {
         Set<String> products = new HashSet<>();
         String [] fileNames = metadata.getAttributeValues(WorldView2Constants.PATH_FILE_LIST);
-        for(String file : fileNames) {
+        for (String file : fileNames) {
             if (file.contains(WorldView2Constants.METADATA_EXTENSION) &&
                     !file.contains(EXCLUSION_STRING)) {
                 String filename = file.substring(file.lastIndexOf("/")+1,file.lastIndexOf(WorldView2Constants.METADATA_EXTENSION));
@@ -325,7 +328,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         for (String name: productNames) {
             constraints.gridy++;
             JRadioButton jButton = new JRadioButton(name);
-            jButton.addActionListener(e -> productSelected = jButton.getText());
+            jButton.addActionListener(e -> setProductSelected(jButton.getText()));
             group.add(jButton);
             content.add(jButton, constraints);
         }
@@ -340,7 +343,6 @@ class WorldView2ProductReader extends AbstractProductReader {
                                           int destOffsetX, int destOffsetY,
                                           int destWidth, int destHeight,
                                           ProductData destBuffer, com.bc.ceres.core.ProgressMonitor pm) throws IOException {
-
     }
 
     private File getInputFile() throws FileNotFoundException {
@@ -350,8 +352,6 @@ class WorldView2ProductReader extends AbstractProductReader {
         }
         return inputFile;
     }
-
-
 
     @Override
     public void close() throws IOException {
@@ -369,18 +369,21 @@ class WorldView2ProductReader extends AbstractProductReader {
             this.productDirectory.close();
             this.productDirectory = null;
         }
-        if(this.metadata != null) {
+        if (this.metadata != null) {
             this.metadata = null;
         }
-        if(this.tilesPanchromatic != null) {
+        if (this.tilesPanchromatic != null) {
             this.tilesPanchromatic.clear();
             this.tilesPanchromatic = null;
         }
-        if(this.tilesMultispectral != null) {
-            this.tilesMultispectral.clear();
-            this.tilesMultispectral = null;
+        if (this.tilesMultiSpectral != null) {
+            this.tilesMultiSpectral.clear();
+            this.tilesMultiSpectral = null;
         }
-
         super.close();
+    }
+
+    public void setProductSelected(String productSelected) {
+        this.productSelected = productSelected;
     }
 }

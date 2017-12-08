@@ -4,6 +4,7 @@ import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
+import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.xml.sax.SAXException;
 
@@ -84,7 +85,7 @@ public class TileMetadata extends XmlMetadata {
 
     @Override
     public ProductData.UTC getProductStartTime() {
-        return null;
+      return  null;
     }
 
     @Override
@@ -99,12 +100,12 @@ public class TileMetadata extends XmlMetadata {
 
     @Override
     public String getProductDescription() {
-        return null;
+        return this.name;
     }
 
     @Override
     public String getFileName() {
-        return null;
+        return this.name;
     }
 
     @Override

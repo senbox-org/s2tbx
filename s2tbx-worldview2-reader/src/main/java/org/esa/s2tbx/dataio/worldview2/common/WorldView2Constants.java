@@ -27,7 +27,7 @@ public class WorldView2Constants {
             "ZON\\d{2}.*_README\\.XML"};
 
     public static final String[] WORLDVIEW2_RGB_PROFILE = new String[] { "Red", "Green", "Blue" };
-    public static final String WORLDVIEW2_UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'";
+    public static final String WORLDVIEW2_UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
 
     /*
      * Package (volume) metadata element paths
