@@ -545,7 +545,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
 
-            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
             hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
@@ -1381,7 +1381,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
-            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
             hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
@@ -1468,7 +1468,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
-            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
             hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
