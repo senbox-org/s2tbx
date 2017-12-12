@@ -21,7 +21,7 @@ public class WorldView2Constants {
     public static final String[] BAND_NAMES_MULTISPECTRAL_4_BANDS =
             new String[]{"Blue", "Green", "Red", "NIR1", "Pan"};
     public static final String[] BAND_NAMES_MULTISPECTRAL_8_BANDS =
-            new String[]{"Coastal", "Blue", "Green", "Yellow","Red","Red Edge", "NIR1","NIR2", "Pan"};
+            new String[]{"Coastal", "Blue", "Green", "Yellow", "Red", "Red Edge", "NIR1", "NIR2", "Pan"};
 
     public static final String[] MINIMAL_PRODUCT_PATTERNS = new String[] {
             "ZON\\d{2}.*_README\\.XML"};

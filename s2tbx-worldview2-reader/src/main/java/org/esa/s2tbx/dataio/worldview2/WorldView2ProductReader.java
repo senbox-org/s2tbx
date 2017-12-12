@@ -383,7 +383,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         super.close();
     }
 
-    public void setProductSelected(String productSelected) {
+    private void setProductSelected(String productSelected) {
         this.productSelected = productSelected;
     }
 }
