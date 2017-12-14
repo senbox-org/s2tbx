@@ -57,10 +57,12 @@ public class S2ResamplerUtils {
                                                     AffineTransform sourceImageToModelTransform,
                                                            int referenceWidth,
                                                            int referenceHeight,
+                                                           Dimension tileSize,
                                                            MultiLevelModel referenceMultiLevelModel,
                                                            Interpolation interpolation) {
+
         return Resample.createInterpolatedMultiLevelImage(sourceImage, noDataValue, sourceImageToModelTransform,
-                                                          referenceWidth, referenceHeight,
+                                                          referenceWidth, referenceHeight, tileSize,
                                                           referenceMultiLevelModel, interpolation);
     }
 

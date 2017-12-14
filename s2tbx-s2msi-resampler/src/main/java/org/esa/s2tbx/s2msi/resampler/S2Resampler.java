@@ -18,6 +18,7 @@ import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.common.BandMathsOp;
 import org.esa.snap.core.gpf.common.resample.ResamplingOp;
+import org.esa.snap.core.util.jai.JAIUtils;
 import org.opengis.referencing.operation.MathTransform;
 
 import javax.media.jai.ImageLayout;
@@ -53,6 +54,7 @@ public class S2Resampler implements Resampler {
     private int targetHeight = 0;
     private int targetResolution = 0;
     private String referenceBandName = null;
+    private Dimension referenceTileSize;
 
 
     private String upsamplingMethod = "Bilinear";
@@ -228,6 +230,10 @@ public class S2Resampler implements Resampler {
                 throw new IllegalArgumentException("Use of target resolution parameter is not possible for this source product.");
             }
         }
+        referenceTileSize = sourceProduct.getPreferredTileSize();
+        if (referenceTileSize == null) {
+            referenceTileSize = JAIUtils.computePreferredTileSize(referenceWidth, referenceHeight, 1);
+        }
 
     }
 
@@ -257,7 +263,7 @@ public class S2Resampler implements Resampler {
             }
             MultiLevelImage footprint = multiSizeProduct.getMaskImage(maskExpression,multiSizeProduct.getBand(bandConstants.getPhysicalName()));
             MultiLevelImage footprintFinal = S2ResamplerUtils.createInterpolatedImage(footprint, 0.0f, multiSizeProduct.getBand(bandConstants.getPhysicalName()).getImageToModelTransform(),
-                                                                                      referenceWidth, referenceHeight, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Nearest"));
+                                                                                      referenceWidth, referenceHeight, referenceTileSize, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Nearest"));
 
 
             S2BandAnglesGridByDetector[] anglesGridByDetector = ((Sentinel2OrthoProductReader)multiSizeProduct.getProductReader()).getMetadataHeader().getAnglesGridByDetector(bandConstants.getBandIndex(), detectorId);
@@ -274,10 +280,10 @@ public class S2Resampler implements Resampler {
             extendedAffineTransform5000.translate(-1d,-1d);
             MultiLevelImage zenithMultiLevelImage = S2ResamplerUtils.createMultiLevelImage(extendedZenithData,extendedWidth,extendedHeight,extendedAffineTransform5000);
             MultiLevelImage targetImageZenith = S2ResamplerUtils.createInterpolatedImage(zenithMultiLevelImage, 0.0f, extendedAffineTransform5000,
-                                                                                          referenceWidth, referenceHeight, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Bilinear"));
+                                                                                          referenceWidth, referenceHeight, referenceTileSize, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Bilinear"));
             MultiLevelImage azimuthMultiLevelImage = S2ResamplerUtils.createMultiLevelImage(extendedAzimuthData,extendedWidth,extendedHeight,extendedAffineTransform5000);
             MultiLevelImage targetImageAzimuth = S2ResamplerUtils.createInterpolatedImage(azimuthMultiLevelImage, 0.0f, extendedAffineTransform5000,
-                                                                                                referenceWidth, referenceHeight, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Bilinear"));
+                                                                                                referenceWidth, referenceHeight, referenceTileSize, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Bilinear"));
 
             ImageLayout imageLayout = new ImageLayout();
             imageLayout.setMinX(0);
@@ -378,10 +384,10 @@ public class S2Resampler implements Resampler {
         extendedAffineTransform5000.translate(-1d,-1d);
         MultiLevelImage zenithMultiLevelImage = S2ResamplerUtils.createMultiLevelImage(extendedZenithData,extendedWidth,extendedHeight,extendedAffineTransform5000);
         MultiLevelImage targetImageZenith = S2ResamplerUtils.createInterpolatedImage(zenithMultiLevelImage, 0.0f, extendedAffineTransform5000,
-                                                                                     referenceWidth, referenceHeight, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Bilinear"));
+                                                                                     referenceWidth, referenceHeight, referenceTileSize, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Bilinear"));
         MultiLevelImage azimuthMultiLevelImage = S2ResamplerUtils.createMultiLevelImage(extendedAzimuthData,extendedWidth,extendedHeight,extendedAffineTransform5000);
         MultiLevelImage targetImageAzimuth = S2ResamplerUtils.createInterpolatedImage(azimuthMultiLevelImage, 0.0f, extendedAffineTransform5000,
-                                                                                      referenceWidth, referenceHeight, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Bilinear"));
+                                                                                      referenceWidth, referenceHeight, referenceTileSize, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Bilinear"));
         bandZenith.setSourceImage(S2ResamplerUtils.adjustImageToModelTransform(targetImageZenith, referenceMultiLevelModel));
         bandAzimuth.setSourceImage(S2ResamplerUtils.adjustImageToModelTransform(targetImageAzimuth, referenceMultiLevelModel));
     }
