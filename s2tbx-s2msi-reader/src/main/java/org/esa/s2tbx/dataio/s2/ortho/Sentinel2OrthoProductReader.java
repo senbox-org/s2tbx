@@ -284,7 +284,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     if (path.exists()) {
                         tilePathMap.put(tile.getId(), path);
                         bFound = true;
-                    } else if(path.getParent() != null ) { //Search a sibling containing the physicalBand name
+                    } else if(path.getParent() != null && path.getParent().exists()) { //Search a sibling containing the physicalBand name
                         S2BandConstants bandConstant = S2BandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
                         if(bandConstant != null) {
                             VirtualPath[] otherPaths = path.getParent().listPaths(bandConstant.getFilenameBandId());
