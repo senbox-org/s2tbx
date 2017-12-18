@@ -38,6 +38,17 @@ A new algorithm that will be used when at least one of the input products is mul
 otherwise the original mosaic operator is called.
 This is fully operational for single granule Sentinel-2 products.
 
+#### S2 Resampler processor
+
+A new processor that allows to resample Sentinel-2 products having into account
+the particularities of the angle bands.
+
+#### OpenJp2 JNA
+
+A new option for using a JNA wrapper for the popular OpenJpeg (OpenJp2) library has been included.
+To activate it, the user have to create a new properties in the s2tbx property file. It has to be added:
+use.openjp2.jna=true
+
 #### Sen2Cor tool adapter
 
 ##### Advanced configuration
@@ -74,11 +85,17 @@ Added support for the new product format introduced in autumn 2016 (PSD 14).
     * [SIITBX-266] - In multi-size mosaic GUI, "Perform mosaic at native resolution" checkbox disables the "overlapping methods" combo
     * [SIITBX-267] - In the Generic Region Merging operator the geocoding of the input product is not copied to the target product
     * [SIITBX-268] - IllegalArgumentException in mosaic operator
-    * [SIITBX-269] - Changing the mosaic bounds has no effect in the ouput
+    * [SIITBX-269] - Changing the mosaic bounds has no effect in the ouput (module multi-size mosaic)
+    * [SIITBX-276] - Radiometric indices not working on not reprojected data
+    * [SIITBX-279] - (AP.8) Radiometric Indices have problems when used in a graph
+    * [SIITBX-280] - JP2 Reader is not able to open jp2 image generated with sen2cor at 10 or 20 m resolution
+    * [SIITBX-285] - S2 reader cannot open by folder name the L2A product with old naming convention
+    * [SIITBX-286] - S2 angles are not well computed when angle grids are not in order in the granule metadata file.
 
 #### New Feature
     * [SIITBX-272] - Segmentation Processor should be implemented in S2TBX
     * [SIITBX-273] - Multi-size mosaic not available in SNAP
+    * [SIITBX-281] - CCI Land Cover module for CCI 2015 global map cover
 
 #### Improvement
     * [SIITBX-118] - S-2 MSI readers to use ZIP-files as input
