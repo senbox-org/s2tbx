@@ -65,6 +65,8 @@
         <module>s2tbx-kompsat2-reader</module>
         <module>s2tbx-pleiades-reader</module>
         <module>s2tbx-worldview2-reader</module>
+        <module>s2tbx-spectral-angle-mapper</module>
+        <module>s2tbx-spectral-angle-mapper-ui</module>
     </modules>
 
     <packaging>pom</packaging>
