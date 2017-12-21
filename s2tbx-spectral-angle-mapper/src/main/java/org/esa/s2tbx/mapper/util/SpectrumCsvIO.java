@@ -58,7 +58,7 @@ public class SpectrumCsvIO {
 
     public static int[] getRecords(String[] textRecord) throws IOException {
         int[] intRecord = new int[textRecord.length];
-        for (int i = 1; i < textRecord.length; i++) {
+        for (int i = 0; i < textRecord.length; i++) {
             try {
                 intRecord[i] = Integer.valueOf(textRecord[i]);
             } catch (NumberFormatException e) {
@@ -95,7 +95,7 @@ public class SpectrumCsvIO {
             int[] dataRecord0 = dataRecords.get(0);
             int[] xValues = new int[dataRecord0.length];
             int[] yValues = new int[dataRecord0.length];
-            for (int j = 1; j < dataRecord0.length; j++) {
+            for (int j = 0; j < dataRecord0.length; j++) {
                 xValues[j] = dataRecords.get(0)[j];
                 yValues[j] = dataRecords.get(1)[j];
                 graphs.add(new Spectrum(headerRecord[j], xValues[j], yValues[j]));

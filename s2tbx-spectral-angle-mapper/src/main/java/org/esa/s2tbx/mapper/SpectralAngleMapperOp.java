@@ -59,7 +59,7 @@ public class SpectralAngleMapperOp extends Operator {
 
     private List<Double> threshold;
     private Map<String, Integer>  classColor;
-
+    private Throwable error;
     @Override
     public void initialize() throws OperatorException {
         if (this.sourceProduct == null) {
@@ -119,7 +119,13 @@ public class SpectralAngleMapperOp extends Operator {
 
             Tile samTile = targetTiles.get(this.targetProduct.getBand(SpectralAngleMapperConstants.SAM_BAND_NAME));
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
+                if(pm.isCanceled()){
+                    break;
+                }
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
+                    if(pm.isCanceled()){
+                        break;
+                    }
                     boolean setPixelColor = false;
                     for(int spectrumIndex = 0; spectrumIndex<this.spectra.length; spectrumIndex++) {
                         Spectrum spectrum = this.spectra[spectrumIndex];
@@ -145,7 +151,6 @@ public class SpectralAngleMapperOp extends Operator {
                     }
                 }
             }
-            checkForCancellation();
             pm.worked(1);
         }finally {
             pm.done();
