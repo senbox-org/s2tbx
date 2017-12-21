@@ -1,6 +1,7 @@
 package org.esa.s2tbx.mapper;
 
 
+import org.esa.s2tbx.mapper.util.SpectrumInput;
 import org.esa.s2tbx.mapper.util.SpectrumCsvIO;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.tango.TangoIcons;
@@ -22,7 +23,7 @@ import java.beans.PropertyChangeSupport;
  */
 
 public class SAMSpectralFormModel {
-    private DefaultListModel<Spectrum> spectrumListModel;
+    private DefaultListModel<SpectrumInput> spectrumListModel;
     private DefaultListSelectionModel spectrumListSelectionModel;
     private int selectedSpectrumIndex;
     private final AppContext appContext;
@@ -39,7 +40,7 @@ public class SAMSpectralFormModel {
         spectrumListSelectionModel.addListSelectionListener(new EndmemberListSelectionListener());
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
-    public ListModel<Spectrum> getSpectrumListModel() {
+    public ListModel<SpectrumInput> getSpectrumListModel() {
         return spectrumListModel;
 
     }
@@ -66,13 +67,13 @@ public class SAMSpectralFormModel {
 
         public void actionPerformed(ActionEvent e) {
             //ensureDefaultDirSet();
-            Spectrum[] csvSpectrum = SpectrumCsvIO.readGraphs(null,
+            SpectrumInput[] csvSpectrumInput = SpectrumCsvIO.readGraphs(null,
                     "Add spectrum csv",
                     new SnapFileFilter[]{SpectrumCsvIO.CSV_FILE_FILTER},
                     appContext.getPreferences());
-           // Spectrum[] spectrum = convertGraphsToSpectrum(diagramGraphs);
-            for (Spectrum spectrumCSV : csvSpectrum) {
-                spectrumListModel.addElement(spectrumCSV);
+           // SpectrumInput[] spectrum = convertGraphsToSpectrum(diagramGraphs);
+            for (SpectrumInput spectrumInputCSV : csvSpectrumInput) {
+                spectrumListModel.addElement(spectrumInputCSV);
             }
         }
     }
@@ -82,7 +83,7 @@ public class SAMSpectralFormModel {
         public RemoveAction() {
             super("Remove");
             putValue(LARGE_ICON_KEY, TangoIcons.actions_list_remove(TangoIcons.Res.R16));
-            putValue(SHORT_DESCRIPTION, "Remove Spectrum");
+            putValue(SHORT_DESCRIPTION, "Remove SpectrumInput");
         }
 
         public void actionPerformed(ActionEvent e) {

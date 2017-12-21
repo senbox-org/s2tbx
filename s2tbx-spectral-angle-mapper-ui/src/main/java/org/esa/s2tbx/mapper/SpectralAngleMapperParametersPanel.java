@@ -2,6 +2,7 @@ package org.esa.s2tbx.mapper;
 
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
+import org.esa.s2tbx.mapper.util.SpectrumInput;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductNodeGroup;
@@ -35,7 +36,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
     private final BindingContext bindingCtx;
     private final SpectralAngleMapperForm samForm;
     private JList<String> sourceBandNames;
-    JList<Spectrum> spectrumList;
+    JList<SpectrumInput> spectrumList;
     SAMSpectralFormModel formModel;
     SpectralAngleMapperThresholdPanel thresholdPanel;
 

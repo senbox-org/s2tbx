@@ -8,6 +8,8 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.esa.s2tbx.mapper.util.SpectrumInput;
 import org.esa.snap.ui.AppContext;
 
 import javax.swing.BorderFactory;
@@ -30,7 +32,7 @@ public class SpectralAngleMapperThresholdPanel extends JPanel {
     private final SpectralAngleMapperFormModel samModel;
     private BindingContext bindingCtx;
     private List<JTextField> componentList;
-    private List<Spectrum> spectrumList;
+    private List<SpectrumInput> spectrumInputList;
 
     boolean adjustingSlider;
 
@@ -42,8 +44,8 @@ public class SpectralAngleMapperThresholdPanel extends JPanel {
         bindingCtx.adjustComponents();
     }
 
-    void updateThresholdComponents(List<Spectrum> spectrumList) {
-        this.spectrumList = spectrumList;
+    void updateThresholdComponents(List<SpectrumInput> spectrumInputList) {
+        this.spectrumInputList = spectrumInputList;
         this.removeAll();
         final TableLayout layout = new TableLayout(1);
         layout.setTableAnchor(TableLayout.Anchor.WEST);
@@ -52,10 +54,10 @@ public class SpectralAngleMapperThresholdPanel extends JPanel {
         layout.setTableWeightY(0.0);
         layout.setTablePadding(2, 2);
         this.setLayout(layout);
-        this.setBorder(BorderFactory.createTitledBorder("Spectrum Thresholds"));
+        this.setBorder(BorderFactory.createTitledBorder("SpectrumInput Thresholds"));
         componentList.clear();
-        for(Spectrum spectrum : this.spectrumList){
-            JLabel label = new JLabel(spectrum.getName());
+        for(SpectrumInput spectrumInput : this.spectrumInputList){
+            JLabel label = new JLabel(spectrumInput.getName());
             JTextField threshold = new JTextField(10);
             JSlider toleranceSlider = new JSlider(0, TOLERANCE_SLIDER_RESOLUTION);
             toleranceSlider.setSnapToTicks(false);

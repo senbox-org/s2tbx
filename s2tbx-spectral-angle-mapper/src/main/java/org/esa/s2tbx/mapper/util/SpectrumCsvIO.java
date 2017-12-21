@@ -1,12 +1,9 @@
 package org.esa.s2tbx.mapper.util;
 
-import org.esa.s2tbx.mapper.Spectrum;
 import org.esa.snap.core.util.PropertyMap;
 import org.esa.snap.core.util.io.CsvReader;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.ui.SnapFileChooser;
-import org.esa.snap.ui.diagram.DefaultDiagramGraph;
-import org.esa.snap.ui.diagram.DiagramGraph;
 
 import javax.swing.JOptionPane;
 import java.awt.Component;
@@ -26,12 +23,11 @@ public class SpectrumCsvIO {
     public static final SnapFileFilter CSV_FILE_FILTER = new SnapFileFilter("CSV", ".csv", "CSV (plain text)");
     public static final String DIAGRAM_GRAPH_IO_LAST_DIR_KEY = "diagramGraphIO.lastDir";
 
-    public static Spectrum[] readGraphs(Reader reader) throws IOException {
+    public static SpectrumInput[] readGraphs(Reader reader) throws IOException {
 
         CsvReader csvReader = new CsvReader(reader, new char[]{','});
-        List<Spectrum> graphGroup = new ArrayList<>(5);
+        List<SpectrumInput> graphGroup = new ArrayList<>(5);
         List<int[]> dataRecords = new ArrayList<>(20);
-
         String[] headerRecord = csvReader.readRecord();
         while (true) {
             if (headerRecord.length < 2) {
@@ -53,7 +49,7 @@ public class SpectrumCsvIO {
             }
         }
         readGraphGroup(headerRecord, dataRecords, graphGroup);
-        return graphGroup.toArray(new Spectrum[0]);
+        return graphGroup.toArray(new SpectrumInput[0]);
     }
 
     public static int[] getRecords(String[] textRecord) throws IOException {
@@ -70,10 +66,10 @@ public class SpectrumCsvIO {
 
 
 
-    public static Spectrum[] readGraphs(Component parentComponent,
-                                            String title,
-                                            SnapFileFilter[] fileFilters,
-                                            PropertyMap preferences) {
+    public static SpectrumInput[] readGraphs(Component parentComponent,
+                                             String title,
+                                             SnapFileFilter[] fileFilters,
+                                             PropertyMap preferences) {
         File selectedFile = selectGraphFile(parentComponent, title, fileFilters, preferences, true);
         if (selectedFile != null) {
             try {
@@ -87,10 +83,10 @@ public class SpectrumCsvIO {
                 JOptionPane.showMessageDialog(parentComponent, "I/O error: " + e.getMessage());
             }
         }
-        return new Spectrum[0];
+        return new SpectrumInput[0];
     }
 
-    private static void readGraphGroup(String[] headerRecord, List<int[]> dataRecords, List<Spectrum> graphs) {
+    private static void readGraphGroup(String[] headerRecord, List<int[]> dataRecords, List<SpectrumInput> graphs) {
         if (dataRecords.size() > 0) {
             int[] dataRecord0 = dataRecords.get(0);
             int[] xValues = new int[dataRecord0.length];
@@ -98,7 +94,7 @@ public class SpectrumCsvIO {
             for (int j = 0; j < dataRecord0.length; j++) {
                 xValues[j] = dataRecords.get(0)[j];
                 yValues[j] = dataRecords.get(1)[j];
-                graphs.add(new Spectrum(headerRecord[j], xValues[j], yValues[j]));
+                graphs.add(new SpectrumInput(headerRecord[j], xValues[j], yValues[j]));
             }
         }
         dataRecords.clear();

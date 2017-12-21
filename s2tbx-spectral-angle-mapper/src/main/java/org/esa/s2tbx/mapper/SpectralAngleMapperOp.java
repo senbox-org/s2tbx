@@ -1,6 +1,7 @@
 package org.esa.s2tbx.mapper;
 
 import org.esa.s2tbx.mapper.common.SpectralAngleMapperConstants;
+import org.esa.s2tbx.mapper.util.SpectrumInput;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -55,7 +56,7 @@ public class SpectralAngleMapperOp extends Operator {
     String thresholds;
 
     @Parameter(description = "The list of spectra.", alias = "spectra")
-    private Spectrum[] spectra;
+    private SpectrumInput[] spectra;
 
     private List<Double> threshold;
     private Map<String, Integer>  classColor;
@@ -99,8 +100,8 @@ public class SpectralAngleMapperOp extends Operator {
         this.threshold = new ArrayList<>();
         this.classColor = new HashMap<>();
         int classColorLevel = 200;
-        for(Spectrum spectrum : this.spectra) {
-            this.classColor.put(spectrum.getName(), classColorLevel);
+        for(SpectrumInput spectrumInput : this.spectra) {
+            this.classColor.put(spectrumInput.getName(), classColorLevel);
             classColorLevel += 200;
         }
         parseThresholds();
@@ -128,9 +129,9 @@ public class SpectralAngleMapperOp extends Operator {
                     }
                     boolean setPixelColor = false;
                     for(int spectrumIndex = 0; spectrumIndex<this.spectra.length; spectrumIndex++) {
-                        Spectrum spectrum = this.spectra[spectrumIndex];
-                        int xPosition = spectrum.getXPixelPosition();
-                        int yPosition = spectrum.getYPixelPosition();
+                        SpectrumInput spectrumInput = this.spectra[spectrumIndex];
+                        int xPosition = spectrumInput.getXPixelPosition();
+                        int yPosition = spectrumInput.getYPixelPosition();
                         float valueSum = 0;
                         float pixelValueSquareSum = 0;
                         float spectrumPixelValueSquareSum = 0;
@@ -142,7 +143,7 @@ public class SpectralAngleMapperOp extends Operator {
                         }
                         double samAngle = Math.acos(valueSum/(Math.sqrt(pixelValueSquareSum)*(Math.sqrt(spectrumPixelValueSquareSum))));
                         if(samAngle < this.threshold.get(spectrumIndex)){
-                          samTile.setSample(x, y,this.classColor.get(spectrum.getName()));
+                          samTile.setSample(x, y,this.classColor.get(spectrumInput.getName()));
                             setPixelColor = true;
                         }
                     }
