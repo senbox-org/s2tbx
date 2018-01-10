@@ -12,8 +12,8 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 /**
  * Created by obarrile on 05/07/2017.
  */
-@OperatorMetadata(alias = "S2ResamplingOp",
-        category = "Raster",
+@OperatorMetadata(alias = "S2Resampling",
+        category = "Optical/Geometric",
         authors = "Omar Barrilero",
         version = "1.0",
         internal = false,
