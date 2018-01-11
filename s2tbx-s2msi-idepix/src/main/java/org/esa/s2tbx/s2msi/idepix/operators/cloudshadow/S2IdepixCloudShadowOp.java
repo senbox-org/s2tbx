@@ -31,6 +31,7 @@ import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -320,10 +321,10 @@ public class S2IdepixCloudShadowOp extends Operator {
                                             flagDetector);
 
         if (computeMountainShadow) {
+            float maxAltitude = Collections.max(altitudes, new MountainShadowMaxFloatComparator());
             MountainShadowFlagger.flagMountainShadowArea(
-                    s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight(),
-                    sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, sourceLatitudes,
-                    sourceLongitudes, altitude, flagArray);
+                    s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight(), sourceRectangle,
+                    targetRectangle, sunZenithMean, sunAzimuthMean, altitude, flagArray, minAltitude, maxAltitude);
         }
 
         final CloudIdentifier cloudIdentifier = new CloudIdentifier(flagArray);
@@ -416,6 +417,25 @@ public class S2IdepixCloudShadowOp extends Operator {
                 int sourceIndex = sourceY * sourceRectangle.width + sourceX;
                 targetTile.setSample(targetX, targetY, inputData[sourceIndex]);
             }
+        }
+    }
+
+    private static class MountainShadowMaxFloatComparator implements Comparator<Float> {
+
+        @Override
+        public int compare(Float o1, Float o2) {
+            if(Float.isNaN(o1) && Float.isNaN(o2)) {
+                return 0;
+            } else if (Float.isNaN(o1)) {
+                return -1;
+            } else if (Float.isNaN(o2)) {
+                return 1;
+            } else if (o1 < o2) {
+                return -1;
+            } else if (o2 > o1) {
+                return 1;
+            }
+            return 0;
         }
     }
 
