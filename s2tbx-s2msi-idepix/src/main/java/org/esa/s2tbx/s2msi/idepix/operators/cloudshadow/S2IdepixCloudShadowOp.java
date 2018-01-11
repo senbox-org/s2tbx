@@ -280,6 +280,9 @@ public class S2IdepixCloudShadowOp extends Operator {
 
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(targetAltitude));
         float minAltitude = Math.max(0, Collections.min(altitudes));
+        if (Float.isNaN(minAltitude)) {
+            minAltitude = 0;
+        }
         final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
                 minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, maxcloudTop,
                 targetRectangle, targetRectangle, getSourceProduct().getSceneRasterHeight(),
@@ -322,6 +325,9 @@ public class S2IdepixCloudShadowOp extends Operator {
 
         if (computeMountainShadow) {
             float maxAltitude = Collections.max(altitudes, new MountainShadowMaxFloatComparator());
+            if (Float.isNaN(maxAltitude)) {
+                maxAltitude = 0;
+            }
             MountainShadowFlagger.flagMountainShadowArea(
                     s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight(), sourceRectangle,
                     targetRectangle, sunZenithMean, sunAzimuthMean, altitude, flagArray, minAltitude, maxAltitude);
