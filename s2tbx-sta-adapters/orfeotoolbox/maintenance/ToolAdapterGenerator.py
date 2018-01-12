@@ -717,7 +717,7 @@ def run_ToolAdapterGenerator(outputDir, xmlDescriptionProcessing, createAdapter=
 
     if createAdapter:
         createPom(toolDirectory, dicResult, lowerToolName)
-        createManifest(metaInfDirectory, dicResult, "5.0.0")
+        createManifest(metaInfDirectory, dicResult, "6.0.0")
 
 
 
