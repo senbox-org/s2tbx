@@ -97,8 +97,10 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         spectrumList.setSelectionModel(formModel.getSpectrumListSelectionModel());
         spectrumList.setPreferredSize(new Dimension(80, 160));
         panel.add(spectrumList);
+        AbstractButton loadButton = ToolButtonFactory.createButton(formModel.getLoadAction(), false);
         AbstractButton addButton = ToolButtonFactory.createButton(formModel.getAddAction(), false);
         AbstractButton removeButton = ToolButtonFactory.createButton(formModel.getRemoveAction(), false);
+        AbstractButton exportButton = ToolButtonFactory.createButton(formModel.getExportAction(), false);
         GridBagLayout gbl = new GridBagLayout();
         JPanel actionPanel = new JPanel(gbl);
         actionPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 0, 3));
@@ -107,11 +109,14 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.ipady = 2;
         gbc.gridy = 0;
+        actionPanel.add(loadButton, gbc);
+        gbc.gridy++;
         actionPanel.add(addButton, gbc);
         gbc.gridy++;
         actionPanel.add(removeButton, gbc);
         gbc.gridy++;
-
+        actionPanel.add(exportButton, gbc);
+        gbc.gridy++;
         JPanel spectrumSelectionPanel = new JPanel(new BorderLayout());
         spectrumSelectionPanel.add(new JScrollPane(spectrumList), BorderLayout.CENTER);
         spectrumSelectionPanel.add(actionPanel, BorderLayout.WEST);

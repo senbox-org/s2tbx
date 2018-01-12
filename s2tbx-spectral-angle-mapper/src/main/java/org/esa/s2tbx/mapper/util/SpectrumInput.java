@@ -10,21 +10,10 @@ public class SpectrumInput {
     @Parameter(pattern = "[a-zA-Z_0-9]*")
     private String name;
     @Parameter
-    private int xPixelPosition;
-    @Parameter
     private int[] xPixelPolygonPositions;
-    @Parameter
-    private int yPixelPosition;
     @Parameter
     private int[] yPixelPolygonPositions;
 
-    public SpectrumInput(String name, int xPixelPosition , int yPixelPosition) {
-        assert name != null;
-
-        this.name = name;
-        this.xPixelPosition = xPixelPosition;
-        this.yPixelPosition = yPixelPosition;
-    }
     public SpectrumInput(String name, int[] xPixelPolygonPositions, int[] yPixelPolygonPositions) {
         assert name != null;
 
@@ -35,14 +24,6 @@ public class SpectrumInput {
 
     public String getName() {
         return name;
-    }
-
-    public int getXPixelPosition() {
-        return xPixelPosition;
-    }
-
-    public int getYPixelPosition() {
-        return yPixelPosition;
     }
 
     @Override
