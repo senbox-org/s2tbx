@@ -85,7 +85,7 @@ public class JP2ProductWriter extends AbstractProductWriter {
 
     private void ensureNamingConvention() {
         if (this.outputFile != null) {
-            getSourceProduct().setName(FileUtils.getFilenameWithoutExtension(this.outputFile));
+            getSourceProduct().setName(FileUtils.getFilenameWithoutExtension(this.outputFile) + JP2Constants.FILE_EXTENSIONS[0]);
         }
     }
 
@@ -152,12 +152,12 @@ public class JP2ProductWriter extends AbstractProductWriter {
                             "Envelope");
                     gmlEnvelope.setPolygonCorners(geoCoding.getGeoPos(new PixelPos(0, 0), null).getLat(),
                             geoCoding.getGeoPos(new PixelPos(0, 0), null).getLon(),
-                            geoCoding.getGeoPos(new PixelPos(width - 1, 0), null).getLat(),
-                            geoCoding.getGeoPos(new PixelPos(width - 1, 0), null).getLon(),
+                            geoCoding.getGeoPos(new PixelPos(width, 0), null).getLat(),
+                            geoCoding.getGeoPos(new PixelPos(width, 0), null).getLon(),
                             geoCoding.getGeoPos(new PixelPos(width, height), null).getLat(),
                             geoCoding.getGeoPos(new PixelPos(width, height), null).getLon(),
-                            geoCoding.getGeoPos(new PixelPos(0, height - 1), null).getLat(),
-                            geoCoding.getGeoPos(new PixelPos(0, height - 1), null).getLon());
+                            geoCoding.getGeoPos(new PixelPos(0, height), null).getLat(),
+                            geoCoding.getGeoPos(new PixelPos(0, height), null).getLon());
                     gmlEnvelope.setPolygonUse(true);
                     this.metadata.setEnvelope(gmlEnvelope);
                 }
