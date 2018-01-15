@@ -28,7 +28,8 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.AddCollectionDescriptor;
 import javax.media.jai.operator.MultiplyConstDescriptor;
 import javax.media.jai.operator.MultiplyDescriptor;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -322,11 +323,23 @@ public class S2Resampler implements Resampler {
 
         RenderingHints hints=new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
         hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-        RenderedOp finalAnglesZenith = AddCollectionDescriptor.create(inputsZenith, hints);
-        RenderedOp finalAnglesAzimuth = AddCollectionDescriptor.create(inputsAzimuth, hints);
+        RenderedOp finalAnglesZenith;
+        RenderedOp finalAnglesAzimuth;
+        if (inputsZenith.size() > 1) {
+            finalAnglesZenith = AddCollectionDescriptor.create(inputsZenith, hints);
+        } else {
+            finalAnglesZenith = inputsZenith.firstElement();
+        }
+        if (inputsAzimuth.size() > 1) {
+            finalAnglesAzimuth = AddCollectionDescriptor.create(inputsAzimuth, hints);
+        } else {
+            finalAnglesAzimuth = inputsAzimuth.firstElement();
+        }
 
-        MultiLevelImage finalImageZenith = new DefaultMultiLevelImage(new DefaultMultiLevelSource(finalAnglesZenith, referenceMultiLevelModel, Interpolation.getInstance(Interpolation.INTERP_NEAREST)));
-        MultiLevelImage finalImageAzimuth = new DefaultMultiLevelImage(new DefaultMultiLevelSource(finalAnglesAzimuth, referenceMultiLevelModel, Interpolation.getInstance(Interpolation.INTERP_NEAREST)));
+        MultiLevelImage finalImageZenith = new DefaultMultiLevelImage(
+                new DefaultMultiLevelSource(finalAnglesZenith, referenceMultiLevelModel, Interpolation.getInstance(Interpolation.INTERP_NEAREST)));
+        MultiLevelImage finalImageAzimuth = new DefaultMultiLevelImage(
+                new DefaultMultiLevelSource(finalAnglesAzimuth, referenceMultiLevelModel, Interpolation.getInstance(Interpolation.INTERP_NEAREST)));
 
         bandZenith.setSourceImage(S2ResamplerUtils.adjustImageToModelTransform(finalImageZenith, referenceMultiLevelModel));
         bandAzimuth.setSourceImage(S2ResamplerUtils.adjustImageToModelTransform(finalImageAzimuth, referenceMultiLevelModel));
