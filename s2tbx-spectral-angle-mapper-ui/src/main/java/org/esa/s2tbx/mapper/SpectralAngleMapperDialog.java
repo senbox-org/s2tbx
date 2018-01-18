@@ -1,16 +1,25 @@
 package org.esa.s2tbx.mapper;
 
+import com.bc.ceres.binding.Property;
+import com.bc.ceres.binding.PropertySet;
+import com.bc.ceres.swing.binding.BindingContext;
+import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
+import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
 import org.esa.snap.core.gpf.ui.OperatorMenu;
 import org.esa.snap.core.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.core.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.TargetProductSelector;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.ui.AppContext;
 
+import java.util.BitSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * dialog
@@ -29,7 +38,6 @@ public class SpectralAngleMapperDialog extends SingleTargetProductDialog {
         selector.getModel().setSaveToFileSelected(false);
         selector.getModel().setProductName("Spectral Angle Mapper");
         selector.getSaveToFileCheckBox().setEnabled(true);
-
 
         final OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi("SpectralAngleMapperOp");
         if (operatorSpi == null) {

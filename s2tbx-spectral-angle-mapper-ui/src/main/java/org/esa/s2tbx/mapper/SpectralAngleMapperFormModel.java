@@ -27,6 +27,9 @@ public class SpectralAngleMapperFormModel {
     public static final String REFERENCE_BANDS_PROPERTY = "referenceBands";
     public static final String SPECTRA_PROPERTY = "spectra";
     public static final String THRESHOLDS_PROPERTY = "thresholds";
+    public static final String RESAMPLE_TYPE_PROPERTY = "resampleType";
+    public static final String UPSAMPLING_PROPERTY = "upsamplingMethod";
+    public static final String DOWNSAMPLING_PROPERTY = "downsamplingMethod";
 
     private SpectralAngleMapperForm parentForm;
     private final PropertySet container;

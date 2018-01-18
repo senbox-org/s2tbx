@@ -18,7 +18,7 @@ public class Spectrum {
         this.setMeanValue(meanValue);
     }
 
-    protected String getClassName() {
+    public String getClassName() {
         return className;
     }
 
@@ -26,7 +26,7 @@ public class Spectrum {
         this.className = className;
     }
 
-    protected float[] getMeanValue() {
+    public float[] getMeanValue() {
         return meanValue;
     }
 

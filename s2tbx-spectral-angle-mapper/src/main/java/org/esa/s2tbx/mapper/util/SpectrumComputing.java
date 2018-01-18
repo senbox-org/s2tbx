@@ -49,6 +49,5 @@ public class SpectrumComputing  implements Runnable{
     @Override
     public void run() {
         execute();
-        System.out.println(Thread.currentThread().getName()+" End.");
     }
 }
