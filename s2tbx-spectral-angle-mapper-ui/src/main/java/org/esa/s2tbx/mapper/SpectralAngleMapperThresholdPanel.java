@@ -26,7 +26,7 @@ import javax.swing.event.DocumentListener;
 
 public class SpectralAngleMapperThresholdPanel extends JPanel {
 
-    public static final int TOLERANCE_SLIDER_RESOLUTION = 1000;
+    public static final int TOLERANCE_SLIDER_RESOLUTION = 10000;
 
     private final AppContext appContext;
     private final SpectralAngleMapperFormModel samModel;

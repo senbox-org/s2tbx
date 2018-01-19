@@ -113,6 +113,16 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         setLayout(layout);
         add(selectionBandsPanel());
         add(resamplingPanel());
+        messagePanel = new JPanel();
+        messagePanel.add(new JLabel(TangoIcons.status_dialog_information(TangoIcons.Res.R16)));
+        messageLabel = new JLabel(RESAMPLE_MESSAGE);
+        messageLabel.setForeground(Color.BLUE);
+        messagePanel.add(messageLabel);
+        messageLabel.setText("No resample is needed");
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.add(messagePanel, BorderLayout.CENTER);
+        messagePanel.setVisible(true);
+        add(messagePanel);
         add(CSVSelectionPanel());
         JButton createThresholdsPanel = new JButton("Set Thresholds");
         createThresholdsPanel.addActionListener(e -> {
@@ -129,14 +139,9 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         add(createThresholdsPanel);
     }
 
+
     private JPanel resamplingPanel() {
-        final TableLayout layout = new TableLayout(2);
-        layout.setTableAnchor(TableLayout.Anchor.WEST);
-        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        layout.setTableWeightX(1.0);
-        layout.setTableWeightY(1.0);
-        layout.setTablePadding(3, 3);
-        final JPanel panel = new JPanel(layout);
+        final JPanel panel = new JPanel(getTableLayout(2));
         panel.setBorder(BorderFactory.createTitledBorder("Resampling Parameters:"));
         JLabel resampleTypeLabel = new JLabel("Resample Type");
         final JComboBox<String> resampleTypeComboBox = new JComboBox<>(new DefaultComboBoxModel<>(this.resampleTypeValues));
@@ -159,36 +164,16 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         panel.add(upsamplingComboBox);
         panel.add(downsamplingMethodlabel);
         panel.add(downsampligComboBox);
-        messagePanel = new JPanel();
-        messagePanel.add(new JLabel(TangoIcons.status_dialog_information(TangoIcons.Res.R16)));
-        messageLabel = new JLabel(RESAMPLE_MESSAGE);
-        messageLabel.setForeground(Color.BLUE);
-        messagePanel.add(messageLabel);
-        messageLabel.setText("No resample is needed");
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.add(messagePanel, BorderLayout.CENTER);
-        messagePanel.setVisible(true);
-        panel.add(wrapper);
-        final Dimension windowSize = this.getPreferredSize();
-        panel.setMinimumSize(new Dimension(windowSize.width, windowSize.height + 30));
         return panel;
 
     }
 
     private JPanel CSVSelectionPanel() {
-        final TableLayout layout = new TableLayout(2);
-        layout.setTableAnchor(TableLayout.Anchor.WEST);
-        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        layout.setTableWeightX(1.0);
-        layout.setTableWeightY(1.0);
-        layout.setTablePadding(3, 3);
-        final JPanel panel = new JPanel(layout);
+        final JPanel panel = new JPanel(getTableLayout(1));
         panel.setBorder(BorderFactory.createTitledBorder("spectrum CSV file:"));
         spectrumList = new JList<>();
         spectrumList.setModel(formModel.getSpectrumListModel());
         spectrumList.setSelectionModel(formModel.getSpectrumListSelectionModel());
-        spectrumList.setPreferredSize(new Dimension(80, 160));
-        panel.add(spectrumList);
         AbstractButton loadButton = ToolButtonFactory.createButton(formModel.getLoadAction(), false);
         AbstractButton addButton = ToolButtonFactory.createButton(formModel.getAddAction(), false);
         AbstractButton removeButton = ToolButtonFactory.createButton(formModel.getRemoveAction(), false);
@@ -218,35 +203,33 @@ class SpectralAngleMapperParametersPanel extends JPanel {
 
 
     private JPanel selectionBandsPanel() {
-
-        final TableLayout layout = new TableLayout(2);
-        layout.setTableAnchor(TableLayout.Anchor.WEST);
-        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        layout.setTableWeightX(1.0);
-        layout.setTableWeightY(1.0);
-        layout.setTablePadding(3, 3);
-        final JPanel panel = new JPanel(layout);
+        final JPanel panel = new JPanel(getTableLayout(1));
         panel.setBorder(BorderFactory.createTitledBorder("Bands Selection"));
         model = new DefaultListModel<>();
         sourceBandNames =  new JList<>();
         sourceBandNames.setModel(model);
-        sourceBandNames.setPreferredSize(new Dimension(80, 160));
-        sourceBandNames.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                checkResampling();
-            }
-        });
-        panel.add(new JLabel("Spectral source bands:"));
-        panel.add(new JScrollPane(sourceBandNames));
+        sourceBandNames.addListSelectionListener(e -> checkResampling());
+        JPanel spectrumSelectionPanel = new JPanel(new BorderLayout());
+        spectrumSelectionPanel.add(new JScrollPane(sourceBandNames), BorderLayout.CENTER);
+        spectrumSelectionPanel.add(new JLabel("Spectral source bands:"), BorderLayout.WEST);
+        panel.add(spectrumSelectionPanel);
         return panel;
+    }
+
+    private TableLayout getTableLayout( int columnCount) {
+        final TableLayout layout = new TableLayout(columnCount);
+        layout.setTableAnchor(TableLayout.Anchor.WEST);
+        layout.setTableFill(TableLayout.Fill.BOTH);
+        layout.setTableWeightX(1.0);
+        layout.setTablePadding(3, 3);
+        return layout;
     }
 
     private void checkResampling() {
         BindingContext bindingContext = this.bindingCtx;
         PropertySet propertySet = bindingContext.getPropertySet();
         final Map<String, Product>sourceProducts = samForm.getSourceProductMap();
-        Product product =sourceProducts.entrySet().stream().findFirst().get().getValue();
+        Product product = sourceProducts.entrySet().stream().findFirst().get().getValue();
         boolean needsResampling = isResampleNeeded(product);
         if (!needsResampling) {
             propertySet.setValue(SpectralAngleMapperFormModel.RESAMPLE_TYPE_PROPERTY, RESAMPLE_NONE);

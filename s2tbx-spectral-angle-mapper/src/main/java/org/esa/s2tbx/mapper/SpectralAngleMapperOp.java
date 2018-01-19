@@ -1,13 +1,6 @@
 package org.esa.s2tbx.mapper;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import org.esa.s2tbx.dataio.Parallel;
+
 import org.esa.s2tbx.mapper.common.SpectralAngleMapperConstants;
 import org.esa.s2tbx.mapper.util.Spectrum;
 import org.esa.s2tbx.mapper.util.SpectrumClassPixelsComputing;
@@ -58,9 +51,9 @@ import java.util.concurrent.TimeUnit;
 
 public class SpectralAngleMapperOp extends Operator {
 
-    public static final String RESAMPLE_NONE = "None";
-    public static final String RESAMPLE_LOWEST = "Lowest resolution";
-    public static final String RESAMPLE_HIGHEST = "Highest resolution";
+    private static final String RESAMPLE_NONE = "None";
+    private static final String RESAMPLE_LOWEST = "Lowest resolution";
+    private static final String RESAMPLE_HIGHEST = "Highest resolution";
 
     @SourceProduct(alias = "source", description = "The source product.")
     private Product sourceProduct;
@@ -83,27 +76,26 @@ public class SpectralAngleMapperOp extends Operator {
     @Parameter(label = "Resample Type",
             description = "If selected bands differ in size, the resample method used before computing the index",
             defaultValue = RESAMPLE_NONE, valueSet = { RESAMPLE_NONE, RESAMPLE_LOWEST, RESAMPLE_HIGHEST })
-    protected String resampleType;
+    private String resampleType;
 
     @Parameter(alias = "upsampling",
             label = "Upsampling Method",
             description = "The method used for interpolation (upsampling to a finer resolution).",
             valueSet = {"Nearest", "Bilinear", "Bicubic"},
             defaultValue = "Nearest")
-    protected String upsamplingMethod;
+    private String upsamplingMethod;
 
     @Parameter(alias = "downsampling",
             label = "Downsampling Method",
             description = "The method used for aggregation (downsampling to a coarser resolution).",
             valueSet = {"First", "Min", "Max", "Mean", "Median"},
             defaultValue = "First")
-    protected String downsamplingMethod;
+    private String downsamplingMethod;
 
-    protected List<Double> threshold;
-    protected Map<String, Integer>  classColor;
+    private List<Double> threshold;
+    private Map<String, Integer>  classColor;
 
-    protected int threadCount;
-    protected ExecutorService threadPool;
+    private int threadCount;
 
     @Override
     public void initialize() throws OperatorException {
@@ -137,6 +129,12 @@ public class SpectralAngleMapperOp extends Operator {
         } else {
             sceneWidth = sourceProduct.getSceneRasterWidth();
             sceneHeight = sourceProduct.getSceneRasterHeight();
+            int firstSourceBandWidth = sourceProduct.getBand(this.referenceBands[0]).getRasterWidth();
+            int firstSourceBandHeight = sourceProduct.getBand(this.referenceBands[0]).getRasterHeight();
+            if(firstSourceBandWidth != sceneWidth || firstSourceBandHeight != sceneHeight ) {
+                sceneWidth = firstSourceBandWidth;
+                sceneHeight = firstSourceBandHeight;
+            }
         }
 
         validateSpectra();
@@ -144,7 +142,7 @@ public class SpectralAngleMapperOp extends Operator {
         this.targetProduct = new Product(SpectralAngleMapperConstants.TARGET_PRODUCT_NAME, this.sourceProduct.getProductType() + "_SAM", sceneWidth, sceneHeight);
         ProductUtils.copyTimeInformation(this.sourceProduct, this.targetProduct);
 
-        Band samOutputBand = new Band(SpectralAngleMapperConstants.SAM_BAND_NAME, ProductData.TYPE_FLOAT32, sceneWidth, sceneHeight);
+        Band samOutputBand = new Band(SpectralAngleMapperConstants.SAM_BAND_NAME, ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         samOutputBand.setNoDataValueUsed(true);
         samOutputBand.setNoDataValue(SpectralAngleMapperConstants.NO_DATA_VALUE);
         this.targetProduct.addBand(samOutputBand);
@@ -169,14 +167,15 @@ public class SpectralAngleMapperOp extends Operator {
 
         this.threshold = new ArrayList<>();
         this.classColor = new HashMap<>();
+        ExecutorService threadPool;
         int classColorLevel = 200;
         for(SpectrumInput spectrumInput : this.spectra) {
             this.classColor.put(spectrumInput.getName(), classColorLevel);
             classColorLevel += 200;
         }
-        this.threadPool = Executors.newFixedThreadPool(threadCount);
-        for (int i = 0; i < spectra.length; i++) {
-            Runnable worker = new SpectrumClassPixelsComputing(spectra[i]);
+        threadPool = Executors.newFixedThreadPool(threadCount);
+        for (SpectrumInput aSpectra : spectra) {
+            Runnable worker = new SpectrumClassPixelsComputing(aSpectra);
             threadPool.execute(worker);
         }
         threadPool.shutdown();
@@ -187,7 +186,7 @@ public class SpectralAngleMapperOp extends Operator {
                 e.printStackTrace();
             }
         }
-        this.threadPool = Executors.newFixedThreadPool(threadCount);
+        threadPool = Executors.newFixedThreadPool(threadCount);
         for (int i = 0; i < spectra.length; i++) {
             Runnable worker = new SpectrumComputing(SpectrumClassReferencePixelsSingleton.getInstance().getElements().get(i), this.sourceProduct, this.referenceBands);
             threadPool.execute(worker);
@@ -232,8 +231,10 @@ public class SpectralAngleMapperOp extends Operator {
                             if(xSpecPosition == x && ySpecPosition == y ) {
                                 samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
                                 isSet = true;
-                                spec.getXPixelPositions().remove(index);
-                                spec.getYPixelPositions().remove(index);
+                                synchronized (this) {
+                                    spec.getXPixelPositions().remove(index);
+                                    spec.getYPixelPositions().remove(index);
+                                }
                             }
 
                         }
@@ -281,15 +282,15 @@ public class SpectralAngleMapperOp extends Operator {
     }
 
     private void validateSpectra() {
-        for (int index = 0; index<spectra.length; index++) {
+        for (SpectrumInput aSpectra : spectra) {
             int xCounter = 0;
             int yCounter = 0;
-            int xElements = spectra[index].getXPixelPolygonPositions().length;
-            int yElements = spectra[index].getYPixelPolygonPositions().length;
-            int[] xPositions = spectra[index].getXPixelPolygonPositions();
-            int[] yPositions = spectra[index].getYPixelPolygonPositions();
+            int xElements = aSpectra.getXPixelPolygonPositions().length;
+            int yElements = aSpectra.getYPixelPolygonPositions().length;
+            int[] xPositions = aSpectra.getXPixelPolygonPositions();
+            int[] yPositions = aSpectra.getYPixelPolygonPositions();
             if (xElements == 0 || yElements == 0 || xElements != yElements) {
-                throw new OperatorException("Invalid number of elements for spectrum " + spectra[index].getName());
+                throw new OperatorException("Invalid number of elements for spectrum " + aSpectra.getName());
             }
             for (int elementIndex = 0; elementIndex < xElements; elementIndex++) {
                 if (xPositions[elementIndex] != -1) {
@@ -299,8 +300,8 @@ public class SpectralAngleMapperOp extends Operator {
                     yCounter++;
                 }
             }
-            if ((xCounter == 0) || (yCounter == 0) || (xCounter != yCounter) ) {
-                throw new OperatorException("Invalid number of elements for spectrum " + spectra[index].getName());
+            if ((xCounter == 0) || (yCounter == 0) || (xCounter != yCounter)) {
+                throw new OperatorException("Invalid number of elements for spectrum " + aSpectra.getName());
             }
         }
     }
