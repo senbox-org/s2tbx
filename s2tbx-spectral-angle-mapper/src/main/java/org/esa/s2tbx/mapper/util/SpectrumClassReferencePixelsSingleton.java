@@ -26,7 +26,7 @@ public class SpectrumClassReferencePixelsSingleton {
       specs.add(spectrumClassReferencePixels);
     }
 
-    public List<SpectrumClassReferencePixels> getElements(){
+    public synchronized List<SpectrumClassReferencePixels> getElements(){
         return Collections.unmodifiableList(this.specs);
     }
 }

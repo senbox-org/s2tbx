@@ -25,7 +25,7 @@ public class SpectrumSingleton {
         specs.add(spectrum);
     }
 
-    public List<Spectrum> getElements(){
+    public synchronized List<Spectrum> getElements(){
         return Collections.unmodifiableList(this.specs);
     }
 }

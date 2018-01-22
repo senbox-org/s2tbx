@@ -138,7 +138,6 @@ public class SpectralAngleMapperOp extends Operator {
         }
 
         validateSpectra();
-
         this.targetProduct = new Product(SpectralAngleMapperConstants.TARGET_PRODUCT_NAME, this.sourceProduct.getProductType() + "_SAM", sceneWidth, sceneHeight);
         ProductUtils.copyTimeInformation(this.sourceProduct, this.targetProduct);
 
@@ -213,34 +212,26 @@ public class SpectralAngleMapperOp extends Operator {
                     sourceTileList.add(getSourceTile(getSourceProduct().getBandAt(index), rectangle));
                 }
             }
-
             Tile samTile = targetTiles.get(this.targetProduct.getBand(SpectralAngleMapperConstants.SAM_BAND_NAME));
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
-                if (pm.isCanceled()) {
-                    break;
-                }
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
-                    if (pm.isCanceled()) {
-                        break;
-                    }
                     boolean isSet = false;
                     for(SpectrumClassReferencePixels spec: SpectrumClassReferencePixelsSingleton.getInstance().getElements()){
                         for(int index = 0; index < spec.getXPixelPositions().size(); index++) {
-                            int xSpecPosition = spec.getXPixelPositions().get(index);
-                            int ySpecPosition = spec.getYPixelPositions().get(index);
-                            if(xSpecPosition == x && ySpecPosition == y ) {
-                                samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
-                                isSet = true;
-                                synchronized (this) {
-                                    spec.getXPixelPositions().remove(index);
-                                    spec.getYPixelPositions().remove(index);
+                            if(x >= spec.getMinXPosition() && x <= spec.getMaxXPosition() &&
+                                    y >= spec.getMinYPosition() && y <= spec.getMaxYPosition()) {
+                                int xSpecPosition = spec.getXPixelPositions().get(index);
+                                int ySpecPosition = spec.getYPixelPositions().get(index);
+                                if (xSpecPosition == x && ySpecPosition == y) {
+                                    samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
+                                    isSet = true;
                                 }
                             }
-
                         }
                     }
                     if(!isSet) {
                         boolean setPixelColor = false;
+                        double threshold = 1.0;
                         for (Spectrum spec : SpectrumSingleton.getInstance().getElements()) {
                             float valueSum = 0;
                             float pixelValueSquareSum = 0;
@@ -254,9 +245,12 @@ public class SpectralAngleMapperOp extends Operator {
                             double samAngle = Math.acos(valueSum / (Math.sqrt(pixelValueSquareSum) * (Math.sqrt(spectrumPixelValueSquareSum))));
                             for (int spectrumIndex = 0; spectrumIndex < this.spectra.length; spectrumIndex++) {
                                 if (this.spectra[spectrumIndex].getName().equals(spec.getClassName())) {
-                                    if (samAngle < this.threshold.get(spectrumIndex)) {
-                                        samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
-                                        setPixelColor = true;
+                                    if (samAngle < this.threshold.get(spectrumIndex) && !setPixelColor) {
+                                        if (this.threshold.get(spectrumIndex) < threshold) {
+                                            samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
+                                            setPixelColor = true;
+                                            threshold = this.threshold.get(spectrumIndex);
+                                        }
                                     }
                                 }
                             }
@@ -266,7 +260,9 @@ public class SpectralAngleMapperOp extends Operator {
                         }
                     }
                 }
+                checkForCancellation();
             }
+            checkForCancellation();
             pm.worked(1);
         }finally {
             pm.done();

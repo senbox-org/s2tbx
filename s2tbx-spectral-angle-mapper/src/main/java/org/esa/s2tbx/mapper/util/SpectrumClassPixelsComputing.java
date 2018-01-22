@@ -64,6 +64,7 @@ public class SpectrumClassPixelsComputing implements Runnable {
                 final Polygon polygon = gf.createPolygon(new LinearRing(new CoordinateArraySequence(points
                         .toArray(new Coordinate[points.size()])), gf), null);
                 getAllPointsInPolygon(spec, polygon, new Rectangle(minX, minY, maxX-minX+1, maxY - minY+1));
+                spec.setBoundingBoxValues(minX, minY, maxX, maxY);
             }
         }
 
