@@ -21,11 +21,9 @@ public class SpectralAngleMapperAction extends AbstractSnapAction {
 
     public static SpectralAngleMapperAction create(Map<String, Object> properties) {
         SpectralAngleMapperAction action = new SpectralAngleMapperAction();
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            if (KNOWN_KEYS.contains(entry.getKey())) {
-                action.putValue(entry.getKey(), entry.getValue());
-            }
-        }
+        properties.entrySet().stream().filter(entry -> KNOWN_KEYS.contains(entry.getKey())).forEach(entry -> {
+            action.putValue(entry.getKey(), entry.getValue());
+        });
         return action;
     }
 

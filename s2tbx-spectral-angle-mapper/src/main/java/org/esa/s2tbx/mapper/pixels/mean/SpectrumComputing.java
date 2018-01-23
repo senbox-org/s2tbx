@@ -1,14 +1,14 @@
-package org.esa.s2tbx.mapper.util;
+package org.esa.s2tbx.mapper.pixels.mean;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixels;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 
 import java.util.Arrays;
 
 /**
- * Created by rdumitrascu on 1/11/2018.
+ * @author Razvan Dumitrascu
  */
 public class SpectrumComputing  implements Runnable{
 
@@ -22,8 +22,8 @@ public class SpectrumComputing  implements Runnable{
         this.sourceBands = sourceBands;
     }
 
-    public void execute(){
-        Spectrum  spec = null;
+    private void execute(){
+        Spectrum spec;
         FloatArrayList pixelsValues = new FloatArrayList();
         FloatArrayList meanValues = new FloatArrayList();
         for (int index = 0; index < this.sourceProduct.getNumBands(); index++) {

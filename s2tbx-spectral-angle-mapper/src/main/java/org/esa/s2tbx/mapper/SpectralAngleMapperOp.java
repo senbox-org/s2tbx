@@ -2,13 +2,13 @@ package org.esa.s2tbx.mapper;
 
 
 import org.esa.s2tbx.mapper.common.SpectralAngleMapperConstants;
-import org.esa.s2tbx.mapper.util.Spectrum;
-import org.esa.s2tbx.mapper.util.SpectrumClassPixelsComputing;
-import org.esa.s2tbx.mapper.util.SpectrumClassReferencePixels;
-import org.esa.s2tbx.mapper.util.SpectrumClassReferencePixelsSingleton;
-import org.esa.s2tbx.mapper.util.SpectrumComputing;
-import org.esa.s2tbx.mapper.util.SpectrumInput;
-import org.esa.s2tbx.mapper.util.SpectrumSingleton;
+import org.esa.s2tbx.mapper.pixels.mean.Spectrum;
+import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassPixelsComputing;
+import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixels;
+import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixelsSingleton;
+import org.esa.s2tbx.mapper.pixels.mean.SpectrumComputing;
+import org.esa.s2tbx.mapper.common.SpectrumInput;
+import org.esa.s2tbx.mapper.pixels.mean.SpectrumSingleton;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -102,10 +102,10 @@ public class SpectralAngleMapperOp extends Operator {
         if (this.sourceProduct == null) {
             throw new OperatorException("Source product not set");
         }
-
         if(spectra.length == 0) {
             throw new OperatorException("No spectrum classes have been set");
         }
+
         int sceneWidth = 0, sceneHeight = 0;
         boolean resampleNeeded = !RESAMPLE_NONE.equals(this.resampleType);
         if (resampleNeeded) {
@@ -150,15 +150,7 @@ public class SpectralAngleMapperOp extends Operator {
             ProductUtils.copyTiePointGrids(this.sourceProduct, this.targetProduct);
             ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
         }
-
         this.threadCount = Runtime.getRuntime().availableProcessors();
-
-    }
-
-
-    @Override
-    public Product getSourceProduct() {
-        return this.sourceProduct;
     }
 
     @Override
@@ -204,7 +196,6 @@ public class SpectralAngleMapperOp extends Operator {
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
         pm.beginTask("Computing SpectralAngleMapperOp", rectangle.height);
-        System.out.println("computing tile " + rectangle.getX() + " " + rectangle.getMinY());
         try {
             List<Tile> sourceTileList = new ArrayList<>();
             for (int index = 0; index < this.sourceProduct.getNumBands(); index++) {

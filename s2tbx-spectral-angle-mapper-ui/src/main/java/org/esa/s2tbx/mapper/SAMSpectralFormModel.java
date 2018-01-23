@@ -2,8 +2,8 @@ package org.esa.s2tbx.mapper;
 
 
 import com.bc.ceres.swing.TableLayout;
-import org.esa.s2tbx.mapper.util.SpectrumInput;
-import org.esa.s2tbx.mapper.util.SpectrumCsvIO;
+import org.esa.s2tbx.mapper.common.SpectrumInput;
+import org.esa.s2tbx.mapper.common.SpectrumCsvIO;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.rcp.util.Dialogs;
@@ -48,7 +48,7 @@ public class SAMSpectralFormModel {
     private Action exportAction = new ExportAction();
     private PropertyChangeSupport propertyChangeSupport;
 
-    public SAMSpectralFormModel(AppContext appContext) {
+    SAMSpectralFormModel(AppContext appContext) {
         this.appContext = appContext;
         spectrumListModel = new DefaultListModel<>();
         spectrumListSelectionModel = new DefaultListSelectionModel();
@@ -56,28 +56,28 @@ public class SAMSpectralFormModel {
         spectrumListSelectionModel.addListSelectionListener(new EndmemberListSelectionListener());
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
-    public ListModel<SpectrumInput> getSpectrumListModel() {
+    ListModel<SpectrumInput> getSpectrumListModel() {
         return spectrumListModel;
 
     }
 
-    public DefaultListSelectionModel getSpectrumListSelectionModel() {
+    DefaultListSelectionModel getSpectrumListSelectionModel() {
         return spectrumListSelectionModel;
     }
 
-    public Action getLoadAction() {
+    Action getLoadAction() {
         return loadAction;
     }
 
-    public Action getAddAction() {
+    Action getAddAction() {
         return addAction;
     }
 
-    public Action getRemoveAction() {
+    Action getRemoveAction() {
         return removeAction;
     }
 
-    public Action getExportAction() {
+    Action getExportAction() {
         return exportAction;
     }
 
@@ -122,7 +122,7 @@ public class SAMSpectralFormModel {
         AddAction() {
             super("Add");
             putValue(LARGE_ICON_KEY, TangoIcons.actions_list_add(TangoIcons.Res.R16));
-            putValue(SHORT_DESCRIPTION, "Load spectrum csv");
+            putValue(SHORT_DESCRIPTION, "Add spectrum");
             xCoordinatesList = new ArrayList<>(1);
             yCoordinatesList = new ArrayList<>(1);
             spectrumName = "";
@@ -249,7 +249,7 @@ public class SAMSpectralFormModel {
         }
     }
 
-    void setSelectedSpectrumIndex(int index) {
+    private void setSelectedSpectrumIndex(int index) {
         int oldIndex = selectedSpectrumIndex;
         if (oldIndex == index) {
             return;

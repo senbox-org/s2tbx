@@ -8,9 +8,6 @@ import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelector;
 import org.esa.snap.ui.AppContext;
-
-import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import java.util.ArrayList;
 import java.util.Map;
@@ -23,7 +20,6 @@ import java.util.Map;
 class SpectralAngleMapperForm extends JTabbedPane {
 
     private static final int CURRENT_PRODUCT = 0;
-
     private final AppContext appContext;
     private final SpectralAngleMapperFormModel samModel;
     private final OperatorDescriptor operatorDescriptor;
@@ -31,7 +27,8 @@ class SpectralAngleMapperForm extends JTabbedPane {
     private DefaultIOParametersPanel ioParametersPanel;
     private SpectralAngleMapperParametersPanel parametersPanel;
     private SpectralAngleMapperThresholdPanel thresholdPanel;
-    SpectralAngleMapperForm(OperatorDescriptor operatorDescriptor, TargetProductSelector selector, AppContext appContext, TargetProductSelector targetProductSelector ) {
+
+    SpectralAngleMapperForm(OperatorDescriptor operatorDescriptor, AppContext appContext, TargetProductSelector targetProductSelector ) {
         this.appContext = appContext;
         this.samModel = new SpectralAngleMapperFormModel(this);
         this.operatorDescriptor = operatorDescriptor;
@@ -43,7 +40,7 @@ class SpectralAngleMapperForm extends JTabbedPane {
         ioParametersPanel = new DefaultIOParametersPanel(appContext, operatorDescriptor, targetProductSelector, true);
         ArrayList<SourceProductSelector> sourceProductSelectorList = this.ioParametersPanel.getSourceProductSelectorList();
         parametersPanel = new SpectralAngleMapperParametersPanel(this, appContext, samModel);
-        thresholdPanel = new SpectralAngleMapperThresholdPanel(appContext, samModel);
+        thresholdPanel = new SpectralAngleMapperThresholdPanel(samModel);
         SelectionChangeListener currentListenerProduct = new SelectionChangeListener() {
             public void selectionChanged(SelectionChangeEvent event) {
                 Product product = sourceProductSelectorList.get(CURRENT_PRODUCT).getSelectedProduct();

@@ -1,6 +1,5 @@
-package org.esa.s2tbx.mapper.util;
+package org.esa.s2tbx.mapper.pixels.computing;
 
-import com.vividsolutions.jts.geom.Polygon;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 /**
@@ -17,32 +16,32 @@ public class SpectrumClassReferencePixels {
     private int maxXPosition;
     private int maxYPosition;
 
-    public SpectrumClassReferencePixels(String className) {
+    SpectrumClassReferencePixels(String className) {
         this.className = className;
         xPixelPositions = new IntArrayList();
         yPixelPositions = new IntArrayList();
     }
 
-   public void addElements(int x, int y) {
-       this.xPixelPositions.add(x);
-       this.yPixelPositions.add(y);
-   }
+    void addElements(int x, int y) {
+        this.xPixelPositions.add(x);
+        this.yPixelPositions.add(y);
+    }
 
-   public void setBoundingBoxValues(int minXPosition, int minYPosition, int maxXPosition, int maxYPosition ) {
-       this.minXPosition = minXPosition;
-       this.minYPosition = minYPosition;
-       this.maxXPosition = maxXPosition;
-       this.maxYPosition = maxYPosition;
-   }
+    void setBoundingBoxValues(int minXPosition, int minYPosition, int maxXPosition, int maxYPosition) {
+        this.minXPosition = minXPosition;
+        this.minYPosition = minYPosition;
+        this.maxXPosition = maxXPosition;
+        this.maxYPosition = maxYPosition;
+    }
 
 
-   public IntArrayList getXPixelPositions() {
-       return this.xPixelPositions;
-   }
+    public IntArrayList getXPixelPositions() {
+        return this.xPixelPositions;
+    }
 
-   public IntArrayList getYPixelPositions() {
-       return this.yPixelPositions;
-   }
+    public IntArrayList getYPixelPositions() {
+        return this.yPixelPositions;
+    }
 
     public String getClassName() {
         return className;

@@ -1,12 +1,11 @@
-package org.esa.s2tbx.mapper.util;
+package org.esa.s2tbx.mapper.pixels.computing;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by rdumitrascu on 1/11/2018.
+ * @author Razvan Dumitrascu
  */
 public class SpectrumClassReferencePixelsSingleton {
 

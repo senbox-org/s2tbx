@@ -1,4 +1,4 @@
-package org.esa.s2tbx.mapper.util;
+package org.esa.s2tbx.mapper.pixels.mean;
 
 import java.util.ArrayList;
 import java.util.Collections;

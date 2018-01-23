@@ -1,4 +1,4 @@
-package org.esa.s2tbx.mapper.util;
+package org.esa.s2tbx.mapper.common;
 
 import org.esa.snap.core.util.PropertyMap;
 import org.esa.snap.core.util.io.CsvReader;
@@ -23,9 +23,9 @@ import java.util.List;
 
 public class SpectrumCsvIO {
     public static final SnapFileFilter CSV_FILE_FILTER = new SnapFileFilter("CSV", ".csv", "CSV (plain text)");
-    public static final String DIAGRAM_GRAPH_IO_LAST_DIR_KEY = "diagramGraphIO.lastDir";
+    private static final String DIAGRAM_GRAPH_IO_LAST_DIR_KEY = "diagramGraphIO.lastDir";
 
-    public static SpectrumInput[] readSpectrum(Reader reader) throws IOException {
+    private static SpectrumInput[] readSpectrum(Reader reader) throws IOException {
 
         CsvReader csvReader = new CsvReader(reader, new char[]{','});
         List<SpectrumInput> graphGroup = new ArrayList<>(5);
@@ -54,7 +54,7 @@ public class SpectrumCsvIO {
         return graphGroup.toArray(new SpectrumInput[0]);
     }
 
-    public static int[] getRecords(String[] textRecord) throws IOException {
+    private  static int[] getRecords(String[] textRecord) throws IOException {
         int[] intRecord = new int[textRecord.length];
         for (int i = 0; i < textRecord.length; i++) {
             try {
@@ -62,7 +62,6 @@ public class SpectrumCsvIO {
             } catch (NumberFormatException e) {
                 intRecord[i] = -1;
             }
-
         }
         return intRecord;
     }
@@ -76,11 +75,8 @@ public class SpectrumCsvIO {
         File selectedFile = selectGraphFile(parentComponent, title, fileFilters, preferences, true);
         if (selectedFile != null) {
             try {
-                FileReader fileReader = new FileReader(selectedFile);
-                try {
+                try (FileReader fileReader = new FileReader(selectedFile)) {
                     return readSpectrum(fileReader);
-                } finally {
-                    fileReader.close();
                 }
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(parentComponent, "I/O error: " + e.getMessage());
@@ -172,13 +168,9 @@ public class SpectrumCsvIO {
         }
         File selectedFile = selectGraphFile(parentComponent, title, fileFilters, preferences, false);
         if (selectedFile != null) {
-
             try {
-                FileWriter fileWriter = new FileWriter(selectedFile);
-                try {
+                try (FileWriter fileWriter = new FileWriter(selectedFile)) {
                     writeSpectrumList(spectrumInputs, fileWriter);
-                } finally {
-                    fileWriter.close();
                 }
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(parentComponent, "I/O error: " + e.getMessage());
@@ -187,27 +179,28 @@ public class SpectrumCsvIO {
     }
     private static void writeSpectrumList(List<SpectrumInput> spectrumInputs, Writer writer) throws IOException {
         int numOfElements = 0;
-        for (SpectrumInput spec : spectrumInputs) {
-            writer.write(spec.getName());
+        for(int index = 0; index <spectrumInputs.size()-1; index++){
+            writer.write(spectrumInputs.get(index).getName());
             writer.write((int) ',');
         }
+        writer.write(spectrumInputs.get(spectrumInputs.size()-1).getName());
         writer.write((int) '\n');
-       for (int specListIndex = 0; specListIndex < spectrumInputs.size(); specListIndex++) {
-           int counter = 0;
-           int length = spectrumInputs.get(specListIndex).getXPixelPolygonPositions().length;
-           for (int elementList = 0; elementList< length; elementList++){
-               int value = spectrumInputs.get(specListIndex).getXPixelPolygonPositions()[elementList];
-               if (value < 0) {
-                   counter++;
-               }
-           }
-           if (length - counter > numOfElements) {
-               numOfElements = length - counter;
-           }
-       }
+        for (SpectrumInput spectrumInput : spectrumInputs) {
+            int counter = 0;
+            int length = spectrumInput.getXPixelPolygonPositions().length;
+            for (int elementList = 0; elementList < length; elementList++) {
+                int value = spectrumInput.getXPixelPolygonPositions()[elementList];
+                if (value < 0) {
+                    counter++;
+                }
+            }
+            if (length - counter > numOfElements) {
+                numOfElements = length - counter;
+            }
+        }
 
        for (int elementPosition = 0; elementPosition < numOfElements; elementPosition++) {
-           for (int spectrumIndex = 0; spectrumIndex < spectrumInputs.size(); spectrumIndex++) {
+           for (int spectrumIndex = 0; spectrumIndex < spectrumInputs.size()-1; spectrumIndex++) {
                SpectrumInput spec = spectrumInputs.get(spectrumIndex);
                if (elementPosition < spec.getXPixelPolygonPositions().length) {
                    int value = spec.getXPixelPolygonPositions()[elementPosition];
@@ -220,9 +213,20 @@ public class SpectrumCsvIO {
                    writeValue(writer, "N/A");
                }
            }
+           SpectrumInput lastSpec = spectrumInputs.get(spectrumInputs.size()-1);
+           if (elementPosition < lastSpec.getXPixelPolygonPositions().length) {
+               int value = lastSpec.getXPixelPolygonPositions()[elementPosition];
+               if (value >= 0) {
+                   writer.write(String.valueOf(lastSpec.getXPixelPolygonPositions()[elementPosition]));
+               } else {
+                   writer.write("N/A");
+               }
+           } else {
+               writer.write("N/A");
+           }
            writer.write((int) '\n');
 
-           for (int spectrumIndex = 0; spectrumIndex < spectrumInputs.size(); spectrumIndex++) {
+           for (int spectrumIndex = 0; spectrumIndex < spectrumInputs.size()-1; spectrumIndex++) {
                SpectrumInput spec = spectrumInputs.get(spectrumIndex);
                if(elementPosition < spec.getYPixelPolygonPositions().length){
                    int value = spec.getYPixelPolygonPositions()[elementPosition];
@@ -234,6 +238,17 @@ public class SpectrumCsvIO {
                } else {
                    writeValue(writer, "N/A");
                }
+           }
+           lastSpec = spectrumInputs.get(spectrumInputs.size()-1);
+           if (elementPosition < lastSpec.getYPixelPolygonPositions().length) {
+               int value = lastSpec.getYPixelPolygonPositions()[elementPosition];
+               if (value >= 0) {
+                   writer.write(String.valueOf(lastSpec.getYPixelPolygonPositions()[elementPosition]));
+               } else {
+                   writer.write("N/A");
+               }
+           } else {
+               writer.write("N/A");
            }
            writer.write((int) '\n');
        }

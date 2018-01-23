@@ -1,4 +1,4 @@
-package org.esa.s2tbx.mapper.util;
+package org.esa.s2tbx.mapper.common;
 
 import org.esa.snap.core.gpf.annotations.Parameter;
 

@@ -1,4 +1,4 @@
-package org.esa.s2tbx.mapper.util;
+package org.esa.s2tbx.mapper.pixels.mean;
 
 /**
  *
@@ -11,9 +11,7 @@ public class Spectrum {
     private float[] meanValue;
     //minimum value for each band
 
-    public Spectrum() {}
-
-    public Spectrum(String className, float[] meanValue){
+    Spectrum(String className, float[] meanValue){
         this.setClassName(className);
         this.setMeanValue(meanValue);
     }

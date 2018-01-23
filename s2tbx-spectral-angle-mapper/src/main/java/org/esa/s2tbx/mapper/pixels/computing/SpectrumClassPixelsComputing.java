@@ -1,4 +1,4 @@
-package org.esa.s2tbx.mapper.util;
+package org.esa.s2tbx.mapper.pixels.computing;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import org.esa.s2tbx.mapper.common.SpectrumInput;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class SpectrumClassPixelsComputing implements Runnable {
         this.spectrumInput = spectrumInput;
     }
 
-    public void execute(){
+    private void execute(){
         SpectrumClassReferencePixels spec = new SpectrumClassReferencePixels(spectrumInput.getName());
         final int length = getSpectrumClassNumElements();
         switch (length){
@@ -99,6 +100,5 @@ public class SpectrumClassPixelsComputing implements Runnable {
     @Override
     public void run() {
         execute();
-        System.out.println(Thread.currentThread().getName()+" End.");
     }
 }

@@ -1,19 +1,17 @@
 package org.esa.s2tbx.mapper;
 
-import com.bc.ceres.binding.Property;
+
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.binding.ValueSet;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
-import org.esa.s2tbx.mapper.util.SpectrumInput;
+import org.esa.s2tbx.mapper.common.SpectrumInput;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.tango.TangoIcons;
 import org.esa.snap.ui.AppContext;
 import org.esa.snap.ui.tool.ToolButtonFactory;
-
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -24,9 +22,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JViewport;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -36,19 +31,15 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.bc.ceres.swing.TableLayout.cell;
 
 /**
  * @author Dumitrascu Razvan.
  */
 class SpectralAngleMapperParametersPanel extends JPanel {
 
-    public static final String RESAMPLE_NONE = "None";
-    public static final String RESAMPLE_LOWEST = "Lowest resolution";
-    public static final String RESAMPLE_HIGHEST = "Highest resolution";
+    private static final String RESAMPLE_NONE = "None";
+    private static final String RESAMPLE_LOWEST = "Lowest resolution";
+    private static final String RESAMPLE_HIGHEST = "Highest resolution";
     private static final String RESAMPLE_MESSAGE = "Bands will be resampled at the %s resolution";
 
     private final AppContext appContext;
@@ -56,14 +47,13 @@ class SpectralAngleMapperParametersPanel extends JPanel {
     private final BindingContext bindingCtx;
     private final SpectralAngleMapperForm samForm;
     private JList<String> sourceBandNames;
-    JList<SpectrumInput> spectrumList;
-    SAMSpectralFormModel formModel;
-    SpectralAngleMapperThresholdPanel thresholdPanel;
+    private JList<SpectrumInput> spectrumList;
+    private SAMSpectralFormModel formModel;
+    private SpectralAngleMapperThresholdPanel thresholdPanel;
 
     private String[] resampleTypeValues;
     private String[] upsamplingMethodValues;
     private String[] downsamplingMethodValues;
-    private JPanel messagePanel;
     private JLabel messageLabel;
 
     private DefaultListModel<String> model;
@@ -113,7 +103,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         setLayout(layout);
         add(selectionBandsPanel());
         add(resamplingPanel());
-        messagePanel = new JPanel();
+        JPanel messagePanel = new JPanel();
         messagePanel.add(new JLabel(TangoIcons.status_dialog_information(TangoIcons.Res.R16)));
         messageLabel = new JLabel(RESAMPLE_MESSAGE);
         messageLabel.setForeground(Color.BLUE);
@@ -226,8 +216,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
     }
 
     private void checkResampling() {
-        BindingContext bindingContext = this.bindingCtx;
-        PropertySet propertySet = bindingContext.getPropertySet();
+        PropertySet propertySet = this.bindingCtx.getPropertySet();
         final Map<String, Product>sourceProducts = samForm.getSourceProductMap();
         Product product = sourceProducts.entrySet().stream().findFirst().get().getValue();
         boolean needsResampling = isResampleNeeded(product);
@@ -270,7 +259,6 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         boolean needsResampling = false;
         if (product != null) {
             int sceneWidth = 0;
-            PropertySet propertySet = this.bindingCtx.getPropertySet();
             List<String>  bandNames = sourceBandNames.getSelectedValuesList();
             if (bandNames.size() > 0) {
                 BitSet bitSet = new BitSet(bandNames.size());
