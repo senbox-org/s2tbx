@@ -155,7 +155,6 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         panel.add(downsamplingMethodlabel);
         panel.add(downsampligComboBox);
         return panel;
-
     }
 
     private JPanel CSVSelectionPanel() {

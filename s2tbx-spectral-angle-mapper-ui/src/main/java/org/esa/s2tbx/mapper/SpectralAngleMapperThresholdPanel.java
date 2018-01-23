@@ -5,6 +5,9 @@ import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
 import org.esa.s2tbx.mapper.common.SpectrumInput;
@@ -50,7 +53,10 @@ public class SpectralAngleMapperThresholdPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane();
         this.setAutoscrolls(true);
         componentList.clear();
-        JPanel content = new JPanel(layout);
+        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0.5, 0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
+        GridBagLayout gbl = new GridBagLayout();
+        JPanel content = new JPanel(gbl);
+        gbl.setConstraints(content, gbc);
         for(SpectrumInput spectrumInput : spectrumInputList){
             final JPanel panel = new JPanel(layout);
             panel.setBorder(BorderFactory.createTitledBorder(spectrumInput.getName()));
@@ -100,7 +106,8 @@ public class SpectralAngleMapperThresholdPanel extends JPanel {
             panel.add(toleranceSliderPanel);
             panel.revalidate();
             panel.repaint();
-            content.add(panel);
+            content.add(panel, gbc);
+            gbc.gridy++;
         }
         scrollPane.setViewportView(content);
         this.add(scrollPane);
@@ -110,7 +117,7 @@ public class SpectralAngleMapperThresholdPanel extends JPanel {
 
     private String sliderValueToTolerance(int sliderValue) {
 
-        double minTolerance = 0.0;
+        double minTolerance = 0.00001;
         double maxTolerance = 0.5;
         double value = minTolerance + sliderValue * (maxTolerance - minTolerance) / TOLERANCE_SLIDER_RESOLUTION;
         return String.valueOf(value);
