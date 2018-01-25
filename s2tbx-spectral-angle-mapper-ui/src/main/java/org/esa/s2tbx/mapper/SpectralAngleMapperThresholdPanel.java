@@ -26,7 +26,7 @@ import javax.swing.event.DocumentListener;
 
 public class SpectralAngleMapperThresholdPanel extends JPanel {
 
-    private static final int TOLERANCE_SLIDER_RESOLUTION = 100000;
+    private static final int TOLERANCE_SLIDER_RESOLUTION = 1000;
 
     private BindingContext bindingCtx;
     private List<JTextField> componentList;
@@ -117,7 +117,7 @@ public class SpectralAngleMapperThresholdPanel extends JPanel {
 
     private String sliderValueToTolerance(int sliderValue) {
 
-        double minTolerance = 0.00001;
+        double minTolerance = 0.0;
         double maxTolerance = 0.5;
         double value = minTolerance + sliderValue * (maxTolerance - minTolerance) / TOLERANCE_SLIDER_RESOLUTION;
         return String.valueOf(value);

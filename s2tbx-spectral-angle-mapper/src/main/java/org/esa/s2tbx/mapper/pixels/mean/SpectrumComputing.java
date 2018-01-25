@@ -40,7 +40,7 @@ public class SpectrumComputing  implements Runnable{
             for(float value : pixelsValues) {
                 sum += value;
             }
-            meanValues.add((float)sum/pixelsValues.size());
+            meanValues.add((float)sum / pixelsValues.size());
         }
         spec = new Spectrum(spectrumClassReferencePixels.getClassName(), meanValues.toFloatArray(new float[meanValues.size()]));
         SpectrumSingleton.getInstance().addElements(spec);

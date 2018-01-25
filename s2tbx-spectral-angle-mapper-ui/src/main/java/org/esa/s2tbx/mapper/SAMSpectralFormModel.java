@@ -36,7 +36,7 @@ import java.util.StringTokenizer;
  * @author Dumitrascu Razvan.
  */
 
-public class SAMSpectralFormModel {
+ class SAMSpectralFormModel {
     private DefaultListModel<SpectrumInput> spectrumListModel;
     private DefaultListSelectionModel spectrumListSelectionModel;
     private int selectedSpectrumIndex;

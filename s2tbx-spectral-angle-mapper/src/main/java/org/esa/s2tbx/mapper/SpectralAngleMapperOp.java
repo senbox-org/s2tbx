@@ -1,6 +1,5 @@
 package org.esa.s2tbx.mapper;
 
-
 import org.esa.s2tbx.mapper.common.SpectralAngleMapperConstants;
 import org.esa.s2tbx.mapper.pixels.mean.Spectrum;
 import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassPixelsComputing;
@@ -159,7 +158,7 @@ public class SpectralAngleMapperOp extends Operator {
         this.threshold = new ArrayList<>();
         this.classColor = new HashMap<>();
         ExecutorService threadPool;
-        int classColorLevel = 200;
+        int classColorLevel = 0;
         for(SpectrumInput spectrumInput : this.spectra) {
             this.classColor.put(spectrumInput.getName(), classColorLevel);
             classColorLevel += 200;

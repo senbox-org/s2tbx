@@ -86,7 +86,7 @@ public class SpectrumCsvIO {
     }
 
     private static void readGraphGroup(String[] headerRecord, List<int[]> dataRecords, List<SpectrumInput> graphs) {
-        if ((dataRecords.size() > 0)&& (dataRecords.size()%2 ==0)) {
+        if ((dataRecords.size() > 0)&& (dataRecords.size() % 2 ==0)) {
             for (int index = 0; index < dataRecords.get(0).length; index++) {
                 int[] xValues = new int[dataRecords.size() / 2];
                 int[] yValues = new int[dataRecords.size() / 2];
