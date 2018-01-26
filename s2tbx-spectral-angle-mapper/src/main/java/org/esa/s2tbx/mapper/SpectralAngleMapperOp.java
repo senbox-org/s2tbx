@@ -1,13 +1,13 @@
 package org.esa.s2tbx.mapper;
 
 import org.esa.s2tbx.mapper.common.SpectralAngleMapperConstants;
+import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixelsContainer;
 import org.esa.s2tbx.mapper.pixels.mean.Spectrum;
 import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassPixelsComputing;
 import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixels;
-import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixelsSingleton;
 import org.esa.s2tbx.mapper.pixels.mean.SpectrumComputing;
 import org.esa.s2tbx.mapper.common.SpectrumInput;
-import org.esa.s2tbx.mapper.pixels.mean.SpectrumSingleton;
+import org.esa.s2tbx.mapper.pixels.mean.SpectrumContainer;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -93,7 +93,8 @@ public class SpectralAngleMapperOp extends Operator {
 
     private List<Double> threshold;
     private Map<String, Integer>  classColor;
-
+    private SpectrumClassReferencePixelsContainer specPixelsContainer;
+    private SpectrumContainer spectrumContainer;
     private int threadCount;
 
     @Override
@@ -135,7 +136,8 @@ public class SpectralAngleMapperOp extends Operator {
                 sceneHeight = firstSourceBandHeight;
             }
         }
-
+        specPixelsContainer = new SpectrumClassReferencePixelsContainer();
+        spectrumContainer = new SpectrumContainer();
         validateSpectra();
         this.targetProduct = new Product(SpectralAngleMapperConstants.TARGET_PRODUCT_NAME, this.sourceProduct.getProductType() + "_SAM", sceneWidth, sceneHeight);
         ProductUtils.copyTimeInformation(this.sourceProduct, this.targetProduct);
@@ -149,6 +151,7 @@ public class SpectralAngleMapperOp extends Operator {
             ProductUtils.copyTiePointGrids(this.sourceProduct, this.targetProduct);
             ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
         }
+
         this.threadCount = Runtime.getRuntime().availableProcessors();
     }
 
@@ -158,14 +161,14 @@ public class SpectralAngleMapperOp extends Operator {
         this.threshold = new ArrayList<>();
         this.classColor = new HashMap<>();
         ExecutorService threadPool;
-        int classColorLevel = 0;
+        int classColorLevel = 200;
         for(SpectrumInput spectrumInput : this.spectra) {
             this.classColor.put(spectrumInput.getName(), classColorLevel);
             classColorLevel += 200;
         }
         threadPool = Executors.newFixedThreadPool(threadCount);
         for (SpectrumInput aSpectra : spectra) {
-            Runnable worker = new SpectrumClassPixelsComputing(aSpectra);
+            Runnable worker = new SpectrumClassPixelsComputing(aSpectra, specPixelsContainer);
             threadPool.execute(worker);
         }
         threadPool.shutdown();
@@ -176,9 +179,10 @@ public class SpectralAngleMapperOp extends Operator {
                 e.printStackTrace();
             }
         }
+
         threadPool = Executors.newFixedThreadPool(threadCount);
         for (int i = 0; i < spectra.length; i++) {
-            Runnable worker = new SpectrumComputing(SpectrumClassReferencePixelsSingleton.getInstance().getElements().get(i), this.sourceProduct, this.referenceBands);
+            Runnable worker = new SpectrumComputing(specPixelsContainer.getElements().get(i), this.sourceProduct, this.referenceBands, this.spectrumContainer);
             threadPool.execute(worker);
         }
         threadPool.shutdown();
@@ -195,6 +199,7 @@ public class SpectralAngleMapperOp extends Operator {
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
         pm.beginTask("Computing SpectralAngleMapperOp", rectangle.height);
+        System.out.println("region x= " + rectangle.getX() +": y= " + rectangle.getY());
         try {
             List<Tile> sourceTileList = new ArrayList<>();
             for (int index = 0; index < this.sourceProduct.getNumBands(); index++) {
@@ -206,7 +211,7 @@ public class SpectralAngleMapperOp extends Operator {
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
                     boolean isSet = false;
-                    for(SpectrumClassReferencePixels spec: SpectrumClassReferencePixelsSingleton.getInstance().getElements()){
+                    for(SpectrumClassReferencePixels spec: specPixelsContainer.getElements()){
                         for(int index = 0; index < spec.getXPixelPositions().size(); index++) {
                             if(x >= spec.getMinXPosition() && x <= spec.getMaxXPosition() &&
                                     y >= spec.getMinYPosition() && y <= spec.getMaxYPosition()) {
@@ -222,7 +227,7 @@ public class SpectralAngleMapperOp extends Operator {
                     if(!isSet) {
                         boolean setPixelColor = false;
                         double threshold = 1.0;
-                        for (Spectrum spec : SpectrumSingleton.getInstance().getElements()) {
+                        for (Spectrum spec : spectrumContainer.getElements()) {
                             float valueSum = 0;
                             float pixelValueSquareSum = 0;
                             float spectrumPixelValueSquareSum = 0;

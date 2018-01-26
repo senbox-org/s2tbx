@@ -7,19 +7,12 @@ import java.util.List;
 /**
  * Created by rdumitrascu on 1/11/2018.
  */
-public class SpectrumSingleton {
+public class SpectrumContainer {
 
-    private static SpectrumSingleton instance;
+    private static SpectrumContainer instance;
     private List<Spectrum> specs = new ArrayList<>();
 
-    private SpectrumSingleton(){}
-
-    public static synchronized SpectrumSingleton getInstance(){
-        if(instance == null){
-            instance = new SpectrumSingleton();
-        }
-        return instance;
-    }
+    public  SpectrumContainer(){}
 
     public synchronized void addElements(Spectrum spectrum){
         specs.add(spectrum);

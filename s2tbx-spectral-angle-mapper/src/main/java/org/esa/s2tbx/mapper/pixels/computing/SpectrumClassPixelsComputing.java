@@ -20,8 +20,10 @@ import java.util.ArrayList;
 public class SpectrumClassPixelsComputing implements Runnable {
 
     private final SpectrumInput spectrumInput;
-    public SpectrumClassPixelsComputing(SpectrumInput spectrumInput){
+    private final SpectrumClassReferencePixelsContainer spectrumClassReferencePixelsContainer;
+    public SpectrumClassPixelsComputing(SpectrumInput spectrumInput, SpectrumClassReferencePixelsContainer spectrumClassReferencePixelsContainer){
         this.spectrumInput = spectrumInput;
+        this.spectrumClassReferencePixelsContainer = spectrumClassReferencePixelsContainer;
     }
 
     private void execute(){
@@ -69,7 +71,7 @@ public class SpectrumClassPixelsComputing implements Runnable {
             }
         }
 
-        SpectrumClassReferencePixelsSingleton.getInstance().addElements(spec);
+       this.spectrumClassReferencePixelsContainer.addElements(spec);
     }
 
     private void getAllPointsInPolygon(SpectrumClassReferencePixels spec, Polygon polygon, Rectangle rectangle) {

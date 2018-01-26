@@ -62,7 +62,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         this.samModel = samModel;
         this.samForm = samForm;
         bindingCtx = new BindingContext(samModel.getPropertySet());
-        this.formModel = new SAMSpectralFormModel(this.appContext);
+        this.formModel = new SAMSpectralFormModel(this.appContext, samForm);
         initResampleValues();
         createUI();
         bindingCtx.adjustComponents();

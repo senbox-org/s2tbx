@@ -13,11 +13,13 @@ import java.util.Arrays;
 public class SpectrumComputing  implements Runnable{
 
     private final SpectrumClassReferencePixels spectrumClassReferencePixels;
+    private final SpectrumContainer spectrumContainer;
     private final Product sourceProduct;
     private final String[] sourceBands;
 
-    public SpectrumComputing(SpectrumClassReferencePixels spectrumPixels, Product sourceProduct, String[] sourceBands){
+    public SpectrumComputing(SpectrumClassReferencePixels spectrumPixels, Product sourceProduct, String[] sourceBands, SpectrumContainer spectrumContainer){
         this.spectrumClassReferencePixels = spectrumPixels;
+        this.spectrumContainer = spectrumContainer;
         this.sourceProduct = sourceProduct;
         this.sourceBands = sourceBands;
     }
@@ -26,24 +28,22 @@ public class SpectrumComputing  implements Runnable{
         Spectrum spec;
         FloatArrayList pixelsValues = new FloatArrayList();
         FloatArrayList meanValues = new FloatArrayList();
-        for (int index = 0; index < this.sourceProduct.getNumBands(); index++) {
+        for (int index = 0; index < this.sourceBands.length; index++) {
             pixelsValues.clear();
-            if (Arrays.asList(this.sourceBands).contains(this.sourceProduct.getBandAt(index).getName())) {
-                Band band = this.sourceProduct.getBandAt(index);
-                for (int intIndex = 0; intIndex < this.spectrumClassReferencePixels.getXPixelPositions().size(); intIndex++) {
-                    int x = this.spectrumClassReferencePixels.getXPixelPositions().getInt(intIndex);
-                    int y = this.spectrumClassReferencePixels.getYPixelPositions().getInt(intIndex);
-                    pixelsValues.add(band.getSampleFloat(x, y));
-                }
+            Band band = this.sourceProduct.getBand(this.sourceBands[index]);
+            for (int intIndex = 0; intIndex < this.spectrumClassReferencePixels.getXPixelPositions().size(); intIndex++) {
+                int x = this.spectrumClassReferencePixels.getXPixelPositions().getInt(intIndex);
+                int y = this.spectrumClassReferencePixels.getYPixelPositions().getInt(intIndex);
+                pixelsValues.add(band.getSampleFloat(x, y));
             }
             double sum = 0;
-            for(float value : pixelsValues) {
+            for (float value : pixelsValues) {
                 sum += value;
             }
-            meanValues.add((float)sum / pixelsValues.size());
+            meanValues.add((float) sum / pixelsValues.size());
         }
         spec = new Spectrum(spectrumClassReferencePixels.getClassName(), meanValues.toFloatArray(new float[meanValues.size()]));
-        SpectrumSingleton.getInstance().addElements(spec);
+        this.spectrumContainer.addElements(spec);
     }
 
     @Override

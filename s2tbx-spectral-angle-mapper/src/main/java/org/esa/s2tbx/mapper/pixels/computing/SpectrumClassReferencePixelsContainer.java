@@ -7,19 +7,12 @@ import java.util.List;
 /**
  * @author Razvan Dumitrascu
  */
-public class SpectrumClassReferencePixelsSingleton {
+public class SpectrumClassReferencePixelsContainer {
 
-    private static SpectrumClassReferencePixelsSingleton instance;
+    private static SpectrumClassReferencePixelsContainer instance;
     private List<SpectrumClassReferencePixels> specs = new ArrayList<>();
 
-    private SpectrumClassReferencePixelsSingleton(){}
-
-    public static synchronized SpectrumClassReferencePixelsSingleton getInstance(){
-        if(instance == null){
-            instance = new SpectrumClassReferencePixelsSingleton();
-        }
-        return instance;
-    }
+    public SpectrumClassReferencePixelsContainer( ){}
 
     public synchronized void addElements(SpectrumClassReferencePixels spectrumClassReferencePixels){
       specs.add(spectrumClassReferencePixels);
