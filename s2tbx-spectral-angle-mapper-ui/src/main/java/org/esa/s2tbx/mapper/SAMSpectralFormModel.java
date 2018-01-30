@@ -133,6 +133,7 @@ class SAMSpectralFormModel {
         private JTextField xCoordinates;
         private JTextField yCoordinates;
         private ModelessDialog dialog;
+        private boolean isShapeDefined;
         AddAction() {
             super("Add");
             putValue(LARGE_ICON_KEY, TangoIcons.actions_list_add(TangoIcons.Res.R16));
@@ -173,10 +174,38 @@ class SAMSpectralFormModel {
             content.add(new JLabel("X Coordinates"));
             xCoordinates= new JTextField(40);
             xCoordinates.setToolTipText("elements must be comma separated");
+            xCoordinates.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    isShapeDefined = false;
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    isShapeDefined = false;
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    isShapeDefined = false;
+                }
+            });
             content.add(xCoordinates);
             content.add(new JLabel("Y Coordinates"));
             yCoordinates= new JTextField(40);
             yCoordinates.setToolTipText("elements must be comma separated");
+            yCoordinates.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    isShapeDefined = false;
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    isShapeDefined = false;
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    isShapeDefined = false;
+                }
+            });
             content.add(yCoordinates);
             JButton okButton = new JButton("OK");
             okButton.addActionListener(e-> executeInput());
@@ -219,8 +248,10 @@ class SAMSpectralFormModel {
                                     }
                                 }
                             }
-                            String polygonName = "POLYGON_" + polygonIndex + "(Starting Coords: " + xCoordinates[0] + " : " + yCoordinates[0] + ")";
-                            model.addElement(new SpectrumInput(polygonName, xCoordinates, yCoordinates));
+                            String polygonName = "POLYGON_" + polygonIndex + "(Starting Coordinates: " + xCoordinates[0] + " : " + yCoordinates[0] + ")";
+                            SpectrumInput spectrumInput = new SpectrumInput(polygonName, xCoordinates, yCoordinates);
+                            spectrumInput.setIsShapeDefined(true);
+                            model.addElement(spectrumInput);
                         }
                     }
                     if (geometrySpectrumList.getModel().getSize() != 0) {
@@ -237,15 +268,16 @@ class SAMSpectralFormModel {
             StringBuilder xElements = new StringBuilder();
             StringBuilder yElements = new StringBuilder();
             int length = spec.getXPixelPolygonPositions().length;
-            for(int index = 0; index< length-2; index++) {
-                    xElements.append(spec.getXPixelPolygonPositions()[index]).append(",");
-                    yElements.append(spec.getYPixelPolygonPositions()[index]).append(",");
+            for (int index = 0; index< length-2; index++) {
+                xElements.append(spec.getXPixelPolygonPositions()[index]).append(",");
+                yElements.append(spec.getYPixelPolygonPositions()[index]).append(",");
             }
             xElements.append(spec.getXPixelPolygonPositions()[length - 2]);
             yElements.append(spec.getYPixelPolygonPositions()[length - 2]);
 
             xCoordinates.setText(xElements.toString());
             yCoordinates.setText(yElements.toString());
+            this.isShapeDefined = true;
         }
 
         private void executeInput() {
@@ -275,9 +307,11 @@ class SAMSpectralFormModel {
                     return;
                 }
             }
+
             SpectrumInput spec = new SpectrumInput(spectrumName,
                     xCoordinatesList.stream().mapToInt(i->i).toArray(),
                     yCoordinatesList.stream().mapToInt(i->i).toArray());
+            spec.setIsShapeDefined(this.isShapeDefined);
             spectrumListModel.addElement(spec);
             dialog.close();
         }

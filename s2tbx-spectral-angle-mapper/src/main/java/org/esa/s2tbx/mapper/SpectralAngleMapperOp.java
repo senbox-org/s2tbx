@@ -20,10 +20,8 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.util.ProductUtils;
-
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +64,7 @@ public class SpectralAngleMapperOp extends Operator {
             description = "The reference bands to be used for the Spectral Angle Mapper Processor ")
     private String[] referenceBands;
 
-    @Parameter(description = "Thresholds", defaultValue = "0.0")
+    @Parameter(description = "thresholds", defaultValue = "0.0")
     private String thresholds;
 
     @Parameter(description = "The list of spectra.", alias = "spectra")
@@ -105,7 +103,10 @@ public class SpectralAngleMapperOp extends Operator {
         if(spectra.length == 0) {
             throw new OperatorException("No spectrum classes have been set");
         }
-
+        int initialProductWidth = this.sourceProduct.getSceneRasterWidth();
+        int initialProductHeight = this.sourceProduct.getSceneRasterHeight();
+        float xRatio = 1.0f;
+        float yRatio = 1.0f;
         int sceneWidth = 0, sceneHeight = 0;
         boolean resampleNeeded = !RESAMPLE_NONE.equals(this.resampleType);
         if (resampleNeeded) {
@@ -125,7 +126,10 @@ public class SpectralAngleMapperOp extends Operator {
                 }
             }
             this.sourceProduct = resample(this.sourceProduct, sceneWidth, sceneHeight);
-
+            if(sceneWidth != initialProductWidth || sceneHeight != initialProductHeight) {
+                xRatio = initialProductWidth / sceneWidth;
+                yRatio = initialProductHeight / sceneHeight;
+            }
         } else {
             sceneWidth = sourceProduct.getSceneRasterWidth();
             sceneHeight = sourceProduct.getSceneRasterHeight();
@@ -134,6 +138,23 @@ public class SpectralAngleMapperOp extends Operator {
             if(firstSourceBandWidth != sceneWidth || firstSourceBandHeight != sceneHeight ) {
                 sceneWidth = firstSourceBandWidth;
                 sceneHeight = firstSourceBandHeight;
+                this.sourceProduct = resample(this.sourceProduct, sceneWidth, sceneHeight);
+            }
+            xRatio = initialProductWidth / sceneWidth;
+            yRatio = initialProductHeight / sceneHeight;
+        }
+        if (xRatio != 1.0f || yRatio != 1.0f) {
+            for(SpectrumInput spectrum : spectra){
+                if (spectrum.getIsShapeDefined()) {
+                    for(int index = 0; index < spectrum.getXPixelPolygonPositions().length; index++) {
+                        int xValue = spectrum.getXPixelPolygonPositions()[index];
+                        int yValue = spectrum.getYPixelPolygonPositions()[index];
+                        if(xValue != -1) {
+                            spectrum.setXPixelPolygonPositionIndex(index, (int) (xValue / xRatio));
+                            spectrum.setYPixelPolygonPositionIndex(index, (int) (yValue / yRatio));
+                        }
+                    }
+                }
             }
         }
         specPixelsContainer = new SpectrumClassReferencePixelsContainer();
@@ -145,19 +166,18 @@ public class SpectralAngleMapperOp extends Operator {
         Band samOutputBand = new Band(SpectralAngleMapperConstants.SAM_BAND_NAME, ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         samOutputBand.setNoDataValueUsed(true);
         samOutputBand.setNoDataValue(SpectralAngleMapperConstants.NO_DATA_VALUE);
+
         this.targetProduct.addBand(samOutputBand);
         boolean sceneSizeRetained = this.sourceProduct.getSceneRasterSize().equals(this.targetProduct.getSceneRasterSize());
         if (sceneSizeRetained) {
             ProductUtils.copyTiePointGrids(this.sourceProduct, this.targetProduct);
             ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
         }
-
         this.threadCount = Runtime.getRuntime().availableProcessors();
     }
 
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
-
         this.threshold = new ArrayList<>();
         this.classColor = new HashMap<>();
         ExecutorService threadPool;
@@ -204,17 +224,32 @@ public class SpectralAngleMapperOp extends Operator {
             List<Tile> sourceTileList = new ArrayList<>();
             for (int index = 0; index < this.sourceProduct.getNumBands(); index++) {
                 if (Arrays.asList(this.referenceBands).contains(this.sourceProduct.getBandAt(index).getName())) {
-                    sourceTileList.add(getSourceTile(getSourceProduct().getBandAt(index), rectangle));
+                    sourceTileList.add(getSourceTile(this.sourceProduct.getBandAt(index), rectangle));
                 }
             }
             Tile samTile = targetTiles.get(this.targetProduct.getBand(SpectralAngleMapperConstants.SAM_BAND_NAME));
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
                     boolean isSet = false;
-                    for(SpectrumClassReferencePixels spec: specPixelsContainer.getElements()){
-                        for(int index = 0; index < spec.getXPixelPositions().size(); index++) {
-                            if(x >= spec.getMinXPosition() && x <= spec.getMaxXPosition() &&
+                    for(SpectrumClassReferencePixels spec: specPixelsContainer.getElements() ) {
+                        if (isSet) {
+                            break;
+                        }
+                        if(spec.getXPixelPositions().size() != 2) {
+                            if (x >= spec.getMinXPosition() && x <= spec.getMaxXPosition() &&
                                     y >= spec.getMinYPosition() && y <= spec.getMaxYPosition()) {
+                                for (int index = 0; index < spec.getXPixelPositions().size(); index++) {
+                                   if (spec.getXPixelPositions().get(index) == x) {
+                                       if (spec.getYPixelPositions().get(index) == y) {
+                                           samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
+                                           isSet = true;
+                                           break;
+                                       }
+                                   }
+                                }
+                            }
+                        } else {
+                            for (int index = 0; index < spec.getXPixelPositions().size(); index++) {
                                 int xSpecPosition = spec.getXPixelPositions().get(index);
                                 int ySpecPosition = spec.getYPixelPositions().get(index);
                                 if (xSpecPosition == x && ySpecPosition == y) {

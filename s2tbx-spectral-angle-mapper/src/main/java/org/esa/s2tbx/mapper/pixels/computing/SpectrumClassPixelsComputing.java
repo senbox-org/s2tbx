@@ -32,6 +32,11 @@ public class SpectrumClassPixelsComputing implements Runnable {
         switch (length){
             case 1: {
                 spec.addElements(spectrumInput.getXPixelPolygonPositions()[0], spectrumInput.getYPixelPolygonPositions()[0]);
+                int minX = spectrumInput.getXPixelPolygonPositions()[0];
+                int maxX = spectrumInput.getXPixelPolygonPositions()[0];
+                int minY = spectrumInput.getYPixelPolygonPositions()[0];
+                int maxY = spectrumInput.getYPixelPolygonPositions()[0];
+                spec.setBoundingBoxValues(minX, minY, maxX, maxY);
                 break;
             }
             case 2: {

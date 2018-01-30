@@ -31,8 +31,9 @@ public class SpectrumCsvIO {
         List<SpectrumInput> graphGroup = new ArrayList<>(5);
         List<int[]> dataRecords = new ArrayList<>(20);
         String[] headerRecord = csvReader.readRecord();
+        String[] shapeDefinedRecord = csvReader.readRecord();
         while (true) {
-            if (headerRecord.length < 2) {
+            if (headerRecord.length < 1) {
                 throw new IOException("Invalid format.");
             }
             String[] record = csvReader.readRecord();
@@ -46,11 +47,11 @@ public class SpectrumCsvIO {
                 }
                 dataRecords.add(dataRecord);
             } else {
-                readGraphGroup(headerRecord, dataRecords, graphGroup);
+                readGraphGroup(headerRecord,shapeDefinedRecord, dataRecords, graphGroup);
                 headerRecord = record;
             }
         }
-        readGraphGroup(headerRecord, dataRecords, graphGroup);
+        readGraphGroup(headerRecord,shapeDefinedRecord, dataRecords, graphGroup);
         return graphGroup.toArray(new SpectrumInput[0]);
     }
 
@@ -85,7 +86,7 @@ public class SpectrumCsvIO {
         return new SpectrumInput[0];
     }
 
-    private static void readGraphGroup(String[] headerRecord, List<int[]> dataRecords, List<SpectrumInput> graphs) {
+    private static void readGraphGroup(String[] headerRecord, String[]shapeDefinedRecord, List<int[]> dataRecords, List<SpectrumInput> graphs) {
         if ((dataRecords.size() > 0)&& (dataRecords.size() % 2 ==0)) {
             for (int index = 0; index < dataRecords.get(0).length; index++) {
                 int[] xValues = new int[dataRecords.size() / 2];
@@ -96,7 +97,9 @@ public class SpectrumCsvIO {
                     yValues[counter] = dataRecords.get(listIndex+1)[index];
                     counter++;
                 }
-                graphs.add(new SpectrumInput(headerRecord[index], xValues, yValues));
+                SpectrumInput spec = new SpectrumInput(headerRecord[index], xValues, yValues);
+                spec.setIsShapeDefined(Boolean.valueOf(shapeDefinedRecord[index]));
+                graphs.add(spec);
             }
         } else {
             try {
@@ -184,6 +187,12 @@ public class SpectrumCsvIO {
             writer.write((int) ',');
         }
         writer.write(spectrumInputs.get(spectrumInputs.size()-1).getName());
+        writer.write((int) '\n');
+        for(int index = 0; index <spectrumInputs.size()-1; index++){
+            writer.write(String.valueOf(spectrumInputs.get(index).getIsShapeDefined()));
+            writer.write((int) ',');
+        }
+        writer.write(String.valueOf(spectrumInputs.get(spectrumInputs.size()-1).getIsShapeDefined()));
         writer.write((int) '\n');
         for (SpectrumInput spectrumInput : spectrumInputs) {
             int counter = 0;

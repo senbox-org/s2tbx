@@ -28,9 +28,9 @@ public class SpectrumComputing  implements Runnable{
         Spectrum spec;
         FloatArrayList pixelsValues = new FloatArrayList();
         FloatArrayList meanValues = new FloatArrayList();
-        for (int index = 0; index < this.sourceBands.length; index++) {
+        for (String sourceBand : this.sourceBands) {
             pixelsValues.clear();
-            Band band = this.sourceProduct.getBand(this.sourceBands[index]);
+            Band band = this.sourceProduct.getBand(sourceBand);
             for (int intIndex = 0; intIndex < this.spectrumClassReferencePixels.getXPixelPositions().size(); intIndex++) {
                 int x = this.spectrumClassReferencePixels.getXPixelPositions().getInt(intIndex);
                 int y = this.spectrumClassReferencePixels.getYPixelPositions().getInt(intIndex);

@@ -13,6 +13,9 @@ public class SpectrumInput {
     private int[] xPixelPolygonPositions;
     @Parameter
     private int[] yPixelPolygonPositions;
+    @Parameter
+    private boolean isShapeDefined;
+
 
     public SpectrumInput(String name, int[] xPixelPolygonPositions, int[] yPixelPolygonPositions) {
         assert name != null;
@@ -32,10 +35,26 @@ public class SpectrumInput {
     }
 
     public int[] getXPixelPolygonPositions() {
-        return xPixelPolygonPositions;
+        return this.xPixelPolygonPositions;
     }
 
     public int[] getYPixelPolygonPositions() {
-        return yPixelPolygonPositions;
+        return this.yPixelPolygonPositions;
+    }
+
+    public void setIsShapeDefined(boolean isShapeDefined) {
+        this.isShapeDefined = isShapeDefined;
+    }
+
+    public void setXPixelPolygonPositionIndex(int index, int value){
+        this.xPixelPolygonPositions[index] = value;
+    }
+
+    public void setYPixelPolygonPositionIndex(int index, int value){
+        this.yPixelPolygonPositions[index] = value;
+    }
+
+    public boolean getIsShapeDefined(){
+        return this.isShapeDefined;
     }
 }

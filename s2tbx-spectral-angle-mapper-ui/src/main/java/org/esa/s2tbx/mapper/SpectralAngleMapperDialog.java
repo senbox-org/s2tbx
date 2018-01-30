@@ -26,9 +26,9 @@ public class SpectralAngleMapperDialog extends SingleTargetProductDialog {
         super(appContext, title, helpID);
 
         final TargetProductSelector selector = getTargetProductSelector();
-        selector.getModel().setSaveToFileSelected(false);
+        selector.getModel().setSaveToFileSelected(true);
         selector.getModel().setProductName("Spectral Angle Mapper");
-        selector.getSaveToFileCheckBox().setEnabled(true);
+        selector.getSaveToFileCheckBox().setEnabled(false);
 
         final OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi("SpectralAngleMapperOp");
         if (operatorSpi == null) {
