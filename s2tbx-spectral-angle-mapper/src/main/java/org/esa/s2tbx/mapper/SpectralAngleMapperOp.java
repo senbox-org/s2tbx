@@ -317,7 +317,7 @@ public class SpectralAngleMapperOp extends Operator {
     }
 
     private void parseThresholds() {
-        StringTokenizer str = new StringTokenizer(this.thresholds, ",");
+        StringTokenizer str = new StringTokenizer(this.thresholds, ", ");
         while (str.hasMoreElements()) {
             double thresholdValue = Double.parseDouble(str.nextToken().trim());
             this.threshold.add(thresholdValue);
