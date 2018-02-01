@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * A container for all the SpectrumClassReferencePixels objects
+ *
  * @author Razvan Dumitrascu
  */
 public class SpectrumClassReferencePixelsContainer {

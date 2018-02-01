@@ -3,6 +3,8 @@ package org.esa.s2tbx.mapper.pixels.computing;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 /**
+ * Contains all the pixels from a specific region defined by the user. Also the minimum and the maximum
+ * values of the bounding box containing the region
  *
  * @author Razvan Dumitrascu
  */

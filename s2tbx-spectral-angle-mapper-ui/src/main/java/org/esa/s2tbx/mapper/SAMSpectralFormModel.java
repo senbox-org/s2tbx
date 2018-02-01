@@ -13,6 +13,7 @@ import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.rcp.util.Dialogs;
 import org.esa.snap.tango.TangoIcons;
 import org.esa.snap.ui.AppContext;
+import org.esa.snap.ui.ModalDialog;
 import org.esa.snap.ui.ModelessDialog;
 import org.esa.snap.ui.diagram.DiagramGraphIO;
 import org.geotools.feature.simple.SimpleFeatureImpl;
@@ -44,23 +45,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 /**
  * @author Dumitrascu Razvan.
  */
 
 class SAMSpectralFormModel {
+    private static final Logger logger = Logger.getLogger(SAMSpectralFormModel.class.getName());
+
     private DefaultListModel<SpectrumInput> spectrumListModel;
     private DefaultListSelectionModel spectrumListSelectionModel;
     private int selectedSpectrumIndex;
     private final AppContext appContext;
     private final SpectralAngleMapperForm samForm;
+    private PropertyChangeSupport propertyChangeSupport;
 
     private Action loadAction = new LoadAction();
     private Action addAction = new AddAction();
     private Action removeAction = new RemoveAction();
     private Action exportAction = new ExportAction();
-    private PropertyChangeSupport propertyChangeSupport;
+
     SAMSpectralFormModel(AppContext appContext, SpectralAngleMapperForm samForm) {
         this.appContext = appContext;
         this.samForm = samForm;
@@ -70,6 +75,7 @@ class SAMSpectralFormModel {
         spectrumListSelectionModel.addListSelectionListener(new EndmemberListSelectionListener());
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
+
     ListModel<SpectrumInput> getSpectrumListModel() {
         return spectrumListModel;
 
@@ -100,11 +106,10 @@ class SAMSpectralFormModel {
         LoadAction() {
             super("Load");
             putValue(LARGE_ICON_KEY, TangoIcons.actions_document_open(TangoIcons.Res.R16));
-            putValue(SHORT_DESCRIPTION, "Load spectrum csv");
+            putValue(SHORT_DESCRIPTION, "Load spectrum classes from csv");
         }
 
         public void actionPerformed(ActionEvent e) {
-            //ensureDefaultDirSet();
             SpectrumInput[] csvSpectrumInput = SpectrumCsvIO.readSpectrum(null,
                     "Load spectrum csv",
                     new SnapFileFilter[]{SpectrumCsvIO.CSV_FILE_FILTER},
@@ -118,15 +123,12 @@ class SAMSpectralFormModel {
                 }
                 if(!exists) {
                     spectrumListModel.addElement(spectrumInputCSV);
-                } else {
-                    throw new OperatorException("Spectrum class " + spectrumInputCSV.getName() + " already exists");
                 }
             }
         }
     }
 
     private class AddAction extends AbstractAction {
-
         private List<Integer> xCoordinatesList;
         private List<Integer> yCoordinatesList;
         private String spectrumName;
@@ -134,18 +136,20 @@ class SAMSpectralFormModel {
         private JTextField yCoordinates;
         private ModelessDialog dialog;
         private boolean isShapeDefined;
+        JTextField spectrumClassName;
         AddAction() {
             super("Add");
             putValue(LARGE_ICON_KEY, TangoIcons.actions_list_add(TangoIcons.Res.R16));
-            putValue(SHORT_DESCRIPTION, "Add spectrum");
+            putValue(SHORT_DESCRIPTION, "Add Spectrum Class");
             xCoordinatesList = new ArrayList<>(1);
             yCoordinatesList = new ArrayList<>(1);
             spectrumName = "";
         }
 
         public void actionPerformed(ActionEvent e) {
-            dialog = new ModelessDialog(null, "Add Spectrum Class", createDialogContent(), ModelessDialog.ID_CANCEL, "");
+            dialog = new ModelessDialog(null, "Add Spectrum Class", createDialogContent(), ModelessDialog.ID_APPLY_CLOSE, "");
             dialog.show();
+            dialog.getButton( ModelessDialog.ID_APPLY).addActionListener( evt -> {executeInput();});
         }
 
         private JPanel createDialogContent() {
@@ -158,14 +162,17 @@ class SAMSpectralFormModel {
             JPanel content = new JPanel(layout);
             content.setBorder(new EmptyBorder(2, 2, 2, 2));
             content.add(new JLabel("Spectrum Class Name"));
-            JTextField spectrumClassName = new JTextField(40);
+            spectrumClassName = new JTextField(40);
             spectrumClassName.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     spectrumName = spectrumClassName.getText();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     spectrumName = spectrumClassName.getText();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     spectrumName = spectrumClassName.getText();
                 }
@@ -207,8 +214,6 @@ class SAMSpectralFormModel {
                 }
             });
             content.add(yCoordinates);
-            JButton okButton = new JButton("OK");
-            okButton.addActionListener(e-> executeInput());
             final Map<String, Product> sourceProducts = samForm.getSourceProductMap();
             Product product = sourceProducts.entrySet().stream().findFirst().get().getValue();
             if (product != null) {
@@ -224,43 +229,46 @@ class SAMSpectralFormModel {
                     });
                     int polygonLength = ((VectorDataMaskOpImage) (product.getMaskGroup().get("geometry").getSourceImage().getImage(0))).getVectorDataNode().getFeatureCollection().toArray().length;
                     for (int polygonIndex = 0; polygonIndex < polygonLength; polygonIndex++) {
-                        SimpleFeatureImpl simpleFeatImp = ((SimpleFeatureImpl) ((VectorDataMaskOpImage) (product.getMaskGroup().get("geometry").getSourceImage().getImage(0))).getVectorDataNode().getFeatureCollection().toArray()[polygonIndex]);
-                        Polygon pol = (Polygon) simpleFeatImp.getAttribute(0);
-                        if (pol != null) {
-                            int[] xCoordinates = new int[pol.getCoordinates().length];
-                            int[] yCoordinates = new int[pol.getCoordinates().length];
-                            if (product.getSceneGeoCoding() instanceof TiePointGeoCoding) {
-                                for (int index = 0; index < pol.getCoordinates().length; index++) {
-                                    xCoordinates[index] = (int) pol.getCoordinates()[index].x;
-                                    yCoordinates[index] = (int) pol.getCoordinates()[index].y;
-                                }
-                            } else {
-                                for (int index = 0; index < pol.getCoordinates().length; index++) {
-                                    double x = pol.getCoordinates()[index].x;
-                                    double y = pol.getCoordinates()[index].y;
-                                    try {
-                                        DirectPosition pos = CRS.findMathTransform(product.getSceneGeoCoding().getMapCRS(), product.getSceneGeoCoding().getImageCRS()).transform(new DirectPosition2D(x, y), null);
-                                        double[] values = pos.getCoordinate();
-                                        xCoordinates[index] = (int) values[0];
-                                        yCoordinates[index] = (int) values[1];
-                                    } catch (TransformException | FactoryException e) {
-                                        e.printStackTrace();
+                        try {
+                            SimpleFeatureImpl simpleFeatImp = ((SimpleFeatureImpl) ((VectorDataMaskOpImage) (product.getMaskGroup().get("geometry").getSourceImage().getImage(0))).getVectorDataNode().getFeatureCollection().toArray()[polygonIndex]);
+                            Polygon pol = (Polygon) simpleFeatImp.getAttribute(0);
+                            if (pol != null) {
+                                int[] xCoordinates = new int[pol.getCoordinates().length];
+                                int[] yCoordinates = new int[pol.getCoordinates().length];
+                                if (product.getSceneGeoCoding() instanceof TiePointGeoCoding) {
+                                    for (int index = 0; index < pol.getCoordinates().length; index++) {
+                                        xCoordinates[index] = (int) pol.getCoordinates()[index].x;
+                                        yCoordinates[index] = (int) pol.getCoordinates()[index].y;
+                                    }
+                                } else {
+                                    for (int index = 0; index < pol.getCoordinates().length; index++) {
+                                        double x = pol.getCoordinates()[index].x;
+                                        double y = pol.getCoordinates()[index].y;
+                                        try {
+                                            DirectPosition pos = CRS.findMathTransform(product.getSceneGeoCoding().getMapCRS(), product.getSceneGeoCoding().getImageCRS()).transform(new DirectPosition2D(x, y), null);
+                                            double[] values = pos.getCoordinate();
+                                            xCoordinates[index] = (int) values[0];
+                                            yCoordinates[index] = (int) values[1];
+                                        } catch (TransformException | FactoryException e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 }
+                                String polygonName = "POLYGON_" + polygonIndex + "(Starting Coordinates: " + xCoordinates[0] + " : " + yCoordinates[0] + ")";
+                                SpectrumInput spectrumInput = new SpectrumInput(polygonName, xCoordinates, yCoordinates);
+                                spectrumInput.setIsShapeDefined(true);
+                                model.addElement(spectrumInput);
                             }
-                            String polygonName = "POLYGON_" + polygonIndex + "(Starting Coordinates: " + xCoordinates[0] + " : " + yCoordinates[0] + ")";
-                            SpectrumInput spectrumInput = new SpectrumInput(polygonName, xCoordinates, yCoordinates);
-                            spectrumInput.setIsShapeDefined(true);
-                            model.addElement(spectrumInput);
+                        } catch(ClassCastException e) {
+                            logger.warning("Error passing data to PromoteEmployee method. " +e.getMessage());
                         }
                     }
                     if (geometrySpectrumList.getModel().getSize() != 0) {
-                        content.add(new JLabel("polygons defined in geometry mask"));
+                        content.add(new JLabel("Polygons Defined In Geometry Mask"));
                         content.add(new JScrollPane(geometrySpectrumList));
                     }
                 }
             }
-            content.add(okButton);
             return content;
         }
 
@@ -277,22 +285,23 @@ class SAMSpectralFormModel {
 
             xCoordinates.setText(xElements.toString());
             yCoordinates.setText(yElements.toString());
+            spectrumClassName.grabFocus();
             this.isShapeDefined = true;
         }
 
         private void executeInput() {
             if(spectrumName.isEmpty()){
-                Dialogs.showError("spectrum class name must not be empty");
+                Dialogs.showError("Spectrum class name must not be empty!");
                 return;
             }
             if(xCoordinates.getText().isEmpty()) {
-                Dialogs.showError("tag X Coordinates must not be empty ");
+                Dialogs.showError("Tag X Coordinates must not be empty!");
                 return;
             } else {
                 updateTextField(xCoordinatesList, xCoordinates.getText());
             }
             if(yCoordinates.getText().isEmpty()) {
-                Dialogs.showError("tag Y Coordinates must not be empty ");
+                Dialogs.showError("Tag Y Coordinates must not be empty!");
                 return;
             } else {
                 updateTextField(yCoordinatesList, yCoordinates.getText());
@@ -303,7 +312,7 @@ class SAMSpectralFormModel {
             }
             for(int index = 0; index < spectrumListModel.getSize(); index++){
                 if(spectrumListModel.get(index).getName().equals(spectrumName)){
-                    Dialogs.showError("spectrum class name already exists");
+                    Dialogs.showError("Spectrum class name already exists!");
                     return;
                 }
             }
@@ -324,7 +333,6 @@ class SAMSpectralFormModel {
                 coordinates.add(thresholdValue);
             }
         }
-
     }
 
     private class RemoveAction extends AbstractAction {
@@ -332,7 +340,7 @@ class SAMSpectralFormModel {
         RemoveAction() {
             super("Remove");
             putValue(LARGE_ICON_KEY, TangoIcons.actions_list_remove(TangoIcons.Res.R16));
-            putValue(SHORT_DESCRIPTION, "Remove SpectrumInput");
+            putValue(SHORT_DESCRIPTION, "Remove Spectrum Class Input");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -344,12 +352,13 @@ class SAMSpectralFormModel {
 
         }
     }
+
     private class ExportAction extends AbstractAction {
 
         ExportAction() {
             super("Exort");
             putValue(LARGE_ICON_KEY, TangoIcons.actions_document_save(TangoIcons.Res.R16));
-            putValue(SHORT_DESCRIPTION, "Export Spectrum List as CSV");
+            putValue(SHORT_DESCRIPTION, "Export Spectrum Classes  as CSV");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -358,7 +367,7 @@ class SAMSpectralFormModel {
                 spectrumList.add(spectrumListModel.get(index));
             }
             SpectrumCsvIO.writeSpectrumList(null,
-                    "Export Spectrum List",
+                    "Export Spectrum Classes",
                     new SnapFileFilter[]{DiagramGraphIO.SPECTRA_CSV_FILE_FILTER},
                     appContext.getPreferences(),
                     spectrumList);

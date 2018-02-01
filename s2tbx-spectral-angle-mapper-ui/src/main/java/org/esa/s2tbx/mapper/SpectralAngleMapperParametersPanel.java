@@ -132,18 +132,18 @@ class SpectralAngleMapperParametersPanel extends JPanel {
 
     private JPanel resamplingPanel() {
         final JPanel panel = new JPanel(getTableLayout(2));
-        panel.setBorder(BorderFactory.createTitledBorder("Resampling Parameters:"));
-        JLabel resampleTypeLabel = new JLabel("Resample Type");
+        panel.setBorder(BorderFactory.createTitledBorder("Resampling Parameters"));
+        JLabel resampleTypeLabel = new JLabel("Resample Type:");
         final JComboBox<String> resampleTypeComboBox = new JComboBox<>(new DefaultComboBoxModel<>(this.resampleTypeValues));
         bindingCtx.bind(SpectralAngleMapperFormModel.RESAMPLE_TYPE_PROPERTY, resampleTypeComboBox);
         samModel.getPropertySet().setValue(SpectralAngleMapperFormModel.RESAMPLE_TYPE_PROPERTY, resampleTypeValues[0]);
         bindingCtx.getPropertySet().getProperty(SpectralAngleMapperFormModel.RESAMPLE_TYPE_PROPERTY).addPropertyChangeListener(evt -> checkResampling());
-        JLabel upsamplingMethodlabel = new JLabel("Upsampling Method");
+        JLabel upsamplingMethodlabel = new JLabel("Upsampling Method:");
         final JComboBox<String> upsamplingComboBox = new JComboBox<>(new DefaultComboBoxModel<>(this.upsamplingMethodValues));
         upsamplingComboBox.setSelectedItem(this.upsamplingMethodValues[0]);
         bindingCtx.bind(SpectralAngleMapperFormModel.UPSAMPLING_PROPERTY, upsamplingComboBox);
         samModel.getPropertySet().setValue(SpectralAngleMapperFormModel.UPSAMPLING_PROPERTY, upsamplingMethodValues[0]);
-        JLabel downsamplingMethodlabel = new JLabel("Downsampling Method");
+        JLabel downsamplingMethodlabel = new JLabel("Downsampling Method:");
         final JComboBox<String> downsampligComboBox = new JComboBox<>(new DefaultComboBoxModel<>(this.downsamplingMethodValues));
         downsampligComboBox.setSelectedItem(this.downsamplingMethodValues[0]);
         bindingCtx.bind(SpectralAngleMapperFormModel.DOWNSAMPLING_PROPERTY, downsampligComboBox);
@@ -159,7 +159,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
 
     private JPanel CSVSelectionPanel() {
         final JPanel panel = new JPanel(getTableLayout(1));
-        panel.setBorder(BorderFactory.createTitledBorder("spectrum CSV file:"));
+        panel.setBorder(BorderFactory.createTitledBorder("Spectrum Classes Input"));
         spectrumList = new JList<>();
         spectrumList.setModel(formModel.getSpectrumListModel());
         spectrumList.setSelectionModel(formModel.getSpectrumListSelectionModel());
@@ -200,7 +200,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         sourceBandNames.addListSelectionListener(e -> checkResampling());
         JPanel spectrumSelectionPanel = new JPanel(new BorderLayout());
         spectrumSelectionPanel.add(new JScrollPane(sourceBandNames), BorderLayout.CENTER);
-        spectrumSelectionPanel.add(new JLabel("Spectral source bands:"), BorderLayout.WEST);
+        spectrumSelectionPanel.add(new JLabel("Source Bands:"), BorderLayout.WEST);
         panel.add(spectrumSelectionPanel);
         return panel;
     }

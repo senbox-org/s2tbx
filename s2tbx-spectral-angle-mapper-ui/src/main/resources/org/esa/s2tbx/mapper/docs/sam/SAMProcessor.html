@@ -1,0 +1,257 @@
+<!--
+  ~ Copyright (C) 2010 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>SNAP Spectral Angle Mapper Processor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            Spectral Angle Mapper Processor</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+<h3>Spectral Angle Mapper</h3>
+Spectral Angle Mapper (SAM) is a physically-based spectral classification that uses an n-D angle to match pixels to reference spectra.
+The algorithm determines the spectral similarity between two spectra by calculating the angle between the spectra and treating them as
+vectors in a space with dimensionality equal to the number of bands. This technique, when used on calibrated reflectance data, is relatively
+insensitive to illumination and albedo effects. Endmember spectra used by SAM can come from CSV files or you can extract
+them directly from an image (as ROI average spectra). SAM compares the angle between the endmember spectrum vector and each pixel vector in n-D space.
+Smaller angles represent closer matches to the reference spectrum. Pixels further away than the specified maximum angle threshold in radians are not classified.
+
+<br><br>SAM classification assumes reflectance data. However, if you use radiance data, the error is generally not significant because the origin is still near zero.
+<br><br> The spectral angle &#920; is defined as (Kruse et al., 1993):<br>
+<center><img src="../images/SamFormula.png"></center> <br>
+Where:
+<p class="i1">
+    <i>x</i>= spectral signature vector of an image pixel;<br>
+    <i>y</i> = spectral signature vector of a training area;<br>
+    <i>n</i> = number of image bands.
+</p>
+Therefore a pixel belongs to the class having the lowest angle, that is:
+<center><img src="../images/capture.png"></center> <br>
+where:
+<p class="i1">
+    Ck = land cover class k;<br>
+    yk = spectral signature of class k;<br>
+    yj = spectral signature of class j.
+</p>
+<br>
+<strong>Spectral angle mapping example</strong> <br>
+<center><img src="../images/SamExample.png"></center> <br>
+In order to exclude pixels below this value from the classification it is possible to define a threshold Ti:
+<center><img src="../images/classInclusion.png"></center> <br>
+
+<h3>Spectral Angle Mapper Dialog</h3>
+<h4>I/O Parameters</h4>
+<table border="0">
+    <tr>
+        <td style="border-width:0;" valign="top">
+            <h5>Source Product</h5>
+
+            <p class="i1">
+                Specify the source product.<br>
+
+            <h5>Target Product</h5>
+
+
+            <p class="i1">
+                <b>Name :</b>
+                Used to specify the name of the target product.
+            </p>
+
+            <p class="i1">
+                <b>Save as :</b>
+                The target product will be automatically saved. The
+                combo box presents a list of file formats, like BEAM-DIMAP, JPEG200, GeoTIFF, and HDF5 and other image formats.
+                The text field allows to specify a target directory.<br>
+            </p>
+
+            <p class="i1">
+                <b>Open in ESA SNAP : </b>
+                Used to specify whether the target product should be opened in the Sentinel Toolbox.
+                When the target product is not saved, it is opened in the Sentinel Toolbox automatically.
+            </p></td>
+        <td style="border-width:0;" valign="top">
+            <img src="../images/SamIOParameters.png">
+        </td>
+    </tr>
+</table>
+<h4>SAM Parameters</h4>
+<table border="0">
+    <tr>
+        <td style="border-width:0;" valign="top">
+            <h5>Bands selection</h5>
+
+            <p class="i1">
+                Specify the source product bands on which the SAM processor will be applied. Must be at least 2 bands. Multiple bands will be selected by using
+                the Ctrl key<br>
+
+            <h5>Resampling parameters</h5>
+            <p class="i1">
+                <strong> Resample Type</strong><br>
+                In case the bands involved in the calculus are not of the same resolution,
+                this represents the choice of resampling the bands: either use the lowest resolution
+                band as reference, or the highest resolution one.<br><br>
+                <strong>Upsampling Method</strong><br>
+                If the resampling will be done for the highest resolution band,
+                this is the method used for upsampling lower resolution bands.
+                Can be one of: <strong>Nearest neighbour, Bilinear, Bicubic</strong>.<br><br>
+                <strong>Downsampling Method</strong><br>
+                If the resampling will be done for the lowest resolution band,
+                this is the method used for downsampling higher resolution bands.<br/>
+                Can be one of: <strong>First, Min, Max, Mean, Median</strong>.<br>
+            </p>
+
+            <h5>Spectrum Classes Input</h5>
+            <p class="i1">
+                The tool buttons to the left of the list field are used to modify the list of Spectrum defined classes. They are:
+            </p>
+            <table>
+                <tr>
+                    <td><b>Load</b></td>
+                    <td>Opens a text file containing spectrum defined classes in comma separated format (CSV) and adds
+                        all classes found to the list. The CSV format is described below.
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Add</b></td>
+                    <td>Opens a dialog box where the user can define a spectrum class either by manually writing the pixels locations or (as shown in
+                        the image below) by using one of the shapes defined in the geometry mask.</td>
+                </tr>
+                <tr>
+                    <td><b>Remove</b></td>
+                    <td>Removes selected class from the list.</td>
+                </tr>
+                <tr>
+                    <td><b>Export</b></td>
+                    <td>Exports the classes in the list to a CSV text file.</td>
+                </tr>
+                <tr >
+                    <td style="border-width:0;" valign="top">
+                        <br>
+                        <img src="../images/addSpectrumClass.png">
+                        <br>
+                    </td>
+                </tr>
+            </table>
+            <p class="i1">
+                In order to set the threshold for each class, the classes must be selected from the list and the "Set Thresholds" button must be pressed. This action will create
+                a slider bar for each class selected in the "Thresholds" tab.<br>
+            </p>
+        </td>
+
+        <td style="border-width:0;" valign="top">
+            <img src="../images/SAMParameters.png">
+        </td>
+    </tr>
+</table>
+<h4>Thresholds</h4>
+<table border="0">
+    <tr>
+        <td style="border-width:0;" valign="top">
+            <h5>Spectrum Classes Input Thresholds</h5>
+
+            <p class="i1">
+                Specify a threshold value for each spectrum class selected from the SAM parameters panel.The smaller the value the less likelihood that evaluated pixels
+                can make part of the specific class but the resulting pixels will be more appropriate as resemblance to the pixels defined class <br><br>
+                Pixels that have the spectral angle smaller than more than one threshold set, will be integrated in the class with the smallest threshold value.<br>
+            </p>
+        </td>
+        <td style="border-width:0;" valign="top">
+            <img src="../images/Thresholds.png">
+        </td>
+    </tr>
+</table>
+<h4>Spectral Classes CSV Format</h4>
+<p class="i1">
+    The CSV format used to import and export spectrum classes is a plain text format.
+    It comprises a header line defining the spectrum classes. The second line defines if the respective input is user defined or is one used from
+    the shapes drawn using the <strong>rectangle drawing tool, polygon drawing tool or the ellipse drawing tool</strong>. <br><br>
+    The values represent pixel position for each spectrum input class. First line is the X coordinate and the next one is the Y coordinate of a pixel and so on. The
+    number of inputs must be even. If two inputs are introduced it means that the spectral angle will define a class and use as reference a single pixel. If
+    4 values are introduced it means that the spectral angle will define a class and use as reference a mean value of the 2 pixels locations introduced. If 6 or
+    more values are introduced those will represent the corners of a polygon shape and the spectral angle will define a class and use as reference
+    a mean value of the pixels that are situated within the polygon shape defined by the input location pixels introduced.  <br><br>
+    It should be taken into consideration that the pixels locations must be within the image size. When working with multisize products the pixel values introduced
+    by the user must be defined in the range of the size the target product will have meaning that if the user wants the target product to be resampled to the smallest
+    size, the pixel values must be taken from the band that has the smallest size and vice versa. In case of shapes drawn there is no problem as the algorithm automatically
+    transpose the shape accordingly with the target product size.<br><br>
+    The <strong>,</strong> character is used to separate header and record fields. Given here is an example of the contents of a CSV spectrum class input file:
+</p>
+
+<blockquote>
+    <center>
+        <table class="code">
+            <tr>
+                <td>Forrest</td>
+                <td>Cropland</td>
+                <td>Grassland</td>
+                <td>Ocean</td>
+            </tr>
+            <tr>
+                <td>true</td>
+                <td>false</td>
+                <td>true</td>
+                <td>false</td>
+            </tr>
+            <tr>
+                <td>53</td>
+                <td>66</td>
+                <td>76</td>
+                <td>570</td>
+            </tr>
+            <tr>
+                <td>147</td>
+                <td>266</td>
+                <td>273</td>
+                <td>761</td>
+            </tr>
+            <tr>
+                <td>70</td>
+                <td>N/A</td>
+                <td>76</td>
+                <td>603</td>
+            </tr>
+            <tr>
+                <td>160</td>
+                <td>N/A</td>
+                <td>280</td>
+                <td>780</td>
+            </tr>
+            <tr>
+                <td>130</td>
+                <td>N/A</td>
+                <td>90</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>200</td>
+                <td>N/A</td>
+                <td>273</td>
+                <td>N/A</td>
+            </tr>
+        </table>
+    </center>
+</blockquote>
+
+</body>
+</html>

@@ -15,14 +15,17 @@
     </folder>
 
     <folder name="Menu">
-        <folder name="Optical">
-            <folder name="Thematic Land Processing">
-                <attr name="position" intvalue="460"/>
-                <file name="org-esa-s2tbx-mapper-Action.shadow">
-                    <attr name="originalFile"
-                          stringvalue="Actions/Operators/org-esa-s2tbx-mapper-Action.instance"/>
-                    <attr name="position" intvalue="10003"/>
-                </file>
+        <folder name="Raster">
+            <folder name="Classification">
+                <attr name="position" intvalue="450"/>
+                <folder name="Supervised Classification">
+                    <attr name="position" intvalue="800"/>
+                    <file name="org-esa-s2tbx-mapper-Action.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-mapper-Action.instance"/>
+                        <attr name="position" intvalue="10003"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

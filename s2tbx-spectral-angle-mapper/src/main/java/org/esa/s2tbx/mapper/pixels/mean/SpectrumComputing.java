@@ -5,9 +5,9 @@ import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixels;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 
-import java.util.Arrays;
-
 /**
+ *  Computes the mean value for each source band for a specific region defined by the user
+ *
  * @author Razvan Dumitrascu
  */
 public class SpectrumComputing  implements Runnable{

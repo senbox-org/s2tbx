@@ -44,7 +44,7 @@ public class SpectralAngleMapperOpTest  extends AbstractOpTest{
         parameters.put("resampleType", "None");
 
         Map<String, Product> sourceProducts = new HashMap<String, Product>();
-        sourceProducts.put("source", sourceProduct);
+        sourceProducts.put("sourceProduct", sourceProduct);
 
         // create the operator
         Operator operator = GPF.getDefaultInstance().createOperator("SpectralAngleMapperOp", parameters, sourceProducts, null);

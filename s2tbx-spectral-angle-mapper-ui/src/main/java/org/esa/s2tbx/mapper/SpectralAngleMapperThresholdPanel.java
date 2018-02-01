@@ -49,7 +49,7 @@ public class SpectralAngleMapperThresholdPanel extends JPanel {
         layout.setTableWeightY(0.2);
         layout.setTablePadding(2, 2);
         this.setLayout(layout);
-        this.setBorder(BorderFactory.createTitledBorder("SpectrumInput Thresholds"));
+        this.setBorder(BorderFactory.createTitledBorder("Spectrum Classes Input Thresholds"));
         JScrollPane scrollPane = new JScrollPane();
         this.setAutoscrolls(true);
         componentList.clear();

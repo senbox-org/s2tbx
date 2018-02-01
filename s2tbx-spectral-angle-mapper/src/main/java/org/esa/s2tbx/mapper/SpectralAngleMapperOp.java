@@ -52,7 +52,7 @@ public class SpectralAngleMapperOp extends Operator {
     private static final String RESAMPLE_LOWEST = "Lowest resolution";
     private static final String RESAMPLE_HIGHEST = "Highest resolution";
 
-    @SourceProduct(alias = "source", description = "The source product.")
+    @SourceProduct(alias = "Source", description = "The source product.")
     private Product sourceProduct;
 
     @TargetProduct
@@ -108,6 +108,8 @@ public class SpectralAngleMapperOp extends Operator {
         float xRatio = 1.0f;
         float yRatio = 1.0f;
         int sceneWidth = 0, sceneHeight = 0;
+
+        // resample source product if needed
         boolean resampleNeeded = !RESAMPLE_NONE.equals(this.resampleType);
         if (resampleNeeded) {
             for (String bandName : this.referenceBands) {
@@ -143,6 +145,9 @@ public class SpectralAngleMapperOp extends Operator {
             xRatio = initialProductWidth / sceneWidth;
             yRatio = initialProductHeight / sceneHeight;
         }
+
+        // if the source product size differs from the source product size before the resampling the
+        // the spectrum input pixels for the shape defined regions must be transmuted
         if (xRatio != 1.0f || yRatio != 1.0f) {
             for(SpectrumInput spectrum : spectra){
                 if (spectrum.getIsShapeDefined()) {
@@ -157,6 +162,7 @@ public class SpectralAngleMapperOp extends Operator {
                 }
             }
         }
+
         specPixelsContainer = new SpectrumClassReferencePixelsContainer();
         spectrumContainer = new SpectrumContainer();
         validateSpectra();
@@ -181,11 +187,15 @@ public class SpectralAngleMapperOp extends Operator {
         this.threshold = new ArrayList<>();
         this.classColor = new HashMap<>();
         ExecutorService threadPool;
+
+        // create a color for each class defined by the user
         int classColorLevel = 200;
         for(SpectrumInput spectrumInput : this.spectra) {
             this.classColor.put(spectrumInput.getName(), classColorLevel);
             classColorLevel += 200;
         }
+
+        //compute each pixel that belongs to each reagion defind by the user
         threadPool = Executors.newFixedThreadPool(threadCount);
         for (SpectrumInput aSpectra : spectra) {
             Runnable worker = new SpectrumClassPixelsComputing(aSpectra, specPixelsContainer);
@@ -199,7 +209,9 @@ public class SpectralAngleMapperOp extends Operator {
                 e.printStackTrace();
             }
         }
+        checkForCancellation();
 
+        //compute the mean value for each reference band for each region defined by the user
         threadPool = Executors.newFixedThreadPool(threadCount);
         for (int i = 0; i < spectra.length; i++) {
             Runnable worker = new SpectrumComputing(specPixelsContainer.getElements().get(i), this.sourceProduct, this.referenceBands, this.spectrumContainer);
@@ -213,13 +225,15 @@ public class SpectralAngleMapperOp extends Operator {
                 e.printStackTrace();
             }
         }
+
+        checkForCancellation();
         parseThresholds();
     }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
         pm.beginTask("Computing SpectralAngleMapperOp", rectangle.height);
-        System.out.println("region x= " + rectangle.getX() +": y= " + rectangle.getY());
+        checkForCancellation();
         try {
             List<Tile> sourceTileList = new ArrayList<>();
             for (int index = 0; index < this.sourceProduct.getNumBands(); index++) {
@@ -230,22 +244,23 @@ public class SpectralAngleMapperOp extends Operator {
             Tile samTile = targetTiles.get(this.targetProduct.getBand(SpectralAngleMapperConstants.SAM_BAND_NAME));
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
+                    // if a specific pixel is one that is already set by the user as making part of a class that pixel will be marked as belonging to that class and no
                     boolean isSet = false;
-                    for(SpectrumClassReferencePixels spec: specPixelsContainer.getElements() ) {
+                    for (SpectrumClassReferencePixels spec: specPixelsContainer.getElements() ) {
                         if (isSet) {
                             break;
                         }
-                        if(spec.getXPixelPositions().size() != 2) {
+                        if (spec.getXPixelPositions().size() != 2) {
                             if (x >= spec.getMinXPosition() && x <= spec.getMaxXPosition() &&
                                     y >= spec.getMinYPosition() && y <= spec.getMaxYPosition()) {
                                 for (int index = 0; index < spec.getXPixelPositions().size(); index++) {
-                                   if (spec.getXPixelPositions().get(index) == x) {
-                                       if (spec.getYPixelPositions().get(index) == y) {
-                                           samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
-                                           isSet = true;
-                                           break;
-                                       }
-                                   }
+                                    if (spec.getXPixelPositions().get(index) == x) {
+                                        if (spec.getYPixelPositions().get(index) == y) {
+                                            samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
+                                            isSet = true;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -259,9 +274,10 @@ public class SpectralAngleMapperOp extends Operator {
                             }
                         }
                     }
+                    // if the pixel is not user set than the algorithm for spectral angle will classify it in one of the classes defined by the user
                     if(!isSet) {
                         boolean setPixelColor = false;
-                        double threshold = 1.0;
+                        double angleValue = 1.0;
                         for (Spectrum spec : spectrumContainer.getElements()) {
                             float valueSum = 0;
                             float pixelValueSquareSum = 0;
@@ -276,15 +292,16 @@ public class SpectralAngleMapperOp extends Operator {
                             for (int spectrumIndex = 0; spectrumIndex < this.spectra.length; spectrumIndex++) {
                                 if (this.spectra[spectrumIndex].getName().equals(spec.getClassName())) {
                                     if (samAngle < this.threshold.get(spectrumIndex) && !setPixelColor) {
-                                        if (this.threshold.get(spectrumIndex) < threshold) {
+                                        if (samAngle < angleValue) {
                                             samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
                                             setPixelColor = true;
-                                            threshold = this.threshold.get(spectrumIndex);
+                                            angleValue = samAngle;
                                         }
                                     }
                                 }
                             }
                         }
+                        // if the pixel does not classify in either class then the pixel will be set as no data value
                         if (!setPixelColor) {
                             samTile.setSample(x, y, SpectralAngleMapperConstants.NO_DATA_VALUE);
                         }
@@ -300,7 +317,7 @@ public class SpectralAngleMapperOp extends Operator {
     }
 
     private void parseThresholds() {
-        StringTokenizer str = new StringTokenizer(this.thresholds, ", ");
+        StringTokenizer str = new StringTokenizer(this.thresholds, ",");
         while (str.hasMoreElements()) {
             double thresholdValue = Double.parseDouble(str.nextToken().trim());
             this.threshold.add(thresholdValue);
@@ -351,6 +368,5 @@ public class SpectralAngleMapperOp extends Operator {
         public Spi() {
             super(SpectralAngleMapperOp.class);
         }
-
     }
 }

@@ -5,11 +5,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by rdumitrascu on 1/11/2018.
+ * A container for all the Spectrum objects
+ *
+ *  @author Razvan Dumitrascu
  */
 public class SpectrumContainer {
 
-    private static SpectrumContainer instance;
     private List<Spectrum> specs = new ArrayList<>();
 
     public  SpectrumContainer(){}
