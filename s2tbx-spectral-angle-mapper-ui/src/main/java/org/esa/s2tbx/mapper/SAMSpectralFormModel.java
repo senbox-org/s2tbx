@@ -259,7 +259,7 @@ class SAMSpectralFormModel {
                                 spectrumInput.setIsShapeDefined(true);
                                 model.addElement(spectrumInput);
                             }
-                        } catch(ClassCastException e) {
+                        } catch (ClassCastException e) {
                             logger.warning("Error passing data to PromoteEmployee method. " +e.getMessage());
                         }
                     }
@@ -363,7 +363,7 @@ class SAMSpectralFormModel {
 
         public void actionPerformed(ActionEvent e) {
             List<SpectrumInput> spectrumList = new ArrayList<>(spectrumListModel.getSize());
-            for(int index = 0; index < spectrumListModel.size(); index++) {
+            for (int index = 0; index < spectrumListModel.size(); index++) {
                 spectrumList.add(spectrumListModel.get(index));
             }
             SpectrumCsvIO.writeSpectrumList(null,

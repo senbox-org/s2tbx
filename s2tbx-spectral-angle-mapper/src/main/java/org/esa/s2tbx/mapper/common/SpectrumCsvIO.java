@@ -67,8 +67,6 @@ public class SpectrumCsvIO {
         return intRecord;
     }
 
-
-
     public static SpectrumInput[] readSpectrum(Component parentComponent,
                                                String title,
                                                SnapFileFilter[] fileFilters,

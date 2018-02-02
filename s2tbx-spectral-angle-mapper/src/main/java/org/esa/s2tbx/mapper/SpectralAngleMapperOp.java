@@ -24,7 +24,6 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.util.ProductUtils;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +102,8 @@ public class SpectralAngleMapperOp extends Operator {
         if(spectra.length == 0) {
             throw new OperatorException("No spectrum classes have been set");
         }
+        validateSpectra();
+
         int initialProductWidth = this.sourceProduct.getSceneRasterWidth();
         int initialProductHeight = this.sourceProduct.getSceneRasterHeight();
         float xRatio = 1.0f;
@@ -165,7 +166,6 @@ public class SpectralAngleMapperOp extends Operator {
 
         specPixelsContainer = new SpectrumClassReferencePixelsContainer();
         spectrumContainer = new SpectrumContainer();
-        validateSpectra();
         this.targetProduct = new Product(SpectralAngleMapperConstants.TARGET_PRODUCT_NAME, this.sourceProduct.getProductType() + "_SAM", sceneWidth, sceneHeight);
         ProductUtils.copyTimeInformation(this.sourceProduct, this.targetProduct);
 
@@ -195,7 +195,7 @@ public class SpectralAngleMapperOp extends Operator {
             classColorLevel += 200;
         }
 
-        //compute each pixel that belongs to each reagion defind by the user
+        //compute each pixel that belongs to each region defined by the user
         threadPool = Executors.newFixedThreadPool(threadCount);
         for (SpectrumInput aSpectra : spectra) {
             Runnable worker = new SpectrumClassPixelsComputing(aSpectra, specPixelsContainer);
@@ -210,7 +210,6 @@ public class SpectralAngleMapperOp extends Operator {
             }
         }
         checkForCancellation();
-
         //compute the mean value for each reference band for each region defined by the user
         threadPool = Executors.newFixedThreadPool(threadCount);
         for (int i = 0; i < spectra.length; i++) {
@@ -236,10 +235,8 @@ public class SpectralAngleMapperOp extends Operator {
         checkForCancellation();
         try {
             List<Tile> sourceTileList = new ArrayList<>();
-            for (int index = 0; index < this.sourceProduct.getNumBands(); index++) {
-                if (Arrays.asList(this.referenceBands).contains(this.sourceProduct.getBandAt(index).getName())) {
-                    sourceTileList.add(getSourceTile(this.sourceProduct.getBandAt(index), rectangle));
-                }
+            for (String bandName : this.referenceBands) {
+                sourceTileList.add(getSourceTile(this.sourceProduct.getBand(bandName), rectangle));
             }
             Tile samTile = targetTiles.get(this.targetProduct.getBand(SpectralAngleMapperConstants.SAM_BAND_NAME));
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
@@ -254,22 +251,19 @@ public class SpectralAngleMapperOp extends Operator {
                             if (x >= spec.getMinXPosition() && x <= spec.getMaxXPosition() &&
                                     y >= spec.getMinYPosition() && y <= spec.getMaxYPosition()) {
                                 for (int index = 0; index < spec.getXPixelPositions().size(); index++) {
-                                    if (spec.getXPixelPositions().get(index) == x) {
-                                        if (spec.getYPixelPositions().get(index) == y) {
+                                    if (spec.getXPixelPositions().get(index) == x && spec.getYPixelPositions().get(index) == y ) {
                                             samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
                                             isSet = true;
                                             break;
-                                        }
                                     }
                                 }
                             }
                         } else {
                             for (int index = 0; index < spec.getXPixelPositions().size(); index++) {
-                                int xSpecPosition = spec.getXPixelPositions().get(index);
-                                int ySpecPosition = spec.getYPixelPositions().get(index);
-                                if (xSpecPosition == x && ySpecPosition == y) {
+                                if (spec.getXPixelPositions().get(index) == x && spec.getYPixelPositions().get(index) == y) {
                                     samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
                                     isSet = true;
+                                    break;
                                 }
                             }
                         }
@@ -291,12 +285,10 @@ public class SpectralAngleMapperOp extends Operator {
                             double samAngle = Math.acos(valueSum / (Math.sqrt(pixelValueSquareSum) * (Math.sqrt(spectrumPixelValueSquareSum))));
                             for (int spectrumIndex = 0; spectrumIndex < this.spectra.length; spectrumIndex++) {
                                 if (this.spectra[spectrumIndex].getName().equals(spec.getClassName())) {
-                                    if (samAngle < this.threshold.get(spectrumIndex) && !setPixelColor) {
-                                        if (samAngle < angleValue) {
-                                            samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
-                                            setPixelColor = true;
-                                            angleValue = samAngle;
-                                        }
+                                    if ((samAngle < this.threshold.get(spectrumIndex)) && (samAngle < angleValue)) {
+                                        samTile.setSample(x, y, this.classColor.get(spec.getClassName()));
+                                        setPixelColor = true;
+                                        angleValue = samAngle;
                                     }
                                 }
                             }
