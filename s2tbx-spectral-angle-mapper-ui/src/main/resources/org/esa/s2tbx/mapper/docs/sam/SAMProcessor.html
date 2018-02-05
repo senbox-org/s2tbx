@@ -38,26 +38,26 @@ them directly from an image (as ROI average spectra). SAM compares the angle bet
 Smaller angles represent closer matches to the reference spectrum. Pixels further away than the specified maximum angle threshold in radians are not classified.
 
 <br><br>SAM classification assumes reflectance data. However, if you use radiance data, the error is generally not significant because the origin is still near zero.
-<br><br> The spectral angle &#920; is defined as (Kruse et al., 1993):<br>
+<br><br> The spectral angle &#952; is defined as (Kruse et al., 1993):<br>
 <center><img src="../images/SamFormula.png"></center> <br>
 Where:
 <p class="i1">
-    <i>x</i>= spectral signature vector of an image pixel;<br>
-    <i>y</i> = spectral signature vector of a training area;<br>
-    <i>n</i> = number of image bands.
+    <i><b>x</b></i>= spectral signature vector of an image pixel;<br>
+    <i><b>y</b></i> = spectral signature vector of a training area;<br>
+    <i><b>n</b></i> = number of image bands.
 </p>
 Therefore a pixel belongs to the class having the lowest angle, that is:
 <center><img src="../images/capture.png"></center> <br>
 where:
 <p class="i1">
-    Ck = land cover class k;<br>
-    yk = spectral signature of class k;<br>
-    yj = spectral signature of class j.
+    <i><b>C<sub>k</sub></b></i> = land cover class k;<br>
+    <i><b>y<sub>k</sub></b></i> = spectral signature of class k;<br>
+    <i><b>y<sub>j</sub></b></i> = spectral signature of class j.
 </p>
 <br>
 <strong>Spectral angle mapping example</strong> <br>
 <center><img src="../images/SamExample.png"></center> <br>
-In order to exclude pixels below this value from the classification it is possible to define a threshold Ti:
+In order to exclude pixels below this value from the classification it is possible to define a threshold <i><b>T<sub>i</sub></b></i>:
 <center><img src="../images/classInclusion.png"></center> <br>
 
 <h3>Spectral Angle Mapper Dialog</h3>
@@ -185,7 +185,7 @@ In order to exclude pixels below this value from the classification it is possib
 <p class="i1">
     The CSV format used to import and export spectrum classes is a plain text format.
     It comprises a header line defining the spectrum classes. The second line defines if the respective input is user defined or is one used from
-    the shapes drawn using the <strong>rectangle drawing tool, polygon drawing tool or the ellipse drawing tool</strong>. <br><br>
+    the shapes drawn using the <strong>rectangle drawing tool, polygon drawing tool</strong> or the <strong> ellipse drawing tool</strong>. <br><br>
     The values represent pixel position for each spectrum input class. First line is the X coordinate and the next one is the Y coordinate of a pixel and so on. The
     number of inputs must be even. If two inputs are introduced it means that the spectral angle will define a class and use as reference a single pixel. If
     4 values are introduced it means that the spectral angle will define a class and use as reference a mean value of the 2 pixels locations introduced. If 6 or
