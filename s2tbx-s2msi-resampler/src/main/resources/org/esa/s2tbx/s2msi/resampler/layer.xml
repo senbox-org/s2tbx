@@ -6,8 +6,8 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="S2 Resampling Processor"/>
-                <attr name="operatorName" stringvalue="S2ResamplingOp"/>
-                <attr name="dialogTitle" stringvalue="S2Resampling"/>
+                <attr name="operatorName" stringvalue="S2Resampling"/>
+                <attr name="dialogTitle" stringvalue="S2 Resampling"/>
                 <attr name="helpId" stringvalue="s2resampler"/>
                 <attr name="targetProductNameSuffix" stringvalue="_s2resampled"/>
                 <attr name="ShortDescription"

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 5.0.0
+OpenIDE-Module-Specification-Version: 6.0.0
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox Adapters
 AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: false
