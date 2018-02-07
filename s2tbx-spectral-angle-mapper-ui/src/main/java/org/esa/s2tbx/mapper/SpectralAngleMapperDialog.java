@@ -70,7 +70,18 @@ public class SpectralAngleMapperDialog extends SingleTargetProductDialog {
 
     private boolean validateSpectrumClassInput(SpectralAngleMapperFormModel formModel) {
         SpectrumInput[] spectra =  formModel.getPropertySet().getProperty(SpectralAngleMapperFormModel.SPECTRA_PROPERTY).getValue();
-        return spectra != null && spectra.length != 0;
+        SpectrumInput[] hiddenSpectra =  formModel.getPropertySet().getProperty(SpectralAngleMapperFormModel.HIDDEN_SPECTRA_PROPERTY).getValue();
+        if(spectra.length != hiddenSpectra.length) {
+            StringBuffer message  = new StringBuffer("Selection different than selected classes to be used. Spectrum classes to be used ");
+            for (int spectrumIndex = 0; spectrumIndex < hiddenSpectra.length-1; spectrumIndex++) {
+                message.append(hiddenSpectra[spectrumIndex].getName());
+                message.append(", ");
+            }
+            message.append((hiddenSpectra[hiddenSpectra.length-1].getName()));
+            showInformationDialog(message.toString());
+        }
+        return hiddenSpectra != null && hiddenSpectra.length != 0;
+
     }
 
     private boolean validateThresholds(SpectralAngleMapperFormModel formModel) {

@@ -30,7 +30,7 @@ public class SpectralAngleMapperAction extends AbstractSnapAction {
     @Override
     public void actionPerformed(ActionEvent event) {
         ModelessDialog dialog = new SpectralAngleMapperDialog("SpectralAngleMapperAction",
-                "SAMOperator", getAppContext());
+                "SAMProcessor", getAppContext());
         dialog.show();
     }
 

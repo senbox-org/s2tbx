@@ -69,6 +69,9 @@ public class SpectralAngleMapperOp extends Operator {
     @Parameter(description = "The list of spectra.", alias = "spectra")
     private SpectrumInput[] spectra;
 
+    @Parameter(description = "The list of spectra.", alias = "hiddenSpectra")
+    private SpectrumInput[] hiddenSpectra;
+
     @Parameter(label = "Resample Type",
             description = "If selected bands differ in size, the resample method used before computing the index",
             defaultValue = RESAMPLE_NONE, valueSet = { RESAMPLE_NONE, RESAMPLE_LOWEST, RESAMPLE_HIGHEST })
@@ -102,7 +105,15 @@ public class SpectralAngleMapperOp extends Operator {
         if(spectra.length == 0) {
             throw new OperatorException("No spectrum classes have been set");
         }
+        if (spectra.length != hiddenSpectra.length) {
+            spectra = new SpectrumInput[hiddenSpectra.length];
+            spectra = hiddenSpectra;
+        }
+        this.threshold = new ArrayList<>();
+        this.classColor = new HashMap<>();
+        parseThresholds();
         validateSpectra();
+        validateNumberOfThresholds();
 
         int initialProductWidth = this.sourceProduct.getSceneRasterWidth();
         int initialProductHeight = this.sourceProduct.getSceneRasterHeight();
@@ -182,10 +193,11 @@ public class SpectralAngleMapperOp extends Operator {
         this.threadCount = Runtime.getRuntime().availableProcessors();
     }
 
+
+
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
-        this.threshold = new ArrayList<>();
-        this.classColor = new HashMap<>();
+
         ExecutorService threadPool;
 
         // create a color for each class defined by the user
@@ -226,7 +238,6 @@ public class SpectralAngleMapperOp extends Operator {
         }
 
         checkForCancellation();
-        parseThresholds();
     }
 
     @Override
@@ -309,6 +320,9 @@ public class SpectralAngleMapperOp extends Operator {
     }
 
     private void parseThresholds() {
+        if(this.thresholds == null || this.thresholds.isEmpty()) {
+            throw new OperatorException("Invalid number of thresholds set ");
+        }
         StringTokenizer str = new StringTokenizer(this.thresholds, ", ");
         while (str.hasMoreElements()) {
             double thresholdValue = Double.parseDouble(str.nextToken().trim());
@@ -338,6 +352,13 @@ public class SpectralAngleMapperOp extends Operator {
             if ((xCounter == 0) || (yCounter == 0) || (xCounter != yCounter)) {
                 throw new OperatorException("Invalid number of elements for spectrum " + aSpectra.getName());
             }
+        }
+    }
+
+    private void validateNumberOfThresholds() {
+        if(this.threshold.size() != this.spectra.length) {
+            throw new OperatorException("Number of threholds does not match the number of Spectrum classes: " + this.threshold.size() +
+                    " number of thresholds found , " + this.spectra.length + " number of spectrum classes found found" );
         }
     }
 

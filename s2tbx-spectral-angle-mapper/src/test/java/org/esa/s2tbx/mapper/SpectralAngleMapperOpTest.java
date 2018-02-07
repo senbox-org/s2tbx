@@ -41,6 +41,7 @@ public class SpectralAngleMapperOpTest  extends AbstractOpTest{
         parameters.put("referenceBands", new String[]{"B4","B8","B11","B12"});
         parameters.put("thresholds", "0.08,0.08,0.08");
         parameters.put("spectra",spectrumInput);
+        parameters.put("hiddenSpectra",spectrumInput);
         parameters.put("resampleType", "None");
 
         Map<String, Product> sourceProducts = new HashMap<String, Product>();

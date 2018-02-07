@@ -22,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -41,6 +42,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
     private static final String RESAMPLE_LOWEST = "Lowest resolution";
     private static final String RESAMPLE_HIGHEST = "Highest resolution";
     private static final String RESAMPLE_MESSAGE = "Bands will be resampled at the %s resolution";
+    private static final int THRESHOLDS_TAB_INDEX = 2;
 
     private final AppContext appContext;
     private final SpectralAngleMapperFormModel samModel;
@@ -48,6 +50,8 @@ class SpectralAngleMapperParametersPanel extends JPanel {
     private final SpectralAngleMapperForm samForm;
     private JList<String> sourceBandNames;
     private JList<SpectrumInput> spectrumList;
+    private JList<SpectrumInput> hiddenSpectrumList;
+    private DefaultListModel<SpectrumInput> hiddenSpectrumListModel;
     private SAMSpectralFormModel formModel;
     private SpectralAngleMapperThresholdPanel thresholdPanel;
 
@@ -63,6 +67,9 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         this.samForm = samForm;
         bindingCtx = new BindingContext(samModel.getPropertySet());
         this.formModel = new SAMSpectralFormModel(this.appContext, samForm);
+        hiddenSpectrumList = new JList<>();
+        hiddenSpectrumListModel = new DefaultListModel<>();
+        hiddenSpectrumList.setModel(hiddenSpectrumListModel);
         initResampleValues();
         createUI();
         bindingCtx.adjustComponents();
@@ -90,6 +97,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
     private void bindComponents() {
         bindingCtx.bind(SpectralAngleMapperFormModel.REFERENCE_BANDS_PROPERTY,sourceBandNames, true);
         bindingCtx.bind(SpectralAngleMapperFormModel.SPECTRA_PROPERTY, spectrumList, true);
+        bindingCtx.bind(SpectralAngleMapperFormModel.HIDDEN_SPECTRA_PROPERTY, hiddenSpectrumList, true);
     }
 
     private void createUI() {
@@ -115,10 +123,21 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         add(messagePanel);
         add(CSVSelectionPanel());
         JButton createThresholdsPanel = new JButton("Set Thresholds");
+        createThresholdsPanel.setToolTipText("only selected elements from the spectrum list will be set a threshold");
         createThresholdsPanel.addActionListener(e -> {
             if(this.spectrumList != null){
+                hiddenSpectrumListModel.clear();
+                for(int index = 0; index< this.spectrumList.getSelectedValuesList().size(); index++) {
+                    hiddenSpectrumListModel.add(index,this.spectrumList.getSelectedValuesList().get(index));
+                }
+                int[] selectedIndexes = new int[hiddenSpectrumListModel.size()];
+                for(int index = 0; index < hiddenSpectrumListModel.size(); index++) {
+                    selectedIndexes[index] = index;
+                }
+                hiddenSpectrumList.setSelectedIndices(selectedIndexes);
                 thresholdPanel =  samForm.getThresholdPanelInstance();
                 thresholdPanel.updateThresholdComponents(this.spectrumList.getSelectedValuesList());
+                samForm.setSelectedIndex(THRESHOLDS_TAB_INDEX);
             }
         });
         createThresholdsPanel.setMaximumSize(new Dimension(20, 40));

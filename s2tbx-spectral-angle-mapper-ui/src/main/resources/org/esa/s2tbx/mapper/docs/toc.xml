@@ -10,9 +10,7 @@
     <tocitem text="Sentinel Toolbox Application">
         <tocitem text="Raster">
             <tocitem text="Classification">
-                <tocitem text="Supervised Classifiers" target="SupervisedClassifiers">
-                    <tocitem text="Spectral Angle Mapper Operator" target="SAMOperator"/>
-                </tocitem>
+                    <tocitem text="Spectral Angle Mapper Classifier" target="SAMProcessor"/>
             </tocitem>
         </tocitem>
     </tocitem>

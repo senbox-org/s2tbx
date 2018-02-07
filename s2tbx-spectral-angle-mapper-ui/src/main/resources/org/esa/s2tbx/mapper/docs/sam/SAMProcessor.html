@@ -38,7 +38,7 @@ them directly from an image (as ROI average spectra). SAM compares the angle bet
 Smaller angles represent closer matches to the reference spectrum. Pixels further away than the specified maximum angle threshold in radians are not classified.
 
 <br><br>SAM classification assumes reflectance data. However, if you use radiance data, the error is generally not significant because the origin is still near zero.
-<br><br> The spectral angle &#952; is defined as (Kruse et al., 1993):<br>
+<br><br> The spectral angle <b><i>&#952;</i></b> is defined as (Kruse et al., 1993):<br>
 <center><img src="../images/SamFormula.png"></center> <br>
 Where:
 <p class="i1">
@@ -56,7 +56,7 @@ where:
 </p>
 <br>
 <strong>Spectral angle mapping example</strong> <br>
-<center><img src="../images/SamExample.png"></center> <br>
+<center><img src="../images/samExample.png"></center> <br>
 In order to exclude pixels below this value from the classification it is possible to define a threshold <i><b>T<sub>i</sub></b></i>:
 <center><img src="../images/classInclusion.png"></center> <br>
 

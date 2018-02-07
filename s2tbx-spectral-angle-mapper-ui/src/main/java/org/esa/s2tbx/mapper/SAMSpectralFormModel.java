@@ -147,6 +147,9 @@ class SAMSpectralFormModel {
         }
 
         public void actionPerformed(ActionEvent e) {
+            xCoordinatesList = new ArrayList<>(1);
+            yCoordinatesList = new ArrayList<>(1);
+            spectrumName = "";
             dialog = new ModelessDialog(null, "Add Spectrum Class", createDialogContent(), ModelessDialog.ID_APPLY_CLOSE, "");
             dialog.show();
             dialog.getButton( ModelessDialog.ID_APPLY).addActionListener( evt -> {executeInput();});
@@ -163,6 +166,7 @@ class SAMSpectralFormModel {
             content.setBorder(new EmptyBorder(2, 2, 2, 2));
             content.add(new JLabel("Spectrum Class Name"));
             spectrumClassName = new JTextField(40);
+            spectrumClassName.setText("");
             spectrumClassName.getDocument().addDocumentListener(new DocumentListener() {
                 @Override
                 public void insertUpdate(DocumentEvent e) {
