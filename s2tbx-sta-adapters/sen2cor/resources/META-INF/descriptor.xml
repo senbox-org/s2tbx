@@ -615,7 +615,8 @@
         </parameter>
       </parameters>
       <template type="simple">
-        <contents>--target
+        <contents>--nox11
+          --target
           $targetLocation/Sen2Cor-2.4.0-Linux64</contents>
       </template>
       <outputFile>Command Template</outputFile>
@@ -649,7 +650,8 @@
         </parameter>
       </parameters>
       <template type="simple">
-        <contents>--target
+        <contents>--nox11
+          --target
           $targetLocation/Sen2Cor-2.4.0-Darwin64</contents>
       </template>
       <outputFile>Command Template</outputFile>
