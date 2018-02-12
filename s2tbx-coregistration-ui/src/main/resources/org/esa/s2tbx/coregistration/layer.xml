@@ -8,9 +8,9 @@
                 <attr name="delegate"
                       methodvalue="org.esa.s2tbx.coregistration.CoregistrationOperatorAction.create"/>
                 <attr name="displayName"
-                      stringvalue="Coregistration"/>
+                      stringvalue="GeFolki Co-registration"/>
                 <attr name="dialogTitle"
-                      stringvalue="Coregistration Processor"/>
+                      stringvalue="GeFolki Co-registration Processor"/>
                 <attr name="operatorName"
                       stringvalue="CoregistrationOp"/>
                 <attr name="targetProductNameSuffix"
