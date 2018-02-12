@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
+import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -27,14 +28,16 @@ import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
@@ -46,6 +49,40 @@ import java.util.logging.Logger;
 public class L2aMetadata extends S2Metadata {
 
     private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
+
+    /**
+     * Read the content of 'path' searching the string "psd-XX.sentinel2.eo.esa.int" and return the XX parsed to an integer.
+     * Checks also some items in file to be able to distinguish PSD 14.3
+     * @param path
+     * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
+     */
+    public static int getDeepPSD(VirtualPath path){
+        try (InputStream stream = path.getInputStream()){
+
+            String xmlStreamAsString = IOUtils.toString(stream);
+            String aux = xmlStreamAsString;
+            String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
+
+            Pattern p = Pattern.compile(regex);
+            Matcher m = p.matcher(xmlStreamAsString);
+            if (m.find()) {
+                int position = m.start();
+                String psdNumber = xmlStreamAsString.substring(position+4,position+6);
+
+                //Check specific 14.3 psd, not possible to distinguish in 'regex'
+                if(Integer.parseInt(psdNumber) == 14 && !aux.contains("L2A_Product_Info") && !aux.contains("TILE_ID_2A")) {
+                    return 143;
+                }
+                return Integer.parseInt(psdNumber);
+            }
+            else {
+                return 0;
+            }
+
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 
     protected Logger logger = SystemUtils.LOG;
 
