@@ -35,7 +35,7 @@
       <value></value>
       <isShared>false</isShared>
       <windows>L2A_Process.bat</windows>
-      <linux>L2A_Process</linux>
+      <linux>/bin/L2A_Process</linux>
       <macosx>/bin/L2A_Process</macosx>
       <isTransient>false</isTransient>
     </osvariable>
