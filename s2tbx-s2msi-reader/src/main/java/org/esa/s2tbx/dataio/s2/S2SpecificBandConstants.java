@@ -6,7 +6,12 @@ package org.esa.s2tbx.dataio.s2;
 public enum S2SpecificBandConstants {
 
     SCL("quality_scene_classification", "SCL"),
-    MSC("quality_mosaic_info", "MSC");
+    MSC("quality_mosaic_info", "MSC"),
+    AOT("quality_aot", "AOT"),
+    WVP("quality_wvp", "WVP"),
+    CLD("quality_cloud_confidence", "CLD"),
+    SNW("quality_snow_confidence", "SNW"),
+    DDV("quality_dense_dark_vegetation", "DDV");
 
 
     private String physicalName;
