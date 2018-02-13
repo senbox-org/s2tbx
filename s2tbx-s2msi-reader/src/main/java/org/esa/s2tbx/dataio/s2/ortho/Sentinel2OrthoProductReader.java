@@ -291,14 +291,27 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             if (otherPaths != null && otherPaths.length == 1) {
                                 tilePathMap.put(tile.getId(), otherPaths[0]);
                                 bFound = true;
+                            } else if (otherPaths != null && otherPaths.length > 1) {
+                                VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths,bandInformation.getResolution().resolution);
+                                if(pathWithResolution != null) {
+                                    tilePathMap.put(tile.getId(), pathWithResolution);
+                                    bFound = true;
+                                }
                             }
-                        } else { //TODO try specificbands
+                        } else { //try specific bands
                             S2SpecificBandConstants specificBandConstant = S2SpecificBandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
                             if(specificBandConstant != null) {
                                 VirtualPath[] otherPaths = path.getParent().listPaths(specificBandConstant.getFilenameBandId());
                                 if (otherPaths != null && otherPaths.length == 1) {
                                     tilePathMap.put(tile.getId(), otherPaths[0]);
                                     bFound = true;
+                                } else if(otherPaths != null && otherPaths.length > 1) {
+
+                                    VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths,bandInformation.getResolution().resolution);
+                                    if(pathWithResolution != null) {
+                                        tilePathMap.put(tile.getId(), pathWithResolution);
+                                        bFound = true;
+                                    }
                                 }
                             }
                         }
@@ -372,6 +385,25 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         return product;
+    }
+
+    private VirtualPath filterVirtualPathsByResolution(VirtualPath[] paths, int resolution) {
+
+        boolean found = false;
+        VirtualPath resultPath = null;
+        if (paths == null) {
+            return null;
+        }
+        for(VirtualPath path : paths) {
+            if (path.getFileName().toString().contains(String.format("%dm",resolution))) {
+                if (found) {
+                    return null;
+                }
+                found = true;
+                resultPath = path;
+            }
+        }
+        return resultPath;
     }
 
     abstract protected int getMaskLevel();
