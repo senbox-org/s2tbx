@@ -149,12 +149,16 @@ class WorldView2ProductReader extends AbstractProductReader {
                 int levels = getProductLevels();
                 for (TileMetadata tileMetadata: tileMetadataList) {
                     String[] bandNames;
+                    if (numMultiSpectralBands < 4) {
+                        bandNames = WorldView2Constants.NATURAL_COLORS;
+                    }
                     if (numMultiSpectralBands == 4) {
                         bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_4_BANDS;
                     } else {
                         bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_8_BANDS;
                     }
-                    if (tileMetadata.getTileComponent().getBandID().equals("MS1")) {
+                    if (tileMetadata.getTileComponent().getBandID().equals("MS1") ||
+                            tileMetadata.getTileComponent().getBandID().equals("Multi") ) {
                         TileComponent tileComp = tileMetadata.getTileComponent();
                         for (int index = 0; index < this.numMultiSpectralBands; index++) {
                             Band targetBand = createTargetBand(levels,bandNames, index, this.tilesMultiSpectral, tileComp);

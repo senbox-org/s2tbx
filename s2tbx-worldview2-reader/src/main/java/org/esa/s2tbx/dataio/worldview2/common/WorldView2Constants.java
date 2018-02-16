@@ -18,13 +18,15 @@ public class WorldView2Constants {
     public static final String PRODUCT_GENERIC_NAME = "WorldView-2 Product";
     public static final String PRODUCT_TYPE = "WorldView-2 Product";
     public static final String METADATA_EXTENSION = ".XML";
+    public static final String[] NATURAL_COLORS =
+            new String[]{"Red", "Green", "Blue"};
     public static final String[] BAND_NAMES_MULTISPECTRAL_4_BANDS =
             new String[]{"Blue", "Green", "Red", "NIR1", "Pan"};
     public static final String[] BAND_NAMES_MULTISPECTRAL_8_BANDS =
             new String[]{"Coastal", "Blue", "Green", "Yellow", "Red", "Red Edge", "NIR1", "NIR2", "Pan"};
 
     public static final String[] MINIMAL_PRODUCT_PATTERNS = new String[] {
-            "ZON\\d{2}.*_README\\.XML"};
+            ".*_README\\.XML"};
 
     public static final String[] WORLDVIEW2_RGB_PROFILE = new String[] { "Red", "Green", "Blue" };
     public static final String WORLDVIEW2_UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
