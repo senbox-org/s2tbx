@@ -63,6 +63,7 @@
         <module>s2tbx-grm-ui</module>
         <module>s2tbx-land-cover</module>
         <module>s2tbx-s2msi-resampler</module>
+        <module>s2tbx-muscate-reader</module>
     </modules>
 
     <packaging>pom</packaging>
