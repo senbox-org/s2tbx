@@ -321,6 +321,43 @@ public class MuscateMetadata extends XmlMetadata {
         return bands;
     }
 
+
+    public String[] getOrderedBandNames(String resolutionId) {
+
+        ArrayList<String> bands = new ArrayList<>(13);
+        MetadataElement bandGroupListElement = getRootElement().getElement("Product_Characteristics").getElement("Band_Group_List");
+
+        for (int i = 0; i < bandGroupListElement.getNumElements(); i++) {
+            MetadataElement element = bandGroupListElement.getElementAt(i);
+            if (element.getAttribute("group_id").getData().getElemString().equals(resolutionId)) {
+                MetadataElement bandListElement = element.getElement("Band_List");
+                for (int j = 0; j < bandListElement.getNumAttributes(); j++) {
+                    if (bandListElement.getAttributeAt(j).getName().equals("BAND_ID")) {
+                        bands.add(bandListElement.getAttributeAt(j).getData().getElemString());
+                    }
+                }
+            }
+        }
+        int totalBands = bands.size();
+        String[] bandStrings = new String[totalBands];
+        int index = 0;
+
+        for (int i = 0; i < bandGroupListElement.getNumElements(); i++) {
+            MetadataElement element = bandGroupListElement.getElementAt(i);
+            if (element.getAttribute("group_id").getData().getElemString().equals(resolutionId)) {
+                MetadataElement bandListElement = element.getElement("Band_List");
+                for (int j = 0; j < bandListElement.getNumAttributes(); j++) {
+                    if (bandListElement.getAttributeAt(j).getName().equals("BAND_ID")) {
+                        bandStrings[index] = bandListElement.getAttributeAt(j).getData().getElemString();
+                        index++;
+                    }
+                }
+            }
+        }
+
+        return bandStrings;
+    }
+
     public ArrayList<String> getBandNames() {
 
         ArrayList<String> bands = new ArrayList<>(17);
@@ -350,6 +387,12 @@ public class MuscateMetadata extends XmlMetadata {
     public float getSolarIrradiance(String bandID) {
         float value = Float.parseFloat(getAttributeSiblingValue(MuscateConstants.PATH_SPECTRAL_BAND_INFORMATION_BAND, bandID,
                                                                 MuscateConstants.PATH_SPECTRAL_BAND_INFORMATION_IRRADIANCE, MuscateConstants.STRING_ZERO));
+        return value;
+    }
+
+    public float getCentralWavelength(String bandID) {
+        float value = Float.parseFloat(getAttributeSiblingValue(MuscateConstants.PATH_SPECTRAL_BAND_INFORMATION_BAND, bandID,
+                                                                MuscateConstants.PATH_SPECTRAL_BAND_INFORMATION_CENTRAL_WAVELENGTH, MuscateConstants.STRING_ZERO));
         return value;
     }
 
@@ -517,6 +560,72 @@ public class MuscateMetadata extends XmlMetadata {
         bandAngleGrid.setResY(resY);
 
         return bandAngleGrid;
+    }
+
+    public AnglesGrid getMeanViewingAnglesGrid() {
+
+        ArrayList<AnglesGrid> viewingAnglesGrids = new ArrayList<>();
+        for(String bandId : getBandNames()) {
+            AnglesGrid bandAngleGrid = getViewingAnglesGrid(bandId);
+            if(bandAngleGrid == null) {
+                continue;
+            }
+            viewingAnglesGrids.add(bandAngleGrid);
+        }
+
+        if(viewingAnglesGrids == null || viewingAnglesGrids.size() < 1) {
+            return null;
+        }
+        int width = viewingAnglesGrids.get(0).getWidth();
+        int height = viewingAnglesGrids.get(0).getHeight();
+
+        //check size
+        for(AnglesGrid angleGrid : viewingAnglesGrids) {
+            if(angleGrid.getWidth() != width || angleGrid.getHeight() != height) {
+                return null;
+            }
+        }
+
+        float[] zenith = new float[width * height];
+        float[] azimuth = new float[width * height];
+
+        Arrays.fill(zenith,Float.NaN);
+        Arrays.fill(azimuth,Float.NaN);
+
+        //compute means
+        for(int i = 0 ; i < width * height ; i++) {
+            int countZenith = 0;
+            float sumZenith = 0.0f;
+            int countAzimuth = 0;
+            float sumAzimuth = 0.0f;
+            for(AnglesGrid angleGrid : viewingAnglesGrids) {
+                if(Float.isFinite(angleGrid.getZenith()[i])) {
+                    countZenith++;
+                    sumZenith = sumZenith + angleGrid.getZenith()[i];
+                }
+                if(Float.isFinite(angleGrid.getAzimuth()[i])) {
+                    countAzimuth++;
+                    sumAzimuth = sumAzimuth + angleGrid.getAzimuth()[i];
+                }
+            }
+            if(countZenith > 0) {
+                zenith[i] = sumZenith/countZenith;
+            }
+            if(countAzimuth > 0) {
+                azimuth[i] = sumAzimuth/countAzimuth;
+            }
+        }
+
+        AnglesGrid meanViewingAnglesGrid = new AnglesGrid();
+
+        meanViewingAnglesGrid.setHeight(height);
+        meanViewingAnglesGrid.setWidth(width);
+        meanViewingAnglesGrid.setAzimuth(azimuth);
+        meanViewingAnglesGrid.setZenith(zenith);
+        meanViewingAnglesGrid.setBandId("MEAN");
+        meanViewingAnglesGrid.setResX(viewingAnglesGrids.get(0).getResX());
+        meanViewingAnglesGrid.setResY(viewingAnglesGrids.get(0).getResY());
+        return meanViewingAnglesGrid;
     }
 
     private boolean isValidAngle(float value) {

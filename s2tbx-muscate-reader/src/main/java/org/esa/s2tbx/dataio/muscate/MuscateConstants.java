@@ -47,7 +47,7 @@ public class MuscateConstants {
 
     public static final String PATH_SPECTRAL_BAND_INFORMATION_BAND = "/Muscate_Metadata_Document/Radiometric_Informations/Spectral_Band_Informations_List/Spectral_Band_Informations/band_id";
     public static final String PATH_SPECTRAL_BAND_INFORMATION_IRRADIANCE = "/Muscate_Metadata_Document/Radiometric_Informations/Spectral_Band_Informations_List/Spectral_Band_Informations/SOLAR_IRRADIANCE";
-
+    public static final String PATH_SPECTRAL_BAND_INFORMATION_CENTRAL_WAVELENGTH = "/Muscate_Metadata_Document/Radiometric_Informations/Spectral_Band_Informations_List/Spectral_Band_Informations/Wavelength/CENTRAL";
 
 
     public static final String PATH_QUICKLOOK = "/Muscate_Metadata_Document/Product_Organisation/Muscate_Product/QUICKLOOK";
@@ -84,7 +84,7 @@ public class MuscateConstants {
     public static final String[] MUSCATE_DEFAULT_EXTENSIONS = new String[]{".xml", ".zip", ".tar"};
     public static final String[] MUSCATE_FORMAT_NAMES = new String[]{"MUSCATE"};
     public static final String[] MINIMAL_PRODUCT_PATTERNS = new String[] {
-            ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D].*"
+            ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D]_V[0-9|-]*[A-Z|_]*\\.(xml|XML|zip|ZIP)"
     };
 
     public static final String XML_PATTERN = ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D].*\\.xml";
