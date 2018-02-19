@@ -124,7 +124,9 @@ public class MuscateProductReader extends AbstractProductReader {
 
         product.setSceneGeoCoding(metadata.getCrsGeoCoding());
         product.setNumResolutionsMax(geopositions.size());
-        product.setAutoGrouping("AOT:Surface_Reflectance:Flat_Reflectance:WVC:cloud:Cloud:MG2:Edge:Saturation:Angles");
+        product.setAutoGrouping("Aux_Mask:AOT_Interpolation:AOT:Surface_Reflectance:Flat_Reflectance:WVC:cloud:MG2:mg2:sun:view:edge:" +
+                                        "detector_footprint-B01:detector_footprint-B02:detector_footprint-B03:detector_footprint-B04:detector_footprint-B05:detector_footprint-B06:detector_footprint-B07:detector_footprint-B08:" +
+                                        "detector_footprint-B8A:detector_footprint-B09:detector_footprint-B10:detector_footprint-B11:detector_footprint-B12:defective:saturation");
         product.setStartTime(parseDate(metadata.getAcquisitionDate(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         product.setEndTime(parseDate(metadata.getAcquisitionDate(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
@@ -140,11 +142,43 @@ public class MuscateProductReader extends AbstractProductReader {
 
         //angles
         //sun angles
-        addAngles(product, metadata.getSunAnglesGrid());
+        //addAngles(product, metadata.getSunAnglesGrid());
+
+        MuscateMetadata.AnglesGrid SunAnglesGrid = metadata.getSunAnglesGrid();
+        //add Zenith
+        addAngles(product, "sun_zenith",
+                  "Sun zenith angles", SunAnglesGrid.getWidth(), SunAnglesGrid.getHeight(),
+                  SunAnglesGrid.getZenith(), SunAnglesGrid.getResX(), SunAnglesGrid.getResY());
+        //add Azimuth
+        addAngles(product, "sun_azimuth",
+                  "Sun azimuth angles", SunAnglesGrid.getWidth(), SunAnglesGrid.getHeight(),
+                  SunAnglesGrid.getAzimuth(), SunAnglesGrid.getResX(), SunAnglesGrid.getResY());
+
+
         //viewing angles
         for(String bandId : metadata.getBandNames()) {
             MuscateMetadata.AnglesGrid anglesGrid = metadata.getViewingAnglesGrid(bandId);
-            addAngles(product, anglesGrid);
+            //addAngles(product, anglesGrid);
+            //add Zenith
+            addAngles(product, "view_zenith_" + anglesGrid.getBandId(),
+                      "Viewing zenith angles", anglesGrid.getWidth(), anglesGrid.getHeight(),
+                      anglesGrid.getZenith(), anglesGrid.getResX(), anglesGrid.getResY());
+            //add Azimuth
+            addAngles(product, "view_azimuth_" + anglesGrid.getBandId(),
+                      "Viewing azimuth angles", anglesGrid.getWidth(), anglesGrid.getHeight(),
+                      anglesGrid.getAzimuth(), anglesGrid.getResX(), anglesGrid.getResY());
+        }
+
+        //Add mean angles
+        MuscateMetadata.AnglesGrid meanViewingAnglesGrid = metadata.getMeanViewingAnglesGrid();
+        if(meanViewingAnglesGrid != null) {
+            addAngles(product, "view_zenith_mean",
+                      "Mean viewing zenith angles", meanViewingAnglesGrid.getWidth(), meanViewingAnglesGrid.getHeight(),
+                      meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY());
+            //add Azimuth
+            addAngles(product, "view_azimuth_mean",
+                      "Mean viewing azimuth angles", meanViewingAnglesGrid.getWidth(), meanViewingAnglesGrid.getHeight(),
+                      meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY());
         }
 
 
@@ -226,6 +260,8 @@ public class MuscateProductReader extends AbstractProductReader {
                   anglesGrid.getAzimuth(), anglesGrid.getResX(), anglesGrid.getResY());
 
     }
+
+
 
     private void addAngles(Product product, String angleBandName, String description, int width, int height, float[] data, float resX, float resY ) {
 
@@ -332,14 +368,14 @@ public class MuscateProductReader extends AbstractProductReader {
                 }
 
             }
-        } else if (mask.nature.equals("Cloud_Shadow")) {
-            for (String file : mask.getMaskFiles()) {
-                if (!addedFiles.contains(file)) {
-                    addedFiles.add(file);
-                    addCloudShadowMask(product, file);
-                }
-
-            }
+//        } else if (mask.nature.equals("Cloud_Shadow")) {
+//            for (String file : mask.getMaskFiles()) {
+//                if (!addedFiles.contains(file)) {
+//                    addedFiles.add(file);
+//                    addCloudShadowMask(product, file);
+//                }
+//
+//            }
         } else if (mask.nature.equals("Edge")) {
             for (String file : mask.getMaskFiles()) {
                 if (!addedFiles.contains(file)) {
@@ -352,6 +388,27 @@ public class MuscateProductReader extends AbstractProductReader {
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
                     addSaturationMask(product, file);
+                }
+            }
+        } else if (mask.nature.equals("Geophysics")) {
+            for (String file : mask.getMaskFiles()) {
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                    addGeophysicsMask(product, file);
+                }
+            }
+        } else if (mask.nature.equals("Detector_Footprint")) {
+            for (String file : mask.getMaskFiles()) {
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                    addDetectorFootprintMask(product, file);
+                }
+            }
+        } else if (mask.nature.equals("Defective_Pixel")) {
+            for (String file : mask.getMaskFiles()) {
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                    addDefectivePixelMask(product, file);
                 }
             }
         } else {
@@ -457,6 +514,7 @@ public class MuscateProductReader extends AbstractProductReader {
 
     }
 
+
     private void addReflectanceImage(Product product, String pathString, String prefix) {
         Band srcBand = getTifBand(pathString, 0);
         if (srcBand == null) {
@@ -477,7 +535,7 @@ public class MuscateProductReader extends AbstractProductReader {
         ProductUtils.copyGeoCoding(srcBand, targetBand);
         targetBand.setNoDataValue(metadata.getReflectanceNoDataValue());
         targetBand.setNoDataValueUsed(true);
-        //targetBand.setSpectralWavelength(srcBand.getSpectralWavelength()); //not available in metadata
+        targetBand.setSpectralWavelength(metadata.getCentralWavelength(bandId)); //not available in metadata
         //targetBand.setSpectralBandwidth(srcBand.getSpectralBandwidth()); //not available in metadata
         targetBand.setScalingFactor(1.0d / metadata.getReflectanceQuantificationValue());
         targetBand.setScalingOffset(0.0d);
@@ -509,7 +567,7 @@ public class MuscateProductReader extends AbstractProductReader {
             return;
         }
 
-        String bandName = "AOT_Interpolation_" + geoposition.id;
+        String bandName = "Aux_Mask_aot_interpolation_" + geoposition.id;
         String maskName = "AOT_Interpolation_Mask_" + geoposition.id;
 
 
@@ -524,12 +582,14 @@ public class MuscateProductReader extends AbstractProductReader {
         targetBand.setDescription("Interpolated AOT pixels mask");
         targetBand.setSourceImage(srcBand.getSourceImage());
 
-        product.addMask(Mask.BandMathsType.create(maskName,
-                                                  "Interpolated AOT pixels mask",
-                                                  width, height,
-                                                  String.format("bit_set(%s,0)", bandName),
-                                                  Color.BLUE,
-                                                  0.5));
+        Mask mask = Mask.BandMathsType.create(maskName,
+                                              "Interpolated AOT pixels mask",
+                                              width, height,
+                                              String.format("bit_set(%s,0)", bandName),
+                                              Color.BLUE,
+                                              0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask);
+        product.addMask(mask);
     }
 
     private void addEdgeMask(Product product, String pathString) {
@@ -548,8 +608,8 @@ public class MuscateProductReader extends AbstractProductReader {
                                          pathString, product.getName()));
             return;
         }
-        String bandName = "Edge_" + geoposition.id;
-        String maskName = "Edge_Mask_" + geoposition.id;
+        String bandName = "Aux_Mask_Edge_" + geoposition.id;
+        String maskName = "edge_mask_" + geoposition.id;
 
 
         Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
@@ -563,12 +623,14 @@ public class MuscateProductReader extends AbstractProductReader {
         targetBand.setDescription("Edge mask");
         targetBand.setSourceImage(srcBand.getSourceImage());
 
-        product.addMask(Mask.BandMathsType.create(maskName,
-                                                  "Edge mask",
-                                                  width, height,
-                                                  String.format("bit_set(%s,0)", bandName),
-                                                  Color.GREEN,
-                                                  0.5));
+        Mask mask = Mask.BandMathsType.create(maskName,
+                                              "Edge mask",
+                                              width, height,
+                                              String.format("bit_set(%s,0)", bandName),
+                                              Color.GREEN,
+                                              0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask);
+        product.addMask(mask);
     }
 
     private void addSaturationMask(Product product, String pathString) {
@@ -588,7 +650,7 @@ public class MuscateProductReader extends AbstractProductReader {
             return;
         }
 
-        String bandName = "Saturation_" + geoposition.id;
+        String bandName = "Aux_Mask_Saturation_" + geoposition.id;
 
         ArrayList<String> bands = metadata.getBandNames(geoposition.id);
 
@@ -606,12 +668,14 @@ public class MuscateProductReader extends AbstractProductReader {
 
         int bitCount = 0;
         for (String bandId : bands) {
-            product.addMask(Mask.BandMathsType.create("Saturation_" + bandId,
-                                                      String.format("Saturation mask of band %s", bandId),
-                                                      width, height,
-                                                      String.format("bit_set(%s,%d)", bandName, bitCount),
-                                                      Color.RED,
-                                                      0.5));
+            Mask mask = Mask.BandMathsType.create("saturation_" + bandId,
+                                                  String.format("Saturation mask of band %s", bandId),
+                                                  width, height,
+                                                  String.format("bit_set(%s,%d)", bandName, bitCount),
+                                                  Color.RED,
+                                                  0.5);
+            ProductUtils.copyGeoCoding(srcBand, mask);
+            product.addMask(mask);
             bitCount++;
         }
     }
@@ -633,7 +697,7 @@ public class MuscateProductReader extends AbstractProductReader {
             return;
         }
 
-        String bandName = "Cloud_" + geoposition.id;
+        String bandName = "Aux_Mask_Cloud_" + geoposition.id;
 
         Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
         product.addBand(targetBand);
@@ -649,57 +713,80 @@ public class MuscateProductReader extends AbstractProductReader {
         ColorIterator.reset();
 
         //addMasks
-        product.addMask(Mask.BandMathsType.create("cloud_mask_all_" + geoposition.id,
-                                                  "Result of a 'logical OR' for all the cloud and shadow maks",
-                                                  width, height,
-                                                  String.format("bit_set(%s,0)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("cloud_mask_all_cloud_" + geoposition.id,
-                                                  "Result of a 'logical OR' for all the cloud masks",
-                                                  width, height,
-                                                  String.format("bit_set(%s,1)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("cloud_mask_refl_" + geoposition.id,
-                                                  "Cloud mask identified by a reflectance threshold",
-                                                  width, height,
-                                                  String.format("bit_set(%s,2)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("cloud_mask_refl_var_" + geoposition.id,
-                                                  "Cloud mask identified by a threshold on reflectance variance",
-                                                  width, height,
-                                                  String.format("bit_set(%s,3)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("cloud_mask_extension_" + geoposition.id,
-                                                  "Cloud mask identified by the extension of cloud masks",
-                                                  width, height,
-                                                  String.format("bit_set(%s,4)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("cloud_mask_shadow_" + geoposition.id,
-                                                  "Shadow mask of clouds inside the image",
-                                                  width, height,
-                                                  String.format("bit_set(%s,5)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("cloud_mask_sahdvar_" + geoposition.id,
-                                                  "Shadow mask of clouds outside the image",
-                                                  width, height,
-                                                  String.format("bit_set(%s,6)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("cloud_mask_cirrus_" + geoposition.id,
-                                                  "Cloud mask identified with the cirrus spectral band",
-                                                  width, height,
-                                                  String.format("bit_set(%s,7)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
+        Mask mask0 = Mask.BandMathsType.create("cloud_mask_all_" + geoposition.id,
+                                               "Result of a 'logical OR' for all the cloud and shadow maks",
+                                               width, height,
+                                               String.format("bit_set(%s,0)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask0);
+        product.addMask(mask0);
+
+        Mask mask1 = Mask.BandMathsType.create("cloud_mask_all_cloud_" + geoposition.id,
+                                               "Result of a 'logical OR' for all the cloud masks",
+                                               width, height,
+                                               String.format("bit_set(%s,1)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask1);
+        product.addMask(mask1);
+
+        Mask mask2 = Mask.BandMathsType.create("cloud_mask_refl_" + geoposition.id,
+                                               "Cloud mask identified by a reflectance threshold",
+                                               width, height,
+                                               String.format("bit_set(%s,2)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask2);
+        product.addMask(mask2);
+
+        Mask mask3 = Mask.BandMathsType.create("cloud_mask_refl_var_" + geoposition.id,
+                                               "Cloud mask identified by a threshold on reflectance variance",
+                                               width, height,
+                                               String.format("bit_set(%s,3)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask3);
+        product.addMask(mask3);
+
+        Mask mask4 = Mask.BandMathsType.create("cloud_mask_extension_" + geoposition.id,
+                                               "Cloud mask identified by the extension of cloud masks",
+                                               width, height,
+                                               String.format("bit_set(%s,4)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask4);
+        product.addMask(mask4);
+
+        Mask mask5 = Mask.BandMathsType.create("cloud_mask_shadow_" + geoposition.id,
+                                               "Shadow mask of clouds inside the image",
+                                               width, height,
+                                               String.format("bit_set(%s,5)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask5);
+        product.addMask(mask5);
+
+        Mask mask6 = Mask.BandMathsType.create("cloud_mask_sahdvar_" + geoposition.id,
+                                               "Shadow mask of clouds outside the image",
+                                               width, height,
+                                               String.format("bit_set(%s,6)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask6);
+        product.addMask(mask6);
+
+        Mask mask7 = Mask.BandMathsType.create("cloud_mask_cirrus_" + geoposition.id,
+                                               "Cloud mask identified with the cirrus spectral band",
+                                               width, height,
+                                               String.format("bit_set(%s,7)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask7);
+        product.addMask(mask7);
     }
 
-    private void addCloudShadowMask(Product product, String pathString) {
+    private void addGeophysicsMask(Product product, String pathString) {
         Band srcBand = getTifBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
@@ -715,7 +802,8 @@ public class MuscateProductReader extends AbstractProductReader {
                                          pathString, product.getName()));
             return;
         }
-        String bandName = "MG2_" + geoposition.id;
+
+        String bandName = "Aux_Mask_MG2_" + geoposition.id;
 
         Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
         product.addBand(targetBand);
@@ -729,56 +817,197 @@ public class MuscateProductReader extends AbstractProductReader {
         targetBand.setSourceImage(srcBand.getSourceImage());
 
         ColorIterator.reset();
+
         //addMasks
-        product.addMask(Mask.BandMathsType.create("MG2_water_mask_" + geoposition.id,
-                                                  "Water mask",
-                                                  width, height,
-                                                  String.format("bit_set(%s,0)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("MG2_cloud_mask_all_cloud_" + geoposition.id,
-                                                  "Result of a 'logical OR' for all the cloud masks",
-                                                  width, height,
-                                                  String.format("bit_set(%s,1)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("MG2_snow_mask_" + geoposition.id,
-                                                  "Snow mask",
-                                                  width, height,
-                                                  String.format("bit_set(%s,2)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("MG2_shadow_masks_clouds_" + geoposition.id,
-                                                  "Shadow masks of clouds",
-                                                  width, height,
-                                                  String.format("bit_set(%s,3)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("MG2_topographical_shadows_mask" + geoposition.id,
-                                                  "Topographical shadows mask",
-                                                  width, height,
-                                                  String.format("bit_set(%s,4)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("MG2_hidden_areas_mask_" + geoposition.id,
-                                                  "Hidden areas mask",
-                                                  width, height,
-                                                  String.format("bit_set(%s,5)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("MG2_sun_too_low_mask_" + geoposition.id,
-                                                  "Sun too low mask",
-                                                  width, height,
-                                                  String.format("bit_set(%s,6)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
-        product.addMask(Mask.BandMathsType.create("MG2_tangent_sun_mask_" + geoposition.id,
-                                                  "Tangent sun mask",
-                                                  width, height,
-                                                  String.format("bit_set(%s,7)", bandName),
-                                                  ColorIterator.next(),
-                                                  0.5));
+        Mask mask0 = Mask.BandMathsType.create("MG2_Water_Mask_" + geoposition.id,
+                                               "Water mask",
+                                               width, height,
+                                               String.format("bit_set(%s,0)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask0);
+        product.addMask(mask0);
+
+        Mask mask1 = Mask.BandMathsType.create("MG2_Cloud_Mask_All_Cloud_" + geoposition.id,
+                                               "Result of a 'logical OR' for all the cloud masks",
+                                               width, height,
+                                               String.format("bit_set(%s,1)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask1);
+        product.addMask(mask1);
+
+        Mask mask2 = Mask.BandMathsType.create("MG2_Snow_Mask_" + geoposition.id,
+                                               "Snow mask",
+                                               width, height,
+                                               String.format("bit_set(%s,2)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask2);
+        product.addMask(mask2);
+
+        Mask mask3 = Mask.BandMathsType.create("MG2_Shadow_Mask_Of_Cloud_" + geoposition.id,
+                                               "Shadow masks of cloud",
+                                               width, height,
+                                               String.format("bit_set(%s,3)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask3);
+        product.addMask(mask3);
+
+        Mask mask4 = Mask.BandMathsType.create("MG2_Topographical_Shadows_Mask_" + geoposition.id,
+                                               "Topographical shadows mask",
+                                               width, height,
+                                               String.format("bit_set(%s,4)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask4);
+        product.addMask(mask4);
+
+        Mask mask5 = Mask.BandMathsType.create("MG2_Hidden_Areas_Mask_" + geoposition.id,
+                                               "Hidden areas mask",
+                                               width, height,
+                                               String.format("bit_set(%s,5)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask5);
+        product.addMask(mask5);
+
+        Mask mask6 = Mask.BandMathsType.create("MG2_Sun_Too_Low_Mask_" + geoposition.id,
+                                               "Sun too low mask",
+                                               width, height,
+                                               String.format("bit_set(%s,6)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask6);
+        product.addMask(mask6);
+
+        Mask mask7 = Mask.BandMathsType.create("MG2_Tangent_Sun_Mask_" + geoposition.id,
+                                               "Tangent sun mask",
+                                               width, height,
+                                               String.format("bit_set(%s,7)", bandName),
+                                               ColorIterator.next(),
+                                               0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask7);
+        product.addMask(mask7);
     }
+
+    private int getDetectorFromFilename(String pathString) {
+        Pattern p = Pattern.compile(".*D[0-9]{2}\\.tif");
+        Matcher m = p.matcher(pathString);
+        if(!m.matches()) {
+            return 0;
+        }
+        return Integer.parseInt(pathString.substring(pathString.length()-6,pathString.length()-4));
+    }
+
+    private String formatBandNameTo3characters(String band) {
+        if(band.startsWith("B") && band.length() == 2) {
+            return String.format("B0%c",band.charAt(1));
+        } else {
+            return band;
+        }
+    }
+
+    private void addDetectorFootprintMask(Product product, String pathString) {
+        Band srcBand = getTifBand(pathString, 0);
+        if (srcBand == null) {
+            logger.warning(String.format("Image %s not added", pathString));
+            return;
+        }
+
+        int height = srcBand.getRasterHeight();
+        int width = srcBand.getRasterWidth();
+
+        MuscateMetadata.Geoposition geoposition = getGeoposition(width, height);
+        if (geoposition == null) {
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
+                                         pathString, product.getName()));
+            return;
+        }
+
+
+        String[] orderedBandNames = metadata.getOrderedBandNames(geoposition.id);
+
+        int detector = getDetectorFromFilename(pathString);
+
+        String bandName = String.format("Aux_Mask_Detector_Footprint_%s_%02d", geoposition.id, detector);
+
+
+        Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
+        product.addBand(targetBand);
+        ProductUtils.copyGeoCoding(srcBand, targetBand);
+        targetBand.setNoDataValueUsed(false);
+        targetBand.setSampleCoding(srcBand.getSampleCoding());
+        targetBand.setImageInfo(srcBand.getImageInfo());
+        targetBand.setDescription("Detector footprint");
+        targetBand.setSourceImage(srcBand.getSourceImage());
+
+        Color color = ColorIterator.next();
+
+        //addMasks
+        for(int i = 0 ; i < orderedBandNames.length ; i++) {
+            Mask mask = Mask.BandMathsType.create(String.format("detector_footprint-%s-%02d",formatBandNameTo3characters(orderedBandNames[i]),detector),
+                                      "Detector footprint",
+                                      width, height,
+                                      String.format("bit_set(%s,%d)", bandName,i),
+                                      color,
+                                      0.5);
+            ProductUtils.copyGeoCoding(srcBand, mask);
+            product.addMask(mask);
+        }
+        return;
+    }
+
+    private void addDefectivePixelMask(Product product, String pathString) {
+        Band srcBand = getTifBand(pathString, 0);
+        if (srcBand == null) {
+            logger.warning(String.format("Image %s not added", pathString));
+            return;
+        }
+
+        int height = srcBand.getRasterHeight();
+        int width = srcBand.getRasterWidth();
+
+        MuscateMetadata.Geoposition geoposition = getGeoposition(width, height);
+        if (geoposition == null) {
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
+                                         pathString, product.getName()));
+            return;
+        }
+
+
+        String[] orderedBandNames = metadata.getOrderedBandNames(geoposition.id);
+
+
+        String bandName = String.format("Aux_Mask_Defective_Pixel_%s", geoposition.id);
+
+
+        Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
+        product.addBand(targetBand);
+        ProductUtils.copyGeoCoding(srcBand, targetBand);
+        targetBand.setNoDataValueUsed(false);
+        targetBand.setSampleCoding(srcBand.getSampleCoding());
+        targetBand.setImageInfo(srcBand.getImageInfo());
+        targetBand.setDescription("Defective Pixel");
+        targetBand.setSourceImage(srcBand.getSourceImage());
+
+        Color color= ColorIterator.next();
+
+        //addMasks
+        for(int i = 0 ; i < orderedBandNames.length ; i++) {
+            Mask mask = Mask.BandMathsType.create(String.format("defective_%s",orderedBandNames[i]),
+                                                  "Detector footprint",
+                                                  width, height,
+                                                  String.format("bit_set(%s,%d)", bandName,i),
+                                                  color,
+                                                  0.5);
+            ProductUtils.copyGeoCoding(srcBand, mask);
+            product.addMask(mask);
+        }
+        return;
+    }
+
 
     @Override
     public void close() throws IOException {
