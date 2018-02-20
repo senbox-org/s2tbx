@@ -9,49 +9,19 @@
     "geoCoding": {
       "coordinates": [
         {
-          "x": 2437.0,
-          "y": 851.0,
-          "lat": 45.06630437564808,
-          "lon": 4.579816463902149
+          "x": 4735.0,
+          "y": 5902.0,
+          "lat": 44.60743499375534,
+          "lon": 4.856919865576568
         },
         {
-          "x": 1279.0,
-          "y": 6211.0,
-          "lat": 44.585876128172686,
-          "lon": 4.4208671833446616
-        },
-        {
-          "x": 5825.0,
-          "y": 6397.0,
-          "lat": 44.56058380331211,
-          "lon": 4.992680218265705
-        },
-        {
-          "x": 10101.0,
-          "y": 10359.0,
-          "lat": 44.19357604785904,
-          "lon": 5.515337064483538
-        },
-        {
-          "x": 5683.0,
-          "y": 6397.0,
-          "lat": 44.56089430512075,
-          "lon": 4.9748102384964845
-        },
-        {
-          "x": 10845.0,
-          "y": 5025.0,
-          "lat": 44.67119731839142,
-          "lon": 5.6297820623061465
-        },
-        {
-          "x": 9887.0,
-          "y": 607.0,
-          "lat": 45.07124500641044,
-          "lon": 5.5263749279758905
+          "x": 8152.0,
+          "y": 7125.0,
+          "lat": 44.489610156711024,
+          "lon": 5.28291800134036
         }
       ],
-      "reverseAccuracy": 3.057066351175308E-7
+      "reverseAccuracy": 1.2997770681977272E-7
     },
     "bands": [
       {
@@ -65,39 +35,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
+            "x": 572,
+            "y": 1956,
             "value": "NaN"
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.07
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.055
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.07
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.115
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.125
+            "x": 7522,
+            "y": 9339,
+            "value": 0.09
           }
         ]
       },
@@ -112,39 +57,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 1596,
+            "y": 1410,
+            "value": 0.11
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.07
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.055
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.07
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.115
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.125
+            "x": 3351,
+            "y": 2005,
+            "value": 0.105
           }
         ]
       },
@@ -159,39 +79,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 3019,
+            "y": 4091,
+            "value": 0.2779
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0689
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.2479
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.2067
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0328
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.0343
+            "x": 3339,
+            "y": 5097,
+            "value": 0.257
           }
         ]
       },
@@ -206,39 +101,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 868,
+            "y": 3656,
+            "value": 0.0815
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0505
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1562
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.1332
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0125
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.0276
+            "x": 2850,
+            "y": 5015,
+            "value": 0.1928
           }
         ]
       },
@@ -253,39 +123,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": "NaN"
+            "x": 8302,
+            "y": 5321,
+            "value": 0.0511
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.02
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0465
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0479
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0108
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5686
+            "x": 10439,
+            "y": 5334,
+            "value": 0.013
           }
         ]
       },
@@ -300,39 +145,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
+            "x": 3737,
+            "y": 9875,
+            "value": 0.1062
+          },
+          {
+            "x": 109,
+            "y": 5168,
             "value": "NaN"
-          },
-          {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.021
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0664
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.061
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0036
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5747
           }
         ]
       },
@@ -347,39 +167,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": "NaN"
+            "x": 3595,
+            "y": 2164,
+            "value": 0.3008
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.0216
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0752
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0722
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5683
+            "x": 2999,
+            "y": 474,
+            "value": 0.8077
           }
         ]
       },
@@ -394,39 +189,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 5333,
+            "y": 3319,
+            "value": 0.0439
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.03
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1026
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.0976
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0237
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.5362
+            "x": 3142,
+            "y": 3935,
+            "value": 0.1205
           }
         ]
       },
@@ -441,39 +211,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 1273,
+            "y": 2731,
+            "value": 0.208
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0449
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1458
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.1387
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0729
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.5624
+            "x": 1762,
+            "y": 3966,
+            "value": 0.1097
           }
         ]
       },
@@ -488,39 +233,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 1965,
+            "y": 2735,
+            "value": 0.2134
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0503
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1585
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.1614
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0757
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.541
+            "x": 2211,
+            "y": 2428,
+            "value": 0.1906
           }
         ]
       },
@@ -535,39 +255,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": "NaN"
+            "x": 6309,
+            "y": 1008,
+            "value": 0.3455
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.0577
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.1777
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.1696
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0689
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5648
+            "x": 7084,
+            "y": 173,
+            "value": 0.631
           }
         ]
       },
@@ -582,39 +277,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 5353,
+            "y": 2016,
+            "value": 0.0203
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.061
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1874
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.1887
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0916
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.5343
+            "x": 5216,
+            "y": 5195,
+            "value": 0.211
           }
         ]
       },
@@ -629,39 +299,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
+            "x": 608,
+            "y": 2480,
             "value": "NaN"
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0428
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.2937
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.2254
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0339
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.0317
+            "x": 3134,
+            "y": 3087,
+            "value": 0.1032
           }
         ]
       },
@@ -676,39 +321,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 2776,
+            "y": 2863,
+            "value": 0.1159
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0303
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1859
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.1455
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0129
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.0253
+            "x": 2474,
+            "y": 3189,
+            "value": 0.0683
           }
         ]
       },
@@ -723,39 +343,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
+            "x": 158,
+            "y": 4662,
             "value": "NaN"
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.015
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0526
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0513
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0111
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5542
+            "x": 770,
+            "y": 10901,
+            "value": 0.0125
           }
         ]
       },
@@ -770,39 +365,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": "NaN"
+            "x": 3258,
+            "y": 8181,
+            "value": 0.0871
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.015
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0761
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0657
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0037
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5559
+            "x": 8822,
+            "y": 8085,
+            "value": 0.0695
           }
         ]
       },
@@ -817,39 +387,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": "NaN"
+            "x": 9162,
+            "y": 10381,
+            "value": 0.0278
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.0148
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0871
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0781
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": -0.0011
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5462
+            "x": 2729,
+            "y": 5839,
+            "value": 0.04
           }
         ]
       },
@@ -864,39 +409,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 3354,
+            "y": 1427,
+            "value": -0.0042
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0203
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1191
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.1054
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0246
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.5092
+            "x": 3035,
+            "y": 828,
+            "value": 0.1397
           }
         ]
       },
@@ -911,39 +431,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 2610,
+            "y": 3069,
+            "value": 0.1617
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0303
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1696
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.1502
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0759
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.5337
+            "x": 524,
+            "y": 4665,
+            "value": 0.1474
           }
         ]
       },
@@ -958,39 +453,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
+            "x": 528,
+            "y": 427,
             "value": "NaN"
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0338
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.1848
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.1748
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0789
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.5127
+            "x": 2498,
+            "y": 3713,
+            "value": 0.1798
           }
         ]
       },
@@ -1005,39 +475,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": "NaN"
+            "x": 5106,
+            "y": 9829,
+            "value": 0.2476
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.0384
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.2076
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.1843
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0709
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5403
+            "x": 9524,
+            "y": 6588,
+            "value": 0.1521
           }
         ]
       },
@@ -1052,39 +497,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
+            "x": 10563,
+            "y": 4183,
+            "value": 0.5387
+          },
+          {
+            "x": 964,
+            "y": 5849,
             "value": "NaN"
-          },
-          {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.0384
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.2076
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.1843
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0709
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 0.5403
           }
         ]
       },
@@ -1100,38 +520,13 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": "NaN"
+            "x": 8075,
+            "y": 6532,
+            "value": 0.55
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": "NaN"
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.7
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.5
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.85
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.6
-          },
-          {
-            "x": 9887,
-            "y": 607,
+            "x": 10718,
+            "y": 2042,
             "value": 0.75
           }
         ]
@@ -1148,44 +543,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": "NaN"
+            "x": 2527,
+            "y": 1432,
+            "value": 1.15
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": "NaN"
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.7
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.5
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.85
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.6
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 0.75
+            "x": 1257,
+            "y": 3555,
+            "value": 1.15
           }
         ]
       },
       {
-        "name": "AOT_Interpolation_R1",
+        "name": "Aux_Mask_aot_interpolation_R1",
         "description": "Interpolated AOT pixels mask",
         "bandWidth": 10980,
         "bandHeight": 10980,
@@ -1195,44 +565,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": 1.0
-          },
-          {
-            "x": 1279,
-            "y": 6211,
-            "value": 1.0
-          },
-          {
-            "x": 5825,
-            "y": 6397,
+            "x": 7023,
+            "y": 4804,
             "value": 0.0
           },
           {
-            "x": 10101,
-            "y": 10359,
+            "x": 5836,
+            "y": 6227,
             "value": 0.0
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 1.0
           }
         ]
       },
       {
-        "name": "AOT_Interpolation_R2",
+        "name": "Aux_Mask_aot_interpolation_R2",
         "description": "Interpolated AOT pixels mask",
         "bandWidth": 5490,
         "bandHeight": 5490,
@@ -1242,44 +587,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
+            "x": 2173,
+            "y": 1174,
             "value": 1.0
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": 1.0
-          },
-          {
-            "x": 2912,
-            "y": 3198,
+            "x": 1531,
+            "y": 4879,
             "value": 0.0
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.0
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.0
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 1.0
           }
         ]
       },
       {
-        "name": "Cloud_R1",
+        "name": "Aux_Mask_Cloud_R1",
         "description": "Cloud mask computed by MACCS software, made of 1 band coded over 8 useful bits",
         "bandWidth": 10980,
         "bandHeight": 10980,
@@ -1289,44 +609,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
+            "x": 10383,
+            "y": 6368,
             "value": 0.0
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": 0.0
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 11.0
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 27.0
-          },
-          {
-            "x": 9887,
-            "y": 607,
+            "x": 8323,
+            "y": 3603,
             "value": 0.0
           }
         ]
       },
       {
-        "name": "Cloud_R2",
+        "name": "Aux_Mask_Cloud_R2",
         "description": "Cloud mask computed by MACCS software, made of 1 band coded over 8 useful bits",
         "bandWidth": 5490,
         "bandHeight": 5490,
@@ -1336,138 +631,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
+            "x": 3077,
+            "y": 1596,
             "value": 0.0
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": 0.0
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 11.0
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.0
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.0
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 27.0
-          },
-          {
-            "x": 4943,
-            "y": 303,
+            "x": 4552,
+            "y": 4780,
             "value": 0.0
           }
         ]
       },
       {
-        "name": "MG2_R1",
-        "description": "Geophysical mask of level 2, made of 1 band coded over 8 useful bits",
-        "bandWidth": 10980,
-        "bandHeight": 10980,
-        "noDataValue": "0.0",
-        "noDataValueUsed": "false",
-        "spectralWavelength": "0.0",
-        "spectralBandwidth": "0.0",
-        "expectedPixels": [
-          {
-            "x": 2437,
-            "y": 851,
-            "value": 0.0
-          },
-          {
-            "x": 1279,
-            "y": 6211,
-            "value": 0.0
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 66.0
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 2.0
-          },
-          {
-            "x": 9887,
-            "y": 607,
-            "value": 4.0
-          }
-        ]
-      },
-      {
-        "name": "MG2_R2",
-        "description": "Geophysical mask of level 2, made of 1 band coded over 8 useful bits",
-        "bandWidth": 5490,
-        "bandHeight": 5490,
-        "noDataValue": "0.0",
-        "noDataValueUsed": "false",
-        "spectralWavelength": "0.0",
-        "spectralBandwidth": "0.0",
-        "expectedPixels": [
-          {
-            "x": 1218,
-            "y": 425,
-            "value": 0.0
-          },
-          {
-            "x": 639,
-            "y": 3105,
-            "value": 0.0
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 66.0
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.0
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.0
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 2.0
-          },
-          {
-            "x": 4943,
-            "y": 303,
-            "value": 4.0
-          }
-        ]
-      },
-      {
-        "name": "Edge_R1",
+        "name": "Aux_Mask_Edge_R1",
         "description": "Edge mask",
         "bandWidth": 10980,
         "bandHeight": 10980,
@@ -1477,44 +653,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
-            "value": 1.0
-          },
-          {
-            "x": 1279,
-            "y": 6211,
-            "value": 1.0
-          },
-          {
-            "x": 5825,
-            "y": 6397,
+            "x": 1187,
+            "y": 9740,
             "value": 0.0
           },
           {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0
-          },
-          {
-            "x": 9887,
-            "y": 607,
+            "x": 3776,
+            "y": 8939,
             "value": 0.0
           }
         ]
       },
       {
-        "name": "Edge_R2",
+        "name": "Aux_Mask_Edge_R2",
         "description": "Edge mask",
         "bandWidth": 5490,
         "bandHeight": 5490,
@@ -1524,44 +675,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
-            "value": 1.0
-          },
-          {
-            "x": 639,
-            "y": 3105,
-            "value": 1.0
-          },
-          {
-            "x": 2912,
-            "y": 3198,
+            "x": 1000,
+            "y": 3801,
             "value": 0.0
           },
           {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.0
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.0
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0
-          },
-          {
-            "x": 4943,
-            "y": 303,
+            "x": 3252,
+            "y": 3014,
             "value": 0.0
           }
         ]
       },
       {
-        "name": "Saturation_R1",
+        "name": "Aux_Mask_Saturation_R1",
         "description": "saturation mask coded over 8 bits, 1 bit per spectral band (number of useful bits = number of spectral bands)",
         "bandWidth": 10980,
         "bandHeight": 10980,
@@ -1571,44 +697,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2437,
-            "y": 851,
+            "x": 2258,
+            "y": 3361,
             "value": 0.0
           },
           {
-            "x": 1279,
-            "y": 6211,
-            "value": 0.0
-          },
-          {
-            "x": 5825,
-            "y": 6397,
-            "value": 0.0
-          },
-          {
-            "x": 10101,
-            "y": 10359,
-            "value": 0.0
-          },
-          {
-            "x": 5683,
-            "y": 6397,
-            "value": 0.0
-          },
-          {
-            "x": 10845,
-            "y": 5025,
-            "value": 0.0
-          },
-          {
-            "x": 9887,
-            "y": 607,
+            "x": 4505,
+            "y": 9482,
             "value": 0.0
           }
         ]
       },
       {
-        "name": "Saturation_R2",
+        "name": "Aux_Mask_Saturation_R2",
         "description": "saturation mask coded over 8 bits, 1 bit per spectral band (number of useful bits = number of spectral bands)",
         "bandWidth": 5490,
         "bandHeight": 5490,
@@ -1618,44 +719,65 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 1218,
-            "y": 425,
+            "x": 3852,
+            "y": 4927,
             "value": 0.0
           },
           {
-            "x": 639,
-            "y": 3105,
-            "value": 0.0
-          },
-          {
-            "x": 2912,
-            "y": 3198,
-            "value": 0.0
-          },
-          {
-            "x": 5050,
-            "y": 5179,
-            "value": 0.0
-          },
-          {
-            "x": 2841,
-            "y": 3198,
-            "value": 0.0
-          },
-          {
-            "x": 5422,
-            "y": 2512,
-            "value": 0.0
-          },
-          {
-            "x": 4943,
-            "y": 303,
+            "x": 1633,
+            "y": 5449,
             "value": 0.0
           }
         ]
       },
       {
-        "name": "Angles_Zenith_SUN",
+        "name": "sun_zenith",
+        "description": "Sun zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 12,
+            "y": 2,
+            "value": 63.4219
+          },
+          {
+            "x": 4,
+            "y": 12,
+            "value": 63.1289
+          }
+        ]
+      },
+      {
+        "name": "sun_azimuth",
+        "description": "Sun azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 10,
+            "y": 2,
+            "value": 159.572
+          },
+          {
+            "x": 19,
+            "y": 13,
+            "value": 160.086
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B2",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -1666,44 +788,65 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": 63.5967
-          },
-          {
             "x": 2,
-            "y": 12,
-            "value": 63.1622
+            "y": 15,
+            "value": "NaN"
           },
           {
-            "x": 11,
-            "y": 12,
-            "value": 63.0129
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 62.5242
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 63.0129
-          },
-          {
-            "x": 21,
+            "x": 16,
             "y": 10,
-            "value": 62.9336
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 63.3495
+            "value": 7.07214
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_SUN",
+        "name": "view_azimuth_B2",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3,
+            "y": 1,
+            "value": "NaN"
+          },
+          {
+            "x": 19,
+            "y": 6,
+            "value": 109.578
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B3",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 13,
+            "y": 22,
+            "value": 7.23027
+          },
+          {
+            "x": 17,
+            "y": 0,
+            "value": 7.5617
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B3",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -1715,43 +858,18 @@
         "expectedPixels": [
           {
             "x": 4,
-            "y": 1,
-            "value": 159.187
+            "y": 5,
+            "value": "NaN"
           },
           {
-            "x": 2,
-            "y": 12,
-            "value": 158.991
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 159.574
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 160.104
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 159.574
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 160.236
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 160.165
+            "x": 7,
+            "y": 4,
+            "value": 107.261
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B2",
+        "name": "view_zenith_B4",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -1762,44 +880,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.84107
-          },
-          {
-            "x": 20,
+            "x": 6,
             "y": 20,
-            "value": 4.63663
+            "value": 10.1181
           },
           {
-            "x": 11,
-            "y": 12,
-            "value": 8.84107
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.11538
-          },
-          {
-            "x": 19,
+            "x": 22,
             "y": 1,
-            "value": 6.67895
+            "value": 5.56898
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B2",
+        "name": "view_azimuth_B4",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -1810,44 +903,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
+            "x": 18,
+            "y": 11,
+            "value": 114.532
+          },
+          {
+            "x": 1,
+            "y": 8,
             "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 99.9939
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 98.462
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 99.9939
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 98.9012
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 109.108
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B3",
+        "name": "view_zenith_B5",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -1858,44 +926,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.86435
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 4.67348
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.86435
+            "x": 6,
+            "y": 13,
+            "value": 10.7283
           },
           {
             "x": 21,
-            "y": 10,
-            "value": 5.14936
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 6.70915
+            "y": 3,
+            "value": 5.81921
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B3",
+        "name": "view_azimuth_B5",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -1906,44 +949,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
             "x": 2,
-            "y": 12,
+            "y": 3,
             "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 98.1539
           },
           {
             "x": 20,
-            "y": 20,
-            "value": 95.0077
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 98.1539
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 95.7615
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 111.519
+            "y": 2,
+            "value": 115.863
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B4",
+        "name": "view_zenith_B6",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -1954,44 +972,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.89385
-          },
-          {
-            "x": 20,
+            "x": 8,
             "y": 20,
-            "value": 4.72242
+            "value": 9.40709
           },
           {
-            "x": 11,
-            "y": 12,
-            "value": 8.89385
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.19438
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 6.74703
+            "x": 13,
+            "y": 13,
+            "value": 8.08205
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B4",
+        "name": "view_azimuth_B6",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2002,44 +995,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
+            "x": 7,
+            "y": 7,
+            "value": 110.301
           },
           {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 96.4625
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 91.8681
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 96.4625
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 92.8967
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 113.704
+            "x": 8,
+            "y": 19,
+            "value": 94.9371
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B5",
+        "name": "view_zenith_B7",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2050,44 +1018,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
+            "x": 7,
+            "y": 15,
+            "value": 10.2096
           },
           {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.91294
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 4.75458
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.91294
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.22395
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 6.772
+            "x": 14,
+            "y": 15,
+            "value": 7.55484
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B5",
+        "name": "view_azimuth_B7",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2098,44 +1041,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
+            "x": 12,
+            "y": 2,
+            "value": 94.112
           },
           {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 95.5537
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 90.2031
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 95.5537
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 91.374
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 114.893
+            "x": 10,
+            "y": 18,
+            "value": 93.5977
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B6",
+        "name": "view_zenith_B8",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2146,44 +1064,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.93458
-          },
-          {
-            "x": 20,
+            "x": 18,
             "y": 20,
-            "value": 4.79139
+            "value": 5.43754
           },
           {
-            "x": 11,
-            "y": 12,
-            "value": 8.93458
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.25779
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 6.79935
+            "x": 0,
+            "y": 16,
+            "value": "NaN"
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B6",
+        "name": "view_azimuth_B8",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2194,44 +1087,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 94.6352
-          },
-          {
             "x": 20,
+            "y": 13,
+            "value": 97.439
+          },
+          {
+            "x": 14,
             "y": 20,
-            "value": 88.532
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 94.6352
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 89.842
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 116.056
+            "value": 109.822
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B7",
+        "name": "view_zenith_B8A",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2242,44 +1110,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
+            "x": 22,
+            "y": 7,
+            "value": 5.20506
           },
           {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.95825
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 4.83176
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.95825
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.29492
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 6.82977
+            "x": 8,
+            "y": 0,
+            "value": 11.1068
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B7",
+        "name": "view_azimuth_B8A",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2290,44 +1133,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 93.7291
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 86.9045
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 93.7291
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 88.3453
-          },
-          {
             "x": 19,
-            "y": 1,
-            "value": 117.22
+            "y": 13,
+            "value": 88.2128
+          },
+          {
+            "x": 13,
+            "y": 9,
+            "value": 92.3644
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B8",
+        "name": "view_zenith_B11",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2338,44 +1156,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
+            "x": 9,
+            "y": 22,
+            "value": 8.84568
           },
           {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.85156
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 4.65293
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.85156
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.13044
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 6.69256
+            "x": 5,
+            "y": 16,
+            "value": 10.8683
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B8",
+        "name": "view_azimuth_B11",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2386,44 +1179,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 99.0744
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 96.7298
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 99.0744
-          },
-          {
             "x": 21,
-            "y": 10,
-            "value": 97.3275
+            "y": 6,
+            "value": 90.8935
           },
           {
-            "x": 19,
-            "y": 1,
-            "value": 110.315
+            "x": 7,
+            "y": 19,
+            "value": 95.3014
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B8A",
+        "name": "view_zenith_B12",
         "description": "Viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2434,44 +1202,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
+            "x": 7,
             "y": 12,
-            "value": "NaN"
+            "value": 10.4893
           },
           {
-            "x": 11,
-            "y": 12,
-            "value": 8.9844
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 4.87639
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.9844
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.336
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 6.86254
+            "x": 8,
+            "y": 18,
+            "value": 9.62966
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B8A",
+        "name": "view_azimuth_B12",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -2482,45 +1225,20 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
+            "x": 12,
+            "y": 5,
+            "value": 92.8553
           },
           {
             "x": 2,
-            "y": 12,
+            "y": 16,
             "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 92.8188
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 85.2896
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 92.8188
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 86.8565
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 118.36
           }
         ]
       },
       {
-        "name": "Angles_Zenith_B11",
-        "description": "Viewing zenith angles",
+        "name": "view_zenith_mean",
+        "description": "Mean viewing zenith angles",
         "bandWidth": 23,
         "bandHeight": 23,
         "geophysicalUnit": "°",
@@ -2530,45 +1248,20 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.93037
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 4.78441
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.93037
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.25135
+            "x": 16,
+            "y": 18,
+            "value": 6.487075
           },
           {
             "x": 19,
             "y": 1,
-            "value": 6.79619
+            "value": 6.7759523
           }
         ]
       },
       {
-        "name": "Angles_Azimuth_B11",
-        "description": "Viewing azimuth angles",
+        "name": "view_azimuth_mean",
+        "description": "Mean viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
         "geophysicalUnit": "°",
@@ -2578,135 +1271,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 94.8063
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 88.8335
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 94.8063
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 90.1194
-          },
-          {
             "x": 19,
-            "y": 1,
-            "value": 115.928
-          }
-        ]
-      },
-      {
-        "name": "Angles_Zenith_B12",
-        "description": "Viewing zenith angles",
-        "bandWidth": 23,
-        "bandHeight": 23,
-        "geophysicalUnit": "°",
-        "noDataValue": "NaN",
-        "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
-        "spectralBandwidth": "0.0",
-        "expectedPixels": [
-          {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
+            "y": 5,
+            "value": 115.21999
           },
           {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.98974
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 4.88555
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 8.98974
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 5.34442
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 6.87199
-          }
-        ]
-      },
-      {
-        "name": "Angles_Azimuth_B12",
-        "description": "Viewing azimuth angles",
-        "bandWidth": 23,
-        "bandHeight": 23,
-        "geophysicalUnit": "°",
-        "noDataValue": "NaN",
-        "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
-        "spectralBandwidth": "0.0",
-        "expectedPixels": [
-          {
-            "x": 4,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 2,
-            "y": 12,
-            "value": "NaN"
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 92.6424
-          },
-          {
-            "x": 20,
-            "y": 20,
-            "value": 84.9775
-          },
-          {
-            "x": 11,
-            "y": 12,
-            "value": 92.6424
-          },
-          {
-            "x": 21,
-            "y": 10,
-            "value": 86.5692
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "value": 118.671
+            "x": 15,
+            "y": 21,
+            "value": 114.77049
           }
         ]
       }
@@ -2821,169 +1393,73 @@
         "description": "Cloud mask identified with the cirrus spectral band"
       },
       {
-        "name": "MG2_water_mask_R1",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,0",
-        "description": "Water mask"
-      },
-      {
-        "name": "MG2_cloud_mask_all_cloud_R1",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,0",
-        "description": "Result of a 'logical OR' for all the cloud masks"
-      },
-      {
-        "name": "MG2_snow_mask_R1",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,255",
-        "description": "Snow mask"
-      },
-      {
-        "name": "MG2_shadow_masks_clouds_R1",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,178",
-        "description": "Shadow masks of clouds"
-      },
-      {
-        "name": "MG2_topographical_shadows_maskR1",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,255,0",
-        "description": "Topographical shadows mask"
-      },
-      {
-        "name": "MG2_hidden_areas_mask_R1",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,178,0",
-        "description": "Hidden areas mask"
-      },
-      {
-        "name": "MG2_sun_too_low_mask_R1",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,255,0",
-        "description": "Sun too low mask"
-      },
-      {
-        "name": "MG2_tangent_sun_mask_R1",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,178,0",
-        "description": "Tangent sun mask"
-      },
-      {
-        "name": "MG2_water_mask_R2",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,0",
-        "description": "Water mask"
-      },
-      {
-        "name": "MG2_cloud_mask_all_cloud_R2",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,0",
-        "description": "Result of a 'logical OR' for all the cloud masks"
-      },
-      {
-        "name": "MG2_snow_mask_R2",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,255",
-        "description": "Snow mask"
-      },
-      {
-        "name": "MG2_shadow_masks_clouds_R2",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,178",
-        "description": "Shadow masks of clouds"
-      },
-      {
-        "name": "MG2_topographical_shadows_maskR2",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,255,0",
-        "description": "Topographical shadows mask"
-      },
-      {
-        "name": "MG2_hidden_areas_mask_R2",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,178,0",
-        "description": "Hidden areas mask"
-      },
-      {
-        "name": "MG2_sun_too_low_mask_R2",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,255,0",
-        "description": "Sun too low mask"
-      },
-      {
-        "name": "MG2_tangent_sun_mask_R2",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,178,0",
-        "description": "Tangent sun mask"
-      },
-      {
-        "name": "Edge_Mask_R1",
+        "name": "edge_mask_R1",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "0,255,0",
         "description": "Edge mask"
       },
       {
-        "name": "Edge_Mask_R2",
+        "name": "edge_mask_R2",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "0,255,0",
         "description": "Edge mask"
       },
       {
-        "name": "Saturation_B2",
+        "name": "saturation_B2",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B2"
       },
       {
-        "name": "Saturation_B3",
+        "name": "saturation_B3",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B3"
       },
       {
-        "name": "Saturation_B4",
+        "name": "saturation_B4",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B4"
       },
       {
-        "name": "Saturation_B8",
+        "name": "saturation_B8",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B8"
       },
       {
-        "name": "Saturation_B5",
+        "name": "saturation_B5",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B5"
       },
       {
-        "name": "Saturation_B6",
+        "name": "saturation_B6",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B6"
       },
       {
-        "name": "Saturation_B7",
+        "name": "saturation_B7",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B7"
       },
       {
-        "name": "Saturation_B8A",
+        "name": "saturation_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B8A"
       },
       {
-        "name": "Saturation_B11",
+        "name": "saturation_B11",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B11"
       },
       {
-        "name": "Saturation_B12",
+        "name": "saturation_B12",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "255,0,0",
         "description": "Saturation mask of band B12"
@@ -2991,44 +1467,44 @@
     ],
     "metadata": [
       {
-        "path": "Metadata/Geoposition_Informations/Metadata_CS/PIXEL_ORIGIN",
+        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Global_Index_List/QUALITY_INDEX[4]",
+        "value": "3"
+      },
+      {
+        "path": "Metadata/Geoposition_Informations/Coordinate_Reference_System/Horizontal_Coordinate_System/HORIZONTAL_CS_TYPE",
+        "value": "PROJECTED"
+      },
+      {
+        "path": "Metadata/Geometric_Informations/Angles_Grids_List/Viewing_Incidence_Angles_Grids_List/Band_Viewing_Incidence_Angles_Grids_List[9]/Viewing_Incidence_Angles_Grids[11]/Azimuth/Values_List/VALUES[12]",
+        "value": "NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN"
+      },
+      {
+        "path": "Metadata/Geometric_Informations/Angles_Grids_List/Viewing_Incidence_Angles_Grids_List/Band_Viewing_Incidence_Angles_Grids_List/Viewing_Incidence_Angles_Grids[9]/Azimuth/Values_List/VALUES",
+        "value": "NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN"
+      },
+      {
+        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Source_Product/PRODUCTION_DATE",
+        "value": "2016-05-10T11:16:58.098898Z"
+      },
+      {
+        "path": "Metadata/Geoposition_Informations/Geopositioning/Global_Geopositioning/Point[2]/LAT",
+        "value": "45.12267188"
+      },
+      {
+        "path": "Metadata/Radiometric_Informations/Special_Values_List/SPECIAL_VALUE[2]",
         "value": "0"
       },
       {
-        "path": "Metadata/Dataset_Identification/GEOGRAPHICAL_ZONE",
-        "value": "T31TFK"
+        "path": "Metadata/Production_Informations/Processing_Jobs_List/Job[3]/Parameter_List/Parameter/NATURE",
+        "value": "PARAM_CORRATMO"
       },
       {
-        "path": "Metadata/Product_Characteristics/UTC_Acquisition_Range/DATE_PRECISION",
-        "value": "0.001"
+        "path": "Metadata/Radiometric_Informations/Spectral_Band_Informations_List/Spectral_Band_Informations[6]/Calibration_Coefficients_Lists/Native_Coefficients_List/COEFFICIENT",
+        "value": "4.88652814148193"
       },
       {
-        "path": "Metadata/Geoposition_Informations/Metadata_CS/PIXEL_ORIGIN",
-        "value": "0"
-      },
-      {
-        "path": "Metadata/Dataset_Identification/GEOGRAPHICAL_ZONE",
-        "value": "T31TFK"
-      },
-      {
-        "path": "Metadata/Production_Informations/Processing_Jobs_List/Job[2]/Products_List/Inputs_List/PRODUCT/PRODUCTION_DATE",
-        "value": "2016-05-03T13:09:59.284580Z"
-      },
-      {
-        "path": "Metadata/Geoposition_Informations/Raster_CS/RASTER_CS_TYPE",
-        "value": "CELL"
-      },
-      {
-        "path": "Metadata/Metadata_Identification/METADATA_INFORMATION",
-        "value": "PUBLIC"
-      },
-      {
-        "path": "Metadata/Geometric_Informations/Angles_Grids_List/Sun_Angles_Grids/Zenith/Values_List/VALUES[17]",
-        "value": "63.0255 63.0088 62.9921 62.9755 62.9588 62.9422 62.9256 62.909 62.8924 62.8758 62.8593 62.8427 62.8262 62.8097 62.7932 62.7767 62.7602 62.7438 62.7273 62.7109 62.6945 62.6781 62.6618"
-      },
-      {
-        "path": "Metadata/Geoposition_Informations/Raster_CS/RASTER_CS_TYPE",
-        "value": "CELL"
+        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Global_Index_List/QUALITY_INDEX",
+        "value": "16"
       }
     ]
   }

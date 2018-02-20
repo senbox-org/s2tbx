@@ -4,6 +4,11 @@
       "id": "MUSCATE-Zip-31TFK",
       "relativePath": "S2/MUSCATE/SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0.zip",
       "description": "Muscate product in an archive"
+    },
+    {
+      "id": "MUSCATE-31TCJ",
+      "relativePath": "S2/MUSCATE/SENTINEL2B_20171127-105827-648_L2A_T31TCJ_D_V1-4/SENTINEL2B_20171127-105827-648_L2A_T31TCJ_D_V1-4_MTD_ALL.xml",
+      "description": "Muscate product in an archive"
     }
   ]
 }
