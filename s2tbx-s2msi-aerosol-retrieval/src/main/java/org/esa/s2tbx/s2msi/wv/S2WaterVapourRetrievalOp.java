@@ -119,7 +119,7 @@ public class S2WaterVapourRetrievalOp extends PixelOperator {
 
     private double getWaterVapour(double lToaB8A, double lToaB9, double rhoToaB8a, double sunZenith, double viewZenith,
                                   double relAzi, double altitude) {
-        double continuumInterpolatedBandRatio = lToaB8A / lToaB9;
+        double continuumInterpolatedBandRatio = lToaB9 / lToaB8A;
         final double log10_cibr = Math.log10(continuumInterpolatedBandRatio);
 
         final IntervalPartition[] partitions = waterVapourLut.getDimensions();
