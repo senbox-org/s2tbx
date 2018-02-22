@@ -33,5 +33,12 @@
             </folder>
         </folder>
     </folder>
+
+    <folder name="OperatorUIs">
+        <file name="org.esa.s2tbx.reflectance2radiance">
+            <attr name="operatorName" stringvalue="ReflectanceToRadianceOp"/>
+            <attr name="disableFromGraphBuilder" stringvalue="true"/>
+        </file>
+    </folder>
     
 </filesystem>

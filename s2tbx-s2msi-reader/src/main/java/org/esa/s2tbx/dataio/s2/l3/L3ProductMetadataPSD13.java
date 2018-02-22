@@ -30,6 +30,8 @@ import java.util.Map;
  */
 public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3ProductMetadata {
 
+    private VirtualPath virtualPath= null;
+
     private static class L3ProductMetadataPSD13Parser extends XmlMetadataParser<L3ProductMetadataPSD13> {
 
         public L3ProductMetadataPSD13Parser(Class metadataFileClass) {
@@ -60,6 +62,8 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
         } finally {
             IOUtils.closeQuietly(stream);
         }
+
+        result.virtualPath = path;
         return result;
     }
     public L3ProductMetadataPSD13(String name) {
@@ -195,6 +199,10 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
 
     @Override
     public String getFormat() {
-        return getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE");
+        String formatName = getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE");
+        if(formatName.equals("SAFE") && this.virtualPath.getFileName().toString().equals("MTD_MSIL03.xml")) {
+            formatName = "SAFE_COMPACT";
+        }
+        return formatName;
     }
 }

@@ -1,6 +1,116 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 6.0
+--------------------
+
+### Main features
+
+#### Sentinel-2 Product Reader
+
+##### Read detector footprint masks per detector
+
+The MSI instrument of Sentinel-2 is composed by different detectors, which have a different viewing geometry.
+Some masks representing these detector for every band have been included in the reader, in order to identify
+from which detector is coming every pixel.
+
+
+##### Support for ZIP inputs
+
+The Sentinel-2 reader is now able to read the zip products directly. It is no more needed to uncompress
+the product before working with it in SNAP.
+
+##### Sentinel-2B products
+
+The new Sentinel-2B products are also supported by the Sentinel-2 reader.
+
+#### Segmentation processor
+
+The Generic Region Merging Processor allows the segmentation of images of arbitrary size.
+It is based on the article A Scalable Tile-Based Framework for Region Merging Segmentation written
+by Pierre Lassale, Jordi Inglada, Julien Michel, Manuel Grizonnet, and Julien Malik.
+
+(http://ieeexplore.ieee.org/document/7101250/)
+
+#### Multi-size mosaic processor
+
+A new algorithm that will be used when at least one of the input products is multisize,
+otherwise the original mosaic operator is called.
+This is fully operational for single granule Sentinel-2 products.
+
+#### S2 Resampler processor
+
+A new processor that allows to resample Sentinel-2 products having into account
+the particularities of the angle bands.
+
+#### OpenJp2 JNA
+
+A new option for using a JNA wrapper for the popular OpenJpeg (OpenJp2) library has been included.
+To activate it, the user have to create a new properties in the s2tbx property file. It has to be added:
+use.openjp2.jna=true
+
+#### Sen2Cor tool adapter
+
+##### Advanced configuration
+
+Now, it is possible to configure more parameters when running sen2cor from SNAP.
+Before, the only parameter was the spatial resolution. Currently, the user can choose
+whether terrain correction should be applied or not, the aerosol type, the ozone, the visibility...
+and all the parameters available in the GIPP file of sen2cor.
+
+##### Sen2Cor download and installation from SNAP
+
+It is now possible to download directly from SNAP the current version of sen2cor and use it without installing anything else.
+This beta version of the sen2cor plugin makes possible to execute sen2cor without installing Anaconda.
+
+#### Sen2Three
+
+Added support for the new product format introduced in autumn 2016 (PSD 14).
+
+
+### List of solved issues
+#### Bug
+    * [SIITBX-248] - L2A SCL Masks do not appear to BandMath on GrephBuilder
+    * [SIITBX-251] - Reflectance2Radiance operator is not working with Sentinel-2 new format
+    * [SIITBX-253] - BaseProductReaderPlugIn getDecodeQualification is too slow
+    * [SIITBX-255] - S2 jpg2000 RGB issue
+    * [SIITBX-256] - GDAL reader interferes with other readers
+    * [SIITBX-257] - Help is broken after updating modules
+    * [SIITBX-258] - java.nio.file.ProviderNotFoundException when trying to open a *.tgz file
+    * [SIITBX-259] - Link to help does not work for S2 MCI processor
+    * [SIITBX-260] - Preset name in S2 MCI processor is wrong
+    * [SIITBX-261] - S2 cache clean-up not working
+    * [SIITBX-263] - "Generic Region Merging" help is disabled in the operator GUI.
+    * [SIITBX-265] - Image link not working properly in milti-size mosaic product
+    * [SIITBX-266] - In multi-size mosaic GUI, "Perform mosaic at native resolution" checkbox disables the "overlapping methods" combo
+    * [SIITBX-267] - In the Generic Region Merging operator the geocoding of the input product is not copied to the target product
+    * [SIITBX-268] - IllegalArgumentException in mosaic operator
+    * [SIITBX-269] - Changing the mosaic bounds has no effect in the ouput (module multi-size mosaic)
+    * [SIITBX-276] - Radiometric indices not working on not reprojected data
+    * [SIITBX-279] - (AP.8) Radiometric Indices have problems when used in a graph
+    * [SIITBX-280] - JP2 Reader is not able to open jp2 image generated with sen2cor at 10 or 20 m resolution
+    * [SIITBX-285] - S2 reader cannot open by folder name the L2A product with old naming convention
+    * [SIITBX-286] - S2 angles are not well computed when angle grids are not in order in the granule metadata file.
+
+#### New Feature
+    * [SIITBX-272] - Segmentation Processor should be implemented in S2TBX
+    * [SIITBX-273] - Multi-size mosaic not available in SNAP
+    * [SIITBX-281] - CCI Land Cover module for CCI 2015 global map cover
+
+#### Improvement
+    * [SIITBX-118] - S-2 MSI readers to use ZIP-files as input
+    * [SIITBX-120] - Read DETECTOR FOOTPRINT masks per detector
+    * [SIITBX-157] - S2-MSI reader is too slow
+    * [SIITBX-225] - Sen2Cor adapter should allow to set advanced GIPP parameters
+    * [SIITBX-235] - Improved error diagnosis for openjpeg executables
+    * [SIITBX-262] - Better support for *.ers files by GDAL reader
+    * [SIITBX-264] - Generic Region Merging default parameters.
+    * [SIITBX-271] - Help missing for Generic Region Merging operator
+    * [SIITBX-274] - Sen2Three - Support for PSD 14
+    * [SIITBX-275] - Download and installation of sen2cor tool from SNAP
+
+
+
 Changes in S2TBX 5.0
 --------------------
 

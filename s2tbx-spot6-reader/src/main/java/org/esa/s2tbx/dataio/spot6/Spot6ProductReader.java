@@ -161,7 +161,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
                 double[][] scalingAndOffsets = imageMetadata.getScalingAndOffsets();
                 Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
-                Product[][] tiles = new Product[tileCols][tileRows];
+                Product[][] tiles = new Product[tileRows][tileCols];
                 for (String rasterFile : tileInfo.keySet()) {
                     int[] coords = tileInfo.get(rasterFile);
                     tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
@@ -195,7 +195,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     MosaicMultiLevelSource bandSource =
                             new MosaicMultiLevelSource(srcBands,
                                     bandWidth, bandHeight,
-                                    tileWidth, tileHeight, tileRows, tileCols,
+                                    tileWidth, tileHeight, tileCols, tileRows,
                                     levels, typeMap.get(pixelDataType),
                                     imageMetadata.isGeocoded() ?
                                             targetBand.getGeoCoding() != null ?

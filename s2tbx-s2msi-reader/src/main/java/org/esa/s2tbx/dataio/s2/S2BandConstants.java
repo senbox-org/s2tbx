@@ -88,4 +88,11 @@ public enum S2BandConstants {
         }
         return null;
     }
+
+    public static S2BandConstants getBandFromPhysicalName(String physicalName) {
+        for (S2BandConstants band : S2BandConstants.values()) {
+            if (band.getPhysicalName().equals(physicalName)) return band;
+        }
+        return null;
+    }
 }

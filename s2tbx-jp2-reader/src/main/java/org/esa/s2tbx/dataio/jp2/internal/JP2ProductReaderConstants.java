@@ -33,6 +33,11 @@ public class JP2ProductReaderConstants {
     public static final String TAG_OFFSET_VECTOR = "/featurecollection/featuremember/featurecollection/featuremember/rectifiedgridcoverage/rectifiedgriddomain/rectifiedgrid/@offsetVector";
     public static final String TAG_CRS_NAME = "/featurecollection/featuremember/featurecollection/featuremember/rectifiedgridcoverage/rectifiedgriddomain/rectifiedgrid/origin/point/@srsname";
     public static final String TYPE = "JPEG-2000";
-    public static final String TAG_POLYGON_POSITIONS = "/Polygon/exterior/LinearRing/@pos";
+    public static final String TAG_BAND_NAME = "/featurecollection/featuremember/featurecollection/featuremember/metadataproperty/genericmetadata/band/@name";
+    public static final String TAG_BAND_SCALE = "/featurecollection/featuremember/featurecollection/featuremember/metadataproperty/genericmetadata/band/@scalefactor";
+    public static final String TAG_BAND_OFFSET = "/featurecollection/featuremember/featurecollection/featuremember/metadataproperty/genericmetadata/band/@offset";
+    public static final String TAG_LOWER_CORNER = "/featurecollection/boundedBy/Envelope/@lowerCorner";
+    public static final String TAG_UPPER_CORNER = "/featurecollection/boundedBy/Envelope/@upperCorner";
+    public static final String TAG_POLYGON_POSITIONS = "/featurecollection/boundedBy/Envelope/Polygon/exterior/LinearRing/@posList";
     public static final String TAG_CRS_NAME_VARIANT = "/Polygon/@srsName";
 }

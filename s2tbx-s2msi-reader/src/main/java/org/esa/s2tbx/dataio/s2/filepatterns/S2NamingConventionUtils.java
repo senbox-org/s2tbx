@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -133,24 +134,36 @@ public class S2NamingConventionUtils {
             return null;
         }
 
-        String xmlFile = "";
-        int availableXmlCount = 0;
-
+        ArrayList<String> xmlCandidates = new ArrayList<>(5);
         for(String xml : listXmlFiles) {
             for(Pattern pattern : patterns) {
                 if (pattern.matcher(xml).matches() ) {
-                    xmlFile = xml;
-                    availableXmlCount++;
-                    break;
+                    xmlCandidates.add(xml);
+                    break; //do not check the rest of the patterns
                 }
             }
         }
 
-        if(availableXmlCount != 1) {
+        if(xmlCandidates.size() == 1) {
+            return path.resolve(xmlCandidates.get(0));
+        } else if (xmlCandidates.size() == 0) {
+            return null;
+        } else {
+            //Try to filter the result, by removing the reports
+            //TODO Make a list of string to filter
+            Iterator<String> i = xmlCandidates.iterator();
+            while (i.hasNext()) {
+                String xmlString = i.next();
+                if(xmlString.contains("report")) {
+                    i.remove();
+                }
+            }
+            //If only one remaining, return it
+            if(xmlCandidates.size() == 1) {
+                return path.resolve(xmlCandidates.get(0));
+            }
             return null;
         }
-
-        return path.resolve(xmlFile);
     }
 
     public static ArrayList<VirtualPath> getAllFilesFromDir(VirtualPath path, String[] REGEXs) {

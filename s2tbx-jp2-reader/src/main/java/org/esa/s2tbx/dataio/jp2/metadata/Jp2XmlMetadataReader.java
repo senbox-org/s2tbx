@@ -22,6 +22,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Reader for decoding JP2 XML blocks into Metadata elements.
@@ -34,6 +36,8 @@ public class Jp2XmlMetadataReader {
     private static final int[] JP2_JP2C = { 0x63, 0x32, 0x70, 0x6A };
     /* Start of any XML block (reversed) */
     private static final int[] JP2_XML = { 0x20, 0x6C, 0x6D, 0x78 };
+
+    private static final Set<Integer> blockTerminators = new HashSet<Integer>() {{ add(0); add(7); }};
 
     private ByteSequenceMatcher jp2cMatcher;
     private ByteSequenceMatcher xmlTagMatcher;
@@ -74,7 +78,7 @@ public class Jp2XmlMetadataReader {
     private String extractBlock(MappedByteBuffer buffer) throws IOException {
         StringBuilder builder = new StringBuilder();
         int current;
-        while ((current = buffer.get()) != 0) {
+        while (!blockTerminators.contains(current = buffer.get())) {
             builder.append(Character.toString((char) current));
         }
         return builder.toString();

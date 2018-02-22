@@ -92,14 +92,15 @@ import static org.esa.snap.utils.DateHelper.parseDate;
  */
 public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader {
 
-    static final String VIEW_ZENITH_PREFIX = "view_zenith";
-    static final String VIEW_AZIMUTH_PREFIX = "view_azimuth";
-    static final String SUN_ZENITH_PREFIX = "sun_zenith";
-    static final String SUN_AZIMUTH_PREFIX = "sun_azimuth";
+    public static final String VIEW_ZENITH_PREFIX = "view_zenith";
+    public static final String VIEW_AZIMUTH_PREFIX = "view_azimuth";
+    public static final String SUN_ZENITH_PREFIX = "sun_zenith";
+    public static final String SUN_AZIMUTH_PREFIX = "sun_azimuth";
 
 
     private final String epsgCode;
     protected final Logger logger;
+    private S2Metadata metadataHeader = null;
 
     public Sentinel2OrthoProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
         super(readerPlugIn);
@@ -113,6 +114,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     protected abstract String getReaderCacheDir();
+
+    public S2Metadata getMetadataHeader() {
+        return metadataHeader;
+    }
 
     protected abstract S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException;
 
@@ -164,7 +169,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             rootMetadataPath = metadataPath;
         }
 
-        S2Metadata metadataHeader = parseHeader(rootMetadataPath, granuleDirName, getConfig(), epsgCode, !foundProductMetadata);
+        /*S2Metadata*/ metadataHeader = parseHeader(rootMetadataPath, granuleDirName, getConfig(), epsgCode, !foundProductMetadata);
         SystemUtils.LOG.fine(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
@@ -274,11 +279,44 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                     }
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
-
+                    boolean bFound = false;
                     VirtualPath path = productPath.resolve(imgFilename);
                     if (path.exists()) {
                         tilePathMap.put(tile.getId(), path);
-                    } else {
+                        bFound = true;
+                    } else if(path.getParent() != null && path.getParent().exists()) { //Search a sibling containing the physicalBand name
+                        S2BandConstants bandConstant = S2BandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
+                        if(bandConstant != null) {
+                            VirtualPath[] otherPaths = path.getParent().listPaths(bandConstant.getFilenameBandId());
+                            if (otherPaths != null && otherPaths.length == 1) {
+                                tilePathMap.put(tile.getId(), otherPaths[0]);
+                                bFound = true;
+                            } else if (otherPaths != null && otherPaths.length > 1) {
+                                VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths,bandInformation.getResolution().resolution);
+                                if(pathWithResolution != null) {
+                                    tilePathMap.put(tile.getId(), pathWithResolution);
+                                    bFound = true;
+                                }
+                            }
+                        } else { //try specific bands
+                            S2SpecificBandConstants specificBandConstant = S2SpecificBandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
+                            if(specificBandConstant != null) {
+                                VirtualPath[] otherPaths = path.getParent().listPaths(specificBandConstant.getFilenameBandId());
+                                if (otherPaths != null && otherPaths.length == 1) {
+                                    tilePathMap.put(tile.getId(), otherPaths[0]);
+                                    bFound = true;
+                                } else if(otherPaths != null && otherPaths.length > 1) {
+
+                                    VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths,bandInformation.getResolution().resolution);
+                                    if(pathWithResolution != null) {
+                                        tilePathMap.put(tile.getId(), pathWithResolution);
+                                        bFound = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(!bFound) {
                         logger.warning(String.format("Warning: missing file %s\n", path.getFullPathString()));
                     }
                 }
@@ -347,6 +385,25 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         return product;
+    }
+
+    private VirtualPath filterVirtualPathsByResolution(VirtualPath[] paths, int resolution) {
+
+        boolean found = false;
+        VirtualPath resultPath = null;
+        if (paths == null) {
+            return null;
+        }
+        for(VirtualPath path : paths) {
+            if (path.getFileName().toString().contains(String.format("%dm",resolution))) {
+                if (found) {
+                    return null;
+                }
+                found = true;
+                resultPath = path;
+            }
+        }
+        return resultPath;
     }
 
     abstract protected int getMaskLevel();
@@ -442,7 +499,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if (masterOriginY < bandAnglesGrid[0].originY) masterOriginY = bandAnglesGrid[0].originY;
 
             for(S2BandAnglesGrid grid : bandAnglesGrid) {
-                anglesIDs.add(new AngleID(grid.getPrefix(),grid.getBand())); //if it is repeated, the angleID is not added because it is a HashSet
+                if(grid.getResX() == resX && grid.getResX() == resX && grid.getWidth() == widthAnglesTile && grid.getHeight() == heightAnglesTile) {
+                    anglesIDs.add(new AngleID(grid.getPrefix(), grid.getBand())); //if it is repeated, the angleID is not added because it is a HashSet
+                }
             }
         }
 
@@ -520,7 +579,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
 
-            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
             hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
@@ -1037,6 +1096,18 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return !Float.isNaN(value) && !Float.isInfinite(value);
     }
 
+    //Checks if every angleGrid has the expected size
+    private boolean checkAnglesGrids(S2Metadata.AnglesGrid[] anglesGrids, int expectedGridHeight, int expectedGridWidth) {
+        if(anglesGrids == null) {
+            return false;
+        }
+        for (S2Metadata.AnglesGrid angleGrid : anglesGrids) {
+            if(angleGrid.getHeight() != expectedGridHeight || angleGrid.getWidth() != expectedGridWidth) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private S2BandAnglesGrid[] createS2OrthoAnglesGrids(S2Metadata metadataHeader, String tileId) throws IOException {
 
@@ -1065,7 +1136,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         S2Metadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
         S2Metadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
 
-        if(viewingIncidenceAnglesGrids != null){
+        if(checkAnglesGrids(viewingIncidenceAnglesGrids, gridHeight, gridWidth)){
             int iLastBandId = -1;
             int bandId;
             for (S2Metadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
@@ -1147,9 +1218,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 if (viewingAzimuthsCount[i] != 0) viewingAzimuths[i] = viewingAzimuths[i] / viewingAzimuthsCount[i];
             }
 
-            listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingZeniths));
-            listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingAzimuths));
+            //listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingZeniths));
+            //listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingAzimuths));
         }
+
+        //out of the "if" because we want always the mean view angles (perhaps they will be NaN)
+        listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingZeniths));
+        listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingAzimuths));
 
 
         if(sunAnglesGrid != null) {
@@ -1356,7 +1431,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
-            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
             hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
@@ -1443,7 +1518,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
-            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
             hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),

@@ -69,7 +69,9 @@ public class FileHelper {
         }
         InputStream inputStream = sourceURL.openStream();
         try {
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destinationFile.toFile()));
+            File dest = destinationFile.toFile();
+            dest.getParentFile().mkdirs();
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dest));
             try {
                 byte[] buffer = new byte[4096];
                 int read;

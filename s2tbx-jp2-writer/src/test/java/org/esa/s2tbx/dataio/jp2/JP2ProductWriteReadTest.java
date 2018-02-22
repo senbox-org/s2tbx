@@ -96,7 +96,7 @@ public class JP2ProductWriteReadTest {
 
     @Test
     public void testWriteReadVirtualBandIsNotExcludedInProduct() throws IOException {
-        final VirtualBand virtualBand = new VirtualBand("band_2", ProductData.TYPE_UINT8,
+        final VirtualBand virtualBand = new VirtualBand("band_2", ProductData.TYPE_UINT16,
                 outProduct.getSceneRasterWidth(),
                 outProduct.getSceneRasterHeight(), "X * Y");
         outProduct.addBand(virtualBand);
@@ -112,8 +112,8 @@ public class JP2ProductWriteReadTest {
     @Test
     public void testWriteReadTiePointGeoCoding() throws IOException {
         setTiePointGeoCoding(outProduct);
-        final Band bandUInt8 = outProduct.addBand("band_2", ProductData.TYPE_UINT8);
-        bandUInt8.setDataElems(createByteData(getProductSize(), 23));
+        final Band bandUInt8 = outProduct.addBand("band_2", ProductData.TYPE_UINT16);
+        bandUInt8.setDataElems(createShortData(getProductSize(), 23));
         final Product inProduct = writeReadProduct();
         try {
             assertEquals(outProduct.getName(), inProduct.getName());
@@ -155,16 +155,14 @@ public class JP2ProductWriteReadTest {
     }
 
     private static void setTiePointGeoCoding(final Product product) {
-        final TiePointGrid latGrid = new TiePointGrid("latitude", 3, 3, 0, 0, 14,14, new float[]{
-                85, 84, 83,
-                75, 74, 73,
-                65, 64, 63
+        final TiePointGrid latGrid = new TiePointGrid("latitude", 2, 2, 0, 0, 14,14, new float[]{
+                85, 83,
+                65, 63
         },TiePointGrid.DISCONT_NONE);
 
-        final TiePointGrid lonGrid = new TiePointGrid("longitude", 3, 3, 0, 0, 14, 14, new float[]{
-                -15, -5, 5,
-                -16, -6, 4,
-                -17, -7, 3
+        final TiePointGrid lonGrid = new TiePointGrid("longitude", 2, 2, 0, 0, 14, 14, new float[]{
+                -15, 5,
+                -17, 3
         },TiePointGrid.DISCONT_AT_180);
 
         product.addTiePointGrid(latGrid);

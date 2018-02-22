@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 import java.awt.geom.Point2D;
+import java.util.Arrays;
 
 /**
  * Created by obarrile on 24/06/2016.
@@ -83,7 +84,5 @@ public class S2BandAnglesGrid {
     public float[] getData() {
         return data;
     }
-
-
-}
+ }
 
