@@ -1,8 +1,11 @@
 package org.esa.s2tbx.s2msi.aerosol;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.s2msi.aerosol.util.AerosolUtils;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.FlagCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -14,7 +17,7 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.ProductUtils;
 
-import java.awt.*;
+import java.awt.Rectangle;
 
 /**
  * Operator for upscaling in aerosol retrieval from S2 MSI.
@@ -43,7 +46,6 @@ public class S2AerosolUpscaleOp extends Operator {
     private int offset;
     private int sourceRasterWidth;
     private int sourceRasterHeight;
-    private Band validBand;
 
     @Override
     public void initialize() throws OperatorException {
@@ -53,8 +55,6 @@ public class S2AerosolUpscaleOp extends Operator {
         int targetHeight = hiresProduct.getSceneRasterHeight();
 
         offset = scale / 2;
-        final String validExpression = InstrumentConsts.VALID_AOT_OUT_EXPRESSION;
-        validBand = AerosolUtils.createBooleanExpressionBand(validExpression, hiresProduct);
 
         String targetProductName = lowresProduct.getName();
         String targetProductType = lowresProduct.getProductType();
@@ -82,10 +82,9 @@ public class S2AerosolUpscaleOp extends Operator {
 
         Band sourceBand = lowresProduct.getBand(targetBandName);
         Tile sourceTile = getSourceTile(sourceBand, srcRec);
-        Tile validTile = getSourceTile(validBand, tarRec);
 
         if (!targetBand.isFlagBand()) {
-            upscaleTileBilinear(sourceTile, validTile, targetTile, tarRec);
+            upscaleTileBilinear(sourceTile, targetTile, tarRec);
         } else {
             upscaleFlagCopy(sourceTile, targetTile, tarRec);
         }
@@ -165,7 +164,7 @@ public class S2AerosolUpscaleOp extends Operator {
         return targetBand;
     }
 
-    private void upscaleTileBilinear(Tile srcTile, Tile validTile, Tile tarTile, Rectangle tarRec) {
+    private void upscaleTileBilinear(Tile srcTile, Tile tarTile, Rectangle tarRec) {
 
         final int tarX = tarRec.x;
         final int tarY = tarRec.y;
@@ -191,9 +190,7 @@ public class S2AerosolUpscaleOp extends Operator {
 
                 float result = noData;
                 try {
-                    if (validTile.getSampleBoolean(iTarX, iTarY)) {
-                        result = interpolateBilinear(srcTile, noData, xFrac, yFrac, iSrcX, iSrcY);
-                    }
+                    result = interpolateBilinear(srcTile, noData, xFrac, yFrac, iSrcX, iSrcY);
                 } catch (Exception ex) {
                     System.err.println(iTarX + " / " + iTarY);
                     System.err.println(ex.getMessage());
