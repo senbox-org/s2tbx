@@ -28,10 +28,10 @@ public class S2WaterVapourRetrievalOp_IntegrationTest {
 
         final Band waterVapourBand = waterVapourProduct.getBand("water_vapour");
         assertNotNull(waterVapourBand);
-        assertEquals(21.02074f, waterVapourBand.getSampleFloat(5, 5), 1e-8);
-        assertEquals(24.296015f, waterVapourBand.getSampleFloat(95, 5), 1e-8);
-        assertEquals(21.63154f, waterVapourBand.getSampleFloat(5, 95), 1e-8);
-        assertEquals(22.193762f, waterVapourBand.getSampleFloat(95, 95), 1e-8);
+        assertEquals(13.64967918f, waterVapourBand.getSampleFloat(5, 5), 1e-8);
+        assertEquals(16.19223213f, waterVapourBand.getSampleFloat(95, 5), 1e-8);
+        assertEquals(14.01031970f, waterVapourBand.getSampleFloat(5, 95), 1e-8);
+        assertEquals(14.30757045f, waterVapourBand.getSampleFloat(95, 95), 1e-8);
     }
 
 }
