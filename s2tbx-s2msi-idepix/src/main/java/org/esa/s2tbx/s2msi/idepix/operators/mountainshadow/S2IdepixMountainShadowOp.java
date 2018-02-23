@@ -1,11 +1,10 @@
-package org.esa.s2tbx.s2msi.idepix.operators;
+package org.esa.s2tbx.s2msi.idepix.operators.mountainshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
-import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 
@@ -71,12 +70,4 @@ public class S2IdepixMountainShadowOp extends Operator {
         }
     }
 
-
-
-    public static class Spi extends OperatorSpi {
-
-        public Spi() {
-            super(S2IdepixMountainShadowOp.class);
-        }
-    }
 }
