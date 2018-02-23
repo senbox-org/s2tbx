@@ -1,6 +1,7 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
@@ -78,7 +79,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     private static final String sourceBandNameClusterB = "B3";
     private static final String sourceSunZenithName = "sun_zenith";
     private static final String sourceSunAzimuthName = "sun_azimuth";
-    private static final String sourceAltitudeName = "elevation";
+    private static final String sourceAltitudeName = S2IdepixConstants.ELEVATION_BAND_NAME;
     private static final String sourceFlagName1 = "pixel_classif_flags";
 
     @Override
