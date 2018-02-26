@@ -109,10 +109,8 @@ public class SlopeAspectOrientationOp extends Operator {
         if (!computeSlope && !computeAspect && !computeOrientation) {
             return;
         }
-        final Rectangle sourceRectangle = getSourceRectangle(targetRectangle, sourceProduct.getSceneRasterWidth(),
-                                                             sourceProduct.getSceneRasterHeight());
+        final Rectangle sourceRectangle = getSourceRectangle_2(targetRectangle);
         float[] elevationData = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
-        ;
         if (computeSlope || computeAspect) {
             final BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
             final Tile elevationTile = getSourceTile(elevationBand, sourceRectangle, borderExtender);
@@ -146,7 +144,8 @@ public class SlopeAspectOrientationOp extends Operator {
                     aspectData[targetIndex] = slopeAndAspect[1];
                 }
                 if (computeOrientation) {
-
+                    orientationData[targetIndex] = computeOrientation(sourceLatitudes, sourceLongitudes,
+                                                                      sourceIndex, sourceRectangle.width);
                 }
             }
         }
@@ -172,9 +171,24 @@ public class SlopeAspectOrientationOp extends Operator {
     }
 
     /* package local for testing */
+    static float computeOrientation(float[] latData, float[] lonData, int sourceIndex, int sourceWidth) {
+        float lat1 = latData[sourceIndex - 1];
+        float lat2 = latData[sourceIndex + 1];
+        float lon1 = lonData[sourceIndex - 1];
+        float lon2 = lonData[sourceIndex + 1];
+        return (float) Math.atan2(- (lat2 - lat1), (lon2 - lon1) * Math.cos(Math.toRadians(lat1)));
+    }
+
+    /* package local for testing */
 //    static float computeOrientation(float[] latData, float[] lonData, int sourceIndex) {
 //
 //    }
+
+    /* package local for testing */
+    static Rectangle getSourceRectangle_2(Rectangle targetRectangle) {
+        return new Rectangle(targetRectangle.x -1, targetRectangle.y - 1,
+                             targetRectangle.width + 2, targetRectangle.height + 2);
+    }
 
     /* package local for testing */
     static Rectangle getSourceRectangle(Rectangle targetRectangle, int productWidth, int productHeight) {
