@@ -69,7 +69,7 @@
 
     <properties>
         <snap.version>6.0.0</snap.version>
-        <s2tbx.version>6.0.0</s2tbx.version>
+        <s2tbx.version>6.0.1-SNAPSHOT</s2tbx.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE82</netbeans.version>
