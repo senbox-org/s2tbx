@@ -2,4 +2,5 @@ org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixOp$Spi
 org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixPostProcessOp$Spi
 org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixClassificationOp$Spi
 org.esa.s2tbx.s2msi.idepix.operators.S2IdepixCloudBufferOp$Spi
+org.esa.s2tbx.s2msi.idepix.operators.mountainshadow.SlopeAspectOrientationOp$Spi
 org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixCloudShadowOp$Spi

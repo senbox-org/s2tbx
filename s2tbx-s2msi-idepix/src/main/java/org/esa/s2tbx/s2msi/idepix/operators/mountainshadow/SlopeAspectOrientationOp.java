@@ -11,6 +11,7 @@ import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
@@ -25,6 +26,12 @@ import java.util.Map;
 /**
  * @author Tonio Fincke
  */
+@OperatorMetadata(alias = "Idepix.Sentinel2.SlopeAspectOrientation",
+        version = "1.0",
+        internal = true,
+        authors = "Tonio Fincke",
+        copyright = "(c) 2016 by Brockmann Consult",
+        description = "Computes Slope, Aspect and Orientation for a Product with elevation data and a CRS geocoding.")
 public class SlopeAspectOrientationOp extends Operator {
 
     @SourceProduct
@@ -51,6 +58,11 @@ public class SlopeAspectOrientationOp extends Operator {
     private Band slopeBand;
     private Band aspectBand;
     private Band orientationBand;
+    private final static String TARGET_PRODUCT_NAME = "Slope-Aspect-Orientation";
+    private final static String TARGET_PRODUCT_TYPE = "slope-aspect-orientation";
+    final static String SLOPE_BAND_NAME = "slope";
+    final static String ASPECT_BAND_NAME = "aspect";
+    final static String ORIENTATION_BAND_NAME = "orientation";
 
     @Override
     public void initialize() throws OperatorException {
@@ -60,7 +72,6 @@ public class SlopeAspectOrientationOp extends Operator {
         if (sourceGeoCoding == null) {
             throw new OperatorException("Source product has no geo-coding");
         }
-//        if (Double.isNaN(spatialResolution) && (computeSlope || computeAspect)) {
         if (computeSlope || computeAspect) {
             if (sourceGeoCoding instanceof CrsGeoCoding) {
                 final MathTransform i2m = sourceGeoCoding.getImageToMapTransform();
@@ -77,16 +88,17 @@ public class SlopeAspectOrientationOp extends Operator {
         if (elevationBand == null && (computeSlope || computeAspect)) {
             throw new OperatorException("Elevation band required to compute slope or aspect");
         }
-        targetProduct = createTargetProduct("Slope-Aspect-Orientation", "slope-aspect-orientation");
+        targetProduct = createTargetProduct();
+        ProductUtils.copyBand(S2IdepixConstants.ELEVATION_BAND_NAME, sourceProduct, targetProduct, true);
         if (computeSlope) {
-            slopeBand = targetProduct.addBand("Slope", ProductData.TYPE_FLOAT32);
+            slopeBand = targetProduct.addBand(SLOPE_BAND_NAME, ProductData.TYPE_FLOAT32);
             slopeBand.setDescription("Slope of each pixel as angle");
             slopeBand.setUnit("rad [0..pi/2]");
             slopeBand.setNoDataValue(-9999.);
             slopeBand.setNoDataValueUsed(true);
         }
         if (computeAspect) {
-            aspectBand = targetProduct.addBand("Aspect", ProductData.TYPE_FLOAT32);
+            aspectBand = targetProduct.addBand(ASPECT_BAND_NAME, ProductData.TYPE_FLOAT32);
             aspectBand.setDescription("Aspect of each pixel as angle between raster -Y direction and steepest slope, " +
                                               "clockwise");
             aspectBand.setUnit("rad [-pi..pi]");
@@ -94,7 +106,7 @@ public class SlopeAspectOrientationOp extends Operator {
             aspectBand.setNoDataValueUsed(true);
         }
         if (computeOrientation) {
-            orientationBand = targetProduct.addBand("Orientation", ProductData.TYPE_FLOAT32);
+            orientationBand = targetProduct.addBand(ORIENTATION_BAND_NAME, ProductData.TYPE_FLOAT32);
             orientationBand.setDescription("Orientation of each pixel as angle between east and raster X direction, " +
                                                    "clockwise");
             orientationBand.setUnit("rad [-pi..pi]");
@@ -109,7 +121,7 @@ public class SlopeAspectOrientationOp extends Operator {
         if (!computeSlope && !computeAspect && !computeOrientation) {
             return;
         }
-        final Rectangle sourceRectangle = getSourceRectangle_2(targetRectangle);
+        final Rectangle sourceRectangle = getSourceRectangle(targetRectangle);
         float[] elevationData = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
         if (computeSlope || computeAspect) {
             final BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
@@ -126,28 +138,28 @@ public class SlopeAspectOrientationOp extends Operator {
                                                                               sourceLatitudes,
                                                                               sourceLongitudes);
         }
-        int sourceIndex = 0;
+        int sourceIndex = sourceRectangle.width;
         int targetIndex = 0;
-        final float[] slopeData = targetTiles.get(slopeBand).getDataBufferFloat();
-        final float[] aspectData = targetTiles.get(aspectBand).getDataBufferFloat();
-        final float[] orientationData = targetTiles.get(orientationBand).getDataBufferFloat();
+        final ProductData slopeDataBuffer = targetTiles.get(slopeBand).getDataBuffer();
+        final ProductData aspectDataBuffer = targetTiles.get(aspectBand).getDataBuffer();
+        final ProductData orientationDataBuffer = targetTiles.get(orientationBand).getDataBuffer();
         for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
-            sourceIndex += sourceRectangle.width;
-            targetIndex += targetRectangle.width;
+            sourceIndex++;
             for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
-                sourceIndex++;
-                targetIndex++;
                 if (computeSlope || computeAspect) {
                     final float[] slopeAndAspect = computeSlopeAndAspect(elevationData, sourceIndex,
                                                                          spatialResolution, sourceRectangle.width);
-                    slopeData[targetIndex] = slopeAndAspect[0];
-                    aspectData[targetIndex] = slopeAndAspect[1];
+                    slopeDataBuffer.setElemFloatAt(targetIndex, slopeAndAspect[0]);
+                    aspectDataBuffer.setElemFloatAt(targetIndex, slopeAndAspect[1]);
                 }
                 if (computeOrientation) {
-                    orientationData[targetIndex] = computeOrientation(sourceLatitudes, sourceLongitudes,
-                                                                      sourceIndex, sourceRectangle.width);
+                    orientationDataBuffer.setElemFloatAt(targetIndex, computeOrientation(
+                            sourceLatitudes, sourceLongitudes, sourceIndex));
                 }
+                sourceIndex++;
+                targetIndex++;
             }
+            sourceIndex++;
         }
     }
 
@@ -171,7 +183,7 @@ public class SlopeAspectOrientationOp extends Operator {
     }
 
     /* package local for testing */
-    static float computeOrientation(float[] latData, float[] lonData, int sourceIndex, int sourceWidth) {
+    static float computeOrientation(float[] latData, float[] lonData, int sourceIndex) {
         float lat1 = latData[sourceIndex - 1];
         float lat2 = latData[sourceIndex + 1];
         float lon1 = lonData[sourceIndex - 1];
@@ -179,46 +191,15 @@ public class SlopeAspectOrientationOp extends Operator {
         return (float) Math.atan2(- (lat2 - lat1), (lon2 - lon1) * Math.cos(Math.toRadians(lat1)));
     }
 
-    /* package local for testing */
-//    static float computeOrientation(float[] latData, float[] lonData, int sourceIndex) {
-//
-//    }
-
-    /* package local for testing */
-    static Rectangle getSourceRectangle_2(Rectangle targetRectangle) {
+    private static Rectangle getSourceRectangle(Rectangle targetRectangle) {
         return new Rectangle(targetRectangle.x -1, targetRectangle.y - 1,
                              targetRectangle.width + 2, targetRectangle.height + 2);
     }
 
-    /* package local for testing */
-    static Rectangle getSourceRectangle(Rectangle targetRectangle, int productWidth, int productHeight) {
-        int leftExtender = 1;
-        int rightExtender = 1;
-        int upperExtender = 1;
-        int lowerExtender = 1;
-        if (targetRectangle.x == 0) {
-            leftExtender = 0;
-        }
-        if (targetRectangle.y == 0) {
-            upperExtender = 0;
-        }
-        if (targetRectangle.x + targetRectangle.width == productWidth) {
-            rightExtender = 0;
-        }
-        if (targetRectangle.y + targetRectangle.height == productHeight) {
-            lowerExtender = 0;
-        }
-        return new Rectangle(targetRectangle.x - leftExtender,
-                             targetRectangle.y - upperExtender,
-                             targetRectangle.width + leftExtender + rightExtender,
-                             targetRectangle.height + upperExtender + lowerExtender);
-    }
-
-    private Product createTargetProduct(String name, String type) {
+    private Product createTargetProduct() {
         final int sceneWidth = sourceProduct.getSceneRasterWidth();
         final int sceneHeight = sourceProduct.getSceneRasterHeight();
-
-        Product targetProduct = new Product(name, type, sceneWidth, sceneHeight);
+        Product targetProduct = new Product(TARGET_PRODUCT_NAME, TARGET_PRODUCT_TYPE, sceneWidth, sceneHeight);
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
         targetProduct.setStartTime(sourceProduct.getStartTime());
         targetProduct.setEndTime(sourceProduct.getEndTime());
@@ -230,7 +211,7 @@ public class SlopeAspectOrientationOp extends Operator {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(S2IdepixMountainShadowOp.class);
+            super(SlopeAspectOrientationOp.class);
         }
     }
 }
