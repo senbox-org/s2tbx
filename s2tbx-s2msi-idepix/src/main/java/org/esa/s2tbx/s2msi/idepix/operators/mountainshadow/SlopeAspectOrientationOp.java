@@ -12,7 +12,6 @@ import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
-import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
@@ -40,20 +39,8 @@ public class SlopeAspectOrientationOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(description = "Whether to compute the slope", defaultValue = "true")
-    private boolean computeSlope;
-
-    @Parameter(description = "Whether to compute the aspect", defaultValue = "true")
-    private boolean computeAspect;
-
-    @Parameter(description = "Whether to compute the orientation", defaultValue = "true")
-    private boolean computeOrientation;
-
-    //    @Parameter(description = "The spatial resolution of the source image. If not given, it is attempted to extract" +
-//            "this from the geo-coding. Required for computing slope and aspect.")
     private double spatialResolution;
 
-    private GeoCoding sourceGeoCoding;
     private Band elevationBand;
     private Band slopeBand;
     private Band aspectBand;
@@ -63,81 +50,68 @@ public class SlopeAspectOrientationOp extends Operator {
     final static String SLOPE_BAND_NAME = "slope";
     final static String ASPECT_BAND_NAME = "aspect";
     final static String ORIENTATION_BAND_NAME = "orientation";
+    private final static String SLOPE_BAND_DESCRIPTION = "Slope of each pixel as angle";
+    private final static String ASPECT_BAND_DESCRIPTION =
+            "Aspect of each pixel as angle between raster -Y direction and steepest slope, clockwise";
+    private final static String ORIENTATION_BAND_DESCRIPTION =
+            "Orientation of each pixel as angle between east and raster X direction, clockwise";
+    private final static String SLOPE_BAND_UNIT = "rad [0..pi/2]";
+    private final static String ASPECT_BAND_UNIT = "rad [-pi..pi]";
+    private final static String ORIENTATION_BAND_UNIT = "rad [-pi..pi]";
 
     @Override
     public void initialize() throws OperatorException {
         sourceProduct = getSourceProduct();
         ensureSingleRasterSize(sourceProduct);
-        sourceGeoCoding = sourceProduct.getSceneGeoCoding();
+        GeoCoding sourceGeoCoding = sourceProduct.getSceneGeoCoding();
         if (sourceGeoCoding == null) {
             throw new OperatorException("Source product has no geo-coding");
         }
-        if (computeSlope || computeAspect) {
-            if (sourceGeoCoding instanceof CrsGeoCoding) {
-                final MathTransform i2m = sourceGeoCoding.getImageToMapTransform();
-                if (i2m instanceof AffineTransform) {
-                    spatialResolution = ((AffineTransform) i2m).getScaleX();
-                } else {
-                    throw new OperatorException("Could not retrieve spatial resolution from Geo-coding");
-                }
+        if (sourceGeoCoding instanceof CrsGeoCoding) {
+            final MathTransform i2m = sourceGeoCoding.getImageToMapTransform();
+            if (i2m instanceof AffineTransform) {
+                spatialResolution = ((AffineTransform) i2m).getScaleX();
             } else {
                 throw new OperatorException("Could not retrieve spatial resolution from Geo-coding");
             }
+        } else {
+            throw new OperatorException("Could not retrieve spatial resolution from Geo-coding");
         }
         elevationBand = sourceProduct.getBand(S2IdepixConstants.ELEVATION_BAND_NAME);
-        if (elevationBand == null && (computeSlope || computeAspect)) {
+        if (elevationBand == null) {
             throw new OperatorException("Elevation band required to compute slope or aspect");
         }
         targetProduct = createTargetProduct();
-        ProductUtils.copyBand(S2IdepixConstants.ELEVATION_BAND_NAME, sourceProduct, targetProduct, true);
-        if (computeSlope) {
-            slopeBand = targetProduct.addBand(SLOPE_BAND_NAME, ProductData.TYPE_FLOAT32);
-            slopeBand.setDescription("Slope of each pixel as angle");
-            slopeBand.setUnit("rad [0..pi/2]");
-            slopeBand.setNoDataValue(-9999.);
-            slopeBand.setNoDataValueUsed(true);
-        }
-        if (computeAspect) {
-            aspectBand = targetProduct.addBand(ASPECT_BAND_NAME, ProductData.TYPE_FLOAT32);
-            aspectBand.setDescription("Aspect of each pixel as angle between raster -Y direction and steepest slope, " +
-                                              "clockwise");
-            aspectBand.setUnit("rad [-pi..pi]");
-            aspectBand.setNoDataValue(-9999.);
-            aspectBand.setNoDataValueUsed(true);
-        }
-        if (computeOrientation) {
-            orientationBand = targetProduct.addBand(ORIENTATION_BAND_NAME, ProductData.TYPE_FLOAT32);
-            orientationBand.setDescription("Orientation of each pixel as angle between east and raster X direction, " +
-                                                   "clockwise");
-            orientationBand.setUnit("rad [-pi..pi]");
-            orientationBand.setNoDataValue(-9999.);
-            orientationBand.setNoDataValueUsed(true);
-        }
+        slopeBand = createBand(SLOPE_BAND_NAME, SLOPE_BAND_DESCRIPTION, SLOPE_BAND_UNIT);
+        aspectBand = createBand(ASPECT_BAND_NAME, ASPECT_BAND_DESCRIPTION, ASPECT_BAND_UNIT);
+        orientationBand = createBand(ORIENTATION_BAND_NAME, ORIENTATION_BAND_DESCRIPTION, ORIENTATION_BAND_UNIT);
         setTargetProduct(targetProduct);
     }
 
+    private Band createBand(String bandName, String description, String unit) {
+        Band band = targetProduct.addBand(bandName, ProductData.TYPE_FLOAT32);
+        band.setDescription(description);
+        band.setUnit(unit);
+        band.setNoDataValue(-9999.);
+        band.setNoDataValueUsed(true);
+        return band;
+    }
+
     @Override
-    public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
-        if (!computeSlope && !computeAspect && !computeOrientation) {
-            return;
-        }
+    public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm)
+            throws OperatorException {
         final Rectangle sourceRectangle = getSourceRectangle(targetRectangle);
-        float[] elevationData = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
-        if (computeSlope || computeAspect) {
-            final BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
-            final Tile elevationTile = getSourceTile(elevationBand, sourceRectangle, borderExtender);
-            elevationData = elevationTile.getDataBufferFloat();
-        }
+        final BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
+        final Tile elevationTile = getSourceTile(elevationBand, sourceRectangle, borderExtender);
+        float[] elevationData = elevationTile.getDataBufferFloat();
         float[] sourceLatitudes = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
         float[] sourceLongitudes = new float[(int) (sourceRectangle.getWidth() * sourceRectangle.getHeight())];
-        if (computeOrientation) {
-            ((CrsGeoCoding) getSourceProduct().getSceneGeoCoding()).getPixels((int) sourceRectangle.getMinX(),
-                                                                              (int) sourceRectangle.getMinY(),
-                                                                              (int) sourceRectangle.getWidth(),
-                                                                              (int) sourceRectangle.getHeight(),
-                                                                              sourceLatitudes,
-                                                                              sourceLongitudes);
-        }
+        ((CrsGeoCoding) getSourceProduct().getSceneGeoCoding()).getPixels((int) sourceRectangle.getMinX(),
+                                                                          (int) sourceRectangle.getMinY(),
+                                                                          (int) sourceRectangle.getWidth(),
+                                                                          (int) sourceRectangle.getHeight(),
+                                                                          sourceLatitudes,
+                                                                          sourceLongitudes);
         int sourceIndex = sourceRectangle.width;
         int targetIndex = 0;
         final ProductData slopeDataBuffer = targetTiles.get(slopeBand).getDataBuffer();
@@ -146,16 +120,12 @@ public class SlopeAspectOrientationOp extends Operator {
         for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
             sourceIndex++;
             for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
-                if (computeSlope || computeAspect) {
-                    final float[] slopeAndAspect = computeSlopeAndAspect(elevationData, sourceIndex,
-                                                                         spatialResolution, sourceRectangle.width);
-                    slopeDataBuffer.setElemFloatAt(targetIndex, slopeAndAspect[0]);
-                    aspectDataBuffer.setElemFloatAt(targetIndex, slopeAndAspect[1]);
-                }
-                if (computeOrientation) {
-                    orientationDataBuffer.setElemFloatAt(targetIndex, computeOrientation(
-                            sourceLatitudes, sourceLongitudes, sourceIndex));
-                }
+                final float[] slopeAndAspect = computeSlopeAndAspect(elevationData, sourceIndex,
+                                                                     spatialResolution, sourceRectangle.width);
+                slopeDataBuffer.setElemFloatAt(targetIndex, slopeAndAspect[0]);
+                aspectDataBuffer.setElemFloatAt(targetIndex, slopeAndAspect[1]);
+                orientationDataBuffer.setElemFloatAt(targetIndex,
+                                                     computeOrientation(sourceLatitudes, sourceLongitudes, sourceIndex));
                 sourceIndex++;
                 targetIndex++;
             }
@@ -188,11 +158,11 @@ public class SlopeAspectOrientationOp extends Operator {
         float lat2 = latData[sourceIndex + 1];
         float lon1 = lonData[sourceIndex - 1];
         float lon2 = lonData[sourceIndex + 1];
-        return (float) Math.atan2(- (lat2 - lat1), (lon2 - lon1) * Math.cos(Math.toRadians(lat1)));
+        return (float) Math.atan2(-(lat2 - lat1), (lon2 - lon1) * Math.cos(Math.toRadians(lat1)));
     }
 
     private static Rectangle getSourceRectangle(Rectangle targetRectangle) {
-        return new Rectangle(targetRectangle.x -1, targetRectangle.y - 1,
+        return new Rectangle(targetRectangle.x - 1, targetRectangle.y - 1,
                              targetRectangle.width + 2, targetRectangle.height + 2);
     }
 
@@ -209,7 +179,6 @@ public class SlopeAspectOrientationOp extends Operator {
 
 
     public static class Spi extends OperatorSpi {
-
         public Spi() {
             super(SlopeAspectOrientationOp.class);
         }
