@@ -290,7 +290,35 @@ public abstract class VirtualDirEx extends VirtualDir {
 
         @Override
         public InputStream getInputStream(String s) throws IOException {
-            return wrapped.getInputStream(s);
+            //return wrapped.getInputStream(s);
+
+            InputStream inputStream = null;
+            try {
+                inputStream = wrapped.getInputStream(s);
+            } catch (IOException e) {
+                try {
+                    inputStream = wrapped.getInputStream(s.toUpperCase());
+                } catch (IOException ex) {
+                    File file = new File(wrapped.getTempDir(), s);
+                    if (file != null && file.exists()) {
+                        inputStream = new FileInputStream(file);
+                    }
+                }
+            }
+            if (inputStream == null) {
+                String key = FileUtils.getFileNameFromPath(s).toLowerCase();
+                String path = findKeyFile(key);
+                if (path == null)
+                    throw new IOException(String.format("File %s does not exist", s));
+                s = path;
+                try {
+                    // the "classic" way
+                    inputStream = getInputStreamInner(s);
+                } catch (IOException e) {
+                    inputStream = !isArchive() ? new FileInputStream(wrapped.getTempDir() + File.separator + s) : getInputStreamInner(s);
+                }
+            }
+            return inputStream;
         }
 
         @Override
@@ -365,6 +393,52 @@ public abstract class VirtualDirEx extends VirtualDir {
                 throw new IOException();
             }
             return wrapped.getFile(newRelativePath);
+        }
+
+        private InputStream getInputStreamInner(String s) throws IOException {
+            String pathSeparator;
+            if (!wrapped.isArchive() && !wrapped.getBasePath().toLowerCase().endsWith("tar")) {
+                pathSeparator = "\\\\";
+                s = s.replaceAll("/", "\\\\");
+            } else {
+                pathSeparator = "/";
+            }
+            try {
+                //if the path letter case is correct, there is no need to read all the path tree
+                InputStream result = wrapped.getInputStream(s);
+                if (result != null) {
+                    return result;
+                }
+            } catch (IOException ignored) {
+            }
+            String[] relativePathArray = s.split(pathSeparator);
+            String newRelativePath = "";
+            String[] files = wrapped.list("");
+            int index = 0;
+            while (files != null && files.length > 0 && index < relativePathArray.length) {
+                boolean found = false;
+                for (String file : files) {
+                    if (relativePathArray[index].equalsIgnoreCase(file)) {
+                        newRelativePath += file + pathSeparator;
+                        index++;
+                        found = true;
+                        if (index < relativePathArray.length) {//there are still subfolders/subfiles to be searched
+                            files = wrapped.list(newRelativePath);
+                        }
+                        break;
+                    }
+                }
+                if (!found) {//if no subfolder/subfile did not matched the search, it makes no sense to continue searching
+                    break;
+                }
+            }
+            if (index > 0) {//if the file was found (meaning the index is not 0), then the last path separator should be removed!
+                newRelativePath = newRelativePath.substring(0, newRelativePath.length() - pathSeparator.length());
+            }
+            if (index == 0) {
+                throw new IOException();
+            }
+            return wrapped.getInputStream(newRelativePath);
         }
 
         @Override
