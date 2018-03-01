@@ -83,6 +83,9 @@ public class S2IdepixOp extends Operator {
 //    private boolean copyNNValue = true;
     private boolean copyNNValue = false;
 
+    @Parameter(defaultValue = "true", label = " Compute mountain shadow")
+    private boolean computeMountainShadow;
+
     //todo remove comments from following line to include cloud shadow op
     @Parameter(defaultValue = "false", label = " Compute cloud shadow")
     private boolean computeCloudShadow = false;
@@ -153,8 +156,8 @@ public class S2IdepixOp extends Operator {
         s2ClassifProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixClassificationOp.class),
                                              pixelClassificationParameters, inputProducts);
 
-        if (computeCloudShadow || computeCloudBuffer) {
-            // Post Cloud Classification: cloud shadow, cloud buffer
+        if (computeCloudShadow || computeCloudBuffer || computeMountainShadow) {
+            // Post Cloud Classification: cloud shadow, cloud buffer, mountain shadow
             computePostProcessProduct();
 
             targetProduct = S2IdepixUtils.cloneProduct(s2ClassifProduct, true);
@@ -203,12 +206,13 @@ public class S2IdepixOp extends Operator {
             postProcessingProduct = cloudBufferProduct;
         }
 
-        if (computeCloudShadow) {
+        if (computeCloudShadow || computeMountainShadow) {
             HashMap<String, Product> inputShadow = new HashMap<>();
             inputShadow.put("l1c", sourceProduct);
             inputShadow.put("s2Classif", s2ClassifProduct);
             inputShadow.put("s2CloudBuffer", cloudBufferProduct);
             Map<String, Object> params = new HashMap<>();
+            params.put("computeMountainShadow", computeMountainShadow);
             params.put("computeCloudShadow", computeCloudShadow);
             postProcessingProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixPostProcessOp.class),
                                                       params, inputShadow);
