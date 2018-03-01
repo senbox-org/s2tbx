@@ -489,21 +489,21 @@
       {
         "name": "Surface_Reflectance_B8A",
         "description": "Ground reflectance without the correction of slope effects, band B8A",
-        "bandWidth": 10980,
-        "bandHeight": 10980,
+        "bandWidth": 5490,
+        "bandHeight": 5490,
         "noDataValue": "-1.0",
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 10563,
-            "y": 4183,
-            "value": 0.5387
+            "x": 5281,
+            "y": 2091,
+            "value": 0.5268
           },
           {
-            "x": 964,
-            "y": 5849,
+            "x": 482,
+            "y": 2924,
             "value": "NaN"
           }
         ]
