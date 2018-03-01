@@ -41,6 +41,7 @@ public class S2IdepixUtils {
     public static final String IDEPIX_WATER_DESCR_TEXT = "Water pixels";
     public static final String IDEPIX_BRIGHTWHITE_DESCR_TEXT = "'Brightwhite' pixels";
     public static final String IDEPIX_VEG_RISK_DESCR_TEXT = "Pixels with vegetation risk";
+    public static final String IDEPIX_MOUNTAIN_SHADOW_DESCR_TEXT = "Pixel is affected by mountain shadow";
 
     private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger("idepix");
 
@@ -137,6 +138,7 @@ public class S2IdepixUtils {
         flagCoding.addFlag("IDEPIX_WATER", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_WATER), IDEPIX_WATER_DESCR_TEXT);
         flagCoding.addFlag("IDEPIX_BRIGHTWHITE", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_BRIGHTWHITE), IDEPIX_BRIGHTWHITE_DESCR_TEXT);
         flagCoding.addFlag("IDEPIX_VEG_RISK", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_VEG_RISK), IDEPIX_VEG_RISK_DESCR_TEXT);
+        flagCoding.addFlag("IDEPIX_MOUNTAIN_SHADOW", BitSetter.setFlag(0, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW), IDEPIX_MOUNTAIN_SHADOW_DESCR_TEXT);
 
         return flagCoding;
     }
@@ -238,6 +240,11 @@ public class S2IdepixUtils {
         mask = Mask.BandMathsType.create("IDEPIX_VEG_RISK",
                                          IDEPIX_VEG_RISK_DESCR_TEXT, w, h,
                                          "pixel_classif_flags.IDEPIX_VEG_RISK",
+                                         getRandomColour(r), 0.5f);
+        gaCloudProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("IDEPIX_MOUNTAIN_SHADOW",
+                                         IDEPIX_MOUNTAIN_SHADOW_DESCR_TEXT, w, h,
+                                         "pixel_classif_flags.IDEPIX_MOUNTAIN_SHADOW",
                                          getRandomColour(r), 0.5f);
         gaCloudProduct.getMaskGroup().add(index++, mask);
 
