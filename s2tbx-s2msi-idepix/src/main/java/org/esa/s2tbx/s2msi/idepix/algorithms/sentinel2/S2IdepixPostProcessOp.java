@@ -135,13 +135,8 @@ public class S2IdepixPostProcessOp extends Operator {
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
                 checkForCancellation();
                 for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
-//                    targetTile.setSample(x, y, S2IdepixConstants.);
-//                    final int cloudShadowFlagValue = mountainShadowFlagTile.getSampleInt(x, y);
-//
-//                    if (cloudShadowFlagValue == oceanCloudShadowIndexValue ||
-//                            cloudShadowFlagValue == landCloudShadowIndexValue) {
-//                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, true);
-//                    }
+                    final boolean mountainShadow = mountainShadowFlagTile.getSampleInt(x, y) > 0;
+                    targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW, mountainShadow);
                 }
             }
         }
