@@ -36,11 +36,13 @@ public class S2IdepixMountainShadowOp_IntegrationTest {
             fail("Unable to create test target directory");
         }
         GPF.getDefaultInstance().getOperatorSpiRegistry().addOperatorSpi(new S2IdepixMountainShadowOp.Spi());
+        GPF.getDefaultInstance().getOperatorSpiRegistry().addOperatorSpi(new SlopeAspectOrientationOp.Spi());
     }
 
     @After
     public void tearDown() {
         GPF.getDefaultInstance().getOperatorSpiRegistry().removeOperatorSpi(new S2IdepixMountainShadowOp.Spi());
+        GPF.getDefaultInstance().getOperatorSpiRegistry().removeOperatorSpi(new SlopeAspectOrientationOp.Spi());
         if (targetDirectory.isDirectory()) {
             if (!FileUtils.deleteTree(targetDirectory)) {
                 fail("Unable to delete test directory");
