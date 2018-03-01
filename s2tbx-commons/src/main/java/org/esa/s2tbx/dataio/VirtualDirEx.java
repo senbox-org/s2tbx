@@ -495,8 +495,17 @@ public abstract class VirtualDirEx extends VirtualDir {
                                      k -> {
                                          String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
                                          name = name.substring(name.lastIndexOf("/") + 1);
-                                         return (extPart != null && extPart.equalsIgnoreCase(FileUtils.getExtension(k))) && namePart.startsWith(name);
+                                         return (extPart != null && extPart.equalsIgnoreCase(FileUtils.getExtension(k))) && namePart.equals(name);
                                      });
+                //If no identical name found, look for a name that could be a truncated name of key (needed for some Deimos products)
+                if(ret == null) {
+                    ret = firstOrDefault(files.keySet(),
+                                         k -> {
+                                             String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
+                                             name = name.substring(name.lastIndexOf("/") + 1);
+                                             return (extPart != null && extPart.equalsIgnoreCase(FileUtils.getExtension(k))) && namePart.startsWith(name);
+                                         });
+                }
             }
             return ret;
         }
