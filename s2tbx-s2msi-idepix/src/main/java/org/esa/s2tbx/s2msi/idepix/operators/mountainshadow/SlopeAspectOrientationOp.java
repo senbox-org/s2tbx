@@ -29,8 +29,9 @@ import java.util.Map;
         version = "1.0",
         internal = true,
         authors = "Tonio Fincke",
-        copyright = "(c) 2016 by Brockmann Consult",
-        description = "Computes Slope, Aspect and Orientation for a Product with elevation data and a CRS geocoding.")
+        copyright = "(c) 2018 by Brockmann Consult",
+        description = "Computes Slope, Aspect and Orientation for a Sentinel-2 product " +
+                "with elevation data and a CRS geocoding.")
 public class SlopeAspectOrientationOp extends Operator {
 
     @SourceProduct
