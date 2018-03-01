@@ -71,7 +71,7 @@ public class S2IdepixPostProcessOp extends Operator {
 
         if (computeMountainShadow) {
             final Product mountainShadowProduct = GPF.createProduct(
-                    OperatorSpi.getOperatorAlias(S2IdepixMountainShadowOp.class), GPF.NO_PARAMS, l1cProduct);
+                    OperatorSpi.getOperatorAlias(S2IdepixMountainShadowOp.class), GPF.NO_PARAMS, s2ClassifProduct);
             mountainShadowFlagBand = mountainShadowProduct.getBand(
                     S2IdepixMountainShadowOp.MOUNTAIN_SHADOW_FLAG_BAND_NAME);
         }
