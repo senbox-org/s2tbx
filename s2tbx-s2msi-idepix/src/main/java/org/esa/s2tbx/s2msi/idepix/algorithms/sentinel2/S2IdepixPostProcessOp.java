@@ -2,6 +2,7 @@ package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixCloudShadowOp;
+import org.esa.s2tbx.s2msi.idepix.operators.mountainshadow.S2IdepixMountainShadowOp;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
@@ -40,7 +41,10 @@ public class S2IdepixPostProcessOp extends Operator {
     @SourceProduct(alias = "s2CloudBuffer", optional = true)
     private Product s2CloudBufferProduct;      // has only classifFlagBand with buffer added
 
-    @Parameter(defaultValue = "true", label = " Compute cloud shadow", description = " Compute cloud shadow")
+    @Parameter(defaultValue = "true", label = "Compute mountain shadow", description = "Compute mountain shadow")
+    private boolean computeMountainShadow;
+    
+    @Parameter(defaultValue = "true", label = "Compute cloud shadow", description = "Compute cloud shadow")
     private boolean computeCloudShadow;
 
 //    @Parameter(defaultValue = "2", label = "Width of cloud buffer (# of pixels)")
@@ -48,6 +52,7 @@ public class S2IdepixPostProcessOp extends Operator {
 
     private Band s2ClassifFlagBand;
     private Band cloudBufferFlagBand;
+    private Band mountainShadowFlagBand;
     private Band cloudShadowFlagBand;
 
     private int oceanCloudShadowIndexValue;
@@ -62,6 +67,13 @@ public class S2IdepixPostProcessOp extends Operator {
         s2ClassifFlagBand = s2ClassifProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
         if (s2CloudBufferProduct != null) {
             cloudBufferFlagBand = s2CloudBufferProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
+        }
+
+        if (computeMountainShadow) {
+            final Product mountainShadowProduct = GPF.createProduct(
+                    OperatorSpi.getOperatorAlias(S2IdepixMountainShadowOp.class), GPF.NO_PARAMS, l1cProduct);
+            mountainShadowFlagBand = mountainShadowProduct.getBand(
+                    S2IdepixMountainShadowOp.MOUNTAIN_SHADOW_FLAG_BAND_NAME);
         }
 
         cloudShadowFlagBand = null;
@@ -118,7 +130,21 @@ public class S2IdepixPostProcessOp extends Operator {
                 }
             }
         }
-
+        if (computeMountainShadow) {
+            final Tile mountainShadowFlagTile = getSourceTile(mountainShadowFlagBand, targetRectangle);
+            for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
+                checkForCancellation();
+                for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
+//                    targetTile.setSample(x, y, S2IdepixConstants.);
+//                    final int cloudShadowFlagValue = mountainShadowFlagTile.getSampleInt(x, y);
+//
+//                    if (cloudShadowFlagValue == oceanCloudShadowIndexValue ||
+//                            cloudShadowFlagValue == landCloudShadowIndexValue) {
+//                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, true);
+//                    }
+                }
+            }
+        }
         if (computeCloudShadow) {
             final Tile cloudShadowFlagTile = getSourceTile(cloudShadowFlagBand, targetRectangle);
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
