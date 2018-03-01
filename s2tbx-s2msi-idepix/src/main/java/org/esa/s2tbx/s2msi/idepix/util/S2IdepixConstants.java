@@ -26,6 +26,7 @@ public class S2IdepixConstants {
     public static final int IDEPIX_WATER = 15;
     public static final int IDEPIX_BRIGHTWHITE = 16;
     public static final int IDEPIX_VEG_RISK = 17;
+    public static final int IDEPIX_MOUNTAIN_SHADOW = 18;
 
     public static final int NO_DATA_VALUE = -1;
 
