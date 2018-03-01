@@ -47,10 +47,13 @@ public class S2IdepixConstants {
             "B12"
     };
 
+    public static final String SUN_ZENITH_BAND_NAME = "sun_zenith";
+    public static final String SUN_AZIMUTH_BAND_NAME = "sun_azimuth";
+
     public static final String[] S2_MSI_ANNOTATION_BAND_NAMES = {
-            "sun_zenith",
+            SUN_ZENITH_BAND_NAME,
             "view_zenith_mean",
-            "sun_azimuth",
+            SUN_AZIMUTH_BAND_NAME,
             "view_azimuth_mean",
     };
 
