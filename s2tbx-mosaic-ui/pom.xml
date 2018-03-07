@@ -22,7 +22,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>6.0.1-SNAPSHOT</version>
+        <version>6.0.1</version>
     </parent>
 
     <artifactId>s2tbx-mosaic-ui</artifactId>
@@ -130,7 +130,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-mosaic</artifactId>
-            <version>6.0.1-SNAPSHOT</version>
+            <version>${s2tbx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-binning</artifactId>
-            <version>6.0.1-SNAPSHOT</version>
+            <version>${snap.version}</version>
         </dependency>
     </dependencies>
 
