@@ -38,6 +38,7 @@ public class S2IdepixMountainShadowOp extends PixelOperator {
 
     private final static int MOUNTAIN_SHADOW_FLAG_BAND_INDEX = 0;
 
+    private final static double SHADOW_THRESHOLD = 0;
 
     public final static String MOUNTAIN_SHADOW_FLAG_BAND_NAME = "mountainShadowFlag";
 
@@ -81,7 +82,7 @@ public class S2IdepixMountainShadowOp extends PixelOperator {
         final double cosBeta = computeCosBeta(sourceSamples[SZA_INDEX].getFloat(), sourceSamples[SAA_INDEX].getFloat(),
                                               sourceSamples[SLOPE_INDEX].getFloat(), sourceSamples[ASPECT_INDEX].getFloat(),
                                               sourceSamples[ORIENTATION_INDEX].getFloat());
-        targetSamples[MOUNTAIN_SHADOW_FLAG_BAND_INDEX].set(cosBeta < 0);
+        targetSamples[MOUNTAIN_SHADOW_FLAG_BAND_INDEX].set(cosBeta < SHADOW_THRESHOLD);
     }
 
     /* package local for testing */
