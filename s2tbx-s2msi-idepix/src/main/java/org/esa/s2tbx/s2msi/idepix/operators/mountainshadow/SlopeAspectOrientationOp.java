@@ -114,21 +114,19 @@ public class SlopeAspectOrientationOp extends Operator {
                                                                           sourceLatitudes,
                                                                           sourceLongitudes);
         int sourceIndex = sourceRectangle.width;
-        int targetIndex = 0;
-        final ProductData slopeDataBuffer = targetTiles.get(slopeBand).getDataBuffer();
-        final ProductData aspectDataBuffer = targetTiles.get(aspectBand).getDataBuffer();
-        final ProductData orientationDataBuffer = targetTiles.get(orientationBand).getDataBuffer();
+        final Tile slopeTile = targetTiles.get(slopeBand);
+        final Tile aspectTile = targetTiles.get(aspectBand);
+        final Tile orientationTile = targetTiles.get(orientationBand);
         for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
             sourceIndex++;
             for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
                 final float[] slopeAndAspect = computeSlopeAndAspect(elevationData, sourceIndex,
                                                                      spatialResolution, sourceRectangle.width);
-                slopeDataBuffer.setElemFloatAt(targetIndex, slopeAndAspect[0]);
-                aspectDataBuffer.setElemFloatAt(targetIndex, slopeAndAspect[1]);
-                orientationDataBuffer.setElemFloatAt(targetIndex,
-                                                     computeOrientation(sourceLatitudes, sourceLongitudes, sourceIndex));
+                final float orientation = computeOrientation(sourceLatitudes, sourceLongitudes, sourceIndex);
+                slopeTile.setSample(x, y, slopeAndAspect[0]);
+                aspectTile.setSample(x, y, slopeAndAspect[1]);
+                orientationTile.setSample(x, y, orientation);
                 sourceIndex++;
-                targetIndex++;
             }
             sourceIndex++;
         }
