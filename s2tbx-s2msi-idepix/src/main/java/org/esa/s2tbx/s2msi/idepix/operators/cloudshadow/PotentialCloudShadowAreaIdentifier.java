@@ -177,6 +177,7 @@ class PotentialCloudShadowAreaIdentifier {
                     cloudSearchPointHeight = cloudSearchPointHeight + (altitude[index1] - minAltitude);
                 }
                 if (cloudExtent[0] <= cloudSearchPointHeight && cloudSearchPointHeight <= cloudExtent[1]) {
+                    flagArray[index1] += PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG;
                     positions.add(index1);
                 }
             }

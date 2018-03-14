@@ -76,6 +76,10 @@ public class S2IdepixCloudShadowOp extends Operator {
     private RasterDataNode sourceAltitude;
 
     private Band targetBandCloudShadow;
+    private Band targetBandCloudID;
+    private Band targetBandTileID;
+
+    private static int tileid;
 
     static int mincloudBase = 100;
     static int maxcloudTop = 10000;
@@ -92,6 +96,8 @@ public class S2IdepixCloudShadowOp extends Operator {
     private static final String sourceAltitudeName = "elevation";
     private static final String sourceFlagName1 = "pixel_classif_flags";
     public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
+    public final static String BAND_NAME_CLOUD_ID = "cloud_ids";
+    public final static String BAND_NAME_TILE_ID = "tile_ids";
     private Mode analysisMode;
 
     public static final String F_INVALID_DESCR_TEXT = "Invalid pixels";
@@ -101,6 +107,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     public static final String F_LAND_DESCR_TEXT = "Land pixels";
     public static final String F_WATER_DESCR_TEXT = "Water pixels";
     public static final String F_HAZE_DESCR_TEXT = "Potential haze/semitarnsparent cloud pixels";
+    public static final String F_POTENTIAL_CLOUD_SHADOW_DESCR_TEXT = "Potential cloud shadow pixels";
 
     public static final int F_WATER = 0;
     public static final int F_LAND = 1;
@@ -110,6 +117,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     public static final int F_MOUNTAIN_SHADOW = 5;
     public static final int F_INVALID = 6;
     public static final int F_CLOUD_BUFFER = 7;
+    public static final int F_POTENTIAL_CLOUD_SHADOW = 8;
 
     @Override
     public void initialize() throws OperatorException {
@@ -136,6 +144,8 @@ public class S2IdepixCloudShadowOp extends Operator {
         }
 
         targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
+        targetBandCloudID = targetProduct.addBand(BAND_NAME_CLOUD_ID, ProductData.TYPE_INT32);
+        targetBandTileID = targetProduct.addBand(BAND_NAME_TILE_ID, ProductData.TYPE_INT32);
         attachFlagCoding(targetBandCloudShadow);
         setupBitmasks(targetProduct);
 
@@ -145,7 +155,7 @@ public class S2IdepixCloudShadowOp extends Operator {
                                                        searchBorderRadius, searchBorderRadius);
         final int tileHeight = determineSourceTileHeight(s2ClassifProduct.getSceneRasterHeight(), sourceTileHeight,
                                                          searchBorderRadius, searchBorderRadius);
-
+        tileid = 0;
         // todo: discuss
         if (s2ClassifProduct.getSceneRasterWidth() > tileWidth || s2ClassifProduct.getSceneRasterHeight() > tileHeight) {
             final int preferredTileWidth = Math.min(s2ClassifProduct.getSceneRasterWidth(), tileWidth);
@@ -294,10 +304,14 @@ public class S2IdepixCloudShadowOp extends Operator {
         int sourceLength = sourceRectangle.width * sourceRectangle.height;
 
         Tile targetTileCloudShadow = targetTiles.get(targetBandCloudShadow);
+        Tile targetTileCloudID = targetTiles.get(targetBandCloudID);
+        Tile targetTileTileID = targetTiles.get(targetBandTileID);
 
         final int[] flagArray = new int[sourceLength];
         //will be filled in SegmentationCloudClass Arrays.fill(cloudIdArray, ....);
         final int[] cloudIDArray = new int[sourceLength];
+        final int[] tileIDArray = new int[sourceLength];
+        Arrays.fill(tileIDArray, tileid++);
 
         final float[] altitude = getSamples(sourceAltitude, sourceRectangle);
         final float[][] clusterData = {getSamples(sourceBandClusterA, sourceRectangle),
@@ -356,6 +370,8 @@ public class S2IdepixCloudShadowOp extends Operator {
             cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
         }
         fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
+        fillTile(cloudIDArray, targetRectangle, sourceRectangle, targetTileCloudID);
+        fillTile(tileIDArray, targetRectangle, sourceRectangle, targetTileTileID);
     }
 
     private void attachFlagCoding(Band targetBandCloudShadow) {
@@ -368,6 +384,8 @@ public class S2IdepixCloudShadowOp extends Operator {
         cloudCoding.addFlag("cloudShadow", BitSetter.setFlag(0, F_CLOUD_SHADOW), F_CLOUD_SHADOW_DESCR_TEXT);
         cloudCoding.addFlag("mountain_shadow", BitSetter.setFlag(0, F_MOUNTAIN_SHADOW), F_MOUNTAIN_SHADOW_DESCR_TEXT);
         cloudCoding.addFlag("invalid", BitSetter.setFlag(0, F_INVALID), F_INVALID_DESCR_TEXT);
+        cloudCoding.addFlag("potential_cloud_shadow", BitSetter.setFlag(0, F_POTENTIAL_CLOUD_SHADOW),
+                            F_POTENTIAL_CLOUD_SHADOW_DESCR_TEXT);
         targetBandCloudShadow.setSampleCoding(cloudCoding);
         targetBandCloudShadow.getProduct().getFlagCodingGroup().add(cloudCoding);
     }
@@ -406,12 +424,17 @@ public class S2IdepixCloudShadowOp extends Operator {
         mask = Mask.BandMathsType.create("cloud_shadow",
                                          F_CLOUD_SHADOW_DESCR_TEXT, w, h,
                                          "FlagBand.cloudShadow",
-                                         Color.ORANGE, 0.5f);
+                                         Color.RED, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
         mask = Mask.BandMathsType.create("mountain_shadow",
                                          F_MOUNTAIN_SHADOW_DESCR_TEXT, w, h,
                                          "FlagBand.mountain_shadow",
                                          Color.PINK, 0.5f);
+        targetProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("potential_cloud_shadow",
+                                         F_POTENTIAL_CLOUD_SHADOW_DESCR_TEXT, w, h,
+                                         "FlagBand.potential_cloud_shadow",
+                                         Color.ORANGE, 0.5f);
         targetProduct.getMaskGroup().add(index, mask);
     }
 
