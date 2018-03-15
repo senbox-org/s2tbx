@@ -12,6 +12,8 @@ import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.vector.VectorDataNodeImporter;
 import org.esa.snap.rcp.layermanager.layersrc.shapefile.SLDUtils;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.styling.FeatureTypeStyle;
+import org.geotools.styling.FeatureTypeStyleImpl;
 import org.geotools.styling.Style;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.openide.awt.ActionID;
@@ -105,19 +107,19 @@ public class ImportVectorDataNodeFromKMLAction extends AbstractImportVectorDataN
         @Override
         public VectorDataNode readVectorDataNode(File file, Product product, ProgressMonitor pm) throws IOException {
 
-            DefaultFeatureCollection featureCollection = KmlUtils.kmlFile2FeatureCollection(file, pm);
-            Style[] styles = SLDUtils.loadSLD(file);
+            DefaultFeatureCollection featureCollection = KmlUtils.kmlFile2FeatureCollection(file, product, pm);
+            Style[] styles =  KmlUtils.loadSLD(file);
+            FeatureTypeStyle[] featureTypeStyle =  KmlUtils.loadStyleFromKmlFile(file);
+
             ProductNodeGroup<VectorDataNode> vectorDataGroup = product.getVectorDataGroup();
             String name = VectorDataNodeImporter.findUniqueVectorDataNodeName(featureCollection.getSchema().getName().getLocalPart(),
                     vectorDataGroup);
-            if (styles.length > 0) {
+            if (styles.length > 0 || featureTypeStyle.length > 0) {
                 SimpleFeatureType featureType = SLDUtils.createStyledFeatureType(featureCollection.getSchema());
-
-
                 VectorDataNode vectorDataNode = new VectorDataNode(name, featureType);
                 DefaultFeatureCollection styledCollection = vectorDataNode.getFeatureCollection();
                 String defaultCSS = vectorDataNode.getDefaultStyleCss();
-                SLDUtils.applyStyle(styles[0], defaultCSS, featureCollection, styledCollection);
+                KmlUtils.applyStyle(styles, featureTypeStyle, defaultCSS, featureCollection, styledCollection);
                 return vectorDataNode;
             } else {
                 return new VectorDataNode(name, featureCollection);

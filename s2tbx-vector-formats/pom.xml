@@ -84,7 +84,8 @@
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.dataio.vectorformats.*</publicPackage>
-                        <publicPackage>org.esa.s2tbx.dataio.vectorformats.common.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.vectorformats.common</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.vectorformats.kml</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
