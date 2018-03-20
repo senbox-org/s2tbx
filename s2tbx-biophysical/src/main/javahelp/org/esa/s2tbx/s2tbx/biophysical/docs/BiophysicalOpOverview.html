@@ -42,6 +42,31 @@
     </ul>
 
 </p>
+<p>
+    The S2 SNAP Toolbox  biophysical variable retrieval algorithm is based on specific radiative transfer models
+    associated with strong assumptions, particularly regarding canopy architecture (turbid medium model).
+    All the variables derived from such algorithms should be seen as effective, i.e. the variables that would correspond
+    to the measured satellite signal reflected by a canopy verifying all the assumptions made through the radiative transfer models.
+    Depending on the variable, this may lead to differences with ground values that may be accessed from field measurements.
+
+</p>
+
+<p>
+    Furthermore, the algorithm is "generic", i.e. it should apply to any type of vegetation with reasonable performances.
+    However, to better match the specificities of given canopies, either simple correction could be calibrated, or more
+    specific algorithm could be developed.
+
+</p>
+<p>
+    One strong assumption embedded in any single pixel retrieval algorithm as this one,
+    is that the pixel targeted belongs to a landscape patch presenting enough homogeneity
+    (at the pixel scale) preventing unexpected loss or gain of radiation fluxes.
+    For forests with large crowns, or any pixel showing strong heterogeneity such as pixels
+    at the intersection between two different vegetation patches, results may be uncertain.
+    This applied also to pixels where the neighbouring ones are very different.
+    Specific algorithms should be developed to detect such situations and possibly propose
+    alternative retrieval methods.
+</p>
 
 <p><a href="BiophysicalOpProcessorDescription.html">Processor Documentation</a></p>
 
