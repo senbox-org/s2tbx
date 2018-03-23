@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.io.IOUtils;
+import org.esa.snap.core.datamodel.PlainFeatureFactory;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.Debug;
 import org.esa.snap.core.util.FeatureUtils;
@@ -235,7 +236,6 @@ public class KmlUtils {
 
             while ((f = (FeatureTypeStyle) parser.parse()) != null) {
                 FeatureTypeStyle origFts = f;
-                Symbolizer[] syms = origFts.getRules()[0].getSymbolizers();
                 futureTypeStyleList.add(origFts);
             }
         } catch (SAXException | XMLStreamException e) {
@@ -298,7 +298,7 @@ public class KmlUtils {
             }
         }
 
-    public static File getSLDFile(File kmlFile) {
+    private static File getSLDFile(File kmlFile) {
         String filename = kmlFile.getAbsolutePath();
         if (filename.endsWith(".kml") || filename.endsWith(".kmz")) {
             filename = filename.substring(0, filename.length() - 4);
@@ -310,7 +310,7 @@ public class KmlUtils {
         return new File(filename);
     }
 
-    public static Style[] createFromSLD(File sld) {
+    private static Style[] createFromSLD(File sld) {
         try {
             SLDParser stylereader = new SLDParser(styleFactory, sld.toURI().toURL());
             return stylereader.readXML();
@@ -320,16 +320,11 @@ public class KmlUtils {
         return new Style[0];
     }
 
-    private static class DummyFeatureCrsProvider implements FeatureUtils.FeatureCrsProvider {
-        @Override
-        public CoordinateReferenceSystem getFeatureCrs(Product product) {
-            return product.getSceneCRS();
-        }
-
-        @Override
-        public boolean clipToProductBounds() {
-            return true;
-        }
+    public static SimpleFeatureType createStyledFeatureType(SimpleFeatureType schema) {
+        SimpleFeatureTypeBuilder sftb = new SimpleFeatureTypeBuilder();
+        sftb.init(schema);
+        sftb.add(PlainFeatureFactory.ATTRIB_NAME_STYLE_CSS, String.class);
+        return sftb.buildFeatureType();
     }
 
     private static Geometry getClippedGeometry(Geometry sourceGeometry, Geometry clipGeometry) {

@@ -115,7 +115,7 @@ public class ImportVectorDataNodeFromKMLAction extends AbstractImportVectorDataN
             String name = VectorDataNodeImporter.findUniqueVectorDataNodeName(featureCollection.getSchema().getName().getLocalPart(),
                     vectorDataGroup);
             if (styles.length > 0 || featureTypeStyle.length > 0) {
-                SimpleFeatureType featureType = SLDUtils.createStyledFeatureType(featureCollection.getSchema());
+                SimpleFeatureType featureType = KmlUtils.createStyledFeatureType(featureCollection.getSchema());
                 VectorDataNode vectorDataNode = new VectorDataNode(name, featureType);
                 DefaultFeatureCollection styledCollection = vectorDataNode.getFeatureCollection();
                 String defaultCSS = vectorDataNode.getDefaultStyleCss();
