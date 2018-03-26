@@ -274,8 +274,7 @@ class CloudShadowFlagger {
 
 
         double averageDistance = maxDist / (numberOfClusters - 1);
-        int i;
-        for (i = 0; i < sortedCluster.size() - 2; i++) {
+        for (int i = 0; i < sortedCluster.size() - 2; i++) {
             if (sortedCluster.get(i + 1) - sortedCluster.get(i) > averageDistance) {
                 break;
             }
@@ -312,7 +311,8 @@ class CloudShadowFlagger {
     }
 
     private static int getRecommendedNumberOfClusters(double[] values) {
-        return Math.max(4, (int) Math.log(values.length) * 2);
+        //return Math.max(4, (int) Math.log(values.length) * 2);
+        return 4;
     }
 
     interface AnalyzerMode {
