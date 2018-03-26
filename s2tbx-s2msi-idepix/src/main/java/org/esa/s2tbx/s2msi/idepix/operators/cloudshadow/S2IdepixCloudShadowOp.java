@@ -2,14 +2,7 @@ package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.apache.commons.lang.ArrayUtils;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.FlagCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.RasterDataNode;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -83,6 +76,7 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     static int mincloudBase = 100;
     static int maxcloudTop = 10000;
+    //static int maxcloudTop = 4000;
     static double spatialResolution;  //[m]
     static int clusterCountDefine = 4;
     static double OUTLIER_THRESHOLD = 0.94;
@@ -106,7 +100,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     public static final String F_CLOUD_SHADOW_DESCR_TEXT = "Cloud shadow pixels";
     public static final String F_LAND_DESCR_TEXT = "Land pixels";
     public static final String F_WATER_DESCR_TEXT = "Water pixels";
-    public static final String F_HAZE_DESCR_TEXT = "Potential haze/semitarnsparent cloud pixels";
+    public static final String F_HAZE_DESCR_TEXT = "Potential haze/semitransparent cloud pixels";
     public static final String F_POTENTIAL_CLOUD_SHADOW_DESCR_TEXT = "Potential cloud shadow pixels";
 
     public static final int F_WATER = 0;
@@ -137,6 +131,12 @@ public class S2IdepixCloudShadowOp extends Operator {
         final double maximumSunZenith = sourceSunZenith.getStx().getMaximum();
         sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
         sourceAltitude = s2ClassifProduct.getBand(sourceAltitudeName);
+
+        final GeoPos centerGeoPos =
+                getCenterGeoPos(s2ClassifProduct.getSceneGeoCoding(), s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
+        System.out.println(centerGeoPos.getLat());
+        maxcloudTop = setCloudTopHeigh(centerGeoPos.getLat());
+        System.out.println(maxcloudTop);
 
         sourceBandFlag1 = s2ClassifProduct.getBand(sourceFlagName1);
         if (s2CloudBufferProduct != null) {
@@ -252,6 +252,16 @@ public class S2IdepixCloudShadowOp extends Operator {
         return tile.getSamplesFloat();
     }
 
+    //aus S2tbxReprojectionOp kopiert:
+    private GeoPos getCenterGeoPos(GeoCoding geoCoding, int width, int height) {
+        final PixelPos centerPixelPos = new PixelPos(0.5 * width + 0.5,
+                0.5 * height + 0.5);
+        return geoCoding.getGeoPos(centerPixelPos, null);
+    }
+
+    int setCloudTopHeigh(double lat){
+        return (int) Math.ceil(0.5* Math.pow(90.-Math.abs(lat), 2.) + (90.-Math.abs(lat))*25 + 5000);
+    }
     /*
     package local for testing
      */
@@ -262,10 +272,12 @@ public class S2IdepixCloudShadowOp extends Operator {
         final int relativeX = (int) relativePath[relativePath.length - 1].getX();
         final int relativeY = (int) relativePath[relativePath.length - 1].getY();
 
-        int x0 = Math.max(0, targetRectangle.x + Math.min(0, relativeX));
-        int y0 = Math.max(0, targetRectangle.y + Math.min(0, relativeY));
-        int x1 = Math.min(productWidth, targetRectangle.x + targetRectangle.width + Math.max(0, relativeX));
-        int y1 = Math.min(productHeight, targetRectangle.y + targetRectangle.height + Math.max(0, relativeY));
+        // borders are now extended in both directions left-right, top-down.
+        // so it needs a reduction in x0,y0 and addition in x1,y1
+        int x0 = Math.max(0, targetRectangle.x + Math.min(0, -1*Math.abs(relativeX)));
+        int y0 = Math.max(0, targetRectangle.y + Math.min(0, -1*Math.abs(relativeY)));
+        int x1 = Math.min(productWidth, targetRectangle.x + targetRectangle.width + Math.max(0, Math.abs(relativeX)));
+        int y1 = Math.min(productHeight, targetRectangle.y + targetRectangle.height + Math.max(0, Math.abs(relativeY)));
         return new Rectangle(x0, y0, x1 - x0, y1 - y0);
     }
 
@@ -297,6 +309,7 @@ public class S2IdepixCloudShadowOp extends Operator {
                 minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, maxcloudTop,
                 targetRectangle, targetRectangle, getSourceProduct().getSceneRasterHeight(),
                 getSourceProduct().getSceneRasterWidth(), spatialResolution, true, false);
+
         final Rectangle sourceRectangle = getSourceRectangle(targetRectangle, cloudShadowRelativePath);
 
         int sourceWidth = sourceRectangle.width;
@@ -366,6 +379,7 @@ public class S2IdepixCloudShadowOp extends Operator {
                     PotentialCloudShadowAreaIdentifier.identifyPotentialCloudShadows(
                             sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, sourceLatitudes, sourceLongitudes,
                             altitude, flagArray, cloudIDArray, cloudShadowRelativePath);
+            System.out.println("potential is ready!");
             final CloudShadowFlagger cloudShadowFlagger = new CloudShadowFlagger();
             cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
         }
