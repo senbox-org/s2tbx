@@ -8,18 +8,18 @@ import java.awt.*;
  */
 class PreparationMaskBand {
 
-    static final int INVALID_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_INVALID)+ 0.1);
-    static final int MOUNTAIN_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_MOUNTAIN_SHADOW)+ 0.1);
-    static final int CLOUD_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD_SHADOW)+ 0.1);
-    static final int POTENTIAL_HAZE = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_HAZE)+ 0.1);
-    static final int CLOUD_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD)+ 0.1);
-    static final int LAND_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_LAND)+ 0.1);
-    static final int WATER_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_WATER) + 0.1);
-    static final int CLOUD_BUFFER_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD_BUFFER) + 0.1);
-    static final int POTENTIAL_CLOUD_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixCloudShadowOp.F_POTENTIAL_CLOUD_SHADOW) + 0.1);
+    static final int INVALID_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_INVALID)+ 0.1);
+    static final int MOUNTAIN_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_MOUNTAIN_SHADOW)+ 0.1);
+    static final int CLOUD_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW)+ 0.1);
+    static final int POTENTIAL_HAZE = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_HAZE)+ 0.1);
+    static final int CLOUD_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD)+ 0.1);
+    static final int LAND_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_LAND)+ 0.1);
+    static final int WATER_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_WATER) + 0.1);
+    static final int CLOUD_BUFFER_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_BUFFER) + 0.1);
+    static final int POTENTIAL_CLOUD_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_POTENTIAL_CLOUD_SHADOW) + 0.1);
 
     static void prepareMaskBand(int productWidth, int productHeight, Rectangle tileSourceRectangle, int[] flagArray,
-                                       FlagDetector flagDetector) {
+                                FlagDetector flagDetector) {
 
 //        int growingCloud = S2IdepixCloudShadowOp.GROWING_CLOUD;
 

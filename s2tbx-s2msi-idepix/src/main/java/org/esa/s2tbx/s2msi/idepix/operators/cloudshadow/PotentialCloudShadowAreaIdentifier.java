@@ -19,8 +19,8 @@ import java.util.Map;
  */
 class PotentialCloudShadowAreaIdentifier {
 
-    private static final double MAXCLOUD_TOP = S2IdepixCloudShadowOp.maxcloudTop;
-    private static final double MINCLOUD_BASE = S2IdepixCloudShadowOp.mincloudBase;
+    private static final double MAXCLOUD_TOP = S2IdepixPreCloudShadowOp.maxcloudTop;
+    private static final double MINCLOUD_BASE = S2IdepixPreCloudShadowOp.mincloudBase;
 
     static Collection<List<Integer>> identifyPotentialCloudShadows(int productHeight, int productWidth, Rectangle sourceRectangle,
                                                                    Rectangle targetRectangle, float[] sourceSunZenith,
@@ -40,7 +40,7 @@ class PotentialCloudShadowAreaIdentifier {
         Point2D[] cloudPath = CloudShadowUtils.getRelativePath(minAltitude, sunZenithCloudRad, sunAzimuthRad,
                                                                MAXCLOUD_TOP, sourceRectangle, targetRectangle,
                                                                productHeight, productWidth,
-                                                               S2IdepixCloudShadowOp.spatialResolution, true, false);
+                                                               S2IdepixPreCloudShadowOp.spatialResolution, true, false);
         return identifyPotentialCloudShadows(sourceRectangle, targetRectangle, sunZenithDegree, sunAzimuth,
                                              sourceLatitude, sourceLongitude, sourceAltitude, flagArray, cloudIDArray,
                                              cloudPath);
@@ -77,8 +77,8 @@ class PotentialCloudShadowAreaIdentifier {
         for( i = xOffset; i < sourceWidth ; i++){
             for ( int j = yOffset; j< sourceHeight; j++){
                 identifyPotentialCloudShadow(i, j, sourceHeight, sourceWidth, cloudPath, sourceLongitude,
-                        sourceLatitude, sourceAltitude, flagArray, sunZenithCloudRad,
-                        cloudIDArray, indexToPositions);
+                                             sourceLatitude, sourceAltitude, flagArray, sunZenithCloudRad,
+                                             cloudIDArray, indexToPositions);
             }
         }
 //        final List<Integer>[] positions = new List<Integer>[indexToPositions.size()];
@@ -104,7 +104,7 @@ class PotentialCloudShadowAreaIdentifier {
         // (Moire-Effect)
         if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0 || x2 >= width || y2 >= height || x2 < 0 || y2 < 0 ||
                 ((flagArray[y1 * width + x1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG &&
-                       (flagArray[y2 * width + x2] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
+                        (flagArray[y2 * width + x2] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
             return;
         }
 
@@ -126,7 +126,7 @@ class PotentialCloudShadowAreaIdentifier {
 
             if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
                     !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)
-                    //&& !positions.contains(index1) //dies macht die Suche extrem langsam! Faktor 10!
+                //&& !positions.contains(index1) //dies macht die Suche extrem langsam! Faktor 10!
                     ) {
 
                 //Dagmar: ist gerade auf minimum und Latitude-abhängiges Maximum fixiert.

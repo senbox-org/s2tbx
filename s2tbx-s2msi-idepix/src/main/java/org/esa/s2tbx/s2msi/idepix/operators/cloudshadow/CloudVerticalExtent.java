@@ -13,8 +13,8 @@ public class CloudVerticalExtent {
         double cloudTop;
 
         // todo cloud height properties
-        cloudBase = S2IdepixCloudShadowOp.mincloudBase;// [m]
-        cloudTop  = S2IdepixCloudShadowOp.maxcloudTop; // [m]
+        cloudBase = S2IdepixPreCloudShadowOp.mincloudBase;// [m]
+        cloudTop  = S2IdepixPreCloudShadowOp.maxcloudTop; // [m]
 
         //cloud top and cloud base height in [m]
         cloudExtent[0]= cloudBase;

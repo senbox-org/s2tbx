@@ -1,26 +1,22 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
-import org.esa.snap.core.util.math.MathUtils;
-
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
-import java.awt.*;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.util.*;
-import java.util.List;
+import java.util.Arrays;
 
 public class ShiftingCloudBULKalongCloudPath {
-    
-    private static final double MAXCLOUD_TOP = S2IdepixCloudShadowOp.maxcloudTop;
-    private static final double MINCLOUD_BASE = S2IdepixCloudShadowOp.mincloudBase;
+
+    private static final double MAXCLOUD_TOP = S2IdepixPreCloudShadowOp.maxcloudTop;
+    private static final double MINCLOUD_BASE = S2IdepixPreCloudShadowOp.mincloudBase;
 
     private double sumValue;
     private int N;
 
     //static Collection<List<Integer>>
     public void ShiftingCloudBULKalongCloudPath(Rectangle sourceRectangle,
-                                     Rectangle targetRectangle, float sourceSunZenith,
-                                     float sourceSunAzimuth,
-                                     float[][] sourceBands,
-                                     int[] flagArray, Point2D[] cloudPath) {
+                                                Rectangle targetRectangle, float sourceSunZenith,
+                                                float sourceSunAzimuth,
+                                                float[][] sourceBands,
+                                                int[] flagArray, Point2D[] cloudPath) {
         int sourceWidth = sourceRectangle.width;
         int sourceHeight = sourceRectangle.height;
         int targetWidth = targetRectangle.width;
@@ -54,7 +50,7 @@ public class ShiftingCloudBULKalongCloudPath {
         N = 0;
 
         for (int path_i = 1; path_i < cloudPath.length; path_i++) {
-        //for (int path_i = 1; path_i < 10; path_i++) {
+            //for (int path_i = 1; path_i < 10; path_i++) {
             //for (int path_i = 10; path_i < 11; path_i++) {
             //collect index per cloudID and cloudpath step.
             // - setup index of water or land pixels at cloud path step. just like identifyPotentialCloudShadow, but without cloudPath iteration. This is fixed to the path_i step.
@@ -105,7 +101,7 @@ public class ShiftingCloudBULKalongCloudPath {
     }
 
     private void simpleShiftedCloudMask_and_meanRefl_alongPath(int x0, int y0, int height, int width, Point2D[] cloudPath, int end_path_i,
-                                                                int[] flagArray, float[] sourceBand) {
+                                                               int[] flagArray, float[] sourceBand) {
         int index0 = y0 * width + x0;
         //start from a cloud pixel, otherwise stop.
         if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
@@ -139,7 +135,7 @@ public class ShiftingCloudBULKalongCloudPath {
     }
 
     private static void setShiftedCloudBULK(int x0, int y0, int height, int width, Point2D[] cloudPath,
-                                        int[] flagArray, int darkIndex) {
+                                            int[] flagArray, int darkIndex) {
         int index0 = y0 * width + x0;
         //start from a cloud pixel, otherwise stop.
         if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {

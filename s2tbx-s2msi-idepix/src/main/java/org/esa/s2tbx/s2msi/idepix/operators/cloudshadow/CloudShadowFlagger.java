@@ -14,7 +14,7 @@ class CloudShadowFlagger {
 
     private int[] flagArray;
 
-    final static int CLUSTER_COUNT = S2IdepixCloudShadowOp.clusterCountDefine;
+    final static int CLUSTER_COUNT = S2IdepixPreCloudShadowOp.clusterCountDefine;
 
     void flagCloudShadowAreas(float[][] sourceBands, int[] flagArray, Collection<List<Integer>> potentialShadowPositions,
                               Mode mode) {
@@ -215,7 +215,7 @@ class CloudShadowFlagger {
                 }
             }
         }
-        int counterWhiteness = (int) (Math.floor(counter * S2IdepixCloudShadowOp.OUTLIER_THRESHOLD));
+        int counterWhiteness = (int) (Math.floor(counter * S2IdepixPreCloudShadowOp.OUTLIER_THRESHOLD));
         if (counterWhiteness >= counter) counterWhiteness = counter - 1;
         double[] sortedBand = band.clone();
         Arrays.sort(sortedBand);

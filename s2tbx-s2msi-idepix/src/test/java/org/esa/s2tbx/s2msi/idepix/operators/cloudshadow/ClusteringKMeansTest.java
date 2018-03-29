@@ -46,7 +46,7 @@ public class ClusteringKMeansTest {
 
     @Before
     public void setUp() {
-        S2IdepixCloudShadowOp.clusterCountDefine = 3;
+        S2IdepixPreCloudShadowOp.clusterCountDefine = 3;
         clusteringKMeans = new ClusteringKMeans();
     }
 

@@ -12,13 +12,13 @@ import static junit.framework.Assert.assertEquals;
 /**
  * @author Tonio Fincke
  */
-public class S2IdepixCloudShadowOpTest {
+public class S2IdepixPreCloudShadowOpTest {
 
-    private S2IdepixCloudShadowOp cloudShadowOp;
+    private S2IdepixPreCloudShadowOp cloudShadowOp;
 
     @Before
     public void setUp() {
-        cloudShadowOp = new S2IdepixCloudShadowOp();
+        cloudShadowOp = new S2IdepixPreCloudShadowOp();
     }
 
     @Test
