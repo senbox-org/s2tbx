@@ -91,32 +91,29 @@ class PotentialCloudShadowAreaIdentifier {
                                                      int[] flagArray, double sunZenithRad, int[] cloudIDArray,
                                                      Map<Integer, List<Integer>> indexToPositions) {
         int index0 = y0 * width + x0;
-
         //start from a cloud pixel, otherwise stop.
         if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
             return;
-        }
-        List<Integer> positions;
-        if (indexToPositions.containsKey(cloudIDArray[index0])) {
-            positions = indexToPositions.get(cloudIDArray[index0]);
-        } else {
-            positions = new ArrayList<>();
-            indexToPositions.put(cloudIDArray[index0], positions);
         }
 
         int x1 = x0 + (int) cloudPath[1].getX();
         int y1 = y0 + (int) cloudPath[1].getY();
         int x2 = x0 + (int) cloudPath[2].getX();
         int y2 = y0 + (int) cloudPath[2].getY();
-        // der wolkenrand sollte mindestens in 2 Pixel Tiefe benutzt werden, um nicht zu viele Lücken durch Orientierung zum
-        // cloud path zu produzieren (Moire-Effekt)
+        // cloud edge is used at least 2 pixels deep, otherwise gaps occur due to orientation of cloud edge and cloud path.
+        // (Moire-Effect)
         if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0 || x2 >= width || y2 >= height || x2 < 0 || y2 < 0 ||
                 ((flagArray[y1 * width + x1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG &&
                        (flagArray[y2 * width + x2] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
-        //if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0 ||
-        //        (flagArray[y1 * width + x1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG ){
-
             return;
+        }
+
+        List<Integer> positions;
+        if (indexToPositions.containsKey(cloudIDArray[index0])) {
+            positions = indexToPositions.get(cloudIDArray[index0]);
+        } else {
+            positions = new ArrayList<>();
+            indexToPositions.put(cloudIDArray[index0], positions);
         }
 
         for (int i = 1; i < cloudPath.length; i++) {
