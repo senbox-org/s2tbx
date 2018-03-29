@@ -375,13 +375,24 @@ public class S2IdepixCloudShadowOp extends Operator {
                     solarFluxNir);   */
 
         if (numClouds > 0) {
+            //potential cloud shadow area + clustering
+            /*
             final Collection<List<Integer>> potentialShadowPositions =
                     PotentialCloudShadowAreaIdentifier.identifyPotentialCloudShadows(
                             sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, sourceLatitudes, sourceLongitudes,
                             altitude, flagArray, cloudIDArray, cloudShadowRelativePath);
             System.out.println("potential is ready!");
             final CloudShadowFlagger cloudShadowFlagger = new CloudShadowFlagger();
-            cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
+            cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);*/
+            //shifting cloud mask
+
+            /*final ShiftingCloudalongCloudPath cloudTest = new ShiftingCloudalongCloudPath();
+            cloudTest.shiftingCloudalongCloudPath(sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, sourceLatitudes, sourceLongitudes,
+                    altitude, clusterData, flagArray, cloudIDArray, cloudShadowRelativePath);*/
+
+            final ShiftingCloudBULKalongCloudPath cloudTest = new ShiftingCloudBULKalongCloudPath();
+            cloudTest.ShiftingCloudBULKalongCloudPath(sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, clusterData, flagArray, cloudShadowRelativePath);
+
         }
         fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
         fillTile(cloudIDArray, targetRectangle, sourceRectangle, targetTileCloudID);
