@@ -138,8 +138,8 @@ public class MountainShadowFlaggerTest {
     }
 
     private void testMountainShadowArea(float saa, int[] expectedFlagArray) throws IOException {
-        S2IdepixCloudShadowOp.searchBorderRadius = 5;
-        S2IdepixCloudShadowOp.spatialResolution = 60;
+        S2IdepixPreCloudShadowOp.searchBorderRadius = 5;
+        S2IdepixPreCloudShadowOp.spatialResolution = 60;
         final Rectangle sourceRectangle = new Rectangle(20, 20);
         final Rectangle targetRectangle = new Rectangle(5, 5, 10, 10);
         final float[] sunZenith = createSmoothGrid(19.7446f, 19.6652f, 19.6997f, 19.6202f, 20, 20);

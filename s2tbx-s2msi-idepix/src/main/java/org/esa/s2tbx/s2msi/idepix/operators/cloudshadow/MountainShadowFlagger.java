@@ -29,14 +29,14 @@ class MountainShadowFlagger {
         final Point2D[] relativePath = CloudShadowUtils.getRelativePath(minAltitude, sunZenithRad, sunAzimuthRad,
                                                                         maxAltitude, sourceRectangle, targetRectangle,
                                                                         productHeight, productWidth,
-                                                                        S2IdepixCloudShadowOp.spatialResolution, false,
+                                                                        S2IdepixPreCloudShadowOp.spatialResolution, false,
                                                                         true);
         if (relativePath.length < 2) {
             return;
         }
         final double[] relativeMinMountainHeights = getRelativeMinMountainHeights(relativePath,
-                                                                                 S2IdepixCloudShadowOp.spatialResolution,
-                                                                                 sunZenithRad);
+                                                                                  S2IdepixPreCloudShadowOp.spatialResolution,
+                                                                                  sunZenithRad);
         if (maxAltitude - minAltitude < relativeMinMountainHeights[1]) {
             return;
         }

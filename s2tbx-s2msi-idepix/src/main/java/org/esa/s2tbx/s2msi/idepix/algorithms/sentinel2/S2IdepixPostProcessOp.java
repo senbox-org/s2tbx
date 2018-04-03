@@ -2,6 +2,7 @@ package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixCloudShadowOp;
+import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixPreCloudShadowOp;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
@@ -130,9 +131,9 @@ public class S2IdepixPostProcessOp extends Operator {
 
         if (computeCloudShadow) {
             final Tile flagTile = getSourceTile(cloudShadowFlagBand, targetRectangle);
-            int cloudShadowFlag = (int) Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD_SHADOW);
-            int mountainShadowFlag = (int) Math.pow(2, S2IdepixCloudShadowOp.F_MOUNTAIN_SHADOW);
-            int cloudBufferFlag = (int) Math.pow(2, S2IdepixCloudShadowOp.F_CLOUD_BUFFER);
+            int cloudShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW);
+            int mountainShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_MOUNTAIN_SHADOW);
+            int cloudBufferFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_BUFFER);
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
                 checkForCancellation();
                 for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {

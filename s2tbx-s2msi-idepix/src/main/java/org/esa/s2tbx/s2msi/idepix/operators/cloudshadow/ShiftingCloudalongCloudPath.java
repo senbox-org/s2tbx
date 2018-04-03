@@ -9,8 +9,8 @@ import java.util.List;
 
 public class ShiftingCloudalongCloudPath {
 
-    private static final double MAXCLOUD_TOP = S2IdepixCloudShadowOp.maxcloudTop;
-    private static final double MINCLOUD_BASE = S2IdepixCloudShadowOp.mincloudBase;
+    private static final double MAXCLOUD_TOP = S2IdepixPreCloudShadowOp.maxcloudTop;
+    private static final double MINCLOUD_BASE = S2IdepixPreCloudShadowOp.mincloudBase;
 
     //static Collection<List<Integer>>
     void shiftingCloudalongCloudPath(Rectangle sourceRectangle,
@@ -49,7 +49,7 @@ public class ShiftingCloudalongCloudPath {
         System.out.println();
 
         for (int path_i = 1; path_i < cloudPath.length; path_i++) {
-        //for (int path_i = 10; path_i < 11; path_i++) {
+            //for (int path_i = 10; path_i < 11; path_i++) {
             //collect index per cloudID and cloudpath step.
             // - setup index of water or land pixels at cloud path step. just like identifyPotentialCloudShadow, but without cloudPath iteration. This is fixed to the path_i step.
 
@@ -61,8 +61,8 @@ public class ShiftingCloudalongCloudPath {
                     //based on identifyPotentialCloudShadow()
 
                     identifyPotentialCloudShadow_atPosition(x0, y0, sourceHeight, sourceWidth, cloudPath, path_i, sourceLongitude,
-                                                                sourceLatitude, sourceAltitude, flagArray, sunZenithCloudRad,
-                                                                cloudIDArray, indexToPositions);
+                                                            sourceLatitude, sourceAltitude, flagArray, sunZenithCloudRad,
+                                                            cloudIDArray, indexToPositions);
 
                 }
             }
@@ -179,9 +179,9 @@ public class ShiftingCloudalongCloudPath {
     }
 
     private static void identifyPotentialCloudShadow_atPosition(int x0, int y0, int height, int width, Point2D[] cloudPath, int path_i,
-                                                     float[] longitude, float[] latitude, float[] altitude,
-                                                     int[] flagArray, double sunZenithRad, int[] cloudIDArray,
-                                                     Map<Integer, List<Integer>> indexToPositions) {
+                                                                float[] longitude, float[] latitude, float[] altitude,
+                                                                int[] flagArray, double sunZenithRad, int[] cloudIDArray,
+                                                                Map<Integer, List<Integer>> indexToPositions) {
         int index0 = y0 * width + x0;
         //start from a cloud pixel, otherwise stop.
         if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
@@ -236,9 +236,9 @@ public class ShiftingCloudalongCloudPath {
             // todo: why is the cloud SearchPointHeight lower than mincloud_base?
             if (cloudSearchPointHeight <= MAXCLOUD_TOP) {
                 if(!((flagArray[index1] & PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG) == PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG)) {
-                   flagArray[index1] += PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG;
-               }
-               positions.add(index1);
+                    flagArray[index1] += PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG;
+                }
+                positions.add(index1);
             }
         }
     }
@@ -326,7 +326,7 @@ public class ShiftingCloudalongCloudPath {
 
             if (arrayBands[0][counterA] >= 1e-8 && !Double.isNaN(arrayBands[0][counterA]) &&
                     (((flag & PreparationMaskBand.LAND_FLAG) == PreparationMaskBand.LAND_FLAG) ||
-                     (flag & PreparationMaskBand.WATER_FLAG) == PreparationMaskBand.WATER_FLAG)) {
+                            (flag & PreparationMaskBand.WATER_FLAG) == PreparationMaskBand.WATER_FLAG)) {
                 arrayIndexes[0][counterA] = index;
 
                 if (arrayBands[0][counterA] < minArrayBands[0]) {

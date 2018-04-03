@@ -218,8 +218,8 @@ public class PotentialCloudShadowAreaIdentifierTest {
 
     private void testPotentialCloudShadowArea(float saa, Rectangle sourceRectangle, Rectangle targetRectangle,
                                               int[][] expectedPotentialShadowPositions) throws IOException {
-        S2IdepixCloudShadowOp.searchBorderRadius = 10;
-        S2IdepixCloudShadowOp.spatialResolution = 60;
+        S2IdepixPreCloudShadowOp.searchBorderRadius = 10;
+        S2IdepixPreCloudShadowOp.spatialResolution = 60;
         final float[] sunZenith = createSmoothGrid(19.7446f, 19.6652f, 19.6997f, 19.6202f, 20, 20);
         final float[] sunAzimuth = createSmoothGrid(saa, saa, saa, saa, 20, 20);
         final float[] latitude = createSmoothGrid(31.630919f, 31.630814f, 31.620094f, 31.619989f, 20, 20);
