@@ -1,6 +1,7 @@
 package org.esa.s2tbx.reflectance2radiance;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -416,6 +417,11 @@ public class ReflectanceToRadianceOp extends Operator {
                     String bandIdAsString = bandIdData.getElemString();
                     return Integer.parseInt(bandIdAsString);
                 }
+            }
+        } else {
+            S2BandConstants s2BandConstant = S2BandConstants.getBandFromPhysicalName(sourceBandName);
+            if(s2BandConstant != null) {
+                return s2BandConstant.getBandIndex();
             }
         }
         return -1;
