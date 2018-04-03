@@ -5,11 +5,11 @@
 	<xsl:param name="medianFilter" select="0" />
 	<xsl:param name="aerosol" select="'RURAL'"/>
 	<xsl:param name="midLat" select="'SUMMER'"/>
-	<xsl:param name="ozone" select="'h'"/>
+	<xsl:param name="ozone" select="'331'"/>
 	<xsl:param name="wvCorrection" select="1"/>
 	<xsl:param name="visUpdateMode" select="1"/>
 	<xsl:param name="wvWatermask" select="1"/>
-	<xsl:param name="cirrusCorrection" select="0"/>
+	<xsl:param name="cirrusCorrection" select="'FALSE'"/>
 	<xsl:param name="brdfCorrection" select="0"/>
 	<xsl:param name="brdfLower" select="0.22"/>
 	<xsl:param name="visibility" select="23.0"/>
@@ -20,11 +20,17 @@
 	<xsl:param name="demUnit" select="'0'"/>
 	<xsl:param name="adjacencyRange" select="1.000"/>
 	<xsl:param name="smoothWVMap" select="100.0"/>
+	<xsl:param name="generateDEMoutput" select="'FALSE'"/>
+	<xsl:param name="generateTCIoutput" select="'TRUE'"/>
+	<xsl:param name="generateDDVoutput" select="'FALSE'"/>
+	<xsl:param name="operationMode" select="'TOOLBOX'"/>
 	<xsl:template match="/">
 		<Level-2A_Ground_Image_Processing_Parameter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="L2A_GIPP.xsd">
 			<Common_Section>
 				<Log_Level>INFO</Log_Level>
 				<!-- can be: NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL -->
+				<Operation_Mode><xsl:value-of select="$operationMode"/></Operation_Mode>
+				<!-- can be: TOOLBOX or PDGS. PDGS reflects changes for integration into PDGS according to SIIMPC-1119 -->
 				<Nr_Processes><xsl:value-of select="$nbProcesses"/></Nr_Processes>
 				<!-- can be an unsigned integer value specifying the number or processes you intend to operate in parallel or: AUTO. If AUTO is chosen, the processor determines the number of processes automatically, using cpu_count() -->
 				<Target_Directory>DEFAULT</Target_Directory>
@@ -33,25 +39,48 @@
 				<!-- should be either a directory in the sen2cor home folder or 'NONE'. If NONE, no DEM will be used -->
 				<DEM_Reference><xsl:value-of select="$demReference"/></DEM_Reference>
 				<!-- will be ignored, if DEM is NONE. A SRTM DEM will be downloaded from this reference, if no local DEM is available -->
-				<PSD_Scheme PSD_Version="13" PSD_Reference="S2-PDGS-TAS-DI-PSD-V13.1_Schema">
-					<UP_Scheme_1C>S2_User_Product_Level-1C_Metadata.xsd</UP_Scheme_1C>
-					<UP_Scheme_2A>S2_User_Product_Level-2A_Metadata.xsd</UP_Scheme_2A>
-					<Tile_Scheme_1C>S2_PDI_Level-1C_Tile_Metadata.xsd</Tile_Scheme_1C>
-					<Tile_Scheme_2A>S2_PDI_Level-2A_Tile_Metadata.xsd</Tile_Scheme_2A>
-					<DS_Scheme_1C>S2_PDI_Level-1C_Datastrip_Metadata.xsd</DS_Scheme_1C>
-					<DS_Scheme_2A>S2_PDI_Level-2A_Datastrip_Metadata.xsd</DS_Scheme_2A>
+				<Generate_DEM_Output><xsl:value-of select="$generateDEMoutput"/></Generate_DEM_Output>
+				<!-- FALSE: no DEM output, TRUE: store DEM in the AUX data directory -->
+				<Generate_TCI_Output><xsl:value-of select="$generateTCIoutput"/></Generate_TCI_Output>
+				<!-- FALSE: no TCI output, TRUE: store TCI in the IMAGE data directory -->
+				<Generate_DDV_Output><xsl:value-of select="$generateDDVoutput"/></Generate_DDV_Output>
+				<!-- FALSE: no DDV output, TRUE: store DDV in the QI_DATA directory -->
+				<PSD_Scheme PSD_Version="13.1" PSD_Reference="S2-PDGS-TAS-DI-PSD-V13.1_Schema">
+					<UP_Scheme_1C>S2_User_Product_Level-1C_Metadata</UP_Scheme_1C>
+					<UP_Scheme_2A>S2_User_Product_Level-2A_Metadata</UP_Scheme_2A>
+					<Tile_Scheme_1C>S2_PDI_Level-1C_Tile_Metadata</Tile_Scheme_1C>
+					<Tile_Scheme_2A>S2_PDI_Level-2A_Tile_Metadata</Tile_Scheme_2A>
+					<DS_Scheme_1C>S2_PDI_Level-1C_Datastrip_Metadata</DS_Scheme_1C>
+					<DS_Scheme_2A>S2_PDI_Level-2A_Datastrip_Metadata</DS_Scheme_2A>
 				</PSD_Scheme>
-				<PSD_Scheme PSD_Version="14" PSD_Reference="S2-PDGS-TAS-DI-PSD-V14.2_Schema">
-					<UP_Scheme_1C>S2_User_Product_Level-1C_Metadata.xsd</UP_Scheme_1C>
-					<UP_Scheme_2A>S2_User_Product_Level-2A_Metadata.xsd</UP_Scheme_2A>
-					<Tile_Scheme_1C>S2_PDI_Level-1C_Tile_Metadata.xsd</Tile_Scheme_1C>
-					<Tile_Scheme_2A>S2_PDI_Level-2A_Tile_Metadata.xsd</Tile_Scheme_2A>
-					<DS_Scheme_1C>S2_PDI_Level-1C_Datastrip_Metadata.xsd</DS_Scheme_1C>
-					<DS_Scheme_2A>S2_PDI_Level-2A_Datastrip_Metadata.xsd</DS_Scheme_2A>
+				<PSD_Scheme PSD_Version="14.2" PSD_Reference="S2-PDGS-TAS-DI-PSD-V14.2_Schema">
+					<UP_Scheme_1C>S2_User_Product_Level-1C_Metadata</UP_Scheme_1C>
+					<UP_Scheme_2A>S2_User_Product_Level-2A_Metadata</UP_Scheme_2A>
+					<Tile_Scheme_1C>S2_PDI_Level-1C_Tile_Metadata</Tile_Scheme_1C>
+					<Tile_Scheme_2A>S2_PDI_Level-2A_Tile_Metadata</Tile_Scheme_2A>
+					<DS_Scheme_1C>S2_PDI_Level-1C_Datastrip_Metadata</DS_Scheme_1C>
+					<DS_Scheme_2A>S2_PDI_Level-2A_Datastrip_Metadata</DS_Scheme_2A>
+				</PSD_Scheme>
+				<PSD_Scheme PSD_Version="14.3" PSD_Reference="S2-PDGS-TAS-DI-PSD-V14.3_Schema">
+					<UP_Scheme_1C>S2_User_Product_Level-1C_Metadata</UP_Scheme_1C>
+					<UP_Scheme_2A>S2_User_Product_Level-2A_Metadata</UP_Scheme_2A>
+					<Tile_Scheme_1C>S2_PDI_Level-1C_Tile_Metadata</Tile_Scheme_1C>
+					<Tile_Scheme_2A>S2_PDI_Level-2A_Tile_Metadata</Tile_Scheme_2A>
+					<DS_Scheme_1C>S2_PDI_Level-1C_Datastrip_Metadata</DS_Scheme_1C>
+					<DS_Scheme_2A>S2_PDI_Level-2A_Datastrip_Metadata</DS_Scheme_2A>
+				</PSD_Scheme>
+				<PSD_Scheme PSD_Version="14.5" PSD_Reference="S2-PDGS-TAS-DI-PSD-V14.5_Schema">
+					<UP_Scheme_1C>S2_User_Product_Level-1C_Metadata</UP_Scheme_1C>
+					<UP_Scheme_2A>S2_User_Product_Level-2A_Metadata</UP_Scheme_2A>
+					<Tile_Scheme_1C>S2_PDI_Level-1C_Tile_Metadata</Tile_Scheme_1C>
+					<Tile_Scheme_2A>S2_PDI_Level-2A_Tile_Metadata</Tile_Scheme_2A>
+					<DS_Scheme_1C>S2_PDI_Level-1C_Datastrip_Metadata</DS_Scheme_1C>
+					<DS_Scheme_2A>S2_PDI_Level-2A_Datastrip_Metadata</DS_Scheme_2A>
 				</PSD_Scheme>
 				<GIPP_Scheme>L2A_GIPP.xsd</GIPP_Scheme>
 				<SC_Scheme>L2A_CAL_SC_GIPP.xsd</SC_Scheme>
 				<AC_Scheme>L2A_CAL_AC_GIPP.xsd</AC_Scheme>
+				<PB_Scheme>L2A_PB_GIPP</PB_Scheme>
 			</Common_Section>
 			<Scene_Classification>
 				<Filters>
@@ -65,26 +94,18 @@
 					<Mid_Latitude><xsl:value-of select="$midLat"/></Mid_Latitude>
 					<!-- SUMMER, WINTER, AUTO -->
 					<Ozone_Content><xsl:value-of select="$ozone"/></Ozone_Content>
-					<!-- 0, f-k, t-y -->
-					<!-- The atmospheric temperature profile and ozone content:
-                      "0" means: get best approximation from metadata (this is smallest difference between metadata and column DU)
-
-                      For midlatitude summer atmosphere:
-                      "f" 250 DU
-                      "g" 290 DU
-                      "h" 331 DU (standard MS)
-                      "i" 370 DU
-                      "j" 410 DU
-                      "k" 450 DU
-
-                      For midlatitude winter atmosphere:
-                      "t" 250 DU
-                      "u" 290 DU
-                      "v" 330 DU
-                      "w" 377 DU (standard MW)
-                      "x" 420 DU
-                      "y" 460 DU
-                     -->
+					<!-- The atmospheric temperature profile and ozone content in Dobson Unit (DU)
+    				0: to get the best approximation from metadata
+    				(this is the smallest difference between metadata and column DU),
+    				else select one of:
+    				==========================================
+  					For midlatitude summer (MS) atmosphere:
+  					250, 290, 331 (standard MS), 370, 410, 450
+  					==========================================
+  					For midlatitude winter (MW) atmosphere:
+  					250, 290, 330, 377 (standard MW), 420, 460
+  					==========================================
+ 					-->
 				</Look_Up_Tables>
 				<Flags>
 					<WV_Correction><xsl:value-of select="$wvCorrection"/></WV_Correction>

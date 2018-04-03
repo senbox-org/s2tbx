@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Sen2Cor</alias>
   <label>SEN2COR</label>
-  <version>240</version>
+  <version>255</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
   <authors></authors>
   <copyright></copyright>
@@ -183,22 +183,22 @@
         <parameter>
           <name>ozone</name>
           <dataType>java.lang.String</dataType>
-          <defaultValue>h</defaultValue>
+          <defaultValue>331</defaultValue>
           <description>Ozone content</description>
           <valueSet>
             <string>0</string>
-            <string>f</string>
-            <string>g</string>
-            <string>h</string>
-            <string>i</string>
-            <string>j</string>
-            <string>k</string>
-            <string>t</string>
-            <string>u</string>
-            <string>v</string>
-            <string>w</string>
-            <string>x</string>
-            <string>y</string>
+            <string>250</string>
+            <string>290</string>
+            <string>331</string>
+            <string>370</string>
+            <string>410</string>
+            <string>450</string>
+            <string>250</string>
+            <string>290</string>
+            <string>330</string>
+            <string>377</string>
+            <string>420</string>
+            <string>460</string>
           </valueSet>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -249,11 +249,11 @@
         </parameter>
         <parameter>
           <name>cirrusCorrection</name>
-          <dataType>java.lang.Integer</dataType>
-          <defaultValue>0</defaultValue>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>FALSE</defaultValue>
           <valueSet>
-            <string>0</string>
-            <string>1</string>
+            <string>FALSE</string>
+            <string>TRUE</string>
           </valueSet>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -373,6 +373,54 @@
           <notEmpty>false</notEmpty>
           <parameterType>RegularParameter</parameterType>
         </parameter>
+        <parameter>
+          <name>generateDEMoutput</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>FALSE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>generateTCIoutput</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>TRUE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>generateDDVoutput</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>FALSE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>operationMode</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>TOOLBOX</defaultValue>
+          <valueSet>
+            <string>TOOLBOX</string>
+            <string>PDGS</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
       </parameters>
       <template type="file">
         <file>Sen2Cor-gipp-template.xsl</file>
@@ -421,7 +469,7 @@
     <parameter>
       <name>ozone</name>
       <dataType>java.lang.String</dataType>
-      <defaultValue>h</defaultValue>
+      <defaultValue>331</defaultValue>
       <description>Ozone content</description>
       <valueSet reference="../../templateparameter[2]/parameters/parameter[5]/valueSet"/>
       <notNull>false</notNull>
@@ -460,8 +508,8 @@
     </parameter>
     <parameter>
       <name>cirrusCorrection</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>0</defaultValue>
+      <dataType>java.lang.String</dataType>
+      <defaultValue>FALSE</defaultValue>
       <valueSet reference="../../templateparameter[2]/parameters/parameter[9]/valueSet"/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
@@ -573,6 +621,43 @@
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
+    <parameter>
+      <name>generateDEMoutput</name>
+      <dataType>java.lang.String</dataType>
+      <defaultValue>FALSE</defaultValue>
+      <valueSet reference="../../templateparameter[2]/parameters/parameter[20]/valueSet"/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>generateTCIoutput</name>
+      <dataType>java.lang.String</dataType>
+      <defaultValue>TRUE</defaultValue>
+      <valueSet reference="../../templateparameter[2]/parameters/parameter[21]/valueSet"/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>generateDDVoutput</name>
+      <dataType>java.lang.String</dataType>
+      <defaultValue>FALSE</defaultValue>
+      <valueSet reference="../../templateparameter[2]/parameters/parameter[22]/valueSet"/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>operationMode</name>
+      <dataType>java.lang.String</dataType>
+      <defaultValue>TOOLBOX</defaultValue>
+      <valueSet reference="../../templateparameter[2]/parameters/parameter[23]/valueSet"/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+
   </parameters>
   <source>user</source>
   <isSystem>false</isSystem>
@@ -580,20 +665,20 @@
   <windowsBundle>
     <bundleType>ZIP</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.4.0/Sen2Cor-2.4.0-win64.zip</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.5.5/Sen2Cor-02.05.05-win64.zip</downloadURL>
     <templateparameter>
       <template type="simple">
         <contents></contents>
       </template>
     </templateparameter>
     <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint>Sen2Cor-2.4.0-win64.zip</entryPoint>
+    <entryPoint>Sen2Cor-02.05.05-win64.zip</entryPoint>
     <updateVariable>SEN2COR_BIN</updateVariable>
   </windowsBundle>
   <linuxBundle>
     <bundleType>INSTALLER</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.4.0/Sen2Cor-2.4.0-Linux64.run</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.5.5/Sen2Cor-02.05.05-Linux64.run</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
@@ -617,18 +702,18 @@
       <template type="simple">
         <contents>--nox11
           --target
-          $targetLocation/Sen2Cor-2.4.0-Linux64</contents>
+          $targetLocation/Sen2Cor-02.05.05-Linux64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
     <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint>Sen2Cor-2.4.0-Linux64.run</entryPoint>
+    <entryPoint>Sen2Cor-02.05.05-Linux64.run</entryPoint>
     <updateVariable>SEN2COR_BIN</updateVariable>
   </linuxBundle>
   <macosxBundle>
     <bundleType>INSTALLER</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.4.0/Sen2Cor-2.4.0-Darwin64.run</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.5.5/Sen2Cor-02.05.05-Darwin64.run</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
@@ -652,12 +737,12 @@
       <template type="simple">
         <contents>--nox11
           --target
-          $targetLocation/Sen2Cor-2.4.0-Darwin64</contents>
+          $targetLocation/Sen2Cor-02.05.05-Darwin64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
     <targetLocation>$USER_HOME/.snap/auxdata</targetLocation>
-    <entryPoint>Sen2Cor-2.4.0-Darwin64.run</entryPoint>
+    <entryPoint>Sen2Cor-02.05.05-Darwin64.run</entryPoint>
     <updateVariable></updateVariable>
   </macosxBundle>
   <sourceProductDescriptors>
