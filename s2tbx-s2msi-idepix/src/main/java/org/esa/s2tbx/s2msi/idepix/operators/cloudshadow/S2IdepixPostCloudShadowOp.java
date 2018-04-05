@@ -11,6 +11,7 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.BitSetter;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
@@ -39,6 +40,10 @@ public class S2IdepixPostCloudShadowOp extends Operator {
 
     @TargetProduct
     private Product targetProduct;
+
+    public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
+    public final static String BAND_NAME_CLOUD_ID = "cloud_ids";
+    public final static String BAND_NAME_TILE_ID = "tile_ids";
 
     @Parameter(description = "Offset along cloud path to minimum reflectance (over all tiles)", defaultValue = "0")
     private int bestOffset;
@@ -114,6 +119,13 @@ public class S2IdepixPostCloudShadowOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         //here you could retrieve the important information from the preProcessedProduct
+        final Product sourceProduct = getSourceProduct();
+        targetProduct = new Product(sourceProduct.getName(), sourceProduct.getProductType(),
+                                    sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        ProductUtils.copyBand(BAND_NAME_CLOUD_SHADOW, sourceProduct, targetProduct, true);
+        ProductUtils.copyBand(BAND_NAME_CLOUD_ID, sourceProduct, targetProduct, true);
+        ProductUtils.copyBand(BAND_NAME_TILE_ID, sourceProduct, targetProduct, true);
+        setTargetProduct(targetProduct);
         targetProduct = getSourceProduct();
         //setTargetProduct(targetProduct);
 
