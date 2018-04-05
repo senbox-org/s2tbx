@@ -30,11 +30,7 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Tonio Fincke, Dagmar Müller
@@ -84,7 +80,17 @@ public class S2IdepixPreCloudShadowOp extends Operator {
 
     static int mincloudBase = 100;
     static int maxcloudTop = 10000;
-    //static int maxcloudTop = 4000;
+    //for calculating a single cloud path
+    private float sunZenithMean;
+    private float sunAzimuthMean;
+    private float minAltitude =0;
+
+    //map for the different tiles: meanReflectance per offset.
+    private Map<Integer, double[]> meanReflPerTile = new HashMap<>();
+    public Point2D[] cloudPath;
+
+
+
     static double spatialResolution;  //[m]
     static int clusterCountDefine = 4;
     static double OUTLIER_THRESHOLD = 0.94;
@@ -145,6 +151,18 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         System.out.println(centerGeoPos.getLat());
         maxcloudTop = setCloudTopHeigh(centerGeoPos.getLat());
         System.out.println(maxcloudTop);
+
+        //create a single potential cloud path for the granule.
+        // sunZenithMean, sunAzimuthMean is the value at the central pixel.
+        minAltitude = 0;
+        sunZenithMean = getRasterNodeValueAtCenter(sourceSunZenith, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
+        sunAzimuthMean = getRasterNodeValueAtCenter(sourceSunAzimuth, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
+        /*Rectangle granuleRectangle = new Rectangle(0, 0,  s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
+        cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
+                minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, maxcloudTop,
+                granuleRectangle, granuleRectangle, getSourceProduct().getSceneRasterHeight(),
+                getSourceProduct().getSceneRasterWidth(), spatialResolution, true, false);
+        System.out.println(cloudShadowRelativePath.length);*/
 
         sourceBandFlag1 = s2ClassifProduct.getBand(sourceFlagName1);
         if (s2CloudBufferProduct != null) {
@@ -268,6 +286,10 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         return geoCoding.getGeoPos(centerPixelPos, null);
     }
 
+    private float getRasterNodeValueAtCenter(RasterDataNode var, int width, int height) {
+        return var.getSampleFloat( (int) 0.5 * width , (int) 0.5 * height );
+    }
+
     int setCloudTopHeigh(double lat){
         return (int) Math.ceil(0.5* Math.pow(90.-Math.abs(lat), 2.) + (90.-Math.abs(lat))*25 + 5000);
     }
@@ -302,22 +324,29 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         return mean / valueCount;
     }
 
+
+
+
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
 
-        final float sunZenithMean = mean(getSamples(sourceSunZenith, targetRectangle));
-        final float sunAzimuthMean = mean(getSamples(sourceSunAzimuth, targetRectangle));
+        /*final float sunZenithMean = mean(getSamples(sourceSunZenith, targetRectangle));
+        final float sunAzimuthMean = mean(getSamples(sourceSunAzimuth, targetRectangle));*/
         final float[] targetAltitude = getSamples(sourceAltitude, targetRectangle);
 
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(targetAltitude));
-        float minAltitude = Math.max(0, Collections.min(altitudes));
+        /*float minAltitude = Math.max(0, Collections.min(altitudes));
         if (Float.isNaN(minAltitude)) {
             minAltitude = 0;
-        }
+        }*/
+
+        //here: cloud path is calculated for center pixel sunZenith and sunAzimuth.
         final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
                 minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, maxcloudTop,
                 targetRectangle, targetRectangle, getSourceProduct().getSceneRasterHeight(),
                 getSourceProduct().getSceneRasterWidth(), spatialResolution, true, false);
+
+        cloudPath = cloudShadowRelativePath;
 
         final Rectangle sourceRectangle = getSourceRectangle(targetRectangle, cloudShadowRelativePath);
 
@@ -333,6 +362,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         //will be filled in SegmentationCloudClass Arrays.fill(cloudIdArray, ....);
         final int[] cloudIDArray = new int[sourceLength];
         final int[] tileIDArray = new int[sourceLength];
+        final int mytileid = tileid;
         Arrays.fill(tileIDArray, tileid++);
 
         final float[] altitude = getSamples(sourceAltitude, sourceRectangle);
@@ -402,10 +432,29 @@ public class S2IdepixPreCloudShadowOp extends Operator {
             final ShiftingCloudBULKalongCloudPath cloudTest = new ShiftingCloudBULKalongCloudPath();
             cloudTest.ShiftingCloudBULKalongCloudPath(sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, clusterData, flagArray, cloudShadowRelativePath);
 
+
+            meanReflPerTile.put(mytileid, cloudTest.getMeanReflectanceAlongPath());
+
+
+
         }
         fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
         fillTile(cloudIDArray, targetRectangle, sourceRectangle, targetTileCloudID);
         fillTile(tileIDArray, targetRectangle, sourceRectangle, targetTileTileID);
+    }
+
+    public Map<Integer, double[]> getMeanReflPerTile() {
+        return meanReflPerTile;
+    }
+
+    public Point2D[] getCloudPath(){
+        return cloudPath;
+    }
+
+    public void shiftCloudByOffset(int offset, Point2D[] cloudPath){
+
+
+
     }
 
     private void attachFlagCoding(Band targetBandCloudShadow) {
