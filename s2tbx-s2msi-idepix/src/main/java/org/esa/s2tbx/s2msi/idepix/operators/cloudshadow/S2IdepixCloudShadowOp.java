@@ -13,6 +13,7 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,6 +45,8 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
 
+    private Map<Integer, double[]> meanReflPerTile = new HashMap<>();
+
     @Override
     public void initialize() throws OperatorException {
         HashMap<String, Product> preInput = new HashMap<>();
@@ -54,24 +57,64 @@ public class S2IdepixCloudShadowOp extends Operator {
         preParams.put("mode", mode);
 
         final String operatorAlias = OperatorSpi.getOperatorAlias(S2IdepixPreCloudShadowOp.class);
-        final Operator cloudShadowPreProcessingOperator =
-                GPF.getDefaultInstance().createOperator(operatorAlias, preParams, preInput, null);
+        final S2IdepixPreCloudShadowOp cloudShadowPreProcessingOperator =
+                (S2IdepixPreCloudShadowOp) GPF.getDefaultInstance().createOperator(operatorAlias, preParams, preInput, null);
 
         //trigger computation of all tiles
         final OperatorExecutor operatorExecutor = OperatorExecutor.create(cloudShadowPreProcessingOperator);
         operatorExecutor.execute(ProgressMonitor.NULL);
 
         Product preProcessedProduct = cloudShadowPreProcessingOperator.getTargetProduct();
+        meanReflPerTile= cloudShadowPreProcessingOperator.getMeanReflPerTile();
+
+        int bestOffset = findOverallMinimumReflectance();
         //here you could retrieve the important information from the preProcessedProduct
+        System.out.print("bestOffset ");
+        System.out.println(bestOffset);
+
+
 
         HashMap<String, Product> postInput = new HashMap<>();
         postInput.put("source", preProcessedProduct);
         //put in here the input products that are required by the post-processing operator
         Map<String, Object> postParams = new HashMap<>();
+        postParams.put("bestOffset", bestOffset);
         //put in here any parameters that might be requested by the post-processing operator
+
         targetProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixPostCloudShadowOp.class),
                                           postParams, postInput);
         setTargetProduct(targetProduct);
+    }
+
+    public int findOverallMinimumReflectance(){
+        double[] scaledTotalReflectance = new double[meanReflPerTile.get(0).length];
+
+        for(int key : meanReflPerTile.keySet()){
+            double[] meanValues = meanReflPerTile.get(key);
+
+            double maxValue = 0.;
+            for(int i=0; i<meanValues.length; i++){
+                if(meanValues[i]>maxValue){
+                    maxValue = meanValues[i];
+                }
+            }
+
+            for(int i=0; i<meanValues.length; i++){
+                scaledTotalReflectance[i] += meanValues[i]/maxValue;
+            }
+        }
+
+        double minValue = 10.;
+        int offset = 0;
+        for(int i=1; i<scaledTotalReflectance.length; i++){
+            if(scaledTotalReflectance[i]<minValue){
+                minValue = scaledTotalReflectance[i];
+                offset = i;
+            }
+        }
+
+
+        return offset;
     }
 
     public static class Spi extends OperatorSpi {
