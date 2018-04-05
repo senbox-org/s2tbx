@@ -11,12 +11,14 @@ public class ShiftingCloudBULKalongCloudPath {
     private double sumValue;
     private int N;
 
+    private double[] meanValuesPath;
+
     //static Collection<List<Integer>>
     public void ShiftingCloudBULKalongCloudPath(Rectangle sourceRectangle,
                                                 Rectangle targetRectangle, float sourceSunZenith,
                                                 float sourceSunAzimuth,
                                                 float[][] sourceBands,
-                                                int[] flagArray, Point2D[] cloudPath) {
+                                                int[] flagArray,  Point2D[] cloudPath) {
         int sourceWidth = sourceRectangle.width;
         int sourceHeight = sourceRectangle.height;
         int targetWidth = targetRectangle.width;
@@ -39,11 +41,12 @@ public class ShiftingCloudBULKalongCloudPath {
         //iteration over cloud path positions.
         // cloudPath.length, cloudPath[i].getX() or .getY()
         //
+        /*System.out.print("cloudPath.length ");
+        System.out.print(cloudPath.length);
+        System.out.println();*/
 
-        System.out.println(cloudPath.length);
-        System.out.println();
 
-        double[] meanValuesPath = new double[cloudPath.length];
+        meanValuesPath = new double[cloudPath.length];
         int[] NPath = new int[cloudPath.length];
 
         sumValue = 0;
@@ -71,19 +74,21 @@ public class ShiftingCloudBULKalongCloudPath {
             NPath[path_i]=N;
         }
 
-
+        /*
+        Find darkest value in meanValuesPath, and shift the cloud mask along the cloud path for the respective offset.
+         */
         double darkValue = 1.;
         int darkIndex = 0;
         for (int i = 1; i<cloudPath.length; i++){
-            System.out.println(meanValuesPath[i]);
+            //System.out.println(meanValuesPath[i]);
             if (meanValuesPath[i] < darkValue){
                 darkValue = meanValuesPath[i];
                 darkIndex = i;
             }
         }
 
-        System.out.print(' ');
-        System.out.println(darkIndex);
+        /*System.out.print(' ');
+        System.out.println(darkIndex);*/
 
         //set the cloud shadow flag for each ID according to the offset determined in bestPosition.
         // iterate through all positions. for each cloud pixel set the accordingly shifted pixel along the cloud path to cloud shadow.
@@ -99,6 +104,34 @@ public class ShiftingCloudBULKalongCloudPath {
 
 
     }
+
+    public void setTileShiftedCloudBULK(Rectangle sourceRectangle,
+                                        Rectangle targetRectangle,
+                                        float sourceSunAzimuth,
+                                        int[] flagArray,  Point2D[] cloudPath, int darkIndex){
+        int sourceWidth = sourceRectangle.width;
+        int sourceHeight = sourceRectangle.height;
+
+        //search rectangle: tile + extension in certain directions
+        int xOffset = 0;
+        int yOffset = 0;
+        if (sourceSunAzimuth < 90) {
+            xOffset = targetRectangle.x - sourceRectangle.x;
+        } else if (sourceSunAzimuth < 180) {
+            xOffset = targetRectangle.x - sourceRectangle.x;
+            yOffset = targetRectangle.y - sourceRectangle.y;
+        } else if (sourceSunAzimuth < 270) {
+            yOffset = targetRectangle.y - sourceRectangle.y;
+        }
+        for(int x0 = xOffset; x0 < sourceWidth ; x0++){
+            for ( int y0 = yOffset; y0< sourceHeight; y0++){
+
+                setShiftedCloudBULK(x0, y0, sourceHeight, sourceWidth, cloudPath, flagArray, darkIndex);
+
+            }
+        }
+    }
+
 
     private void simpleShiftedCloudMask_and_meanRefl_alongPath(int x0, int y0, int height, int width, Point2D[] cloudPath, int end_path_i,
                                                                int[] flagArray, float[] sourceBand) {
@@ -160,6 +193,15 @@ public class ShiftingCloudBULKalongCloudPath {
             }
         }
     }
+
+    public double[] getMeanReflectanceAlongPath() {
+        return meanValuesPath;
+    }
+
+    /*public int getTileid() {
+        return tileid;
+    }*/
+
 
     private class PotentialShadowAnalyzerMode {
 
