@@ -1,5 +1,7 @@
+#if(!($resolution.toString().equals("ALL")))
 --resolution
 $resolution
+#end
 $sourceProduct.FileLocation
 #if($sceneOnly)
 --sc_only
@@ -8,7 +10,9 @@ $sourceProduct.FileLocation
 --cr_only
 #end
 --GIP_L2A
-#if($SEN2COR_BIN.toString().contains("Sen2Cor-02.05."))
+#if($useL2AGIPP)
+$useL2AGIPP
+#elseif($SEN2COR_BIN.toString().contains("Sen2Cor-02.05."))
 $gip25L2A
 #else
 $gipL2A

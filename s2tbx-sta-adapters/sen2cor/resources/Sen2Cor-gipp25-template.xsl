@@ -23,13 +23,12 @@
 	<xsl:param name="generateDEMoutput" select="'FALSE'"/>
 	<xsl:param name="generateTCIoutput" select="'TRUE'"/>
 	<xsl:param name="generateDDVoutput" select="'FALSE'"/>
-	<xsl:param name="operationMode" select="'TOOLBOX'"/>
 	<xsl:template match="/">
 		<Level-2A_Ground_Image_Processing_Parameter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="L2A_GIPP.xsd">
 			<Common_Section>
 				<Log_Level>INFO</Log_Level>
 				<!-- can be: NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL -->
-				<Operation_Mode><xsl:value-of select="$operationMode"/></Operation_Mode>
+				<Operation_Mode>PDGS</Operation_Mode>
 				<!-- can be: TOOLBOX or PDGS. PDGS reflects changes for integration into PDGS according to SIIMPC-1119 -->
 				<Nr_Processes><xsl:value-of select="$nbProcesses"/></Nr_Processes>
 				<!-- can be an unsigned integer value specifying the number or processes you intend to operate in parallel or: AUTO. If AUTO is chosen, the processor determines the number of processes automatically, using cpu_count() -->

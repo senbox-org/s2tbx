@@ -102,12 +102,13 @@
     </parameter>
     <parameter>
       <name>resolution</name>
-      <dataType>java.lang.Integer</dataType>
+      <dataType>java.lang.String</dataType>
       <defaultValue>60</defaultValue>
       <valueSet>
         <string>10</string>
         <string>20</string>
         <string>60</string>
+        <string>ALL</string>
       </valueSet>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
@@ -404,18 +405,6 @@
           <valueSet>
             <string>FALSE</string>
             <string>TRUE</string>
-          </valueSet>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
-        <parameter>
-          <name>operationMode</name>
-          <dataType>java.lang.String</dataType>
-          <defaultValue>TOOLBOX</defaultValue>
-          <valueSet>
-            <string>TOOLBOX</string>
-            <string>PDGS</string>
           </valueSet>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -895,6 +884,7 @@
     </parameter>
     <parameter>
       <name>generateDEMoutput</name>
+      <alias>Generate DEM output</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>FALSE</defaultValue>
       <valueSet reference="../../templateparameter[2]/parameters/parameter[20]/valueSet"/>
@@ -904,6 +894,7 @@
     </parameter>
     <parameter>
       <name>generateTCIoutput</name>
+      <alias>Generate TCI output</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>TRUE</defaultValue>
       <valueSet reference="../../templateparameter[2]/parameters/parameter[21]/valueSet"/>
@@ -913,6 +904,7 @@
     </parameter>
     <parameter>
       <name>generateDDVoutput</name>
+      <alias>Generate DDV output</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>FALSE</defaultValue>
       <valueSet reference="../../templateparameter[2]/parameters/parameter[22]/valueSet"/>
@@ -920,15 +912,18 @@
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
+
     <parameter>
-      <name>operationMode</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>TOOLBOX</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[23]/valueSet"/>
+      <name>useL2AGIPP</name>
+      <description>Use configuration from GIPP file</description>
+      <alias>Use configuration from GIPP file</alias>
+      <dataType>java.io.File</dataType>
+      <defaultValue/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
+
 
   </parameters>
   <source>user</source>
