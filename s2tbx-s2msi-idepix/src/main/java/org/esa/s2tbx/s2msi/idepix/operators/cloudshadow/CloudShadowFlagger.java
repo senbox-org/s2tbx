@@ -9,12 +9,13 @@ import java.util.List;
  * @author Grit Kirches
  * @author Tonio Fincke
  * @author Michael Paperin
+ * @author Dagmar Müller
  */
 class CloudShadowFlagger {
 
     private int[] flagArray;
 
-    final static int CLUSTER_COUNT = S2IdepixPreCloudShadowOp.clusterCountDefine;
+    final static int CLUSTER_COUNT = S2IdepixPostCloudShadowOp.clusterCountDefine;
 
     void flagCloudShadowAreas(float[][] sourceBands, int[] flagArray, Collection<List<Integer>> potentialShadowPositions,
                               Mode mode) {
