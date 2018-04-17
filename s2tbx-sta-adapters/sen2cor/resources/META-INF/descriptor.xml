@@ -123,6 +123,17 @@
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
+
+    <parameter>
+      <name>useL2AGIPP</name>
+      <description>Use configuration from GIPP file</description>
+      <alias><![CDATA[<html><body>L2A_GIPP file<br>(If a file is selected,<br>the parameters below<br>will not be used)</body></html>]]></alias>
+      <dataType>java.io.File</dataType>
+      <defaultValue/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
     <templateparameter>
       <name>gip25L2A</name>
       <dataType>java.io.File</dataType>
@@ -912,18 +923,6 @@
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
-
-    <parameter>
-      <name>useL2AGIPP</name>
-      <description>Use configuration from GIPP file</description>
-      <alias>Use configuration from GIPP file</alias>
-      <dataType>java.io.File</dataType>
-      <defaultValue/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-
 
   </parameters>
   <source>user</source>
