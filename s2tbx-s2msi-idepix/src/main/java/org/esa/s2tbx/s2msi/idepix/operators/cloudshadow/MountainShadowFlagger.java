@@ -141,11 +141,8 @@ class MountainShadowFlagger {
                                                float[] sourceAltitude, int[] flagArray, float maxAltitude) {
         int index0 = y0 * width + x0;
         float altitude0 = sourceAltitude[index0];
-        /*if (((flagArray[index0] & PreparationMaskBand.MOUNTAIN_SHADOW_FLAG) == PreparationMaskBand.MOUNTAIN_SHADOW_FLAG)
+        if (((flagArray[index0] & PreparationMaskBand.MOUNTAIN_SHADOW_FLAG) == PreparationMaskBand.MOUNTAIN_SHADOW_FLAG)
                 || Float.isNaN(altitude0)) {
-            return;
-        }*/
-        if ( Float.isNaN(altitude0)) {
             return;
         }
         for (int i = 1; i < relativePath.length; i++) {
