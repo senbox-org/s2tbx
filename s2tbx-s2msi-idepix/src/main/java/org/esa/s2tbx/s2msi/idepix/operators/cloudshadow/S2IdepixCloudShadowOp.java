@@ -12,6 +12,7 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,9 @@ public class S2IdepixCloudShadowOp extends Operator {
     @SourceProduct(alias = "s2CloudBuffer", optional = true)
     private Product s2CloudBufferProduct;      // has only classifFlagBand with buffer added
 
+    @SourceProduct(alias = "sourceProduct", optional = true)
+    private Product preProcessedProduct;
+
     @TargetProduct
     private Product targetProduct;
 
@@ -45,7 +49,8 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
 
-    private Map<Integer, double[]> meanReflPerTile = new HashMap<>();
+    //private Map<Integer, double[]> meanReflPerTile = new HashMap<>();
+    private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
 
     @Override
     public void initialize() throws OperatorException {
@@ -56,6 +61,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         preParams.put("computeMountainShadow", computeMountainShadow);
         preParams.put("mode", mode);
 
+        //Preprocessing
         final String operatorAlias = OperatorSpi.getOperatorAlias(S2IdepixPreCloudShadowOp.class);
         final S2IdepixPreCloudShadowOp cloudShadowPreProcessingOperator =
                 (S2IdepixPreCloudShadowOp) GPF.getDefaultInstance().createOperator(operatorAlias, preParams, preInput, null);
@@ -64,28 +70,45 @@ public class S2IdepixCloudShadowOp extends Operator {
         final OperatorExecutor operatorExecutor = OperatorExecutor.create(cloudShadowPreProcessingOperator);
         operatorExecutor.execute(ProgressMonitor.NULL);
 
-        Product preProcessedProduct = cloudShadowPreProcessingOperator.getTargetProduct();
         meanReflPerTile= cloudShadowPreProcessingOperator.getMeanReflPerTile();
+        int[] bestOffset = findOverallMinimumReflectance();
+        System.out.print("bestOffset all ");
+        System.out.println(bestOffset[0]);
+        System.out.print("bestOffset land ");
+        System.out.println(bestOffset[1]);
+        System.out.print("bestOffset water ");
+        System.out.println(bestOffset[2]);
 
-        int bestOffset = findOverallMinimumReflectance();
-        //here you could retrieve the important information from the preProcessedProduct
-        System.out.print("bestOffset ");
-        System.out.println(bestOffset);
-
+        //Write target product
+        //setTargetProduct(preProcessedProduct);
 
 
         HashMap<String, Product> postInput = new HashMap<>();
-        postInput.put("source", preProcessedProduct);
+        postInput.put("s2ClassifProduct", s2ClassifProduct);
+        postInput.put("s2CloudBufferProduct", s2CloudBufferProduct);
         //put in here the input products that are required by the post-processing operator
         Map<String, Object> postParams = new HashMap<>();
         postParams.put("bestOffset", bestOffset);
+        postParams.put("mode", mode);
         //put in here any parameters that might be requested by the post-processing operator
 
-        targetProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixPostCloudShadowOp.class),
-                                          postParams, postInput);
+        //Postprocessing
+
+        final String operatorAliasPost = OperatorSpi.getOperatorAlias(S2IdepixPostCloudShadowOp.class);
+        final S2IdepixPostCloudShadowOp cloudShadowPostProcessingOperator =
+                (S2IdepixPostCloudShadowOp) GPF.getDefaultInstance().createOperator(operatorAliasPost, postParams, postInput, null);
+
+        //trigger computation of all tiles
+        final OperatorExecutor operatorExecutorPost = OperatorExecutor.create(cloudShadowPostProcessingOperator);
+        operatorExecutorPost.execute(ProgressMonitor.NULL);
+
+        targetProduct = cloudShadowPostProcessingOperator.getTargetProduct();
+
         setTargetProduct(targetProduct);
+
     }
 
+    /*
     public int findOverallMinimumReflectance(){
         double[] scaledTotalReflectance = new double[meanReflPerTile.get(0).length];
 
@@ -112,9 +135,120 @@ public class S2IdepixCloudShadowOp extends Operator {
                 offset = i;
             }
         }
-
-
         return offset;
+    }*/
+
+    public int[] findOverallMinimumReflectance(){
+
+        double[][] scaledTotalReflectance = new double[3][meanReflPerTile.get(0)[0].length];
+
+        for (int j=0; j < 3; j++){
+
+            /*Checking the meanReflPerTile:
+                - if it has no relative minimum other than the first or the last value, it is excluded.
+                - if it contains NaNs, it is excluded.
+                Exclusion works by setting values to NaN.
+            */
+            for(int key : meanReflPerTile.keySet()){
+                double[][] meanValues = meanReflPerTile.get(key);
+                boolean exclude = false;
+
+                List<Integer> relativeMinimum = indecesRelativMaxInArray(meanValues[j], false);
+                //System.out.println(relativeMinimum.toArray());
+                if (relativeMinimum.contains(0)) relativeMinimum.remove(relativeMinimum.indexOf(0));
+                if (relativeMinimum.contains(meanValues[j].length-1)) relativeMinimum.remove(relativeMinimum.indexOf(meanValues[j].length-1));
+
+                if (relativeMinimum.size()==0) exclude = true;
+
+                if (exclude){
+                    for(int i=0; i<meanValues[j].length; i++){
+                        meanValues[j][i] = Double.NaN;
+                    }
+                }
+            }
+
+            //Finding the minimum in brightness in the scaled mean function.
+            for(int key : meanReflPerTile.keySet()){
+                double[][] meanValues = meanReflPerTile.get(key);
+
+                double[] maxValue = new double[3];
+
+                for(int i=0; i<meanValues[j].length; i++){
+
+                    if (!Double.isNaN(meanValues[j][i])) {
+                        if(meanValues[j][i] > maxValue[j]){
+                            maxValue[j] = meanValues[j][i];
+                        }
+                    }
+                }
+
+                for(int i=0; i<meanValues[j].length; i++){
+                    if (!Double.isNaN(meanValues[j][i]) && maxValue[j]>0) {
+                        System.out.println(meanValues[j][i]/maxValue[j]);
+                        scaledTotalReflectance[j][i] += meanValues[j][i]/maxValue[j];
+                    }
+                }
+                System.out.println();
+            }
+        }
+
+        int[] offset = new int[3];
+
+        for (int j=0; j<3; j++){
+
+            List<Integer> test = indecesRelativMaxInArray(scaledTotalReflectance[j], false);
+            if (test.contains(0)) test.remove(test.indexOf(0));
+            if (test.contains(scaledTotalReflectance[j].length-1)) test.remove(test.indexOf(scaledTotalReflectance[j].length-1));
+
+            if (test.size()>0){
+                offset[j] = test.get(0);
+            }
+
+            /*
+            double minValue = 10.;
+            for(int i=1; i<scaledTotalReflectance[0].length; i++){
+                //System.out.println(scaledTotalReflectance[j][i]);
+                if(scaledTotalReflectance[j][i] < minValue){
+                    minValue = scaledTotalReflectance[j][i];
+                    offset[j] = i;
+                }
+            }
+            */
+            //System.out.println();
+
+        }
+        return offset;
+    }
+
+    public List<Integer> indecesRelativMaxInArray(double[] x, boolean findMax){
+        int lx = x.length;
+
+        List<Integer> ID = new ArrayList<>();
+
+        boolean valid = true;
+        int i =0;
+        while (i<lx && valid){
+            if (Double.isNaN(x[i])) valid = false;
+            i++;
+        }
+
+        if(valid){
+            double fac=1.;
+            if (!findMax) fac = -1.;
+
+            if (fac*x[0]> fac*x[1]) ID.add(0);
+            if (fac*x[lx - 1] > fac*x[lx - 2]) ID.add(lx-1);
+
+            for ( i=1; i< lx - 1; i++){
+                if(fac*x[i] > fac*x[i - 1] && fac*x[i] > fac*x[i + 1]) ID.add(i);
+            }
+        }
+        else{
+            ID.add(0);
+            ID.add(lx-1);
+        }
+
+        return ID;
     }
 
     public static class Spi extends OperatorSpi {
