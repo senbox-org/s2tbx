@@ -92,14 +92,15 @@ public class ShiftingCloudBULKalongCloudPath {
 
         //set the cloud shadow flag for each ID according to the offset determined in bestPosition.
         // iterate through all positions. for each cloud pixel set the accordingly shifted pixel along the cloud path to cloud shadow.
-
+        // not a good idea! needs the information of all.
+        /*
         for(int x0 = xOffset; x0 < sourceWidth ; x0++){
             for ( int y0 = yOffset; y0< sourceHeight; y0++){
 
                 setShiftedCloudBULK(x0, y0, sourceHeight, sourceWidth, cloudPath, flagArray, darkIndex);
 
             }
-        }
+        }*/
 
 
 
@@ -127,6 +128,7 @@ public class ShiftingCloudBULKalongCloudPath {
             for ( int y0 = yOffset; y0< sourceHeight; y0++){
 
                 setShiftedCloudBULK(x0, y0, sourceHeight, sourceWidth, cloudPath, flagArray, darkIndex);
+                setPotentialCloudShadowMask(x0, y0, sourceHeight, sourceWidth, cloudPath, flagArray);
 
             }
         }
@@ -176,7 +178,6 @@ public class ShiftingCloudBULKalongCloudPath {
         }
 
 
-
         int x1 = x0 + (int) cloudPath[darkIndex].getX();
         int y1 = y0 + (int) cloudPath[darkIndex].getY();
         if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0) {
@@ -188,8 +189,51 @@ public class ShiftingCloudBULKalongCloudPath {
         if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
                 !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
 
-            if(!((flagArray[index1] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG)) {
-                flagArray[index1] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
+
+            if(!((flagArray[index1] & PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG) == PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG)) {
+                flagArray[index1] += PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG;
+            }
+        }
+    }
+
+    private static void setPotentialCloudShadowMask(int x0, int y0, int height, int width, Point2D[] cloudPath,
+                                                    int[] flagArray){
+        int index0 = y0 * width + x0;
+        //start from a cloud pixel, otherwise stop.
+        if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
+            return;
+        }
+
+        int x1 = x0 + (int) cloudPath[1].getX();
+        int y1 = y0 + (int) cloudPath[1].getY();
+        int x2 = x0 + (int) cloudPath[2].getX();
+        int y2 = y0 + (int) cloudPath[2].getY();
+        // cloud edge is used at least 2 pixels deep, otherwise gaps occur due to orientation of cloud edge and cloud path.
+        // (Moire-Effect)
+        if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0 || x2 >= width || y2 >= height || x2 < 0 || y2 < 0 ||
+                ((flagArray[y1 * width + x1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG &&
+                        (flagArray[y2 * width + x2] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
+            return;
+        }
+
+
+        for (int i=1; i<cloudPath.length; i++){
+
+            x1 = x0 + (int) cloudPath[i].getX();
+            y1 = y0 + (int) cloudPath[i].getY();
+            if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0) {
+                break;
+            }
+
+
+            int index1 = y1 * width + x1;
+
+            if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
+                    !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
+
+                if(!((flagArray[index1] & PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG) == PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG)) {
+                    flagArray[index1] += PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG;
+                }
             }
         }
     }
