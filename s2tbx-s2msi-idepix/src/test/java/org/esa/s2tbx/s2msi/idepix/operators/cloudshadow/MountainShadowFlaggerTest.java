@@ -1,6 +1,7 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.esa.snap.core.util.math.MathUtils;
 import org.junit.Test;
 
 import java.awt.Rectangle;
@@ -155,10 +156,16 @@ public class MountainShadowFlaggerTest {
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(elevation));
         float minAltitude = Collections.min(altitudes);
         float maxAltitude = Collections.max(altitudes);
+        float sunZenithMean = sunZenith[0];
+        float sunAzimuthMean = saa;
+        final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
+                minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, S2IdepixPreCloudShadowOp.maxcloudTop,
+                targetRectangle, targetRectangle, 20,
+                20, S2IdepixPreCloudShadowOp.spatialResolution, true, false);
         MountainShadowFlagger.flagMountainShadowArea(20, 20, sourceRectangle, targetRectangle,
                                                      sunZenithDegree, sunAzimuthDegree,
                                                      elevation, flagArray,
-                                                     minAltitude, maxAltitude);
+                                                     minAltitude, maxAltitude, cloudShadowRelativePath);
         assertArrayEquals(expectedFlagArray, flagArray);
     }
 
