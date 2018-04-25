@@ -51,6 +51,8 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     //private Map<Integer, double[]> meanReflPerTile = new HashMap<>();
     private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
+    private Map<Integer, Integer> NCloudOverLand = new HashMap<>();
+    private Map<Integer, Integer> NCloudOverWater = new HashMap<>();
 
     @Override
     public void initialize() throws OperatorException {
@@ -70,14 +72,23 @@ public class S2IdepixCloudShadowOp extends Operator {
         final OperatorExecutor operatorExecutor = OperatorExecutor.create(cloudShadowPreProcessingOperator);
         operatorExecutor.execute(ProgressMonitor.NULL);
 
+        NCloudOverLand = cloudShadowPreProcessingOperator.getNCloudOverLandPerTile();
+        NCloudOverWater = cloudShadowPreProcessingOperator.getNCloudOverWaterPerTile();
         meanReflPerTile= cloudShadowPreProcessingOperator.getMeanReflPerTile();
+        //writingMeanReflAlongPath(); // for development of minimum analysis.
+
         int[] bestOffset = findOverallMinimumReflectance();
+
+        int a = chooseBestOffset(bestOffset);
         System.out.print("bestOffset all ");
         System.out.println(bestOffset[0]);
         System.out.print("bestOffset land ");
         System.out.println(bestOffset[1]);
         System.out.print("bestOffset water ");
         System.out.println(bestOffset[2]);
+
+        System.out.print("chosen Offset ");
+        System.out.println(a);
 
         //Write target product
         //setTargetProduct(preProcessedProduct);
@@ -88,7 +99,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         postInput.put("s2CloudBufferProduct", s2CloudBufferProduct);
         //put in here the input products that are required by the post-processing operator
         Map<String, Object> postParams = new HashMap<>();
-        postParams.put("bestOffset", bestOffset);
+        postParams.put("bestOffset", a);
         postParams.put("mode", mode);
         //put in here any parameters that might be requested by the post-processing operator
 
@@ -106,6 +117,68 @@ public class S2IdepixCloudShadowOp extends Operator {
 
         setTargetProduct(targetProduct);
 
+    }
+
+    public void writingMeanReflAlongPath(){
+        for(int j=0; j<3; j++){
+            int N=0;
+            for(int key : meanReflPerTile.keySet()){
+                N=meanReflPerTile.get(key)[j].length;
+                break;
+            }
+
+            for(int key: meanReflPerTile.keySet()){
+                if(j==0) System.out.print((NCloudOverLand.get(key)+NCloudOverWater.get(key)) + "\t");
+                if(j==1) System.out.print(NCloudOverLand.get(key)+ "\t");
+                if(j==2) System.out.print(NCloudOverWater.get(key)+ "\t");
+            }
+            System.out.println();
+
+            for(int i=0; i<N; i++){
+
+                for(int key : meanReflPerTile.keySet()){
+
+                    System.out.print(meanReflPerTile.get(key)[j][i] + "\t");
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
+    }
+
+    public int chooseBestOffset(int[] bestOffset){
+        int NCloudWater=0;
+        int NCloudLand=0;
+
+        int out;
+
+        if(NCloudOverWater.size()>0){
+            for(int index : NCloudOverWater.keySet()){
+                NCloudWater += NCloudOverWater.get(index);
+            }
+        }
+        if(NCloudOverLand.size()>0){
+            for(int index : NCloudOverLand.keySet()){
+                NCloudLand += NCloudOverLand.get(index);
+            }
+        }
+
+        int Nall= NCloudLand + NCloudWater;
+
+        float relCloudLand = (float) NCloudLand/Nall;
+        float relCloudWater = (float) NCloudWater/Nall;
+
+
+        if(relCloudLand> 2*relCloudWater){
+            out = bestOffset[1];
+        }
+        else if(relCloudWater > 2*relCloudLand){
+            out = bestOffset[2];
+        }
+        else out = bestOffset[0];
+
+
+        return out;
     }
 
     /*
@@ -158,6 +231,9 @@ public class S2IdepixCloudShadowOp extends Operator {
                 if (relativeMinimum.contains(0)) relativeMinimum.remove(relativeMinimum.indexOf(0));
                 if (relativeMinimum.contains(meanValues[j].length-1)) relativeMinimum.remove(relativeMinimum.indexOf(meanValues[j].length-1));
 
+                //smallest relative minimum is in second part of the path -> exclude
+                if (relativeMinimum.indexOf(0) > meanValues[j].length/2.) exclude = true;
+
                 if (relativeMinimum.size()==0) exclude = true;
 
                 if (exclude){
@@ -184,11 +260,11 @@ public class S2IdepixCloudShadowOp extends Operator {
 
                 for(int i=0; i<meanValues[j].length; i++){
                     if (!Double.isNaN(meanValues[j][i]) && maxValue[j]>0) {
-                        System.out.println(meanValues[j][i]/maxValue[j]);
+                        //System.out.println(meanValues[j][i]/maxValue[j]);
                         scaledTotalReflectance[j][i] += meanValues[j][i]/maxValue[j];
                     }
                 }
-                System.out.println();
+                //System.out.println();
             }
         }
 
