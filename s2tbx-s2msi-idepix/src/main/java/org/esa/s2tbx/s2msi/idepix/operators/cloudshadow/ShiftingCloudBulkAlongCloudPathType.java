@@ -10,6 +10,8 @@ public class ShiftingCloudBulkAlongCloudPathType {
 
     private double[] sumValue;
     private int[] N;
+    private int NCloudLand;
+    private int NCloudWater;
 
     private double[][] meanValuesPath;
 
@@ -44,6 +46,8 @@ public class ShiftingCloudBulkAlongCloudPathType {
 
         sumValue = new double[3]; // Positions: 0: all, 1: only land, 2: only water
         N = new int[3];
+        NCloudLand = 0;
+        NCloudWater = 0;
 
         for (int path_i = 1; path_i < cloudPath.length; path_i++) {
             //for (int path_i = 1; path_i < 10; path_i++) {
@@ -58,7 +62,7 @@ public class ShiftingCloudBulkAlongCloudPathType {
                     //each pixel needs to be tested, whether it is cloud or not.
                     //based on identifyPotentialCloudShadow()
 
-                    simpleShiftedCloudMask_and_meanRefl_alongPath(x0, y0, sourceHeight, sourceWidth, cloudPath, path_i, flagArray, sourceBands[0]);
+                    simpleShiftedCloudMask_and_meanRefl_alongPath(x0, y0, sourceHeight, sourceWidth, cloudPath, path_i, flagArray, sourceBands[1]); //
 
                 }
             }
@@ -109,6 +113,15 @@ public class ShiftingCloudBulkAlongCloudPathType {
         //start from a cloud pixel, otherwise stop.
         if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
             return;
+        }
+
+        if (((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
+            if(((flagArray[index0] & PreparationMaskBand.LAND_FLAG) == PreparationMaskBand.LAND_FLAG)){
+                NCloudLand++;
+            }
+            if(((flagArray[index0] & PreparationMaskBand.WATER_FLAG) == PreparationMaskBand.WATER_FLAG)){
+                NCloudWater++;
+            }
         }
 
         for (int i=end_path_i; i<end_path_i+1; i++){
@@ -169,6 +182,8 @@ public class ShiftingCloudBulkAlongCloudPathType {
         }
     }
 
+
+
     private static void setPotentialCloudShadowMask(int x0, int y0, int height, int width, Point2D[] cloudPath,
                                                     int[] flagArray){
         int index0 = y0 * width + x0;
@@ -215,6 +230,13 @@ public class ShiftingCloudBulkAlongCloudPathType {
         return meanValuesPath;
     }
 
+    public int getNCloudOverWater() {
+        return NCloudWater;
+    }
+
+    public int getNCloudOverLand() {
+        return NCloudLand;
+    }
 
     private class PotentialShadowAnalyzerMode {
 
