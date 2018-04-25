@@ -58,8 +58,8 @@ public class S2IdepixPostCloudShadowOp extends Operator {
     private boolean computeMountainShadow;
 
     @Parameter(description = "Offset along cloud path to minimum reflectance (over all tiles)", defaultValue = "0")
-    //private int bestOffset;
-    private int[] bestOffset;
+    private int bestOffset;
+    //private int[] bestOffset;
 
     private final static double MAX_CLOUD_HEIGHT = 8000.;
     private final static int MAX_TILE_DIMENSION = 1400;
@@ -77,6 +77,8 @@ public class S2IdepixPostCloudShadowOp extends Operator {
     private Band targetBandCloudShadow;
     private Band targetBandCloudID;
     private Band targetBandTileID;
+    private Band targetBandShadowID;
+    private Band targetBandCloudTest;
 
     private static int tileid;
     private Map<Integer, Rectangle> rectangleTile = new HashMap<>();
@@ -106,6 +108,8 @@ public class S2IdepixPostCloudShadowOp extends Operator {
     private final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
     private final static String BAND_NAME_CLOUD_ID = "cloud_ids";
     private final static String BAND_NAME_TILE_ID = "tile_ids";
+    private final static String BAND_NAME_SHADOW_ID = "shadow_ids";
+    private final static String BAND_NAME_CLOUD_TEST = "cloud_test";
     private Mode analysisMode;
 
     private static final String F_INVALID_DESCR_TEXT = "Invalid pixels";
@@ -139,6 +143,8 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
         targetBandCloudID = targetProduct.addBand(BAND_NAME_CLOUD_ID, ProductData.TYPE_INT32);
         targetBandTileID = targetProduct.addBand(BAND_NAME_TILE_ID, ProductData.TYPE_INT32);
+        targetBandShadowID = targetProduct.addBand(BAND_NAME_SHADOW_ID, ProductData.TYPE_INT32);
+        targetBandCloudTest = targetProduct.addBand(BAND_NAME_CLOUD_TEST, ProductData.TYPE_INT32);
         attachFlagCoding(targetBandCloudShadow);
         setupBitmasks(targetProduct);
 
@@ -431,11 +437,15 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         Tile targetTileCloudShadow = targetTiles.get(targetBandCloudShadow);
         Tile targetTileCloudID = targetTiles.get(targetBandCloudID);
         Tile targetTileTileID = targetTiles.get(targetBandTileID);
+        Tile targetTileShadowID = targetTiles.get(targetBandShadowID);
+        Tile targetTileCloudTest = targetTiles.get(targetBandCloudTest);
 
         final int[] flagArray = new int[sourceLength];
         //will be filled in SegmentationCloudClass Arrays.fill(cloudIdArray, ....);
         final int[] cloudIDArray = new int[sourceLength];
         final int[] tileIDArray = new int[sourceLength];
+        final int[] shadowIDArray = new int[sourceLength];
+        final int[] cloudTestArray = new  int[sourceLength];
         Arrays.fill(tileIDArray, tileid++);
 
         final float[] altitude = getSamples(sourceAltitude, sourceRectangle);
@@ -472,8 +482,11 @@ public class S2IdepixPostCloudShadowOp extends Operator {
                     targetRectangle, sunZenithMean, sunAzimuthMean, altitude, flagArray, minAltitude, maxAltitude, cloudShadowRelativePath);
         }
 
-        final CloudIdentifier cloudIdentifier = new CloudIdentifier(flagArray);
-        int numClouds = cloudIdentifier.computeCloudID(sourceWidth, sourceHeight, cloudIDArray);
+        //final CloudIdentifier cloudIdentifier = new CloudIdentifier(flagArray);
+        //int numClouds = cloudIdentifier.computeCloudID(sourceWidth, sourceHeight, cloudIDArray);
+
+        final FindContinuousAreas cloudIdentifier = new FindContinuousAreas(flagArray);
+        Map<Integer, List<Integer>> cloudList = cloudIdentifier.computeAreaID(sourceWidth, sourceHeight, cloudIDArray, true);
 
         //todo assessment of the order of processing steps
             /*double solarFluxNir = sourceBandHazeNir.getSolarFlux();
@@ -485,9 +498,10 @@ public class S2IdepixPostCloudShadowOp extends Operator {
                     sourceHeight,
                     flagArray,
                     solarFluxNir);   */
-        int i = 0;
 
-        if (numClouds > 0) {
+
+        //if (numClouds > 0) {
+        if (cloudList.size()>0){
             /*
             /   potential cloud shadow area + clustering (potential shadow area as one)
             */
@@ -514,21 +528,45 @@ public class S2IdepixPostCloudShadowOp extends Operator {
 
 
             System.out.println("potential is ready!");
+            /*
+            //clustering with some constraints concerning the offset
             final CloudShadowFlaggerTest cloudShadowFlagger = new CloudShadowFlaggerTest();
             cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, offsetAtPotentialShadow, bestOffset[0], analysisMode);
+            */
 
-            //shifting by offset
             /*
+            //shifting by offset
             final ShiftingCloudBULKalongCloudPath cloudTest = new ShiftingCloudBULKalongCloudPath();
             cloudTest.setTileShiftedCloudBULK(sourceRectangle, targetRectangle, sunAzimuthMean, flagArray, cloudShadowRelativePath, bestOffset);
             */
-            final ShiftingCloudBulkAlongCloudPathType cloudTest = new ShiftingCloudBulkAlongCloudPathType();
-            cloudTest.setTileShiftedCloudBULK(sourceRectangle, targetRectangle, sunAzimuthMean, flagArray, cloudShadowRelativePath, bestOffset[0]); //offset: 0: all, 1: over land, 2: over water.
 
+
+            // shifting by offset, but looking into water, land and all pixel. best offset still is that derived from all pixel.
+            final ShiftingCloudBulkAlongCloudPathType cloudTest = new ShiftingCloudBulkAlongCloudPathType();
+            cloudTest.setTileShiftedCloudBULK(sourceRectangle, targetRectangle, sunAzimuthMean, flagArray, cloudShadowRelativePath, bestOffset); //offset: 0: all, 1: over land, 2: over water.
+
+
+            //combining information. clustered shadow is analysed for continuous areas.
+            // shifting the shadow is done before and a correction is included.
+            final CloudShadowFlaggerCombination cloudShadowFlagger = new CloudShadowFlaggerCombination();
+            cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, offsetAtPotentialShadow, cloudList, bestOffset, analysisMode, sourceWidth, sourceHeight, shadowIDArray, cloudTestArray, cloudShadowRelativePath);
+
+
+            /* Statistics are too bad to find the minimum correctly, if the clouds are shifted individually.
+            final ShiftingCloudIndividualAlongCloudPath cloudIndividualTest = new ShiftingCloudIndividualAlongCloudPath();
+            cloudIndividualTest.ShiftingCloudIndividualAlongCloudPath(sourceRectangle, targetRectangle, clusterData, flagArray, cloudShadowRelativePath, cloudList);
+            */
         }
+
+        //System.out.println(targetRectangle);
+        //System.out.println(sourceRectangle);
+
         fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
         fillTile(cloudIDArray, targetRectangle, sourceRectangle, targetTileCloudID);
         fillTile(tileIDArray, targetRectangle, sourceRectangle, targetTileTileID);
+        fillTile(shadowIDArray, targetRectangle, sourceRectangle, targetTileShadowID);
+
+        fillTile(cloudTestArray, targetRectangle, sourceRectangle, targetTileCloudTest);
 
     }
 
