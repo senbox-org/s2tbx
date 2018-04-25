@@ -42,7 +42,7 @@ class PreparationMaskBand {
                             flagArray[j * sourceWidth + i] += WATER_FLAG;
                         }
 
-//                        if (flagDetector.isCloud(i, j) || flagDetector.isCloudBuffer(i, j)) {
+//                      if (flagDetector.isCloud(i, j) || flagDetector.isCloudBuffer(i, j)) {
                         if (flagDetector.isCloud(i, j)) {
                             flagArray[j * (sourceWidth) + i] += CLOUD_FLAG;
                         }
