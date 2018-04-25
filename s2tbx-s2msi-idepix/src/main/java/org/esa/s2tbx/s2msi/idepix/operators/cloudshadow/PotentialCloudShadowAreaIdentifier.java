@@ -2,16 +2,11 @@ package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.esa.snap.core.util.math.MathUtils;
+import org.geotools.xml.xsi.XSISimpleTypes;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Tonio Fincke
@@ -191,6 +186,49 @@ class PotentialCloudShadowAreaIdentifier {
                         cloudIDArray, indexToPositions, offsetAtPositions);
             }
         }
+
+        /*
+
+        The lists 'indexToPositions' contains duplicated pixel, because the search depth at a cloud border is two pixels deep (which is necessary to avoid Moire-Effects).
+        The duplicates need to be identified in indexToPosition, but they need to be removed in both lists. They are not duplicates in the 'offsetAtPositions' list.
+        For each List per cloudID individually, but based on indexToPositions.
+        CAUTION: It might be necessary to adjust the incrementation of x,y so that the first entry of a duplicated position is also the one with the smallest offset.
+            It is not checked, whether the offset of the duplicated pixel is the smallest one (which it should be).
+
+        RESOLUTION:
+        checking the lists is no solution! contains() is very time consuming!
+         */
+
+        /*for (int cloudIndex : indexToPositions.keySet()){
+            List<Integer> noduplicates_pos = new ArrayList<>();
+            List<Integer> noduplicates_off = new ArrayList<>();
+
+            List<Integer> pos = indexToPositions.get(cloudIndex);
+
+            if(pos.size()>1){
+
+                List<Integer> off = offsetAtPositions.get(cloudIndex);
+
+
+                for (int p=0; p< pos.size(); p++){
+                    if (!noduplicates_pos.contains(pos.get(p))){
+                        noduplicates_pos.add(pos.get(p));
+                        noduplicates_off.add(off.get(p));
+                    }
+                }
+
+                if(noduplicates_pos.size() < pos.size()){
+                    pos.clear();
+                    pos.addAll(noduplicates_pos);
+                    off.clear();
+                    off.addAll(noduplicates_off);
+                }
+            }
+
+        }*/
+
+
+
 //        final List<Integer>[] positions = new List<Integer>[indexToPositions.size()];
 //        return indexToPositions.values().toArray(new List<Integer>[indexToPositions.size()]);
         final Map[] output = new Map[2];
@@ -274,10 +312,18 @@ class PotentialCloudShadowAreaIdentifier {
                     if(!((flagArray[index1] & PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG) == PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG)) {
                         flagArray[index1] += PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG;
                     }
+
+
                     positions.add(index1);
                     offsets.add(i);
+
                 }
             }
+        }
+
+        if(positions.size()==0){
+            indexToPositions.remove(cloudIDArray[index0]);
+            offsetAtPositions.remove(cloudIDArray[index0]);
         }
     }
 }
