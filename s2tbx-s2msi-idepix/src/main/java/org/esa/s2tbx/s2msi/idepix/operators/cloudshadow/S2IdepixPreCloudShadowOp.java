@@ -86,6 +86,9 @@ public class S2IdepixPreCloudShadowOp extends Operator {
 
     //map for the different tiles: meanReflectance per offset.
     private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
+    private Map<Integer, Integer> NCloudOverLand = new HashMap<>();
+    private Map<Integer, Integer> NCloudOverWater = new HashMap<>();
+
     public Point2D[] cloudPath;
 
     static double spatialResolution;  //[m]
@@ -383,7 +386,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
             cloudTest.ShiftingCloudBulkAlongCloudPathType(sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, clusterData, flagArray, cloudShadowRelativePath);
 
             meanReflPerTile.put(mytileid, cloudTest.getMeanReflectanceAlongPath());
-
+            NCloudOverLand.put(mytileid, cloudTest.getNCloudOverLand());
+            NCloudOverWater.put(mytileid, cloudTest.getNCloudOverWater());
         }
         
     }
@@ -396,6 +400,14 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     public Map<Integer, double[][]> getMeanReflPerTile() {
         return meanReflPerTile;
     }
+
+    public Map<Integer, Integer> getNCloudOverLandPerTile() {
+        return NCloudOverLand;
+    }
+    public Map<Integer, Integer> getNCloudOverWaterPerTile() {
+        return NCloudOverWater;
+    }
+
 
     private void attachFlagCoding(Band targetBandCloudShadow) {
         FlagCoding cloudCoding = new FlagCoding("cloudCoding");
