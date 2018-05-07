@@ -292,13 +292,18 @@ class CloudShadowFlaggerCombination {
     private void analyseCloudShadows(int counter, int minNumberMemberCluster, double[][] arrayBands, int[] arrayIndexes, int[] arrayOffsets,
                                      double[] minArrayBands, float[] thresholds, double mean, int[] shadowIDArray, int[] cloudTestArray, float[] sourceBand) {
 
-        if (counter > minNumberMemberCluster) {
+       if (counter > minNumberMemberCluster) {
+           /*
+           test with counter > minNumberMemberCluster && cloudSize >3: leads to missing stripes of shadows.
+            */
 //            analysePotentialCloudShadowArea_sigma(counter, arrayBands, arrayIndexes, thresholds);
 //            analysePotentialCloudShadowArea_percentiles(counter, arrayBands, arrayIndexes, mean);
             analysePotentialCloudShadowArea_clustering(counter, arrayBands, arrayIndexes, arrayOffsets, shadowIDArray, cloudTestArray, sourceBand);
         } else if (counter > 0) {
             analyseSmallCloudShadows(arrayBands, minArrayBands, counter, arrayIndexes);
         }
+
+
     }
 
     private void analyseSmallCloudShadows(double[][] arrayBands, double[] minArrayBands, int counter,
@@ -471,11 +476,10 @@ class CloudShadowFlaggerCombination {
 //        double threshold = sortedCluster.get(i) + (sortedCluster.get(i + 1) - sortedCluster.get(i)) / 2;
         double threshold = sortedCluster.get(0) + (sortedCluster.get(1) - sortedCluster.get(0)) / 2;
 
+
         List<Integer> shadowIndex = new ArrayList<>();
         List<Integer> shadowOffset = new ArrayList<>();
         List<Double>  shadowRefl = new ArrayList<>();
-
-
 
         for (int j = 0; j < counter; j++) { //potential cloud shadow
             //cloudTestArray[arrayIndexes[j]] = key; //potential cloud shadow in the analysis
