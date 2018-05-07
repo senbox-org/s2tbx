@@ -324,9 +324,10 @@ class CloudIdentifier {
 
 
     private boolean isCloud(int index) {
-        return (((flagArray[index] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
-                //|| ((flagArray[index] & PreparationMaskBand.CLOUD_BUFFER_FLAG) == PreparationMaskBand.CLOUD_BUFFER_FLAG))
-                   (!((flagArray[index] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)));
+        return (((flagArray[index] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)
+                //|| ((flagArray[index] & PreparationMaskBand.CLOUD_BUFFER_FLAG) == PreparationMaskBand.CLOUD_BUFFER_FLAG)
+                )&&
+                   (!((flagArray[index] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG));
     }
 }
 
