@@ -20,6 +20,7 @@ class FlagDetectorSentinel2 implements FlagDetector {
     private final int cloud_byte;
     private final int cloud_buffer_byte;
     private final int land_byte;
+    private final int cirrus_ambiguous_byte;
 
     FlagDetectorSentinel2(Tile classifSourceTile, Tile bufferSourceTile, Rectangle roi) {
         invalid_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_INVALID);
@@ -28,6 +29,7 @@ class FlagDetectorSentinel2 implements FlagDetector {
         cloud_sure_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_CLOUD_SURE);
         cloud_buffer_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_CLOUD_BUFFER);
         land_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_LAND);
+        cirrus_ambiguous_byte = (int) Math.pow(2, S2IdepixConstants.IDEPIX_CIRRUS_AMBIGUOUS);
         classifData = classifSourceTile.getSamplesInt();
         if (bufferSourceTile != null) {
             bufferData = bufferSourceTile.getSamplesInt();
@@ -44,7 +46,7 @@ class FlagDetectorSentinel2 implements FlagDetector {
     @Override
     public boolean isCloud(int x, int y) {
         final int classifSample = classifData[y * roiWidth + x];
-        return ((classifSample & cloud_byte) != 0 || (classifSample & cloud_ambiguous_byte) != 0 ||
+        return ((classifSample & cloud_byte) != 0 || (classifSample & cloud_ambiguous_byte) != 0 || //(classifSample & cloud_buffer_byte)!=0 ||//(classifSample & cirrus_ambiguous_byte)!=0 ||
                 (classifSample & cloud_sure_byte) != 0);
     }
 
