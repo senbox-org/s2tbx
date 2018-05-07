@@ -80,15 +80,11 @@ public class S2IdepixCloudShadowOp extends Operator {
         int[] bestOffset = findOverallMinimumReflectance();
 
         int a = chooseBestOffset(bestOffset);
-        System.out.print("bestOffset all ");
-        System.out.println(bestOffset[0]);
-        System.out.print("bestOffset land ");
-        System.out.println(bestOffset[1]);
-        System.out.print("bestOffset water ");
-        System.out.println(bestOffset[2]);
+        System.out.println("bestOffset all "+ bestOffset[0]);
+        System.out.println("bestOffset land "+bestOffset[1]);
+        System.out.println("bestOffset water "+bestOffset[2]);
 
-        System.out.print("chosen Offset ");
-        System.out.println(a);
+        System.out.println("chosen Offset "+a);
 
         //Write target product
         //setTargetProduct(preProcessedProduct);
