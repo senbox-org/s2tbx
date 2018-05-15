@@ -116,6 +116,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private static final String F_HAZE_DESCR_TEXT = "Potential haze/semitransparent cloud pixels";
     private static final String F_POTENTIAL_CLOUD_SHADOW_DESCR_TEXT = "Potential cloud shadow pixels";
     private static final String F_SHIFTED_CLOUD_SHADOW_DESCR_TEXT = "Shifted cloud mask as shadow pixels";
+    private static final String F_CLOUD_SHADOW_COMB_DESCR_TEXT = "cloud mask (combination)";
     private static final String F_CLOUD_BUFFER_DESCR_TEXT = "Cloud buffer";
 
     public static final int F_WATER = 0;
@@ -128,6 +129,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     public static final int F_CLOUD_BUFFER = 7;
     public static final int F_POTENTIAL_CLOUD_SHADOW = 8;
     public static final int F_SHIFTED_CLOUD_SHADOW = 9;
+    public static final int F_CLOUD_SHADOW_COMB = 10;
+
 
     @Override
     public void initialize() throws OperatorException {
@@ -370,6 +373,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
                 s2ClassifProduct.getSceneRasterHeight(), sourceRectangle, flagArray,
                 flagDetector);
 
+        // todo Here: test, whether there is a cloud flagged. if so, set numClouds to 1.
 
         int numClouds = 1;
         if (numClouds > 0) {
@@ -423,6 +427,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
                 F_POTENTIAL_CLOUD_SHADOW_DESCR_TEXT);
         cloudCoding.addFlag("shifted_cloud_shadow", BitSetter.setFlag(0, F_SHIFTED_CLOUD_SHADOW),
                 F_SHIFTED_CLOUD_SHADOW_DESCR_TEXT);
+        cloudCoding.addFlag("cloud_shadow_comb", BitSetter.setFlag(0, F_CLOUD_SHADOW_COMB),
+                F_CLOUD_SHADOW_COMB_DESCR_TEXT);
         targetBandCloudShadow.setSampleCoding(cloudCoding);
         targetBandCloudShadow.getProduct().getFlagCodingGroup().add(cloudCoding);
     }
@@ -477,6 +483,11 @@ public class S2IdepixPreCloudShadowOp extends Operator {
                 F_SHIFTED_CLOUD_SHADOW_DESCR_TEXT, w, h,
                 "FlagBand.shifted_cloud_shadow",
                 Color.MAGENTA, 0.5f);
+        targetProduct.getMaskGroup().add(index, mask);
+        mask = Mask.BandMathsType.create("cloud_shadow_comb",
+                F_CLOUD_SHADOW_COMB_DESCR_TEXT, w, h,
+                "FlagBand.cloud_shadow_comb",
+                Color.BLUE, 0.5f);
         targetProduct.getMaskGroup().add(index, mask);
     }
 
