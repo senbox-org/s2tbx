@@ -22,7 +22,7 @@ import java.util.Map;
  */
 @OperatorMetadata(alias = "CCICloudShadow",
         category = "Optical",
-        authors = "Grit Kirches, Michael Paperin, Olaf Danne",
+        authors = "Grit Kirches, Michael Paperin, Olaf Danne, Tonio Fincke, Dagmar Mueller",
         copyright = "(c) Brockmann Consult GmbH",
         version = "1.0",
         description = "Algorithm detecting cloud shadow...")
