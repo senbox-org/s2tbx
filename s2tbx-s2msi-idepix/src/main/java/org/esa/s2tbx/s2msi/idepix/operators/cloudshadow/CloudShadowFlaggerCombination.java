@@ -120,6 +120,46 @@ class CloudShadowFlaggerCombination {
 
             }*/
         }
+
+        /*
+         combining shifted and clustered cloud shadow: new flag cloud_shadow_comb
+        (over land?) after adjusting the shifted cloud, test against dark clusters.
+          - coinciding pixels between dark cluster and shifted cloud?
+          - if yes:
+             - leave these clusters, switch off not-coincinding ones.
+          - if no:
+             - shifting might have failed.
+             - if the shifted cloud is close to the cloud edge (?), it might be the better approximation than the clustered version (compare distances).
+         */
+
+        //flags for shifted, and clustered cloud shadow are set.
+        // coinciding is tested on the entire tile.
+
+        /*int test[] = new int[flagArray.length];
+        for (int i=0; i<flagArray.length; i++){
+            if ((flagArray[i] & PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG) == PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG){
+                test[i]=1;
+            }
+        }
+        FindContinuousAreas testContinuousShadow= new FindContinuousAreas(test);
+        Map<Integer, List<Integer>> shiftedShadowTileID = testContinuousShadow.computeAreaID(width, height, shadowIDArray, false);
+*/
+        /*
+        todo test includes also information of nearby clouds, if their potential shadow areas are already analysed and the flag has been set.
+             Information in the flagArray is cumulative! Good or bad?
+         */
+        int test[] = new int[flagArray.length];
+        for (int i=0; i<flagArray.length; i++){
+            if ((flagArray[i] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG){
+                test[i]=1;
+            }
+        }
+        FindContinuousAreas testContinuousShadow= new FindContinuousAreas(test);
+        Map<Integer, List<Integer>> clusteredShadowTileID = testContinuousShadow.computeAreaID(width, height, shadowIDArray, false);
+
+        setCombinedCloudShadowFlagOnTile( clusteredShadowTileID);
+
+
     }
 
     private double setMeanRefl(List<Integer> cloud, int bestOffset, float[] sourceBand, Point2D[] cloudPath){
@@ -164,7 +204,7 @@ class CloudShadowFlaggerCombination {
             int index1 = y1 * width + x1;
 
             if (((flagArray[index1] & PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG) == PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG) ) {
-                flagArray[index1] += PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG;
+                flagArray[index1] -= PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG;
             }
         }
     }
@@ -187,6 +227,123 @@ class CloudShadowFlaggerCombination {
                 flagArray[index1] += PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG;
             }
         }
+    }
+
+    private void setCombinedCloudShadowFlagOnTile(Map<Integer, List<Integer>> clusteredShadowTileID){
+        //if a continuous clustered shadow coincides with a shifted (adjusted) shadow, keep it.
+
+        List<Integer> coincideKey = new ArrayList<>();
+
+        for(int key : clusteredShadowTileID.keySet()){
+            List<Integer> positions = clusteredShadowTileID.get(key);
+
+            for (int i = 0; i < positions.size(); i++) {
+                int ind = positions.get(i);
+                if (((flagArray[ind] & PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG) == PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG)) {
+                    coincideKey.add(key);
+                    break;
+                }
+            }
+        }
+
+        if (coincideKey.size()>0){
+            for( int key : coincideKey){
+                List<Integer> positions = clusteredShadowTileID.get(key);
+
+                for( int index1 : positions){
+                    if ( !((flagArray[index1] & PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG) == PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG) &&
+                            !((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
+                            !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
+                        flagArray[index1] += PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG;
+                    }
+                }
+
+            }
+        }
+
+
+    }
+
+    private void setANDTestCombinedCloudShadowFlag(List<Integer> cloud, int Offset, int indexForOffset, Point2D[] cloudPath, Map<Integer, List<Integer>> ListShadowID){
+
+        List<Integer> indexShiftedCloud = new ArrayList<>();
+        if (Offset == 0){
+            //shifted cloud as is (at BestOffset)
+            Offset = bestOffset;
+        }
+
+        for (int index : cloud){
+            int[] x= revertIndexToXY(index, width);
+
+            int x1 = x[0] + (int) cloudPath[Offset].getX();
+            int y1 = x[1] + (int) cloudPath[Offset].getY();
+
+            if (x1 >= width || y1 >= height || x1 < 0 || y1 < 0) {
+                break;
+            }
+            int index1 = y1 * width + x1;
+
+            if ( //!((flagArray[index1] & PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG) == PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG) &&
+                    !((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
+                    !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
+                //flagArray[index1] += PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG;
+                indexShiftedCloud.add(index1);
+            }
+        }
+
+
+        //coinciding pixels between cluster and shift?
+        List<Integer> coincideKey = new ArrayList<>();
+        for (int key : ListShadowID.keySet()){
+            List<Integer> positions = ListShadowID.get(key);
+            int test[] = new int[flagArray.length];
+            for (int i = 0; i < positions.size(); i++) {
+                int ind = positions.get(i);
+                if (ind < test.length) {
+                    test[ind] += 1;
+                }
+            }
+
+            for (int i=0; i<indexShiftedCloud.size(); i++){
+                int ind = indexShiftedCloud.get(i);
+                if (ind < test.length) {
+                    if(test[ind] >0){
+                        coincideKey.add(key);
+                        //break;
+                    }
+                }
+            }
+        }
+
+        List<Integer> noduplCoincideKey = new ArrayList<>(new LinkedHashSet<>(coincideKey));
+
+        if (noduplCoincideKey.size()>0){
+            for( int key : noduplCoincideKey){
+                List<Integer> positions = ListShadowID.get(key);
+
+                for( int index1 : positions){
+                    if ( !((flagArray[index1] & PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG) == PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG) &&
+                            !((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
+                            !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
+                        flagArray[index1] += PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG;
+                    }
+                }
+
+            }
+        }
+
+
+        if(indexShiftedCloud.size() >0){
+            for (int index1 : indexShiftedCloud){
+                if ( !((flagArray[index1] & PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG) == PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG) &&
+                        !((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
+                                !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
+                    flagArray[index1] += PreparationMaskBand.CLOUD_SHADOW_COMB_FLAG;
+
+                }
+            }
+        }
+
     }
 
     private int[] revertIndexToXY(int index, int width){
@@ -504,11 +661,9 @@ class CloudShadowFlaggerCombination {
 
 
         /*
-        Checking cloud shadow results.
+        Checking cloud shadow results of the shifted mask against the clusters.
         •	1) Find all continuous clusters of dark pixels.
-        •	2) If the number of clusters is greater than one, find the darkest one with a similar size than the original cloud. Reduce the number to one. (how?)
-        •	If the number of clusters is 1, compare position of shifted cloud mask and cluster; and reflectance values for both.
-                o	If they do not coincide, changing the shifted cloud might be appropriate by the mean offset of the clusters.
+        •	compare position of shifted cloud mask and cluster; and reflectance values for both.
         */
 
 
@@ -532,7 +687,7 @@ class CloudShadowFlaggerCombination {
                 Map<Integer, Double> meanReflClust = new HashMap<>();
                 Map<Integer, Integer> meanOffsetClust = new HashMap<>();
 
-
+                //calculate mean offset and mean Refl for each of the continuous shadow areas from the clustering
                 for (int i : listShadowID.keySet()){
 
                     List<Integer> pos = listShadowID.get(i);
@@ -569,34 +724,6 @@ class CloudShadowFlaggerCombination {
                     clusterTest.put(i, meanRefl);
 
                     if (minRefl==0 || meanRefl < minRefl) minRefl = meanRefl;
-
-                    //double relSize = Math.abs( (double)listShadowID.get(i).size()- (double)cloudSize)/(double)cloudSize;
-                    //double relDist = Math.abs((double)meanOffsetClust.get(i)- (double) bestOffset)/ (double) bestOffset;
-
-
-
-                    //clusterTest.add(i, a );
-
-                    //System.out.println(listShadowID.get(i).size()+ "\t" +meanOffsetClust.get(i)+ "\t"+ meanReflClust.get(i)+ "\t"+ relDist + "\t"+ relSize);
-
-                    //right cluster, if size is similar to cloudsize and offset is similar to bestoffset? only correct for relatively small clouds
-
-                    /*List<Integer> pos = listShadowID.get(i);
-                    for(int flagIndex : pos){
-                        if(cloudTestArray[flagIndex] == 0 || cloudTestArray[flagIndex]> relSize)  cloudTestArray[flagIndex] = (int) (relSize*100);
-                        //if(cloudTestArray[flagIndex] == 0 || cloudTestArray[flagIndex]> relDist)  cloudTestArray[flagIndex] = (int) (relDist*100);
-                    }*/
-
-                    /*if(relSize*100 > 150 && listShadowID.get(i).size()<200){
-
-                        for( int flagIndex : pos){
-                            //turn off the cloud shadow flag.
-                            if (((flagArray[flagIndex] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG)) {
-                                flagArray[flagIndex] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
-                            }
-                        }
-
-                    }*/
                 }
 
                 if(minRefl> 0){
@@ -606,23 +733,17 @@ class CloudShadowFlaggerCombination {
 
                             if(clusterTest.get(index) == minRefl){
                                 //System.out.println(index);
-
                                 int offset = meanOffsetClust.get(index);
 
-                                //System.out.println(offset);
+                                //remove flags for shifted shadow for bestOffset
+                                switchOffShiftedCloudShadowFlag(cloud, bestOffset, cloudPath);
+                                //add flags for shifted shadow for this offset.
+                                setShiftedCloudShadowFlag(cloud, offset, cloudPath);
 
-                                //if( Math.abs(offset - bestOffset) < bestOffset/2. ){
-
-                                    //remove flags for shifted shadow for bestOffset
-                                    switchOffShiftedCloudShadowFlag(cloud, bestOffset, cloudPath);
-                                    //add flags for shifted shadow for this offset.
-                                    setShiftedCloudShadowFlag(cloud, offset, cloudPath);
-                                //}
                             }
                         }
                     }
                 }
-
             }
         }
 
