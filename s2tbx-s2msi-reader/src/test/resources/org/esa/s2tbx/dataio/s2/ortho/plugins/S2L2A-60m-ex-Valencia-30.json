@@ -101,9 +101,9 @@
                         "description": "Vegetation"
                     },
                     {
-                        "name": "BARE_SOIL_DESERT",
+                        "name": "NOT_VEGETATED",
                         "value": 5,
-                        "description": "Bare soil / Desert"
+                        "description": "Not vegetated"
                     },
                     {
                         "name": "WATER",
@@ -111,9 +111,9 @@
                         "description": "Water"
                     },
                     {
-                        "name": "CLOUD_LOW_PROBA",
+                        "name": "UNCLASSIFIED",
                         "value": 7,
-                        "description": "Cloud (low probability)"
+                        "description": "Unclassified"
                     },
                     {
                         "name": "CLOUD_MEDIUM_PROBA",
@@ -4216,10 +4216,10 @@
                 "description": "Vegetation"
             },
             {
-                "name": "scl_bare_soil_desert",
+                "name": "scl_not_vegetated",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "255,230,90",
-                "description": "Bare soil / Desert"
+                "description": "Not vegetated"
             },
             {
                 "name": "scl_water",
@@ -4228,10 +4228,10 @@
                 "description": "Water"
             },
             {
-                "name": "scl_cloud_low_proba",
+                "name": "scl_unclassified",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "129,129,129",
-                "description": "Cloud (low probability)"
+                "description": "Unclassified"
             },
             {
                 "name": "scl_cloud_medium_proba",
