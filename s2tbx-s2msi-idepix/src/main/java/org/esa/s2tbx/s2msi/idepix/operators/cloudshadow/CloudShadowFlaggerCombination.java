@@ -2,6 +2,7 @@ package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import java.awt.geom.Point2D;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author Grit Kirches
@@ -131,17 +132,19 @@ class CloudShadowFlaggerCombination {
              - cluster is probably another dark pixel on the surface, but not a shadow.
          */
 
-        int test[] = new int[flagArray.length];
-        for (int i=0; i<flagArray.length; i++){
-            if ((flagArray[i] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG){
-                test[i]=1;
+        if(bestOffset > 0) {
+
+            int test[] = new int[flagArray.length];
+            for (int i = 0; i < flagArray.length; i++) {
+                if ((flagArray[i] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG) {
+                    test[i] = 1;
+                }
             }
+            FindContinuousAreas testContinuousShadow = new FindContinuousAreas(test);
+            Map<Integer, List<Integer>> clusteredShadowTileID = testContinuousShadow.computeAreaID(width, height, shadowIDArray, false);
+
+            setCombinedCloudShadowFlagOnTile(clusteredShadowTileID);
         }
-        FindContinuousAreas testContinuousShadow= new FindContinuousAreas(test);
-        Map<Integer, List<Integer>> clusteredShadowTileID = testContinuousShadow.computeAreaID(width, height, shadowIDArray, false);
-
-        setCombinedCloudShadowFlagOnTile( clusteredShadowTileID);
-
 
     }
 
