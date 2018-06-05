@@ -38,8 +38,6 @@ public class CloudShadowFlaggerShiftInCloudGaps {
             //at the moment: fixed kernel width.
             //double maxRadius = Math.sqrt(Math.pow(cloudPath[bestOffset].getX(), 2)+ Math.pow(cloudPath[bestOffset].getY(), 2))
             //        *spatialResolution;
-            //System.out.println(maxRadius);
-
             //double kernelRadius = maxRadius;
             double kernelRadius = 1000.;
             double kernelInnerRadius = 0.8*kernelRadius;
