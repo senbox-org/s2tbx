@@ -135,13 +135,14 @@ public class S2IdepixPostProcessOp extends Operator {
             int mountainShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_MOUNTAIN_SHADOW);
             int cloudBufferFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_BUFFER);
             int potentialShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_POTENTIAL_CLOUD_SHADOW);
-            int shiftedCloudMaskInGapsFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_SHIFTED_CLOUD_SHADOW_GAPS);
-            int coincidingClusterShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW_COMB);
+            //int shiftedCloudMaskInGapsFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_SHIFTED_CLOUD_SHADOW_GAPS);
+            //int coincidingClusterShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW_COMB);
+            int recommendedCloudShadow = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_RECOMMENDED_CLOUD_SHADOW);
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
                 checkForCancellation();
                 for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
                     final int flagValue = flagTile.getSampleInt(x, y);
-                    if ((flagValue & shiftedCloudMaskInGapsFlag) == shiftedCloudMaskInGapsFlag || (flagValue & coincidingClusterShadowFlag) == coincidingClusterShadowFlag ) {
+                    if ((flagValue & recommendedCloudShadow) == recommendedCloudShadow ) {
                         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, true);
                     }
                     if ((flagValue & cloudBufferFlag) == cloudBufferFlag) {
