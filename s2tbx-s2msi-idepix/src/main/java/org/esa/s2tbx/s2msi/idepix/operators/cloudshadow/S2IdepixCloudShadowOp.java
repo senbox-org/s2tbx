@@ -53,6 +53,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
     private Map<Integer, Integer> NCloudOverLand = new HashMap<>();
     private Map<Integer, Integer> NCloudOverWater = new HashMap<>();
+    private Map<Integer, Integer> NValidPixelTile = new HashMap<>();
 
     @Override
     public void initialize() throws OperatorException {
@@ -75,7 +76,15 @@ public class S2IdepixCloudShadowOp extends Operator {
         NCloudOverLand = cloudShadowPreProcessingOperator.getNCloudOverLandPerTile();
         NCloudOverWater = cloudShadowPreProcessingOperator.getNCloudOverWaterPerTile();
         meanReflPerTile= cloudShadowPreProcessingOperator.getMeanReflPerTile();
+        NValidPixelTile = cloudShadowPreProcessingOperator.getNValidPixelTile();
         //writingMeanReflAlongPath(); // for development of minimum analysis.
+
+
+        /*for(int key : NCloudOverWater.keySet()){
+            System.out.println("valid pixel: "+NValidPixelTile.get(key));
+            System.out.println((float)(NCloudOverLand.get(key) +NCloudOverWater.get(key))/ (float) NValidPixelTile.get(key));
+        }*/
+
 
         int[] bestOffset = findOverallMinimumReflectance();
 
@@ -85,6 +94,8 @@ public class S2IdepixCloudShadowOp extends Operator {
         System.out.println("bestOffset water "+bestOffset[2]);
 
         System.out.println("chosen Offset "+a);
+
+        //writingMeanReflAlongPath();
 
         //Write target product
         //setTargetProduct(preProcessedProduct);
@@ -124,9 +135,9 @@ public class S2IdepixCloudShadowOp extends Operator {
             }
 
             for(int key: meanReflPerTile.keySet()){
-                if(j==0) System.out.print((NCloudOverLand.get(key)+NCloudOverWater.get(key)) + "\t");
-                if(j==1) System.out.print(NCloudOverLand.get(key)+ "\t");
-                if(j==2) System.out.print(NCloudOverWater.get(key)+ "\t");
+                if(j==0) System.out.print((float) (NCloudOverLand.get(key)+NCloudOverWater.get(key))/NValidPixelTile.get(key) + "\t");
+                if(j==1) System.out.print((float) NCloudOverLand.get(key)/NValidPixelTile.get(key)+ "\t");
+                if(j==2) System.out.print((float) NCloudOverWater.get(key)/NValidPixelTile.get(key)+ "\t");
             }
             System.out.println();
 
@@ -211,6 +222,8 @@ public class S2IdepixCloudShadowOp extends Operator {
 
         double[][] scaledTotalReflectance = new double[3][meanReflPerTile.get(0)[0].length];
 
+        String[] cases = {"all", "land", "water"};
+
         for (int j=0; j < 3; j++){
 
             /*Checking the meanReflPerTile:
@@ -219,6 +232,8 @@ public class S2IdepixCloudShadowOp extends Operator {
                 Exclusion works by setting values to NaN.
             */
             for(int key : meanReflPerTile.keySet()){
+                //float part = (float)(NCloudOverLand.get(key) +NCloudOverWater.get(key))/ (float) NValidPixelTile.get(key);
+
                 double[][] meanValues = meanReflPerTile.get(key);
                 boolean exclude = false;
 
@@ -233,6 +248,7 @@ public class S2IdepixCloudShadowOp extends Operator {
                 if (relativeMinimum.size()==0) exclude = true;
 
                 if (exclude){
+                   // System.out.println("exclude:"+ cases[j] + " cloud per valid: "+ part);
                     for(int i=0; i<meanValues[j].length; i++){
                         meanValues[j][i] = Double.NaN;
                     }
@@ -246,14 +262,12 @@ public class S2IdepixCloudShadowOp extends Operator {
                 double[] maxValue = new double[3];
 
                 for(int i=0; i<meanValues[j].length; i++){
-
                     if (!Double.isNaN(meanValues[j][i])) {
                         if(meanValues[j][i] > maxValue[j]){
                             maxValue[j] = meanValues[j][i];
                         }
                     }
                 }
-
                 for(int i=0; i<meanValues[j].length; i++){
                     if (!Double.isNaN(meanValues[j][i]) && maxValue[j]>0) {
                         //System.out.println(meanValues[j][i]/maxValue[j]);
