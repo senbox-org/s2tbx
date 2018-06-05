@@ -72,13 +72,13 @@ public class S2IdepixClassificationOp extends Operator {
 
 
     @Parameter(defaultValue = "true",
-            label = " Write TOA Reflectances to the target product",
-            description = " Write TOA Reflectances to the target product")
+            label = " Write TOA reflectances to the target product",
+            description = " Write TOA reflectances to the target product")
     private boolean copyToaReflectances;
 
     @Parameter(defaultValue = "false",
-            label = " Write Feature Values to the target product",
-            description = " Write all Feature Values to the target product")
+            label = " Write feature values to the target product",
+            description = " Write all feature values to the target product")
     private boolean copyFeatureValues;
 
     @Parameter(defaultValue = "0.01",

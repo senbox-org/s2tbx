@@ -36,13 +36,13 @@ public class S2IdepixOp extends Operator {
     private static final int OVERSAMPLING_FACTOR_Y = 3;
 
     @Parameter(defaultValue = "true",
-            label = " Write TOA Reflectances to the target product",
-            description = " Write TOA Reflectances to the target product")
+            label = " Write TOA reflectances to the target product",
+            description = " Write TOA reflectances to the target product")
     private boolean copyToaReflectances;
 
     @Parameter(defaultValue = "false",
-            label = " Write Feature Values to the target product",
-            description = " Write all Feature Values to the target product")
+            label = " Write feature values to the target product",
+            description = " Write all feature values to the target product")
     private boolean copyFeatureValues;
 
     // NN stuff is deactivated unless we have a better net
@@ -86,7 +86,6 @@ public class S2IdepixOp extends Operator {
     @Parameter(defaultValue = "true", label = " Compute mountain shadow")
     private boolean computeMountainShadow;
 
-    //todo remove comments from following line to include cloud shadow op
     @Parameter(defaultValue = "false", label = " Compute cloud shadow")
     private boolean computeCloudShadow = false;
 
@@ -101,20 +100,24 @@ public class S2IdepixOp extends Operator {
             description = " The width of the 'safety buffer' around a pixel identified as cloudy.")
     private int cloudBufferWidth;
 
-    @Parameter(defaultValue = "0.01",
-            label = " Threshold CW_THRESH",
-            description = " Threshold CW_THRESH")
-    private double cwThresh;
+    // temporarily disabled the following threshold options. TODO: clarify their meaning! They aren't explained anywhere.
+//    @Parameter(defaultValue = "0.01",
+//            label = " Threshold CW_THRESH",
+//            description = " Threshold CW_THRESH")
+//    private double cwThresh;
+    private double cwThresh = 0.01;
 
-    @Parameter(defaultValue = "-0.11",
-            label = " Threshold GCL_THRESH",
-            description = " Threshold GCL_THRESH")
-    private double gclThresh;
+//    @Parameter(defaultValue = "-0.11",
+//            label = " Threshold GCL_THRESH",
+//            description = " Threshold GCL_THRESH")
+//    private double gclThresh;
+    private double gclThresh = -0.11;
 
-    @Parameter(defaultValue = "0.01",
-            label = " Threshold CL_THRESH",
-            description = " Threshold CL_THRESH")
-    private double clThresh;
+//    @Parameter(defaultValue = "0.01",
+//            label = " Threshold CL_THRESH",
+//            description = " Threshold CL_THRESH")
+//    private double clThresh;
+    private double clThresh = 0.01;
 
     @Parameter(description = "The digital elevation model.", defaultValue = "SRTM 3Sec", label = "Digital Elevation Model")
     private String demName = "SRTM 3Sec";
