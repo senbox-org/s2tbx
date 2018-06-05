@@ -131,18 +131,29 @@ public class S2IdepixPostProcessOp extends Operator {
 
         if (computeCloudShadow) {
             final Tile flagTile = getSourceTile(cloudShadowFlagBand, targetRectangle);
-            int cloudShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW);
+            int clusteredCloudShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW); //clustering algorithm
             int mountainShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_MOUNTAIN_SHADOW);
             int cloudBufferFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_BUFFER);
+            int potentialShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_POTENTIAL_CLOUD_SHADOW);
+            int shiftedCloudMaskInGapsFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_SHIFTED_CLOUD_SHADOW_GAPS);
+            int coincidingClusterShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW_COMB);
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
                 checkForCancellation();
                 for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
                     final int flagValue = flagTile.getSampleInt(x, y);
-                    if ((flagValue & cloudShadowFlag) == cloudShadowFlag) {
+                    if ((flagValue & shiftedCloudMaskInGapsFlag) == shiftedCloudMaskInGapsFlag || (flagValue & coincidingClusterShadowFlag) == coincidingClusterShadowFlag ) {
                         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, true);
-                    } else if ((flagValue & cloudBufferFlag) == cloudBufferFlag) {
+                    }
+                    if ((flagValue & cloudBufferFlag) == cloudBufferFlag) {
                         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_BUFFER, true);
                     }
+                    if ((flagValue & potentialShadowFlag) == potentialShadowFlag) {
+                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_POTENTIAL_SHADOW, true);
+                    }
+                    if ((flagValue & clusteredCloudShadowFlag) == clusteredCloudShadowFlag) {
+                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLUSTERED_CLOUD_SHADOW, true);
+                    }
+
                     if (computeMountainShadow && (flagValue & mountainShadowFlag) == mountainShadowFlag) {
                         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW, true);
                     }
