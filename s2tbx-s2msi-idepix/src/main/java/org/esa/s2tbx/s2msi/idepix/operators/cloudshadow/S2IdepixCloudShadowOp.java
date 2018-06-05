@@ -49,7 +49,6 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
 
-    //private Map<Integer, double[]> meanReflPerTile = new HashMap<>();
     private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
     private Map<Integer, Integer> NCloudOverLand = new HashMap<>();
     private Map<Integer, Integer> NCloudOverWater = new HashMap<>();
@@ -64,7 +63,8 @@ public class S2IdepixCloudShadowOp extends Operator {
         preParams.put("computeMountainShadow", computeMountainShadow);
         preParams.put("mode", mode);
 
-        //Preprocessing
+        //Preprocessing:
+        // No flags are created, only statistics generated to find the best offset along the illumination path.
         final String operatorAlias = OperatorSpi.getOperatorAlias(S2IdepixPreCloudShadowOp.class);
         final S2IdepixPreCloudShadowOp cloudShadowPreProcessingOperator =
                 (S2IdepixPreCloudShadowOp) GPF.getDefaultInstance().createOperator(operatorAlias, preParams, preInput, null);
@@ -80,12 +80,6 @@ public class S2IdepixCloudShadowOp extends Operator {
         //writingMeanReflAlongPath(); // for development of minimum analysis.
 
 
-        /*for(int key : NCloudOverWater.keySet()){
-            System.out.println("valid pixel: "+NValidPixelTile.get(key));
-            System.out.println((float)(NCloudOverLand.get(key) +NCloudOverWater.get(key))/ (float) NValidPixelTile.get(key));
-        }*/
-
-
         int[] bestOffset = findOverallMinimumReflectance();
 
         int a = chooseBestOffset(bestOffset);
@@ -94,8 +88,6 @@ public class S2IdepixCloudShadowOp extends Operator {
         System.out.println("bestOffset water "+bestOffset[2]);
 
         System.out.println("chosen Offset "+a);
-
-        //writingMeanReflAlongPath();
 
         //Write target product
         //setTargetProduct(preProcessedProduct);
@@ -110,8 +102,10 @@ public class S2IdepixCloudShadowOp extends Operator {
         postParams.put("mode", mode);
         //put in here any parameters that might be requested by the post-processing operator
 
+        //
         //Postprocessing
-
+        //
+        //Generation of all cloud shadow flags
         final String operatorAliasPost = OperatorSpi.getOperatorAlias(S2IdepixPostCloudShadowOp.class);
         final S2IdepixPostCloudShadowOp cloudShadowPostProcessingOperator =
                 (S2IdepixPostCloudShadowOp) GPF.getDefaultInstance().createOperator(operatorAliasPost, postParams, postInput, null);
@@ -127,6 +121,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     }
 
     public void writingMeanReflAlongPath(){
+        // only for offline analysis of the data.
         for(int j=0; j<3; j++){
             int N=0;
             for(int key : meanReflPerTile.keySet()){
@@ -187,36 +182,6 @@ public class S2IdepixCloudShadowOp extends Operator {
 
         return out;
     }
-
-    /*
-    public int findOverallMinimumReflectance(){
-        double[] scaledTotalReflectance = new double[meanReflPerTile.get(0).length];
-
-        for(int key : meanReflPerTile.keySet()){
-            double[] meanValues = meanReflPerTile.get(key);
-
-            double maxValue = 0.;
-            for(int i=0; i<meanValues.length; i++){
-                if(meanValues[i]>maxValue){
-                    maxValue = meanValues[i];
-                }
-            }
-
-            for(int i=0; i<meanValues.length; i++){
-                scaledTotalReflectance[i] += meanValues[i]/maxValue;
-            }
-        }
-
-        double minValue = 10.;
-        int offset = 0;
-        for(int i=1; i<scaledTotalReflectance.length; i++){
-            if(scaledTotalReflectance[i]<minValue){
-                minValue = scaledTotalReflectance[i];
-                offset = i;
-            }
-        }
-        return offset;
-    }*/
 
     public int[] findOverallMinimumReflectance(){
 
