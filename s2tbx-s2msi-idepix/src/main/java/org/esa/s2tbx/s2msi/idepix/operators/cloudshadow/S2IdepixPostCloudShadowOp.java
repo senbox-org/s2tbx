@@ -475,9 +475,9 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         diff_phi = diff_phi * Math.tan(viewZenithMean*MathUtils.DTOR);
         if(viewAzimuthMean>180) diff_phi= -1.*diff_phi;
 
-        System.out.println("viewAzimuthMean post " + viewAzimuthMean);
+        /*System.out.println("viewAzimuthMean post " + viewAzimuthMean);
         System.out.println("viewZenithMean post " + viewZenithMean);
-        System.out.println("diff_phi post " + diff_phi);
+        System.out.println("diff_phi post " + diff_phi);*/
 
         return (float) (sunAzimuthMean + diff_phi);
     }
@@ -566,9 +566,6 @@ public class S2IdepixPostCloudShadowOp extends Operator {
                     targetRectangle, sunZenithMean, sunAzimuthMean, altitude, flagArray, minAltitude, maxAltitude, cloudShadowRelativePath);
         }
 
-        //final CloudIdentifier cloudIdentifier = new CloudIdentifier(flagArray);
-        //int numClouds = cloudIdentifier.computeCloudID(sourceWidth, sourceHeight, cloudIDArray);
-
         final FindContinuousAreas cloudIdentifier = new FindContinuousAreas(flagArray);
         Map<Integer, List<Integer>> cloudList = cloudIdentifier.computeAreaID(sourceWidth, sourceHeight, cloudIDArray, true);
 
@@ -587,18 +584,6 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         //if (numClouds > 0) {
         if (cloudList.size()>0){
             /*
-            /   potential cloud shadow area + clustering (potential shadow area as one)
-            */
-            /*final Collection<List<Integer>> potentialShadowPositions =
-                    PotentialCloudShadowAreaIdentifier.identifyPotentialCloudShadows(
-                            sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, sourceLatitudes, sourceLongitudes,
-                            altitude, flagArray, cloudIDArray, cloudShadowRelativePath);
-            System.out.println("potential is ready!");
-            final CloudShadowFlagger cloudShadowFlagger = new CloudShadowFlagger();
-            cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, analysisMode);
-            */
-
-            /*
             /   Clustering can be separated: potential cloud shadow over water, and over land.
             /   potentialShadowPositions: Collection of List of integers, which hold the index of potential cloud shadow pixels for each cloudID.
             /   offsetAtPotentialShadowPositions: Collection of List of integers, holding the step along the cloud shadow path in the potential cloud shadow. Useful to determine distances of clusters.
@@ -611,21 +596,9 @@ public class S2IdepixPostCloudShadowOp extends Operator {
             final Map<Integer, List<Integer>> offsetAtPotentialShadow = results[1];
 
 
-            System.out.println("potential is ready!");
-            /*
-            //clustering with some constraints concerning the offset
-            final CloudShadowFlaggerTest cloudShadowFlagger = new CloudShadowFlaggerTest();
-            cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, offsetAtPotentialShadow, bestOffset[0], analysisMode);
-            */
+            System.out.println("[potential shadow is ready!]");
 
-            /*
-            //shifting by offset
-            final ShiftingCloudBULKalongCloudPath cloudTest = new ShiftingCloudBULKalongCloudPath();
-            cloudTest.setTileShiftedCloudBULK(sourceRectangle, targetRectangle, sunAzimuthMean, flagArray, cloudShadowRelativePath, bestOffset);
-            */
-
-
-            // shifting by offset, but looking into water, land and all pixel. best offset still is that derived from all pixel.
+            // shifting by offset, but looking into water, land and all pixel. best offset is determined before (either from water, land, or all pixels).
             // only, if bestOffset > 0
             if(bestOffset >0) {
                 final ShiftingCloudBulkAlongCloudPathType cloudTest = new ShiftingCloudBulkAlongCloudPathType();
@@ -638,19 +611,19 @@ public class S2IdepixPostCloudShadowOp extends Operator {
             final CloudShadowFlaggerCombination cloudShadowFlagger = new CloudShadowFlaggerCombination();
             cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, offsetAtPotentialShadow, cloudList, bestOffset, analysisMode, sourceWidth, sourceHeight, shadowIDArray, cloudShadowRelativePath);
 
+            //shifted cloud mask in cloud gaps.
             if(bestOffset>0){
                 final CloudShadowFlaggerShiftInCloudGaps test = new CloudShadowFlaggerShiftInCloudGaps();
                 test.setShiftedCloudInCloudGaps(sourceRectangle, flagArray, cloudShadowRelativePath, bestOffset, cloudList, cloudTestArray, spatialResolution);
 
             }
+
             /* Statistics are too bad to find the minimum correctly, if the clouds are shifted individually.
             final ShiftingCloudIndividualAlongCloudPath cloudIndividualTest = new ShiftingCloudIndividualAlongCloudPath();
             cloudIndividualTest.ShiftingCloudIndividualAlongCloudPath(sourceRectangle, targetRectangle, clusterData, flagArray, cloudShadowRelativePath, cloudList);
             */
         }
 
-        //System.out.println(targetRectangle);
-        //System.out.println(sourceRectangle);
 
         fillTile(flagArray, targetRectangle, sourceRectangle, targetTileCloudShadow);
         fillTile(cloudIDArray, targetRectangle, sourceRectangle, targetTileCloudID);
