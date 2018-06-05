@@ -12,6 +12,7 @@ public class ShiftingCloudBulkAlongCloudPathType {
     private int[] N;
     private int NCloudLand;
     private int NCloudWater;
+    private int NValidPixel;
 
     private double[][] meanValuesPath;
 
@@ -48,6 +49,7 @@ public class ShiftingCloudBulkAlongCloudPathType {
         N = new int[3];
         NCloudLand = 0;
         NCloudWater = 0;
+        NValidPixel = 0;
 
         for (int path_i = 1; path_i < cloudPath.length; path_i++) {
             //for (int path_i = 1; path_i < 10; path_i++) {
@@ -111,6 +113,10 @@ public class ShiftingCloudBulkAlongCloudPathType {
                                                                int[] flagArray, float[] sourceBand) {
         int index0 = y0 * width + x0;
         //start from a cloud pixel, otherwise stop.
+        if (!((flagArray[index0] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
+            NValidPixel++;
+        }
+
         if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
             return;
         }
@@ -236,6 +242,9 @@ public class ShiftingCloudBulkAlongCloudPathType {
 
     public int getNCloudOverLand() {
         return NCloudLand;
+    }
+    public int getNValidPixel() {
+        return NValidPixel;
     }
 
     private class PotentialShadowAnalyzerMode {
