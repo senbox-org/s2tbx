@@ -127,6 +127,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private static final String F_CLOUD_SHADOW_COMB_DESCR_TEXT = "cloud mask (combination)";
     private static final String F_CLOUD_BUFFER_DESCR_TEXT = "Cloud buffer";
     private static final String F_SHIFTED_CLOUD_SHADOW_GAPS_DESCR_TEXT = "shifted cloud mask in cloud gap";
+    private static final String F_RECOMMENDED_CLOUD_SHADOW_DESCR_TEXT = "combination of shifted cloud mask in cloud gap + cloud-shadow_comb, or if bestOffset=0: clustered";
 
     public static final int F_WATER = 0;
     public static final int F_LAND = 1;
@@ -140,6 +141,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     public static final int F_SHIFTED_CLOUD_SHADOW = 9;
     public static final int F_CLOUD_SHADOW_COMB = 10;
     public static final int F_SHIFTED_CLOUD_SHADOW_GAPS = 11;
+    public static final int F_RECOMMENDED_CLOUD_SHADOW = 12;
 
     @Override
     public void initialize() throws OperatorException {
@@ -469,6 +471,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
                 F_CLOUD_SHADOW_COMB_DESCR_TEXT);
         cloudCoding.addFlag("shifted_cloud_shadow_gaps", BitSetter.setFlag(0, F_SHIFTED_CLOUD_SHADOW_GAPS),
                 F_SHIFTED_CLOUD_SHADOW_GAPS_DESCR_TEXT);
+        cloudCoding.addFlag("recommended_cloud_shadow", BitSetter.setFlag(0, F_RECOMMENDED_CLOUD_SHADOW),
+                F_RECOMMENDED_CLOUD_SHADOW_DESCR_TEXT);
         targetBandCloudShadow.setSampleCoding(cloudCoding);
         targetBandCloudShadow.getProduct().getFlagCodingGroup().add(cloudCoding);
     }
@@ -532,6 +536,11 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         mask = Mask.BandMathsType.create("shifted_cloud_shadow_gaps",
                 F_SHIFTED_CLOUD_SHADOW_GAPS_DESCR_TEXT, w, h,
                 "FlagBand.shifted_cloud_shadow_gaps",
+                Color.BLUE, 0.5f);
+        targetProduct.getMaskGroup().add(index, mask);
+        mask = Mask.BandMathsType.create("recommended_cloud_shadow",
+                F_RECOMMENDED_CLOUD_SHADOW_DESCR_TEXT, w, h,
+                "FlagBand.recommended_cloud_shadow",
                 Color.BLUE, 0.5f);
         targetProduct.getMaskGroup().add(index, mask);
     }
