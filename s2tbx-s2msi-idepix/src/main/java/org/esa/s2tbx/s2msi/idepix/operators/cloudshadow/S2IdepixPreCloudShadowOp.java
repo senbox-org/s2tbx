@@ -71,6 +71,9 @@ public class S2IdepixPreCloudShadowOp extends Operator {
 
     private RasterDataNode sourceSunZenith;
     private RasterDataNode sourceSunAzimuth;
+    private RasterDataNode sourceViewZenith;
+    private RasterDataNode sourceViewAzimuth;
+
     private RasterDataNode sourceAltitude;
 
     private Band targetBandCloudShadow;
@@ -82,12 +85,15 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     //for calculating a single cloud path
     private float sunZenithMean;
     private float sunAzimuthMean;
+    private float viewAzimuthMean;
+    private float viewZenithMean;
     private float minAltitude =0;
 
     //map for the different tiles: meanReflectance per offset.
     private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
     private Map<Integer, Integer> NCloudOverLand = new HashMap<>();
     private Map<Integer, Integer> NCloudOverWater = new HashMap<>();
+    private Map<Integer, Integer> NValidPixelTile = new HashMap<>();
 
     public Point2D[] cloudPath;
 
@@ -101,6 +107,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private static final String sourceBandNameClusterB = "B3";
     private static final String sourceSunZenithName = "sun_zenith";
     private static final String sourceSunAzimuthName = "sun_azimuth";
+    private static final String sourceViewAzimuthName = "view_azimuth_mean";
+    private static final String sourceViewZenithName = "view_zenith_mean";
     private static final String sourceAltitudeName = "elevation";
     private static final String sourceFlagName1 = "pixel_classif_flags";
     private final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
@@ -118,6 +126,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private static final String F_SHIFTED_CLOUD_SHADOW_DESCR_TEXT = "Shifted cloud mask as shadow pixels";
     private static final String F_CLOUD_SHADOW_COMB_DESCR_TEXT = "cloud mask (combination)";
     private static final String F_CLOUD_BUFFER_DESCR_TEXT = "Cloud buffer";
+    private static final String F_SHIFTED_CLOUD_SHADOW_GAPS_DESCR_TEXT = "shifted cloud mask in cloud gap";
 
     public static final int F_WATER = 0;
     public static final int F_LAND = 1;
@@ -130,7 +139,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     public static final int F_POTENTIAL_CLOUD_SHADOW = 8;
     public static final int F_SHIFTED_CLOUD_SHADOW = 9;
     public static final int F_CLOUD_SHADOW_COMB = 10;
-
+    public static final int F_SHIFTED_CLOUD_SHADOW_GAPS = 11;
 
     @Override
     public void initialize() throws OperatorException {
@@ -149,6 +158,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         final int sourceTileHeight = sourceSunZenith.getSourceImage().getTileHeight();
         final double maximumSunZenith = sourceSunZenith.getStx().getMaximum();
         sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
+        sourceViewAzimuth = s2ClassifProduct.getBand(sourceViewAzimuthName);
+        sourceViewZenith = s2ClassifProduct.getBand(sourceViewZenithName);
         sourceAltitude = s2ClassifProduct.getBand(sourceAltitudeName);
 
         final GeoPos centerGeoPos =
@@ -162,6 +173,10 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         minAltitude = 0;
         sunZenithMean = getRasterNodeValueAtCenter(sourceSunZenith, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
         sunAzimuthMean = getRasterNodeValueAtCenter(sourceSunAzimuth, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
+        viewAzimuthMean = getRasterNodeValueAtCenter(sourceViewAzimuth, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
+        viewZenithMean = getRasterNodeValueAtCenter(sourceViewZenith,targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
+
+        sunAzimuthMean = convertToApparentSunAzimuth();
 
         sourceBandFlag1 = s2ClassifProduct.getBand(sourceFlagName1);
         if (s2CloudBufferProduct != null) {
@@ -321,8 +336,36 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         return mean / valueCount;
     }
 
+    float convertToApparentSunAzimuth(){
+        //here: cloud path is calculated for center pixel sunZenith and sunAzimuth.
+        // after correction of sun azimuth angle into apparent sun azimuth angle.
+        // Due to projection of the cloud at view_zenith>0 the position of the cloud becomes distorted.
+        // The true position still causes the shadow - and it cannot be determined without the cloud top height.
+        // So instead, the apparent sun azimuth angle is calculated and used to find the cloudShadowRelativePath.
 
+        double diff_phi = sunAzimuthMean - viewAzimuthMean;
+        if(diff_phi < 0) diff_phi = 180 + diff_phi;
+        if(diff_phi > 90) diff_phi = diff_phi - 90;
+        diff_phi = diff_phi * Math.tan(viewZenithMean*MathUtils.DTOR);
+        if(viewAzimuthMean>180) diff_phi= -1.*diff_phi;
 
+        System.out.println("viewAzimuthMean " + viewAzimuthMean);
+        System.out.println("viewZenithMean " + viewZenithMean);
+
+        System.out.println("diff_phi " + diff_phi);
+        return (float) (sunAzimuthMean + diff_phi);
+    }
+
+    int testCloudInTile(int[] flagArray){
+        int out=0;
+        for( int i=0; i<flagArray.length; i++){
+            if (((flagArray[i] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
+                out = 1;
+                break;
+            }
+        }
+        return out;
+    }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
@@ -373,9 +416,9 @@ public class S2IdepixPreCloudShadowOp extends Operator {
                 s2ClassifProduct.getSceneRasterHeight(), sourceRectangle, flagArray,
                 flagDetector);
 
-        // todo Here: test, whether there is a cloud flagged. if so, set numClouds to 1.
-
         int numClouds = 1;
+        //int numClouds = testCloudInTile(flagArray);
+
         if (numClouds > 0) {
 
             //all land cover types
@@ -392,6 +435,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
             meanReflPerTile.put(mytileid, cloudTest.getMeanReflectanceAlongPath());
             NCloudOverLand.put(mytileid, cloudTest.getNCloudOverLand());
             NCloudOverWater.put(mytileid, cloudTest.getNCloudOverWater());
+            NValidPixelTile.put(mytileid, cloudTest.getNValidPixel());
         }
         
     }
@@ -411,7 +455,9 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     public Map<Integer, Integer> getNCloudOverWaterPerTile() {
         return NCloudOverWater;
     }
-
+    public Map<Integer, Integer> getNValidPixelTile() {
+        return NValidPixelTile;
+    }
 
     private void attachFlagCoding(Band targetBandCloudShadow) {
         FlagCoding cloudCoding = new FlagCoding("cloudCoding");
@@ -429,6 +475,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
                 F_SHIFTED_CLOUD_SHADOW_DESCR_TEXT);
         cloudCoding.addFlag("cloud_shadow_comb", BitSetter.setFlag(0, F_CLOUD_SHADOW_COMB),
                 F_CLOUD_SHADOW_COMB_DESCR_TEXT);
+        cloudCoding.addFlag("shifted_cloud_shadow_gaps", BitSetter.setFlag(0, F_SHIFTED_CLOUD_SHADOW_GAPS),
+                F_SHIFTED_CLOUD_SHADOW_GAPS_DESCR_TEXT);
         targetBandCloudShadow.setSampleCoding(cloudCoding);
         targetBandCloudShadow.getProduct().getFlagCodingGroup().add(cloudCoding);
     }
@@ -487,6 +535,11 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         mask = Mask.BandMathsType.create("cloud_shadow_comb",
                 F_CLOUD_SHADOW_COMB_DESCR_TEXT, w, h,
                 "FlagBand.cloud_shadow_comb",
+                Color.BLUE, 0.5f);
+        targetProduct.getMaskGroup().add(index, mask);
+        mask = Mask.BandMathsType.create("shifted_cloud_shadow_gaps",
+                F_SHIFTED_CLOUD_SHADOW_GAPS_DESCR_TEXT, w, h,
+                "FlagBand.shifted_cloud_shadow_gaps",
                 Color.BLUE, 0.5f);
         targetProduct.getMaskGroup().add(index, mask);
     }
