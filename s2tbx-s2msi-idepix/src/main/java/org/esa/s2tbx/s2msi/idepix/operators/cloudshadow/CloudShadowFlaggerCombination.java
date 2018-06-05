@@ -123,30 +123,14 @@ class CloudShadowFlaggerCombination {
 
         /*
          combining shifted and clustered cloud shadow: new flag cloud_shadow_comb
-        (over land?) after adjusting the shifted cloud, test against dark clusters.
+         after adjusting the shifted cloud, test against dark clusters.
           - coinciding pixels between dark cluster and shifted cloud?
           - if yes:
              - leave these clusters, switch off not-coincinding ones.
           - if no:
-             - shifting might have failed.
-             - if the shifted cloud is close to the cloud edge (?), it might be the better approximation than the clustered version (compare distances).
+             - cluster is probably another dark pixel on the surface, but not a shadow.
          */
 
-        //flags for shifted, and clustered cloud shadow are set.
-        // coinciding is tested on the entire tile.
-
-        /*int test[] = new int[flagArray.length];
-        for (int i=0; i<flagArray.length; i++){
-            if ((flagArray[i] & PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG) == PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG){
-                test[i]=1;
-            }
-        }
-        FindContinuousAreas testContinuousShadow= new FindContinuousAreas(test);
-        Map<Integer, List<Integer>> shiftedShadowTileID = testContinuousShadow.computeAreaID(width, height, shadowIDArray, false);
-*/
-        /*
-
-         */
         int test[] = new int[flagArray.length];
         for (int i=0; i<flagArray.length; i++){
             if ((flagArray[i] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG){
