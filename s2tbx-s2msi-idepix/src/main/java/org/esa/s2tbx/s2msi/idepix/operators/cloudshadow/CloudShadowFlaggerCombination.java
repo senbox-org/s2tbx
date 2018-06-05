@@ -32,7 +32,7 @@ class CloudShadowFlaggerCombination {
 
     void flagCloudShadowAreas(float[][] sourceBands, int[] flagArray, Map<Integer, List<Integer>> potentialShadowPositions,
                               Map<Integer, List<Integer>> offsetAtPotentialShadow, Map<Integer, List<Integer>> cloudList,
-                              int bestOffset, Mode mode, int sourceWidth, int sourceHeight, int[] shadowIDArray, int[] cloudTestArray, Point2D[] cloudPath) {
+                              int bestOffset, Mode mode, int sourceWidth, int sourceHeight, int[] shadowIDArray, Point2D[] cloudPath) {
 
         this.flagArray = flagArray;
         this.bestOffset = bestOffset;
@@ -100,7 +100,7 @@ class CloudShadowFlaggerCombination {
                 int offset = offsetAtPos.get(i);
                 analyzerMode.doIterationStep(index, offset);
             }
-            analyzerMode.doCloudShadowAnalysis(CLUSTER_COUNT * 2 + 1, shadowIDArray, cloudTestArray, sourceBands[1]);
+            analyzerMode.doCloudShadowAnalysis(CLUSTER_COUNT * 2 + 1, shadowIDArray, sourceBands[1]);
 
 
             iter++;
@@ -145,8 +145,7 @@ class CloudShadowFlaggerCombination {
         Map<Integer, List<Integer>> shiftedShadowTileID = testContinuousShadow.computeAreaID(width, height, shadowIDArray, false);
 */
         /*
-        todo test includes also information of nearby clouds, if their potential shadow areas are already analysed and the flag has been set.
-             Information in the flagArray is cumulative! Good or bad?
+
          */
         int test[] = new int[flagArray.length];
         for (int i=0; i<flagArray.length; i++){
@@ -447,7 +446,7 @@ class CloudShadowFlaggerCombination {
     }
 
     private void analyseCloudShadows(int counter, int minNumberMemberCluster, double[][] arrayBands, int[] arrayIndexes, int[] arrayOffsets,
-                                     double[] minArrayBands, float[] thresholds, double mean, int[] shadowIDArray, int[] cloudTestArray, float[] sourceBand) {
+                                     double[] minArrayBands, float[] thresholds, double mean, int[] shadowIDArray, float[] sourceBand) {
 
        if (counter > minNumberMemberCluster) {
            /*
@@ -455,7 +454,7 @@ class CloudShadowFlaggerCombination {
             */
 //            analysePotentialCloudShadowArea_sigma(counter, arrayBands, arrayIndexes, thresholds);
 //            analysePotentialCloudShadowArea_percentiles(counter, arrayBands, arrayIndexes, mean);
-            analysePotentialCloudShadowArea_clustering(counter, arrayBands, arrayIndexes, arrayOffsets, shadowIDArray, cloudTestArray, sourceBand);
+            analysePotentialCloudShadowArea_clustering(counter, arrayBands, arrayIndexes, arrayOffsets, shadowIDArray, sourceBand);
         } else if (counter > 0) {
             analyseSmallCloudShadows(arrayBands, minArrayBands, counter, arrayIndexes);
         }
@@ -551,7 +550,7 @@ class CloudShadowFlaggerCombination {
     }
 
     private void analysePotentialCloudShadowArea_clustering(int counter, double[][] arrayBands, int[] arrayIndexes,
-                                                            int[] arrayOffsets, int[] shadowIDArray, int[] cloudTestArray, float[] sourceBand) {
+                                                            int[] arrayOffsets, int[] shadowIDArray, float[] sourceBand) {
         double[] band = new double[counter];
         double darkestBand = Double.MAX_VALUE;
         double[] darkestBands = new double[arrayBands.length];
@@ -643,31 +642,45 @@ class CloudShadowFlaggerCombination {
             if (band[j] < threshold) {
 
                 int flagIndex = arrayIndexes[j];
-                if(arrayOffsets[j] < 3*bestOffset && arrayOffsets[j]>0){
-                    shadowOffset.add(arrayOffsets[j]);
-                    shadowIndex.add(flagIndex);
 
-                    shadowRefl.add(band[j]);
+                if(bestOffset > 0){
+                    if(arrayOffsets[j] < 3*bestOffset && arrayOffsets[j]>0){
+                        shadowOffset.add(arrayOffsets[j]);
+                        shadowIndex.add(flagIndex);
+
+                        shadowRefl.add(band[j]);
+                    }
+                    if (!((flagArray[flagIndex] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG)
+                            && arrayOffsets[j] < 3*bestOffset && arrayOffsets[j]>0 && cloudSize>1) {
+                        flagArray[flagIndex] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
+                    }
                 }
-                if (!((flagArray[flagIndex] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG)
-                        && arrayOffsets[j] < 3*bestOffset && arrayOffsets[j]>0 && cloudSize>1) {
-                    flagArray[flagIndex] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
+                else {
+                    if( arrayOffsets[j]>0){
+                        shadowOffset.add(arrayOffsets[j]);
+                        shadowIndex.add(flagIndex);
+
+                        shadowRefl.add(band[j]);
+                    }
+                    if (!((flagArray[flagIndex] & PreparationMaskBand.CLOUD_SHADOW_FLAG) == PreparationMaskBand.CLOUD_SHADOW_FLAG)
+                            && arrayOffsets[j]>0 && cloudSize>1) {
+                        flagArray[flagIndex] += PreparationMaskBand.CLOUD_SHADOW_FLAG;
+                    }
                 }
             }
         }
 
 
 
-
-
         /*
         Checking cloud shadow results of the shifted mask against the clusters.
+        Can only work, if bestOffset >0!!
         •	1) Find all continuous clusters of dark pixels.
         •	compare position of shifted cloud mask and cluster; and reflectance values for both.
         */
 
 
-        if (shadowIndex.size()>20 && cloudSize>1){
+        if (bestOffset > 0 && shadowIndex.size()>20 && cloudSize>1){
             //duplicates are removed!
             //initialize with shadow flags from clustering.
             int test[] = new int[flagArray.length];
@@ -734,12 +747,14 @@ class CloudShadowFlaggerCombination {
                             if(clusterTest.get(index) == minRefl){
                                 //System.out.println(index);
                                 int offset = meanOffsetClust.get(index);
+                                //System.out.println("bestOffset:" + bestOffset + " thisOffset: "+ offset);
 
-                                //remove flags for shifted shadow for bestOffset
-                                switchOffShiftedCloudShadowFlag(cloud, bestOffset, cloudPath);
-                                //add flags for shifted shadow for this offset.
-                                setShiftedCloudShadowFlag(cloud, offset, cloudPath);
-
+                                if(offset < 2*bestOffset){
+                                    //remove flags for shifted shadow for bestOffset
+                                    switchOffShiftedCloudShadowFlag(cloud, bestOffset, cloudPath);
+                                    //add flags for shifted shadow for this offset.
+                                    setShiftedCloudShadowFlag(cloud, offset, cloudPath);
+                                }
                             }
                         }
                     }
@@ -780,7 +795,7 @@ class CloudShadowFlaggerCombination {
 
         void doIterationStep(int index, int offset);
 
-        void doCloudShadowAnalysis(int minNumberMemberCluster, int[] shadowIDArray, int[] cloudTestArray, float[] sourceBand);
+        void doCloudShadowAnalysis(int minNumberMemberCluster, int[] shadowIDArray, float[] sourceBand);
 
     }
 
@@ -855,11 +870,11 @@ class CloudShadowFlaggerCombination {
         }
 
         @Override
-        public void doCloudShadowAnalysis(int minNumberMemberCluster, int[] shadowIDArray, int[] cloudTestArray, float[] sourceBand) {
+        public void doCloudShadowAnalysis(int minNumberMemberCluster, int[] shadowIDArray, float[] sourceBand) {
             analyseCloudShadows(counterA, minNumberMemberCluster, new double[][]{arrayBands[0]}, arrayIndexes[0], arrayOffsets[0],
-                    new double[]{minArrayBands[0]}, landThreshholds, landMean, shadowIDArray, cloudTestArray, sourceBand);
+                    new double[]{minArrayBands[0]}, landThreshholds, landMean, shadowIDArray, sourceBand);
             analyseCloudShadows(counterB, minNumberMemberCluster, new double[][]{arrayBands[1]}, arrayIndexes[1], arrayOffsets[1],
-                    new double[]{minArrayBands[1]}, waterThreshholds, waterMean, shadowIDArray, cloudTestArray, sourceBand);
+                    new double[]{minArrayBands[1]}, waterThreshholds, waterMean, shadowIDArray, sourceBand);
         }
 
     }
@@ -926,9 +941,9 @@ class CloudShadowFlaggerCombination {
         }
 
         @Override
-        public void doCloudShadowAnalysis(int minNumberMemberCluster, int[] shadowIDarray, int[] cloudTestArray, float[] sourceBand) {
+        public void doCloudShadowAnalysis(int minNumberMemberCluster, int[] shadowIDarray, float[] sourceBand) {
             analyseCloudShadows(counter, minNumberMemberCluster, new double[][]{arrayBandA, arrayBandB}, arrayIndexes, arrayOffsets,
-                    new double[]{minArrayBandA, minArrayBandB}, thresholds, mean, shadowIDarray, cloudTestArray, sourceBand);
+                    new double[]{minArrayBandA, minArrayBandB}, thresholds, mean, shadowIDarray, sourceBand);
         }
 
     }
@@ -979,9 +994,9 @@ class CloudShadowFlaggerCombination {
         }
 
         @Override
-        public void doCloudShadowAnalysis(int minNumberMemberCluster, int[] shadowIDarray, int[] cloudTestArray, float[] sourceBand) {
+        public void doCloudShadowAnalysis(int minNumberMemberCluster, int[] shadowIDarray, float[] sourceBand) {
             analyseCloudShadows(counter, minNumberMemberCluster, new double[][]{arrayBandA}, arrayIndexes, arrayOffsets,
-                    new double[]{minArrayBandA}, thresholds, mean, shadowIDarray, cloudTestArray, sourceBand);
+                    new double[]{minArrayBandA}, thresholds, mean, shadowIDarray, sourceBand);
         }
 
     }
