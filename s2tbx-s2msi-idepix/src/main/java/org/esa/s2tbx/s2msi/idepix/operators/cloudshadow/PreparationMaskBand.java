@@ -20,6 +20,7 @@ class PreparationMaskBand {
     static final int SHIFTED_CLOUD_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_SHIFTED_CLOUD_SHADOW) + 0.1);
     static final int CLOUD_SHADOW_COMB_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW_COMB) + 0.1);
     static final int SHIFTED_CLOUD_SHADOW_GAPS_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_SHIFTED_CLOUD_SHADOW_GAPS) + 0.1);
+    static final int RECOMMENDED_CLOUD_SHADOW_FLAG = (int) (Math.pow(2, S2IdepixPreCloudShadowOp.F_RECOMMENDED_CLOUD_SHADOW) + 0.1);
 
     static void prepareMaskBand(int productWidth, int productHeight, Rectangle tileSourceRectangle, int[] flagArray,
                                 FlagDetector flagDetector) {
