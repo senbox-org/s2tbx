@@ -176,6 +176,11 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         viewAzimuthMean = getRasterNodeValueAtCenter(sourceViewAzimuth, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
         viewZenithMean = getRasterNodeValueAtCenter(sourceViewZenith,targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
 
+        // todo: if the center pixel of the granule does not exist, find the center of the existing data!
+        // actually: sunZenith and sunAzimuth are given on the entire granule, even if the data is only partially available.
+        // view zenith and azimuth are missing, but the return value is 0 -> sunAzimuth is not corrected.
+        // this might not be the best choice for the data near the swath border, but in principal the calculation can still be done.
+
         sunAzimuthMean = convertToApparentSunAzimuth();
 
         sourceBandFlag1 = s2ClassifProduct.getBand(sourceFlagName1);
@@ -377,7 +382,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
             minAltitude = 0;
         }*/
 
-        //here: cloud path is calculated for center pixel sunZenith and sunAzimuth.
+        //here: cloud path is calculated for center pixel sunZenith and sunAzimuth. sunAzimuth is corrected with view geometry.
         final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
                 minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, maxcloudTop,
                 targetRectangle, targetRectangle, getSourceProduct().getSceneRasterHeight(),
@@ -420,14 +425,6 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         //int numClouds = testCloudInTile(flagArray);
 
         if (numClouds > 0) {
-
-            //all land cover types
-            /*final ShiftingCloudBULKalongCloudPath cloudTest = new ShiftingCloudBULKalongCloudPath();
-            cloudTest.ShiftingCloudBULKalongCloudPath(sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, clusterData, flagArray, cloudShadowRelativePath);
-
-            meanReflPerTile.put(mytileid, cloudTest.getMeanReflectanceAlongPath());
-            */
-
             //statistics by type: 0: all, 1: over land, 2: over water
             final ShiftingCloudBulkAlongCloudPathType cloudTest = new ShiftingCloudBulkAlongCloudPathType();
             cloudTest.ShiftingCloudBulkAlongCloudPathType(sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, clusterData, flagArray, cloudShadowRelativePath);
@@ -439,11 +436,6 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         }
         
     }
-
-    /*
-    public Map<Integer, double[]> getMeanReflPerTile() {
-        return meanReflPerTile;
-    }*/
 
     public Map<Integer, double[][]> getMeanReflPerTile() {
         return meanReflPerTile;
