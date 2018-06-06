@@ -7,6 +7,7 @@ import java.awt.geom.Point2D;
 
 /**
  * @author Tonio Fincke
+ * @author Dagmar Müller
  */
 class MountainShadowFlagger {
 
@@ -126,7 +127,7 @@ class MountainShadowFlagger {
         double[] relativeMinMountainHeights = new double[relativePath.length];
         //final double sunFactor = Math.tan(Math.PI / 2. - sunZenith);
         final double sunFactor = Math.tan(sunZenith);
-        for (int i = 1; i < relativePath.length; i++) {
+        for (int i = 0; i < relativePath.length; i++) {
             final double x = relativePath[i].getX();
             final double y = relativePath[i].getY();
             double dist = Math.sqrt(Math.pow(spatialResolution * x, 2) + Math.pow(spatialResolution * y, 2));
