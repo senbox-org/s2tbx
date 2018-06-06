@@ -102,7 +102,8 @@ public class S2IdepixPreCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, 5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(10, 10, 15, 15);
+        //Rectangle expectedSourceRectangle = new Rectangle(10, 10, 15, 15);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 20, 20);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -112,7 +113,8 @@ public class S2IdepixPreCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, -5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(10, 5, 15, 15);
+        //Rectangle expectedSourceRectangle = new Rectangle(10, 5, 15, 15);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 20, 20);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -122,7 +124,8 @@ public class S2IdepixPreCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, 5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(5, 10, 15, 15);
+        //Rectangle expectedSourceRectangle = new Rectangle(5, 10, 15, 15);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 20, 20);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -132,7 +135,8 @@ public class S2IdepixPreCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, -5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 15, 15);
+        //Rectangle expectedSourceRectangle = new Rectangle(5, 5, 15, 15);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 20, 20);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -142,7 +146,8 @@ public class S2IdepixPreCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, 5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(2, 2, 8, 8);
+        //Rectangle expectedSourceRectangle = new Rectangle(2, 2, 8, 8);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 10, 10);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -152,7 +157,7 @@ public class S2IdepixPreCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, -5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(2, 0, 8, 8);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 10, 10);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -162,7 +167,7 @@ public class S2IdepixPreCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, 5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(0, 2, 8, 8);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 10, 10);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -172,7 +177,7 @@ public class S2IdepixPreCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, -5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 8, 8);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 10, 10);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
