@@ -10,7 +10,7 @@ import java.util.*;
 
 /**
  * @author Tonio Fincke
- * Dagmar Mueller
+ * @author Dagmar Mueller
  */
 class PotentialCloudShadowAreaIdentifier {
 
@@ -187,47 +187,82 @@ class PotentialCloudShadowAreaIdentifier {
             }
         }
 
-        /*
+//        /*
+//
+//        The lists 'indexToPositions' contains duplicated pixel, because the search depth at a cloud border is two pixels deep (which is necessary to avoid Moire-Effects).
+//        The duplicates need to be identified in indexToPosition, but they need to be removed in both lists. They are not duplicates in the 'offsetAtPositions' list.
+//        For each List per cloudID individually, but based on indexToPositions.
+//        CAUTION: It might be necessary to adjust the incrementation of x,y so that the first entry of a duplicated position is also the one with the smallest offset.
+//            It is not checked, whether the offset of the duplicated pixel is the smallest one (which it should be).
+//
+//        No SOLUTION:
+//        checking the lists is no solution! contains() is very time consuming!
+//         */
+//
+//        /*for (int cloudIndex : indexToPositions.keySet()){
+//            List<Integer> noduplicates_pos = new ArrayList<>();
+//            List<Integer> noduplicates_off = new ArrayList<>();
+//
+//            List<Integer> pos = indexToPositions.get(cloudIndex);
+//
+//            if(pos.size()>1){
+//
+//                List<Integer> off = offsetAtPositions.get(cloudIndex);
+//
+//
+//                for (int p=0; p< pos.size(); p++){
+//                    if (!noduplicates_pos.contains(pos.get(p))){
+//                        noduplicates_pos.add(pos.get(p));
+//                        noduplicates_off.add(off.get(p));
+//                    }
+//                }
+//
+//                if(noduplicates_pos.size() < pos.size()){
+//                    pos.clear();
+//                    pos.addAll(noduplicates_pos);
+//                    off.clear();
+//                    off.addAll(noduplicates_off);
+//                }
+//            }
+//
+//        }*/
 
-        The lists 'indexToPositions' contains duplicated pixel, because the search depth at a cloud border is two pixels deep (which is necessary to avoid Moire-Effects).
-        The duplicates need to be identified in indexToPosition, but they need to be removed in both lists. They are not duplicates in the 'offsetAtPositions' list.
-        For each List per cloudID individually, but based on indexToPositions.
-        CAUTION: It might be necessary to adjust the incrementation of x,y so that the first entry of a duplicated position is also the one with the smallest offset.
-            It is not checked, whether the offset of the duplicated pixel is the smallest one (which it should be).
+        // REMOVE the duplicates!
+        // formerly done in CloudShadowFlaggerCombination
 
-        RESOLUTION:
-        checking the lists is no solution! contains() is very time consuming!
-         */
+        for (int key : indexToPositions.keySet()){
+            /*
+            positions and offsetAtPosition can contain duplicates!
+            Removing duplicates, Keeping the smaller offset at a position...
+             */
+            List<Integer> positions = indexToPositions.get(key);
+            List<Integer> offsetAtPos = offsetAtPositions.get(key);
 
-        /*for (int cloudIndex : indexToPositions.keySet()){
-            List<Integer> noduplicates_pos = new ArrayList<>();
-            List<Integer> noduplicates_off = new ArrayList<>();
+            List<Integer> noduplicatesPositions = new ArrayList<>(new LinkedHashSet<>(positions));
 
-            List<Integer> pos = indexToPositions.get(cloudIndex);
-
-            if(pos.size()>1){
-
-                List<Integer> off = offsetAtPositions.get(cloudIndex);
-
-
-                for (int p=0; p< pos.size(); p++){
-                    if (!noduplicates_pos.contains(pos.get(p))){
-                        noduplicates_pos.add(pos.get(p));
-                        noduplicates_off.add(off.get(p));
-                    }
+            if (noduplicatesPositions.size() < positions.size()) {
+                int test[] = new int[flagArray.length];
+                for (int k = 0; k < positions.size(); k++) {
+                    int off = offsetAtPos.get(k);
+                    int ind = positions.get(k);
+                    if (ind < test.length) {
+                        if (test[ind] > off || test[ind] == 0) {
+                            test[ind] = off;
+                        }
+                    } else System.out.println("Index: " + ind + " outside range");
                 }
 
-                if(noduplicates_pos.size() < pos.size()){
-                    pos.clear();
-                    pos.addAll(noduplicates_pos);
-                    off.clear();
-                    off.addAll(noduplicates_off);
+                List<Integer> noduplicatesOffsets = new ArrayList<>();
+                for (int k : noduplicatesPositions) {
+                    noduplicatesOffsets.add(test[k]);
                 }
+
+                positions.clear();
+                positions.addAll(noduplicatesPositions);
+                offsetAtPos.clear();
+                offsetAtPos.addAll(noduplicatesOffsets);
             }
-
-        }*/
-
-
+        }
 
 //        final List<Integer>[] positions = new List<Integer>[indexToPositions.size()];
 //        return indexToPositions.values().toArray(new List<Integer>[indexToPositions.size()]);
