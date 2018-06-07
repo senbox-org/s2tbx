@@ -40,84 +40,49 @@ used also as a command line tool. The graph processing is invoked
 by the command
 <ul>
     <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt
+        ${S2TBX-INSTALL-DIR}/bin/gpt
     </li>
 </ul>
 
 To obtain general help on the graph processing, use the command
 <ul>
     <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h
+        ${S2TBX-INSTALL-DIR}/bin/gpt -h
     </li>
 </ul>
 
 Specific help on the Idepix processor for a given instrument onboard a given satellite can be obtained with
 <ul>
     <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.&lt;Satellite&gt;.&lt;Instrument&gt;
+        ${S2TBX-INSTALL-DIR}/bin/gpt -h Idepix.&lt;Satellite&gt;.&lt;Instrument&gt;
     </li>
 </ul>
 
-so we have the following options:
+so for Sentinel-2 MSI we have:
 <ul>
     <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Sentinel2.MSI
-    </li>
-    <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Sentinel3.OLCI
-    </li>
-    <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Envisat.MERIS
-    </li>
-    <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Landsat8.OLI
-    </li>
-    <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Probav.Vegetation
-    </li>
-    <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Spot.Vegetation
-    </li>
-    <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.TerraAqua.Modis
-    </li>
-    <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.OrbView2.Seawifs
-    </li>
-    <li>
-        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.SuomiNpp.Viirs
+        ${S2TBX-INSTALL-DIR}/bin/gpt -h Idepix.Sentinel2.MSI
     </li>
 </ul>
-In this case, information on the usage and a list of all available parameters are given. E.g., for MODIS this looks
-like in the figure below.
-<p align="center"><img src="images/IdepixCommandLineModis_new.png"></p>
+In this case, information on the usage and a list of all available parameters are given.
 
 The Idepix processor parameters can also be specified via a graph xml file.
-E.g., a possible graph xml file for MODIS could look like the following. (Note that in principle it is not necessary
+E.g., a possible graph xml file for Sentinel-2 MSI could look like the following. (Note that in principle it is not necessary
 to explicitly set parameters if default values shall be used).
 <pre>
 
-    &lt;graph id="IdepixModisTest"&gt;
+    &lt;graph id="IdepixS2MsiTest"&gt;
         &lt;version&gt;1.0&lt;/version&gt;
         &lt;node id="idepix"&gt;
-            &lt;operator&gt;Idepix.TerraAqua.Modis&lt;/operator&gt;
+            &lt;operator&gt;Idepix.Sentinel2.MSI&lt;/operator&gt;
             &lt;sources&gt;
                 &lt;source&gt;${sourceProduct}&lt;/source&gt;
             &lt;/sources&gt;
             &lt;parameters&gt;
-                &lt;cloudFlaggingStrength&gt;CLOUD_CONSERVATIVE&lt;/cloudFlaggingStrength&gt;
+                &lt;computeCloudBuffer&gt;false&lt;/computeCloudBuffer&gt;
             &lt;/parameters&gt;
             &lt;parameters&gt;
-                &lt;cloudBufferWidth&gt;2&lt;/cloudBufferWidth&gt;
-            &lt;/parameters&gt;
-            &lt;parameters&gt;
-                &lt;waterMaskResolution&gt;300&lt;/waterMaskResolution&gt;
-            &lt;/parameters&gt;
-            &lt;parameters&gt;
-                &lt;outputRad2Refl&gt;false&lt;/outputRad2Refl&gt;
-            &lt;/parameters&gt;
-            &lt;parameters&gt;
-                &lt;outputEmissive&gttrue&lt;/outputEmissive&gt;
+                &lt;computeMountainShadow&gt;true&lt;/computeMountainShadow&gt;
             &lt;/parameters&gt;
         &lt;/node&gt;
     &lt;/graph&gt;
