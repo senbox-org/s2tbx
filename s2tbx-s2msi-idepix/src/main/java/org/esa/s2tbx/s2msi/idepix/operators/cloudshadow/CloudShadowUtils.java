@@ -32,6 +32,8 @@ class CloudShadowUtils {
         }
         double x1 = x0 + deltaProjX + 0.5;
         double y1 = y0 + deltaProjY + 0.5;
+        //double x1 = x0 + deltaProjX ;
+        //double y1 = y0 + deltaProjY ;
         double minX = Math.max(0, sourceRectangle.getX());
         double minY = Math.max(0, sourceRectangle.getY());
         double maxX = Math.min(productWidth - 1, sourceRectangle.getX() + sourceRectangle.getWidth() - 1);
@@ -80,7 +82,7 @@ class CloudShadowUtils {
             endPoint.setLocation(x1 - x0, y1 - y0);
         }
         Point2D[] vertices = new Point2D[]{new Point2D.Double(0, 0), endPoint};
-        final ShapeRasterizer shapeRasterizer = new ShapeRasterizer();
+        final PotentialPathShapeRasterizer shapeRasterizer = new PotentialPathShapeRasterizer();
         return shapeRasterizer.rasterize(vertices);
     }
 
