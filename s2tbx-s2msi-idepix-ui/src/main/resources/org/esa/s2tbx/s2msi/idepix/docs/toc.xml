@@ -23,30 +23,16 @@
     <tocitem text="Sentinel Toolbox Application">
         <tocitem text="Optical">
             <tocitem text="Pre-Processing">
-                <tocitem text="Idepix Classification of Pixels" target="idepixTool">
-                    <tocitem text="Idepix Processor Descriptions" target="idepixProcessorDesc">
-                        <tocitem text="Sentinel-2 MSI" target="sentinel2MsiProcessorDesc"/>
-                        <tocitem text="Sentinel-3 OLCI" target="sentinel3OlciProcessorDesc"/>
-                        <tocitem text="Envisat MERIS" target="envisatMerisProcessorDesc"/>
-                        <tocitem text="Landsat-8 OLI" target="landsat8OliProcessorDesc"/>
-                        <tocitem text="Proba-V Vegetation" target="probavVegetationProcessorDesc"/>
-                        <tocitem text="SPOT Vegetation" target="spotVegetationProcessorDesc"/>
-                        <tocitem text="Terra/Aqua MODIS" target="terraAquaModisProcessorDesc"/>
-                        <tocitem text="OrbView-2 SeaWiFS" target="orbview2SeawifsProcessorDesc"/>
-                        <tocitem text="Suomi NPP VIIRS" target="suominppViirsProcessorDesc"/>
+                <tocitem text="Masking">
+                    <tocitem text="IdePix Classification of Pixels (Sentinel-2)" target="idepixS2Tool">
+                        <tocitem text="Idepix Processor Descriptions" target="idepixS2ProcessorDesc">
+                            <tocitem text="Sentinel-2 MSI" target="sentinel2MsiProcessorDesc"/>
+                        </tocitem>
+                        <tocitem text="Idepix Algorithm Specifications" target="idepixS2AlgorithmSpec">
+                            <tocitem text="Sentinel-2 MSI" target="sentinel2MsiAlgorithmSpec"/>
+                        </tocitem>
+                        <tocitem text="Command Line Description" target="idepixS2CommandLine"/>
                     </tocitem>
-                    <tocitem text="Idepix Algorithm Specifications" target="idepixAlgorithmSpec">
-                        <tocitem text="Sentinel-2 MSI" target="sentinel2MsiAlgorithmSpec"/>
-                        <tocitem text="Sentinel-3 OLCI" target="sentinel3OlciAlgorithmSpec"/>
-                        <tocitem text="Envisat MERIS" target="envisatMerisAlgorithmSpec"/>
-                        <tocitem text="Landsat-8 OLI" target="landsat8OliAlgorithmSpec"/>
-                        <tocitem text="Proba-V Vegetation" target="probavVegetationAlgorithmSpec"/>
-                        <tocitem text="SPOT Vegetation" target="spotVegetationAlgorithmSpec"/>
-                        <tocitem text="Terra/Aqua MODIS" target="terraAquaModisAlgorithmSpec"/>
-                        <tocitem text="OrbView-2 SeaWiFS" target="orbview2SeawifsAlgorithmSpec"/>
-                        <tocitem text="Suomi NPP VIIRS" target="suominppViirsAlgorithmSpec"/>
-                    </tocitem>
-                    <tocitem text="Command Line Description" target="idepixCommandLine"/>
                 </tocitem>
             </tocitem>
         </tocitem>

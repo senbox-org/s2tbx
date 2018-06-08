@@ -36,11 +36,11 @@ import java.awt.event.ActionEvent;
 //@ActionReference(path = "Menu/Optical/Preprocessing/IdePix Pixel Classification", position = 200)
 @ActionReference(path = "Menu/Optical/Preprocessing/Masking/IdePix (Clouds, Land, Water, ...)", position = 100)
 @NbBundle.Messages({"CTL_IdepixSentinel2Action_Text=Sentinel-2 MSI"})
-public class IdepixSentinel2Action extends AbstractSnapAction {
+public class IdepixSentinel2MsiAction extends AbstractSnapAction {
 
-    private static final String HELP_ID = "idepixTool";
+    private static final String HELP_ID = "idepixS2Tool";
 
-    public IdepixSentinel2Action() {
+    public IdepixSentinel2MsiAction() {
         putValue(Action.SHORT_DESCRIPTION, "Performs pixel classification on a Sentinel-2 product.");
     }
 

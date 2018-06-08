@@ -20,30 +20,10 @@
         "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
 <map version="2.0">
-    <mapID target="idepixTool" url="idepix/IdepixTool.html"/>
-
-    <mapID target="idepixProcessorDesc" url="idepix/IdepixProcessorDescription.html"/>
-    <mapID target="idepixAlgorithmSpec" url="idepix/IdepixAlgorithmSpecification.html"/>
-    <mapID target="idepixCommandLine" url="idepix/IdepixCommandLine.html"/>
-
+    <mapID target="idepixS2Tool" url="idepix/IdepixS2Tool.html"/>
+    <mapID target="idepixS2ProcessorDesc" url="idepix/IdepixS2ProcessorDescription.html"/>
+    <mapID target="idepixS2AlgorithmSpec" url="idepix/IdepixS2AlgorithmSpecification.html"/>
+    <mapID target="idepixS2CommandLine" url="idepix/IdepixS2CommandLine.html"/>
     <mapID target="sentinel2MsiProcessorDesc" url="idepix/Sentinel2MsiProcessorDescription.html"/>
-    <mapID target="sentinel3OlciProcessorDesc" url="idepix/Sentinel3OlciProcessorDescription.html"/>
-    <mapID target="envisatMerisProcessorDesc" url="idepix/EnvisatMerisProcessorDescription.html"/>
-    <mapID target="landsat8OliProcessorDesc" url="idepix/Landsat8OliProcessorDescription.html"/>
-    <mapID target="probavVegetationProcessorDesc" url="idepix/ProbavVegetationProcessorDescription.html"/>
-    <mapID target="spotVegetationProcessorDesc" url="idepix/SpotVegetationProcessorDescription.html"/>
-    <mapID target="terraAquaModisProcessorDesc" url="idepix/TerraAquaModisProcessorDescription.html"/>
-    <mapID target="orbview2SeawifsProcessorDesc" url="idepix/OrbView2SeawifsProcessorDescription.html"/>
-    <mapID target="suominppViirsProcessorDesc" url="idepix/SuomiNppViirsProcessorDescription.html"/>
-
     <mapID target="sentinel2MsiAlgorithmSpec" url="idepix/Sentinel2MsiAlgorithmSpecification.html"/>
-    <mapID target="sentinel3OlciAlgorithmSpec" url="idepix/Sentinel3OlciAlgorithmSpecification.html"/>
-    <mapID target="envisatMerisAlgorithmSpec" url="idepix/EnvisatMerisAlgorithmSpecification.html"/>
-    <mapID target="landsat8OliAlgorithmSpec" url="idepix/Landsat8OliAlgorithmSpecification.html"/>
-    <mapID target="probavVegetationAlgorithmSpec" url="idepix/ProbavVegetationAlgorithmSpecification.html"/>
-    <mapID target="spotVegetationAlgorithmSpec" url="idepix/SpotVegetationAlgorithmSpecification.html"/>
-    <mapID target="terraAquaModisAlgorithmSpec" url="idepix/TerraAquaModisAlgorithmSpecification.html"/>
-    <mapID target="orbview2SeawifsAlgorithmSpec" url="idepix/OrbView2SeawifsAlgorithmSpecification.html"/>
-    <mapID target="suominppViirsAlgorithmSpec" url="idepix/SuomiNppViirsAlgorithmSpecification.html"/>
-
 </map>
