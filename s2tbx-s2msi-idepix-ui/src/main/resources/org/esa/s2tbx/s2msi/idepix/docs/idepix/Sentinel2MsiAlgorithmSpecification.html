@@ -19,8 +19,200 @@
     </tr>
 </table>
 
-<!--todo: complete-->
-to be completed
+<h3>Algorithm Specification</h3>
+
+<h4>Neural network classification</h4>
+
+<p>
+    The Idepix classification algorithm for Sentinel-2 MSI is based on a 'feature extraction and classification'
+    scheme which was originally developed in the frame of the
+    ESA DUE GlobAlbedo project. It is described in detail in the project ATBD [1].
+    In addition, various threshold tests are applied to identify cirrus clouds.<br> <br>
+
+    As output, the neural net finally provides per pixel one of the properties 'cloud sure',
+    'cloud ambiguous', 'cloud' (which means sure OR ambiguous) ,  'cirrus sure',
+    'cirrus ambiguous', or 'snow/ice'.
+
+<h4>Additional properties</h4>
+<p>
+    The following additional pixel properties are provided from the classification:
+<ul>
+    <li>
+        'cloud_buffer': For pixels identified as cloudy, a cloud buffer of specified width can be set by the
+        user to finally obtain a more
+        conservative cloud mask. This is done in a post-processing step after the cloud classification has been applied
+        on the full image. The cloud buffer algorithm works on pixel windows of size (2N+1) x (2N+1) with N = cloud buffer
+        width. Note that the cloud buffer is only applied on cloud-free pixels, i.e. cloudy pixels are not flagged as cloud
+        buffer of cloudy neighbour pixels.
+        The cloud buffer procedure is described in a bit more detail in the CCI Land Cover ATBD [2].
+    </li>
+    <li>
+        'cloud_shadow': For pixels identified as CLOUD, a cloud shadow algorithm can be optionally applied.
+        In a first step, this algorithm determines
+        the shadow from cloudy pixels by simple geometric calculations using the sun zenith angle and the cloud top
+        height, which for Sentinel-2 MSI is actually set to a fixed value of 12km.
+        In a second step, a cluster analysis is applied as an improvement to take into account the high
+        spatial resolution of the MSI instrument.
+        This cloud shadow procedure is described in more detail in the CCI Land Cover ATBD [1].
+    </li>
+    <li>
+        'bright': A bright spectrum means that the intensity of the spectral curve (related to the albedo)
+        should present relatively high values. However, a simple reflectance threshold test is applied for
+        Suomi NPP VIIRS, using just the TOA reflectance at 443nm and the sun and viewing angles.
+    </li>
+    <li>
+        'white':
+        The whiteness classification is obtained from the 'feature extraction and classification' scheme.
+        A white spectrum means that the spectral signature must be flat along the spectrum. The first derivative of the
+        spectral curve should present low values, but noise and calibration errors may reduce the accuracy in the estimation
+        of the spectrum flatness when computing the spectral derivative in channels with similar wavelengths.
+    </li>
+    <li>
+        'brightwhite':
+        The 'brightwhite' classification is obtained from the 'feature extraction and classification' scheme.
+        Basically this means that the sum of brightness and whiteness feature values extend a certain threshold.
+    </li>
+    <li>
+        'land': the pixel is located over land
+    </li>
+    <li>
+        'water': the pixel is located over water
+    </li>
+    <li>
+        'clear land': the pixel is clear and located over land. Here, the identification as 'clear' is obtained
+        from a radiometric test within the feature extraction approach.
+    </li>
+    <li>
+        'clear water': the pixel is clear and located over water. Here, the identification as 'clear' is obtained
+        from a radiometric test within the feature extraction approach.
+    </li>
+    <li>
+        'coastline': the pixel is a coastline pixel
+    </li>
+    <li>
+        'vegetation risk': the pixel has a 'vegetation risk' if the NDVI (Normalized Difference Vegetation Index),
+        which for Sentinel-2 MSI is computed from the reflectances at 865nm and 665nm, exceeds a threshold of 0.5.
+    </li>
+    <li>
+        'mountain_shadow': For all pixels, a mountain shadow algorithm can be optionally applied.
+        This algorithm determines
+        the mountain shadow from the sun and view angles and slope/aspect information computed from the altitudes
+        in a given square around the considered pixel.
+    </li>
+</ul>
+
+The 'land', 'water', and 'coastline' pixels are identified from an SRTM (Shuttle Radar Topography Mission) land/water mask [3].
+This is a fractional mask:
+<ul>
+    <li>
+        water fraction = 0 : 'land'
+    </li>
+    <li>
+        water fraction &gt; 0 and  water fraction  &lt; 100: 'coastline'
+    </li>
+    <li>
+        water fraction = 100: 'water'
+    </li>
+</ul>
+
+<h4>Final classification flags</h4>
+<p>
+    In summary, from the algorithm steps outlined above, the following final classification flags are provided for
+    Proba-V:
+<ul>
+    <li>
+        'INVALID' (input invalid or no classification possible)
+    </li>
+    <li>
+        'CLOUD' (which means either CLOUD_AMBIGUOUS or CLOUD_SURE)
+    </li>
+    <li>
+        'CLOUD_AMBIGUOUS'
+    </li>
+    <li>
+        'CLOUD_SURE'
+    </li>
+    <li>
+        'CLOUD_BUFFER'
+    </li>
+    <li>
+        'CLOUD_SHADOW'
+    </li>
+    <li>
+        'SNOW_ICE'
+    </li>
+    <li>
+        'COASTLINE'
+    </li>
+    <li>
+        'LAND'
+    </li>
+    <li>
+        'WATER'
+    </li>
+    <li>
+        'CLEAR_LAND'
+    </li>
+    <li>
+        'CLEAR_WATER'
+    </li>
+    <li>
+        'CIRRUS_SURE'
+    </li>
+    <li>
+        'BRIGHT'
+    </li>
+    <li>
+        'WHITE'
+    </li>
+    <li>
+        'BRIGHTWHITE'
+    </li>
+    <li>
+        'VEG_RISK'
+    </li>
+    <li>
+        'MOUNTAIN_SHADOW'
+    </li>
+
+</ul>
+
+<h4>Known issues</h4>
+<p>
+    The determination of a cloud shadow is very difficult i.e. for the high spatial resolution provided by the
+    MSI instrument. Therefore, the cloud shadow results may sometimes be rather poor.
+</p>
+<p>
+    The following pixel properties are currently NOT provided for Sentinel-2 MSI:
+<ul>
+    <li>
+        'GLINT_RISK'
+    </li>
+    <li>
+        'MIXED_PIXEL'
+    </li>
+</ul>
+
+<h3>References</h3>
+
+<p class="i1">
+    <b>[1]</b>
+    ESA DUE GlobAlbedo ATBD. Algorithm Theoretical Basis Document, Section A: Pixel Classification.
+    Version 4.12, 7 July 2013.
+    <br><br>
+
+    <b>[2]</b>
+    CCI Land Cover ATBD. Algorithm Theoretical Basis Document: Pre-Processing Year 3.
+    Version 1.1, 21 August 2017.
+    <br><br>
+
+    <b>[3]</b>
+    Farr, T. G., et al., The Shuttle Radar Topography Mission, Rev. Geophys., 45, RG2004,
+    doi:10.1029/2005RG000183. (2007)
+    <br><br>
+
+</p>
+<br>
 
 <hr>
 </body>
