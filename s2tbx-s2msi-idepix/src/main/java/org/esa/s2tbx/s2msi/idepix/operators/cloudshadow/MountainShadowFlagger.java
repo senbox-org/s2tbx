@@ -19,6 +19,7 @@ class MountainShadowFlagger {
         final int sourceWidth = sourceRectangle.width;
         final int sourceHeight = sourceRectangle.height;
 
+        //Grit: SunZenith is reduced to find more than the core shadow.
         double sunZenithIntermediate;
         if (SHADOW_ADAPTER_SZA) {
             sunZenithIntermediate = (double) sourceSunZenith * (2. * Math.pow(((90. - (double) sourceSunZenith) / 90), 3) + 1.);
@@ -26,6 +27,7 @@ class MountainShadowFlagger {
             sunZenithIntermediate = (double) sourceSunZenith;
         }
         double sunZenithRad = Math.min(89.0, sunZenithIntermediate) * MathUtils.DTOR;
+        //double sunZenithRad = Math.min(89.0, sourceSunZenith) * MathUtils.DTOR;
         double sunAzimuthRad = sourceSunAzimuth * MathUtils.DTOR;
         /*final Point2D[] relativePath = CloudShadowUtils.getRelativePath(minAltitude, sunZenithRad, sunAzimuthRad,
                                                                         maxAltitude, sourceRectangle, targetRectangle,
@@ -39,6 +41,7 @@ class MountainShadowFlagger {
         final double[] relativeMinMountainHeights = getRelativeMinMountainHeights(relativePath,
                                                                                   S2IdepixPreCloudShadowOp.spatialResolution,
                                                                                   sunZenithRad);
+
         if (maxAltitude - minAltitude < relativeMinMountainHeights[1]) {
             return;
         }
@@ -46,7 +49,61 @@ class MountainShadowFlagger {
         int xOffset = 0;
         int yOffset = 0;
 
-        if (sourceSunAzimuth < 90) {
+        int relPathDeltaX1 = (int) relativePath[1].getX();
+        int ip=2;
+        while(relPathDeltaX1 == 0 && ip<relativePath.length){
+            relPathDeltaX1 = (int) relativePath[ip].getX();
+            ip++;
+        }
+        int relPathDeltaY1 =  (int) relativePath[1].getY();
+        ip=2;
+        while(relPathDeltaY1 == 0 && ip<relativePath.length){
+            relPathDeltaY1 = (int) relativePath[ip].getY();
+            ip++;
+        }
+
+        if(relPathDeltaX1 > 0){
+
+            if(relPathDeltaY1 > 0){
+                //direction +, + , faster in y
+                for(int i = xOffset; i < sourceWidth ; i++){
+                    for ( int j = yOffset; j< sourceHeight; j++){
+                        identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
+                                sourceAltitude, flagArray, maxAltitude);
+                    }
+                }
+            }
+            else{
+                for(int i = xOffset; i < sourceWidth ; i++){
+                    for ( int j =sourceHeight-1 ; j> yOffset-1 ; j--){
+                        identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
+                                sourceAltitude, flagArray, maxAltitude);
+                    }
+                }
+            }
+        }
+        else{
+            if(relPathDeltaY1 > 0){
+                //direction +, + , faster in y
+                for(int i =sourceWidth-1 ; i >xOffset-1  ; i--){
+                    for ( int j = yOffset; j< sourceHeight; j++){
+                        identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
+                                sourceAltitude, flagArray, maxAltitude);
+                    }
+                }
+            }
+            else{
+                for(int i =sourceWidth-1 ; i >xOffset-1  ; i--){
+                    for ( int j =sourceHeight-1 ; j> yOffset-1 ; j--){
+                        identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
+                                sourceAltitude, flagArray, maxAltitude);
+                    }
+                }
+            }
+        }
+
+
+        /*if (sourceSunAzimuth < 90) {
             //start at upper right(not necessary, direction of search is appointed in identifyPotentialCloudShadow)
             xOffset = targetRectangle.x - sourceRectangle.x;
         } else if (sourceSunAzimuth < 180) {
@@ -62,11 +119,11 @@ class MountainShadowFlagger {
                 identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
                         sourceAltitude, flagArray, maxAltitude);
             }
-        }
+        }*/
 
-        /*int xOffset = targetRectangle.x - sourceRectangle.x;
-        int yOffset = targetRectangle.y - sourceRectangle.y;
-        int width = targetRectangle.width;
+        //int xOffset = targetRectangle.x - sourceRectangle.x;
+        //int yOffset = targetRectangle.y - sourceRectangle.y;
+        /*int width = targetRectangle.width;
         int height = targetRectangle.height;
         int xLimit = xOffset + width;
         int yLimit = yOffset + height;
@@ -142,11 +199,15 @@ class MountainShadowFlagger {
                                                float[] sourceAltitude, int[] flagArray, float maxAltitude) {
         int index0 = y0 * width + x0;
         float altitude0 = sourceAltitude[index0];
-        if (((flagArray[index0] & PreparationMaskBand.MOUNTAIN_SHADOW_FLAG) == PreparationMaskBand.MOUNTAIN_SHADOW_FLAG)
+        /*if (((flagArray[index0] & PreparationMaskBand.MOUNTAIN_SHADOW_FLAG) == PreparationMaskBand.MOUNTAIN_SHADOW_FLAG)
                 || Float.isNaN(altitude0)) {
             return;
+        }*/
+        if ( Float.isNaN(altitude0)) {
+            return;
         }
-        for (int i = 1; i < relativePath.length; i++) {
+
+        for (int i = 0; i < relativePath.length; i++) {
             if (altitude0 + relativeMinMountainHeights[i] > maxAltitude) {
                 return;
             }
@@ -179,8 +240,8 @@ class MountainShadowFlagger {
                             flagArray[index2] += PreparationMaskBand.MOUNTAIN_SHADOW_FLAG;
                         }
                     }
-                }*/
-                return;
+                }
+                return;*/
             }
         }
     }
