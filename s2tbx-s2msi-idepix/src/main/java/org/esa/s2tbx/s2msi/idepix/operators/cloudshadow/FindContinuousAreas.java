@@ -23,18 +23,12 @@ class FindContinuousAreas {
 
     Map<Integer, List<Integer>> computeAreaID(int sourceWidth, int sourceHeight, int[] cloudIdArray, boolean useFlagBand) {
 
-
         int id = 0;
         Map<Integer, List<Integer>> output = new HashMap<>();
-        //Map<Integer, Integer> idToOffset = new HashMap<>();
-        //int[] cloudIdArray = new int[sourceHeight*sourceWidth];
-
-        // todo segmentation without border and after this applying own cloud-border processing
 
         //first pixel (top left)
         if (isTarget(0, useFlagBand)) {
             cloudIdArray[0] = ++id;
-            //idToOffset.put(id, 0);
         }
 
         // first row (top row)
@@ -44,7 +38,6 @@ class FindContinuousAreas {
                     cloudIdArray[i] = cloudIdArray[i - 1];
                 } else {
                     cloudIdArray[i] = ++id;
-                    //idToOffset.put(id, i);
                 }
             }
         }
@@ -58,25 +51,17 @@ class FindContinuousAreas {
                     if (i == 0) {
                         if (upperNeighbour == 0) {
                             cloudIdArray[index] = ++id;
-                            //idToOffset.put(id, index);
                         } else {
                             cloudIdArray[index] = upperNeighbour;
                         }
                     } else if (leftNeighbour == 0 && upperNeighbour == 0) {
                         cloudIdArray[index] = ++id;
-                        //idToOffset.put(id, index);
                     } else if (upperNeighbour == 0 || leftNeighbour == upperNeighbour) {
                         cloudIdArray[index] = leftNeighbour;
                     } else if (leftNeighbour == 0) {
                         cloudIdArray[index] = upperNeighbour;
                     } else {
                         cloudIdArray[index] = upperNeighbour;
-                        /*for (int k = idToOffset.get(leftNeighbour); k < index; k++) {
-                            if (cloudIdArray[k] == leftNeighbour) {
-                                cloudIdArray[k] = upperNeighbour;
-                            }
-                        }
-                        idToOffset.remove(leftNeighbour);*/
                     }
                 }
             }
@@ -104,7 +89,9 @@ class FindContinuousAreas {
 
         int count = 1;
         int k = 0;
-        //for (int k=0; k <10; k++) {
+
+        //reverting directions during the search repeatedly allows to identify spiraling areas as continuous areas.
+
         while (count >0 && k <10) {    //test in all four next neighbours, from bottom right to top left
 
             count = 0;
@@ -126,7 +113,6 @@ class FindContinuousAreas {
                         if (upperNeighbour > thisMax) thisMax = upperNeighbour;
                         if (center > thisMax) thisMax = center;
 
-                        //if (lowerNeighbour > 0 || upperNeighbour > 0 || leftNeighbour > 0 || rightNeighbour > 0) {
                         if(center < thisMax) {
                             cloudIdArray[index] = thisMax;
                             count++;
@@ -165,7 +151,6 @@ class FindContinuousAreas {
                         if (upperNeighbour > thisMax) thisMax = upperNeighbour;
                         int center = cloudIdArray[index];
 
-                        //if (lowerNeighbour > 0 || upperNeighbour > 0 || leftNeighbour > 0 || rightNeighbour > 0) {
                         if(center < thisMax) {
                             cloudIdArray[index] = thisMax;
                             count++;
