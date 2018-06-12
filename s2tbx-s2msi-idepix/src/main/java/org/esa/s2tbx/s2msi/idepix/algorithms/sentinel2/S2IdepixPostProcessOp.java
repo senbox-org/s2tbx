@@ -2,6 +2,7 @@ package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixCloudShadowOp;
+import org.esa.s2tbx.s2msi.idepix.operators.mountainshadow.S2IdepixMountainShadowOp;
 import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixPreCloudShadowOp;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
@@ -48,19 +49,15 @@ public class S2IdepixPostProcessOp extends Operator {
     @Parameter(defaultValue = "true", label = " Compute cloud shadow", description = " Compute cloud shadow")
     private boolean computeCloudShadow;
 
-    @Parameter(description = "The mode by which clouds are detected. There are three options: Land/Water, Multiple Bands" +
-            "or Single Band", valueSet = {"LandWater", "MultiBand", "SingleBand"}, defaultValue = "LandWater")
-    private String mode;
-
-    @Parameter(description = "Whether to also compute mountain shadow", defaultValue = "true")
-    private boolean computeMountainShadow;
-
 //    @Parameter(defaultValue = "2", label = "Width of cloud buffer (# of pixels)")
 //    private int cloudBufferWidth;
 
     private Band s2ClassifFlagBand;
     private Band cloudBufferFlagBand;
     private Band cloudShadowFlagBand;
+
+    private int oceanCloudShadowIndexValue;
+    private int landCloudShadowIndexValue;
 
     @Override
     public void initialize() throws OperatorException {
@@ -78,13 +75,12 @@ public class S2IdepixPostProcessOp extends Operator {
             HashMap<String, Product> input = new HashMap<>();
             input.put("s2ClassifProduct", s2ClassifProduct);
             input.put("s2CloudBufferProduct", s2CloudBufferProduct);
-            Map<String, Object> params = new HashMap<>();
-            params.put("computeCloudShadow", computeCloudShadow);
-            params.put("computeMountainShadow", computeMountainShadow);
-            params.put("mode", mode);
             final Product cloudShadowProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixCloudShadowOp.class),
-                                                                 params, input);
+                                                                 GPF.NO_PARAMS, input);
             cloudShadowFlagBand = cloudShadowProduct.getBand(S2IdepixCloudShadowOp.BAND_NAME_CLOUD_SHADOW);
+            final IndexCoding cloudShadowFlagBandIndexCoding = cloudShadowFlagBand.getIndexCoding();
+            oceanCloudShadowIndexValue = cloudShadowFlagBandIndexCoding.getIndexValue("ocean_cloud_shadow");
+            landCloudShadowIndexValue = cloudShadowFlagBandIndexCoding.getIndexValue("land_cloud_shadow");
         }
 
         ProductUtils.copyBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS, s2ClassifProduct, postProcessedCloudProduct, false);
@@ -130,33 +126,15 @@ public class S2IdepixPostProcessOp extends Operator {
         }
 
         if (computeCloudShadow) {
-            final Tile flagTile = getSourceTile(cloudShadowFlagBand, targetRectangle);
-            int clusteredCloudShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW); //clustering algorithm
-            int mountainShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_MOUNTAIN_SHADOW);
-            int cloudBufferFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_BUFFER);
-            int potentialShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_POTENTIAL_CLOUD_SHADOW);
-            //int shiftedCloudMaskInGapsFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_SHIFTED_CLOUD_SHADOW_GAPS);
-            //int coincidingClusterShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW_COMB);
-            int recommendedCloudShadow = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_RECOMMENDED_CLOUD_SHADOW);
+            final Tile cloudShadowFlagTile = getSourceTile(cloudShadowFlagBand, targetRectangle);
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
                 checkForCancellation();
                 for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
-                    final int flagValue = flagTile.getSampleInt(x, y);
-                    if ((flagValue & recommendedCloudShadow) == recommendedCloudShadow ) {
-                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, true);
-                    }
-                    if ((flagValue & cloudBufferFlag) == cloudBufferFlag) {
-                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_BUFFER, true);
-                    }
-                    if ((flagValue & potentialShadowFlag) == potentialShadowFlag) {
-                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_POTENTIAL_SHADOW, true);
-                    }
-                    if ((flagValue & clusteredCloudShadowFlag) == clusteredCloudShadowFlag) {
-                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLUSTERED_CLOUD_SHADOW, true);
-                    }
+                    final int cloudShadowFlagValue = cloudShadowFlagTile.getSampleInt(x, y);
 
-                    if (computeMountainShadow && (flagValue & mountainShadowFlag) == mountainShadowFlag) {
-                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW, true);
+                    if (cloudShadowFlagValue == oceanCloudShadowIndexValue ||
+                            cloudShadowFlagValue == landCloudShadowIndexValue) {
+                        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLOUD_SHADOW, true);
                     }
                 }
             }

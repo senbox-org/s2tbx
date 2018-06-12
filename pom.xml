@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>6.0.1-SNAPSHOT</version>
+    <version>6.0.2-SNAPSHOT</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -63,13 +63,14 @@
         <module>s2tbx-grm-ui</module>
         <module>s2tbx-land-cover</module>
         <module>s2tbx-s2msi-resampler</module>
+        <module>s2tbx-muscate-reader</module>
     </modules>
 
     <packaging>pom</packaging>
 
     <properties>
         <snap.version>6.0.0</snap.version>
-        <s2tbx.version>6.0.0</s2tbx.version>
+        <s2tbx.version>6.0.2-SNAPSHOT</s2tbx.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE82</netbeans.version>
@@ -173,6 +174,12 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>ceres-jai</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>ceres-binding</artifactId>
                 <version>${snap.version}</version>
             </dependency>
 
