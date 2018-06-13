@@ -3,9 +3,11 @@ package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixCloudShadowOp;
 import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixPreCloudShadowOp;
+import org.esa.s2tbx.s2msi.idepix.operators.mountainshadow.S2IdepixMountainShadowOp;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
@@ -45,21 +47,22 @@ public class S2IdepixPostProcessOp extends Operator {
     @SourceProduct(alias = "s2CloudBuffer", optional = true)
     private Product s2CloudBufferProduct;      // has only classifFlagBand with buffer added
 
-    @Parameter(defaultValue = "true", label = " Compute cloud shadow", description = " Compute cloud shadow")
+    @Parameter(defaultValue = "true", label = "Compute mountain shadow", description = "Whether to compute mountain shadow")
+    private boolean computeMountainShadow;
+
+    @Parameter(defaultValue = "true", label = "Compute cloud shadow", description = "Compute cloud shadow")
     private boolean computeCloudShadow;
 
     @Parameter(description = "The mode by which clouds are detected. There are three options: Land/Water, Multiple Bands" +
             "or Single Band", valueSet = {"LandWater", "MultiBand", "SingleBand"}, defaultValue = "LandWater")
     private String mode;
 
-    @Parameter(description = "Whether to also compute mountain shadow", defaultValue = "true")
-    private boolean computeMountainShadow;
-
 //    @Parameter(defaultValue = "2", label = "Width of cloud buffer (# of pixels)")
 //    private int cloudBufferWidth;
 
     private Band s2ClassifFlagBand;
     private Band cloudBufferFlagBand;
+    private Band mountainShadowFlagBand;
     private Band cloudShadowFlagBand;
 
     @Override
@@ -73,6 +76,13 @@ public class S2IdepixPostProcessOp extends Operator {
             cloudBufferFlagBand = s2CloudBufferProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
         }
 
+        if (computeMountainShadow) {
+            final Product mountainShadowProduct = GPF.createProduct(
+                    OperatorSpi.getOperatorAlias(S2IdepixMountainShadowOp.class), GPF.NO_PARAMS, s2ClassifProduct);
+            mountainShadowFlagBand = mountainShadowProduct.getBand(
+                    S2IdepixMountainShadowOp.MOUNTAIN_SHADOW_FLAG_BAND_NAME);
+        }
+
         cloudShadowFlagBand = null;
         if (computeCloudShadow) {
             HashMap<String, Product> input = new HashMap<>();
@@ -83,8 +93,9 @@ public class S2IdepixPostProcessOp extends Operator {
             params.put("computeMountainShadow", computeMountainShadow);
             params.put("mode", mode);
             final Product cloudShadowProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixCloudShadowOp.class),
-                                                                 params, input);
+                    GPF.NO_PARAMS, input);
             cloudShadowFlagBand = cloudShadowProduct.getBand(S2IdepixCloudShadowOp.BAND_NAME_CLOUD_SHADOW);
+            final IndexCoding cloudShadowFlagBandIndexCoding = cloudShadowFlagBand.getIndexCoding();
         }
 
         ProductUtils.copyBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS, s2ClassifProduct, postProcessedCloudProduct, false);
@@ -128,7 +139,16 @@ public class S2IdepixPostProcessOp extends Operator {
                 }
             }
         }
-
+        if (computeMountainShadow) {
+            final Tile mountainShadowFlagTile = getSourceTile(mountainShadowFlagBand, targetRectangle);
+            for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
+                checkForCancellation();
+                for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
+                    final boolean mountainShadow = mountainShadowFlagTile.getSampleInt(x, y) > 0;
+                    targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW, mountainShadow);
+                }
+            }
+        }
         if (computeCloudShadow) {
             final Tile flagTile = getSourceTile(cloudShadowFlagBand, targetRectangle);
             int clusteredCloudShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW); //clustering algorithm
