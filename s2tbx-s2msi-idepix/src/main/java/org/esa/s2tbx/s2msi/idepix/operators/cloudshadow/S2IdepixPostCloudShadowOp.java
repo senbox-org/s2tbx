@@ -621,7 +621,10 @@ public class S2IdepixPostCloudShadowOp extends Operator {
             cloudShadowFlagger.flagCloudShadowAreas(clusterData, flagArray, potentialShadowPositions, offsetAtPotentialShadow, cloudList, bestOffset, analysisMode, sourceWidth, sourceHeight, shadowIDArray, cloudShadowRelativePath);
 
             //shifted cloud mask in cloud gaps.
-            if(bestOffset>0){
+            // the sourceRectangle has to be large enough, larger than the spatial filter with 1000m radius!
+            double kernelRadius = 1000.;
+            int blockSize = 2 * (int) Math.ceil(kernelRadius / spatialResolution) + 1;
+            if(bestOffset>0 && blockSize < Math.min(sourceHeight, sourceWidth)){
                 final CloudShadowFlaggerShiftInCloudGaps test = new CloudShadowFlaggerShiftInCloudGaps();
                 test.setShiftedCloudInCloudGaps(sourceRectangle, flagArray, cloudShadowRelativePath, bestOffset, cloudList, cloudTestArray, spatialResolution);
 
