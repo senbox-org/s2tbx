@@ -624,6 +624,21 @@ public class PhaseFilter {
 
         int Nx = 2*nhkern[1]+1;
         int Ny = 2*nhkern[0]+1;
+
+        /*
+        Filter width is fixed at 1000m. If the resolution is getting coarser (resampling to 300m or more),
+        the filter gets very small in pixel size. To avoid that its width reduces to one (or zero), it is now tested.
+        minimum width of the filter is 9 pixels, the spacing is adjusted.
+         */
+        if(Nx <9){
+            Nx = 9;
+            spacing[0] = 2* 1000./( Nx-1);
+        }
+        if(Ny < 9){
+            Ny = 9;
+            spacing[1] = 2* 1000./( Ny-1);
+        }
+
         double ydist;
         double xdist;
 
