@@ -15,6 +15,10 @@
     <name>Sentinel-2 Toolbox S2-MSI Idepix</name>
     <description>Generic classification of pixels (cloud, snow, ice, land, water) originating from S2-MSI instrument.</description>
 
+    <properties>
+        <s2tbx.idepix.version>6.0.1.1</s2tbx.idepix.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
