@@ -42,19 +42,17 @@ public class ClusteringKMeansTest {
             0.0622, 0.0637, 0.0625, 0.0668, 0.0688, 0.0719, 0.0693, 0.0702, 0.0738, 0.0764, 0.0949, 0.0971, 0.0929,
             0.0897, 0.0968, 0.1007, 0.0897, 0.0848, 0.0974, 0.1069, 0.1033, 0.0968, 0.0977, 0.1069, 0.0947, 0.0948,
             0.0961};
-    private ClusteringKMeans clusteringKMeans;
 
     @Before
     public void setUp() {
         S2IdepixPreCloudShadowOp.clusterCountDefine = 3;
-        clusteringKMeans = new ClusteringKMeans();
     }
 
     @Test
-    public void computedKMeansCluster_singleBand() throws Exception {
-        final double[][] doubles = clusteringKMeans.computedKMeansCluster(3, band1Values);
-
+    public void computedKMeansCluster_singleBand() {
         double[] expectedDoubles = new double[]{0.027628395223507175, 0.26682499796152115, 0.1585571425301688};
+
+        final double[][] doubles = ClusteringKMeans.computedKMeansCluster(3, band1Values);
 
         assertEquals(expectedDoubles[0], doubles[0][0], 1e-8);
         assertEquals(expectedDoubles[1], doubles[1][0], 1e-8);
@@ -62,11 +60,11 @@ public class ClusteringKMeansTest {
     }
 
     @Test
-    public void computedKMeansCluster_multiBand() throws Exception {
-        final double[][] doubles = clusteringKMeans.computedKMeansCluster(3, band1Values, band2Values);
-
+    public void computedKMeansCluster_multiBand() {
         final double[][] expectedDoubles = new double[][]{{0.030700000090291724, 0.09508749999999999},
                 {0.24001764549928553, 0.08908823529411765}, {0.0265578951098417, 0.19064210526315792}};
+
+        final double[][] doubles = ClusteringKMeans.computedKMeansCluster(3, band1Values, band2Values);
 
         assertEquals(expectedDoubles.length, doubles.length);
         for (int i = 0; i < doubles.length; i++) {

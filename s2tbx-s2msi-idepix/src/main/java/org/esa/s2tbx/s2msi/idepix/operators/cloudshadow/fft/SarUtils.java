@@ -12,7 +12,7 @@ import static org.jblas.MatrixFunctions.*;
 
 public class SarUtils {
 
-    static Logger logger = SystemUtils.LOG;
+    private static Logger logger = SystemUtils.LOG;
 
     /**
      * HARMONIC INTERPOLATION
@@ -20,7 +20,8 @@ public class SarUtils {
      * 2 factors possible, extrapolation at end.
      * no vectors possible.
      */
-    public static ComplexDoubleMatrix oversample(ComplexDoubleMatrix inputMatrix, final int factorRow, final int factorCol) throws IllegalArgumentException {
+    public static ComplexDoubleMatrix oversample(ComplexDoubleMatrix inputMatrix, final int factorRow,
+                                                 final int factorCol) throws IllegalArgumentException {
 
         final int l = inputMatrix.rows;
         final int p = inputMatrix.columns;
@@ -54,7 +55,6 @@ public class SarUtils {
         final Window winA1;
         final Window winA2;
         final Window winR2;
-
         ComplexDoubleMatrix tempMatrix;
         if (factorRow == 1) {
 
@@ -84,9 +84,6 @@ public class SarUtils {
 
             // divide by 2 'cause even fftlength
             tempMatrix.putRow(halfL, tempMatrix.getRow(halfL).mmul(half));
-//            for (i=0; i<p; ++i){
-//                A(halfl,i) *= half;
-//            }
 
             // zero padding windows
             winA1 = new Window(0, halfL, 0, p - 1);
@@ -108,18 +105,11 @@ public class SarUtils {
             Window winR3;
             Window winR4;
 
-            // A=fft2d(A)
             tempMatrix = SpectralUtils.fft2D(inputMatrix);
 
             // divide by 2 'cause even fftlength
             tempMatrix.putColumn(halfP, tempMatrix.getColumn(halfP).mmuli(half));
             tempMatrix.putRow(halfL, tempMatrix.getRow(halfL).mmuli(half));
-//            for (i=0; i<l; ++i) {
-//                A(i,halfp) *= half;
-//            }
-//            for (i=0; i<p; ++i) {
-//                A(halfl,i) *= half;
-//            }
 
             // zero padding windows
             winA1 = new Window(0, halfL, 0, halfP);   // zero padding windows
@@ -145,6 +135,7 @@ public class SarUtils {
         return returnMatrix;
 
     }
+
     public static boolean isPower2(long value) {
         return value == 1 || value == 2 || value == 4 || value == 8 || value == 16 ||
                 value == 32 || value == 64 || value == 128 || value == 256 ||
@@ -168,14 +159,15 @@ public class SarUtils {
     }
 
     @Deprecated
-    public static DoubleMatrix coherence(final ComplexDoubleMatrix inputMatrix, final ComplexDoubleMatrix normsMatrix, final int winL, final int winP) {
+    public static DoubleMatrix coherence(final ComplexDoubleMatrix inputMatrix, final ComplexDoubleMatrix normsMatrix,
+                                         final int winL, final int winP) {
 
         logger.info("coherence ver #2");
         if (!(winL >= winP)) {
             logger.warning("coherence: estimator window size L<P not very efficiently programmed.");
         }
 
-        if (inputMatrix.rows != normsMatrix.rows || inputMatrix.rows != inputMatrix.rows) {
+        if (inputMatrix.rows != normsMatrix.rows) {
             logger.severe("coherence: not same dimensions.");
             throw new IllegalArgumentException("coherence: not the same dimensions.");
         }
@@ -216,7 +208,8 @@ public class SarUtils {
         return outputMatrix;
     }
 
-    public static DoubleMatrix coherence2(final ComplexDoubleMatrix input, final ComplexDoubleMatrix norms, final int winL, final int winP) {
+    public static DoubleMatrix coherence2(final ComplexDoubleMatrix input, final ComplexDoubleMatrix norms,
+                                          final int winL, final int winP) {
 
         logger.info("coherence ver #2");
         if (!(winL >= winP)) {
@@ -250,11 +243,9 @@ public class SarUtils {
             int maxL = minL + winP;
             for (k = 0; k < winL; k++) {
                 for (l = minL; l < maxL; l++) {
-                    //sum.addi(input.get(k, l));
-                    //power.addi(norms.get(k, l));
                     int inI = 2 * input.index(k, l);
-                    sum.set(sum.real()+input.data[inI], sum.imag()+input.data[inI+1]);
-                    power.set(power.real()+norms.data[inI], power.imag()+norms.data[inI+1]);
+                    sum.set(sum.real() + input.data[inI], sum.imag() + input.data[inI + 1]);
+                    power.set(power.real() + norms.data[inI], power.imag() + norms.data[inI + 1]);
                 }
             }
             result.put(0, minL, coherenceProduct(sum, power));
@@ -264,13 +255,12 @@ public class SarUtils {
             for (i = 0; i < maxI; i++) {
                 final int iwinL = i + winL;
                 for (l = minL; l < maxL; l++) {
-                    //sum.addi(input.get(iwinL, l).sub(input.get(i, l)));
-                    //power.addi(norms.get(iwinL, l).sub(norms.get(i, l)));
-
                     int inI = 2 * input.index(i, l);
                     int inWinL = 2 * input.index(iwinL, l);
-                    sum.set(sum.real()+(input.data[inWinL]-input.data[inI]), sum.imag()+(input.data[inWinL+1]-input.data[inI+1]));
-                    power.set(power.real()+(norms.data[inWinL]-norms.data[inI]), power.imag()+(norms.data[inWinL+1]-norms.data[inI+1]));
+                    sum.set(sum.real() + (input.data[inWinL] - input.data[inI]),
+                            sum.imag() + (input.data[inWinL + 1] - input.data[inI + 1]));
+                    power.set(power.real() + (norms.data[inWinL] - norms.data[inI]),
+                            power.imag() + (norms.data[inWinL + 1] - norms.data[inI + 1]));
                 }
                 result.put(i + 1, j - leadingZeros, coherenceProduct(sum, power));
             }
@@ -278,13 +268,13 @@ public class SarUtils {
         return result;
     }
 
-    static double coherenceProduct(final ComplexDouble sum, final ComplexDouble power) {
+    private static double coherenceProduct(final ComplexDouble sum, final ComplexDouble power) {
         final double product = power.real() * power.imag();
-//        return (product > 0.0) ? Math.sqrt(Math.pow(sum.abs(),2) / product) : 0.0;
         return (product > 0.0) ? sum.abs() / Math.sqrt(product) : 0.0;
     }
 
-    public static ComplexDoubleMatrix multilook(final ComplexDoubleMatrix inputMatrix, final int factorRow, final int factorColumn) {
+    public static ComplexDoubleMatrix multilook(final ComplexDoubleMatrix inputMatrix, final int factorRow,
+                                                final int factorColumn) {
 
         if (factorRow == 1 && factorColumn == 1) {
             return inputMatrix;
@@ -300,7 +290,8 @@ public class SarUtils {
 
         ComplexDouble sum;
         final ComplexDouble factorLP = new ComplexDouble(factorRow * factorColumn);
-        ComplexDoubleMatrix outputMatrix = new ComplexDoubleMatrix(inputMatrix.rows / factorRow, inputMatrix.columns / factorColumn);
+        ComplexDoubleMatrix outputMatrix = new ComplexDoubleMatrix(inputMatrix.rows / factorRow,
+                inputMatrix.columns / factorColumn);
         for (int i = 0; i < outputMatrix.rows; i++) {
             for (int j = 0; j < outputMatrix.columns; j++) {
                 sum = new ComplexDouble(0);
@@ -315,19 +306,20 @@ public class SarUtils {
         return outputMatrix;
     }
 
-    public static ComplexDoubleMatrix computeIfg(final ComplexDoubleMatrix masterData, final ComplexDoubleMatrix slaveData) throws Exception {
+    private static ComplexDoubleMatrix computeIfg(final ComplexDoubleMatrix masterData,
+                                                 final ComplexDoubleMatrix slaveData) {
         return LinearAlgebraUtils.dotmult(masterData, slaveData.conj());
     }
 
-    public static void computeIfg_inplace(final ComplexDoubleMatrix masterData, final ComplexDoubleMatrix slaveData) throws Exception {
+    public static void computeIfg_inplace(final ComplexDoubleMatrix masterData, final ComplexDoubleMatrix slaveData) {
         LinearAlgebraUtils.dotmult_inplace(masterData, slaveData);
     }
 
     public static ComplexDoubleMatrix computeIfg(final ComplexDoubleMatrix masterData, final ComplexDoubleMatrix slaveData,
-                                                 final int ovsFactorAz, final int ovsFactorRg) throws Exception {
+                                                 final int ovsFactorAz, final int ovsFactorRg) {
         if (ovsFactorAz == 1 && ovsFactorRg == 1) {
             return computeIfg(masterData, slaveData);
-        }   else {
+        } else {
             return computeIfg(oversample(masterData, ovsFactorAz, ovsFactorRg), oversample(slaveData, ovsFactorAz, ovsFactorRg));
         }
 

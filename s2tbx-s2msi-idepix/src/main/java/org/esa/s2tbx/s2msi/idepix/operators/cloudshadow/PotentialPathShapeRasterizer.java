@@ -22,14 +22,11 @@ public class PotentialPathShapeRasterizer extends ShapeRasterizer {
         final List<Point> list = new LinkedList<Point>();
         final Point lastPoint = new Point();
 
-        final LinePixelVisitor visitor = new LinePixelVisitor() {
-
-            public void visit(int x, int y) {
-                if (list.size() == 0 || lastPoint.x != x || lastPoint.y != y) {
-                    lastPoint.x = x;
-                    lastPoint.y = y;
-                    list.add(new Point(lastPoint));
-                }
+        final LinePixelVisitor visitor = (x, y) -> {
+            if (list.size() == 0 || lastPoint.x != x || lastPoint.y != y) {
+                lastPoint.x = x;
+                lastPoint.y = y;
+                list.add(new Point(lastPoint));
             }
         };
 
@@ -49,6 +46,6 @@ public class PotentialPathShapeRasterizer extends ShapeRasterizer {
             y0 = y1;
         }
 
-        return list.toArray(new Point[list.size()]);
+        return list.toArray(new Point[0]);
     }
 }

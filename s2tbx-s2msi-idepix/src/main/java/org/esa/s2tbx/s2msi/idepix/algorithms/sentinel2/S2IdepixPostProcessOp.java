@@ -7,7 +7,6 @@ import org.esa.s2tbx.s2msi.idepix.operators.mountainshadow.S2IdepixMountainShado
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
@@ -57,9 +56,6 @@ public class S2IdepixPostProcessOp extends Operator {
             "or Single Band", valueSet = {"LandWater", "MultiBand", "SingleBand"}, defaultValue = "LandWater")
     private String mode;
 
-//    @Parameter(defaultValue = "2", label = "Width of cloud buffer (# of pixels)")
-//    private int cloudBufferWidth;
-
     private Band s2ClassifFlagBand;
     private Band cloudBufferFlagBand;
     private Band mountainShadowFlagBand;
@@ -87,15 +83,12 @@ public class S2IdepixPostProcessOp extends Operator {
         if (computeCloudShadow) {
             HashMap<String, Product> input = new HashMap<>();
             input.put("s2ClassifProduct", s2ClassifProduct);
-            input.put("s2CloudBufferProduct", s2CloudBufferProduct);
             Map<String, Object> params = new HashMap<>();
-            params.put("computeCloudShadow", computeCloudShadow);
             params.put("computeMountainShadow", computeMountainShadow);
             params.put("mode", mode);
             final Product cloudShadowProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixCloudShadowOp.class),
-                    GPF.NO_PARAMS, input);
+                    params, input);
             cloudShadowFlagBand = cloudShadowProduct.getBand(S2IdepixCloudShadowOp.BAND_NAME_CLOUD_SHADOW);
-            final IndexCoding cloudShadowFlagBandIndexCoding = cloudShadowFlagBand.getIndexCoding();
         }
 
         ProductUtils.copyBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS, s2ClassifProduct, postProcessedCloudProduct, false);
@@ -155,8 +148,6 @@ public class S2IdepixPostProcessOp extends Operator {
             int mountainShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_MOUNTAIN_SHADOW);
             int cloudBufferFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_BUFFER);
             int potentialShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_POTENTIAL_CLOUD_SHADOW);
-            //int shiftedCloudMaskInGapsFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_SHIFTED_CLOUD_SHADOW_GAPS);
-            //int coincidingClusterShadowFlag = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_CLOUD_SHADOW_COMB);
             int recommendedCloudShadow = (int) Math.pow(2, S2IdepixPreCloudShadowOp.F_RECOMMENDED_CLOUD_SHADOW);
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
                 checkForCancellation();

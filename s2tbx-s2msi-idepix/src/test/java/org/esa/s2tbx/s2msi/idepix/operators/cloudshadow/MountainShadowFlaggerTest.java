@@ -59,6 +59,7 @@ public class MountainShadowFlaggerTest {
                 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 0, 0, 0};
         testMountainShadowArea(27f, expectedFlagArray);
     }
+
     @Test
     public void testIdentifyMountainShadowArea_saa_45() throws Exception {
         int[] expectedFlagArray = {
@@ -241,7 +242,7 @@ public class MountainShadowFlaggerTest {
         testMountainShadowArea(297f, expectedFlagArray);
     }
 
-    private void testMountainShadowArea(float saa, int[] expectedFlagArray) throws IOException {
+    private void testMountainShadowArea(float saa, int[] expectedFlagArray) {
         S2IdepixPreCloudShadowOp.searchBorderRadius = 5;
         S2IdepixPreCloudShadowOp.spatialResolution = 60;
         final Rectangle sourceRectangle = new Rectangle(20, 20);
@@ -249,9 +250,6 @@ public class MountainShadowFlaggerTest {
         final float[] sunZenith = createSmoothGrid(19.7446f, 19.6652f, 19.6997f, 19.6202f, 20, 20);
         final float[] sunAzimuth = createSmoothGrid(saa, saa, saa, saa, 20, 20);
         final float[] elevation = createConicalGrid(5000, 20, 20);
-
-        //float[] elevation = createConicalGrid(2000, 20, 20);
-        //elevation = shiftedGrid(elevation, 20, 20, -6, 0);
 
         int[] flagArray = new int[20 * 20];
         final int sourceWidth = sourceRectangle.width;
@@ -264,32 +262,14 @@ public class MountainShadowFlaggerTest {
         float minAltitude = Collections.min(altitudes);
         float maxAltitude = Collections.max(altitudes);
         float sunZenithMean = sunZenith[0];
-        float sunAzimuthMean = saa;
 
         final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
-                minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, S2IdepixPreCloudShadowOp.maxcloudTop,
+                minAltitude, sunZenithMean * MathUtils.DTOR, saa * MathUtils.DTOR, S2IdepixPreCloudShadowOp.maxcloudTop,
                 targetRectangle, targetRectangle, 20,
                 20, S2IdepixPreCloudShadowOp.spatialResolution, true, false);
 
-        /*for(int i=0; i<cloudShadowRelativePath.length; i++){
-            System.out.println(cloudShadowRelativePath[i].getX()+ ", "+cloudShadowRelativePath[i].getY());
-        }*/
-
-        MountainShadowFlagger.flagMountainShadowArea(20, 20, sourceRectangle, targetRectangle,
-                                                     sunZenithDegree, sunAzimuthDegree,
-                                                     elevation, flagArray,
-                                                     minAltitude, maxAltitude, cloudShadowRelativePath);
-
-
-
-        /*System.out.println();
-        for( int y=0; y<20;y++){
-            for(int x=0; x<20; x++){
-                System.out.print(flagArray[y*20 + x] + ", ");
-                //System.out.print(elevation[y*20 + x] + ", ");
-            }
-            System.out.println();
-        }*/
+        MountainShadowFlagger.flagMountainShadowArea(sourceRectangle, sunZenithDegree, elevation, flagArray,
+                minAltitude, maxAltitude, cloudShadowRelativePath);
 
         assertArrayEquals(expectedFlagArray, flagArray);
     }
@@ -319,37 +299,6 @@ public class MountainShadowFlaggerTest {
             for (int x = 0; x < width; x++) {
                 float horizontalWeight = 1f - Math.abs((float) (x - (width / 2)) / (float) (width / 2));
                 grid[x + (width * y)] = centerValue * verticalWeight * horizontalWeight;
-            }
-        }
-        return grid;
-    }
-
-    private float[] shiftedGrid(float[] data, int width, int height, int xoffset, int yoffset){
-        float[] grid = new float[width * height];
-        int xstart = 0;
-        int xend = width;
-        int ystart =0;
-        int yend = height;
-
-        if(xoffset>0){
-            xstart=xoffset;
-        }else if(xoffset<0){
-            xend = width+xoffset;
-        }
-        if(yoffset>0){
-            ystart=yoffset;
-        }
-        if(yoffset<0){
-            yend= height+yoffset;
-        }
-
-
-        for (int y = ystart; y < yend; y++) {
-            for (int x = xstart; x < xend; x++) {
-                int index = y*width + x;
-                int index2 = (y-yoffset)*width + x-xoffset;
-                grid[index] = data[index2];
-
             }
         }
         return grid;

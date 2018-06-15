@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 public class SpectralUtils {
 
-    static Logger logger = SystemUtils.LOG;
+    private static Logger logger = SystemUtils.LOG;
 
     private static void fftTransform1D_inplace(ComplexDoubleMatrix vector, int fftLength, int direction) {
         switch (direction) {
@@ -25,12 +25,12 @@ public class SpectralUtils {
         }
     }
 
-    public static void fft1D_inplace(ComplexDoubleMatrix vector, final int fftLength) {
+    private static void fft1D_inplace(ComplexDoubleMatrix vector, final int fftLength) {
         DoubleFFT_1D fft = new DoubleFFT_1D(fftLength);
         fft.complexForward(vector.data);
     }
 
-    public static void invfft1D_inplace(ComplexDoubleMatrix vector, final int fftLength) {
+    private static void invfft1D_inplace(ComplexDoubleMatrix vector, final int fftLength) {
         DoubleFFT_1D fft = new DoubleFFT_1D(fftLength);
         fft.complexInverse(vector.data, true);
     }
@@ -83,7 +83,7 @@ public class SpectralUtils {
         }
     }
 
-    public static ComplexDoubleMatrix fft(ComplexDoubleMatrix inMatrix, final int dimension) {
+    static ComplexDoubleMatrix fft(ComplexDoubleMatrix inMatrix, final int dimension) {
         return fftTransform(inMatrix, dimension, 1);
     }
 
@@ -95,19 +95,18 @@ public class SpectralUtils {
         fftTransformInPlace(inMatrix, dimension, 1);
     }
 
-    public static void invfft_inplace(ComplexDoubleMatrix inMatrix, int dimension) {
+    static void invfft_inplace(ComplexDoubleMatrix inMatrix, int dimension) {
         fftTransformInPlace(inMatrix, dimension, -1);
     }
 
-    public static void fft2D_inplace(ComplexDoubleMatrix A) {
+    static void fft2D_inplace(ComplexDoubleMatrix A) {
         ComplexDoubleMatrix aTemp = A.transpose();
         DoubleFFT_2D fft2d = new DoubleFFT_2D(aTemp.rows, aTemp.columns);
-//        fft2d.complexForward(A.data);
         fft2d.complexForward(aTemp.data);
         A.data = aTemp.transpose().data;
     }
 
-    public static ComplexDoubleMatrix fft2D(ComplexDoubleMatrix inMatrix) {
+    static ComplexDoubleMatrix fft2D(ComplexDoubleMatrix inMatrix) {
         ComplexDoubleMatrix outMatrix = inMatrix.dup();
         fft2D_inplace(outMatrix);
         return outMatrix;
@@ -118,9 +117,8 @@ public class SpectralUtils {
         fft2d.realForwardFull(A.data);
     }
 
-    public static void invfft2D_inplace(ComplexDoubleMatrix A) {
+    static void invfft2D_inplace(ComplexDoubleMatrix A) {
         DoubleFFT_2D fft2d = new DoubleFFT_2D(A.rows, A.columns);
-//        fft2d.complexInverse(A.data, true);
         ComplexDoubleMatrix aTemp = A.transpose();
         fft2d.complexInverse(aTemp.data, true);
         A.data = aTemp.transpose().data;
@@ -132,13 +130,13 @@ public class SpectralUtils {
         return outMatrix;
     }
 
-    public static ComplexDoubleMatrix fftshift(ComplexDoubleMatrix inMatrix) {
+    private static ComplexDoubleMatrix fftshift(ComplexDoubleMatrix inMatrix) {
         if (!inMatrix.isVector()) {
             logger.severe("ifftshift: only vectors");
             throw new IllegalArgumentException("ifftshift: works only for vectors!");
         }
 
-        final int cplxMatrixLength = 2*inMatrix.length;
+        final int cplxMatrixLength = 2 * inMatrix.length;
 
         ComplexDoubleMatrix outMatrix = new ComplexDoubleMatrix(inMatrix.rows, inMatrix.columns);
         final int start = (int) (Math.floor((double) cplxMatrixLength / 2) + 1);
@@ -149,7 +147,7 @@ public class SpectralUtils {
         return outMatrix;
     }
 
-    public static DoubleMatrix fftshift(DoubleMatrix inMatrix) {
+    private static DoubleMatrix fftshift(DoubleMatrix inMatrix) {
         if (!inMatrix.isVector()) {
             logger.severe("ifftshift: only vectors");
             throw new IllegalArgumentException("ifftshift: works only for vectors!");
@@ -179,14 +177,14 @@ public class SpectralUtils {
      * ifftshift of vector inMatrix is returned in inMatrix by reference       *
      * undo effect of fftshift. ?p=floor(m/2); inMatrix=inMatrix[p:m-1 0:p-1]; *
      */
-    public static ComplexDoubleMatrix ifftshift(ComplexDoubleMatrix inMatrix) throws IllegalArgumentException {
+    private static ComplexDoubleMatrix ifftshift(ComplexDoubleMatrix inMatrix) throws IllegalArgumentException {
 
         if (!inMatrix.isVector()) {
             logger.severe("ifftshift: only vectors");
             throw new IllegalArgumentException("ifftshift: works only for vectors!");
         }
 
-        final int cplxMatrixLength = 2*inMatrix.length;
+        final int cplxMatrixLength = 2 * inMatrix.length;
 
         ComplexDoubleMatrix outMatrix = new ComplexDoubleMatrix(inMatrix.rows, inMatrix.columns);
         final int start = (int) (Math.floor((double) cplxMatrixLength / 2) - 1);
@@ -197,7 +195,7 @@ public class SpectralUtils {
         return outMatrix;
     }
 
-    public static DoubleMatrix ifftshift(DoubleMatrix inMatrix) throws IllegalArgumentException {
+    private static DoubleMatrix ifftshift(DoubleMatrix inMatrix) throws IllegalArgumentException {
 
         if (!inMatrix.isVector()) {
             logger.severe("ifftshift: only vectors");
@@ -222,8 +220,6 @@ public class SpectralUtils {
         // NOT very efficient! Allocating and copying! //
         inMatrix.copy(ifftshift(inMatrix));
     }
-
-
 
 
 }

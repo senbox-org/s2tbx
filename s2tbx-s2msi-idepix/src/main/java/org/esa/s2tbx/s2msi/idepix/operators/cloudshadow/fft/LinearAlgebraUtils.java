@@ -11,7 +11,7 @@ import static org.jblas.MatrixFunctions.*;
 
 public class LinearAlgebraUtils {
 
-    static Logger logger = SystemUtils.LOG;
+    private static Logger logger = SystemUtils.LOG;
 
     /**
      * solve22
@@ -114,7 +114,7 @@ public class LinearAlgebraUtils {
         return inMatrix;
     }
 
-    public static void invertChol_inplace(double[][] inMatrix) {
+    private static void invertChol_inplace(double[][] inMatrix) {
         final int numOfRows = inMatrix.length;
         double sum;
         int i, j, k;
@@ -147,7 +147,7 @@ public class LinearAlgebraUtils {
         return outMatrix;
     }
 
-    public static void invertChol_inplace(DoubleMatrix inMatrix) {
+    private static void invertChol_inplace(DoubleMatrix inMatrix) {
         final int numOfRows = inMatrix.rows;
         double sum;
         int i, j, k;
@@ -180,11 +180,11 @@ public class LinearAlgebraUtils {
         return outMatrix;
     }
 
-    public static ComplexDoubleMatrix dotmult(ComplexDoubleMatrix A, ComplexDoubleMatrix B) {
+    static ComplexDoubleMatrix dotmult(ComplexDoubleMatrix A, ComplexDoubleMatrix B) {
         return A.mul(B);
     }
 
-    public static void dotmult_inplace(ComplexDoubleMatrix A, ComplexDoubleMatrix B) {
+    static void dotmult_inplace(ComplexDoubleMatrix A, ComplexDoubleMatrix B) {
         A.muli(B);
     }
 
@@ -200,11 +200,6 @@ public class LinearAlgebraUtils {
 
         if (nRows == 1 || nCols == 1) {
             double tmp;
-//            for (int i = 0; i < (nCols / 2); ++i) {
-//                tmp = A.get(0, i);
-//                A.put(0, i, A.get(0, nRows - i));
-//                A.put(0, nRows - 1, tmp);
-//            }
             final int length = A.length;
             for (int i = 0; i < (length / 2); i++) {
                 tmp = A.data[i];
@@ -237,7 +232,7 @@ public class LinearAlgebraUtils {
      * implementation: WSHIFT(inVector,n) == WSHIFT(inVector,n-sizeA);
      * inVector is changed itself!
      */
-    public static void wshift_inplace(DoubleMatrix inVector, int n) throws IllegalArgumentException {
+    private static void wshift_inplace(DoubleMatrix inVector, int n) throws IllegalArgumentException {
 
         if (n >= inVector.length) {
             System.err.println("wshift: shift larger than matrix not implemented.");
@@ -275,7 +270,7 @@ public class LinearAlgebraUtils {
      * if outWin==0 defaults to totalB, inWin==0 defaults to totalA
      * first line matrix =0 (?)
      */
-    public static void setdata(DoubleMatrix outMatrix, Window outWin, DoubleMatrix inMatrix, Window inWin) {
+    private static void setdata(DoubleMatrix outMatrix, Window outWin, DoubleMatrix inMatrix, Window inWin) {
 
         if (outWin.linehi == 0 && outWin.pixhi == 0) {
             outWin.linehi = outMatrix.rows - 1;
@@ -321,57 +316,7 @@ public class LinearAlgebraUtils {
         }
     }
 
-/*
-    public static void setdata(double[][] outMatrix, Window outWin, double[][] inMatrix, Window inWin) {
-
-        if (outWin.linehi == 0 && outWin.pixhi == 0) {
-            outWin.linehi = outMatrix.length - 1;
-            outWin.pixhi = outMatrix[0].length - 1;
-        }
-        if (inWin.linehi == 0 && inWin.pixhi == 0) {
-            inWin.linehi = inMatrix.length - 1;
-            inWin.pixhi = inMatrix[0].length - 1;
-        }
-
-        if (((outWin.linehi - outWin.linelo) != (inWin.linehi - inWin.linelo)) ||
-                ((outWin.pixhi - outWin.pixlo) != (inWin.pixhi - inWin.pixlo))) {
-            logger.severe("setdata: wrong input.");
-            throw new IllegalArgumentException("setdata: wrong input.");
-
-        }
-        if (outWin.linehi < outWin.linelo || outWin.pixhi < outWin.pixlo) {
-            logger.severe("setdata: wrong input.1");
-            throw new IllegalArgumentException("setdata: wrong input.1");
-        }
-
-        if ((outWin.linehi > outMatrix.length - 1) ||
-                (outWin.pixhi > outMatrix[0].length - 1)) {
-            logger.severe("setdata: wrong input.2");
-            throw new IllegalArgumentException("setdata: wrong input.2");
-        }
-
-        if ((inWin.linehi > inMatrix.length - 1) ||
-                (inWin.pixhi > inMatrix[0].length - 1)) {
-            logger.severe("setdata: wrong input.3");
-            throw new IllegalArgumentException("setdata: wrong input.3");
-        }
-
-        //// Fill data ////
-        int sizeLin = (int) inWin.pixels();
-//        for (int i = (int) outWin.linelo; i <= outWin.linehi; i++) {
-        for (int i = 0; i <= outWin.lines(); i++) {
-
-
-            int startIn = (int) (i * inMatrix.length + inWin.pixlo);
-            int startOut = (int) (i * outMatrix.length + outWin.pixlo);
-
-            System.arraycopy(inMatrix[i], startIn, outMatrix[i], startOut, sizeLin);
-
-        }
-    }
-*/
-
-    public static void setdata(ComplexDoubleMatrix outMatrix, Window outWin, ComplexDoubleMatrix inMatrix, Window inWin) {
+    static void setdata(ComplexDoubleMatrix outMatrix, Window outWin, ComplexDoubleMatrix inMatrix, Window inWin) {
 
         // Check default request
         if (outWin.linehi == 0 && outWin.pixhi == 0) {
@@ -408,7 +353,6 @@ public class LinearAlgebraUtils {
 
         //// Fill data ////
         int sizeLin = (int) inWin.lines() * 2;
-//        int sizeLin = (int) inWin.lines();
         for (int i = (int) outWin.pixlo, j = (int) inWin.pixlo; i <= outWin.pixhi; i++, j++) {
 
             int startIn = (int) (j * (2 * inMatrix.rows) + (2 * inWin.linelo));
@@ -423,7 +367,6 @@ public class LinearAlgebraUtils {
     }
 
     public static void setdata(DoubleMatrix outMatrix, DoubleMatrix inMatrix, Window inWin) {
-        //setdata(outMatrix, new Window(0, outMatrix.rows, 0, outMatrix.columns), inMatrix, inWin);
         setdata(outMatrix, new Window(0, outMatrix.rows - 1, 0, outMatrix.columns - 1), inMatrix, inWin);
     }
 
@@ -435,7 +378,7 @@ public class LinearAlgebraUtils {
      * this one is a lot slower then veclib and there may be more
      * efficient implementations.
      */
-    public static void chol_inplace(double[][] inMatrix) {
+    private static void chol_inplace(double[][] inMatrix) {
         final int N = inMatrix.length;
         double sum;
         for (int i = 0; i < N; ++i) {
@@ -456,7 +399,7 @@ public class LinearAlgebraUtils {
         }
     }
 
-    public static void chol_inplace(DoubleMatrix inMatrix) {
+    private static void chol_inplace(DoubleMatrix inMatrix) {
         final int N = inMatrix.rows;
         double sum;
         for (int i = 0; i < N; ++i) {
@@ -478,7 +421,7 @@ public class LinearAlgebraUtils {
     }
 
     // TODO: new invert() _wrapper_ methods, to be documented and unit tested
-    public static void invert_inplace(double[][] inMatrix) {
+    private static void invert_inplace(double[][] inMatrix) {
         chol_inplace(inMatrix);
         invertChol_inplace(inMatrix);
         arrangeCholesky_inplace(inMatrix);
@@ -490,7 +433,7 @@ public class LinearAlgebraUtils {
         return outMatrix;
     }
 
-    public static void invert_inplace(DoubleMatrix inMatrix) {
+    private static void invert_inplace(DoubleMatrix inMatrix) {
         chol_inplace(inMatrix);
         invertChol_inplace(inMatrix);
         arrangeCholesky_inplace(inMatrix);
@@ -503,7 +446,7 @@ public class LinearAlgebraUtils {
     }
 
 
-    public static void arrangeCholesky_inplace(DoubleMatrix inMatrix) {
+    private static void arrangeCholesky_inplace(DoubleMatrix inMatrix) {
         // assume squared
         for (int i = 0; i < inMatrix.rows; i++) {
             for (int j = 0; j < i; j++) {
@@ -513,7 +456,7 @@ public class LinearAlgebraUtils {
     }
 
     // assume squared
-    public static void arrangeCholesky_inplace(double[][] inArray) {
+    private static void arrangeCholesky_inplace(double[][] inArray) {
         for (int i = 0; i < inArray.length; i++) {
             for (int j = 0; j < i; j++) {
                 inArray[j][i] = inArray[i][j];

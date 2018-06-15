@@ -1,7 +1,6 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.apache.commons.lang.ArrayUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.FlagCoding;
@@ -17,7 +16,6 @@ import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
-import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.BitSetter;
@@ -30,7 +28,8 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Tonio Fincke, Dagmar Müller
@@ -47,18 +46,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     @SourceProduct(description = "The classification product.")
     private Product s2ClassifProduct;
 
-    @SourceProduct(alias = "s2CloudBuffer", optional = true)
-    private Product s2CloudBufferProduct;      // has only classifFlagBand with buffer added
-
     @TargetProduct
     private Product targetProduct;
-
-    @Parameter(description = "The mode by which clouds are detected. There are three options: Land/Water, Multiple Bands" +
-            "or Single Band", valueSet = {"LandWater", "MultiBand", "SingleBand"}, defaultValue = "LandWater")
-    private String mode;
-
-    @Parameter(description = "Whether to also compute mountain shadow", defaultValue = "true")
-    private boolean computeMountainShadow;
 
     private final static double MAX_CLOUD_HEIGHT = 8000.;
     private final static int MAX_TILE_DIMENSION = 1400;
@@ -67,16 +56,6 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private Band sourceBandClusterB;
 
     private Band sourceBandFlag1;
-    private Band sourceBandFlag2;
-
-    private RasterDataNode sourceSunZenith;
-    private RasterDataNode sourceSunAzimuth;
-    private RasterDataNode sourceViewZenith;
-    private RasterDataNode sourceViewAzimuth;
-
-    private RasterDataNode sourceAltitude;
-
-    private Band targetBandCloudShadow;
 
     private static int tileid;
 
@@ -87,7 +66,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private float sunAzimuthMean;
     private float viewAzimuthMean;
     private float viewZenithMean;
-    private float minAltitude =0;
+    private float minAltitude = 0;
 
     //map for the different tiles: meanReflectance per offset.
     private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
@@ -95,13 +74,9 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private Map<Integer, Integer> NCloudOverWater = new HashMap<>();
     private Map<Integer, Integer> NValidPixelTile = new HashMap<>();
 
-    public Point2D[] cloudPath;
-
     static double spatialResolution;  //[m]
     static int clusterCountDefine = 4;
     static double OUTLIER_THRESHOLD = 0.94;
-    static double Threshold_Whiteness_Darkness = -1000;
-    static int GROWING_CLOUD = 1;
     static int searchBorderRadius;
     private static final String sourceBandNameClusterA = "B8A";
     private static final String sourceBandNameClusterB = "B3";
@@ -112,8 +87,6 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private static final String sourceAltitudeName = "elevation";
     private static final String sourceFlagName1 = "pixel_classif_flags";
     private final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
-    
-    private Mode analysisMode;
 
     private static final String F_INVALID_DESCR_TEXT = "Invalid pixels";
     private static final String F_CLOUD_DESCR_TEXT = "Cloud pixels";
@@ -146,37 +119,40 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
 
-        targetProduct = new Product(s2ClassifProduct.getName(), s2ClassifProduct.getProductType(), s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
+        targetProduct = new Product(s2ClassifProduct.getName(), s2ClassifProduct.getProductType(),
+                s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
 
         ProductUtils.copyGeoCoding(s2ClassifProduct, targetProduct);
 
         sourceBandClusterA = s2ClassifProduct.getBand(sourceBandNameClusterA);
         sourceBandClusterB = s2ClassifProduct.getBand(sourceBandNameClusterB);
 
-        sourceSunZenith = s2ClassifProduct.getBand(sourceSunZenithName);
+        RasterDataNode sourceSunZenith = s2ClassifProduct.getBand(sourceSunZenithName);
         // take these. They're as good as the tile dimensions from any other band and DEFINITELY more reliable than
         // the preferred tile size of the s2ClassifProduct
         final int sourceTileWidth = sourceSunZenith.getSourceImage().getTileWidth();
         final int sourceTileHeight = sourceSunZenith.getSourceImage().getTileHeight();
         final double maximumSunZenith = sourceSunZenith.getStx().getMaximum();
-        sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
-        sourceViewAzimuth = s2ClassifProduct.getBand(sourceViewAzimuthName);
-        sourceViewZenith = s2ClassifProduct.getBand(sourceViewZenithName);
-        sourceAltitude = s2ClassifProduct.getBand(sourceAltitudeName);
+        RasterDataNode sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
+        RasterDataNode sourceViewAzimuth = s2ClassifProduct.getBand(sourceViewAzimuthName);
+        RasterDataNode sourceViewZenith = s2ClassifProduct.getBand(sourceViewZenithName);
 
         final GeoPos centerGeoPos =
-                getCenterGeoPos(s2ClassifProduct.getSceneGeoCoding(), s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
-        System.out.println(centerGeoPos.getLat());
-        maxcloudTop = setCloudTopHeigh(centerGeoPos.getLat());
-        System.out.println(maxcloudTop);
+                getCenterGeoPos(s2ClassifProduct.getSceneGeoCoding(), s2ClassifProduct.getSceneRasterWidth(),
+                        s2ClassifProduct.getSceneRasterHeight());
+        maxcloudTop = setCloudTopHeight(centerGeoPos.getLat());
 
         //create a single potential cloud path for the granule.
         // sunZenithMean, sunAzimuthMean is the value at the central pixel.
         minAltitude = 0;
-        sunZenithMean = getRasterNodeValueAtCenter(sourceSunZenith, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
-        sunAzimuthMean = getRasterNodeValueAtCenter(sourceSunAzimuth, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
-        viewAzimuthMean = getRasterNodeValueAtCenter(sourceViewAzimuth, s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
-        viewZenithMean = getRasterNodeValueAtCenter(sourceViewZenith,targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
+        sunZenithMean = getRasterNodeValueAtCenter(sourceSunZenith, s2ClassifProduct.getSceneRasterWidth(),
+                s2ClassifProduct.getSceneRasterHeight());
+        sunAzimuthMean = getRasterNodeValueAtCenter(sourceSunAzimuth, s2ClassifProduct.getSceneRasterWidth(),
+                s2ClassifProduct.getSceneRasterHeight());
+        viewAzimuthMean = getRasterNodeValueAtCenter(sourceViewAzimuth, s2ClassifProduct.getSceneRasterWidth(),
+                s2ClassifProduct.getSceneRasterHeight());
+        viewZenithMean = getRasterNodeValueAtCenter(sourceViewZenith, targetProduct.getSceneRasterWidth(),
+                targetProduct.getSceneRasterHeight());
 
         // todo: if the center pixel of the granule does not exist, find the center of the existing data!
         // actually: sunZenith and sunAzimuth are given on the entire granule, even if the data is only partially available.
@@ -186,11 +162,8 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         sunAzimuthMean = convertToApparentSunAzimuth();
 
         sourceBandFlag1 = s2ClassifProduct.getBand(sourceFlagName1);
-        if (s2CloudBufferProduct != null) {
-            sourceBandFlag2 = s2CloudBufferProduct.getBand(sourceFlagName1);
-        }
 
-        targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
+        Band targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
         attachFlagCoding(targetBandCloudShadow);
         setupBitmasks(targetProduct);
 
@@ -211,19 +184,6 @@ public class S2IdepixPreCloudShadowOp extends Operator {
             targetProduct.setPreferredTileSize(s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
             searchBorderRadius = 0;
         }
-        switch (mode) {
-            case "LandWater":
-                analysisMode = Mode.LAND_WATER;
-                break;
-            case "MultiBand":
-                analysisMode = Mode.MULTI_BAND;
-                break;
-            case "SingleBand":
-                analysisMode = Mode.SINGLE_BAND;
-                break;
-            default:
-                throw new OperatorException("Invalid analysis mode. Must be LandWater, MultiBand or SingleBand.");
-        }
     }
 
     private double determineSourceResolution() throws OperatorException {
@@ -234,7 +194,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
                 return ((AffineTransform) imageToMapTransform).getScaleX();
             }
         }
-        throw new OperatorException("Invalid product: ");
+        throw new OperatorException("Invalid product");
     }
 
     private int determineSourceTileWidth(int rasterWidth, int tileWidth,
@@ -273,32 +233,12 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         return maxCloudDistance / spatialResolution;
     }
 
-    int getRightBorderExtension(double searchBorderRadius, double minSunAzimuth, double maxSunAzimuth) {
-        return (int) Math.ceil(searchBorderRadius * Math.max(0, Math.max(Math.sin(Math.toRadians(minSunAzimuth)),
-                Math.sin(Math.toRadians(maxSunAzimuth)))));
-    }
-
-    int getLeftBorderExtension(double searchBorderRadius, double minSunAzimuth, double maxSunAzimuth) {
-        return (int) Math.ceil(searchBorderRadius * Math.max(0, Math.max(Math.sin(Math.toRadians(minSunAzimuth)) * -1,
-                Math.sin(Math.toRadians(maxSunAzimuth)) * -1)));
-    }
-
-    int getTopBorderExtension(double searchBorderRadius, double minSunAzimuth, double maxSunAzimuth) {
-        return (int) Math.ceil(searchBorderRadius *
-                Math.max(0, Math.max(Math.cos(Math.toRadians(minSunAzimuth)), Math.cos(Math.toRadians(maxSunAzimuth)))));
-    }
-
-    int getBottomBorderExtension(double searchBorderRadius, double minSunAzimuth, double maxSunAzimuth) {
-        return (int) Math.ceil(searchBorderRadius * Math.max(0, Math.max(Math.cos(Math.toRadians(minSunAzimuth)) * -1,
-                Math.cos(Math.toRadians(maxSunAzimuth)) * -1)));
-    }
-
     private float[] getSamples(RasterDataNode rasterDataNode, Rectangle rectangle) {
         Tile tile = getSourceTile(rasterDataNode, rectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
         return tile.getSamplesFloat();
     }
 
-    //aus S2tbxReprojectionOp kopiert:
+    // copied from S2TBXReprojectionOp
     private GeoPos getCenterGeoPos(GeoCoding geoCoding, int width, int height) {
         final PixelPos centerPixelPos = new PixelPos(0.5 * width + 0.5,
                 0.5 * height + 0.5);
@@ -306,12 +246,13 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     }
 
     private float getRasterNodeValueAtCenter(RasterDataNode var, int width, int height) {
-        return var.getSampleFloat( (int) (0.5 * width) , (int) (0.5 * height) );
+        return var.getSampleFloat((int) (0.5 * width), (int) (0.5 * height));
     }
 
-    private int setCloudTopHeigh(double lat){
-        return (int) Math.ceil(0.5* Math.pow(90.-Math.abs(lat), 2.) + (90.-Math.abs(lat))*25 + 5000);
+    private int setCloudTopHeight(double lat) {
+        return (int) Math.ceil(0.5 * Math.pow(90. - Math.abs(lat), 2.) + (90. - Math.abs(lat)) * 25 + 5000);
     }
+
     /*
     package local for testing
      */
@@ -324,26 +265,14 @@ public class S2IdepixPreCloudShadowOp extends Operator {
 
         // borders are now extended in both directions left-right, top-down.
         // so it needs a reduction in x0,y0 and addition in x1,y1
-        int x0 = Math.max(0, targetRectangle.x + Math.min(0, -1*Math.abs(relativeX)));
-        int y0 = Math.max(0, targetRectangle.y + Math.min(0, -1*Math.abs(relativeY)));
+        int x0 = Math.max(0, targetRectangle.x + Math.min(0, -1 * Math.abs(relativeX)));
+        int y0 = Math.max(0, targetRectangle.y + Math.min(0, -1 * Math.abs(relativeY)));
         int x1 = Math.min(productWidth, targetRectangle.x + targetRectangle.width + Math.max(0, Math.abs(relativeX)));
         int y1 = Math.min(productHeight, targetRectangle.y + targetRectangle.height + Math.max(0, Math.abs(relativeY)));
         return new Rectangle(x0, y0, x1 - x0, y1 - y0);
     }
 
-    private static float mean(float[] values) {
-        float mean = 0f;
-        int valueCount = 0;
-        for (float value : values) {
-            if (!Double.isNaN(value)) {
-                mean += value;
-                valueCount++;
-            }
-        }
-        return mean / valueCount;
-    }
-
-    float convertToApparentSunAzimuth(){
+    private float convertToApparentSunAzimuth() {
         //here: cloud path is calculated for center pixel sunZenith and sunAzimuth.
         // after correction of sun azimuth angle into apparent sun azimuth angle.
         // Due to projection of the cloud at view_zenith>0 the position of the cloud becomes distorted.
@@ -351,46 +280,20 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         // So instead, the apparent sun azimuth angle is calculated and used to find the cloudShadowRelativePath.
 
         double diff_phi = sunAzimuthMean - viewAzimuthMean;
-        if(diff_phi < 0) diff_phi = 180 + diff_phi;
-        if(diff_phi > 90) diff_phi = diff_phi - 90;
-        diff_phi = diff_phi * Math.tan(viewZenithMean*MathUtils.DTOR);
-        if(viewAzimuthMean>180) diff_phi= -1.*diff_phi;
-
-        System.out.println("viewAzimuthMean " + viewAzimuthMean);
-        System.out.println("viewZenithMean " + viewZenithMean);
-
-        System.out.println("diff_phi " + diff_phi);
+        if (diff_phi < 0) diff_phi = 180 + diff_phi;
+        if (diff_phi > 90) diff_phi = diff_phi - 90;
+        diff_phi = diff_phi * Math.tan(viewZenithMean * MathUtils.DTOR);
+        if (viewAzimuthMean > 180) diff_phi = -1. * diff_phi;
         return (float) (sunAzimuthMean + diff_phi);
-    }
-
-    int testCloudInTile(int[] flagArray){
-        int out=0;
-        for( int i=0; i<flagArray.length; i++){
-            if (((flagArray[i] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
-                out = 1;
-                break;
-            }
-        }
-        return out;
     }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
-
-        final float[] targetAltitude = getSamples(sourceAltitude, targetRectangle);
-        final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(targetAltitude));
-        /*float minAltitude = Math.max(0, Collections.min(altitudes));
-        if (Float.isNaN(minAltitude)) {
-            minAltitude = 0;
-        }*/
-
         //here: cloud path is calculated for center pixel sunZenith and sunAzimuth. sunAzimuth is corrected with view geometry.
         final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
                 minAltitude, sunZenithMean * MathUtils.DTOR, sunAzimuthMean * MathUtils.DTOR, maxcloudTop,
                 targetRectangle, targetRectangle, getSourceProduct().getSceneRasterHeight(),
                 getSourceProduct().getSceneRasterWidth(), spatialResolution, true, false);
-
-        cloudPath = cloudShadowRelativePath;
 
         final Rectangle sourceRectangle = getSourceRectangle(targetRectangle, cloudShadowRelativePath);
 
@@ -398,8 +301,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
 
         final int[] flagArray = new int[sourceLength];
         final int mytileid = tileid++;
-        
-        final float[] altitude = getSamples(sourceAltitude, sourceRectangle);
+
         final float[][] clusterData = {getSamples(sourceBandClusterA, sourceRectangle),
                 getSamples(sourceBandClusterB, sourceRectangle)};
 
@@ -413,43 +315,34 @@ public class S2IdepixPreCloudShadowOp extends Operator {
                 sourceLongitudes);
 
         Tile sourceTileFlag1 = getSourceTile(sourceBandFlag1, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
-        Tile sourceTileFlag2 = null;
-        if (sourceBandFlag2 != null) {
-            sourceTileFlag2 = getSourceTile(sourceBandFlag2, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
-        }
-        FlagDetector flagDetector = new FlagDetectorSentinel2(sourceTileFlag1, sourceTileFlag2, sourceRectangle);
+        FlagDetector flagDetector = new FlagDetector(sourceTileFlag1, sourceRectangle);
 
         PreparationMaskBand.prepareMaskBand(s2ClassifProduct.getSceneRasterWidth(),
-                s2ClassifProduct.getSceneRasterHeight(), sourceRectangle, flagArray,
-                flagDetector);
+                s2ClassifProduct.getSceneRasterHeight(), sourceRectangle, flagArray, flagDetector);
 
-        int numClouds = 1;
-        //int numClouds = testCloudInTile(flagArray);
+        final CloudBulkShifter cloudBulkShifter = new CloudBulkShifter();
+        cloudBulkShifter.shiftCloudBulkAlongCloudPathType(sourceRectangle, targetRectangle, sunAzimuthMean,
+                clusterData, flagArray, cloudShadowRelativePath);
+        meanReflPerTile.put(mytileid, cloudBulkShifter.getMeanReflectanceAlongPath());
+        NCloudOverLand.put(mytileid, cloudBulkShifter.getNCloudOverLand());
+        NCloudOverWater.put(mytileid, cloudBulkShifter.getNCloudOverWater());
+        NValidPixelTile.put(mytileid, cloudBulkShifter.getNValidPixel());
 
-        if (numClouds > 0) {
-            //statistics by type: 0: all, 1: over land, 2: over water
-            final ShiftingCloudBulkAlongCloudPathType cloudTest = new ShiftingCloudBulkAlongCloudPathType();
-            cloudTest.ShiftingCloudBulkAlongCloudPathType(sourceRectangle, targetRectangle, sunZenithMean, sunAzimuthMean, clusterData, flagArray, cloudShadowRelativePath);
-
-            meanReflPerTile.put(mytileid, cloudTest.getMeanReflectanceAlongPath());
-            NCloudOverLand.put(mytileid, cloudTest.getNCloudOverLand());
-            NCloudOverWater.put(mytileid, cloudTest.getNCloudOverWater());
-            NValidPixelTile.put(mytileid, cloudTest.getNValidPixel());
-        }
-        
     }
 
-    public Map<Integer, double[][]> getMeanReflPerTile() {
+    Map<Integer, double[][]> getMeanReflPerTile() {
         return meanReflPerTile;
     }
 
-    public Map<Integer, Integer> getNCloudOverLandPerTile() {
+    Map<Integer, Integer> getNCloudOverLandPerTile() {
         return NCloudOverLand;
     }
-    public Map<Integer, Integer> getNCloudOverWaterPerTile() {
+
+    Map<Integer, Integer> getNCloudOverWaterPerTile() {
         return NCloudOverWater;
     }
-    public Map<Integer, Integer> getNValidPixelTile() {
+
+    Map<Integer, Integer> getNValidPixelTile() {
         return NValidPixelTile;
     }
 
@@ -483,96 +376,42 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         int w = targetProduct.getSceneRasterWidth();
         int h = targetProduct.getSceneRasterHeight();
         Mask mask;
-        mask = Mask.BandMathsType.create("invalid",
-                F_INVALID_DESCR_TEXT, w, h,
-                "FlagBand.invalid",
-                Color.DARK_GRAY, 0.5f);
+        mask = Mask.BandMathsType.create("invalid", F_INVALID_DESCR_TEXT, w, h,
+                "FlagBand.invalid", Color.DARK_GRAY, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("land",
-                F_LAND_DESCR_TEXT, w, h,
-                "FlagBand.land",
-                Color.GREEN, 0.5f);
+        mask = Mask.BandMathsType.create("land", F_LAND_DESCR_TEXT, w, h,
+                "FlagBand.land", Color.GREEN, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("water",
-                F_WATER_DESCR_TEXT, w, h,
-                "FlagBand.water",
-                Color.BLUE, 0.5f);
+        mask = Mask.BandMathsType.create("water", F_WATER_DESCR_TEXT, w, h,
+                "FlagBand.water", Color.BLUE, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("cloud",
-                F_CLOUD_DESCR_TEXT, w, h,
-                "FlagBand.cloud",
-                Color.YELLOW, 0.5f);
+        mask = Mask.BandMathsType.create("cloud", F_CLOUD_DESCR_TEXT, w, h,
+                "FlagBand.cloud", Color.YELLOW, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("haze/semitransparent cloud",
-                F_HAZE_DESCR_TEXT, w, h,
-                " FlagBand.pot_haze",
-                Color.CYAN, 0.5f);
+        mask = Mask.BandMathsType.create("haze/semitransparent cloud", F_HAZE_DESCR_TEXT, w, h,
+                " FlagBand.pot_haze", Color.CYAN, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("cloud_shadow",
-                F_CLOUD_SHADOW_DESCR_TEXT, w, h,
-                "FlagBand.cloudShadow",
-                Color.RED, 0.5f);
+        mask = Mask.BandMathsType.create("cloud_shadow", F_CLOUD_SHADOW_DESCR_TEXT, w, h,
+                "FlagBand.cloudShadow", Color.RED, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("mountain_shadow",
-                F_MOUNTAIN_SHADOW_DESCR_TEXT, w, h,
-                "FlagBand.mountain_shadow",
-                Color.PINK, 0.5f);
+        mask = Mask.BandMathsType.create("mountain_shadow", F_MOUNTAIN_SHADOW_DESCR_TEXT, w, h,
+                "FlagBand.mountain_shadow", Color.PINK, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("potential_cloud_shadow",
-                F_POTENTIAL_CLOUD_SHADOW_DESCR_TEXT, w, h,
-                "FlagBand.potential_cloud_shadow",
-                Color.ORANGE, 0.5f);
+        mask = Mask.BandMathsType.create("potential_cloud_shadow", F_POTENTIAL_CLOUD_SHADOW_DESCR_TEXT, w, h,
+                "FlagBand.potential_cloud_shadow", Color.ORANGE, 0.5f);
         targetProduct.getMaskGroup().add(index++, mask);
-        mask = Mask.BandMathsType.create("shifted_cloud_shadow",
-                F_SHIFTED_CLOUD_SHADOW_DESCR_TEXT, w, h,
-                "FlagBand.shifted_cloud_shadow",
-                Color.MAGENTA, 0.5f);
+        mask = Mask.BandMathsType.create("shifted_cloud_shadow", F_SHIFTED_CLOUD_SHADOW_DESCR_TEXT, w, h,
+                "FlagBand.shifted_cloud_shadow", Color.MAGENTA, 0.5f);
         targetProduct.getMaskGroup().add(index, mask);
-        mask = Mask.BandMathsType.create("cloud_shadow_comb",
-                F_CLOUD_SHADOW_COMB_DESCR_TEXT, w, h,
-                "FlagBand.cloud_shadow_comb",
-                Color.BLUE, 0.5f);
+        mask = Mask.BandMathsType.create("cloud_shadow_comb", F_CLOUD_SHADOW_COMB_DESCR_TEXT, w, h,
+                "FlagBand.cloud_shadow_comb", Color.BLUE, 0.5f);
         targetProduct.getMaskGroup().add(index, mask);
-        mask = Mask.BandMathsType.create("shifted_cloud_shadow_gaps",
-                F_SHIFTED_CLOUD_SHADOW_GAPS_DESCR_TEXT, w, h,
-                "FlagBand.shifted_cloud_shadow_gaps",
-                Color.BLUE, 0.5f);
+        mask = Mask.BandMathsType.create("shifted_cloud_shadow_gaps", F_SHIFTED_CLOUD_SHADOW_GAPS_DESCR_TEXT, w, h,
+                "FlagBand.shifted_cloud_shadow_gaps", Color.BLUE, 0.5f);
         targetProduct.getMaskGroup().add(index, mask);
-        mask = Mask.BandMathsType.create("recommended_cloud_shadow",
-                F_RECOMMENDED_CLOUD_SHADOW_DESCR_TEXT, w, h,
-                "FlagBand.recommended_cloud_shadow",
-                Color.BLUE, 0.5f);
+        mask = Mask.BandMathsType.create("recommended_cloud_shadow", F_RECOMMENDED_CLOUD_SHADOW_DESCR_TEXT, w, h,
+                "FlagBand.recommended_cloud_shadow", Color.BLUE, 0.5f);
         targetProduct.getMaskGroup().add(index, mask);
-    }
-
-    private static void fillTile(int[] inputData, Rectangle targetRectangle, Rectangle sourceRectangle, Tile targetTile) {
-        for (int targetY = targetRectangle.y; targetY < targetRectangle.y + targetRectangle.height; targetY++) {
-            int sourceY = targetY - sourceRectangle.y;
-            for (int targetX = targetRectangle.x; targetX < targetRectangle.x + targetRectangle.width; targetX++) {
-                int sourceX = targetX - sourceRectangle.x;
-                int sourceIndex = sourceY * sourceRectangle.width + sourceX;
-                targetTile.setSample(targetX, targetY, inputData[sourceIndex]);
-            }
-        }
-    }
-
-    private static class MountainShadowMaxFloatComparator implements Comparator<Float> {
-
-        @Override
-        public int compare(Float o1, Float o2) {
-            if(Float.isNaN(o1) && Float.isNaN(o2)) {
-                return 0;
-            } else if (Float.isNaN(o1)) {
-                return -1;
-            } else if (Float.isNaN(o2)) {
-                return 1;
-            } else if (o1 < o2) {
-                return -1;
-            } else if (o2 > o1) {
-                return 1;
-            }
-            return 0;
-        }
     }
 
     public static class Spi extends OperatorSpi {

@@ -1,4 +1,5 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
+
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class ShiftingCloudIndividualAlongCloudPath {
         int sourceHeight = sourceRectangle.height;
 
 
-        for( int key : cloudList.keySet()){
+        for (int key : cloudList.keySet()) {
             List<Integer> cloud = cloudList.get(key);
 
             meanValuesPath = new double[3][cloudPath.length];
@@ -35,15 +36,15 @@ public class ShiftingCloudIndividualAlongCloudPath {
 
             for (int path_i = 1; path_i < cloudPath.length; path_i++) {
 
-                for(int index : cloud){
+                for (int index : cloud) {
                     int[] x = revertIndexToXY(index, sourceWidth);
                     simpleShiftedCloudMask_and_meanRefl_alongPath(x[0], x[1], sourceHeight, sourceWidth, cloudPath, path_i, flagArray, sourceBands[1]);
 
                 }
 
 
-                for (int j=0; j<3; j++){
-                    if (N[j]>0)  meanValuesPath[j][path_i] = sumValue[j]/N[j];
+                for (int j = 0; j < 3; j++) {
+                    if (N[j] > 0) meanValuesPath[j][path_i] = sumValue[j] / N[j];
                     //NPath[path_i] = N[0];
                 }
             }
@@ -58,75 +59,75 @@ public class ShiftingCloudIndividualAlongCloudPath {
 
     }
 
-    private int[] revertIndexToXY(int index, int width){
+    private int[] revertIndexToXY(int index, int width) {
         //int index0 = y0 * width + x0;
 
         int y = Math.floorDiv(index, width);
-        int x = index  - y*width;
+        int x = index - y * width;
 
-        return new int[]{x,y};
+        return new int[]{x, y};
     }
 
-    private int findOverallMinimumReflectanceSimple(double[] meanRefl){
+    private int findOverallMinimumReflectanceSimple(double[] meanRefl) {
 
         boolean exclude = false;
 
         List<Integer> relativeMinimum = indecesRelativMaxInArray(meanRefl, false);
         //System.out.println(relativeMinimum.toArray());
         if (relativeMinimum.contains(0)) relativeMinimum.remove(relativeMinimum.indexOf(0));
-        if (relativeMinimum.contains(meanRefl.length-1)) relativeMinimum.remove(relativeMinimum.indexOf(meanRefl.length-1));
+        if (relativeMinimum.contains(meanRefl.length - 1))
+            relativeMinimum.remove(relativeMinimum.indexOf(meanRefl.length - 1));
 
-        if (relativeMinimum.size()==0) exclude = true;
+        if (relativeMinimum.size() == 0) exclude = true;
 
         int offset = 0;
 
-        if (relativeMinimum.size()>0 && !exclude) offset = relativeMinimum.get(0);
+        if (relativeMinimum.size() > 0 && !exclude) offset = relativeMinimum.get(0);
 
         return offset;
     }
 
-    private List<Integer> indecesRelativMaxInArray(double[] x, boolean findMax){
+    private List<Integer> indecesRelativMaxInArray(double[] x, boolean findMax) {
         int lx = x.length;
 
         List<Integer> ID = new ArrayList<>();
 
         boolean valid = true;
-        int i =0;
-        while (i<lx && valid){
+        int i = 0;
+        while (i < lx && valid) {
             if (Double.isNaN(x[i])) valid = false;
             i++;
         }
 
-        if(valid){
-            double fac=1.;
+        if (valid) {
+            double fac = 1.;
             if (!findMax) fac = -1.;
 
-            if (fac*x[0]> fac*x[1]) ID.add(0);
-            if (fac*x[lx - 1] > fac*x[lx - 2]) ID.add(lx-1);
+            if (fac * x[0] > fac * x[1]) ID.add(0);
+            if (fac * x[lx - 1] > fac * x[lx - 2]) ID.add(lx - 1);
 
-            for ( i=1; i< lx - 1; i++){
-                if(fac*x[i] > fac*x[i - 1] && fac*x[i] > fac*x[i + 1]) ID.add(i);
+            for (i = 1; i < lx - 1; i++) {
+                if (fac * x[i] > fac * x[i - 1] && fac * x[i] > fac * x[i + 1]) ID.add(i);
             }
-        }
-        else{
+        } else {
             ID.add(0);
-            ID.add(lx-1);
+            ID.add(lx - 1);
         }
 
         return ID;
     }
 
     private void setTileShiftedCloudIndividual(Rectangle sourceRectangle,
-                                        int[] flagArray,  Point2D[] cloudPath, int darkIndex, List<Integer> cloud){
+                                               int[] flagArray, Point2D[] cloudPath, int darkIndex, List<Integer> cloud) {
         int sourceWidth = sourceRectangle.width;
         int sourceHeight = sourceRectangle.height;
 
 
-        for( int index0 : cloud){
+        for (int index0 : cloud) {
 
             //start from a cloud pixel, otherwise stop.
             if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
-             return;
+                return;
             }
 
             int[] x = revertIndexToXY(index0, sourceWidth);
@@ -140,10 +141,10 @@ public class ShiftingCloudIndividualAlongCloudPath {
             int index1 = y1 * sourceWidth + x1;
 
             if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
-                !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
+                    !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
 
 
-                if(!((flagArray[index1] & PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG) == PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG)) {
+                if (!((flagArray[index1] & PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG) == PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG)) {
                     flagArray[index1] += PreparationMaskBand.SHIFTED_CLOUD_SHADOW_FLAG;
                 }
             }
@@ -160,7 +161,7 @@ public class ShiftingCloudIndividualAlongCloudPath {
             return;
         }
 
-        for (int i=end_path_i; i<end_path_i+1; i++){
+        for (int i = end_path_i; i < end_path_i + 1; i++) {
 
 
             int x1 = x0 + (int) cloudPath[i].getX();
@@ -173,20 +174,20 @@ public class ShiftingCloudIndividualAlongCloudPath {
             if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
                     !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
 
-                if(!((flagArray[index1] & PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG) == PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG)) {
+                if (!((flagArray[index1] & PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG) == PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG)) {
                     flagArray[index1] += PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG;
                 }
 
                 this.sumValue[0] += sourceBand[index1];
-                this.N[0] +=1;
+                this.N[0] += 1;
 
-                if (((flagArray[index1] & PreparationMaskBand.LAND_FLAG) == PreparationMaskBand.LAND_FLAG)){
+                if (((flagArray[index1] & PreparationMaskBand.LAND_FLAG) == PreparationMaskBand.LAND_FLAG)) {
                     this.sumValue[1] += sourceBand[index1];
-                    this.N[1] +=1;
+                    this.N[1] += 1;
                 }
-                if (((flagArray[index1] & PreparationMaskBand.WATER_FLAG) == PreparationMaskBand.WATER_FLAG)){
+                if (((flagArray[index1] & PreparationMaskBand.WATER_FLAG) == PreparationMaskBand.WATER_FLAG)) {
                     this.sumValue[2] += sourceBand[index1];
-                    this.N[2] +=1;
+                    this.N[2] += 1;
 
                 }
             }
@@ -221,9 +222,8 @@ public class ShiftingCloudIndividualAlongCloudPath {
     }*/
 
 
-
     private static void setPotentialCloudShadowMask(int x0, int y0, int height, int width, Point2D[] cloudPath,
-                                                    int[] flagArray){
+                                                    int[] flagArray) {
         int index0 = y0 * width + x0;
         //start from a cloud pixel, otherwise stop.
         if (!((flagArray[index0] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG)) {
@@ -243,7 +243,7 @@ public class ShiftingCloudIndividualAlongCloudPath {
         }
 
 
-        for (int i=1; i<cloudPath.length; i++){
+        for (int i = 1; i < cloudPath.length; i++) {
 
             x1 = x0 + (int) cloudPath[i].getX();
             y1 = y0 + (int) cloudPath[i].getY();
@@ -257,7 +257,7 @@ public class ShiftingCloudIndividualAlongCloudPath {
             if (!((flagArray[index1] & PreparationMaskBand.CLOUD_FLAG) == PreparationMaskBand.CLOUD_FLAG) &&
                     !((flagArray[index1] & PreparationMaskBand.INVALID_FLAG) == PreparationMaskBand.INVALID_FLAG)) {
 
-                if(!((flagArray[index1] & PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG) == PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG)) {
+                if (!((flagArray[index1] & PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG) == PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG)) {
                     flagArray[index1] += PreparationMaskBand.POTENTIAL_CLOUD_SHADOW_FLAG;
                 }
             }
@@ -343,8 +343,8 @@ public class ShiftingCloudIndividualAlongCloudPath {
 
         public double[] calculateMean() {
             for (int i = 0; i < counterA; i++) {
-                mean[0] +=arrayBands[0][i];
-                mean[1] +=arrayBands[1][i];
+                mean[0] += arrayBands[0][i];
+                mean[1] += arrayBands[1][i];
             }
 
             for (int j = 0; j < arrayBands.length; j++) {

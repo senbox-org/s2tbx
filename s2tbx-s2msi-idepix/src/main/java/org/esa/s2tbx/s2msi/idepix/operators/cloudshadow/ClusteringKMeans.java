@@ -13,7 +13,7 @@ import java.util.List;
  */
 class ClusteringKMeans {
 
-    static final int MAX_ITER_COUNT = 30;
+    private static final int MAX_ITER_COUNT = 30;
 
     static double[][] computedKMeansCluster(int clusterCount, double[]... images) {
         AdaptedIsoClustering clusterer = new AdaptedIsoClustering(clusterCount, MAX_ITER_COUNT);

@@ -6,8 +6,10 @@ import org.junit.Test;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -38,7 +40,7 @@ public class PotentialCloudShadowAreaIdentifierTest {
     }
 
     @Test
-    public void testIdentifyPotentialCloudShadowArea_saa_305_corner() throws Exception {
+    public void testIdentifyPotentialCloudShadowArea_saa_305_corner() {
         int[][] expectedPositions = {
                 {64, 85, 106, 107, 128, 149, 150, 171, 192, 213, 214, 235, 278, 299, 83, 84, 105, 148, 169, 170, 191, 212, 233, 234, 255, 298, 319, 65, 86, 108, 129, 151, 172, 193, 215, 236, 258, 279},
                 {68, 89, 110, 111, 154, 175, 196, 217, 218, 239, 87, 88, 109, 130, 131, 173, 174, 195, 216, 237, 238, 259, 69, 90, 112, 155, 176, 197, 219},
@@ -84,7 +86,7 @@ public class PotentialCloudShadowAreaIdentifierTest {
     }
 
     @Test
-    public void testIdentifyPotentialCloudShadowArea_saa_55_corner() throws Exception {
+    public void testIdentifyPotentialCloudShadowArea_saa_55_corner() {
         int[][] expectedPositions = {
                 {61, 60, 81, 80, 82, 100},
                 {65, 64, 83, 102, 101, 120, 85, 84, 103, 121, 140, 86, 104, 141, 160},
@@ -130,7 +132,7 @@ public class PotentialCloudShadowAreaIdentifierTest {
     }
 
     @Test
-    public void testIdentifyPotentialCloudShadowArea_saa_145_corner() throws Exception {
+    public void testIdentifyPotentialCloudShadowArea_saa_145_corner() {
         int[][] expectedPositions = {
                 {21, 1, 41, 0, 22, 2},
                 {25, 5, 45, 4, 26, 6},
@@ -175,7 +177,7 @@ public class PotentialCloudShadowAreaIdentifierTest {
     }
 
     @Test
-    public void testIdentifyPotentialCloudShadowArea_saa_225_corner() throws Exception {
+    public void testIdentifyPotentialCloudShadowArea_saa_225_corner() {
         int[][] expectedPositions = {
                 {23, 4, 24, 5, 44, 25, 6},
                 {27, 8, 28, 9, 48, 29, 10},
@@ -221,7 +223,7 @@ public class PotentialCloudShadowAreaIdentifierTest {
     }
 
     @Test
-    public void testIdentifyPotentialCloudShadowArea_saa_305_center() throws Exception {
+    public void testIdentifyPotentialCloudShadowArea_saa_305_center() {
         int[][] expectedPositions = {
                 {64, 85, 106, 107, 128, 149, 150, 171, 192, 213, 214, 235, 278, 299, 83, 84, 105, 148, 169, 170, 191, 212, 233, 234, 255, 298, 319, 65, 86, 108, 129, 151, 172, 193, 215, 236, 258, 279},
                 {68, 89, 110, 111, 154, 175, 196, 217, 218, 239, 87, 88, 109, 130, 131, 173, 174, 195, 216, 237, 238, 259, 69, 90, 112, 155, 176, 197, 219},
@@ -267,7 +269,7 @@ public class PotentialCloudShadowAreaIdentifierTest {
     }
 
     @Test
-    public void testIdentifyPotentialCloudShadowArea_saa_55_center() throws Exception {
+    public void testIdentifyPotentialCloudShadowArea_saa_55_center() {
         int[][] expectedPositions = {
                 {355, 354, 373, 392, 391, 375, 374, 393, 376, 394},
                 {65, 64, 83, 102, 101, 120, 85, 84, 103, 121, 140, 86, 104, 141, 160},
@@ -308,7 +310,7 @@ public class PotentialCloudShadowAreaIdentifierTest {
     }
 
     @Test
-    public void testIdentifyPotentialCloudShadowArea_saa_145_center() throws Exception {
+    public void testIdentifyPotentialCloudShadowArea_saa_145_center() {
         int[][] expectedPositions = {
                 {315, 295, 274, 233, 212, 191, 171, 150, 129, 108, 88, 26, 5, 335, 294, 232, 211, 170, 149, 128, 87, 25, 4, 316, 296, 275, 254, 234, 213, 192, 172, 151, 130, 109, 89, 68, 27, 6},
                 {105, 85, 64, 23, 2, 125, 84, 22, 1, 106, 86, 65, 44, 24, 3},
@@ -346,7 +348,7 @@ public class PotentialCloudShadowAreaIdentifierTest {
     }
 
     @Test
-    public void testIdentifyPotentialCloudShadowArea_saa_225_center() throws Exception {
+    public void testIdentifyPotentialCloudShadowArea_saa_225_center() {
         int[][] expectedPositions = {
                 {317, 298, 279, 318, 299, 338, 319},
                 {103, 84, 65, 27, 8, 104, 85, 28, 9, 124, 105, 86, 48, 29, 10},
@@ -426,22 +428,11 @@ public class PotentialCloudShadowAreaIdentifierTest {
             List<Integer> positions = potentialShadowPositions.get(key);
             assertEquals(expectedPotentialShadowPositions[i].length, positions.size());
             for (int j = 0; j < positions.size(); j++) {
-                //System.out.print(positions.get(j) + ", ");
                 assertEquals(expectedPotentialShadowPositions[i][j], (int) positions.get(j));
                 cloudIdArea[positions.get(j)] = -1;
             }
-            //System.out.println();
             i++;
         }
-//        for(int y=0; y<20;y++){
-//            for(int x=0; x<20; x++){
-//                int ind= y*20 + x;
-//                System.out.print(cloudIdArea[ind] + "\t");
-//            }
-//            System.out.println();
-//        }
-//        System.out.println();
-
     }
 
     private float[] createSmoothGrid(float topLeft, float topRight, float bottomLeft, float bottomRight, int width, int height) {
