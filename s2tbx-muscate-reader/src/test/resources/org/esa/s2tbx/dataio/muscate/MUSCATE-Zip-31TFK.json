@@ -1,0 +1,1511 @@
+{
+  "id": "MUSCATE-Zip-31TFK",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 10980,
+    "sceneHeight": 10980,
+    "startTime": "05-FEB-2016 10:35:56.319000",
+    "endTime": "05-FEB-2016 10:35:56.319000",
+    "geoCoding": {
+      "coordinates": [
+        {
+          "x": 4735.0,
+          "y": 5902.0,
+          "lat": 44.60743499375534,
+          "lon": 4.856919865576568
+        },
+        {
+          "x": 8152.0,
+          "y": 7125.0,
+          "lat": 44.489610156711024,
+          "lon": 5.28291800134036
+        }
+      ],
+      "reverseAccuracy": 1.2997770681977272E-7
+    },
+    "bands": [
+      {
+        "name": "AOT_R1",
+        "description": "Aerosol Optical Thickness at 10m resolution",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 572,
+            "y": 1956,
+            "value": "NaN"
+          },
+          {
+            "x": 7522,
+            "y": 9339,
+            "value": 0.09
+          }
+        ]
+      },
+      {
+        "name": "AOT_R2",
+        "description": "Aerosol Optical Thickness at 20m resolution",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 1596,
+            "y": 1410,
+            "value": 0.11
+          },
+          {
+            "x": 3351,
+            "y": 2005,
+            "value": 0.105
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B11",
+        "description": "Ground reflectance with the correction of slope effects, band B11",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3019,
+            "y": 4091,
+            "value": 0.2779
+          },
+          {
+            "x": 3339,
+            "y": 5097,
+            "value": 0.257
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B12",
+        "description": "Ground reflectance with the correction of slope effects, band B12",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 868,
+            "y": 3656,
+            "value": 0.0815
+          },
+          {
+            "x": 2850,
+            "y": 5015,
+            "value": 0.1928
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B2",
+        "description": "Ground reflectance with the correction of slope effects, band B2",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 8302,
+            "y": 5321,
+            "value": 0.0511
+          },
+          {
+            "x": 10439,
+            "y": 5334,
+            "value": 0.013
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B3",
+        "description": "Ground reflectance with the correction of slope effects, band B3",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3737,
+            "y": 9875,
+            "value": 0.1062
+          },
+          {
+            "x": 109,
+            "y": 5168,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B4",
+        "description": "Ground reflectance with the correction of slope effects, band B4",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3595,
+            "y": 2164,
+            "value": 0.3008
+          },
+          {
+            "x": 2999,
+            "y": 474,
+            "value": 0.8077
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B5",
+        "description": "Ground reflectance with the correction of slope effects, band B5",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 5333,
+            "y": 3319,
+            "value": 0.0439
+          },
+          {
+            "x": 3142,
+            "y": 3935,
+            "value": 0.1205
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B6",
+        "description": "Ground reflectance with the correction of slope effects, band B6",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 1273,
+            "y": 2731,
+            "value": 0.208
+          },
+          {
+            "x": 1762,
+            "y": 3966,
+            "value": 0.1097
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B7",
+        "description": "Ground reflectance with the correction of slope effects, band B7",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 1965,
+            "y": 2735,
+            "value": 0.2134
+          },
+          {
+            "x": 2211,
+            "y": 2428,
+            "value": 0.1906
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B8",
+        "description": "Ground reflectance with the correction of slope effects, band B8",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 6309,
+            "y": 1008,
+            "value": 0.3455
+          },
+          {
+            "x": 7084,
+            "y": 173,
+            "value": 0.631
+          }
+        ]
+      },
+      {
+        "name": "Flat_Reflectance_B8A",
+        "description": "Ground reflectance with the correction of slope effects, band B8A",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 5353,
+            "y": 2016,
+            "value": 0.0203
+          },
+          {
+            "x": 5216,
+            "y": 5195,
+            "value": 0.211
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B11",
+        "description": "Ground reflectance without the correction of slope effects, band B11",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 608,
+            "y": 2480,
+            "value": "NaN"
+          },
+          {
+            "x": 3134,
+            "y": 3087,
+            "value": 0.1032
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B12",
+        "description": "Ground reflectance without the correction of slope effects, band B12",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2776,
+            "y": 2863,
+            "value": 0.1159
+          },
+          {
+            "x": 2474,
+            "y": 3189,
+            "value": 0.0683
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B2",
+        "description": "Ground reflectance without the correction of slope effects, band B2",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 158,
+            "y": 4662,
+            "value": "NaN"
+          },
+          {
+            "x": 770,
+            "y": 10901,
+            "value": 0.0125
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B3",
+        "description": "Ground reflectance without the correction of slope effects, band B3",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3258,
+            "y": 8181,
+            "value": 0.0871
+          },
+          {
+            "x": 8822,
+            "y": 8085,
+            "value": 0.0695
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B4",
+        "description": "Ground reflectance without the correction of slope effects, band B4",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 9162,
+            "y": 10381,
+            "value": 0.0278
+          },
+          {
+            "x": 2729,
+            "y": 5839,
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B5",
+        "description": "Ground reflectance without the correction of slope effects, band B5",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3354,
+            "y": 1427,
+            "value": -0.0042
+          },
+          {
+            "x": 3035,
+            "y": 828,
+            "value": 0.1397
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B6",
+        "description": "Ground reflectance without the correction of slope effects, band B6",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2610,
+            "y": 3069,
+            "value": 0.1617
+          },
+          {
+            "x": 524,
+            "y": 4665,
+            "value": 0.1474
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B7",
+        "description": "Ground reflectance without the correction of slope effects, band B7",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 528,
+            "y": 427,
+            "value": "NaN"
+          },
+          {
+            "x": 2498,
+            "y": 3713,
+            "value": 0.1798
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B8",
+        "description": "Ground reflectance without the correction of slope effects, band B8",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 5106,
+            "y": 9829,
+            "value": 0.2476
+          },
+          {
+            "x": 9524,
+            "y": 6588,
+            "value": 0.1521
+          }
+        ]
+      },
+      {
+        "name": "Surface_Reflectance_B8A",
+        "description": "Ground reflectance without the correction of slope effects, band B8A",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "-1.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 5281,
+            "y": 2091,
+            "value": 0.5268
+          },
+          {
+            "x": 482,
+            "y": 2924,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "WVC_R1",
+        "description": "Water vapor content at 10m resolution in cm",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "geophysicalUnit": "cm",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 8075,
+            "y": 6532,
+            "value": 0.55
+          },
+          {
+            "x": 10718,
+            "y": 2042,
+            "value": 0.75
+          }
+        ]
+      },
+      {
+        "name": "WVC_R2",
+        "description": "Water vapor content at 20m resolution in cm",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "geophysicalUnit": "cm",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2527,
+            "y": 1432,
+            "value": 1.15
+          },
+          {
+            "x": 1257,
+            "y": 3555,
+            "value": 1.15
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_aot_interpolation_R1",
+        "description": "Interpolated AOT pixels mask",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 7023,
+            "y": 4804,
+            "value": 0.0
+          },
+          {
+            "x": 5836,
+            "y": 6227,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_aot_interpolation_R2",
+        "description": "Interpolated AOT pixels mask",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2173,
+            "y": 1174,
+            "value": 1.0
+          },
+          {
+            "x": 1531,
+            "y": 4879,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_Cloud_R1",
+        "description": "Cloud mask computed by MACCS software, made of 1 band coded over 8 useful bits",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 10383,
+            "y": 6368,
+            "value": 0.0
+          },
+          {
+            "x": 8323,
+            "y": 3603,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_Cloud_R2",
+        "description": "Cloud mask computed by MACCS software, made of 1 band coded over 8 useful bits",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3077,
+            "y": 1596,
+            "value": 0.0
+          },
+          {
+            "x": 4552,
+            "y": 4780,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_Edge_R1",
+        "description": "Edge mask",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 1187,
+            "y": 9740,
+            "value": 0.0
+          },
+          {
+            "x": 3776,
+            "y": 8939,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_Edge_R2",
+        "description": "Edge mask",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 1000,
+            "y": 3801,
+            "value": 0.0
+          },
+          {
+            "x": 3252,
+            "y": 3014,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_Saturation_R1",
+        "description": "saturation mask coded over 8 bits, 1 bit per spectral band (number of useful bits = number of spectral bands)",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2258,
+            "y": 3361,
+            "value": 0.0
+          },
+          {
+            "x": 4505,
+            "y": 9482,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_Saturation_R2",
+        "description": "saturation mask coded over 8 bits, 1 bit per spectral band (number of useful bits = number of spectral bands)",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3852,
+            "y": 4927,
+            "value": 0.0
+          },
+          {
+            "x": 1633,
+            "y": 5449,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "sun_zenith",
+        "description": "Sun zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 12,
+            "y": 2,
+            "value": 63.4219
+          },
+          {
+            "x": 4,
+            "y": 12,
+            "value": 63.1289
+          }
+        ]
+      },
+      {
+        "name": "sun_azimuth",
+        "description": "Sun azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 10,
+            "y": 2,
+            "value": 159.572
+          },
+          {
+            "x": 19,
+            "y": 13,
+            "value": 160.086
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B2",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2,
+            "y": 15,
+            "value": "NaN"
+          },
+          {
+            "x": 16,
+            "y": 10,
+            "value": 7.07214
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B2",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 3,
+            "y": 1,
+            "value": "NaN"
+          },
+          {
+            "x": 19,
+            "y": 6,
+            "value": 109.578
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B3",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 13,
+            "y": 22,
+            "value": 7.23027
+          },
+          {
+            "x": 17,
+            "y": 0,
+            "value": 7.5617
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B3",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 4,
+            "y": 5,
+            "value": "NaN"
+          },
+          {
+            "x": 7,
+            "y": 4,
+            "value": 107.261
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B4",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 6,
+            "y": 20,
+            "value": 10.1181
+          },
+          {
+            "x": 22,
+            "y": 1,
+            "value": 5.56898
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B4",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 18,
+            "y": 11,
+            "value": 114.532
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B5",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 6,
+            "y": 13,
+            "value": 10.7283
+          },
+          {
+            "x": 21,
+            "y": 3,
+            "value": 5.81921
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B5",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2,
+            "y": 3,
+            "value": "NaN"
+          },
+          {
+            "x": 20,
+            "y": 2,
+            "value": 115.863
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B6",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 8,
+            "y": 20,
+            "value": 9.40709
+          },
+          {
+            "x": 13,
+            "y": 13,
+            "value": 8.08205
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B6",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 7,
+            "y": 7,
+            "value": 110.301
+          },
+          {
+            "x": 8,
+            "y": 19,
+            "value": 94.9371
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B7",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 7,
+            "y": 15,
+            "value": 10.2096
+          },
+          {
+            "x": 14,
+            "y": 15,
+            "value": 7.55484
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B7",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 12,
+            "y": 2,
+            "value": 94.112
+          },
+          {
+            "x": 10,
+            "y": 18,
+            "value": 93.5977
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B8",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 18,
+            "y": 20,
+            "value": 5.43754
+          },
+          {
+            "x": 0,
+            "y": 16,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B8",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 20,
+            "y": 13,
+            "value": 97.439
+          },
+          {
+            "x": 14,
+            "y": 20,
+            "value": 109.822
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B8A",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 22,
+            "y": 7,
+            "value": 5.20506
+          },
+          {
+            "x": 8,
+            "y": 0,
+            "value": 11.1068
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B8A",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 19,
+            "y": 13,
+            "value": 88.2128
+          },
+          {
+            "x": 13,
+            "y": 9,
+            "value": 92.3644
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B11",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 9,
+            "y": 22,
+            "value": 8.84568
+          },
+          {
+            "x": 5,
+            "y": 16,
+            "value": 10.8683
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B11",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 21,
+            "y": 6,
+            "value": 90.8935
+          },
+          {
+            "x": 7,
+            "y": 19,
+            "value": 95.3014
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B12",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 7,
+            "y": 12,
+            "value": 10.4893
+          },
+          {
+            "x": 8,
+            "y": 18,
+            "value": 9.62966
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B12",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 12,
+            "y": 5,
+            "value": 92.8553
+          },
+          {
+            "x": 2,
+            "y": 16,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_mean",
+        "description": "Mean viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 16,
+            "y": 18,
+            "value": 6.487075
+          },
+          {
+            "x": 19,
+            "y": 1,
+            "value": 6.7759523
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_mean",
+        "description": "Mean viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 19,
+            "y": 5,
+            "value": 115.21999
+          },
+          {
+            "x": 15,
+            "y": 21,
+            "value": 114.77049
+          }
+        ]
+      }
+    ],
+    "masks": [
+      {
+        "name": "AOT_Interpolation_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Interpolated AOT pixels mask"
+      },
+      {
+        "name": "AOT_Interpolation_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Interpolated AOT pixels mask"
+      },
+      {
+        "name": "cloud_mask_all_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "edge_mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Edge mask"
+      },
+      {
+        "name": "edge_mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Edge mask"
+      },
+      {
+        "name": "saturation_B2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B2"
+      },
+      {
+        "name": "saturation_B3",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B3"
+      },
+      {
+        "name": "saturation_B4",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B4"
+      },
+      {
+        "name": "saturation_B8",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B8"
+      },
+      {
+        "name": "saturation_B5",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B5"
+      },
+      {
+        "name": "saturation_B6",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B6"
+      },
+      {
+        "name": "saturation_B7",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B7"
+      },
+      {
+        "name": "saturation_B8A",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B8A"
+      },
+      {
+        "name": "saturation_B11",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B11"
+      },
+      {
+        "name": "saturation_B12",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Saturation mask of band B12"
+      }
+    ],
+    "metadata": [
+      {
+        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Global_Index_List/QUALITY_INDEX[4]",
+        "value": "3"
+      },
+      {
+        "path": "Metadata/Geoposition_Informations/Coordinate_Reference_System/Horizontal_Coordinate_System/HORIZONTAL_CS_TYPE",
+        "value": "PROJECTED"
+      },
+      {
+        "path": "Metadata/Geometric_Informations/Angles_Grids_List/Viewing_Incidence_Angles_Grids_List/Band_Viewing_Incidence_Angles_Grids_List[9]/Viewing_Incidence_Angles_Grids[11]/Azimuth/Values_List/VALUES[12]",
+        "value": "NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN"
+      },
+      {
+        "path": "Metadata/Geometric_Informations/Angles_Grids_List/Viewing_Incidence_Angles_Grids_List/Band_Viewing_Incidence_Angles_Grids_List/Viewing_Incidence_Angles_Grids[9]/Azimuth/Values_List/VALUES",
+        "value": "NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN"
+      },
+      {
+        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Source_Product/PRODUCTION_DATE",
+        "value": "2016-05-10T11:16:58.098898Z"
+      },
+      {
+        "path": "Metadata/Geoposition_Informations/Geopositioning/Global_Geopositioning/Point[2]/LAT",
+        "value": "45.12267188"
+      },
+      {
+        "path": "Metadata/Radiometric_Informations/Special_Values_List/SPECIAL_VALUE[2]",
+        "value": "0"
+      },
+      {
+        "path": "Metadata/Production_Informations/Processing_Jobs_List/Job[3]/Parameter_List/Parameter/NATURE",
+        "value": "PARAM_CORRATMO"
+      },
+      {
+        "path": "Metadata/Radiometric_Informations/Spectral_Band_Informations_List/Spectral_Band_Informations[6]/Calibration_Coefficients_Lists/Native_Coefficients_List/COEFFICIENT",
+        "value": "4.88652814148193"
+      },
+      {
+        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Global_Index_List/QUALITY_INDEX",
+        "value": "16"
+      }
+    ]
+  }
+}

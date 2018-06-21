@@ -35,7 +35,7 @@ class CloudShadowUtils {
         double minX = Math.max(0, sourceRectangle.getX());
         double minY = Math.max(0, sourceRectangle.getY());
         double maxX = Math.min(productWidth - 1, sourceRectangle.getX() + sourceRectangle.getWidth() - 1);
-        double maxY = Math.min(productHeight -1, sourceRectangle.getY() + sourceRectangle.getHeight() - 1);
+        double maxY = Math.min(productHeight - 1, sourceRectangle.getY() + sourceRectangle.getHeight() - 1);
         if (sinSaa + QUARTER_DIVIDER < 1e-8) {
             //upper border
             if (y1 < minY) { //intersection exists
@@ -80,12 +80,12 @@ class CloudShadowUtils {
             endPoint.setLocation(x1 - x0, y1 - y0);
         }
         Point2D[] vertices = new Point2D[]{new Point2D.Double(0, 0), endPoint};
-        final ShapeRasterizer shapeRasterizer = new ShapeRasterizer();
+        final PotentialPathShapeRasterizer shapeRasterizer = new PotentialPathShapeRasterizer();
         return shapeRasterizer.rasterize(vertices);
     }
 
     static double[] computeDistance(int index0, int indexPath, float[] sourceLongitude, float[] sourceLatitude,
-                                            float[] sourceAltitude) {
+                                    float[] sourceAltitude) {
         double k = Math.PI / 180.0;
         double geoPos1Lon = sourceLongitude[index0];
         double geoPos1Lat = sourceLatitude[index0];
@@ -104,7 +104,7 @@ class CloudShadowUtils {
         double cosDelta = Math.cos(delta);
         double sinDelta = Math.sin(delta);
         double y = Math.sqrt(Math.pow(cosPos2Lat * sinDelta, 2) +
-                                     Math.pow(cosPos1Lat * sinPos2Lat - sinPos1Lat * cosPos2Lat * cosDelta, 2));
+                Math.pow(cosPos1Lat * sinPos2Lat - sinPos1Lat * cosPos2Lat * cosDelta, 2));
         double x = sinPos1Lat * sinPos2Lat + cosPos1Lat * cosPos2Lat * cosDelta;
         double ad = Math.atan2(y, x);
         double[] distAltArray = new double[3];

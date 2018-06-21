@@ -12,13 +12,13 @@ import static junit.framework.Assert.assertEquals;
 /**
  * @author Tonio Fincke
  */
-public class S2IdepixCloudShadowOpTest {
+public class S2IdepixPreCloudShadowOpTest {
 
-    private S2IdepixCloudShadowOp cloudShadowOp;
+    private S2IdepixPreCloudShadowOp cloudShadowOp;
 
     @Before
     public void setUp() {
-        cloudShadowOp = new S2IdepixCloudShadowOp();
+        cloudShadowOp = new S2IdepixPreCloudShadowOp();
     }
 
     @Test
@@ -32,54 +32,6 @@ public class S2IdepixCloudShadowOpTest {
         assertEquals(107.17967697244907, cloudShadowOp.determineSearchBorderRadius(20, 15), 1e-8);
         assertEquals(35.72655899081636, cloudShadowOp.determineSearchBorderRadius(60, 15), 1e-8);
         assertEquals(17.86327949540818, cloudShadowOp.determineSearchBorderRadius(120, 15), 1e-8);
-    }
-
-    @Test
-    public void testGetRightBorderExtension() {
-        assertEquals(0, cloudShadowOp.getRightBorderExtension(100, 0, 0));
-        assertEquals(100, cloudShadowOp.getRightBorderExtension(100, 0, 90));
-        assertEquals(100, cloudShadowOp.getRightBorderExtension(100, 90, 0));
-        assertEquals(100, cloudShadowOp.getRightBorderExtension(100, 90, 180));
-        assertEquals(1, cloudShadowOp.getRightBorderExtension(100, 0, 180));
-        assertEquals(71, cloudShadowOp.getRightBorderExtension(100, 45, 180));
-        assertEquals(35, cloudShadowOp.getRightBorderExtension(100, 10, 20));
-        assertEquals(0, cloudShadowOp.getRightBorderExtension(100, 225, 315));
-    }
-
-    @Test
-    public void testGetLeftBorderExtension() {
-        assertEquals(0, cloudShadowOp.getLeftBorderExtension(100, 0, 0));
-        assertEquals(100, cloudShadowOp.getLeftBorderExtension(100, 0, 270));
-        assertEquals(100, cloudShadowOp.getLeftBorderExtension(100, 270, 0));
-        assertEquals(100, cloudShadowOp.getLeftBorderExtension(100, 270, 180));
-        assertEquals(0, cloudShadowOp.getLeftBorderExtension(100, 0, 180));
-        assertEquals(71, cloudShadowOp.getLeftBorderExtension(100, 315, 180));
-        assertEquals(35, cloudShadowOp.getLeftBorderExtension(100, 350, 340));
-        assertEquals(0, cloudShadowOp.getLeftBorderExtension(100, 135, 45));
-    }
-
-    @Test
-    public void testGetTopBorderExtension() {
-        assertEquals(1, cloudShadowOp.getTopBorderExtension(100, 90, 90));
-        assertEquals(100, cloudShadowOp.getTopBorderExtension(100, 0, 0));
-        assertEquals(100, cloudShadowOp.getTopBorderExtension(100, 90, 0));
-        assertEquals(100, cloudShadowOp.getTopBorderExtension(100, 0, 270));
-        assertEquals(0, cloudShadowOp.getTopBorderExtension(100, 270, 180));
-        assertEquals(71, cloudShadowOp.getTopBorderExtension(100, 45, 270));
-        assertEquals(35, cloudShadowOp.getTopBorderExtension(100, 80, 70));
-        assertEquals(0, cloudShadowOp.getTopBorderExtension(100, 235, 135));
-    }
-
-    @Test
-    public void testGetBottomBorderExtension() {
-        assertEquals(0, cloudShadowOp.getBottomBorderExtension(100, 90, 90));
-        assertEquals(100, cloudShadowOp.getBottomBorderExtension(100, 90, 180));
-        assertEquals(100, cloudShadowOp.getBottomBorderExtension(100, 180, 90));
-        assertEquals(100, cloudShadowOp.getBottomBorderExtension(100, 270, 180));
-        assertEquals(1, cloudShadowOp.getBottomBorderExtension(100, 0, 270));
-        assertEquals(71, cloudShadowOp.getBottomBorderExtension(100, 135, 270));
-        assertEquals(35, cloudShadowOp.getBottomBorderExtension(100, 100, 110));
-        assertEquals(0, cloudShadowOp.getBottomBorderExtension(100, 45, 315));
     }
 
     @Test
@@ -102,7 +54,7 @@ public class S2IdepixCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, 5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(10, 10, 15, 15);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 20, 20);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -112,7 +64,7 @@ public class S2IdepixCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, -5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(10, 5, 15, 15);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 20, 20);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -122,7 +74,7 @@ public class S2IdepixCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, 5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(5, 10, 15, 15);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 20, 20);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -132,7 +84,7 @@ public class S2IdepixCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(10, 10, 10, 10);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, -5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 15, 15);
+        Rectangle expectedSourceRectangle = new Rectangle(5, 5, 20, 20);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -142,7 +94,7 @@ public class S2IdepixCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, 5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(2, 2, 8, 8);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 10, 10);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -152,7 +104,7 @@ public class S2IdepixCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(5, -5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(2, 0, 8, 8);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 10, 10);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -162,7 +114,7 @@ public class S2IdepixCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, 5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(0, 2, 8, 8);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 10, 10);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 
@@ -172,7 +124,7 @@ public class S2IdepixCloudShadowOpTest {
         Rectangle targetRecangle = new Rectangle(2, 2, 6, 6);
         Point2D[] relativePath = new Point2D[]{new Point2D.Double(-5, -5)};
         Rectangle sourceRectangle = cloudShadowOp.getSourceRectangle(targetRecangle, relativePath);
-        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 8, 8);
+        Rectangle expectedSourceRectangle = new Rectangle(0, 0, 10, 10);
         assertEquals(expectedSourceRectangle, sourceRectangle);
     }
 

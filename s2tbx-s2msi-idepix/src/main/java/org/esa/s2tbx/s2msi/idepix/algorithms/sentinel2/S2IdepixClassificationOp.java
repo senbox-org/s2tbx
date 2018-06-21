@@ -200,7 +200,7 @@ public class S2IdepixClassificationOp extends Operator {
             landWaterBand = waterMaskProduct.getBand("land_water_fraction");
         }
 
-        if (sourceProduct.containsBand("elevation")) {
+        if (sourceProduct.containsBand(S2IdepixConstants.ELEVATION_BAND_NAME)) {
             elevationProduct = sourceProduct;
         } else {
             AddElevationOp elevationOp = new AddElevationOp();
@@ -242,7 +242,7 @@ public class S2IdepixClassificationOp extends Operator {
             nnTargetTile = targetTiles.get(nnTargetBand);
         }
 
-        final Band elevationBand = targetProduct.getBand("elevation");
+        final Band elevationBand = targetProduct.getBand(S2IdepixConstants.ELEVATION_BAND_NAME);
         final Tile elevationTile = getSourceTile(elevationBand, rectangle);
         final Tile validPixelTile = getSourceTile(validPixelMask, rectangle);
 
@@ -361,7 +361,7 @@ public class S2IdepixClassificationOp extends Operator {
             b.setUnit("dl");
         }
 
-        Band b = ProductUtils.copyBand("elevation", elevationProduct, targetProduct, true);
+        Band b = ProductUtils.copyBand(S2IdepixConstants.ELEVATION_BAND_NAME, elevationProduct, targetProduct, true);
         b.setUnit("m");
 
         if (sourceProduct.containsBand("lat") && !targetProduct.containsBand("lat")) {
@@ -634,6 +634,8 @@ public class S2IdepixClassificationOp extends Operator {
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_BRIGHTWHITE, s2Algorithm.isBrightWhite());
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_VEG_RISK, s2Algorithm.isVegRisk());
         targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_MOUNTAIN_SHADOW, false); //not computed here
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_POTENTIAL_SHADOW, false); //not computed here
+        targetTile.setSample(x, y, S2IdepixConstants.IDEPIX_CLUSTERED_CLOUD_SHADOW, false); //not computed here
     }
 
     /**

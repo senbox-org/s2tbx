@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.esa.s2tbx</groupId>
         <artifactId>s2tbx</artifactId>
-        <version>6.0.1-SNAPSHOT</version>
+        <version>6.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-s2msi-idepix</artifactId>
@@ -14,6 +14,10 @@
 
     <name>Sentinel-2 Toolbox S2-MSI Idepix</name>
     <description>Generic classification of pixels (cloud, snow, ice, land, water) originating from S2-MSI instrument.</description>
+
+    <properties>
+        <s2tbx.idepix.version>6.0.1.1</s2tbx.idepix.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -53,6 +57,17 @@
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-watermask</artifactId>
             <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jblas</groupId>
+            <artifactId>jblas</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.emory.mathcs</groupId>
+            <artifactId>jtransforms</artifactId>
+            <version>2.3</version>
         </dependency>
 
         <dependency>

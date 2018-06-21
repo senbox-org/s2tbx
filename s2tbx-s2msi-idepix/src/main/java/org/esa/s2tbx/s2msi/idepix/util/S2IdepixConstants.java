@@ -18,7 +18,6 @@ public class S2IdepixConstants {
     public static final int IDEPIX_WHITE = 8;
     public static final int IDEPIX_COASTLINE = 9;
     public static final int IDEPIX_LAND = 10;
-
     public static final int IDEPIX_CIRRUS_SURE = 11;
     public static final int IDEPIX_CIRRUS_AMBIGUOUS = 12;
     public static final int IDEPIX_CLEAR_LAND = 13;
@@ -27,9 +26,12 @@ public class S2IdepixConstants {
     public static final int IDEPIX_BRIGHTWHITE = 16;
     public static final int IDEPIX_VEG_RISK = 17;
     public static final int IDEPIX_MOUNTAIN_SHADOW = 18;
+    public static final int IDEPIX_POTENTIAL_SHADOW = 19;
+    public static final int IDEPIX_CLUSTERED_CLOUD_SHADOW = 20;
 
     public static final int NO_DATA_VALUE = -1;
 
+    public static final String ELEVATION_BAND_NAME = "elevation";
 
     public static final String[] S2_MSI_REFLECTANCE_BAND_NAMES = {
             "B1",
@@ -47,10 +49,13 @@ public class S2IdepixConstants {
             "B12"
     };
 
+    public static final String SUN_ZENITH_BAND_NAME = "sun_zenith";
+    public static final String SUN_AZIMUTH_BAND_NAME = "sun_azimuth";
+
     public static final String[] S2_MSI_ANNOTATION_BAND_NAMES = {
-            "sun_zenith",
+            SUN_ZENITH_BAND_NAME,
             "view_zenith_mean",
-            "sun_azimuth",
+            SUN_AZIMUTH_BAND_NAME,
             "view_azimuth_mean",
     };
 

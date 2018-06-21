@@ -25,16 +25,17 @@ public class PreparationMaskBandTest {
             2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
             2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
             2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 66, 66, 66, 66, 66, 66, 66, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 6, 6, 6, 6, 6, 6, 6, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 66, 66, 66, 6, 6, 6, 6, 6, 6, 6, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 66, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 66, 66, 6, 6, 6, 6, 6, 6, 6, 6, 6};
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6
+    };
 
     @Test
     public void prepareMaskBand() throws Exception {
@@ -45,7 +46,7 @@ public class PreparationMaskBandTest {
         final Rectangle sourceRectangle = new Rectangle(21, 17);
         final Band classifBand = s2Product.getBand("pixel_classif_flags");
         final Tile classifSourceTile = new TileImpl(classifBand, classifBand.getSourceImage().getData());
-        final FlagDetectorSentinel2 flagDetector = new FlagDetectorSentinel2(classifSourceTile, null, sourceRectangle);
+        final FlagDetector flagDetector = new FlagDetector(classifSourceTile, sourceRectangle);
         PreparationMaskBand.prepareMaskBand(21, 17, sourceRectangle, flagArray, flagDetector);
 
         assertArrayEquals(EXPECTED_FLAG_ARRAY, flagArray);

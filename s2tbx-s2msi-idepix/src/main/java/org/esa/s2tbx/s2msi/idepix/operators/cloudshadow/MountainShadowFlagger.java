@@ -7,106 +7,92 @@ import java.awt.geom.Point2D;
 
 /**
  * @author Tonio Fincke
+ * @author Dagmar Müller
  */
 class MountainShadowFlagger {
 
     private static final boolean SHADOW_ADAPTER_SZA = true;
 
-    static void flagMountainShadowArea(int productWidth, int productHeight, Rectangle sourceRectangle,
-                                       Rectangle targetRectangle, float sourceSunZenith, float sourceSunAzimuth,
-                                       float[] sourceAltitude, int[] flagArray, float minAltitude, float maxAltitude) {
+    static void flagMountainShadowArea(Rectangle sourceRectangle, float sourceSunZenith, float[] sourceAltitude,
+                                       int[] flagArray, float minAltitude, float maxAltitude, Point2D[] relativePath) {
         final int sourceWidth = sourceRectangle.width;
         final int sourceHeight = sourceRectangle.height;
-
+        //GK: SunZenith is reduced to find more than the core shadow.
         double sunZenithIntermediate;
         if (SHADOW_ADAPTER_SZA) {
-            sunZenithIntermediate = (double) sourceSunZenith * (2. * Math.pow(((90. - (double) sourceSunZenith) / 90), 3) + 1.);
+            sunZenithIntermediate =
+                    (double) sourceSunZenith * (2. * Math.pow(((90. - (double) sourceSunZenith) / 90), 3) + 1.);
         } else {
             sunZenithIntermediate = (double) sourceSunZenith;
         }
         double sunZenithRad = Math.min(89.0, sunZenithIntermediate) * MathUtils.DTOR;
-        double sunAzimuthRad = sourceSunAzimuth * MathUtils.DTOR;
-        final Point2D[] relativePath = CloudShadowUtils.getRelativePath(minAltitude, sunZenithRad, sunAzimuthRad,
-                                                                        maxAltitude, sourceRectangle, targetRectangle,
-                                                                        productHeight, productWidth,
-                                                                        S2IdepixCloudShadowOp.spatialResolution, false,
-                                                                        true);
         if (relativePath.length < 2) {
             return;
         }
         final double[] relativeMinMountainHeights = getRelativeMinMountainHeights(relativePath,
-                                                                                 S2IdepixCloudShadowOp.spatialResolution,
-                                                                                 sunZenithRad);
+                S2IdepixPreCloudShadowOp.spatialResolution,
+                sunZenithRad);
         if (maxAltitude - minAltitude < relativeMinMountainHeights[1]) {
             return;
         }
-        int xOffset = targetRectangle.x - sourceRectangle.x;
-        int yOffset = targetRectangle.y - sourceRectangle.y;
-        int width = targetRectangle.width;
-        int height = targetRectangle.height;
-        int xLimit = xOffset + width;
-        int yLimit = yOffset + height;
-        int max = width + height - 1;
-        int i = 0;
-        if (sourceSunAzimuth < 90) {
-            while (i < max) {
-                int x = xOffset + Math.min(i, width - 1);
-                int y = yLimit + Math.min(-1, height - 2 - i);
-                while (x >= xOffset && y >= yOffset) {
-                    identifyMountainShadow(x, y, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
-                                           sourceAltitude, flagArray, maxAltitude);
-                    x--;
-                    y--;
+        int xOffset = 0;
+        int yOffset = 0;
+
+        int relPathDeltaX1 = (int) relativePath[1].getX();
+        int ip = 2;
+        while (relPathDeltaX1 == 0 && ip < relativePath.length) {
+            relPathDeltaX1 = (int) relativePath[ip].getX();
+            ip++;
+        }
+        int relPathDeltaY1 = (int) relativePath[1].getY();
+        ip = 2;
+        while (relPathDeltaY1 == 0 && ip < relativePath.length) {
+            relPathDeltaY1 = (int) relativePath[ip].getY();
+            ip++;
+        }
+        if (relPathDeltaX1 > 0) {
+            if (relPathDeltaY1 > 0) {
+                for (int i = xOffset; i < sourceWidth; i++) {
+                    for (int j = yOffset; j < sourceHeight; j++) {
+                        identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
+                                sourceAltitude, flagArray, maxAltitude);
+                    }
                 }
-                i++;
-            }
-        } else if (sourceSunAzimuth < 180) {
-            while (i < max) {
-                int x = xOffset + Math.min(i, width - 1);
-                int y = yOffset + Math.max(0, i - height + 1);
-                while (x >= xOffset && y < yLimit) {
-                    identifyMountainShadow(x, y, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
-                                           sourceAltitude, flagArray, maxAltitude);
-                    x--;
-                    y++;
+            } else {
+                for (int i = xOffset; i < sourceWidth; i++) {
+                    for (int j = sourceHeight - 1; j > yOffset - 1; j--) {
+                        identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
+                                sourceAltitude, flagArray, maxAltitude);
+                    }
                 }
-                i++;
-            }
-        } else if (sourceSunAzimuth < 270) {
-            while (i < max) {
-                int x = xOffset + Math.max(0, width - 1 - i);
-                int y = yOffset + Math.max(0, i - height + 1);
-                while (x < xLimit && y < yLimit) {
-                    identifyMountainShadow(x, y, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
-                                           sourceAltitude, flagArray, maxAltitude);
-                    x++;
-                    y++;
-                }
-                i++;
             }
         } else {
-            while (i < max) {
-                int x = xOffset + Math.max(0, width - 1 - i);
-                int y = yLimit + Math.min(-1, height - 2 - i);
-                while (x < xLimit && y >= yOffset) {
-                    identifyMountainShadow(x, y, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
-                                           sourceAltitude, flagArray, maxAltitude);
-                    x++;
-                    y--;
+            if (relPathDeltaY1 > 0) {
+                for (int i = sourceWidth - 1; i > xOffset - 1; i--) {
+                    for (int j = yOffset; j < sourceHeight; j++) {
+                        identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
+                                sourceAltitude, flagArray, maxAltitude);
+                    }
                 }
-                i++;
+            } else {
+                for (int i = sourceWidth - 1; i > xOffset - 1; i--) {
+                    for (int j = sourceHeight - 1; j > yOffset - 1; j--) {
+                        identifyMountainShadow(i, j, relativePath, relativeMinMountainHeights, sourceHeight, sourceWidth,
+                                sourceAltitude, flagArray, maxAltitude);
+                    }
+                }
             }
         }
     }
 
     static double[] getRelativeMinMountainHeights(Point2D[] relativePath, double spatialResolution, double sunZenith) {
         double[] relativeMinMountainHeights = new double[relativePath.length];
-        final double sunFactor = Math.tan(Math.PI / 2. - sunZenith);
-        for (int i = 1; i < relativePath.length; i++) {
+        final double sunFactor = Math.tan(sunZenith);
+        for (int i = 0; i < relativePath.length; i++) {
             final double x = relativePath[i].getX();
             final double y = relativePath[i].getY();
             double dist = Math.sqrt(Math.pow(spatialResolution * x, 2) + Math.pow(spatialResolution * y, 2));
-            relativeMinMountainHeights[i] = dist * sunFactor;
+            relativeMinMountainHeights[i] = dist / sunFactor;
         }
         return relativeMinMountainHeights;
     }
@@ -116,11 +102,11 @@ class MountainShadowFlagger {
                                                float[] sourceAltitude, int[] flagArray, float maxAltitude) {
         int index0 = y0 * width + x0;
         float altitude0 = sourceAltitude[index0];
-        if (((flagArray[index0] & PreparationMaskBand.MOUNTAIN_SHADOW_FLAG) == PreparationMaskBand.MOUNTAIN_SHADOW_FLAG)
-                || Float.isNaN(altitude0)) {
+        if (Float.isNaN(altitude0)) {
             return;
         }
-        for (int i = 1; i < relativePath.length; i++) {
+
+        for (int i = 0; i < relativePath.length; i++) {
             if (altitude0 + relativeMinMountainHeights[i] > maxAltitude) {
                 return;
             }
@@ -134,21 +120,11 @@ class MountainShadowFlagger {
             if (Float.isNaN(altitude1)) {
                 continue;
             }
-            if (altitude1 - altitude0 > relativeMinMountainHeights[i]) {
-                flagArray[index0] += PreparationMaskBand.MOUNTAIN_SHADOW_FLAG;
-                for (int j = 1; j < i; j++) {
-                    int x2 = x0 + (int) relativePath[j].getX();
-                    int y2 = y0 + (int) relativePath[j].getY();
-                    final Point2D.Double relativePos = new Point2D.Double(x1 - x2, y1 - y2);
-                    if (org.esa.snap.core.util.ArrayUtils.isMemberOf(relativePos, relativePath)) {
-                        int index2 = y2 * width + x2;
-                        if (!((flagArray[index2] & PreparationMaskBand.MOUNTAIN_SHADOW_FLAG) ==
-                                PreparationMaskBand.MOUNTAIN_SHADOW_FLAG)) {
-                            flagArray[index2] += PreparationMaskBand.MOUNTAIN_SHADOW_FLAG;
-                        }
-                    }
+            if (altitude0 - altitude1 > relativeMinMountainHeights[i]) {
+                if (!((flagArray[index1] & PreparationMaskBand.MOUNTAIN_SHADOW_FLAG) ==
+                        PreparationMaskBand.MOUNTAIN_SHADOW_FLAG)) {
+                    flagArray[index1] += PreparationMaskBand.MOUNTAIN_SHADOW_FLAG;
                 }
-                return;
             }
         }
     }
