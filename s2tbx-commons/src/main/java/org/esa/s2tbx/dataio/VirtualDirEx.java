@@ -558,7 +558,7 @@ public abstract class VirtualDirEx extends VirtualDir {
 
         public static boolean isTgz(String filename) {
             final String extension = FileUtils.getExtension(filename);
-            return (".tgz".equals(extension) || ".gz".equals(extension));
+            return (".tgz".equals(extension) || filename.endsWith("tar.gz"));
         }
 
         public static boolean isTar(String filename) {
