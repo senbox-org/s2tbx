@@ -5,7 +5,7 @@
     <parent>
         <artifactId>s2tbx-sta-adapters</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>6.0.2-SNAPSHOT</version>
+        <version>6.0.2</version>
     </parent>
     <version>6.0.3-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
