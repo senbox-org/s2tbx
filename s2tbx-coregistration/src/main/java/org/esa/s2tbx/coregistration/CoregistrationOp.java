@@ -115,6 +115,7 @@ public class CoregistrationOp extends Operator {
     }
 
     public void doExecute(Product sourceMasterProduct, Product sourceSlaveProduct, int[] radArray) {
+        //sourceMasterProduct.getSceneGeoCoding().getMapCRS()
         if (masterSourceBand == null || masterSourceBand.isEmpty() ||
                 sourceMasterProduct.getBand(masterSourceBand) == null) {
             throw new OperatorException("Band name " + masterSourceBand + " wrong for master product " +
@@ -226,8 +227,14 @@ public class CoregistrationOp extends Operator {
                 ImagePyramidCache.writeImage(Ix.get(), "Ix");
                 SoftReference<BufferedImage> Iy = new SoftReference<>(ImageOperations.gradientCol2(I0));
                 ImagePyramidCache.writeImage(Iy.get(), "Iy");
+                if(Ix.get() == null){
+                    Ix = new SoftReference<BufferedImage>(ImagePyramidCache.readImage("Ix").getAsBufferedImage());
+                }
                 WeakReference<RenderedImage> Ixx = new WeakReference<>(MultiplyDescriptor.create(Ix.get(), Ix.get(), null));
                 ImagePyramidCache.writeImage(Ixx.get(), "Ixx");
+                if(Iy.get() == null){
+                    Iy = new SoftReference<BufferedImage>(ImagePyramidCache.readImage("Iy").getAsBufferedImage());
+                }
                 WeakReference<RenderedImage> Iyy = new WeakReference<>(MultiplyDescriptor.create(Iy.get(), Iy.get(), null));
                 ImagePyramidCache.writeImage(Iyy.get(), "Iyy");
                 WeakReference<RenderedImage> Ixy = new WeakReference<>(MultiplyDescriptor.create(Ix.get(), Iy.get(), null));
@@ -240,11 +247,26 @@ public class CoregistrationOp extends Operator {
                     for (int j = 0; j < fen.length; j++) {
                         fen[j] = 1;
                     }
-                    WeakReference<RenderedImage> Ixxload = new WeakReference<>(ImagePyramidCache.readImage("Ixx"));
+                    WeakReference<RenderedImage> Ixxload;
+                    if(Ixx.get() == null){
+                        Ixxload = new WeakReference<>(ImagePyramidCache.readImage("Ixx"));
+                    } else {
+                        Ixxload = Ixx;
+                    }
                     RenderedImage A = ImageOperations.doubleConvolve(Ixxload.get(), fen);
-                    WeakReference<RenderedImage> Iyyload = new WeakReference<>(ImagePyramidCache.readImage("Iyy"));
+                    WeakReference<RenderedImage> Iyyload;
+                    if(Iyy.get() == null){
+                        Iyyload = new WeakReference<>(ImagePyramidCache.readImage("Iyy"));
+                    } else {
+                        Iyyload = Iyy;
+                    }
                     RenderedImage B = ImageOperations.doubleConvolve(Iyyload.get(), fen);
-                    WeakReference<RenderedImage> Ixyload = new WeakReference<>(ImagePyramidCache.readImage("Ixy"));
+                    WeakReference<RenderedImage> Ixyload;
+                    if(Ixy.get() == null){
+                        Ixyload = new WeakReference<>(ImagePyramidCache.readImage("Ixy"));
+                    } else {
+                        Ixyload = Ixy;
+                    }
                     RenderedImage C = ImageOperations.doubleConvolve(Ixyload.get(), fen);
                     RenderedImage D = SubtractDescriptor.create(
                             MultiplyDescriptor.create(A, B, null),
