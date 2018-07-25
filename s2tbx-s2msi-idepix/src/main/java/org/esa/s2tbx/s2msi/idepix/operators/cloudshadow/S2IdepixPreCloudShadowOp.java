@@ -25,6 +25,7 @@ import org.opengis.referencing.operation.MathTransform;
 
 import javax.media.jai.BorderExtenderConstant;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -50,14 +51,12 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private Product targetProduct;
 
     private final static double MAX_CLOUD_HEIGHT = 8000.;
-    private final static int MAX_TILE_DIMENSION = 1400;
+    private final static int MAX_TILE_DIMENSION_IN_M = 84000;
 
     private Band sourceBandClusterA;
     private Band sourceBandClusterB;
 
     private Band sourceBandFlag1;
-
-    private static int tileid;
 
     static int mincloudBase = 100;
     static int maxcloudTop = 10000;
@@ -130,9 +129,6 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         RasterDataNode sourceSunZenith = s2ClassifProduct.getBand(sourceSunZenithName);
         // take these. They're as good as the tile dimensions from any other band and DEFINITELY more reliable than
         // the preferred tile size of the s2ClassifProduct
-        final int sourceTileWidth = sourceSunZenith.getSourceImage().getTileWidth();
-        final int sourceTileHeight = sourceSunZenith.getSourceImage().getTileHeight();
-        final double maximumSunZenith = sourceSunZenith.getStx().getMaximum();
         RasterDataNode sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
         RasterDataNode sourceViewAzimuth = s2ClassifProduct.getBand(sourceViewAzimuthName);
         RasterDataNode sourceViewZenith = s2ClassifProduct.getBand(sourceViewZenithName);
@@ -168,22 +164,6 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         setupBitmasks(targetProduct);
 
         spatialResolution = determineSourceResolution();
-        searchBorderRadius = (int) determineSearchBorderRadius(S2IdepixPreCloudShadowOp.spatialResolution,
-                maximumSunZenith);
-        final int tileWidth = determineSourceTileWidth(s2ClassifProduct.getSceneRasterWidth(), sourceTileWidth,
-                searchBorderRadius, searchBorderRadius);
-        final int tileHeight = determineSourceTileHeight(s2ClassifProduct.getSceneRasterHeight(), sourceTileHeight,
-                searchBorderRadius, searchBorderRadius);
-        tileid = 0;
-        // todo: discuss
-        if (s2ClassifProduct.getSceneRasterWidth() > tileWidth || s2ClassifProduct.getSceneRasterHeight() > tileHeight) {
-            final int preferredTileWidth = Math.min(s2ClassifProduct.getSceneRasterWidth(), tileWidth);
-            final int preferredTileHeight = Math.min(s2ClassifProduct.getSceneRasterHeight(), tileHeight);
-            targetProduct.setPreferredTileSize(preferredTileWidth, preferredTileHeight); //1500
-        } else {
-            targetProduct.setPreferredTileSize(s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
-            searchBorderRadius = 0;
-        }
     }
 
     private double determineSourceResolution() throws OperatorException {
@@ -197,18 +177,9 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         throw new OperatorException("Invalid product");
     }
 
-    private int determineSourceTileWidth(int rasterWidth, int tileWidth,
-                                         int rightBorderExtension, int leftBorderExtension) {
-        return determineSourceTileSize(rasterWidth, tileWidth, rightBorderExtension, leftBorderExtension);
-    }
-
-    private int determineSourceTileHeight(int rasterHeight, int tileHeight,
-                                          int topBorderExtension, int bottomBorderExtension) {
-        return determineSourceTileSize(rasterHeight, tileHeight, topBorderExtension, bottomBorderExtension);
-    }
-
     int determineSourceTileSize(int rasterSize, int tileSize, int borderExtension1, int borderExtension2) {
-        int maxTileSize = Math.min(MAX_TILE_DIMENSION - borderExtension1 - borderExtension2, 2 * tileSize);
+        int maxTileDimension = (int)(MAX_TILE_DIMENSION_IN_M / spatialResolution);
+        int maxTileSize = Math.min(maxTileDimension - borderExtension1 - borderExtension2, 2 * tileSize);
         final int minNumTiles = (int) Math.floor(rasterSize / maxTileSize * 1.);
         int bestTileSize = Integer.MIN_VALUE;
         int smallestDiff = Integer.MAX_VALUE;
@@ -300,7 +271,11 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         int sourceLength = sourceRectangle.width * sourceRectangle.height;
 
         final int[] flagArray = new int[sourceLength];
-        final int mytileid = tileid++;
+        Dimension tileSize = targetProduct.getPreferredTileSize();
+        int tileX = (int) (targetRectangle.getX() / tileSize.getWidth());
+        int tileY = (int) (targetRectangle.getY() / tileSize.getHeight());
+        int numXTiles = targetProduct.getSceneRasterWidth() / (int) tileSize.getWidth();
+        final int tileid = (tileY * numXTiles) + tileX;
 
         final float[][] clusterData = {getSamples(sourceBandClusterA, sourceRectangle),
                 getSamples(sourceBandClusterB, sourceRectangle)};
@@ -323,10 +298,10 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         final CloudBulkShifter cloudBulkShifter = new CloudBulkShifter();
         cloudBulkShifter.shiftCloudBulkAlongCloudPathType(sourceRectangle, targetRectangle, sunAzimuthMean,
                 clusterData, flagArray, cloudShadowRelativePath);
-        meanReflPerTile.put(mytileid, cloudBulkShifter.getMeanReflectanceAlongPath());
-        NCloudOverLand.put(mytileid, cloudBulkShifter.getNCloudOverLand());
-        NCloudOverWater.put(mytileid, cloudBulkShifter.getNCloudOverWater());
-        NValidPixelTile.put(mytileid, cloudBulkShifter.getNValidPixel());
+        meanReflPerTile.put(tileid, cloudBulkShifter.getMeanReflectanceAlongPath());
+        NCloudOverLand.put(tileid, cloudBulkShifter.getNCloudOverLand());
+        NCloudOverWater.put(tileid, cloudBulkShifter.getNCloudOverWater());
+        NValidPixelTile.put(tileid, cloudBulkShifter.getNValidPixel());
 
     }
 

@@ -60,9 +60,6 @@ public class S2IdepixPostCloudShadowOp extends Operator {
     @Parameter(description = "Offset along cloud path to minimum reflectance (over all tiles)", defaultValue = "0")
     private int bestOffset;
 
-    private final static double MAX_CLOUD_HEIGHT = 8000.;
-    private final static int MAX_TILE_DIMENSION = 1400;
-
     private Band sourceBandClusterA;
     private Band sourceBandClusterB;
 
@@ -75,9 +72,6 @@ public class S2IdepixPostCloudShadowOp extends Operator {
     private Band targetBandTileID;
     private Band targetBandShadowID;
     private Band targetBandCloudTest;
-
-    private static int tileid;
-    private Map<Integer, Rectangle> rectangleTile = new HashMap<>();
 
     private static int maxcloudTop = 10000;
     //for calculating a single cloud path
@@ -140,7 +134,7 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         ProductUtils.copyGeoCoding(s2ClassifProduct, targetProduct);
         targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
         targetBandCloudID = targetProduct.addBand(BAND_NAME_CLOUD_ID, ProductData.TYPE_INT32);
-        targetBandTileID = targetProduct.addBand(BAND_NAME_TILE_ID, ProductData.TYPE_INT32);
+        targetBandTileID = targetProduct.addBand(BAND_NAME_TILE_ID, ProductData.TYPE_INT8);
         targetBandShadowID = targetProduct.addBand(BAND_NAME_SHADOW_ID, ProductData.TYPE_INT32);
         targetBandCloudTest = targetProduct.addBand(BAND_NAME_CLOUD_TEST, ProductData.TYPE_FLOAT64);
         attachFlagCoding(targetBandCloudShadow);
@@ -152,9 +146,6 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         RasterDataNode sourceSunZenith = s2ClassifProduct.getBand(sourceSunZenithName);
         // take these. They're as good as the tile dimensions from any other band and DEFINITELY more reliable than
         // the preferred tile size of the s2ClassifProduct
-        final int sourceTileWidth = sourceSunZenith.getSourceImage().getTileWidth();
-        final int sourceTileHeight = sourceSunZenith.getSourceImage().getTileHeight();
-        final double maximumSunZenith = sourceSunZenith.getStx().getMaximum();
         RasterDataNode sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
         sourceAltitude = s2ClassifProduct.getBand(sourceAltitudeName);
         RasterDataNode sourceViewAzimuth = s2ClassifProduct.getBand(sourceViewAzimuthName);
@@ -183,21 +174,6 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         sourceBandFlag1 = s2ClassifProduct.getBand(sourceFlagName1);
 
         spatialResolution = determineSourceResolution();
-        int searchBorderRadius = (int) determineSearchBorderRadius(S2IdepixPostCloudShadowOp.spatialResolution,
-                maximumSunZenith);
-        final int tileWidth = determineSourceTileWidth(targetProduct.getSceneRasterWidth(), sourceTileWidth,
-                searchBorderRadius, searchBorderRadius);
-        final int tileHeight = determineSourceTileHeight(targetProduct.getSceneRasterHeight(), sourceTileHeight,
-                searchBorderRadius, searchBorderRadius);
-        tileid = 0;
-        // todo: discuss
-        if (targetProduct.getSceneRasterWidth() > tileWidth || targetProduct.getSceneRasterHeight() > tileHeight) {
-            final int preferredTileWidth = Math.min(targetProduct.getSceneRasterWidth(), tileWidth);
-            final int preferredTileHeight = Math.min(targetProduct.getSceneRasterHeight(), tileHeight);
-            targetProduct.setPreferredTileSize(preferredTileWidth, preferredTileHeight); //1500
-        } else {
-            targetProduct.setPreferredTileSize(targetProduct.getSceneRasterWidth(), targetProduct.getSceneRasterHeight());
-        }
         switch (mode) {
             case "LandWater":
                 analysisMode = Mode.LAND_WATER;
@@ -330,42 +306,6 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         throw new OperatorException("Invalid product: ");
     }
 
-    private int determineSourceTileWidth(int rasterWidth, int tileWidth,
-                                         int rightBorderExtension, int leftBorderExtension) {
-        return determineSourceTileSize(rasterWidth, tileWidth, rightBorderExtension, leftBorderExtension);
-    }
-
-    private int determineSourceTileHeight(int rasterHeight, int tileHeight,
-                                          int topBorderExtension, int bottomBorderExtension) {
-        return determineSourceTileSize(rasterHeight, tileHeight, topBorderExtension, bottomBorderExtension);
-    }
-
-    private int determineSourceTileSize(int rasterSize, int tileSize, int borderExtension1, int borderExtension2) {
-        int maxTileSize = Math.min(MAX_TILE_DIMENSION - borderExtension1 - borderExtension2, 2 * tileSize);
-        final int minNumTiles = (int) Math.floor(rasterSize / maxTileSize * 1.);
-        int bestTileSize = Integer.MIN_VALUE;
-        int smallestDiff = Integer.MAX_VALUE;
-        for (int i = minNumTiles; i >= 1; i++) {
-            if (rasterSize % i == 0) {
-                final int candidateDiff = Math.abs(tileSize - rasterSize / i);
-                if (candidateDiff > smallestDiff) {
-                    break;
-                }
-                bestTileSize = rasterSize / i;
-                smallestDiff = Math.abs(tileSize - bestTileSize);
-            }
-        }
-        if (smallestDiff < Integer.MAX_VALUE) {
-            return bestTileSize;
-        }
-        return maxTileSize;
-    }
-
-    private double determineSearchBorderRadius(double spatialResolution, double maxSunZenith) {
-        final double maxCloudDistance = MAX_CLOUD_HEIGHT / Math.tan(Math.toRadians(90. - maxSunZenith));
-        return maxCloudDistance / spatialResolution;
-    }
-
     private float[] getSamples(RasterDataNode rasterDataNode, Rectangle rectangle) {
         Tile tile = getSourceTile(rasterDataNode, rectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
         return tile.getSamplesFloat();
@@ -403,17 +343,11 @@ public class S2IdepixPostCloudShadowOp extends Operator {
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
-
-        final int mytileid = tileid;
-        if (rectangleTile.isEmpty()) {
-            rectangleTile.put(mytileid, targetRectangle);
-        } else {
-            if (rectangleTile.containsValue(targetRectangle)) {
-                return;
-            } else {
-                rectangleTile.put(mytileid, targetRectangle);
-            }
-        }
+        Dimension tileSize = targetProduct.getPreferredTileSize();
+        int tileX = (int) (targetRectangle.getX() / tileSize.getWidth());
+        int tileY = (int) (targetRectangle.getY() / tileSize.getHeight());
+        int numXTiles = targetProduct.getSceneRasterWidth() / (int) tileSize.getWidth();
+        final int tileid = (tileY * numXTiles) + tileX;
         final float[] targetAltitude = getSamples(sourceAltitude, targetRectangle);
         final List<Float> altitudes = Arrays.asList(ArrayUtils.toObject(targetAltitude));
         final Point2D[] cloudShadowRelativePath = CloudShadowUtils.getRelativePath(
@@ -437,7 +371,7 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         final int[] tileIDArray = new int[sourceLength];
         final int[] shadowIDArray = new int[sourceLength];
         final double[] cloudTestArray = new double[sourceLength];
-        Arrays.fill(tileIDArray, tileid++);
+        Arrays.fill(tileIDArray, tileid);
 
         final float[] altitude = getSamples(sourceAltitude, sourceRectangle);
         final float[][] clusterData = {getSamples(sourceBandClusterA, sourceRectangle),
