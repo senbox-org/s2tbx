@@ -94,17 +94,8 @@ public class S2IdepixCloudShadowOp extends Operator {
         //Postprocessing
         //
         //Generation of all cloud shadow flags
-        final String operatorAliasPost = OperatorSpi.getOperatorAlias(S2IdepixPostCloudShadowOp.class);
-        final S2IdepixPostCloudShadowOp cloudShadowPostProcessingOperator =
-                (S2IdepixPostCloudShadowOp) GPF.getDefaultInstance().createOperator(operatorAliasPost, postParams, postInput, null);
-
-        //trigger computation of all tiles
-        final OperatorExecutor operatorExecutorPost = OperatorExecutor.create(cloudShadowPostProcessingOperator);
-        operatorExecutorPost.execute(ProgressMonitor.NULL);
-
-        targetProduct = cloudShadowPostProcessingOperator.getTargetProduct();
-
-        setTargetProduct(targetProduct);
+        Product postProduct = GPF.createProduct("Idepix.Sentinel2.CloudShadow.Postprocess", postParams, postInput);
+        setTargetProduct(postProduct);
     }
 
     private int chooseBestOffset(int[] bestOffset) {
