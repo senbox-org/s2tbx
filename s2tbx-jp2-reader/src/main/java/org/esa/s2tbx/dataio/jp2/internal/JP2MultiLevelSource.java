@@ -24,12 +24,18 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -134,6 +140,9 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
             logger.warning("No tile images for mosaic");
             return null;
         }
+        if (tileImages.size() == 1) {
+            return tileImages.get(0);
+        }
 
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setMinX(0);
@@ -143,7 +152,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         imageLayout.setTileGridXOffset(0);
         imageLayout.setTileGridYOffset(0);
 
-        RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
+        RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[0]),
                                                       MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                       null, null, null, null,
                                                       new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
