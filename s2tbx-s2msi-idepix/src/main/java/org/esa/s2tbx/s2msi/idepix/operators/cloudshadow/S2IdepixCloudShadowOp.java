@@ -13,11 +13,17 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
+import org.esa.snap.core.gpf.internal.OperatorImage;
+import org.esa.snap.core.gpf.internal.OperatorImageTileStack;
 import org.esa.snap.core.util.SystemUtils;
 import org.opengis.referencing.operation.MathTransform;
 
+import javax.media.jai.CachedTile;
+import javax.media.jai.JAI;
 import java.awt.geom.AffineTransform;
+import java.awt.image.RenderedImage;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +82,31 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
+        JAI.getDefaultInstance().getTileCache().setTileComparator(new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                return getWeight(o1) - getWeight(o2) - 1; // do not return equality as that keeps us in while loop
+            }
+
+            private int getWeight(Object o) {
+                if (!(o instanceof CachedTile)) {
+                    return -1;
+                }
+                RenderedImage oOwner = ((CachedTile) o).getOwner();
+                if (!(oOwner instanceof OperatorImageTileStack)) {
+                    return 0;
+                }
+                if (((OperatorImageTileStack)oOwner).getTargetBand().getName().equals("pixel_classif_flags")) {
+                    return 2;
+                }
+                if (((OperatorImageTileStack)oOwner).getTargetBand().getName().equals("S2IdepixCloudShadowOp.BAND_NAME_CLOUD_SHADOW")) {
+                    return 4;
+                }
+                return 0;
+            }
+
+        });
+
         int sourceResolution = determineSourceResolution(l1cProduct);
 
         Product classificationProduct = getClassificationProduct(sourceResolution);
