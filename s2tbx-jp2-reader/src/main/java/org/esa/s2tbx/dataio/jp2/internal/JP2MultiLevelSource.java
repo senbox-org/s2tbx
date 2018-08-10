@@ -24,12 +24,18 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -52,6 +58,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     private final Logger logger;
     private final int bandIndex;
     private final TileImageDisposer tileManager;
+    private boolean directMode;
 
     /**
      * Constructs an instance of a single band multi-level image source
@@ -85,6 +92,9 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         this.tileManager = new TileImageDisposer();
     }
 
+    public void enableDirectMode(boolean enable) {
+        directMode = enable;
+    }
     /**
      * Creates a planar image corresponding of a tile identified by row and column, at the specified resolution.
      *
@@ -97,9 +107,9 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         // the edge tiles dimensions may be less than the dimensions from JP2 header
         if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
             currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
-                                            Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
-                                            Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
-                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+                                           Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
+                                           Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
+                                           tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
             currentLayout.numBands = tileLayout.numBands;
         }
         return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);

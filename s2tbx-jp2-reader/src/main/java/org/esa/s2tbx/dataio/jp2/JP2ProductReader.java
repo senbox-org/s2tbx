@@ -46,6 +46,7 @@ import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.runtime.Config;
 import org.geotools.referencing.CRS;
 
 import javax.media.jai.JAI;
@@ -63,9 +64,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
-import static org.esa.s2tbx.dataio.Utils.getMD5sum;
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
+import static org.esa.s2tbx.dataio.Utils.*;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.*;
 
 /**
  * Generic reader for JP2 files.
@@ -89,6 +89,7 @@ public class JP2ProductReader extends AbstractProductReader {
     }};
 
     private final Logger logger;
+    private Boolean directMode;
     private Product product;
     private Path tmpFolder;
 
@@ -96,6 +97,17 @@ public class JP2ProductReader extends AbstractProductReader {
         super(readerPlugIn);
         logger = Logger.getLogger(JP2ProductReader.class.getName());
         registerMetadataParser();
+    }
+
+    public void enableDirectMode(Boolean directMode) {
+        this.directMode = directMode;
+    }
+
+    public boolean isDirectModeEnabled() {
+        if (directMode == null) {
+            directMode = Boolean.parseBoolean(Config.instance("s2tbx").preferences().get("use.openjp2.jna", "false"));
+        }
+        return directMode;
     }
 
     @Override
@@ -125,7 +137,7 @@ public class JP2ProductReader extends AbstractProductReader {
         Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
         Properties versionProp = new Properties();
 
-        try (InputStream inputStream = Files.newInputStream(versionFile)){
+        try (InputStream inputStream = Files.newInputStream(versionFile)) {
             versionProp.load(inputStream);
         } catch (IOException e) {
             SystemUtils.LOG.severe("JP2-reader configuration error: Failed to read " + versionFile.toString());
@@ -155,7 +167,7 @@ public class JP2ProductReader extends AbstractProductReader {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
 
-        if(!validateOpenJpegExecutables(OpenJpegExecRetriever.getOpjDump(),OpenJpegExecRetriever.getOpjDecompress())){
+        if (!validateOpenJpegExecutables(OpenJpegExecRetriever.getOpjDump(), OpenJpegExecRetriever.getOpjDecompress())) {
             throw new IOException("Invalid OpenJpeg executables");
         }
 
@@ -198,17 +210,17 @@ public class JP2ProductReader extends AbstractProductReader {
                     if (crsGeocoding != null && origin != null) {
                         try {
                             geoCoding = new CrsGeoCoding(CRS.decode(crsGeocoding.replace("::", ":")),
-                                    imageWidth, imageHeight,
-                                    origin.getX(), origin.getY(),
-                                    metadata.getStepX(), -metadata.getStepY());
+                                                         imageWidth, imageHeight,
+                                                         origin.getX(), origin.getY(),
+                                                         metadata.getStepX(), -metadata.getStepY());
                         } catch (Exception gEx) {
                         }
                     }
-                    if(geoCoding == null){
+                    if (geoCoding == null) {
                         try {
                             float[] latPoints = null;
                             float[] lonPoints = null;
-                            if(origin != null){
+                            if (origin != null) {
                                 float oX = (float) origin.getX();
                                 float oY = (float) origin.getY();
                                 float h = (float) imageHeight * (float) metadata.getStepY();
@@ -228,7 +240,7 @@ public class JP2ProductReader extends AbstractProductReader {
                                             (float) polygonPositions.get(2).getY()};
                                 }
                             }
-                            if(latPoints != null ) {
+                            if (latPoints != null) {
                                 TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, imageWidth, imageHeight, latPoints);
                                 TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, imageWidth, imageHeight, lonPoints);
                                 geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
@@ -247,9 +259,9 @@ public class JP2ProductReader extends AbstractProductReader {
                 for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
                     int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
                     Band virtualBand = new Band(bandNames != null ? bandNames[bandIdx] : "band_" + String.valueOf(bandIdx + 1),
-                            precisionTypeMap.get(precision),
-                            imageWidth,
-                            imageHeight);
+                                                precisionTypeMap.get(precision),
+                                                imageWidth,
+                                                imageHeight);
                     JP2MultiLevelSource source = new JP2MultiLevelSource(
                             getFileInput(getInput()),
                             tmpFolder,
@@ -260,6 +272,7 @@ public class JP2ProductReader extends AbstractProductReader {
                             csInfo.getNumTilesX(), csInfo.getNumTilesY(),
                             csInfo.getNumResolutions(), dataTypeMap.get(precision),
                             product.getSceneGeoCoding());
+                    source.enableDirectMode(isDirectModeEnabled());
                     virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
                     if (bandScales != null && bandOffsets != null) {
                         virtualBand.setScalingFactor(bandScales[bandIdx]);
