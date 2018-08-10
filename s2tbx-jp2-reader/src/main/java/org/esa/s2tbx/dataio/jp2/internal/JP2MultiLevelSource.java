@@ -52,6 +52,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     private final Logger logger;
     private final int bandIndex;
     private final TileImageDisposer tileManager;
+    private boolean directMode;
 
     /**
      * Constructs an instance of a single band multi-level image source
@@ -85,6 +86,9 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         this.tileManager = new TileImageDisposer();
     }
 
+    public void enableDirectMode(boolean enable) {
+        directMode = enable;
+    }
     /**
      * Creates a planar image corresponding of a tile identified by row and column, at the specified resolution.
      *
@@ -97,9 +101,9 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         // the edge tiles dimensions may be less than the dimensions from JP2 header
         if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
             currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
-                                            Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
-                                            Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
-                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+                                           Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
+                                           Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
+                                           tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
             currentLayout.numBands = tileLayout.numBands;
         }
         return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);

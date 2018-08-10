@@ -29,7 +29,6 @@ import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.runtime.Config;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -38,8 +37,14 @@ import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -63,7 +68,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     // each time and, therefore, takes unnecessary time
     private static final Map<Path, Rectangle> tileDims = new HashMap<>();
 
-    private static final int[] bands = new int[] { 0 };
+    private static final int[] bands = new int[]{0};
 
     private Boolean useOpenJp2Jna;
 
@@ -77,10 +82,10 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     private final Logger logger;
 
     private JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
-                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level) throws IOException {
+                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level, boolean directMode) {
         super(dataType, null, tileLayout.tileWidth, tileLayout.tileHeight,
-                getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
-                null, ResolutionLevel.create(imageModel, level));
+              getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
+              null, ResolutionLevel.create(imageModel, level));
 
         Assert.notNull(imageFile, "imageFile");
         Assert.notNull(cacheDir, "cacheDir");
@@ -95,37 +100,52 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         this.bandIndex = bandIdx;
         this.dataType = dataType;
 
-        //if (useOpenJp2Jna == null) {
-            /* Uncomment to use the direct openJp2 decompression */
-            String openJp2 = OpenJpegExecRetriever.getOpenJp2();
-            useOpenJp2Jna = Boolean.parseBoolean(Config.instance("s2tbx").preferences().get("use.openjp2.jna", "false")) &&
-                    openJp2 != null && tileLayout.numBands == 1;
-            /*useOpenJp2Jna = false;*/
-        //}
+        boolean openJp2JnaPossible = OpenJpegExecRetriever.getOpenJp2() != null && tileLayout.numBands == 1;
+        useOpenJp2Jna = directMode && openJp2JnaPossible;
     }
 
     /**
      * Factory method for creating a TileOpImage instance.
      *
-     * @param imageFile     The JP2 file
-     * @param cacheDir      The directory where decompressed tiles will be extracted
-     * @param bandIdx       The index of the band for which the operator is created
-     * @param row           The row of the tile in the scene layout
-     * @param col           The column of the tile in the scene layout
-     * @param tileLayout    The scene layout
-     * @param imageModel    The multi-level image model
-     * @param dataType      The data type of the tile raster
-     * @param level         The resolution at which the tile is created
+     * @param imageFile  The JP2 file
+     * @param cacheDir   The directory where decompressed tiles will be extracted
+     * @param bandIdx    The index of the band for which the operator is created
+     * @param row        The row of the tile in the scene layout
+     * @param col        The column of the tile in the scene layout
+     * @param tileLayout The scene layout
+     * @param imageModel The multi-level image model
+     * @param dataType   The data type of the tile raster
+     * @param level      The resolution at which the tile is created
      */
     public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx,
                                      int row, int col, TileLayout tileLayout,
                                      MultiLevelModel imageModel, int dataType, int level) throws IOException {
+        return create(imageFile, cacheDir, bandIdx, row, col, tileLayout, imageModel, dataType, level, false);
+    }
+
+    /**
+     * Factory method for creating a TileOpImage instance.
+     *
+     * @param imageFile  The JP2 file
+     * @param cacheDir   The directory where decompressed tiles will be extracted
+     * @param bandIdx    The index of the band for which the operator is created
+     * @param row        The row of the tile in the scene layout
+     * @param col        The column of the tile in the scene layout
+     * @param tileLayout The scene layout
+     * @param imageModel The multi-level image model
+     * @param dataType   The data type of the tile raster
+     * @param level      The resolution at which the tile is created
+     * @param directMode Enables direct reading from Jp2 files, if possible
+     */
+    public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx,
+                                     int row, int col, TileLayout tileLayout,
+                                     MultiLevelModel imageModel, int dataType, int level, boolean directMode) {
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
         if (imageFile != null) {
             //jp2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
-            return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
+            return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level, directMode);
         } else {
             int targetWidth = tileLayout.tileWidth;
             int targetHeight = tileLayout.tileHeight;
@@ -133,9 +153,9 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(dataType, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
-                    (float) imageLayout.getHeight(null),
-                    new Short[]{0},
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                             (float) imageLayout.getHeight(null),
+                                             new Short[]{0},
+                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         }
     }
 
@@ -178,7 +198,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                         }
                     }
                     if (readTileImage != null) {
-                        Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, new int[] { bandIndex });
+                        Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, new int[]{bandIndex});
                         dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
                     }
                 } catch (IOException e) {
@@ -241,7 +261,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
     private static Dimension getTileDim(int width, int height) {
         return new Dimension(width < JAI.getDefaultTileSize().width ? width : JAI.getDefaultTileSize().width,
-                height < JAI.getDefaultTileSize().height ? height : JAI.getDefaultTileSize().height);
+                             height < JAI.getDefaultTileSize().height ? height : JAI.getDefaultTileSize().height);
     }
 
     private Path decompressTile(int tileIndex, int level) throws IOException {
@@ -255,9 +275,8 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             }};
             String tileFileName;
             if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS && (tileFile.getParent() != null)) {
-                tileFileName = Utils.GetIterativeShortPathNameW(tileFile.getParent().toString()) + File.separator + tileFile.getName(tileFile.getNameCount()-1);
-            }
-            else {
+                tileFileName = Utils.GetIterativeShortPathNameW(tileFile.getParent().toString()) + File.separator + tileFile.getName(tileFile.getNameCount() - 1);
+            } else {
                 tileFileName = tileFile.toString();
             }
 
