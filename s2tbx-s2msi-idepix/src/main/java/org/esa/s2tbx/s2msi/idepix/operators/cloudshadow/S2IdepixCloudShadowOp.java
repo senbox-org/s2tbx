@@ -1,6 +1,8 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
@@ -12,7 +14,9 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.util.SystemUtils;
+import org.opengis.referencing.operation.MathTransform;
 
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +33,9 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     private static Logger logger = SystemUtils.LOG;
 
+    @SourceProduct(description = "The original input product")
+    private Product l1cProduct;
+
     @SourceProduct(description = "The classification product.")
     private Product s2ClassifProduct;
 
@@ -42,6 +49,24 @@ public class S2IdepixCloudShadowOp extends Operator {
     @Parameter(description = "Whether to also compute mountain shadow", defaultValue = "true")
     private boolean computeMountainShadow;
 
+    @Parameter(defaultValue = "0.01",
+            label = " Threshold CW_THRESH",
+            description = " Threshold CW_THRESH")
+    private double cwThresh;
+
+    @Parameter(defaultValue = "-0.11",
+            label = " Threshold GCL_THRESH",
+            description = " Threshold GCL_THRESH")
+    private double gclThresh;
+
+    @Parameter(defaultValue = "0.01",
+            label = " Threshold CL_THRESH",
+            description = " Threshold CL_THRESH")
+    private double clThresh;
+
+    @Parameter(description = "The digital elevation model.", defaultValue = "SRTM 3Sec", label = "Digital Elevation Model")
+    private String demName = "SRTM 3Sec";
+
     public final static String BAND_NAME_CLOUD_SHADOW = "FlagBand";
 
     private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
@@ -51,8 +76,12 @@ public class S2IdepixCloudShadowOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
+        int sourceResolution = determineSourceResolution(l1cProduct);
+
+        Product classificationProduct = getClassificationProduct(sourceResolution);
+
         HashMap<String, Product> preInput = new HashMap<>();
-        preInput.put("s2ClassifProduct", s2ClassifProduct);
+        preInput.put("s2ClassifProduct", classificationProduct);
         Map<String, Object> preParams = new HashMap<>();
         preParams.put("computeMountainShadow", computeMountainShadow);
         preParams.put("mode", mode);
@@ -83,7 +112,7 @@ public class S2IdepixCloudShadowOp extends Operator {
 
 
         HashMap<String, Product> postInput = new HashMap<>();
-        postInput.put("s2ClassifProduct", s2ClassifProduct);
+        postInput.put("s2ClassifProduct", classificationProduct);
         //put in here the input products that are required by the post-processing operator
         Map<String, Object> postParams = new HashMap<>();
         postParams.put("bestOffset", bestOffset);
@@ -95,7 +124,60 @@ public class S2IdepixCloudShadowOp extends Operator {
         //
         //Generation of all cloud shadow flags
         Product postProduct = GPF.createProduct("Idepix.Sentinel2.CloudShadow.Postprocess", postParams, postInput);
-        setTargetProduct(postProduct);
+
+        setTargetProduct(prepareTargetProduct(sourceResolution, postProduct));
+    }
+
+    private int determineSourceResolution(Product product) throws OperatorException {
+        final GeoCoding sceneGeoCoding = product.getSceneGeoCoding();
+        if (sceneGeoCoding instanceof CrsGeoCoding) {
+            final MathTransform imageToMapTransform = sceneGeoCoding.getImageToMapTransform();
+            if (imageToMapTransform instanceof AffineTransform) {
+                return (int)((AffineTransform) imageToMapTransform).getScaleX();
+            }
+        }
+        throw new OperatorException("Invalid product");
+    }
+
+    private Product getClassificationProduct(int resolution) {
+        if (resolution == 60) {
+            return s2ClassifProduct;
+        }
+
+        HashMap<String, Product> resamplingInput = new HashMap<>();
+        resamplingInput.put("sourceProduct", l1cProduct);
+        Map<String, Object> resamplingParams = new HashMap<>();
+        resamplingParams.put("upsampling", "Nearest");
+        resamplingParams.put("downsampling", "First");
+        resamplingParams.put("targetResolution", 60);
+        Product resampledProduct = GPF.createProduct("Resample", resamplingParams, resamplingInput);
+
+        HashMap<String, Product> classificationInput = new HashMap<>();
+        classificationInput.put("sourceProduct", resampledProduct);
+        Map<String, Object> classificationParams = new HashMap<>();
+        classificationParams.put("computeMountainShadow", false);
+        classificationParams.put("computeCloudShadow", false);
+        classificationParams.put("computeCloudBuffer", false);
+        classificationParams.put("cwThresh", cwThresh);
+        classificationParams.put("gclThresh", gclThresh);
+        classificationParams.put("clThresh", clThresh);
+        classificationParams.put("demName", demName);
+
+        return GPF.createProduct("Idepix.Sentinel2", classificationParams, classificationInput);
+    }
+
+    private Product prepareTargetProduct(int resolution, Product postProcessedProduct) {
+        if (resolution == 60) {
+            return postProcessedProduct;
+        }
+
+        HashMap<String, Product> resamplingInput = new HashMap<>();
+        resamplingInput.put("sourceProduct", postProcessedProduct);
+        Map<String, Object> resamplingParams = new HashMap<>();
+        resamplingParams.put("upsampling", "Nearest");
+        resamplingParams.put("downsampling", "First");
+        resamplingParams.put("targetResolution", resolution);
+        return GPF.createProduct("Resample", resamplingParams, resamplingInput);
     }
 
     private int chooseBestOffset(int[] bestOffset) {

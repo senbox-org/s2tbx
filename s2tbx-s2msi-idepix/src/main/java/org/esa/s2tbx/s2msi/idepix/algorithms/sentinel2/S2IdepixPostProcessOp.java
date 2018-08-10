@@ -56,6 +56,24 @@ public class S2IdepixPostProcessOp extends Operator {
             "or Single Band", valueSet = {"LandWater", "MultiBand", "SingleBand"}, defaultValue = "LandWater")
     private String mode;
 
+    @Parameter(defaultValue = "0.01",
+            label = " Threshold CW_THRESH",
+            description = " Threshold CW_THRESH")
+    private double cwThresh;
+
+    @Parameter(defaultValue = "-0.11",
+            label = " Threshold GCL_THRESH",
+            description = " Threshold GCL_THRESH")
+    private double gclThresh;
+
+    @Parameter(defaultValue = "0.01",
+            label = " Threshold CL_THRESH",
+            description = " Threshold CL_THRESH")
+    private double clThresh;
+
+    @Parameter(description = "The digital elevation model.", defaultValue = "SRTM 3Sec", label = "Digital Elevation Model")
+    private String demName = "SRTM 3Sec";
+
     private Band s2ClassifFlagBand;
     private Band cloudBufferFlagBand;
     private Band mountainShadowFlagBand;
@@ -82,10 +100,15 @@ public class S2IdepixPostProcessOp extends Operator {
         cloudShadowFlagBand = null;
         if (computeCloudShadow) {
             HashMap<String, Product> input = new HashMap<>();
+            input.put("l1cProduct", l1cProduct);
             input.put("s2ClassifProduct", s2ClassifProduct);
             Map<String, Object> params = new HashMap<>();
             params.put("computeMountainShadow", computeMountainShadow);
             params.put("mode", mode);
+            params.put("cwThresh", cwThresh);
+            params.put("gclThresh", gclThresh);
+            params.put("clThresh", clThresh);
+            params.put("demName", demName);
             final Product cloudShadowProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixCloudShadowOp.class),
                     params, input);
             cloudShadowFlagBand = cloudShadowProduct.getBand(S2IdepixCloudShadowOp.BAND_NAME_CLOUD_SHADOW);
