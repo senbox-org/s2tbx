@@ -52,6 +52,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     private final Logger logger;
     private final int bandIndex;
     private final TileImageDisposer tileManager;
+    private boolean directMode;
 
     /**
      * Constructs an instance of a single band multi-level image source
@@ -85,6 +86,9 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         this.tileManager = new TileImageDisposer();
     }
 
+    public void enableDirectMode(boolean enable) {
+        directMode = enable;
+    }
     /**
      * Creates a planar image corresponding of a tile identified by row and column, at the specified resolution.
      *
