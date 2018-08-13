@@ -41,7 +41,6 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -154,9 +153,12 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         // It must be specified which values shall be mosaicked. The default settings don't work
         // We want all values to be considered
         ROI[]sourceRois = new ROI[tileImages.size()];
-        RenderedImage refImage = tileImages.get(0);
-        ROI refRoi = new ROI(ConstantDescriptor.create((float) refImage.getWidth(), (float) refImage.getHeight(), new Byte[]{127}, null), 127);
-        Arrays.fill(sourceRois, refRoi);
+        for (int i = 0; i < sourceRois.length; i++) {
+            RenderedImage image = tileImages.get(i);
+            ImageLayout roiLayout = new ImageLayout(image);
+            ROI roi = new ROI(ConstantDescriptor.create((float) image.getWidth(), (float) image.getHeight(), new Byte[]{127}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, roiLayout)), 127);
+            sourceRois[i] = roi;
+        }
 
 
         RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[0]),
