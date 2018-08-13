@@ -1,6 +1,7 @@
 package org.esa.s2tbx.s2msi.idepix.operators.cloudshadow;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -102,9 +103,11 @@ public class S2IdepixCloudShadowOp extends Operator {
                         return 8;
                     }
                 }
-                if (oOwner instanceof OperatorImage &&
-                        ((OperatorImage) oOwner).getTargetBand().getName().equals("elevation")) {
-                    return 2;
+                if (oOwner instanceof OperatorImage) {
+                    Band targetBand = ((OperatorImage) oOwner).getTargetBand();
+                    if (targetBand != null && targetBand.getName() != null && targetBand.getName().equals("elevation")) {
+                        return 2;
+                    }
                 }
 
                 return 0;
