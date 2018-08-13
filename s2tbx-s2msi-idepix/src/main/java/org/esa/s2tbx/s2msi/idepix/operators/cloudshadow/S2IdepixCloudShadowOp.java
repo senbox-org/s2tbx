@@ -93,15 +93,20 @@ public class S2IdepixCloudShadowOp extends Operator {
                     return -1;
                 }
                 RenderedImage oOwner = ((CachedTile) o).getOwner();
-                if (!(oOwner instanceof OperatorImageTileStack)) {
-                    return 0;
+                if (oOwner instanceof OperatorImageTileStack) {
+                    String bandName = ((OperatorImageTileStack) oOwner).getTargetBand().getName();
+                    if (bandName.equals("pixel_classif_flags")) {
+                        return 4;
+                    }
+                    if (bandName.equals(S2IdepixCloudShadowOp.BAND_NAME_CLOUD_SHADOW)) {
+                        return 8;
+                    }
                 }
-                if (((OperatorImageTileStack)oOwner).getTargetBand().getName().equals("pixel_classif_flags")) {
+                if (oOwner instanceof OperatorImage &&
+                        ((OperatorImage) oOwner).getTargetBand().getName().equals("elevation")) {
                     return 2;
                 }
-                if (((OperatorImageTileStack)oOwner).getTargetBand().getName().equals("S2IdepixCloudShadowOp.BAND_NAME_CLOUD_SHADOW")) {
-                    return 4;
-                }
+
                 return 0;
             }
 
