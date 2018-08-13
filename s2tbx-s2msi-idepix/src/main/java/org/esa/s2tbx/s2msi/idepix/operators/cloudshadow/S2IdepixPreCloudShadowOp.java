@@ -71,6 +71,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
     private Map<Integer, double[][]> meanReflPerTile = new HashMap<>();
     private Map<Integer, Integer> NCloudOverLand = new HashMap<>();
     private Map<Integer, Integer> NCloudOverWater = new HashMap<>();
+    private Map<Integer, Integer> NValidPixelTile = new HashMap<>();
 
     static double spatialResolution;  //[m]
     static int clusterCountDefine = 4;
@@ -300,6 +301,7 @@ public class S2IdepixPreCloudShadowOp extends Operator {
         meanReflPerTile.put(tileid, cloudBulkShifter.getMeanReflectanceAlongPath());
         NCloudOverLand.put(tileid, cloudBulkShifter.getNCloudOverLand());
         NCloudOverWater.put(tileid, cloudBulkShifter.getNCloudOverWater());
+        NValidPixelTile.put(tileid, cloudBulkShifter.getNValidPixel());
 
     }
 
@@ -313,6 +315,10 @@ public class S2IdepixPreCloudShadowOp extends Operator {
 
     Map<Integer, Integer> getNCloudOverWaterPerTile() {
         return NCloudOverWater;
+    }
+
+    Map<Integer, Integer> getNValidPixelTile() {
+        return NValidPixelTile;
     }
 
     private void attachFlagCoding(Band targetBandCloudShadow) {

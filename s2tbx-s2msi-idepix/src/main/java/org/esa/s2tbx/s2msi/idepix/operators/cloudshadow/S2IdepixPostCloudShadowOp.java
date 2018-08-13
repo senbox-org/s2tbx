@@ -12,7 +12,6 @@ import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.RasterDataNode;
-import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -21,7 +20,6 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.BitSetter;
 import org.esa.snap.core.util.math.MathUtils;
@@ -33,7 +31,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author Tonio Fincke, Dagmar Müller
@@ -59,6 +56,9 @@ public class S2IdepixPostCloudShadowOp extends Operator {
 
     @Parameter(description = "Whether to also compute mountain shadow", defaultValue = "true")
     private boolean computeMountainShadow;
+
+    @Parameter(description = "Offset along cloud path to minimum reflectance (over all tiles)", defaultValue = "0")
+    private int bestOffset;
 
     private Band sourceBandClusterA;
     private Band sourceBandClusterB;
@@ -125,12 +125,9 @@ public class S2IdepixPostCloudShadowOp extends Operator {
     private static final int F_CLOUD_SHADOW_COMB = 10;
     private static final int F_SHIFTED_CLOUD_SHADOW_GAPS = 11;
     private static final int F_RECOMMENDED_CLOUD_SHADOW = 12;
-    private Logger logger;
-    private int bestOffset;
 
     @Override
     public void initialize() throws OperatorException {
-        logger = Logger.getLogger(getClass().getName());
 
         targetProduct = new Product(s2ClassifProduct.getName(), s2ClassifProduct.getProductType(),
                 s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
@@ -192,40 +189,10 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         }
     }
 
-    @Override
-    public void doExecute(ProgressMonitor pm) throws OperatorException {
-        HashMap<String, Product> preInput = new HashMap<>();
-        preInput.put("s2ClassifProduct", s2ClassifProduct);
-        Map<String, Object> preParams = new HashMap<>();
-        preParams.put("computeMountainShadow", computeMountainShadow);
-        preParams.put("mode", mode);
-
-        //Preprocessing:
-        // No flags are created, only statistics generated to find the best offset along the illumination path.
-        final String operatorAlias = OperatorSpi.getOperatorAlias(S2IdepixPreCloudShadowOp.class);
-        final S2IdepixPreCloudShadowOp cloudShadowPreProcessingOperator =
-                (S2IdepixPreCloudShadowOp) GPF.getDefaultInstance().createOperator(operatorAlias, preParams, preInput, null);
-
-        //trigger computation of all tiles
-        final OperatorExecutor operatorExecutor = OperatorExecutor.create(cloudShadowPreProcessingOperator);
-        operatorExecutor.execute(ProgressMonitor.NULL);
-
-        Map<Integer, Integer> NCloudOverLand = cloudShadowPreProcessingOperator.getNCloudOverLandPerTile();
-        Map<Integer, Integer> NCloudOverWater = cloudShadowPreProcessingOperator.getNCloudOverWaterPerTile();
-        Map<Integer, double[][]> meanReflPerTile = cloudShadowPreProcessingOperator.getMeanReflPerTile();
-
-        int[] bestOffsets = findOverallMinimumReflectance(meanReflPerTile);
-
-        bestOffset = chooseBestOffset(bestOffsets, NCloudOverWater, NCloudOverLand);
-        logger.fine("bestOffset all " + bestOffsets[0]);
-        logger.fine("bestOffset land " + bestOffsets[1]);
-        logger.fine("bestOffset water " + bestOffsets[2]);
-        logger.fine("chosen Offset " + bestOffset);
-    }
-
-    //copied from S2tbxReprojectionOp:
+    //aus S2tbxReprojectionOp kopiert:
     private GeoPos getCenterGeoPos(GeoCoding geoCoding, int width, int height) {
-        final PixelPos centerPixelPos = new PixelPos(0.5 * width + 0.5, 0.5 * height + 0.5);
+        final PixelPos centerPixelPos = new PixelPos(0.5 * width + 0.5,
+                0.5 * height + 0.5);
         return geoCoding.getGeoPos(centerPixelPos, null);
     }
 
@@ -372,114 +339,6 @@ public class S2IdepixPostCloudShadowOp extends Operator {
         diff_phi = diff_phi * Math.tan(viewZenithMean * MathUtils.DTOR);
         if (viewAzimuthMean > 180) diff_phi = -1. * diff_phi;
         return (float) (sunAzimuthMean + diff_phi);
-    }
-
-    private int[] findOverallMinimumReflectance(Map<Integer, double[][]> meanReflPerTile) {
-        double[][] scaledTotalReflectance = new double[3][meanReflPerTile.get(0)[0].length];
-        for (int j = 0; j < 3; j++) {
-            /*Checking the meanReflPerTile:
-                - if it has no relative minimum other than the first or the last value, it is excluded.
-                - if it contains NaNs, it is excluded.
-                Exclusion works by setting values to NaN.
-            */
-            for (int key : meanReflPerTile.keySet()) {
-                double[][] meanValues = meanReflPerTile.get(key);
-                boolean exclude = false;
-                List<Integer> relativeMinimum = indecesRelativMaxInArray(meanValues[j]);
-                if (relativeMinimum.contains(0)) relativeMinimum.remove(relativeMinimum.indexOf(0));
-                if (relativeMinimum.contains(meanValues[j].length-1))
-                    relativeMinimum.remove(relativeMinimum.indexOf(meanValues[j].length-1));
-
-                //smallest relative minimum is in second part of the path -> exclude
-                if (relativeMinimum.indexOf(0) > meanValues[j].length / 2.) exclude = true;
-                if (relativeMinimum.size() == 0) exclude = true;
-                if (exclude) {
-                    for (int i = 0; i < meanValues[j].length; i++) {
-                        meanValues[j][i] = Double.NaN;
-                    }
-                }
-            }
-            //Finding the minimum in brightness in the scaled mean function.
-            for (int key : meanReflPerTile.keySet()) {
-                double[][] meanValues = meanReflPerTile.get(key);
-                double[] maxValue = new double[3];
-                for (int i = 0; i < meanValues[j].length; i++) {
-                    if (!Double.isNaN(meanValues[j][i])) {
-                        if (meanValues[j][i] > maxValue[j]) {
-                            maxValue[j] = meanValues[j][i];
-                        }
-                    }
-                }
-                for (int i = 0; i < meanValues[j].length; i++) {
-                    if (!Double.isNaN(meanValues[j][i]) && maxValue[j] > 0) {
-                        scaledTotalReflectance[j][i] += meanValues[j][i] / maxValue[j];
-                    }
-                }
-            }
-        }
-        int[] offset = new int[3];
-        for (int j = 0; j < 3; j++) {
-            List<Integer> test = indecesRelativMaxInArray(scaledTotalReflectance[j]);
-            if (test.contains(0)) test.remove(test.indexOf(0));
-            if (test.contains(scaledTotalReflectance[j].length-1))
-                test.remove(test.indexOf(scaledTotalReflectance[j].length-1));
-
-            if (test.size() > 0) {
-                offset[j] = test.get(0);
-            }
-        }
-        return offset;
-    }
-
-    private List<Integer> indecesRelativMaxInArray(double[] x) {
-        int lx = x.length;
-        List<Integer> ID = new ArrayList<>();
-        boolean valid = true;
-        int i = 0;
-        while (i < lx && valid) {
-            if (Double.isNaN(x[i])) valid = false;
-            i++;
-        }
-        if (valid) {
-            double fac = -1.;
-
-            if (fac * x[0] > fac * x[1]) ID.add(0);
-            if (fac * x[lx - 1] > fac * x[lx - 2]) ID.add(lx - 1);
-
-            for (i = 1; i < lx - 1; i++) {
-                if (fac * x[i] > fac * x[i - 1] && fac * x[i] > fac * x[i + 1]) ID.add(i);
-            }
-        } else {
-            ID.add(0);
-            ID.add(lx - 1);
-        }
-
-        return ID;
-    }
-
-    private int chooseBestOffset(int[] bestOffset, Map<Integer, Integer> NCloudOverWater, Map<Integer, Integer> NCloudOverLand) {
-        int NCloudWater = 0;
-        int NCloudLand = 0;
-        int out;
-        if (NCloudOverWater.size() > 0) {
-            for (int index : NCloudOverWater.keySet()) {
-                NCloudWater += NCloudOverWater.get(index);
-            }
-        }
-        if (NCloudOverLand.size() > 0) {
-            for (int index : NCloudOverLand.keySet()) {
-                NCloudLand += NCloudOverLand.get(index);
-            }
-        }
-        int Nall = NCloudLand + NCloudWater;
-        float relCloudLand = (float) NCloudLand / Nall;
-        float relCloudWater = (float) NCloudWater / Nall;
-        if (relCloudLand > 2 * relCloudWater) {
-            out = bestOffset[1];
-        } else if (relCloudWater > 2 * relCloudLand) {
-            out = bestOffset[2];
-        } else out = bestOffset[0];
-        return out;
     }
 
     @Override
