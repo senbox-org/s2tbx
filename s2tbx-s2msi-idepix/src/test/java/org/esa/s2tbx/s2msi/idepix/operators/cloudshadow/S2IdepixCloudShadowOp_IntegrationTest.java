@@ -6,6 +6,7 @@ import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.util.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -45,6 +46,7 @@ public class S2IdepixCloudShadowOp_IntegrationTest {
     }
 
     @Test
+    @Ignore
     public void testS2IdepixCloudShadowOp() throws IOException {
         final URL s2ProductURL = S2IdepixCloudShadowOp_IntegrationTest.class.getResource("s2_classif.dim");
         final Product s2Product = ProductIO.readProduct(s2ProductURL.getFile());
