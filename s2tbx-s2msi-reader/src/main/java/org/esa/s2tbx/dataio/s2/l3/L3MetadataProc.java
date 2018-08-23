@@ -119,9 +119,9 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
         indexList.add(S2IndexBandInformation.makeIndex(2, new Color(46, 46, 46), "DARK_FEATURE_SHADOW", "Dark feature shadow"));
         indexList.add(S2IndexBandInformation.makeIndex(3, new Color(100, 50, 0), "CLOUD_SHADOW", "Cloud shadow"));
         indexList.add(S2IndexBandInformation.makeIndex(4, new Color(0, 128, 0), "VEGETATION", "Vegetation"));
-        indexList.add(S2IndexBandInformation.makeIndex(5, new Color(255, 230, 90), "BARE_SOIL_DESERT", "Bare soil / Desert"));
+        indexList.add(S2IndexBandInformation.makeIndex(5, new Color(255, 230, 90), "NOT_VEGETATED", "Not vegetated"));
         indexList.add(S2IndexBandInformation.makeIndex(6, new Color(0, 0, 255), "WATER", "Water"));
-        indexList.add(S2IndexBandInformation.makeIndex(7, new Color(129, 129, 129), "CLOUD_LOW_PROBA", "Cloud (low probability)"));
+        indexList.add(S2IndexBandInformation.makeIndex(7, new Color(129, 129, 129), "UNCLASSIFIED", "Unclassified"));
         indexList.add(S2IndexBandInformation.makeIndex(8, new Color(193, 193, 193), "CLOUD_MEDIUM_PROBA", "Cloud (medium probability)"));
         indexList.add(S2IndexBandInformation.makeIndex(9, new Color(255, 255, 255), "CLOUD_HIGH_PROBA", "Cloud (high probability)"));
         indexList.add(S2IndexBandInformation.makeIndex(10, new Color(100, 200, 255), "THIN_CIRRUS", "Thin cirrus"));

@@ -23,7 +23,7 @@
 
     <folder name="Menu">
         <folder name="Optical">
-            <folder name="Thematic Land Processing">
+            <folder name="Preprocessing">
                 <file name="org-esa-s2tbx-reflectance2radiance-Action.shadow">
                     <attr name="originalFile"
                           stringvalue="Actions/Operators/org-esa-s2tbx-reflectance2radiance-Action.instance"/>

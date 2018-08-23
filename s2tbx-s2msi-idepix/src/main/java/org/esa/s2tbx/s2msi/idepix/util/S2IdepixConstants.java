@@ -49,6 +49,11 @@ public class S2IdepixConstants {
             "B12"
     };
 
+    public static final String[] S2_MSI_CLOUD_SHADOW_REFLECTANCE_BAND_NAMES = {
+            "B3",
+            "B8A"
+    };
+
     public static final String SUN_ZENITH_BAND_NAME = "sun_zenith";
     public static final String SUN_AZIMUTH_BAND_NAME = "sun_azimuth";
 

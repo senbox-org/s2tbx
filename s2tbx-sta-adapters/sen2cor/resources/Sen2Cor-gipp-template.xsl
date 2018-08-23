@@ -5,11 +5,11 @@
 	<xsl:param name="medianFilter" select="0" />
 	<xsl:param name="aerosol" select="'RURAL'"/>
 	<xsl:param name="midLat" select="'SUMMER'"/>
-	<xsl:param name="ozone" select="'h'"/>
+	<xsl:param name="ozone" select="'h - 331'"/>
 	<xsl:param name="wvCorrection" select="1"/>
 	<xsl:param name="visUpdateMode" select="1"/>
 	<xsl:param name="wvWatermask" select="1"/>
-	<xsl:param name="cirrusCorrection" select="0"/>
+	<xsl:param name="cirrusCorrection" select="FALSE"/>
 	<xsl:param name="brdfCorrection" select="0"/>
 	<xsl:param name="brdfLower" select="0.22"/>
 	<xsl:param name="visibility" select="23.0"/>
@@ -64,11 +64,51 @@
 					<!-- RURAL, MARITIME, AUTO -->
 					<Mid_Latitude><xsl:value-of select="$midLat"/></Mid_Latitude>
 					<!-- SUMMER, WINTER, AUTO -->
-					<Ozone_Content><xsl:value-of select="$ozone"/></Ozone_Content>
+
+
+
+					<xsl:if test="$ozone = '0'">
+						<Ozone_Content>0</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'f - 250'">
+						<Ozone_Content>f</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'g - 290'">
+						<Ozone_Content>g</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'h - 331'">
+						<Ozone_Content>h</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'i - 370'">
+						<Ozone_Content>i</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'j - 410'">
+						<Ozone_Content>j</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'k - 450'">
+						<Ozone_Content>k</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 't - 250'">
+						<Ozone_Content>t</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'u - 290'">
+						<Ozone_Content>u</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'v - 330'">
+						<Ozone_Content>v</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'w - 377'">
+						<Ozone_Content>w</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'x - 420'">
+						<Ozone_Content>x</Ozone_Content>
+					</xsl:if>
+					<xsl:if test="$ozone = 'y - 460'">
+						<Ozone_Content>y</Ozone_Content>
+					</xsl:if>
 					<!-- 0, f-k, t-y -->
 					<!-- The atmospheric temperature profile and ozone content:
                       "0" means: get best approximation from metadata (this is smallest difference between metadata and column DU)
-
                       For midlatitude summer atmosphere:
                       "f" 250 DU
                       "g" 290 DU
@@ -76,7 +116,6 @@
                       "i" 370 DU
                       "j" 410 DU
                       "k" 450 DU
-
                       For midlatitude winter atmosphere:
                       "t" 250 DU
                       "u" 290 DU
@@ -93,7 +132,14 @@
 					<!-- 0: constant, 1: variable visibility -->
 					<WV_Watermask><xsl:value-of select="$wvWatermask"/></WV_Watermask>
 					<!-- 0: not replaced, 1: land-average, 2: line-average -->
-					<Cirrus_Correction><xsl:value-of select="$cirrusCorrection"/></Cirrus_Correction>
+
+					<xsl:if test="$cirrusCorrection = 'FALSE'">
+						<Cirrus_Correction>0</Cirrus_Correction>
+					</xsl:if>
+					<xsl:if test="$cirrusCorrection = 'TRUE'">
+						<Cirrus_Correction>1</Cirrus_Correction>
+					</xsl:if>
+
 					<!-- 0: no, 1: yes -->
 					<BRDF_Correction><xsl:value-of select="$brdfCorrection"/></BRDF_Correction>
 					<!-- 0: no BRDF correction, 1: , 2: ,11, 12, 22, 21: -->
