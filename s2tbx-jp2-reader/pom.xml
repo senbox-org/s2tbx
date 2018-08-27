@@ -14,7 +14,7 @@
     <name>Sentinel-2 Toolbox Generic JP2 Reader</name>
     <description>
         This module enables the Sentinel Toolbox to read JP2 data products
-    </description>                                                                                           readAsRenderedImage
+    </description>
 
     <dependencies>
         <dependency>
