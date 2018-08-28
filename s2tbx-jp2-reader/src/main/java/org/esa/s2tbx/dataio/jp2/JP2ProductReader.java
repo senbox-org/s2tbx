@@ -105,9 +105,13 @@ public class JP2ProductReader extends AbstractProductReader {
 
     public boolean isDirectModeEnabled() {
         if (directMode == null) {
-            directMode = Boolean.parseBoolean(Config.instance("s2tbx").preferences().get("use.openjp2.jna", "false"));
+            directMode = getDirectModeProperty();
         }
         return directMode;
+    }
+
+    public static boolean getDirectModeProperty() {
+        return Boolean.parseBoolean(Config.instance("s2tbx").preferences().get("use.openjp2.jna", "false"));
     }
 
     @Override

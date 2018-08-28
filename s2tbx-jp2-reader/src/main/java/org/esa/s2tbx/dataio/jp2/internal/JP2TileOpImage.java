@@ -21,6 +21,7 @@ import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.jp2.JP2ProductReader;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjp2.OpenJP2Decoder;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
@@ -119,7 +120,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx,
                                      int row, int col, TileLayout tileLayout,
                                      MultiLevelModel imageModel, int dataType, int level) throws IOException {
-        return create(imageFile, cacheDir, bandIdx, row, col, tileLayout, imageModel, dataType, level, false);
+        return create(imageFile, cacheDir, bandIdx, row, col, tileLayout, imageModel, dataType, level, JP2ProductReader.getDirectModeProperty());
     }
 
     /**
