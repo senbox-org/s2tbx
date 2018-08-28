@@ -112,7 +112,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
             currentLayout.numBands = tileLayout.numBands;
         }
-        return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
+        return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level, directMode);
     }
 
     @Override
