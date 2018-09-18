@@ -1,8 +1,6 @@
 package org.esa.s2tbx.dataio.ikonos.metadata;
 
 
-import java.util.Arrays;
-
 /**
  * Class to parse metadata files for specific image files
  *

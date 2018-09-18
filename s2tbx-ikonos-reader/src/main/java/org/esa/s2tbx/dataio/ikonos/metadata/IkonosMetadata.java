@@ -5,11 +5,8 @@ import com.bc.ceres.core.VirtualDir;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
-import org.geotools.referencing.CRS;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,6 +25,18 @@ public class IkonosMetadata extends XmlMetadata {
     private IkonosComponent component;
     private String imageDirectoryPath;
     private List<BandMetadata> bandMetadatas;
+
+    private static class IkonosMetadataParser extends XmlMetadataParser<IkonosMetadata> {
+
+        public IkonosMetadataParser(Class metadataFileClass) {
+            super(metadataFileClass);
+        }
+
+        @Override
+        protected boolean shouldValidateSchema() {
+            return false;
+        }
+    }
 
     public IkonosMetadata(String name) {
         super(name);
@@ -393,15 +402,5 @@ public class IkonosMetadata extends XmlMetadata {
         public float stepY;
     }
 
-    private static class IkonosMetadataParser extends XmlMetadataParser<IkonosMetadata> {
 
-        public IkonosMetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return false;
-        }
-    }
 }

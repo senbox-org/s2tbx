@@ -32,7 +32,6 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
     private final int tileWidth;
     private final int tileHeight;
     private final Logger logger;
-    private ImageLayout imageLayout;
 
     public MosaicMultiLevelSource(Band sourceBand, int imageWidth, int imageHeight,
                                   int tileWidth, int tileHeight, int levels,
@@ -72,7 +71,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
             return null;
         }
 
-        imageLayout = new ImageLayout();
+        ImageLayout imageLayout = new ImageLayout();
         imageLayout.setMinX(0);
         imageLayout.setMinY(0);
         imageLayout.setTileWidth(JAI.getDefaultTileSize().width);
