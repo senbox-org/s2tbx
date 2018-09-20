@@ -13,7 +13,7 @@ import java.io.File;
 public class IkonosConstants {
     public static final Class[] READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String[] FORMAT_NAMES = new String[]{"IkonosGeoTIFF"};
-    public static final String[] DEFAULT_EXTENSIONS = new String[]{".xml", ".zip", ".gz"};
+    public static final String[] DEFAULT_EXTENSIONS = new String[]{".xml", ".zip"};
     public static final String DESCRIPTION = "Ikonos Data Products";
     public static final String[] MINIMAL_PRODUCT_PATTERNS = new String[]{
             "IK2_OPER_OSA_GEO_\\d{1}\\w{1}_\\d{8}T\\d{6}_\\w{1}\\d{2}-\\d{3}_\\w{1}\\d{3}-\\d{3}_\\d{4}.*.ZIP",

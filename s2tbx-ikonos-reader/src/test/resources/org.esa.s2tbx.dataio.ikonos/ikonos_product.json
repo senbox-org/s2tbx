@@ -2,8 +2,8 @@
   "id": "ikonos_product",
   "decodeQualification": "INTENDED",
   "expectedContent": {
-    "sceneWidth": 14768,
-    "sceneHeight": 13268,
+    "sceneWidth": 4101,
+    "sceneHeight": 3983,
     "geoCoding": {
       "coordinates": [
         {
@@ -31,63 +31,52 @@
         "name": "1",
         //blue
         "noDataValue": "0.0",
-        "bandWidth": 3692,
-        "bandHeight": 3317,
+        "bandWidth": 4101,
+        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 835,
-            "y": 837,
-            "value": "NaN"
+            "x": 21,
+            "y": 22,
+            "value": 0.46580
           },
           {
-            "x": 1240,
-            "y": 1248,
-            "value": 0.41100
+            "x": 87,
+            "y": 87,
+            "value": 0.47265
           },
           {
-            "x": 3016,
-            "y": 2237,
-            "value": 0.54663
-          },
-          {
-            "x": 4101,
-            "y": 3983,
-            "value": "NaN"
-          }
+            "x": 166,
+            "y": 182,
+            "value": 0.43018          }
         ]
       },
       {
         "name": "2",
         //green
         "noDataValue": "0.0",
-        "bandWidth": 3692,
-        "bandHeight": 3317,
+        "bandWidth": 4101,
+        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 835,
-            "y": 837,
-            "value": "NaN"
+            "x": 21,
+            "y": 22,
+            "value": 0.53430
           },
           {
-            "x": 1240,
-            "y": 1248,
-            "value": 0.46169
+            "x": 87,
+            "y": 87,
+            "value": 0.57677
           },
           {
-            "x": 3016,
-            "y": 2237,
-            "value": 0.54937
-          },
-          {
-            "x": 4101,
-            "y": 3983,
-            "value": "NaN"
+            "x": 166,
+            "y": 182,
+            "value": 0.46443
           }
         ]
       },
@@ -95,31 +84,26 @@
         "name": "3",
         //red
         "noDataValue": "0.0",
-        "bandWidth": 3692,
-        "bandHeight": 3317,
+        "bandWidth": 4101,
+        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 835,
-            "y": 837,
-            "value": "NaN"
+            "x": 21,
+            "y": 22,
+            "value": 0.33915
           },
           {
-            "x": 1240,
-            "y": 1248,
-            "value": 0.31710
+            "x": 87,
+            "y": 87,
+            "value": 0.40110
           },
           {
-            "x": 3016,
-            "y": 2237,
-            "value": 0.30135
-          },
-          {
-            "x": 4101,
-            "y": 3983,
-            "value": "NaN"
+            "x": 166,
+            "y": 182,
+            "value": 0.29085
           }
         ]
       },
@@ -127,67 +111,52 @@
         "name": "4",
         //nir
         "noDataValue": "0.0",
-        "bandWidth": 3692,
-        "bandHeight": 3317,
+        "bandWidth": 4101,
+        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 835,
-            "y": 837,
-            "value": "NaN"
+            "x": 21,
+            "y": 22,
+            "value": 0.61880
           },
           {
-            "x": 1240,
-            "y": 1248,
-            "value": 0.44863
+            "x": 87,
+            "y": 87,
+            "value": 0.63308
           },
           {
-            "x": 3016,
-            "y": 2237,
-            "value": 0.28322
-          },
-          {
-            "x": 4101,
-            "y": 3983,
-            "value": "NaN"
+            "x": 166,
+            "y": 182,
+            "value": 0.70329
           }
         ]
       },
       {
         "name": "Pan",
         "noDataValue": "0.0",
-        "bandWidth": 3692,
-        "bandHeight": 3317,
+        "bandWidth": 4101,
+        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 835,
-            "y": 837,
-            "value": "NaN"
+            "x": 21,
+            "y": 22,
+            "value": 0.38219
           },
           {
-            "x": 1240,
-            "y": 1248,
-            "value": 0.32914
+            "x": 87,
+            "y": 87,
+            "value": 0.45195
           },
           {
-            "x": 3016,
-            "y": 2237,
-            "value": 0.20043
-          },
-          {
-            "x": 10020,
-            "y": 9800,
-            "value": 0.25348
-          },
-          {
-            "x": 14757,
-            "y": 13028,
-            "value": "NaN"
+            "x": 166,
+            "y": 182,
+            "value": 0.41167
           }
         ]
       }
@@ -204,10 +173,6 @@
       {
         "path": "Metadata/result/EarthObservationResult/browse/BrowseInformation/referenceSystemIdentifier",
         "value": "UTM_34N"
-      },
-      {
-        "path": "Metadata/metaDataProperty/EarthObservationMetaData/vendorSpecific/SpecificInformation/localValue",
-        "value": "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.ZIP"
       },
       {
         "path": "Metadata/metaDataProperty/EarthObservationMetaData/identifier",
