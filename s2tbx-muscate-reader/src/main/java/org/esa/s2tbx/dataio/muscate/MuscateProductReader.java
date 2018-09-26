@@ -390,7 +390,8 @@ public class MuscateProductReader extends AbstractProductReader {
                     addSaturationMask(product, file);
                 }
             }
-        } else if (mask.nature.equals("Geophysics")) {
+        } else if (mask.nature.equals("Geophysics") || mask.nature.equals("Cloud_Shadow")) {
+            //In some old products the Nature is Cloud_Shadow. Perhaps an error?
             for (String file : mask.getMaskFiles()) {
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
