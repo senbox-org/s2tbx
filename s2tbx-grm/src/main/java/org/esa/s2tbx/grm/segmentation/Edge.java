@@ -9,7 +9,7 @@ public class Edge {
     private byte costUpdated;
     private int boundary;
 
-    public Edge(Node target, int boundary) {
+    Edge(Node target, int boundary) {
         if (target == null) {
             throw new NullPointerException("The target node cannot be null.");
         }

@@ -13,6 +13,7 @@ import org.junit.Test;
 import javax.media.jai.JAI;
 
 import java.awt.*;
+import java.lang.ref.WeakReference;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -58,56 +59,6 @@ public class SegmenterTest {
         assertEquals(0, mergedBox.getTopY());
         assertEquals(200, mergedBox.getWidth());
         assertEquals(170, mergedBox.getHeight());
-    }
-
-    @Test
-    public void testGenerateBorderCells() {
-        Contour contour = new Contour();
-
-        contour.pushRight();
-        contour.pushRight();
-        contour.pushRight();
-
-        contour.pushBottom();
-        contour.pushBottom();
-        contour.pushBottom();
-
-        contour.pushLeft();
-        contour.pushLeft();
-        contour.pushLeft();
-
-        contour.pushTop();
-        contour.pushTop();
-        contour.pushTop();
-
-        IntSet borderCells = AbstractSegmenter.generateBorderCells(contour, 100, 1000);
-        assertEquals(8, borderCells.size());
-
-        IntIterator iterator = borderCells.iterator();
-
-        int cellId = iterator.nextInt();
-        assertEquals(2100, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(2101, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(2102, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(1100, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(100, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(102, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(101, cellId);
-
-        cellId = iterator.nextInt();
-        assertEquals(1102, cellId);
     }
 
     @Test
@@ -303,7 +254,10 @@ public class SegmenterTest {
         GenericRegionMergingOpTest.checkGraphNode(node, nodeExpectedMeansValues, 1, 25, 18, 1, 76, 1);
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-        segmenter.fillBandData(targetBand);
+        OutputMaskMatrixHelper outputMaskMatrixHelper = segmenter.buildOutputMaskMatrixHelper();
+        OutputMarkerMatrixHelper outputMarkerMatrix = outputMaskMatrixHelper.buildMaskMatrix();
+        ProductData data = outputMarkerMatrix.buildOutputProductData();
+        targetBand.setData(data);
 
         int bandValue = targetBand.getSampleInt(12, 14);
         assertEquals(1, bandValue);
@@ -373,7 +327,10 @@ public class SegmenterTest {
         GenericRegionMergingOpTest.checkGraphNode(node, nodeExpectedMeansValues, 1, 25, 18, 1, 76, 1);
 
         Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-        segmenter.fillBandData(targetBand);
+        OutputMaskMatrixHelper outputMaskMatrixHelper = segmenter.buildOutputMaskMatrixHelper();
+        OutputMarkerMatrixHelper outputMarkerMatrix = outputMaskMatrixHelper.buildMaskMatrix();
+        ProductData data = outputMarkerMatrix.buildOutputProductData();
+        targetBand.setData(data);
 
         int bandValue = targetBand.getSampleInt(12, 14);
         assertEquals(1, bandValue);
@@ -442,7 +399,7 @@ public class SegmenterTest {
         Band sourceBand = sourceProduct.getBandAt(0);
         Rectangle targetRectangle = new Rectangle(0, 0, sceneWidth, sceneHeight);
         Tile tile = new TileImpl(sourceBand, sourceBand.getSourceImage().getData(), targetRectangle, true);
-        Tile[] sourceTiles = new Tile[] {tile};
+        TileDataSource[] sourceTiles = new TileDataSource[] {new TileDataSourceImpl(tile)};
 
         BaatzSchapeSegmenter segmenter = new BaatzSchapeSegmenter(spectralWeight, shapeWeight, threshold);
         segmenter.update(sourceTiles, rectange, numberOfIterations, fastSegmentation, addFourNeighbors);
@@ -458,7 +415,7 @@ public class SegmenterTest {
         Band sourceBand = sourceProduct.getBandAt(0);
         Rectangle targetRectangle = new Rectangle(0, 0, sceneWidth, sceneHeight);
         Tile tile = new TileImpl(sourceBand, sourceBand.getSourceImage().getData(), targetRectangle, true);
-        Tile[] sourceTiles = new Tile[] {tile};
+        TileDataSource[] sourceTiles = new TileDataSource[] {new TileDataSourceImpl(tile)};
 
         SpringSegmenter segmenter = new SpringSegmenter(threshold);
         segmenter.update(sourceTiles, rectange, numberOfIterations, fastSegmentation, addFourNeighbors);
@@ -475,7 +432,7 @@ public class SegmenterTest {
         Band sourceBand = sourceProduct.getBandAt(0);
         Rectangle targetRectangle = new Rectangle(0, 0, sceneWidth, sceneHeight);
         Tile tile = new TileImpl(sourceBand, sourceBand.getSourceImage().getData(), targetRectangle, true);
-        Tile[] sourceTiles = new Tile[] {tile};
+        TileDataSource[] sourceTiles = new TileDataSource[] {new TileDataSourceImpl(tile)};
         FullLambdaScheduleSegmenter segmenter = new FullLambdaScheduleSegmenter(threshold);
         segmenter.update(sourceTiles, rectange, numberOfIterations, fastSegmentation, addFourNeighbors);
         return segmenter;

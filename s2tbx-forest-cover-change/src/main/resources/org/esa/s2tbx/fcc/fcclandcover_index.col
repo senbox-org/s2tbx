@@ -1,0 +1,6 @@
+0 = No data						                                                    	Color(64,64,64)
+1 = Previous land cover forest                                                          Color(195,20,0)
+2 = Recent land cover forest                                                           Color(255,180,50)
+3 = Common land cover forest                                                           Color(0,160,0)
+4 = Previous mask                                                                      Color(160,160,0)
+5 = Recent mask                                                                        Color(0,160,160)

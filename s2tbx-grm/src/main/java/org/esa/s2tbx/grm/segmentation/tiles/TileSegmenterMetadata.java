@@ -1,7 +1,5 @@
 package org.esa.s2tbx.grm.segmentation.tiles;
 
-import org.esa.s2tbx.grm.segmentation.BoundingBox;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,8 +7,7 @@ import java.util.Map;
  * @author Jean Coravu
  */
 public class TileSegmenterMetadata {
-    private final long availableMemory;
-    private final Map<String, BoundingBox> tilesMap;
+    private final Map<String, ProcessingTile> tilesMap;
 
     private long accumulatedMemory;
     private boolean isFusion;
@@ -18,11 +15,9 @@ public class TileSegmenterMetadata {
     private int computedTileCountY;
 
     public TileSegmenterMetadata() {
-        this.tilesMap = new HashMap<String, BoundingBox>();
+        this.tilesMap = new HashMap<String, ProcessingTile>();
         this.computedTileCountX = 0;
         this.computedTileCountY = 0;
-
-        this.availableMemory = Runtime.getRuntime().totalMemory();
 
         resetValues();
     }
@@ -32,45 +27,50 @@ public class TileSegmenterMetadata {
         this.isFusion = false;
     }
 
-    public void addTile(int rowIndex, int columnIndex, int leftX, int topY, int width, int height) {
+    public ProcessingTile addTile(int rowIndex, int columnIndex, ProcessingTile tileToAdd) {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
-        this.tilesMap.put(key, new BoundingBox(leftX, topY, width, height));
+        ProcessingTile oldValue = this.tilesMap.put(key, tileToAdd);
 
         this.computedTileCountX = Math.max(this.computedTileCountX, columnIndex+1);
         this.computedTileCountY = Math.max(this.computedTileCountY, rowIndex+1);
+
+        return oldValue;
     }
 
-    public BoundingBox getTileAt(int rowIndex, int columnIndex) {
+    public ProcessingTile removeTile(int rowIndex, int columnIndex) {
+        String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
+        return this.tilesMap.remove(key);
+    }
+
+    public ProcessingTile getTileAt(int rowIndex, int columnIndex) {
         String key = Integer.toString(rowIndex) + "|" + Integer.toString(columnIndex);
         return this.tilesMap.get(key);
     }
 
     public int getComputedTileCountX() {
-        return computedTileCountX;
+        return this.computedTileCountX;
     }
 
     public int getComputedTileCountY() {
-        return computedTileCountY;
+        return this.computedTileCountY;
     }
 
-    public void addAccumulatedMemory(long accumulatedMemoryToAdd) {
+    public void addAccumulatedMemory(long accumulatedMemoryToAdd, boolean isFusion) {
         this.accumulatedMemory += accumulatedMemoryToAdd;
+        if (isFusion) {
+            this.isFusion = isFusion;
+        }
     }
 
     public long getAccumulatedMemory() {
-        return accumulatedMemory;
-    }
-
-    public void setFusion(boolean fusion) {
-        isFusion = fusion;
+        return this.accumulatedMemory;
     }
 
     public boolean isFusion() {
-        return isFusion;
+        return this.isFusion;
     }
 
-    public long getAvailableMemory() {
-        return availableMemory;
+    public boolean canRunSecondPartialSegmentation() {
+        return this.isFusion;// && (this.accumulatedMemory > (0.5f * Runtime.getRuntime().freeMemory()));
     }
-
 }

@@ -64,6 +64,8 @@
         <module>s2tbx-land-cover</module>
         <module>s2tbx-s2msi-resampler</module>
         <module>s2tbx-muscate-reader</module>
+        <module>s2tbx-forest-cover-change</module>
+        <module>s2tbx-forest-cover-change-ui</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -350,6 +352,12 @@
                 <groupId>org.esa.s2tbx.gdal</groupId>
                 <artifactId>gdal</artifactId>
                 <version>2.1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-archiver</artifactId>
+                <version>2.2</version>
             </dependency>
 
         </dependencies>
