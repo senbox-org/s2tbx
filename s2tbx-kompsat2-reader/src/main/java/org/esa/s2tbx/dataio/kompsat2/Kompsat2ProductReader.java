@@ -87,6 +87,7 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
             String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
             String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
             int levels;
+            Double bandGainPan = 0.0;
             for (BandMetadata aBandMetadataList : bandMetadataList) {
                 String imageFileName = aBandMetadataList.getImageFileName();
                 this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + Kompsat2Constants.IMAGE_EXTENSION).toFile()));
@@ -99,13 +100,17 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
                 levels = band.getSourceImage().getModel().getLevelCount();
                 final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
                 String bandName = null;
+                Double bandGain = null;
                 for (int bandNameIndex = 0; bandNameIndex < Kompsat2Constants.BAND_NAMES.length - 1; bandNameIndex++) {
                     if (imageFileName.contains(Kompsat2Constants.FILE_NAMES[bandNameIndex])) {
                         bandName = Kompsat2Constants.BAND_NAMES[bandNameIndex];
+                        bandGain = Kompsat2Constants.KOMPSAT2_GAIN_VALUES[bandNameIndex];
+                        bandGainPan += Kompsat2Constants.KOMPSAT2_GAIN_VALUES[bandNameIndex];
                     }
                 }
                 if (bandName == null) {
                     bandName = Kompsat2Constants.BAND_NAMES[4];
+                    bandGain = bandGainPan / (Kompsat2Constants.BAND_NAMES.length - 1);
                     GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
                     if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
                         this.product.setSceneGeoCoding(bandGeoCoding);
@@ -116,12 +121,11 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
                 targetBand.setSpectralWavelength(band.getSpectralWavelength());
                 targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
                 targetBand.setSolarFlux(band.getSolarFlux());
-                targetBand.setUnit(band.getUnit());
+                targetBand.setUnit(Kompsat2Constants.KOMPSAT2_UNIT);
                 targetBand.setNoDataValue(band.getNoDataValue());
                 targetBand.setNoDataValueUsed(true);
-                targetBand.setScalingFactor(band.getScalingFactor());
+                targetBand.setScalingFactor(bandGain);
                 targetBand.setScalingOffset(band.getScalingOffset());
-                targetBand.setUnit(band.getUnit());
                 targetBand.setDescription(band.getDescription());
                 if (band.getGeoCoding() != null) {
                     targetBand.setGeoCoding(band.getGeoCoding());
