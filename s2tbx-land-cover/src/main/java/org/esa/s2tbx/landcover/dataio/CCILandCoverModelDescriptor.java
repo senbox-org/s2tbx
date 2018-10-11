@@ -35,7 +35,7 @@ import java.nio.file.Path;
  * @author Cosmin Cara
  */
 public class CCILandCoverModelDescriptor extends AbstractLandCoverModelDescriptor {
-    public static final String NAME = "CCILandCover-2015";
+    private static final String NAME = "CCILandCover-2015";
 
     private static final File INSTALL_DIR = new File(Settings.instance().getAuxDataFolder().getAbsolutePath(),
                                                      "LandCover" + File.separator + NAME);
