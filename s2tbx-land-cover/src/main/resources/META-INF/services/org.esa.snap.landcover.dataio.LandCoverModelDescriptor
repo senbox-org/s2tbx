@@ -1,1 +1,2 @@
 org.esa.s2tbx.landcover.dataio.CCILandCoverModelDescriptor
+org.esa.s2tbx.landcover.dataio.JaxaForestMapModelDescriptor

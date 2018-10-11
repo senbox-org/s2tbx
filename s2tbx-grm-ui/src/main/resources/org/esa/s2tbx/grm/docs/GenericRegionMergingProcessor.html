@@ -97,7 +97,15 @@
 
             <p class="i1">
                 <b>Total iterations:</b>
-                Specify the total number of iterations.
+                Specify the total number of iterations. The higher the number of iterations, the lower the number of segmentation objects is. On a segmentation
+                step the number of segmentation objects may be reduced by merging the adjacent segments based on the merging cost criterion and
+                region merging criterion.
+            </p>
+
+            <p class="i1">
+                <b>Threshold:</b>
+                Specify the threshold which is compared with the merging cost. This thereshold avoids undersegmentation. The higher the value of the threshold the least chances
+                of undersegmentation.
             </p>
 
             <p class="i1">
@@ -106,18 +114,12 @@
             </p>
 
             <p class="i1">
-                <b>Threshold:</b>
-                Specify the threshold which is compared with the merging cost. This thereshold avoids undersegmentation.
-            </p>
-
-            <p class="i1">
                 <b>Shape weight:</b>
                 Specify the shape weight.
             </p>
-            <p class="i1">
-                <b>Source bands:</b>
-                Specify the bands of the source product used to compute the segmentation.
-                The selected source bands to extract the segments must have the same resolution.
+            <p>
+                <b>NOTE:</b> The threshold, spectral weight, shape weight may vary according to the pixel values of the raster. The standard values for spectral weight, shape weight is 0.5
+                and for threshold is 100. Sometimes to detect more precisely the segmentation objects the processor needs to execute several times with different parameter values.
             </p>
         </td>
         <td style="border-width:0;" valign="top">

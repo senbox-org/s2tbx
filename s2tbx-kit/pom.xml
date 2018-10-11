@@ -80,6 +80,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-land-cover</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-annotations-common</artifactId>
             <version>${netbeans.version}</version>
@@ -290,7 +296,19 @@
             <artifactId>s2tbx-grm-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
-		
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-forest-cover-change</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-forest-cover-change-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-mosaic-ui</artifactId>

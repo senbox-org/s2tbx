@@ -1,0 +1,4 @@
+0 = No data						                                            	Color(0,0,0)
+1 = Forest                                                                      Color(0,100,0)
+2 = No Forest                                                                   Color(255,255,153)
+3 = Water                                                                       Color(0,0,255)

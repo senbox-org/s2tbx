@@ -91,7 +91,8 @@
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.grm</publicPackage>
-                        <publicPackage>org.esa.s2tbx.grm.tiles</publicPackage>
+                        <publicPackage>org.esa.s2tbx.grm.segmentation.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.grm.segmentation.tiles</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

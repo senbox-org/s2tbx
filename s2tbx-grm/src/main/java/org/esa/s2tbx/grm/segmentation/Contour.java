@@ -102,4 +102,59 @@ public class Contour {
         x = x << positionsToMove;
         this.bits[arrayIndex] = (byte)x;
     }
+
+    public int computeContourBorderSize() {
+        if (hasBorderSize()) {
+            return this.size / 2;
+        }
+        return 0;
+    }
+
+    public boolean hasBorderSize() {
+        return (this.size > 8);
+    }
+
+    public static int computeNextCellId(int previousMoveId, int currentMoveId, int currentCellId, int width) {
+        assert (currentMoveId >= 0 && currentMoveId <= 3);
+
+        if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
+            // impossible case is previous index = 2 (bottom)
+            assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
+
+            if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+                currentCellId -= width; // go to the top
+            } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+                currentCellId = currentCellId - width + 1; // go to the top right
+            }
+        } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
+            // impossible case is previous index = 3 (left)
+            assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
+
+            if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+                currentCellId++; // go to the right
+            } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+                currentCellId = currentCellId + width + 1; // go to the bottom right
+            }
+        } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
+            // impossible case is previous index = 0 (top)
+            assert (previousMoveId != Contour.TOP_MOVE_INDEX);
+
+            if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+                currentCellId += width;
+            } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+                currentCellId = currentCellId + width - 1; // go to the bottom left
+            }
+        } else { // current index = 3 (left)
+            // impossible case is previous index = 1 (right)
+            assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
+
+            if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+                currentCellId = currentCellId - width - 1;  // go to the top left
+            } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+                currentCellId--; // go the to left
+            }
+        }
+
+        return currentCellId;
+    }
 }

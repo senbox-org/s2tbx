@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
+ * Model Descriptor for CCI LandCover 2015
+ *
  * @author Cosmin Cara
  */
 public class CCILandCoverModelDescriptor extends AbstractLandCoverModelDescriptor {
