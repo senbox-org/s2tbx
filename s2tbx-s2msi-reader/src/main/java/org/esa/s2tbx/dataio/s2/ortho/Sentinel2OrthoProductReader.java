@@ -90,7 +90,7 @@ import static org.esa.snap.utils.DateHelper.parseDate;
  * @author Norman Fomferra
  * @author Nicolas Ducoin
  */
-public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader {
+public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader implements S2AnglesGeometry {
 
     public static final String VIEW_ZENITH_PREFIX = "view_zenith";
     public static final String VIEW_AZIMUTH_PREFIX = "view_azimuth";
@@ -1738,6 +1738,16 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         output = output.append(line.substring(line.lastIndexOf(' ')+1));
         output = output.append("))");
         return output.toString();
+    }
+
+
+    public S2BandAnglesGridByDetector[] getViewingIncidenceAnglesGrids(int bandId, int detectorId){
+        if(metadataHeader == null) return null;
+        return metadataHeader.getAnglesGridByDetector(bandId, detectorId);
+    }
+    public S2BandAnglesGrid[] getSunAnglesGrid(){
+        if(metadataHeader == null) return null;
+        return metadataHeader.getSunAnglesGrid();
     }
 }
 
