@@ -127,7 +127,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
         if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
-            throw new IOException("Can't access package cache directory");
+            throw new IOException("Can't access package cache directory " + cacheDir);
         }
         SystemUtils.LOG.fine("Successfully set up cache dir for product " + productPath.getFileName().toString() + " to " + cacheDir.toString());
     }
