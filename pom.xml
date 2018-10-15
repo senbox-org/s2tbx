@@ -64,6 +64,7 @@
         <module>s2tbx-land-cover</module>
         <module>s2tbx-s2msi-resampler</module>
         <module>s2tbx-muscate-reader</module>
+        <module>s2tbx-pleiades-reader</module>
         <module>s2tbx-forest-cover-change</module>
         <module>s2tbx-forest-cover-change-ui</module>
     </modules>
