@@ -177,14 +177,15 @@ public class PleiadesProductReader extends AbstractProductReader {
                 Product[][] tiles = new Product[tileCols][tileRows];
                 for (String rasterFile : tileInfo.keySet()) {
                     int[] coords = tileInfo.get(rasterFile);
-                    tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
-                    tileRefs.add(new WeakReference<Product>(tiles[coords[0]][coords[1]]));
+                    tiles[coords[1]][coords[0]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
+                    tileRefs.add(new WeakReference<Product>(tiles[coords[1]][coords[0]]));
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
                 if (levels > product.getNumResolutionsMax()) {
                     product.setNumResolutionsMax(levels);
                 }
                 //final Stx[] statistics = imageMetadata.getBandsStatistics();
+
                 for (int i = 0; i < numBands; i++) {
                     Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, Math.round(width / factorX),
                                                            Math.round(height / factorY), colorPaletteFilePath);
@@ -195,12 +196,16 @@ public class PleiadesProductReader extends AbstractProductReader {
                     targetBand.setUnit(bandInfos[i].getUnit());
                     targetBand.setNoDataValue(noDataValue);
                     targetBand.setNoDataValueUsed(true);
-                    targetBand.setScalingFactor(scalingAndOffsets[i][0] / bandInfos[i].getGain());
-                    targetBand.setScalingOffset(scalingAndOffsets[i][1] * bandInfos[i].getBias());
+					if (!bandInfos[i].getUnit().toLowerCase().contains("mw")) {
+                        targetBand.setScalingFactor(1 / bandInfos[i].getGain());
+                    } else {
+                        targetBand.setScalingFactor(1 / bandInfos[i].getGain() * 0.1);
+                    }
+                    targetBand.setScalingOffset(bandInfos[i].getBias());
                     initBandGeoCoding(imageMetadata, targetBand, width, height);
-                    Band[][] srcBands = new Band[tileRows][tileCols];
-                    for (int x = 0; x < tileRows; x++) {
-                        for (int y = 0; y < tileCols; y++) {
+                    Band[][] srcBands = new Band[tileCols][tileRows];
+                    for (int x = 0; x < tileCols; x++) {
+                        for (int y = 0; y < tileRows; y++) {
                             srcBands[x][y] = tiles[x][y].getBandAt(bandInfos[i].getIndex());
                         }
                     }
@@ -208,7 +213,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                     MosaicMultiLevelSource bandSource =
                             new MosaicMultiLevelSource(srcBands,
                                     bandWidth, bandHeight,
-                                    tileWidth, tileHeight, tileRows, tileCols,
+                                    tileWidth, tileHeight, tileCols, tileRows,
                                     levels, typeMap.get(pixelDataType),
                                     imageMetadata.isGeocoded() ?
                                             targetBand.getGeoCoding() != null ?
@@ -273,6 +278,15 @@ public class PleiadesProductReader extends AbstractProductReader {
         product.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
     }
 
+	private GeoCoding addTiePointGridGeo(ImageMetadata metadata, int width, int height) {
+        float[][] cornerLonsLats = metadata.getCornerLonsLats();
+        int sceneWidth = width;
+        int sceneHeight = height;
+        TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
+        TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
+        return new TiePointGeoCoding(latGrid, lonGrid);
+    }
+	
     private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight) {
         int bandWidth = imageMetadata.getRasterWidth();
         int bandHeight = imageMetadata.getRasterHeight();
@@ -289,6 +303,7 @@ public class PleiadesProductReader extends AbstractProductReader {
             } else {
                 if (sceneWidth != bandWidth) {
                     AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);
+					geoCoding = addTiePointGridGeo(imageMetadata, bandWidth, bandHeight);
                     band.setImageToModelTransform(transform2D);
                 }
             }
