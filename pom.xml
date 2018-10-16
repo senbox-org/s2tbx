@@ -67,6 +67,12 @@
         <module>s2tbx-pleiades-reader</module>
         <module>s2tbx-forest-cover-change</module>
         <module>s2tbx-forest-cover-change-ui</module>
+        <module>s2tbx-kompsat2-reader</module>
+        <module>s2tbx-pleiades-reader</module>
+        <module>s2tbx-worldview2-reader</module>
+        <module>s2tbx-spectral-angle-mapper</module>
+        <module>s2tbx-spectral-angle-mapper-ui</module>
+        <module>s2tbx-vector-formats</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -74,6 +80,7 @@
     <properties>
         <snap.version>6.0.0</snap.version>
         <s2tbx.version>6.0.3-SNAPSHOT</s2tbx.version>
+        <geotools.version>17.1</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE82</netbeans.version>

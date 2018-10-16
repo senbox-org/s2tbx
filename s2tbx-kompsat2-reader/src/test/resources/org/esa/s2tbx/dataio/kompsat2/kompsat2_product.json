@@ -1,0 +1,223 @@
+{
+  "id": "kompsat2_product",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 18172,
+    "sceneHeight": 18808,
+    "geoCoding": {
+      "coordinates": [
+        {
+          "x": 1020,
+          "y": 200,
+          "lat": -14.411545656482968,
+          "lon": 129.5859883090521
+        },
+        {
+          "x": 2000,
+          "y": 1710,
+          "lat": -14.425175125387973,
+          "lon": 129.5951153117422
+        },
+        {
+          "x": 16000,
+          "y": 17010,
+          "lat": -14.563137557552196,
+          "lon": 129.72543934553352
+        }
+      ]
+    },
+    "bands": [
+      {
+        "name": "MS1",
+        "noDataValue": "0.0",
+        "bandWidth": 4543,
+        "bandHeight": 4702,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": "NaN"
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 446.0
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": 552.0
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "MS2",
+        "noDataValue": "0.0",
+        "bandWidth": 4543,
+        "bandHeight": 4702,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": "NaN"
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 521.0
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": 591.0
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "MS3",
+        "noDataValue": "0.0",
+        "bandWidth": 4543,
+        "bandHeight": 4702,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": "NaN"
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 346.0
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": 347.0
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "MS4",
+        "noDataValue": "0.0",
+        "bandWidth": 4543,
+        "bandHeight": 4702,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": "NaN"
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 281.0
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": 369.0
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "PAN",
+        "noDataValue": "0.0",
+        "bandWidth": 18172,
+        "bandHeight": 18808,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": "NaN"
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": 214.0
+          },
+          {
+            "x": 10020,
+            "y": 9800,
+            "value": 299.0
+          },
+          {
+            "x": 18000,
+            "y": 18000,
+            "value": "NaN"
+          }
+        ]
+      }
+    ],
+    "metadata": [
+      {
+        "path": "Metadata/phenomenonTime/TimePeriod/endPosition",
+        "value": "2011-09-20T01:32:03.730Z"
+      },
+      {
+        "path": "Metadata/phenomenonTime/TimePeriod/beginPosition",
+        "value": "2011-09-20T01:32:01.394Z"
+      },
+      {
+        "path": "Metadata/result/EarthObservationResult/browse/BrowseInformation/referenceSystemIdentifier",
+        "value": "UTM:South,52 WGS 84"
+      },
+      {
+        "path": "Metadata/metaDataProperty/EarthObservationMetaData/vendorSpecific/SpecificInformation/localValue",
+        "value": "MSC_110920012631_27459_10080892_1G.zip"
+      },
+      {
+        "path": "Metadata/metaDataProperty/EarthObservationMetaData/identifier",
+        "value": "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001"
+      },
+      {
+        "path": "Metadata/featureOfInterest/Footprint/centerOf/Point/pos",
+        "value": "-14.494548069 129.661042414"
+      },
+      {
+        "path": "Metadata/featureOfInterest/Footprint/multiExtentOf/MultiSurface/surfaceMember/Polygon/exterior/LinearRing/posList",
+        "value": "-14.40976521 129.57652647 -14.57977522 129.57696612 -14.57929798 129.74562262 -14.40929376 129.74505447 -14.40976521 129.57652647"
+      }
+
+    ]
+  }
+}

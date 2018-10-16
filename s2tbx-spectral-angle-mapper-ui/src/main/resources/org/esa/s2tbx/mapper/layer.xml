@@ -1,0 +1,38 @@
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Operators">
+            <file name="org-esa-s2tbx-mapper-Action.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.mapper.SpectralAngleMapperAction.create"/>
+                <attr name="displayName" stringvalue="Spectral Angle Mapper Processor"/>
+                <attr name="dialogTitle" stringvalue="Spectral Angle Mapper Processor"/>
+                <attr name="operatorName" stringvalue="SpectralAngleMapperOp"/>
+                <attr name="targetProductNameSuffix" stringvalue="_sam"/>
+                <attr name="helpId" stringvalue="SAMOperator"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="Raster">
+            <folder name="Classification">
+                <attr name="position" intvalue="450"/>
+                <folder name="Supervised Classification">
+                    <attr name="position" intvalue="800"/>
+                    <file name="org-esa-s2tbx-mapper-Action.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-mapper-Action.instance"/>
+                        <attr name="position" intvalue="10003"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="OperatorUIs">
+        <file name="org.esa.s2tbx.mapper.SpectralAngleMapperOp">
+            <attr name="operatorName" stringvalue="SpectralAngleMapperOp"/>
+            <attr name="disableFromGraphBuilder" stringvalue="true"/>
+        </file>
+    </folder>
+</filesystem>
