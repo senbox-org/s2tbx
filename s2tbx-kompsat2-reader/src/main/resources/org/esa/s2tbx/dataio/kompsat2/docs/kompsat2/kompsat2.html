@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kompsat 2 Product Reader</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<>
+
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;Import Kompsat 2 Products</td>
+        <td class="header" align="right">
+            <a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border="0"/></a>
+        </td>
+    </tr>
+</table>
+
+<h4>Overview</h4>
+<p>
+    The KOMPSAT-2 system allows the acquisition of PAN images at spatial resolution of 1 meter
+    and MS images of 4 meters from space. The mission objectives of the KOMPSAT-2 System
+    are to provide the following capabilities in the field of earth observation.
+    The KOMPSAT-2 system provides 1) surveillance of large scale disasters and their
+    countermeasures, 2) acquisition of independent high resolution images for GIS, and 3)
+    composition of printed maps and digitized image maps on domestic and overseas territories to
+    users.
+</p>
+<h4>Imaging Performance</h4>
+<p>
+    The KOMPSAT-2 allows the generation of high resolution images with a GSD of better than
+    1 m for PAN data and 4 m for MS data with nadir viewing condition at the nominal altitude of
+    685 km. The MSC has a single PAN spectral band between 500 - 900 nm and 4 MS spectral
+    bands between 450-900 nm. PAN imaging and MS imaging can be operated simultaneously
+    during mission operations. The swath width is greater than or equal to 15 km at the mission
+    altitude for PAN data and MS data
+</p>
+<ul>
+    <li><a href=https://earth.esa.int/web/guest/-/kompsat-2-image-data-manual-6334">Kompsat2 Reference Documentation</a></li>
+</ul>
+<p>
+    This command allows to import Kompsat2 products.
+    There are two levels of products that can be imported:
+</p>
+<ul>
+    <li>Level 1R : Level 1R data is the image data cut by catalogue (15000 column X15500 line), optionally MTF
+        corrected and stored by Tiff format </li>
+    <li>Level 1G :Level 1G data is geometrically corrected from Level 1R image data using KOMPSAT-2
+        ancillary data only and stored by GeoTiff format  </li>
+</ul>
+<h4>MSC image data format</h4>
+<p>
+    The products can be either compressed in a zip archive, or uncompressed in a specific folder structure.
+</p>
+<p>Whether the product is an archive or a folder, the list of files must have the same structure:</p>
+<br>
+<p>The product must contain 1 file and a image directory containing a TIFF images and metadata files:</p>
+<ul>
+    <li>
+        the xml file provides the image metadata
+    </li>
+    <li>
+        the zip folder contains 5 TIFF images that each represents a band. For each TIFF image there is a .txt file containing information about
+        <ul>
+            <li>File _M1XXXG_1G/_M1XXXG_1R for band MS1 (green)</li>
+            <li>File _M2XXXB_1G/_M2XXXB_1R for band MS2 (blue)</li>
+            <li>File _M3XXXN_1G/_M3XXXN_1R for band MS3 (NIR)</li>
+            <li>File _M4XXXR_1G/_M4XXXR_1R for band MS4 (red)</li>
+            <li>File _PXXXN_1G/_PXXXN_1R for band PAN (panchromatic)</li>
+        </ul>
+    </li>
+</ul>
+<ul>
+    <h5>File Naming Convention</h5>
+    <ul>
+        <li>TIFF Level 1R</li>
+        <li>MSC_YYMMDDHhmmss_nnnnn_PPPPrrrrPAxx_tt.tif - PAN </li>
+        <li>MSC_YYMMDDHhmmss_nnnnn_PPPPrrrrMXAxxB_tt.tif - MS</li>
+        <li>YYMMDDHhmmss – Scene center time in UTC </li>
+        <li>nnnnn – Orbit number </li>
+        <li>PPPP – Path number</li>
+        <li>rrrr – Row number</li>
+        <li>P – P(Pan only)</li>
+        <li>MX - M(MS only) X(1,2,3,4)</li>
+        <li>A – P(positive), N(negative) tilt angle</li>
+        <li>xx – Tilting angle(first two digit)</li>
+        <li>B – G(Green), B(Blue), N(NIR), R(Red)</li>
+        <li> tt – 1R</li>
+    </ul>
+    <ul>
+        <li>TIFF Level 1G</li>
+        <li>MSC_YYMMDDHhmmss_nnnnn_PPPPrrrrPAxx_tt.tif - PAN </li>
+        <li>MSC_YYMMDDHhmmss_nnnnn_PPPPrrrrMXAxxB_tt.tif - MS</li>
+        <li>YYMMDDHhmmss – Scene center time in UTC </li>
+        <li>nnnnn – Orbit number </li>
+        <li>PPPP – Path number</li>
+        <li>rrrr – Row number</li>
+        <li>P – P(Pan only)</li>
+        <li>MX - M(MS only) X(1,2,3,4)</li>
+        <li>A – P(positive), N(negative) tilt angle</li>
+        <li>xx – Tilting angle(first two digit)</li>
+        <li>B – G(Green), B(Blue), N(NIR), R(Red)</li>
+        <li> tt – 1G</li>
+    </ul>
+</ul>
+<ul>
+    <h4> Geodetic Coordinate System </h4>
+    <p>The  geodetic  coordinate  system  is  based  on  the  WGS84  reference  frame  with  coordinates
+        expressed latitude, longitude, and height above the reference Earth ellipsoid</p>
+</ul>
+<br>
+</body>
+</html>
