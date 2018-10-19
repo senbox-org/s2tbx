@@ -1,0 +1,92 @@
+<!--
+  ~ Copyright (C) 2016 by CS ROMANIA
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>SNAP GeFolki Co-registration Processor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            GeFolki Co-registration Processor</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<p><br/></p>
+<p>
+    The GeFolki Co-registration Processor is based on <a href="https://www.researchgate.net/publication/305362804_Adaptation_and_Evaluation_of_an_Optical_Flow_Method_Applied_to_Coregistration_of_Forest_Remote_Sensing_Images">
+    Adaptation and Evaluation of an Optical Flow Method Applied to Coregistration of Forest Remot Sensing Images</a> developed by Guillaume Brigot, Elise Colin-Koeniguer, Aur´elien Plyer, and Fabrice Janez.
+</p>
+<p>
+    The memory required to process the images may be very high and therefore leads to unfeasibility on slow computers.
+</p>
+<p>
+    [TBD]
+</p>
+
+<h4>I/O Parameters</h4>
+<table border="0">
+    <tr>
+        <td style="border-width:0;" valign="top">
+            <h5>Master source Product</h5>
+
+            <p class="i1">
+                ...
+            </p>
+
+            <h5>Target Product</h5>
+            <p class="i1">
+                <b>Name:</b>
+                Used to specify the name of the target product.
+            </p>
+
+            <p class="i1">
+                <b>Save as:</b>
+                Used to specify whether the target product should be saved to the file system. The
+                combo box presents a list of file formats, currently BEAM-DIMAP, GeoTIFF, and HDF5.
+                The text field allows to specify a target directory. <br>
+            </p>
+
+            <p class="i1">
+                <b>Open in SNAP:</b>
+                Used to specify whether the target product should be opened in the Sentinel Toolbox.
+                When the target product is not saved, it is opened in the Sentinel Toolbox automatically.
+            </p></td>
+        <td style="border-width:0;" valign="top">
+            <img src="images/io-parameters.png">
+        </td>
+    </tr>
+</table>
+
+<h4>Processing Parameters</h4>
+<table border="0">
+    <tr>
+        <td style="border-width:0;" valign="top">
+        </td>
+        <td style="border-width:0;" valign="top">
+            <img src="images/processing-parameters.png">
+        </td>
+    </tr>
+</table>
+
+<hr>
+</body>
+</html>
