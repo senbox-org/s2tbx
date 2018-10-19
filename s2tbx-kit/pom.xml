@@ -363,12 +363,6 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-pleiades-reader</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-worldview2-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -390,6 +384,18 @@
             <artifactId>s2tbx-vector-formats</artifactId>
             <version>${project.version}</version>
         </dependency>-->
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-coregistration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-coregistration-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.netbeans.api</groupId>

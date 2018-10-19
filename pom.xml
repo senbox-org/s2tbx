@@ -72,6 +72,8 @@
         <module>s2tbx-spectral-angle-mapper</module>
         <module>s2tbx-spectral-angle-mapper-ui</module>
         <!--<module>s2tbx-vector-formats</module>-->
+        <module>s2tbx-coregistration</module>
+        <module>s2tbx-coregistration-ui</module>
     </modules>
 
     <packaging>pom</packaging>
