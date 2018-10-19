@@ -6,13 +6,13 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>6.0.0-SNAPSHOT</version>
+        <version>6.0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-coregistration</artifactId>
     <packaging>nbm</packaging>
 
-    <name>Sentinel-2 Coregistration</name>
+    <name>Sentinel-2 Toolbox Coregistration Processor</name>
     <description>Sentinel-2 Coregistration</description>
 
     <dependencies>
