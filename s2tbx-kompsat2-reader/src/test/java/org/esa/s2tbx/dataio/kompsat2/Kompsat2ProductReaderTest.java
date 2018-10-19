@@ -52,7 +52,8 @@ public class Kompsat2ProductReaderTest {
     @Test
     public void testReadProductNodes() {
         Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productsFolder + "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP/KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML");
+        File file = TestUtil.getTestFile(productsFolder + "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP" + File.separator +
+          "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
@@ -78,7 +79,8 @@ public class Kompsat2ProductReaderTest {
     @Test
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productsFolder + "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP/KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML");
+        File file = TestUtil.getTestFile(productsFolder + "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP" + File.separator +
+          "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "200");
         try {
@@ -103,7 +105,8 @@ public class Kompsat2ProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnFileInput() {
-        File file = TestUtil.getTestFile(productsFolder + "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP/KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML");
+        File file = TestUtil.getTestFile(productsFolder + "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP" + File.separator +
+          "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
