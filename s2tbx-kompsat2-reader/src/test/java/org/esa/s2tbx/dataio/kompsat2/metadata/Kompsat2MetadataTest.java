@@ -35,7 +35,8 @@ public class Kompsat2MetadataTest {
 
         XmlMetadataParserFactory.registerParser(Kompsat2Metadata.class, new XmlMetadataParser<>(Kompsat2Metadata.class));
         metadata = Kompsat2Metadata.create(Kompsat2Metadata.class, TestUtil.getTestFile(productsFolder +
-                "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP/KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML"));
+          "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP" + File.separator +
+          "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML"));
     }
 
     @After
@@ -104,7 +105,8 @@ public class Kompsat2MetadataTest {
     @Test
     public void testKompsat2MetadataComponent() throws Exception {
        metadata =  Kompsat2Metadata.create(TestUtil.getTestFile(productsFolder +
-               "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP/KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML").toPath());
+         "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP" + File.separator +
+         "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML").toPath());
         assertNotNull(metadata.getMetadataComponent());
         float[][] tiePointGridPoints = {{-14.40976521f, -14.40929376f, -14.57977522f, -14.57929798f },{129.57652647f, 129.74505447f, 129.57696612f, 129.74562262f}};
         for (int index = 0; index<4;index++) {
