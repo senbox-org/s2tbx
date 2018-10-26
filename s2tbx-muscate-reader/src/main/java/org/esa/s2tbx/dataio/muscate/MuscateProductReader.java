@@ -4,6 +4,10 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
+import org.esa.s2tbx.dataio.s2.S2BandAnglesGridByDetector;
+import org.esa.s2tbx.dataio.s2.S2BandConstants;
+import org.esa.s2tbx.dataio.s2.ortho.S2AnglesGeometry;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -46,7 +50,7 @@ import static org.esa.snap.utils.DateHelper.parseDate;
 /**
  * Created by obarrile on 26/01/2017.
  */
-public class MuscateProductReader extends AbstractProductReader {
+public class MuscateProductReader extends AbstractProductReader implements S2AnglesGeometry {
 
     private ArrayList<MuscateMetadata.Geoposition> geopositions = new ArrayList<>();
     private VirtualDirEx virtualDir;
@@ -1030,5 +1034,32 @@ public class MuscateProductReader extends AbstractProductReader {
             return matcher.group(8);
         }
         return ("UNKNOWN");
+    }
+
+    public S2BandAnglesGridByDetector[] getViewingIncidenceAnglesGrids(int bandId, int detectorId){
+        if(metadata == null) return null;
+        MuscateMetadata.AnglesGrid[] viewingAnglesList = metadata.getViewingAnglesGrid();
+        S2BandConstants bandConstants = S2BandConstants.getBand(bandId);
+
+        for(MuscateMetadata.AnglesGrid viewingAngles : viewingAnglesList) {
+            if(viewingAngles.getBandId().equals(bandConstants.getPhysicalName()) && Integer.parseInt(viewingAngles.getDetectorId()) == detectorId) {
+                S2BandAnglesGridByDetector[] bandAnglesGridByDetector = new S2BandAnglesGridByDetector[2];
+                bandAnglesGridByDetector[0] = new S2BandAnglesGridByDetector("view_zenith", bandConstants, detectorId, viewingAngles.getWidth(), viewingAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, viewingAngles.getResX(), viewingAngles.getResY(), viewingAngles.getZenith());
+                bandAnglesGridByDetector[1] = new S2BandAnglesGridByDetector("view_azimuth", bandConstants, detectorId, viewingAngles.getWidth(), viewingAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, viewingAngles.getResX(), viewingAngles.getResY(), viewingAngles.getAzimuth());
+                return bandAnglesGridByDetector;
+            }
+        }
+
+        return null;
+
+    }
+    public S2BandAnglesGrid[] getSunAnglesGrid(){
+        if(metadata == null) return null;
+        MuscateMetadata.AnglesGrid sunAngles = metadata.getSunAnglesGrid();
+
+        S2BandAnglesGrid[] bandAnglesGrid = new S2BandAnglesGrid[2];
+        bandAnglesGrid[0] = new S2BandAnglesGrid("sun_zenith", null, sunAngles.getWidth(), sunAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, sunAngles.getResX(), sunAngles.getResY(), sunAngles.getZenith());
+        bandAnglesGrid[1] = new S2BandAnglesGrid("sun_azimuth", null, sunAngles.getWidth(), sunAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, sunAngles.getResX(), sunAngles.getResY(), sunAngles.getAzimuth());
+        return bandAnglesGrid;
     }
 }
