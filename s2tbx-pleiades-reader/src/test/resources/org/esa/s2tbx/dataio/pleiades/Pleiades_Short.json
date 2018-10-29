@@ -1,22 +1,22 @@
 {
-  "id": "Spot6_OP12b_Short",
+  "id": "Pleiades_Short",
   "decodeQualification": "INTENDED",
   "expectedContent": {
-    "sceneWidth": 2319,
-    "sceneHeight": 1870,
+    "sceneWidth": 33300,
+    "sceneHeight": 4397,
     "geoCoding": {
-      "coordinates": [
+     "coordinates": [
         {
           "x": 1020,
           "y": 200,
-          "lat": 42.669193,
-          "lon": -83.778974
+          "lat": 39.838333,
+          "lon": -8.084722
         },
         {
-          "x": 2000,
-          "y": 1710,
-          "lat": 42.648322,
-          "lon": -83.762122
+          "x": 31000,
+          "y": 4000,
+          "lat": 39.819722,
+          "lon": -7.99722
         }
       ]
     },
@@ -25,13 +25,13 @@
         "name": "B0",
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "486.5",
-        "spectralBandwidth": "71.0",
+        "spectralWavelength": "495.0",
+        "spectralBandwidth": "130.0",
         "expectedPixels": [
           {
             "x": 374,
             "y": 247,
-            "value": 56.237159
+            "value": 17.56312
           },
           {
             "x": 1214,
@@ -44,13 +44,13 @@
         "name": "B1",
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "557.5",
-        "spectralBandwidth": "67.0",
+        "spectralWavelength": "558.5",
+        "spectralBandwidth": "117.0",
         "expectedPixels": [
           {
             "x": 374,
             "y": 247,
-            "value": 53.310947
+            "value": 24.26229
           },
           {
             "x": 1214,
@@ -63,13 +63,13 @@
         "name": "B2",
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "659.5",
-        "spectralBandwidth": "77.0",
+        "spectralWavelength": "656.0",
+        "spectralBandwidth": "132.0",
         "expectedPixels": [
           {
             "x": 374,
             "y": 247,
-            "value": 33.328224
+            "value": 27.60976
           },
           {
             "x": 1214,
@@ -82,13 +82,13 @@
         "name": "B3",
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "818.5",
-        "spectralBandwidth": "133.0",
+        "spectralWavelength": "842.5",
+        "spectralBandwidth": "205.0",
         "expectedPixels": [
           {
             "x": 374,
             "y": 247,
-            "value": 115.376655
+            "value": 29.94167
           },
           {
             "x": 1214,
@@ -105,7 +105,7 @@
       },
       {
         "path": "Metadata/Coordinate_reference_System/Projected_CRS/PROJECTED_CRS_CODE",
-        "value": "urn:ogc:def:crs:EPSG::32616"
+        "value": "urn:ogc:def:crs:EPSG::32629"
       },
       {
         "path": "Metadata/Geoposition/Raster_CRS/RASTER_GEOMETRY",
@@ -125,23 +125,23 @@
       },
       {
         "path": "Metadata/Processing_Information/Product_Settings/Radiometric_Settings/RADIOMETRIC_PROCESSING",
-        "value": "LINEAR_STRETCH"
+        "value": "BASIC"
       },
       {
         "path": "Metadata/Processing_Information/Processing_Lineage/Component/COMPONENT_PATH/href",
-        "value": "LINEAGE/PROCESSING_SPOT6_PMS_201305251604372_ORT_816009101_DIM.XML"
+        "value": "LINEAGE/PROCESSING_PHR1A_PMS_201511151132244_ORT_2025121101-001_DIM.XML"
       },
       {
         "path": "Metadata/Raster_Data/Data_Access/Data_Files/Data_File/Data_File_Path/href",
-        "value": "IMG_SPOT6_PMS_201305251604372_ORT_816009101_R2C2.JP2"
+        "value": "IMG_PHR1A_PMS_201511151132244_ORT_2025121101-001_R2C1.JP2"
       },
       {
         "path": "Metadata/Raster_Data/Raster_Dimensions/NROWS",
-        "value": "1870"
+        "value": "4397"
       },
       {
         "path": "Metadata/Raster_Data/Raster_Dimensions/NCOLS",
-        "value": "2319"
+        "value": "33300"
       },
       {
         "path": "Metadata/Raster_Data/Raster_Dimensions/NBANDS",
@@ -165,7 +165,7 @@
       },
       {
         "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[1]/MIN",
-        "value": "621"
+        "value": "0.430"
       }
     ]
   }
