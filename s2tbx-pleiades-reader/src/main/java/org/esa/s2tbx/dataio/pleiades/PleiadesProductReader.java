@@ -45,7 +45,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Reader for SPOT 6/7 products.
+ * Reader for Pleiades products.
  *
  * @author Cosmin Cara
  */

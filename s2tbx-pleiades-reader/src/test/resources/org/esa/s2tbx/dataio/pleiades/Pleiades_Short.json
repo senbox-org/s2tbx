@@ -1,98 +1,98 @@
 {
-  "id": "Spot7_Spain",
+  "id": "Pleiades_Short",
   "decodeQualification": "INTENDED",
   "expectedContent": {
-    "sceneWidth": 2289,
-    "sceneHeight": 1686,
+    "sceneWidth": 33300,
+    "sceneHeight": 4397,
     "geoCoding": {
-      "coordinates": [
+     "coordinates": [
         {
           "x": 1020,
           "y": 200,
-          "lat": 37.130874,
-          "lon": -5.980387
+          "lat": 39.838333,
+          "lon": -8.084722
         },
         {
-          "x": 2000,
-          "y": 1710,
-          "lat": 37.047619,
-          "lon": -5.917591
+          "x": 31000,
+          "y": 4000,
+          "lat": 39.819722,
+          "lon": -7.99722
         }
       ]
     },
     "bands": [
       {
         "name": "B0",
-        "noDataValue": "4388.696514",
+        "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "491.0",
-        "spectralBandwidth": "68.0",
+        "spectralWavelength": "495.0",
+        "spectralBandwidth": "130.0",
         "expectedPixels": [
           {
             "x": 374,
             "y": 247,
-            "value": 4454.074218
+            "value": 17.56312
           },
           {
-            "x": 587,
-            "y": 23,
+            "x": 1214,
+            "y": 1254,
             "value": "NaN"
           }
         ]
       },
       {
         "name": "B1",
-        "noDataValue": "4059.613239",
+        "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "565.0",
-        "spectralBandwidth": "62.0",
+        "spectralWavelength": "558.5",
+        "spectralBandwidth": "117.0",
         "expectedPixels": [
           {
             "x": 374,
             "y": 247,
-            "value": 4142.197265
+            "value": 24.26229
           },
           {
-            "x": 675,
-            "y": 45,
+            "x": 1214,
+            "y": 1254,
             "value": "NaN"
           }
         ]
       },
       {
         "name": "B2",
-        "noDataValue": "3685.728312",
+        "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "665.0",
-        "spectralBandwidth": "64.0",
+        "spectralWavelength": "656.0",
+        "spectralBandwidth": "132.0",
         "expectedPixels": [
           {
             "x": 374,
             "y": 247,
-            "value": 3756.173339
+            "value": 27.60976
           },
           {
-            "x": 1139,
-            "y": 21,
+            "x": 1214,
+            "y": 1254,
             "value": "NaN"
           }
         ]
       },
       {
         "name": "B3",
-        "noDataValue": "703.293678",
+        "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "822.0",
-        "spectralBandwidth": "104.0",
+        "spectralWavelength": "842.5",
+        "spectralBandwidth": "205.0",
         "expectedPixels": [
           {
             "x": 374,
             "y": 247,
-            "value": 804.650146
+            "value": 29.94167
           },
           {
-            "x": 1871,
-            "y": 1643,
+            "x": 1214,
+            "y": 1254,
             "value": "NaN"
           }
         ]
@@ -125,23 +125,23 @@
       },
       {
         "path": "Metadata/Processing_Information/Product_Settings/Radiometric_Settings/RADIOMETRIC_PROCESSING",
-        "value": "LINEAR_STRETCH"
+        "value": "BASIC"
       },
       {
         "path": "Metadata/Processing_Information/Processing_Lineage/Component/COMPONENT_PATH/href",
-        "value": "LINEAGE/PROCESSING_SPOT7_MS_201412261100121_ORT_1196430101_DIM.XML"
+        "value": "LINEAGE/PROCESSING_PHR1A_PMS_201511151132244_ORT_2025121101-001_DIM.XML"
       },
       {
         "path": "Metadata/Raster_Data/Data_Access/Data_Files/Data_File/Data_File_Path/href",
-        "value": "IMG_SPOT7_MS_201412261100121_ORT_1196430101_R1C1.JP2"
+        "value": "IMG_PHR1A_PMS_201511151132244_ORT_2025121101-001_R2C1.JP2"
       },
       {
         "path": "Metadata/Raster_Data/Raster_Dimensions/NROWS",
-        "value": "1686"
+        "value": "4397"
       },
       {
         "path": "Metadata/Raster_Data/Raster_Dimensions/NCOLS",
-        "value": "2289"
+        "value": "33300"
       },
       {
         "path": "Metadata/Raster_Data/Raster_Dimensions/NBANDS",
@@ -165,55 +165,7 @@
       },
       {
         "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[1]/MIN",
-        "value": "633"
-      },
-      {
-        "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[1]/MAX",
-        "value": "697"
-      },
-      {
-        "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[2]/MIN",
-        "value": "534"
-      },
-      {
-        "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[2]/MAX",
-        "value": "596"
-      },
-      {
-        "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[3]/MIN",
-        "value": "457"
-      },
-      {
-        "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[3]/MAX",
-        "value": "525"
-      },
-      {
-        "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[4]/MIN",
-        "value": "770"
-      },
-      {
-        "path": "Metadata/Radiometric_Data/Radiometric_Calibration/Instrument_Calibration/Band_Measurement_List/Band_Spectral_Range[4]/MAX",
-        "value": "874"
-      }
-    ],
-    "masks":[
-      {
-        "name": "NODATA",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,0",
-        "description": "NODATA"
-      },
-      {
-        "name": "SATURATED",
-        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,200,0",
-        "description": "SATURATED"
-      },
-      {
-        "name": "Area_Of_Interest Mask",
-        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "255,0,0",
-        "description": "Region of interest mask"
+        "value": "0.430"
       }
     ]
   }
