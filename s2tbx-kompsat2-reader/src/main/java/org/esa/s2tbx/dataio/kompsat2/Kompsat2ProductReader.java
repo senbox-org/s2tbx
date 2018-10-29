@@ -63,9 +63,9 @@ public class Kompsat2ProductReader  extends AbstractProductReader {
         String fileName;
         //product file name differs from archive file name
         if (this.productDirectory.isCompressed()) {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf("\\")+1,productFilePath.lastIndexOf(Kompsat2Constants.Product_FILE_SUFFIX));
+            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator)+1,productFilePath.lastIndexOf(Kompsat2Constants.Product_FILE_SUFFIX));
         } else {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf("\\")+1,productFilePath.lastIndexOf("."));
+            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator)+1,productFilePath.lastIndexOf("."));
         }
 
         this.metadata = Kompsat2Metadata.create(this.productDirectory.getFile(fileName + Kompsat2Constants.METADATA_FILE_SUFFIX).toPath());
