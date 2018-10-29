@@ -43,7 +43,7 @@ import static org.junit.Assume.assumeTrue;
 public class PleiadesProductReaderTest {
 
     private PleiadesProductReader reader;
-    private String productsFolder = "_spot6_7" + File.separator;
+    private String productsFolder = "_pleiades" + File.separator;
 
     @Before
     public void setup() {
@@ -61,19 +61,18 @@ public class PleiadesProductReaderTest {
     @Test
     public void testReadProductNodes() {
         Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short\\SPOT_LIST.XML");
+        File file = TestUtil.getTestFile(productsFolder + "PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.SIP"+File.separator+"TPP1600462598"+File.separator+"VOL_PHR.XML");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(4, finalProduct.getBands().length);
             assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
-            assertEquals("SPOT 6/7 Product", finalProduct.getProductType());
+            assertEquals("Pleiades 1A/B Product", finalProduct.getProductType());
             assertEquals(3, finalProduct.getMaskGroup().getNodeCount());
-            assertEquals(2319, finalProduct.getSceneRasterWidth());
-            assertEquals(1870, finalProduct.getSceneRasterHeight());
-            //name should be changed
-            assertEquals("SPOT_20140129050233095_816009101_2", finalProduct.getName());
+            assertEquals(33300, finalProduct.getSceneRasterWidth());
+            assertEquals(4397, finalProduct.getSceneRasterHeight());
+            assertEquals("ORTHO PMS DS_PHR1A_201511151131518_FR1_PX_W008N40_0103_01317", finalProduct.getName());
             Date endDate = Calendar.getInstance().getTime();
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
         } catch (IOException e) {
@@ -85,7 +84,7 @@ public class PleiadesProductReaderTest {
     @Test
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short\\SPOT_LIST.XML");
+        File file = TestUtil.getTestFile(productsFolder + "PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.SIP"+File.separator+"TPP1600462598"+File.separator+"VOL_PHR.XML");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "200");
         try {
@@ -110,19 +109,12 @@ public class PleiadesProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnFileInput() {
-        File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short\\SPOT_LIST.XML");
+        File file = TestUtil.getTestFile(productsFolder + "PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.SIP"+File.separator+"TPP1600462598"+File.separator+"VOL_PHR.XML");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
-            assertEquals(8, components.getChildren().length);
-            assertEquals("SPOT_LIST.XML", components.getChildren()[0].getId());
-            assertEquals("SPOT_VOL.XML", components.getChildren()[1].getId());
-            assertEquals("DIM_SPOT6_PMS_201305251604372_ORT_816009101.XML", components.getChildren()[2].getId());
-            assertEquals("IMG_SPOT6_PMS_201305251604372_ORT_816009101_R2C2.JP2", components.getChildren()[3].getId());
-            assertEquals("Area_Of_Interest Mask", components.getChildren()[4].getId());
-            assertEquals("Detector_Quality Mask", components.getChildren()[5].getId());
-            assertEquals("Cloud_Cotation Mask", components.getChildren()[6].getId());
-            assertEquals("SPOT_PROD.XML", components.getChildren()[7].getId());
+            assertEquals(1, components.getChildren().length);
+            assertEquals("VOL_PHR.XML", components.getChildren()[0].getId());
         } catch (IOException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
@@ -132,12 +124,12 @@ public class PleiadesProductReaderTest {
     @Test
     public void testGetProductComponentsOnArchiveInput() {
         //TODO this will work someday!
-        /*File file = TestUtil.getTestFile(productsFolder + "SPOT6_archived.zip");
+        /*File file = TestUtil.getTestFile(productsFolder + "Pleiades_archived.zip");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(1, components.getChildren().length);
-            assertEquals("SPOT6_archived.zip", components.getChildren()[0].getId());
+            assertEquals("Pleiades_archived.zip", components.getChildren()[0].getId());
         } catch (IOException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);

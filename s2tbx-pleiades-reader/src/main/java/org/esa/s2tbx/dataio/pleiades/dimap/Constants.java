@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.pleiades.dimap;
 import java.io.File;
 
 /**
- * Holder for various constants related to SPOT 6/7 products.
+ * Holder for various constants related to Pleiades products.
  * @author Cosmin Cara
  */
 public class Constants {

@@ -26,7 +26,7 @@ import java.io.File;
 import java.util.Locale;
 
 /**
- * Reader plugin for SPOT6/7 products.
+ * Reader plugin for Pleiades products.
  *
  * @author Cosmin Cara
  */

@@ -34,7 +34,7 @@
         <folder name="File">
             <folder name="Import">
                 <folder name="Optical Sensors">
-                    <folder name="Spot">
+                    <folder name="Pleiades">
                         <file name="org-esa-s2tbx-dataio-pleiades-ImportPleiadesDimapProduct.shadow">
                             <attr name="originalFile"
                                   stringvalue="Actions/Readers/org-esa-s2tbx-dataio-pleiades-ImportPleiadesDimapProduct.instance"/>
