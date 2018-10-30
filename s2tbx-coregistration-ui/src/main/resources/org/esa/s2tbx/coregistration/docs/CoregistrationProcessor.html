@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<p>
 <table class="header">
     <tr class="header">
         <td class="header">&nbsp;
@@ -32,24 +32,57 @@
 
 <p><br/></p>
 <p>
+    The acronym GeFolki stands for Geoscience Extended Flow Optical Lucas-Kanade Iterative.
+</p>
+<p>
     The GeFolki Co-registration Processor is based on <a href="https://www.researchgate.net/publication/305362804_Adaptation_and_Evaluation_of_an_Optical_Flow_Method_Applied_to_Coregistration_of_Forest_Remote_Sensing_Images">
-    Adaptation and Evaluation of an Optical Flow Method Applied to Coregistration of Forest Remot Sensing Images</a> developed by Guillaume Brigot, Elise Colin-Koeniguer, Aur´elien Plyer, and Fabrice Janez.
+    Adaptation and Evaluation of an Optical Flow Method Applied to Coregistration of Forest Remote Sensing Images</a> developed by Guillaume Brigot, Elise Colin-Koeniguer, Aur´elien Plyer, and Fabrice Janez.
 </p>
 <p>
-    The memory required to process the images may be very high and therefore leads to unfeasibility on slow computers.
+    The GeFolki algorithm allows the registration of images in a nonparametric and dense way.
+    GeFolki is based on a local method of optical flow derived from the Lucas-Kanade algorithm, with a multiscale implementation, and a specific filtering including rank filtering, rolling guidance filtering and local contrast inversion.
 </p>
 <p>
-    [TBD]
+    GeFolki takes two input images resampled at the same rate, and outputs the two components of the flow at every pixel position.
+    The aim of the algorithm is to minimize a given criterion.
+</p>
+<p><p><img src="images/CoregistrationAlgorithmByGeocoding.png"></p></p>
+<p>
+    First coregistration scheme by geocoding from a geometric point of view:
+    <ul>
+        <li>the latitude and longitudes are computed for each pixel of the images according to topographic and track information.</li>
+        <li>then, the flow is computed between these both coordinates, and the slave image is resampled accordingly.</li>
+    </ul>
+</p>
+<p><p><img src="images/CoregistrationAlgorithmByOpticalFlow.png"></p></p>
+<p>
+    Coregistration scheme by optical flow calculation:
+    <ul>
+        <li>first a coarse coregistration is performed by warping the slave image on the master image through a projective transformation based on the manual selection of four tie-points. This first step constitutes the initialization of GeFolki.</li>
+        <li>then, GeFolki computes the flow for this couple of images, and the final slave image is resampled accordingly.</li>
+    </ul>
+</p>
+<p>
+    The registration precision of GeFolki is about a few pixels, (1 pixel = 80 cm), compared to ten of pixels by geocoding. This precision opens new opportunities for studies related to data fusion, for example, with applications involving the counting of trees. It appears that the fusion of different images may improve detection performance, but only if we can trust the accuracy of registration.
+    GeFolki has been proven to be faster than the baseline registration method, by a factor of 10 to 20.
+</p>
+<p>
+    <b>NOTE:</b> The memory required to process the images may be very high and therefore leads to unfeasibility on slow computers.
 </p>
 
 <h4>I/O Parameters</h4>
 <table border="0">
     <tr>
         <td style="border-width:0;" valign="top">
-            <h5>Master source Product</h5>
+            <h5>Source Product</h5>
 
             <p class="i1">
-                ...
+                <b>Master:</b>
+                Specify the current master product which will be used. The current master product represents a Landsat 2 product.
+            </p>
+            <p class="i1">
+                <b>Slave:</b>
+                Specify the current slave product which will be used. The current slave product represents a Sentinel 2 product.
             </p>
 
             <h5>Target Product</h5>
@@ -80,6 +113,38 @@
 <table border="0">
     <tr>
         <td style="border-width:0;" valign="top">
+            <p class="i1">
+                <b>Master band:</b>
+                Choose a band from the list.
+            </p>
+            <p class="nospace">
+                <b>NOTE:</b> The master band field must not be empty.
+            </p>
+            <p class="i1">
+                <b>Slave band:</b>
+                Choose a band from the list.
+            </p>
+            <p class="nospace">
+                <b>NOTE:</b> The slave band field must not be empty.
+            </p>
+            <p class="i1">
+                <b>Number of levels:</b>
+                Specify the total number of pyramid levels. If the overall displacement to find is large, a high number of pyramid levels is required.
+            </p>
+            <p class="i1">
+                <b>Rank number:</b>
+                Specify the rank number. The rank is a filtering step based on the rolling guidance filter, in order to make image textures more similar. It is also a function of local contrast inversion, for all cases where the contrast exhibited between the different sensors is not the same.
+                The rank number enhances the robustness of the motion estimation.
+            </p>
+            <p class="i1">
+                <b>Number of iterations:</b>
+                Specify the total number of iterations.
+            </p>
+            <p class="i1">
+                <b>Radius values:</b>
+                Specify the radius values that describes the size of the local window. In the case where the images are taken with different geometries, the terrain projection
+                effects can induce more local deformation between the two images, and in this case, it could be necessary to use a smaller radius to be more precise.
+            </p>
         </td>
         <td style="border-width:0;" valign="top">
             <img src="images/processing-parameters.png">
