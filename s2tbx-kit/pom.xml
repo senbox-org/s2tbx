@@ -80,6 +80,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-land-cover</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-annotations-common</artifactId>
             <version>${netbeans.version}</version>
@@ -290,7 +296,19 @@
             <artifactId>s2tbx-grm-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
-		
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-forest-cover-change</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-forest-cover-change-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-mosaic-ui</artifactId>
@@ -326,18 +344,66 @@
             <artifactId>s2tbx-s2msi-resampler</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-kompsat2-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-worldview2-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-spectral-angle-mapper</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-spectral-angle-mapper-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--<dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-vector-formats</artifactId>
+            <version>${project.version}</version>
+        </dependency>-->
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-coregistration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-coregistration-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-rcp</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-engine-utilities</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-modules</artifactId>
         </dependency>
-
     </dependencies>
 
 </project>

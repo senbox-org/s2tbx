@@ -65,6 +65,15 @@
         <module>s2tbx-s2msi-resampler</module>
         <module>s2tbx-muscate-reader</module>
         <module>s2tbx-pleiades-reader</module>
+        <module>s2tbx-forest-cover-change</module>
+        <module>s2tbx-forest-cover-change-ui</module>
+        <module>s2tbx-kompsat2-reader</module>
+        <module>s2tbx-worldview2-reader</module>
+        <module>s2tbx-spectral-angle-mapper</module>
+        <module>s2tbx-spectral-angle-mapper-ui</module>
+        <!--<module>s2tbx-vector-formats</module>-->
+        <module>s2tbx-coregistration</module>
+        <module>s2tbx-coregistration-ui</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -72,6 +81,7 @@
     <properties>
         <snap.version>7.0.0-SNAPSHOT</snap.version>
         <s2tbx.version>7.0.0-SNAPSHOT</s2tbx.version>
+        <geotools.version>17.1</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE82</netbeans.version>
@@ -345,6 +355,12 @@
                 <groupId>org.esa.s2tbx.gdal</groupId>
                 <artifactId>gdal</artifactId>
                 <version>2.1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-archiver</artifactId>
+                <version>2.2</version>
             </dependency>
 
         </dependencies>

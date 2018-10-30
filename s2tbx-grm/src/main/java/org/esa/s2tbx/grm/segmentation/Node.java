@@ -2,9 +2,9 @@ package org.esa.s2tbx.grm.segmentation;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.esa.snap.utils.ArrayListExtended;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.ref.WeakReference;
 
 /**
  * @author Jean Coravu
@@ -18,7 +18,7 @@ public abstract class Node {
      * Node is identified by the location of the first pixel of the region.
      */
     private int id;
-    private final List<Edge> edges;
+    private final ArrayListExtended<Edge> edges;
     protected final float[] means;
 
     private int area;
@@ -30,7 +30,7 @@ public abstract class Node {
 
     protected Node(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel) {
         this.id = id;
-        this.edges = new ArrayList<Edge>();
+        this.edges = new ArrayListExtended<Edge>(0);
         this.means = new float[numberOfComponentsPerPixel];
 
         this.contour = new Contour();
@@ -49,7 +49,7 @@ public abstract class Node {
 
     protected Node(int id, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
         this.id = id;
-        this.edges = new ArrayList<Edge>();
+        this.edges = new ArrayListExtended<Edge>(0);
         this.means = new float[numberOfComponentsPerPixel];
 
         this.contour = contour;
@@ -66,7 +66,7 @@ public abstract class Node {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "@" + this.hashCode() + "[id="+id+"]";
+        return getClass().getSimpleName() + "@" + this.hashCode() + "[id=" + id + "]";
     }
 
     public void initData(int index, float pixel) {
@@ -91,9 +91,9 @@ public abstract class Node {
 
     public void setMerged(boolean merged) {
         if (merged) {
-            this.flags = (byte)(this.flags | MERGED_FLAG);
+            this.flags = (byte) (this.flags | MERGED_FLAG);
         } else {
-            this.flags = (byte)(this.flags & ~MERGED_FLAG);
+            this.flags = (byte) (this.flags & ~MERGED_FLAG);
         }
     }
 
@@ -103,9 +103,9 @@ public abstract class Node {
 
     public void setExpired(boolean expired) {
         if (expired) {
-            this.flags = (byte)(this.flags | EXPIRED_FLAG);
+            this.flags = (byte) (this.flags | EXPIRED_FLAG);
         } else {
-            this.flags = (byte)(this.flags & ~EXPIRED_FLAG);
+            this.flags = (byte) (this.flags & ~EXPIRED_FLAG);
         }
     }
 
@@ -115,9 +115,9 @@ public abstract class Node {
 
     public void setValid(boolean valid) {
         if (valid) {
-            this.flags = (byte)(this.flags | VALID_FLAG);
+            this.flags = (byte) (this.flags | VALID_FLAG);
         } else {
-            this.flags = (byte)(this.flags & ~VALID_FLAG);
+            this.flags = (byte) (this.flags & ~VALID_FLAG);
         }
     }
 
@@ -158,7 +158,9 @@ public abstract class Node {
     }
 
     public void resetCostUpdatedFlagToAllEdges() {
-        for (Edge edge : this.edges) {
+        int edgeCount = this.edges.size();
+        for (int i = 0; i < edgeCount; i++) {
+            Edge edge = this.edges.get(i);
             edge.setCostUpdated(false);
             Edge toNeigh = edge.getTarget().findEdge(this);
             toNeigh.setCostUpdated(false);
@@ -167,10 +169,10 @@ public abstract class Node {
 
     public void swapEdges(int firstIndex, int secondIndex) {
         if (firstIndex < 0 || firstIndex >= this.edges.size()) {
-            throw new IllegalArgumentException("The first index " + firstIndex + " is out of bounds. The maximum index is " + (this.edges.size()-1));
+            throw new IllegalArgumentException("The first index " + firstIndex + " is out of bounds. The maximum index is " + (this.edges.size() - 1));
         }
         if (secondIndex < 0 || secondIndex >= this.edges.size()) {
-            throw new IllegalArgumentException("The second index " + secondIndex + " is out of bounds. The maximum index is " + (this.edges.size()-1));
+            throw new IllegalArgumentException("The second index " + secondIndex + " is out of bounds. The maximum index is " + (this.edges.size() - 1));
         }
         Edge auxEdge = this.edges.set(firstIndex, this.edges.get(secondIndex));
         this.edges.set(secondIndex, auxEdge);
@@ -178,6 +180,7 @@ public abstract class Node {
 
     /**
      * Check the local mutual best fitting.
+     *
      * @param threshold
      * @return
      */
@@ -201,7 +204,8 @@ public abstract class Node {
     }
 
     public Edge findEdge(Node target) {
-        for (int i = 0; i < this.edges.size(); i++) {
+        int edgeCount = this.edges.size();
+        for (int i = 0; i < edgeCount; i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
                 return edge;
@@ -211,19 +215,49 @@ public abstract class Node {
     }
 
     public int removeEdge(Node target) {
-        for (int i = 0; i < this.edges.size(); i++) {
+        int edgeCount = this.edges.size();
+        for (int i = 0; i < edgeCount; i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
+                // found the edge to the target node
                 this.edges.remove(i);
+                WeakReference<Edge> reference = new WeakReference<Edge>(edge);
+                reference.clear();
                 return i;
             }
         }
-        return -1;
+        return -1; // -1 => no edge removed
+    }
+
+    public final void removeEdgeToUnstableNode() {
+        int edgeCount = this.edges.size();
+        for (int j = 0; j < edgeCount; j++) {
+            Edge edge = this.edges.get(j);
+            Node nodeNeighbor = edge.getTarget();
+            int removedEdgeIndex = nodeNeighbor.removeEdge(this);
+            assert (removedEdgeIndex >= 0);
+        }
+    }
+
+    public void doClose() {
+        int edgeCount = this.edges.size();
+        for (int j = 0; j < edgeCount; j++) {
+            Edge edge = this.edges.get(j);
+            if (this != edge.getTarget()) {
+                // the target node is different
+                edge.getTarget().removeEdge(this);
+            }
+            WeakReference<Edge> reference = new WeakReference<Edge>(edge);
+            reference.clear();
+        }
+        this.edges.clearItems(); // remove all the edges
+        WeakReference<ArrayListExtended<Edge>> reference = new WeakReference<ArrayListExtended<Edge>>(this.edges);
+        reference.clear();
     }
 
     private void updateNeighbors(Node neighborToRemove) {
         // explore the neighbors of 'neighborToRemove'
-        for (int i=0; i<neighborToRemove.getEdgeCount(); i++) {
+        for (int i = 0; i < neighborToRemove.getEdgeCount(); i++) {
             Edge currentEdge = neighborToRemove.getEdgeAt(i);
             // retrieve the edge targeting node 'neighborToRemove'
             Node targetNodeOfCurrentEdge = currentEdge.getTarget();
@@ -254,7 +288,7 @@ public abstract class Node {
                     toThis.setBoundary(toThis.getBoundary() + boundary);
 
                     // increment the boundary of the edge from node a targeting to node neigh_b.
-                    Edge toNeighB = this.findEdge(targetNodeOfCurrentEdge);
+                    Edge toNeighB = findEdge(targetNodeOfCurrentEdge);
                     toNeighB.setBoundary(toNeighB.getBoundary() + boundary);
                 }
             }
@@ -304,7 +338,7 @@ public abstract class Node {
 
         // table containing id neighbors
         int[] neighbors = new int[8];
-        for (; ;) {
+        while (true) {
             // compute neighbor' ids
             AbstractSegmenter.generateEightNeighborhood(neighbors, currentNodeId, boxWidth, boxHeight);
 
@@ -385,10 +419,9 @@ public abstract class Node {
 
     private static void generateBorderCellsForContourFusion(IntSet outputBorderCells, Contour contour, int startCellId, int width, BoundingBox mergedBox) {
         // add the first pixel to the border list
-        int id = gridToBBox(startCellId, mergedBox, width);
-        outputBorderCells.add(id);
+        outputBorderCells.add(gridToBBox(startCellId, mergedBox, width));
 
-        if (contour.size() > 8) { // contour size > 8 => more then 4 moves
+        if (contour.hasBorderSize()) { // contour size > 8 => more then 4 moves
             // initialize the first move at previous index
             int previousMoveId = contour.getMove(0);
 
@@ -396,55 +429,63 @@ public abstract class Node {
             int currentCellId = startCellId;
 
             // explore the contour
-            for (int contourIndex = 1; contourIndex < contour.size() / 2; contourIndex++) {
+            int contourSize = contour.computeContourBorderSize();
+            for (int contourIndex = 1; contourIndex < contourSize; contourIndex++) {
                 int currentMoveId = contour.getMove(contourIndex);
-                assert (currentMoveId >= 0 && currentMoveId <= 3);
+//                assert (currentMoveId >= 0 && currentMoveId <= 3);
+//
+//                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
+//                    // impossible case is previous index = 2 (bottom)
+//                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+//                        currentCellId -= width; // go to the top
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+//                        currentCellId = currentCellId - width + 1; // go to the top right
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    }
+//                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
+//                    // impossible case is previous index = 3 (left)
+//                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
+//                        currentCellId++; // go to the right
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+//                        currentCellId = currentCellId + width + 1; // go to the bottom right
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    }
+//                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
+//                    // impossible case is previous index = 0 (top)
+//                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
+//                        currentCellId += width;
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+//                        currentCellId = currentCellId + width - 1; // go to the bottom left
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    }
+//                } else { // current index = 3 (left)
+//                    // impossible case is previous index = 1 (right)
+//                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
+//
+//                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
+//                        currentCellId = currentCellId - width - 1; // go to the top left
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
+//                        currentCellId--; // go the to left
+//                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
+//                    }
+//                }
 
-                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
-                    // impossible case is previous index = 2 (bottom)
-                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId -= width; // go to the top
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId = currentCellId - width + 1; // go to the top right
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    }
-                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
-                    // impossible case is previous index = 3 (left)
-                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId++; // go to the right
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId = currentCellId + width + 1; // go to the bottom right
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    }
-                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
-                    // impossible case is previous index = 0 (top)
-                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId += width;
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId = currentCellId + width - 1; // go to the bottom left
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    }
-                } else { // current index = 3 (left)
-                    // impossible case is previous index = 1 (right)
-                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId = currentCellId - width - 1; // go to the top left
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId--; // go the to left
-                        outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
-                    }
+                int nextCellId = Contour.computeNextCellId(previousMoveId, currentMoveId, currentCellId, width);
+                if (nextCellId != currentCellId) {
+                    currentCellId = nextCellId;
+                    outputBorderCells.add(gridToBBox(currentCellId, mergedBox, width));
                 }
+
                 previousMoveId = currentMoveId;
             }
         }
@@ -460,3 +501,5 @@ public abstract class Node {
         return bbY * bbox.getWidth() + bbX;
     }
 }
+
+

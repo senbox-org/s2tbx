@@ -21,6 +21,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.util.ImageUtils;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -94,15 +95,15 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         final List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>(numXTiles * numYTiles));
         double factorX = 1.0 / Math.pow(2, level);
         double factorY = 1.0 / Math.pow(2, level);
-        for (int x = 0; x < numYTiles; x++) {
-            for (int y = 0; y < numXTiles; y++) {
+        for (int x = 0; x < numXTiles; x++) {
+            for (int y = 0; y < numYTiles; y++) {
                 PlanarImage opImage;
                 try {
                     opImage = createTileImage(x, y, level);
                     if (opImage != null) {
                         opImage = TranslateDescriptor.create(opImage,
-                                                             (float) (y * tileWidth * factorX),
-                                                             (float) (x * tileHeight * factorY),
+                                                             (float) (x * tileWidth * factorX),
+                                                             (float) (y * tileHeight * factorY),
                                                              Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                                              null);
                     }
@@ -125,7 +126,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
             imageLayout.setTileHeight(JAI.getDefaultTileSize().height);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
-            //imageLayout.setSampleModel(ImageUtils.createSingleBandedSampleModel(dataType, imageWidth, imageHeight));
+            imageLayout.setSampleModel(ImageUtils.createSingleBandedSampleModel(dataType, imageWidth, imageHeight));
             //imageLayout.setColorModel(ImageUtils.create8BitGreyscaleColorModel());
         //}
 

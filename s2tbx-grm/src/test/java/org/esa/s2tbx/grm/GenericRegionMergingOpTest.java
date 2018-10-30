@@ -11,11 +11,13 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
+import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.media.jai.JAI;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -281,38 +283,34 @@ public class GenericRegionMergingOpTest {
         }
     }
 
-    private static GenericRegionMergingOp executeOperator(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion, int totalIterationsForSecondSegmentation,
-                                                   float threshold, Float spectralWeight, Float shapeWeight )
-                                                   throws IOException {
+    private static GenericRegionMergingOp executeOperator(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion,
+                                                          int totalIterationsForSecondSegmentation, float threshold, Float spectralWeight, Float shapeWeight )
+                                                          throws IOException {
 
         String[] sourceBandNames = new String[]{"red", "blue", "green"};
 
-        String operatorName = "GenericRegionMergingOp";
-
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("mergingCostCriterion", mergingCostCriterion);
         parameters.put("regionMergingCriterion", regionMergingCriterion);
         parameters.put("totalIterationsForSecondSegmentation", totalIterationsForSecondSegmentation);
         parameters.put("threshold", threshold);
+        parameters.put("sourceBandNames", sourceBandNames);
         if (spectralWeight != null) {
             parameters.put("spectralWeight", spectralWeight.floatValue());
         }
         if (shapeWeight != null) {
             parameters.put("shapeWeight", shapeWeight.floatValue());
         }
-        parameters.put("sourceBandNames", sourceBandNames);
 
-        Map<String, Product> sourceProducts = new HashMap<String, Product>(1);
+        Map<String, Product> sourceProducts = new HashMap<String, Product>();
         sourceProducts.put("source", sourceProduct);
 
-        GenericRegionMergingOp operator = (GenericRegionMergingOp)GPF.getDefaultInstance().createOperator(operatorName, parameters, sourceProducts, null);
+        // create the operator
+        GenericRegionMergingOp operator = (GenericRegionMergingOp)GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
+
         Product targetProduct = operator.getTargetProduct(); // initialize the operator
 
-        Dimension preferredTileSize = targetProduct.getPreferredTileSize();
-        assertNotNull(preferredTileSize);
-
-        Dimension newPreferredTileSize = new Dimension(preferredTileSize.width/2, preferredTileSize.height/2);
-        targetProduct.setPreferredTileSize(newPreferredTileSize);
+        assertNotNull(targetProduct.getPreferredTileSize());
 
         assertEquals(mergingCostCriterion, operator.getMergingCostCriterion());
         assertEquals(regionMergingCriterion, operator.getRegionMergingCriterion());

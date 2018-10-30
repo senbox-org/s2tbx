@@ -7,10 +7,18 @@ import org.esa.s2tbx.grm.segmentation.Contour;
  * @author Jean Coravu
  */
 public class ProcessingTile {
-    private final int[] rows; // lower and upper rows (-1 means that the row has not be considered)
-    private final int[] columns; // lower and upper columns (-1 means that the row has not be considered)
-    private final int[] margin; // the margin at top, left, bottom or right
     private BoundingBox region; // the image region
+
+    private int imageTopY;
+    private int imageBottomY;
+
+    private int imageLeftX;
+    private int imageRightX;
+
+    private int marginLeftX;
+    private int marginRightX;
+    private int marginTopY;
+    private int marginBottomY;
 
     private String nodeFileName;
     private String edgeFileName;
@@ -18,9 +26,16 @@ public class ProcessingTile {
     private String edgeMarginFileName;
 
     public ProcessingTile() {
-        rows = new int[2];
-        columns = new int[2];
-        margin = new int[4];
+        this.imageTopY = 0;
+        this.imageBottomY = 0;
+
+        this.imageLeftX = 0;
+        this.imageRightX = 0;
+
+        this.marginLeftX = 0;
+        this.marginRightX = 0;
+        this.marginTopY = 0;
+        this.marginBottomY = 0;
     }
 
     public String getNodeFileName() {
@@ -56,67 +71,67 @@ public class ProcessingTile {
     }
 
     public int getTopMargin() {
-        return this.margin[Contour.TOP_MOVE_INDEX];
+        return this.marginTopY;
     }
 
     public int getBottomMargin() {
-        return this.margin[Contour.BOTTOM_MOVE_INDEX];
+        return this.marginBottomY;
     }
 
     public int getLeftMargin() {
-        return this.margin[Contour.LEFT_MOVE_INDEX];
+        return this.marginLeftX;
     }
 
     public int getRightMargin() {
-        return this.margin[Contour.RIGHT_MOVE_INDEX];
+        return this.marginRightX;
     }
 
     public void setTopMargin(int marginValue) {
-        this.margin[Contour.TOP_MOVE_INDEX] = marginValue;
+        this.marginTopY = marginValue;
     }
 
     public void setBottomMargin(int marginValue) {
-        this.margin[Contour.BOTTOM_MOVE_INDEX] = marginValue;
+        this.marginBottomY = marginValue;
     }
 
     public void setLeftMargin(int marginValue) {
-        this.margin[Contour.LEFT_MOVE_INDEX] = marginValue;
+        this.marginLeftX = marginValue;
     }
 
     public void setRightMargin(int marginValue) {
-        this.margin[Contour.RIGHT_MOVE_INDEX] = marginValue;
+        this.marginRightX = marginValue;
     }
 
     public int getImageTopY() {
-        return rows[0];
+        return this.imageTopY;
     }
 
     public void setImageTopY(int topY) {
-        rows[0] = topY;
+        this.imageTopY = topY;
     }
 
     public int getImageBottomY() {
-        return rows[1];
+        return this.imageBottomY;
     }
 
     public void setImageBottomY(int bottomY) {
-        rows[1] = bottomY;
+        this.imageBottomY = bottomY;
     }
 
     public int getImageLeftX() {
-        return columns[0];
+        return this.imageLeftX;
     }
 
     public void setImageLeftX(int leftX) {
-        columns[0] = leftX;
+        this.imageLeftX = leftX;
     }
 
     public int getImageRightX() {
-        return columns[1];
+        return this.imageRightX;
     }
 
     public void setImageRightX(int rightX) {
-        columns[1] = rightX;
+        this.imageRightX = rightX;
     }
 
     public void setRegion(BoundingBox region) {
@@ -133,5 +148,9 @@ public class ProcessingTile {
 
     public int getImageHeight() {
         return getImageBottomY() - getImageTopY() + 1;
+    }
+
+    public boolean isRegionInside(BoundingBox box) {
+        return (box.getLeftX() > getImageLeftX() && box.getTopY() > getImageTopY() && box.getRightX() - 1 < getImageRightX() && box.getBottomY() - 1 < getImageBottomY());
     }
 }

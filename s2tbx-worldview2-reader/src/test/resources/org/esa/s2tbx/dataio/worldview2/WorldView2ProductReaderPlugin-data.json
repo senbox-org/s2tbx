@@ -1,0 +1,9 @@
+{
+  "testProducts": [
+    {
+      "id": "WorldView2_product",
+      "relativePath": "_worldView\\ZON24_I200862_FL01-P369685\\ZON24_README.XML",
+      "description": "WorldView2 product in an folder"
+    }
+  ]
+}

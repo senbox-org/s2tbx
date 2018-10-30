@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 /**
  * Represents a DIMAP volume metadata file, which points to individual components (products).
- * As of now, SPOT scene products have only one component.
+ * As of now, Pleiades scene products have only one component.
  *
  * @author Cosmin Cara
  */

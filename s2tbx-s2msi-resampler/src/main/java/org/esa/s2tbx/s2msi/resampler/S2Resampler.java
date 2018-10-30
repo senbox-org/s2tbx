@@ -8,7 +8,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGridByDetector;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
-import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
+import org.esa.s2tbx.dataio.s2.ortho.S2AnglesGeometry;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -133,7 +133,7 @@ public class S2Resampler implements Resampler {
         //if ((S2ResamplerUtils.countMatches(bandNames,"view_azimuth_.*") <= 0) || (S2ResamplerUtils.countMatches(bandNames,"view_zenith_.*") <= 0))
         //    return false;
         //todo check referencebandName
-        return multiSizeProduct.getProductReader() instanceof Sentinel2OrthoProductReader;
+        return multiSizeProduct.getProductReader() instanceof S2AnglesGeometry;
     }
 
     @Override
@@ -262,12 +262,29 @@ public class S2Resampler implements Resampler {
             } else {
                 maskExpression = String.format("'%s'>0 && '%s'==0", maskName, nextMaskName);
             }
-            MultiLevelImage footprint = multiSizeProduct.getMaskImage(maskExpression,multiSizeProduct.getBand(bandConstants.getPhysicalName()));
-            MultiLevelImage footprintFinal = S2ResamplerUtils.createInterpolatedImage(footprint, 0.0f, multiSizeProduct.getBand(bandConstants.getPhysicalName()).getImageToModelTransform(),
+
+            Band auxBand = multiSizeProduct.getBand(bandConstants.getPhysicalName());
+
+            //To support MUSCATE products
+            if(auxBand == null) {
+                String[] bandNames = multiSizeProduct.getBandNames();
+                for(String bandName : bandNames) {
+                    if(bandName.endsWith(bandConstants.getPhysicalName()) && !bandName.startsWith("view") && !bandName.startsWith("sun")) {
+                        auxBand = multiSizeProduct.getBand(bandName);
+                        break;
+                    }
+                }
+            }
+            if(auxBand == null) {
+                return false;
+            }
+
+            MultiLevelImage footprint = multiSizeProduct.getMaskImage(maskExpression,auxBand);
+            MultiLevelImage footprintFinal = S2ResamplerUtils.createInterpolatedImage(footprint, 0.0f, auxBand.getImageToModelTransform(),
                                                                                       referenceWidth, referenceHeight, referenceTileSize, referenceMultiLevelModel, S2ResamplerUtils.getInterpolation("Nearest"));
 
 
-            S2BandAnglesGridByDetector[] anglesGridByDetector = ((Sentinel2OrthoProductReader)multiSizeProduct.getProductReader()).getMetadataHeader().getAnglesGridByDetector(bandConstants.getBandIndex(), detectorId);
+            S2BandAnglesGridByDetector[] anglesGridByDetector = ((S2AnglesGeometry)multiSizeProduct.getProductReader()).getViewingIncidenceAnglesGrids(bandConstants.getBandIndex(), detectorId);
             float[] extendedZenithData = S2ResamplerUtils.extendDataV2(anglesGridByDetector[0].getData(),
                                                                anglesGridByDetector[0].getWidth(),
                                                                anglesGridByDetector[0].getHeight());
@@ -383,7 +400,7 @@ public class S2Resampler implements Resampler {
         Band bandZenith = targetProduct.getBand(zenithBandName);
         Band bandAzimuth = targetProduct.getBand(azimuthBandName);
 
-        S2BandAnglesGrid[] anglesGrid = ((Sentinel2OrthoProductReader)multiSizeProduct.getProductReader()).getMetadataHeader().getSunAnglesGrid();
+        S2BandAnglesGrid[] anglesGrid = ((S2AnglesGeometry)multiSizeProduct.getProductReader()).getSunAnglesGrid();
         float[] extendedZenithData = S2ResamplerUtils.extendDataV2(anglesGrid[0].getData(),
                                                                  anglesGrid[0].getWidth(),
                                                                  anglesGrid[0].getHeight());

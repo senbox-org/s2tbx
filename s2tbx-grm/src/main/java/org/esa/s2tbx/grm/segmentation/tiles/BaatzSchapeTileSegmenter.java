@@ -1,5 +1,6 @@
 package org.esa.s2tbx.grm.segmentation.tiles;
 
+import org.esa.s2tbx.grm.RegionMergingProcessingParameters;
 import org.esa.s2tbx.grm.segmentation.*;
 import org.esa.snap.utils.BufferedInputStreamWrapper;
 import org.esa.snap.utils.BufferedOutputStreamWrapper;
@@ -7,6 +8,8 @@ import org.esa.snap.utils.BufferedOutputStreamWrapper;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.concurrent.Executor;
 
 /**
  * @author Jean Coravu
@@ -15,11 +18,11 @@ public class BaatzSchapeTileSegmenter extends AbstractTileSegmenter {
     private final float spectralWeight;
     private final float shapeWeight;
 
-    public BaatzSchapeTileSegmenter(Dimension imageSize, Dimension tileSize, int totalIterationsForSecondSegmentation,
-                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight)
+    public BaatzSchapeTileSegmenter(RegionMergingProcessingParameters processingParameters, int totalIterationsForSecondSegmentation,
+                                    float threshold, boolean fastSegmentation, float spectralWeight, float shapeWeight, Path temporaryParentFolder)
                                     throws IOException {
 
-        super(imageSize, tileSize, totalIterationsForSecondSegmentation, threshold, fastSegmentation);
+        super(processingParameters, totalIterationsForSecondSegmentation, threshold, fastSegmentation, temporaryParentFolder);
 
         this.spectralWeight = spectralWeight;
         this.shapeWeight = shapeWeight;

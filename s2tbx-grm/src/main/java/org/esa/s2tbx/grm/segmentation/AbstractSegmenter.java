@@ -1,10 +1,6 @@
 package org.esa.s2tbx.grm.segmentation;
 
-import it.unimi.dsi.fastutil.ints.*;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.gpf.Tile;
-
+import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,7 +24,7 @@ public abstract class AbstractSegmenter {
 
     protected abstract Node buildNode(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel);
 
-    public final boolean update(Tile[] sourceTiles, BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
+    public final boolean update(TileDataSource[] sourceTiles, BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
         initNodes(sourceTiles, rectange, addFourNeighbors);
 
         boolean merged = false;
@@ -41,39 +37,21 @@ public abstract class AbstractSegmenter {
         return !merged;
     }
 
-    public void setGraph(Graph graph, int imageWidth, int imageHeight) {
+    public final void setGraph(Graph graph, int imageWidth, int imageHeight) {
         this.graph = graph;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
     }
 
-    public final void fillBandData(Band targetBand) {
-        if (targetBand.getRasterWidth() != this.imageWidth) {
-            throw new IllegalArgumentException("Different band width.");
-        }
-        if (targetBand.getRasterHeight() != this.imageHeight) {
-            throw new IllegalArgumentException("Different band height.");
-        }
-        int widthCount = this.imageWidth + 2;
-        int heightCount = this.imageHeight + 2;
-        int[][] marker = buildMarkerMatrix();
+    public final void doClose() {
+        this.graph.doClose();
 
-        int dataType = targetBand.getDataType();
-        ProductData data = targetBand.createCompatibleRasterData();
-        targetBand.setData(data);
-        for (int y = 1; y < heightCount - 1; y++) {
-            for (int x = 1; x < widthCount - 1; x++) {
-                if (dataType == ProductData.TYPE_INT32) {
-                    targetBand.setPixelInt(x - 1, y - 1, marker[y][x]);
-                } else if (dataType == ProductData.TYPE_FLOAT32) {
-                    targetBand.setPixelFloat(x - 1, y - 1, marker[y][x]);
-                } else if (dataType == ProductData.TYPE_FLOAT64) {
-                    targetBand.setPixelDouble(x - 1, y - 1, marker[y][x]);
-                } else {
-                    throw new IllegalArgumentException("Unknown band data type " + dataType + ".");
-                }
-            }
-        }
+        WeakReference<Graph> reference = new WeakReference<Graph>(this.graph);
+        reference.clear();
+    }
+
+    public final OutputMaskMatrixHelper buildOutputMaskMatrixHelper() {
+        return new OutputMaskMatrixHelper(this.graph, this.imageWidth, this.imageHeight);
     }
 
     public Graph getGraph() {
@@ -82,7 +60,6 @@ public abstract class AbstractSegmenter {
 
     public boolean performAllIterationsWithLMBF(int numberOfIterations) {
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "");
             logger.log(Level.FINER, "Perform iterations with LMBF: number of iterations: "+numberOfIterations);
         }
         int iterations = 0;
@@ -102,7 +79,6 @@ public abstract class AbstractSegmenter {
 
     private boolean performAllIterationsWithBF(int numberOfIterations) {
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "");
             logger.log(Level.FINER, "Perform iterations with BF: number of iterations: "+numberOfIterations);
         }
         int iterations = 0;
@@ -195,13 +171,13 @@ public abstract class AbstractSegmenter {
         }
     }
 
-    private void initNodes(Tile[] sourceTiles, BoundingBox rectange, boolean addFourNeighbors) {
+    private void initNodes(TileDataSource[] sourceTiles, BoundingBox rectange, boolean addFourNeighbors) {
         this.imageWidth = rectange.getWidth();
         this.imageHeight = rectange.getHeight();
 
         int numberOfComponentsPerPixel = sourceTiles.length;
         int numberOfNodes = this.imageWidth * this.imageHeight;
-        this.graph = new Graph();
+        this.graph = new Graph(numberOfNodes);
 
         for (int i = 0; i < numberOfNodes; i++) {
             int upperLeftX = i % this.imageWidth;
@@ -235,100 +211,6 @@ public abstract class AbstractSegmenter {
                 node.initData(b, pixel);
             }
         }
-    }
-
-    private int[][] buildMarkerMatrix() {
-        int widthCount = this.imageWidth + 2;
-        int heightCount = this.imageHeight + 2;
-        int[][] mask = new int[heightCount][widthCount];
-        int[][] marker = new int[heightCount][widthCount];
-
-        int nodeCount = this.graph.getNodeCount();
-        for (int i = 0; i < nodeCount; i++) {
-            Node node = this.graph.getNodeAt(i);
-            IntSet borderCells = generateBorderCells(node.getContour(), node.getId(), this.imageWidth);
-            IntIterator itCells = borderCells.iterator();
-            while (itCells.hasNext()) {
-                int gridId = itCells.nextInt();
-                int gridX = gridId % this.imageWidth;
-                int gridY = gridId / this.imageWidth;
-                mask[gridY + 1][gridX + 1] = i + 1;
-            }
-        }
-        // fill the first and the last rows (the top and the bottom rows) in the mask matrix
-        for (int x = 0; x < widthCount; x++) {
-            mask[0][x] = nodeCount + 1;
-            mask[heightCount - 1][x] = nodeCount + 1;
-        }
-        // fill the first and the last columns (the left and the right columns) in the mask matrix
-        for (int y = 0; y < heightCount; y++) {
-            mask[y][0] = nodeCount + 1;
-            mask[y][widthCount - 1] = nodeCount + 1;
-        }
-
-        // copy the first two rows and the last two rows in the marker matrix
-        for (int x = 0; x < widthCount; x++) {
-            marker[0][x] = mask[0][x];
-            marker[1][x] = mask[1][x];
-            marker[heightCount - 2][x] = mask[heightCount - 2][x];
-            marker[heightCount - 1][x] = mask[heightCount - 1][x];
-        }
-        // fill the first two columns and the last two columns in the marker matrix
-        for (int y = 0; y < heightCount; y++) {
-            marker[y][0] = mask[y][0];
-            marker[y][1] = mask[y][1];
-            marker[y][widthCount - 2] = mask[y][widthCount - 2];
-            marker[y][widthCount - 1] = mask[y][widthCount - 1];
-        }
-        // fill the center of the marker matrix
-        for (int y = 2; y < heightCount - 1; y++) {
-            for (int x = 2; x < widthCount - 1; x++) {
-                marker[y][x] = nodeCount;
-            }
-        }
-
-        // first step to compute the values in the marker matrix
-        for (int y = 1; y < heightCount; y++) {
-            for (int x = 1; x < widthCount; x++) {
-                int pixel = marker[y][x];
-                int leftPixel = marker[y][x - 1];
-                int topPixel = marker[y - 1][x];
-                int value = Math.min(Math.min(leftPixel, topPixel), pixel);
-                marker[y][x] = Math.max(value, mask[y][x]);
-            }
-        }
-
-        // second step to compute the values in the marker matrix
-        IntPriorityQueue queue = new IntArrayFIFOQueue();
-        for (int y = heightCount - 2; y > 0; y--) {
-            for (int x = widthCount - 2; x > 0; x--) {
-                int markerCurrentPixel = marker[y][x];
-                int rightPixel = marker[y][x + 1];
-                int bottomPixel = marker[y + 1][x];
-                int value = Math.min(Math.min(rightPixel, bottomPixel), markerCurrentPixel);
-                markerCurrentPixel = Math.max(value, mask[y][x]);
-                marker[y][x] = markerCurrentPixel;
-
-                if ((bottomPixel > markerCurrentPixel && bottomPixel > mask[y + 1][x]) || (rightPixel > markerCurrentPixel && rightPixel > mask[y][x + 1])) {
-                    queue.enqueue(convertPointToId(x, y, widthCount));
-                }
-            }
-        }
-
-        // the third step to compute the values in the marker matrix
-        while (!queue.isEmpty()) {
-            int id = queue.dequeueInt();
-            int x = id % widthCount;
-            int y = id / widthCount;
-            int markerCurrentPixel = marker[y][x];
-
-            addToQueue(marker, mask, markerCurrentPixel, x, y - 1, widthCount, queue); // top
-            addToQueue(marker, mask, markerCurrentPixel, x + 1, y, widthCount, queue); // right
-            addToQueue(marker, mask, markerCurrentPixel, x, y + 1, widthCount, queue); // bottom
-            addToQueue(marker, mask, markerCurrentPixel, x - 1, y, widthCount, queue); // left
-        }
-
-        return marker;
     }
 
     private void updateMergingCostsUsingLMBF() {
@@ -400,19 +282,6 @@ public abstract class AbstractSegmenter {
         return merged;
     }
 
-    private static void addToQueue(int[][] marker, int[][] mask, int markerCurrentPixel, int x, int y, int widthCount, IntPriorityQueue queue) {
-        int markerNeighborPixel = marker[y][x];
-        int maskNeighborPixel = mask[y][x];
-        if (markerNeighborPixel > markerCurrentPixel && markerNeighborPixel != maskNeighborPixel) {
-            marker[y][x] = Math.max(markerCurrentPixel, maskNeighborPixel);
-            queue.enqueue(convertPointToId(x, y, widthCount));
-        }
-    }
-
-    private static int convertPointToId(int x, int y, int width) {
-        return (y * width) + x;
-    }
-
     public static BoundingBox mergeBoundingBoxes(BoundingBox bb1, BoundingBox bb2) {
         int minimumLeftUpperX = Math.min(bb1.getLeftX(), bb2.getLeftX());
         int minimumLeftUpperY = Math.min(bb1.getTopY(), bb2.getTopY());
@@ -422,76 +291,6 @@ public abstract class AbstractSegmenter {
         int width = maximumWidth - minimumLeftUpperX;
         int height = maximummHeight - minimumLeftUpperY;
         return new BoundingBox(minimumLeftUpperX, minimumLeftUpperY, width, height);
-    }
-
-    public static IntSet generateBorderCells(Contour contour, int startCellId, int width) {
-        IntSet borderCells = new IntOpenHashSet();
-
-        // add the first pixel to the border list
-        borderCells.add(startCellId);
-
-        if (contour.size() > 8) {
-            // initialize the first move at prev
-            int previousMoveId = contour.getMove(0);
-
-            // declare the current pixel index
-            int currentCellId = startCellId;
-
-            // Explore the contour
-            for (int contourIndex = 1; contourIndex < contour.size() / 2; contourIndex++) {
-                int currentMoveId = contour.getMove(contourIndex);
-                assert (currentMoveId >= 0 && currentMoveId <= 3);
-
-                if (currentMoveId == Contour.TOP_MOVE_INDEX) { // top
-                    // impossible case is previous index = 2 (bottom)
-                    assert (previousMoveId != Contour.BOTTOM_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId -= width; // go to the top
-                        borderCells.add(currentCellId);
-                    } else if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId = currentCellId - width + 1; // go to the top right
-                        borderCells.add(currentCellId);
-                    }
-                } else if (currentMoveId == Contour.RIGHT_MOVE_INDEX) { // right
-                    // impossible case is previous index = 3 (left)
-                    assert (previousMoveId != Contour.LEFT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.RIGHT_MOVE_INDEX) {
-                        currentCellId++; // go to the right
-                        borderCells.add(currentCellId);
-                    } else if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId = currentCellId + width + 1; // go to the bottom right
-                        borderCells.add(currentCellId);
-                    }
-                } else if (currentMoveId == Contour.BOTTOM_MOVE_INDEX) { // bottom
-                    // impossible case is previous index = 0 (top)
-                    assert (previousMoveId != Contour.TOP_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.BOTTOM_MOVE_INDEX) {
-                        currentCellId += width;
-                        borderCells.add(currentCellId);
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId = currentCellId + width - 1; // go to the bottom left
-                        borderCells.add(currentCellId);
-                    }
-                } else { // current index = 3 (left)
-                    // impossible case is previous index = 1 (right)
-                    assert (previousMoveId != Contour.RIGHT_MOVE_INDEX);
-
-                    if (previousMoveId == Contour.TOP_MOVE_INDEX) {
-                        currentCellId = currentCellId - width - 1;  // go to the top left
-                        borderCells.add(currentCellId);
-                    } else if (previousMoveId == Contour.LEFT_MOVE_INDEX) {
-                        currentCellId--; // go the to left
-                        borderCells.add(currentCellId);
-                    }
-                }
-
-                previousMoveId = currentMoveId;
-            }
-        }
-        return borderCells;
     }
 
     public static void generateEightNeighborhood(int[] neighborhood, int id, int width, int height) {
