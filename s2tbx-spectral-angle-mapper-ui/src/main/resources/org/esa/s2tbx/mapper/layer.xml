@@ -9,7 +9,7 @@
                 <attr name="dialogTitle" stringvalue="Spectral Angle Mapper Processor"/>
                 <attr name="operatorName" stringvalue="SpectralAngleMapperOp"/>
                 <attr name="targetProductNameSuffix" stringvalue="_sam"/>
-                <attr name="helpId" stringvalue="SAMOperator"/>
+                <attr name="helpId" stringvalue="SAMProcessor"/>
             </file>
         </folder>
     </folder>
