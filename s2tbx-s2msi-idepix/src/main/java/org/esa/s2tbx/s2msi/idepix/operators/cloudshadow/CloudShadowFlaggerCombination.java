@@ -684,7 +684,7 @@ class CloudShadowFlaggerCombination {
     }
 
     private static int getRecommendedNumberOfClusters(double[] values) {
-        return 4;
+        return Math.min (values.length, 4);
     }
 
     interface AnalyzerMode {
