@@ -24,6 +24,8 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
             <version>${project.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
