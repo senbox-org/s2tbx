@@ -73,6 +73,7 @@ public class CoregistrationOpTest {
         assertEquals(4, op.getParameter("rank"));
         assertEquals(6, op.getParameter("levels"));
         assertEquals(2, op.getParameter("iterations"));
+        assertEquals("32, 28, 24, 20, 16, 12, 8",op.getParameter("radius"));
         assertEquals("CoregistrationOp", op.getSpi().getOperatorAlias());
 
     }
@@ -86,6 +87,7 @@ public class CoregistrationOpTest {
         parameters.put("rank", 2);
         parameters.put("levels", 3);
         parameters.put("iterations", 4);
+        parameters.put("radius", "20, 16, 12, 8");
 
         Map<String, Product> sourceProducts = new HashMap<String, Product>();
         sourceProducts.put("Master", masterSourceProduct);
@@ -100,6 +102,8 @@ public class CoregistrationOpTest {
         assertEquals(3, operator.getParameter("levels"));
         assertNotEquals(2, operator.getParameter("iterations"));
         assertEquals(4, operator.getParameter("iterations"));
+        assertNotEquals("32, 28, 24, 20, 16, 12, 8", operator.getParameter("radius"));
+        assertEquals("20, 16, 12, 8", operator.getParameter("radius"));
     }
 
     @Test
@@ -111,6 +115,7 @@ public class CoregistrationOpTest {
         parameters.put("levels", 6);
         parameters.put("rank", 4);
         parameters.put("iterations", 2);
+        parameters.put("radius", "32, 28, 24, 20, 16, 12, 8");
 
         Map<String, Product> sourceProducts = new HashMap<String, Product>();
         sourceProducts.put("Master", masterSourceProduct);
