@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>6.0.3-SNAPSHOT</version>
+    <version>6.0.3</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -79,8 +79,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>6.0.0</snap.version>
-        <s2tbx.version>6.0.3-SNAPSHOT</s2tbx.version>
+        <snap.version>6.0.5</snap.version>
+        <snap-reader-tests.version>6.0.0</snap-reader-tests.version>
+        <s2tbx.version>6.0.3</s2tbx.version>
         <geotools.version>17.1</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
@@ -253,7 +254,7 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-reader-tests</artifactId>
-                <version>${snap.version}</version>
+                <version>${snap-reader-tests.version}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -262,7 +263,7 @@
                 <artifactId>snap-reader-tests</artifactId>
                 <type>test-jar</type>
                 <scope>test</scope>
-                <version>${snap.version}</version>
+                <version>${snap-reader-tests.version}</version>
             </dependency>
 
             <!-- NetBeans -->
