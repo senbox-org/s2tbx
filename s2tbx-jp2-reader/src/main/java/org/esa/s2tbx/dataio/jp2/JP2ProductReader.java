@@ -244,9 +244,9 @@ public class JP2ProductReader extends AbstractProductReader {
                 List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
                 int numBands = componentTilesInfo.size();
                 for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
-                    ImageInfo.ImageInfoComponent imageInfoComponent = imageInfo.getComponents().get(bandIdx);
-                    int snapDataType = getSnapDataTypeFromImageInfo(imageInfoComponent);
-                    int awtDataType = getAwtDataTypeFromImageInfo(imageInfoComponent);
+                    ImageInfo.ImageInfoComponent bandImageInfo = imageInfo.getComponents().get(bandIdx);
+                    int snapDataType = getSnapDataTypeFromImageInfo(bandImageInfo);
+                    int awtDataType = getAwtDataTypeFromImageInfo(bandImageInfo);
                     Band virtualBand = new Band(bandNames != null ? bandNames[bandIdx] : "band_" + (bandIdx + 1),
                                                 snapDataType,
                                                 imageWidth,
