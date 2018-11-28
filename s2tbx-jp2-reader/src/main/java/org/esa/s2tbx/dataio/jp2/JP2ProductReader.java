@@ -63,9 +63,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
-import static org.esa.s2tbx.dataio.Utils.getMD5sum;
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
+import static org.esa.s2tbx.dataio.Utils.*;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.*;
 
 /**
  * Generic reader for JP2 files.
@@ -245,11 +244,13 @@ public class JP2ProductReader extends AbstractProductReader {
                 List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
                 int numBands = componentTilesInfo.size();
                 for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
-                    int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
-                    Band virtualBand = new Band(bandNames != null ? bandNames[bandIdx] : "band_" + String.valueOf(bandIdx + 1),
-                            precisionTypeMap.get(precision),
-                            imageWidth,
-                            imageHeight);
+                    ImageInfo.ImageInfoComponent imageInfoComponent = imageInfo.getComponents().get(bandIdx);
+                    int snapDataType = getSnapDataTypeFromImageInfo(imageInfoComponent);
+                    int awtDataType = getAwtDataTypeFromImageInfo(imageInfoComponent);
+                    Band virtualBand = new Band(bandNames != null ? bandNames[bandIdx] : "band_" + (bandIdx + 1),
+                                                snapDataType,
+                                                imageWidth,
+                                                imageHeight);
                     JP2MultiLevelSource source = new JP2MultiLevelSource(
                             getFileInput(getInput()),
                             tmpFolder,
@@ -258,7 +259,7 @@ public class JP2ProductReader extends AbstractProductReader {
                             imageWidth, imageHeight,
                             csInfo.getTileWidth(), csInfo.getTileHeight(),
                             csInfo.getNumTilesX(), csInfo.getNumTilesY(),
-                            csInfo.getNumResolutions(), dataTypeMap.get(precision),
+                            csInfo.getNumResolutions(), awtDataType,
                             product.getSceneGeoCoding());
                     virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
                     if (bandScales != null && bandOffsets != null) {
@@ -281,6 +282,24 @@ public class JP2ProductReader extends AbstractProductReader {
         }
         return product;
     }
+
+    private int getSnapDataTypeFromImageInfo(ImageInfo.ImageInfoComponent imageInfo) {
+        int precision = imageInfo.getPrecision();
+        boolean signed = imageInfo.isSigned();
+        if(!signed && precision == 16) {
+            return ProductData.TYPE_UINT16;
+        }
+        return precisionTypeMap.get(precision);
+    }
+    private int getAwtDataTypeFromImageInfo(ImageInfo.ImageInfoComponent imageInfo) {
+        int precision = imageInfo.getPrecision();
+        boolean signed = imageInfo.isSigned();
+        if(!signed && precision == 16) {
+            return DataBuffer.TYPE_USHORT;
+        }
+        return dataTypeMap.get(precision);
+    }
+
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
