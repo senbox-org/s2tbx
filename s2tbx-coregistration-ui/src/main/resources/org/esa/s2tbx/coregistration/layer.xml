@@ -15,6 +15,7 @@
                       stringvalue="CoregistrationOp"/>
                 <attr name="targetProductNameSuffix"
                       stringvalue="_coreg"/>
+                <attr name="helpId" stringvalue="coregistrationProcessor"/>
             </file>
         </folder>
     </folder>

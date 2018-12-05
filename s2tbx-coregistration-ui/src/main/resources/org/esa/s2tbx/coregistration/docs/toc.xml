@@ -25,7 +25,7 @@
     <tocitem text="Sentinel Toolbox Application">
             <tocitem text="Raster">
                 <tocitem text="Geometric Operations">
-                    <tocitem text="Coregistration processor" target="coregistrationProcessor"/>
+                    <tocitem text="GeFolki Co-registration" target="coregistrationProcessor"/>
                 </tocitem>
             </tocitem>
     </tocitem>
