@@ -1,5 +1,7 @@
 package org.esa.s2tbx.dataio.worldview2.metadata;
 
+import java.util.HashMap;
+
 /**
  * This maps to the corresponding WorldView2 Tile Component element.
  *
@@ -15,6 +17,7 @@ public class TileComponent {
     private double originX;
     private double originY;
     private double stepSize;
+    private HashMap<String, Double> scalingFactor = new HashMap<>();
     private int mapZone;
     private String mapHemisphere;
     private int numOfTiles;
@@ -204,5 +207,16 @@ public class TileComponent {
        }
        return tileIndex;
     }
+
+    public double getScalingFactor(String name) {
+        return this.scalingFactor.get(name);
+    }
+
+    public void setScalingFactor(HashMap<String, Double> abscalfactor,HashMap<String, Double> effectivebandwidth ) {
+        for (String key:abscalfactor.keySet()) {
+            this.scalingFactor.put(key,0.1*abscalfactor.get(key)/effectivebandwidth.get(key));
+        }
+    }
+
 
 }

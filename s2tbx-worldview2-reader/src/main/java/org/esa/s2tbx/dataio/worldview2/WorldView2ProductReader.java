@@ -32,7 +32,7 @@ import java.awt.GridBagLayout;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,9 +76,12 @@ class WorldView2ProductReader extends AbstractProductReader {
     @Override
     protected Product readProductNodesImpl() throws IOException {
         WorldView2ProductReaderPlugin readerPlugin = (WorldView2ProductReaderPlugin)getReaderPlugIn();
-        final File inputFile = getInputFile();
+        File inputFile = getInputFile();
         this.productDirectory = readerPlugin.getInput(getInput());
-        this.metadata = WorldView2Metadata.create(inputFile.toPath());
+        if(productDirectory.isCompressed()){
+            inputFile = new File(productDirectory.findFirst(WorldView2Constants.METADATA_FILE_SUFFIX));
+        }
+        this.metadata = WorldView2Metadata.create(this.productDirectory.getFile(inputFile.toString()).toPath());
         String[] products = getProductsFromMetadata(this.metadata);
         if (products.length > 1) {
             ModalDialog dialog = new ModalDialog(null, "Product Selector", ModalDialog.ID_OK_CANCEL, "");
@@ -103,9 +106,11 @@ class WorldView2ProductReader extends AbstractProductReader {
             }
             List<TileMetadata> tileMetadataList = new ArrayList<>();
             for (String fileMetadata : selectedProductFiles) {
-                if (fileMetadata.endsWith(WorldView2Constants.METADATA_EXTENSION)) {
+                if (fileMetadata.endsWith(WorldView2Constants.METADATA_EXTENSION )) {
                     TileMetadata tileMetadata = TileMetadata.create(productDirectory.getFile(fileMetadata).toPath());
                     tileMetadataList.add(tileMetadata);
+                }else{
+                    Files.newInputStream(productDirectory.getFile(fileMetadata).toPath());
                 }
             }
             if (tileMetadataList.size() != 0) {
@@ -125,6 +130,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                         originY = tileComponent.getOriginY();
                         crsCode = tileComponent.computeCRSCode();
                     }
+
                 }
                 this.product = new Product(productSelected, WorldView2Constants.PRODUCT_TYPE, width, height);
                 this.product.setStartTime(this.metadata.getProductStartTime());
@@ -192,6 +198,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                                 Product.findImageToModelTransform(targetBand.getGeoCoding()) :
                                 Product.findImageToModelTransform(product.getSceneGeoCoding()));
         targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+        targetBand.setScalingFactor(tileComp.getScalingFactor(targetBand.getName()));
         return targetBand;
     }
 
@@ -268,9 +275,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         targetBand.setUnit(band.getUnit());
         targetBand.setNoDataValue(band.getNoDataValue());
         targetBand.setNoDataValueUsed(true);
-        targetBand.setScalingFactor(band.getScalingFactor());
         targetBand.setScalingOffset(band.getScalingOffset());
-        targetBand.setUnit(band.getUnit());
         targetBand.setDescription(band.getDescription());
     }
 
@@ -284,7 +289,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                         filePath = filePaths;
                     }
                 }
-                Product p = ProductIO.readProduct(Paths.get(productDirectory.getBasePath()).resolve(filePath).toFile());
+                Product p = ProductIO.readProduct(productDirectory.getFile(filePath));
                 this.bandDataType = p.getBandAt(0).getDataType();
                 if (tileComponent.getBandID().equals("P")) {
                     this.tilesPanchromatic.put(p, tileComponent.getTileNames()[filesIndex]);
