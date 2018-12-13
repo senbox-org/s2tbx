@@ -352,6 +352,11 @@
             <artifactId>s2tbx-vector-formats</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-worldviewESAarchive-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

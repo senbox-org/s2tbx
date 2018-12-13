@@ -1,0 +1,378 @@
+{
+  "id": "WorldView2ESA_product",
+  "decodeQualification": "INTENDED",
+  "expectedContent":{
+    "sceneWidth": 47563,
+    "sceneHeight": 92201,
+    "geoCoding": {
+      "coordinates": [
+        {
+          "x": 1020,
+          "y": 200,
+          "lat": 23.773889,
+          "lon": 44.502500
+        },
+        {
+          "x": 2000,
+          "y": 1710,
+          "lat": 23.778611,
+          "lon": 44.496944
+        },
+        {
+          "x": 7000,
+          "y": 16050,
+          "lat": 23.801111,
+          "lon": 44.444722
+        }
+      ]
+    },
+    "bands": [
+      {
+        "name": "blue",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 0.0
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 6.73354
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "green",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 0.0
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 5.37017
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "red",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 0.0
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 2.67760
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "red edge",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 0.0
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 5.41518
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "yellow",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 5.86377
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 3.71494
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "coastal",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 7.82171
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 7.07492
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "NIR1",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 4.66637
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 7.02963
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "NIR2",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 0.0
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 6.66637
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "Pan",
+        "noDataValue": "0.0",
+        "bandWidth": 16384,
+        "bandHeight": 16384,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": "NaN"
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 6.48441
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": 6.76373
+          },
+          {
+            "x": 9514,
+            "y": 10701,
+            "value": "NaN"
+          }
+        ]
+      }
+    ],
+    "metadata": [
+      {
+        "path": "Metadata[1]/imd/numrows",
+        "value": "16384"
+      },
+      {
+        "path": "Metadata[1]/imd/numcolumns",
+        "value": "16384"
+      },
+      {
+        "path": "Metadata[1]/imd/bitsperpixel",
+        "value": "16"
+      },
+      {
+        "path": "Metadata[1]/imd/map_projected_product/mapzone",
+        "value": "34"
+      },
+      {
+        "path": "Metadata[1]/imd/map_projected_product/maphemi",
+        "value": "N"
+      },
+      {
+        "path": "Metadata[1]/imd/map_projected_product/originx",
+        "value": "7.201042002090100e+05"
+      },
+      {
+        "path": "Metadata[1]/imd/map_projected_product/originy",
+        "value": "4.931498999998590e+06"
+      },
+      {
+        "path": "Metadata[1]/imd/map_projected_product/productgsd",
+        "value": "4.000000000000000e-01"
+      },
+      {
+        "path": "Metadata[2]/imd/numrows",
+        "value": "23051"
+      },
+      {
+        "path": "Metadata[2]/imd/numcolumns",
+        "value": "11891"
+      },
+      {
+        "path": "Metadata[2]/imd/bitsperpixel",
+        "value": "16"
+      },
+      {
+        "path": "Metadata[2]/imd/map_projected_product/mapzone",
+        "value": "34"
+      },
+      {
+        "path": "Metadata[2]/imd/map_projected_product/maphemi",
+        "value": "N"
+      },
+      {
+        "path": "Metadata[2]/imd/map_projected_product/originx",
+        "value": "7.201048002090200e+05"
+      },
+      {
+        "path": "Metadata[2]/imd/map_projected_product/originy",
+        "value": "4.931498399998600e+06"
+      },
+      {
+        "path": "Metadata[2]/imd/map_projected_product/productgsd",
+        "value": "1.600000000000000e+00"
+      }
+    ]
+  }
+
+}
