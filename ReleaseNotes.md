@@ -121,9 +121,6 @@ The GeFolki algorithm allows the registration of images in a nonparametric and d
     * [SIITBX-280] - JP2 Reader is not able to open jp2 image generated with sen2cor at 10 or 20 m resolution
     * [SIITBX-285] - S2 reader cannot open by folder name the L2A product with old naming convention
     * [SIITBX-286] - S2 angles are not well computed when angle grids are not in order in the granule metadata file.
-    * [SIITBX-304] - Use object tag for external link.
-    * [SIITBX-305] - Help link does not work from menu.
-    * [SIITBX-306] - Entry in ToC of Help should be renamed.
     * Pleiades Reader, raster operations (resample, reprojection, subset) return error.
     * Pleiades Reader tests are not passed.
     * Kompsat2 Reader, pixels values are incorrectly calculated.
