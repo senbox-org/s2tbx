@@ -24,7 +24,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="Alos AVNIR-2"/>
-                <attr name="formatName" stringvalue="AlosAV2GeoTIFF"/>
+                <attr name="formatName" stringvalue="AlosAV2Dimap"/>
                 <attr name="useAllFileFilter" boolvalue="false"/>
             </file>
         </folder>

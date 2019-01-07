@@ -8,6 +8,12 @@ import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
 import java.util.Locale;
 
+/**
+ * Plugin for reading ALOS AVNIR-2 files.
+ * The files are GeoTIFF with DIMAP metadata
+ *
+ * @author Denisa Stefanescu
+ */
 public class AlosAV2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     private static final String COLOR_PALETTE_FILE_NAME = "AlosAV2_color_palette.cpd";
@@ -24,7 +30,7 @@ public class AlosAV2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new AlosAV2ProductReader(this);
+        return new AlosAV2ProductReader(this,getColorPaletteFilePath());
     }
 
     @Override
@@ -54,6 +60,6 @@ public class AlosAV2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     protected void registerRGBProfile() {
-        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Alos AVNIR2", AlosAV2Constants.ALOSAV2_RGB_PROFILE));
+        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Alos AVNIR-2", AlosAV2Constants.ALOSAV2_RGB_PROFILE));
     }
 }
