@@ -66,7 +66,7 @@ public class CoregistrationOp extends Operator {
     private int iterations = 2;
 
     @Parameter(label = "Radius values", defaultValue = "32, 28, 24, 20, 16, 12, 8", description = "The radius integer values splitted by comma.")
-    private static final String radius = "32, 28, 24, 20, 16, 12, 8";
+    private String radius = "32, 28, 24, 20, 16, 12, 8";
 
     public String hiddenSlaveBand;
 
