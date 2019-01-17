@@ -1,0 +1,77 @@
+#set($systemClass=$sourceProductFile.Class.forName("java.lang.System"))
+#set($fileClass = $sourceProductFile.Class.forName("java.nio.file.Files"))
+
+#set($pathClass = $sourceProductFile.Class.forName("java.nio.file.Path"))
+#set($optionsClass = $sourceProductFile.Class.forName("[Ljava.nio.file.CopyOption;"))
+
+#set($copyMethod = $fileClass.getMethod("copy", $pathClass, $pathClass, $optionsClass))
+#set($file = $sourceProduct.FileLocation)
+#set($prodFilePath = $file.toPath().toAbsolutePath())
+
+Delete source products from working dir since they were copied before execution:
+#set($fileClass=$sourceProductFile.Class.forName("java.io.File"))
+#set($ctors = $fileClass.Constructors)
+#foreach ($ctor in $ctors)
+	#if ($ctor.toString() == "public java.io.File(java.lang.String)")
+		#set($fileCtor = $ctor)
+	#end
+#end
+
+#set($sourceProductFolder = $file.ParentFile)
+
+#set($os=$systemClass.getProperty("os.name"))
+#if ($os.startsWith("Windows"))
+	#set($targetName = $USERPROFILE)
+#else
+	#set($targetName = $HOME)
+#end
+
+#set($paramList = [$targetName])
+#set($paramArray = $paramList.toArray())
+#set($workPath = $fileCtor.newInstance($paramArray).toPath())
+$workPath
+
+#set($sourceProductFolder = $file.ParentFile)
+$sourceProductFolder
+#if($sourceProductFolder != $workPath)
+	#set($fileList = $sourceProductFolder.listFiles())
+	#foreach($file in $fileList)
+		#set($fileName = $file.Name)
+		#if($fileName.startsWith("UnwPhase_") && $fileName.endsWith(".snaphu.hdr"))
+			#set($outputFileName = $fileName)
+		#end
+		#set($targetFilePath = $workPath.resolve($file.Name))
+		Deleting $targetFilePath
+		$targetFilePath.toFile().delete()
+	#end
+#end
+
+#set($intClass = $sourceProductFile.Class.forName("java.lang.Integer"))
+#set($intPMember = $intClass.getDeclaredField("TYPE"))
+#set($intPClass = $intPMember.get($NULL))
+#set($arrayClass = $sourceProductFile.Class.forName("java.lang.reflect.Array"))
+#set($classClass = $sourceProductFile.Class.forName("java.lang.Class"))
+#set($newMethod = $arrayClass.getMethod("newInstance", $classClass, $intPClass))
+#set($optionClass = $sourceProductFile.Class.forName("java.nio.file.CopyOption"))
+#set($arrayObj = $newMethod.invoke($NULL, $optionClass, 0))
+
+$outputFolder.toPath()
+
+#set($outputFileName = $outputFileName.replace(".hdr", ".img"))
+$outputFileName
+#set($outputFile = $outputFolder.toPath().resolve($outputFileName))
+$outputFile.toString()
+$outputFile.class
+
+#set($resultFilePath = $workPath.resolve($outputFileName))
+$resultFilePath
+$resultFilePath.class
+exists: $resultFilePath.toFile().exists()
+
+
+#if($outputFolder != $workPath && $resultFilePath.toFile().exists())
+	$copyMethod.invoke($NULL, $resultFilePath, $outputFile, $arrayObj)
+	#set($targetProductFile = $outputFile.toFile())
+	$resultFilePath.toFile().delete()
+#end
+
