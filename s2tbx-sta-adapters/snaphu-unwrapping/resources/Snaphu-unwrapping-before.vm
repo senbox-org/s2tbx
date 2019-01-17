@@ -1,0 +1,57 @@
+#set($systemClass=$sourceProductFile.Class.forName("java.lang.System"))
+#set($fileClass = $sourceProductFile.Class.forName("java.nio.file.Files"))
+
+#set($pathClass = $sourceProductFile.Class.forName("java.nio.file.Path"))
+#set($optionsClass = $sourceProductFile.Class.forName("[Ljava.nio.file.CopyOption;"))
+
+#set($copyMethod = $fileClass.getMethod("copy", $pathClass, $pathClass, $optionsClass))
+#set($file = $sourceProduct.FileLocation)
+#set($prodFilePath = $file.toPath().toAbsolutePath())
+Source product location: $prodFilePath
+
+#set($intClass = $sourceProductFile.Class.forName("java.lang.Integer"))
+#set($intPMember = $intClass.getDeclaredField("TYPE"))
+#set($intPClass = $intPMember.get($NULL))
+
+#set($arrayClass = $sourceProductFile.Class.forName("java.lang.reflect.Array"))
+#set($classClass = $sourceProductFile.Class.forName("java.lang.Class"))
+
+#set($newMethod = $arrayClass.getMethod("newInstance", $classClass, $intPClass))
+#set($optionClass = $sourceProductFile.Class.forName("java.nio.file.CopyOption"))
+#set($arrayObj = $newMethod.invoke($NULL, $optionClass, 0))
+
+#set($sourceProductFolder = $file.ParentFile)
+
+#set($fileClass=$sourceProductFile.Class.forName("java.io.File"))
+#set($ctors = $fileClass.Constructors)
+#foreach ($ctor in $ctors)
+	#if ($ctor.toString() == "public java.io.File(java.lang.String)")
+		#set($fileCtor = $ctor)
+	#end
+#end
+
+#set($os=$systemClass.getProperty("os.name"))
+#if ($os.startsWith("Windows"))
+	#set($targetName = $USERPROFILE)
+#else
+	#set($targetName = $HOME)
+#end
+
+Start copy product files to $targetName		
+#set($paramList = [$targetName])
+#set($paramArray = $paramList.toArray())
+#set($targetPath = $fileCtor.newInstance($paramArray).toPath())
+#set($targetWDPath = $targetPath)
+#set($targetWDFile = $targetWDPath.toFile())
+
+#set($fileList = $sourceProductFolder.listFiles())
+#foreach($file in $fileList)
+		#set($sourceFilePath = $file.toPath().toAbsolutePath())
+		
+		#set($targetFilePath = $targetWDPath.resolve($file.Name))
+		$targetFilePath.toString()
+		$targetFilePath.toFile().delete()
+		
+		$copyMethod.invoke($NULL, $sourceFilePath, $targetFilePath, $arrayObj)
+		Copied file $file to $targetFilePath
+#end
