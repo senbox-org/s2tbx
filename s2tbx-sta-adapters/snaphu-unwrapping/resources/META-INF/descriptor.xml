@@ -1,5 +1,5 @@
 <operator>
-  <name>org.esa.s2tbx.snaphu.unwrapping</name>
+  <name>org.esa.snap.core.gpf.operators.tooladapter.snaphu.unwrapping</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Snaphu-unwrapping</alias>
   <label>Snaphu-unwrapping</label>
