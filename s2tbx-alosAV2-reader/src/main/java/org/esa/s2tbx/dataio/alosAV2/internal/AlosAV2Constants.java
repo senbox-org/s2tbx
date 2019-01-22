@@ -43,12 +43,12 @@ public class AlosAV2Constants {
      */
     public static final String PATH_SOURCE_ID = "/Dimap_Document/Dataset_Sources/Source_Information/SOURCE_ID";
     public static final String PATH_IMG_METADATA_FORMAT = "/Dimap_Document/Metadata_Id/METADATA_FORMAT";
-    public static final String PATH_IMG_METADATA_PROFILE = "/Dimap_Document/Dataset_Id/METADATA_PROFILE";
+    public static final String PATH_IMG_METADATA_PROFILE = "/Dimap_Document/Metadata_Id/METADATA_PROFILE";
     public static final String PATH_IMG_DATA_FILE_PATH = "/Dimap_Document/Data_Access/Data_File/DATA_FILE_PATH/href";
     public static final String PATH_TIME_FIRST_LINE="/Dimap_Document/Data_Strip/Satellite_Time/TIME_FIRST_LINE";
     public static final String PATH_TIME_CENTER_LINE="/Dimap_Document/Data_Strip/Satellite_Time/TIME_CENTER_LINE";
     public static final String PATH_TIME_LAST_LINE="/Dimap_Document/Data_Strip/Satellite_Time/TIME_LAST_LINE";
-   public static final String PATH_IMG_NUM_BANDS = "/Dimap_Document/Raster_Dimensions/NBANDS";
+    public static final String PATH_IMG_NUM_BANDS = "/Dimap_Document/Raster_Dimensions/NBANDS";
     public static final String PATH_IMG_NUM_ROWS = "/Dimap_Document/Raster_Dimensions/NROWS";
     public static final String PATH_IMG_NUM_COLS = "/Dimap_Document/Raster_Dimensions/NCOLS";
     public static final String PATH_IMG_SPECIAL_VALUE_TEXT = "/Dimap_Document/Image_Display/Special_Value/SPECIAL_VALUE_TEXT";
