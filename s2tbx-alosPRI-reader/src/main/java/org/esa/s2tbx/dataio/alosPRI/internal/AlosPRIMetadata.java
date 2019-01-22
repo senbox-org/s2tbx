@@ -75,7 +75,7 @@ public class AlosPRIMetadata extends XmlMetadata {
 
     @Override
     public String getFormatName() {
-        return AlosPRIConstants.PRODUCT_GENERIC_NAME;
+        return AlosPRIConstants.DIMAP;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class AlosPRIMetadata extends XmlMetadata {
 
     @Override
     public String getProductDescription() {
-        return this.name;
+        return AlosPRIConstants.DESCRIPTION;
     }
 
     @Override
