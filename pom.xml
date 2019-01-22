@@ -66,6 +66,7 @@
         <module>s2tbx-s2msi-resampler</module>
         <module>s2tbx-muscate-reader</module>
         <module>s2tbx-alosAV2-reader</module>
+        <module>s2tbx-alosPRI-reader</module>
     </modules>
 
     <packaging>pom</packaging>
