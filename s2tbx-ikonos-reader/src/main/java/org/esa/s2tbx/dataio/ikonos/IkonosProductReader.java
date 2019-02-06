@@ -12,7 +12,12 @@ import org.esa.s2tbx.dataio.ikonos.metadata.IkonosMetadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.transform.AffineTransform2D;
 import org.esa.snap.core.util.jai.JAIUtils;
 
@@ -142,7 +147,20 @@ public class IkonosProductReader extends AbstractProductReader {
 
                 for (int bandNameIndex = 0; bandNameIndex < IkonosConstants.BAND_NAMES.length - 1; bandNameIndex++) {
                     if (imageFileName.contains(IkonosConstants.FILE_NAMES[bandNameIndex])) {
-                        bandName = IkonosConstants.BAND_NAMES[bandNameIndex];
+                        switch (IkonosConstants.BAND_NAMES[bandNameIndex]) {
+                            case "1":
+                                bandName = "Blue";
+                                break;
+                            case "2":
+                                bandName = "Green";
+                                break;
+                            case "3":
+                                bandName = "Red";
+                                break;
+                            case "4":
+                                bandName = "Near";
+                                break;
+                        }
                         bandGain = IkonosConstants.BAND_GAIN[bandNameIndex];
                         bandGainPan += IkonosConstants.BAND_GAIN[bandNameIndex];
                     }
@@ -173,19 +191,19 @@ public class IkonosProductReader extends AbstractProductReader {
                     if (width != band.getRasterWidth()) {
                         AffineTransform2D transform2D =
                                 new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
-                                        (float) height / band.getRasterHeight(), 0.0, 0.0);
+                                                      (float) height / band.getRasterHeight(), 0.0, 0.0);
                         targetBand.setGeoCoding(addTiePointGridGeo(this.metadata, targetBand));
                         targetBand.setImageToModelTransform(transform2D);
                     }
                 }
                 MosaicMultiLevelSource bandSource =
                         new MosaicMultiLevelSource(band,
-                                band.getRasterWidth(), band.getRasterHeight(),
-                                tileSize.width, tileSize.height,
-                                levels, band.getGeoCoding() != null ? targetBand.getGeoCoding() != null ?
+                                                   band.getRasterWidth(), band.getRasterHeight(),
+                                                   tileSize.width, tileSize.height,
+                                                   levels, band.getGeoCoding() != null ? targetBand.getGeoCoding() != null ?
                                 Product.findImageToModelTransform(targetBand.getGeoCoding()) :
                                 Product.findImageToModelTransform(product.getSceneGeoCoding()) :
-                                targetBand.getImageToModelTransform());
+                                                           targetBand.getImageToModelTransform());
                 targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
                 this.product.addBand(targetBand);
             }

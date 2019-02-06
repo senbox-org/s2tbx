@@ -395,12 +395,4 @@ public class IkonosMetadata extends XmlMetadata {
         }
     }
 
-    public class InsertionPoint {
-        public float x;
-        public float y;
-        public float stepX;
-        public float stepY;
-    }
-
-
 }

@@ -25,14 +25,4 @@ public class BandMetadataUtil {
         Arrays.sort(this.bandsMetadata, Comparator.comparing(BandMetadata::getNumLines));
         return this.bandsMetadata[bandsMetadata.length - 1].getNumLines();
     }
-
-    public double getMaxStepSizeX() {
-        Arrays.sort(this.bandsMetadata, Comparator.comparing(BandMetadata::getPixelSizeX));
-        return this.bandsMetadata[0].getPixelSizeX();
-    }
-
-    public double getMaxStepSizeY() {
-        Arrays.sort(this.bandsMetadata, Comparator.comparing(BandMetadata::getPixelSizeY));
-        return this.bandsMetadata[0].getPixelSizeY();
-    }
 }
