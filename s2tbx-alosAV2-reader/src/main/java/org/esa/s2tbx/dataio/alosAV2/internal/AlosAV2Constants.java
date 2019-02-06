@@ -66,7 +66,7 @@ public class AlosAV2Constants {
     public static final String PATH_SPECTRAL_BAND_INFO = "Dimap_Document/Image_Interpretation/Spectral_Band_Info";
     public static final String PATH_BAND_DESCRIPTION = "/Dimap_Document/Image_Interpretation/Spectral_Band_Info/BAND_DESCRIPTION";
     public static final String PATH_PHYSICAL_GAIN = "/Dimap_Document/Image_Interpretation/Spectral_Band_Info/PHYSICAL_GAIN";
-    public static final String PATH_PHYSICAL_BIAS = "/Dimap_Document/Image_Interpretation/Spectral_Band_Info/OFFSET_BAND";
+    public static final String PATH_PHYSICAL_BIAS = "/Dimap_Document/Dataset_Sources/Source_Information/Scene_Source/Image_Interpretation/Spectral_Band_Info/OFFSET_BAND";
     public static final String PATH_BAND_UNIT = "/Dimap_Document/Image_Interpretation/Spectral_Band_Info/PHYSICAL_UNIT";
     public static final String PATH_IMG_PROCESSING_LEVEL = "/Dimap_Document/Dataset_Sources/Source_Information/Scene_Source/SCENE_PROCESSING_LEVEL";
 

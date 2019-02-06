@@ -18,18 +18,6 @@ public class AlosAV2Metadata extends XmlMetadata {
     private HashMap<String, Float> bandGains;
     private HashMap<String, Float> bandBiases;
 
-    private static class AlosAV2MetadataParser extends XmlMetadataParser<AlosAV2Metadata> {
-
-        public AlosAV2MetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return false;
-        }
-    }
-
     public AlosAV2Metadata(String name) {
         super(name);
     }
@@ -216,20 +204,6 @@ public class AlosAV2Metadata extends XmlMetadata {
         return date;
     }
 
-    public InsertionPoint getInsertPoint() {
-        InsertionPoint point;
-        try {
-            point = new InsertionPoint();
-            point.x = Float.parseFloat(getAttributeValue(AlosAV2Constants.PATH_ULXMAP, AlosAV2Constants.STRING_ZERO));
-            point.y = Float.parseFloat(getAttributeValue(AlosAV2Constants.PATH_ULYMAP, AlosAV2Constants.STRING_ZERO));
-            point.stepX = Float.parseFloat(getAttributeValue(AlosAV2Constants.PATH_XDIM, AlosAV2Constants.STRING_ZERO));
-            point.stepY = Float.parseFloat(getAttributeValue(AlosAV2Constants.PATH_YDIM, AlosAV2Constants.STRING_ZERO));
-        } catch (NumberFormatException e) {
-            warn(MISSING_ELEMENT_WARNING, AlosAV2Constants.PATH_GEOPOSITION_INSERT);
-            point = null;
-        }
-        return point;
-    }
 
     public float getGain(String bandName) {
         if (bandGains == null) {
