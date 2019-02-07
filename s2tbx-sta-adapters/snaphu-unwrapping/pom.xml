@@ -5,8 +5,7 @@
     <parent>
         <artifactId>s2tbx-sta-adapters</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <!--20190118: current adapter version is 6.0.5, the version of STA, this is just for compile -->
-        <version>6.0.4-SNAPSHOT</version>
+        <version>7.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

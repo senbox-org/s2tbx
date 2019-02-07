@@ -1,6 +1,60 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 7.0
+--------------------
+
+### Main features
+
+#### Snaphu Unwrapping tool adapter
+
+It is now possible to download directly from SNAP the current version of SNAPHU.
+
+#### Forest Cover Change Processor
+
+The Forest Cover Change Processor is a multi-steps iterative process that transform two date images into one forest change product.
+The overall principle of the algorithm is to identify the forest objects showing higher reflectance differences between the two images than the other forest objects.
+
+#### Pleiades Product Reader
+
+This module enables the Sentinel Toolbox to read Pleiades data products.
+
+#### Kompsat2 Product Reader
+
+This module enables the Sentinel Toolbox to read Kompsat2 data products.
+
+#### WorldView-2 Product Reader
+
+This module enables the Sentinel Toolbox to read WorldView-2 data products.
+
+#### Spectral Angle Mapper
+
+Spectral Angle Mapper (SAM) is a physically-based spectral classification that uses an n-D angle to match pixels to reference spectra.
+The algorithm determines the spectral similarity between two spectra by calculating the angle between the spectra and treating them as
+vectors in a space with dimensionality equal to the number of bands.
+
+#### GeFolki Co-registration Processor
+
+The GeFolki algorithm allows the registration of images in a nonparametric and dense way. GeFolki is based on a local method of optical flow derived from the Lucas-Kanade algorithm, with a multiscale implementation, and a specific filtering including rank filtering, rolling guidance filtering and local contrast inversion.
+
+### List of solved issues
+#### Bug
+    * [SIITBX-305] - Help link does not work from menu.
+    * Pleiades Reader, raster operations (resample, reprojection, subset) return error.
+    * Pleiades Reader tests are not passed.
+    * Kompsat2 Reader, pixels values are incorrectly calculated.
+    * WorldView-2 Reader tests are not passed.
+    * Spectral Angle Mapper help images are not displayed in Linux.
+
+#### New Feature
+    * [SIITBX-141] - Add PLEIADES reader
+
+#### Improvement
+    * [SIITBX-304] - Use object tag for external link.
+    * [SIITBX-306] - Entry in ToC of Help should be renamed.
+
+
+
 Changes in S2TBX 6.0
 --------------------
 
@@ -63,40 +117,9 @@ and all the parameters available in the GIPP file of sen2cor.
 It is now possible to download directly from SNAP the current version of sen2cor and use it without installing anything else.
 This beta version of the sen2cor plugin makes possible to execute sen2cor without installing Anaconda.
 
-#### Snaphu Unwrapping tool adapter
-
-It is now possible to download directly from SNAP the current version of SNAPHU.
-
 #### Sen2Three
 
 Added support for the new product format introduced in autumn 2016 (PSD 14).
-
-#### Forest Cover Change Processor
-
-The Forest Cover Change Processor is a multi-steps iterative process that transform two date images into one forest change product.
-The overall principle of the algorithm is to identify the forest objects showing higher reflectance differences between the two images than the other forest objects.
-
-#### Pleiades Product Reader
-
-This module enables the Sentinel Toolbox to read Pleiades data products.
-
-#### Kompsat2 Product Reader
-
-This module enables the Sentinel Toolbox to read Kompsat2 data products.
-
-#### WorldView-2 Product Reader
-
-This module enables the Sentinel Toolbox to read WorldView-2 data products.
-
-#### Spectral Angle Mapper
-
-Spectral Angle Mapper (SAM) is a physically-based spectral classification that uses an n-D angle to match pixels to reference spectra.
-The algorithm determines the spectral similarity between two spectra by calculating the angle between the spectra and treating them as
-vectors in a space with dimensionality equal to the number of bands.
-
-#### GeFolki Co-registration Processor
-
-The GeFolki algorithm allows the registration of images in a nonparametric and dense way. GeFolki is based on a local method of optical flow derived from the Lucas-Kanade algorithm, with a multiscale implementation, and a specific filtering including rank filtering, rolling guidance filtering and local contrast inversion.
 
 ### List of solved issues
 #### Bug
@@ -121,14 +144,8 @@ The GeFolki algorithm allows the registration of images in a nonparametric and d
     * [SIITBX-280] - JP2 Reader is not able to open jp2 image generated with sen2cor at 10 or 20 m resolution
     * [SIITBX-285] - S2 reader cannot open by folder name the L2A product with old naming convention
     * [SIITBX-286] - S2 angles are not well computed when angle grids are not in order in the granule metadata file.
-    * Pleiades Reader, raster operations (resample, reprojection, subset) return error.
-    * Pleiades Reader tests are not passed.
-    * Kompsat2 Reader, pixels values are incorrectly calculated.
-    * WorldView-2 Reader tests are not passed.
-    * Spectral Angle Mapper help images are not displayed in Linux.
 
 #### New Feature
-    * [SIITBX-141] - Add PLEIADES reader
     * [SIITBX-272] - Segmentation Processor should be implemented in S2TBX
     * [SIITBX-273] - Multi-size mosaic not available in SNAP
     * [SIITBX-281] - CCI Land Cover module for CCI 2015 global map cover
