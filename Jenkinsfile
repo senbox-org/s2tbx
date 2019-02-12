@@ -36,8 +36,7 @@ pipeline {
                 sh 'ls -al /var/maven/.m2'
                 echo "id"
                 sh 'id'
-                sh 'mkdir -p ~/snap'
-                sh 'mvn -X -Duser.home=/var/maven -Dsnap.userdir=~/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
+                sh 'mvn -X -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
             }
         }
         stage('Deploy') {
