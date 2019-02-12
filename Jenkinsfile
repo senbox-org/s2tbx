@@ -29,11 +29,11 @@ pipeline {
             steps {
                 echo "Package and Unit Tests ${env.JOB_NAME}"
                 echo "/var :"
-                sh 'ls -l /var'
+                sh 'ls -al /var'
                 echo "/var/maven :"
-                sh 'ls -l /var/maven'
+                sh 'ls -al /var/maven'
                 echo "/var/maven/.m2 :"
-                sh 'ls -l /var/maven/.m2'
+                sh 'ls -al /var/maven/.m2'
                 echo "id"
                 sh 'id'
                 sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home -Djava.io.tmpdir=/home clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
