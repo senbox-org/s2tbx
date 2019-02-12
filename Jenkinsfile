@@ -28,7 +28,7 @@ pipeline {
             }
             steps {
                 echo "Package and unit tests ${env.JOB_NAME}"
-                sh 'mvn -Duser.home=/var/maven clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false
+                sh 'mvn -Duser.home=/var/maven clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
             }
         }
         stage('Deploy') {
