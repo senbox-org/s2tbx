@@ -27,15 +27,8 @@ pipeline {
                 }
             }
             steps {
-                echo "Package ${env.JOB_NAME}"
-                sh 'mvn -Duser.home=/var/maven clean install org.jacoco:jacoco-maven-plugin:0.8.1:prepare-agent org.sonarsource.scanner.maven:sonar-maven-plugin:3.4.0.905:sonar '
-                sh 'mvn -Duser.home=/var/maven -pl services/bootstrap deploy'
-            }
-        }
-        stage('Unit Test') {
-            agent any
-            steps {
-                echo "Test ${env.JOB_NAME}"
+                echo "Package and unit tests ${env.JOB_NAME}"
+                sh 'mvn -Duser.home=/var/maven clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false
             }
         }
         stage('Deploy') {
