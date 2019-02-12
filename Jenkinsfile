@@ -21,7 +21,7 @@ pipeline {
         stage('Package') {
             agent {
                 docker {
-                    image 's2ms.cisnap-build-server.tilaa.cloud/maven'
+                    image 'snap-build-server.tilaa.cloud/maven'
                     // We add the docker group from host (i.e. 999)
                     args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /var/maven/.m2:/var/maven/.m2'
                 }
