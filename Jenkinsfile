@@ -21,13 +21,13 @@ pipeline {
         stage('Package') {
             agent {
                 docker {
-                    image 'snap-build-server.tilaa.cloud/maven'
+                    image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8-alpine'
                     // We add the docker group from host (i.e. 999)
                     args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /var/maven/.m2:/var/maven/.m2'
                 }
             }
             steps {
-                echo "Package and unit tests ${env.JOB_NAME}"
+                echo "Package and Unit Tests ${env.JOB_NAME}"
                 sh 'mvn -Duser.home=/var/maven clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
             }
         }
