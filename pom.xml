@@ -508,6 +508,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.19</version>
                     <configuration>
+                        <useSystemClassLoader>false</useSystemClassLoader>
                         <enableAssertions>true</enableAssertions>
                         <!--<skip>true</skip>-->
                         <printSummary>true</printSummary>
