@@ -156,12 +156,11 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         for (int i = 0; i < sourceRois.length; i++) {
             RenderedImage image = tileImages.get(i);
             ImageLayout roiLayout = new ImageLayout(image);
-            ROI roi = new ROI(ConstantDescriptor.create((float) image.getWidth(), (float) image.getHeight(), new Byte[]{127}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, roiLayout)), 127);
+            ROI roi = new ROI(ConstantDescriptor.create((float) image.getWidth(), (float) image.getHeight(), new Byte[]{Byte.MAX_VALUE}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, roiLayout)), Byte.MAX_VALUE);
             sourceRois[i] = roi;
         }
 
-
-        RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[0]),
+        RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                       MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                       null, sourceRois, null, null,
                                                       new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
