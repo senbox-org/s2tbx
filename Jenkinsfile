@@ -23,20 +23,11 @@ pipeline {
                 docker {
                     image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8-alpine'
                     // We add the docker group from host (i.e. 999)
-                    args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml'
+                    args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v /opt/maven/.snap:/home/snap/.snap/'
                 }
             }
             steps {
-                echo "Package and Unit Tests ${env.JOB_NAME}"
-                echo "/var :"
-                sh 'ls -al /var'
-                echo "/var/maven :"
-                sh 'ls -al /var/maven'
-                echo "/var/maven/.m2 :"
-                sh 'ls -al /var/maven/.m2'
-                echo "id"
-                sh 'id'
-                sh 'mvn -X -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
+                sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
             }
         }
         stage('Deploy') {
