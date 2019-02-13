@@ -21,9 +21,9 @@ pipeline {
         stage('Package') {
             agent {
                 docker {
-                    image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8-alpine'
+                    image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8'
                     // We add the docker group from host (i.e. 999)
-                    args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v /opt/maven/.snap:/home/snap/.snap/'
+                    args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml'
                 }
             }
             steps {
