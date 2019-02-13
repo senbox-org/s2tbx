@@ -24,12 +24,19 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.ROI;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -69,9 +76,9 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param dataType    The pixel data type
      * @param geoCoding   (optional) The geocoding found (if any) in the JP2 header
      */
-    public JP2MultiLevelSource(Path jp2File, Path cacheFolder, int bandIndex, int numBands, int imageWidth, int imageHeight,
-                               int tileWidth, int tileHeight, int numTilesX, int numTilesY, int levels, int dataType,
-                               GeoCoding geoCoding) {
+    public JP2MultiLevelSource(Path jp2File, Path cacheFolder, int bandIndex, int numBands,
+                               int imageWidth, int imageHeight, int tileWidth, int tileHeight,
+                               int numTilesX, int numTilesY, int levels, int dataType, GeoCoding geoCoding) {
         super(new DefaultMultiLevelModel(levels,
                                          Product.findImageToModelTransform(geoCoding),
                                          imageWidth, imageHeight));
@@ -97,9 +104,9 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         // the edge tiles dimensions may be less than the dimensions from JP2 header
         if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
             currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
-                                            Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
-                                            Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
-                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+                                           Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
+                                           Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
+                                           tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
             currentLayout.numBands = tileLayout.numBands;
         }
         return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
@@ -143,9 +150,19 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         imageLayout.setTileGridXOffset(0);
         imageLayout.setTileGridYOffset(0);
 
+        // It must be specified which values shall be mosaicked. The default settings don't work
+        // We want all values to be considered
+        ROI[]sourceRois = new ROI[tileImages.size()];
+        for (int i = 0; i < sourceRois.length; i++) {
+            RenderedImage image = tileImages.get(i);
+            ImageLayout roiLayout = new ImageLayout(image);
+            ROI roi = new ROI(ConstantDescriptor.create((float) image.getWidth(), (float) image.getHeight(), new Byte[]{Byte.MAX_VALUE}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, roiLayout)), Byte.MAX_VALUE);
+            sourceRois[i] = roi;
+        }
+
         RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                       MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                      null, null, null, null,
+                                                      null, sourceRois, null, null,
                                                       new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
         int fittingRectWidth = scaleValue(tileLayout.width, level);
