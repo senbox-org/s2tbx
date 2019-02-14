@@ -106,11 +106,11 @@ public class AlosPRIProductReader extends AbstractProductReader {
             }
 
             ImageMetadata.InsertionPoint origin = metadata.getProductOrigin();
-            float offsetX = (metadata.getMinInsertPointX() - metadata.getMaxInsertPointX()) / metadata.getStepSizeX();
+            float offsetX = (metadata.getMaxInsertPointX() - metadata.getMinInsertPointX()) / metadata.getStepSizeX();
             float offsetY = (metadata.getMaxInsertPointY() - metadata.getMinInsertPointY()) / metadata.getStepSizeY();
 
-            int width = (int) (metadata.getRasterWidth() + offsetX);
-            int height = (int) (metadata.getRasterHeight() + offsetY);
+            int width = metadata.getRasterWidth();
+            int height = metadata.getRasterHeight();
 
             this.product = new Product(this.metadata.getProductName(), AlosPRIConstants.PRODUCT_GENERIC_NAME, width, height);
             this.product.setStartTime(this.metadata.getProductStartTime());
@@ -119,7 +119,6 @@ public class AlosPRIProductReader extends AbstractProductReader {
             this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
             this.product.setFileLocation(inputFile);
             this.product.setProductReader(this);
-
             if (metadata.hasInsertPoint()) {
                 String crsCode = metadata.getCrsCode();
                 try {
@@ -132,7 +131,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                     logger.warning(e.getMessage());
                 }
             } else {
-                initProductTiePointGeoCoding(product, offsetX, offsetY);
+                initProductTiePointGeoCoding(this.product, offsetX, offsetY);
             }
             int levels;
 
@@ -146,9 +145,9 @@ public class AlosPRIProductReader extends AbstractProductReader {
                 Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
 
                 levels = band.getSourceImage().getModel().getLevelCount();
-                final Dimension tileSize = JAIUtils.computePreferredTileSize(imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight(), 1);
+                final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
 
-                Band targetBand = new Band(imageMetadata.getBandName(), imageMetadata.getPixelDataType(), imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight());
+                Band targetBand = new Band(imageMetadata.getBandName(), band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
                 targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
                 targetBand.setSpectralWavelength(band.getSpectralWavelength());
                 targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
@@ -165,10 +164,9 @@ public class AlosPRIProductReader extends AbstractProductReader {
                         new MosaicMultiLevelSource(band,
                                                    band.getRasterWidth(), band.getRasterHeight(),
                                                    tileSize.width, tileSize.height,
-                                                   levels, band.getGeoCoding() != null ? targetBand.getGeoCoding() != null ?
+                                                   levels, targetBand.getGeoCoding() != null ?
                                 Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                                Product.findImageToModelTransform(product.getSceneGeoCoding()) :
-                                                           targetBand.getImageToModelTransform());
+                                Product.findImageToModelTransform(product.getSceneGeoCoding()));
                 targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
                 this.product.addBand(targetBand);
                 addMasks(product, imageMetadata);
@@ -297,7 +295,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                 }
             }
         }
-        if (this.metadata != null) {
+        if (this.metadata != null && this.metadata.getImageDirectoryPath() != null) {
             File imageDir = new File(this.metadata.getImageDirectoryPath());
             if (imageDir.exists()) {
                 deleteDirectory(imageDir);

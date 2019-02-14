@@ -48,8 +48,8 @@ public class AlosPRIProductReaderTest {
             assertEquals("Alos PRISM Product", finalProduct.getProductType());
             assertEquals(2, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(0, finalProduct.getTiePointGrids().length);
-            assertEquals(25143, finalProduct.getSceneRasterWidth());
-            assertEquals(21233, finalProduct.getSceneRasterHeight());
+            assertEquals(25629, finalProduct.getSceneRasterWidth());
+            assertEquals(22640, finalProduct.getSceneRasterHeight());
             Date endDate = Calendar.getInstance().getTime();
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
         } catch (IOException e) {

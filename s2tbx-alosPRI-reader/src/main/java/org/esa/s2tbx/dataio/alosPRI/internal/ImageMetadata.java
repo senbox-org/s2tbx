@@ -200,11 +200,19 @@ public class ImageMetadata extends XmlMetadata {
     }
 
     public float getInsertPointX() {
-        return Float.parseFloat(getAttributeValue(AlosPRIConstants.PATH_IMG_GEOPOSITION_INSERT_ULXMAP, String.valueOf(Float.NaN)));
+        if(hasInsertPoint()) {
+            return Float.parseFloat(getAttributeValue(AlosPRIConstants.PATH_IMG_GEOPOSITION_INSERT_ULXMAP, String.valueOf(Float.NaN)));
+        }else{
+            return Float.parseFloat(getAttributeValue(AlosPRIConstants.PATH_IMG_EXTENT_VERTEX_LON, 0, String.valueOf(Float.NaN)));
+        }
     }
 
     public float getInsertPointY() {
-        return Float.parseFloat(getAttributeValue(AlosPRIConstants.PATH_IMG_GEOPOSITION_INSERT_ULYMAP, String.valueOf(Float.NaN)));
+        if(hasInsertPoint()) {
+            return Float.parseFloat(getAttributeValue(AlosPRIConstants.PATH_IMG_GEOPOSITION_INSERT_ULYMAP, String.valueOf(Float.NaN)));
+        }else{
+            return Float.parseFloat(getAttributeValue(AlosPRIConstants.PATH_IMG_EXTENT_VERTEX_LAT, 0, String.valueOf(Float.NaN)));
+        }
     }
 
     public float getPixelSizeX() {
@@ -229,6 +237,26 @@ public class ImageMetadata extends XmlMetadata {
             point.stepY = Float.parseFloat(AlosPRIConstants.DEFAULT_PIXEL_SIZE);
         }
         return point;
+    }
+
+    public float getInsertPointMaxRightX(){
+        float pointX;
+        if (hasInsertPoint()) {
+            pointX = getInsertPointX()+getRasterWidth()*getPixelSizeX();
+        } else {
+            pointX = Float.parseFloat(getAttributeValue(AlosPRIConstants.PATH_IMG_EXTENT_VERTEX_LON, 1, String.valueOf(Float.NaN)));
+        }
+        return pointX;
+    }
+
+    public float getInsertPointMaxLowerY(){
+        float pointY;
+        if (hasInsertPoint()) {
+            pointY = getInsertPointY()-getRasterHeight()*getPixelSizeY();
+        } else {
+            pointY = Float.parseFloat(getAttributeValue(AlosPRIConstants.PATH_IMG_EXTENT_VERTEX_LAT, 3, String.valueOf(Float.NaN)));
+        }
+        return pointY;
     }
 
     public float[][] getCornerLonsLats() {

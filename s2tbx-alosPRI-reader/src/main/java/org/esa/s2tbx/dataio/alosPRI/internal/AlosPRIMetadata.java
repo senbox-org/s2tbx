@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -80,22 +81,31 @@ public class AlosPRIMetadata extends XmlMetadata {
 
     @Override
     public int getRasterWidth() {
-        return componentMetadata.stream()
-                .filter(metadata -> metadata instanceof ImageMetadata)
-                .map(metadata -> (ImageMetadata) metadata)
-                .map(ImageMetadata::getRasterWidth)
-                .collect(Collectors.minBy(Integer::compare))
-                .get();
+        if (componentMetadata.get(0).hasInsertPoint()) {
+            return (int) ((getMaxPoint().get("x") - getMinInsertPointX()) / 2.5);
+        } else {
+            return componentMetadata.stream()
+                    .filter(metadata -> metadata instanceof ImageMetadata)
+                    .map(metadata -> (ImageMetadata) metadata)
+                    .map(ImageMetadata::getRasterWidth)
+                    .collect(Collectors.maxBy(Integer::compare))
+                    .get();
+        }
+
     }
 
     @Override
     public int getRasterHeight() {
-        return componentMetadata.stream()
-                .filter(metadata -> metadata instanceof ImageMetadata)
-                .map(metadata -> (ImageMetadata) metadata)
-                .map(ImageMetadata::getRasterHeight)
-                .collect(Collectors.minBy(Integer::compare))
-                .get();
+        if (componentMetadata.get(0).hasInsertPoint()) {
+            return (int) ((getMaxInsertPointY() - getMaxPoint().get("y")) / 2.5);
+        } else {
+            return componentMetadata.stream()
+                    .filter(metadata -> metadata instanceof ImageMetadata)
+                    .map(metadata -> (ImageMetadata) metadata)
+                    .map(ImageMetadata::getRasterHeight)
+                    .collect(Collectors.maxBy(Integer::compare))
+                    .get();
+        }
     }
 
     @Override
@@ -212,7 +222,7 @@ public class AlosPRIMetadata extends XmlMetadata {
                 .filter(metadata -> metadata instanceof ImageMetadata)
                 .map(metadata -> (ImageMetadata) metadata)
                 .map(ImageMetadata::getInsertPointX)
-                .collect(Collectors.minBy(Float::compare))
+                .collect(Collectors.maxBy(Float::compare))
                 .get();
     }
 
@@ -230,7 +240,16 @@ public class AlosPRIMetadata extends XmlMetadata {
                 .filter(metadata -> metadata instanceof ImageMetadata)
                 .map(metadata -> (ImageMetadata) metadata)
                 .map(ImageMetadata::getInsertPointX)
-                .collect(Collectors.maxBy(Float::compare))
+                .collect(Collectors.minBy(Float::compare))
+                .get();
+    }
+
+    public float getMinInsertPointY() {
+        return componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getInsertPointY)
+                .collect(Collectors.minBy(Float::compare))
                 .get();
     }
 
@@ -252,20 +271,11 @@ public class AlosPRIMetadata extends XmlMetadata {
                 .get();
     }
 
-    public float getMinInsertPointY() {
-        return componentMetadata.stream()
-                .filter(metadata -> metadata instanceof ImageMetadata)
-                .map(metadata -> (ImageMetadata) metadata)
-                .map(ImageMetadata::getInsertPointY)
-                .collect(Collectors.minBy(Float::compare))
-                .get();
-    }
-
     public HashMap<String, Float[]> bandOffset() {
         HashMap<String, Float[]> bandOffset = new HashMap<>();
         for (ImageMetadata imageMetadata : componentMetadata) {
-            float originX = (imageMetadata.getInsertPointX() - getMaxInsertPointX()) / imageMetadata.getPixelSizeX();
-            float originY = (getMaxInsertPointY() - imageMetadata.getInsertPointY()) / imageMetadata.getPixelSizeY();
+            float originX = (imageMetadata.getInsertPointX() - upperLeftPointOrigin.x) / imageMetadata.getPixelSizeX();
+            float originY = (upperLeftPointOrigin.y - imageMetadata.getInsertPointY()) / imageMetadata.getPixelSizeY();
             bandOffset.put(imageMetadata.getBandName(), new Float[]{originX, originY});
         }
         return bandOffset;
@@ -293,6 +303,21 @@ public class AlosPRIMetadata extends XmlMetadata {
 
         }
         return upperLeftPointOrigin;
+    }
+
+    public HashMap<String, Float> getMaxPoint() {
+        ArrayList<Float> maxPointXList = new ArrayList<>();
+        ArrayList<Float> maxPointYList = new ArrayList<>();
+        for (ImageMetadata metadata : componentMetadata) {
+            maxPointXList.add(metadata.getInsertPointMaxRightX());
+            maxPointYList.add(metadata.getInsertPointMaxLowerY());
+        }
+        return new HashMap<String, Float>() {
+            {
+                put("x", Collections.max(maxPointXList));
+                put("y", Collections.min(maxPointYList));
+            }
+        };
     }
 
     public float[][] getMaxCorners() {

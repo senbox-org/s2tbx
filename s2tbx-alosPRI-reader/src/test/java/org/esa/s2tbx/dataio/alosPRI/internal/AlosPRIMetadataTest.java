@@ -76,12 +76,12 @@ public class AlosPRIMetadataTest {
 
     @Test
     public void testMaxInsertPointX() throws Exception {
-        assertEquals(468615, metadata.getMaxInsertPointX(), 0.0);
+        assertEquals(481647.5, metadata.getMaxInsertPointX(), 0.0);
     }
 
     @Test
     public void testMinInsertPointX() throws Exception {
-        assertEquals(481647.5, metadata.getMinInsertPointX(), 0.0);
+        assertEquals(468615, metadata.getMinInsertPointX(), 0.0);
     }
 
     @Test
@@ -97,12 +97,12 @@ public class AlosPRIMetadataTest {
 
     @Test
     public void testGetRasterHeight() throws Exception {
-        assertEquals(19068, metadata.getRasterHeight());
+        assertEquals(22640, metadata.getRasterHeight());
     }
 
     @Test
     public void testGetRasterWidth() throws Exception {
-        assertEquals(19930, metadata.getRasterWidth());
+        assertEquals(25629, metadata.getRasterWidth());
     }
 
 
@@ -170,6 +170,7 @@ public class AlosPRIMetadataTest {
 
     @Test
     public void testBandOffset() throws Exception {
+        metadata.getProductOrigin();
         assertEquals(2749, metadata.bandOffset().get("ALPSMN038921855")[0].intValue());
         assertEquals(1221, metadata.bandOffset().get("ALPSMN038921855")[1].intValue());
         assertEquals(0, metadata.bandOffset().get("ALPSMF038921800")[0].intValue());
