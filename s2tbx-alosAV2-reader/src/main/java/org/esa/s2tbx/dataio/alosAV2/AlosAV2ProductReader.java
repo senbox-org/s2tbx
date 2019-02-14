@@ -26,6 +26,7 @@ import java.util.logging.Logger;
  */
 public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
     private static final Logger logger = Logger.getLogger(AlosAV2ProductReader.class.getName());
+    private File inputFile;
 
     protected AlosAV2ProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn, colorPaletteFilePath);
@@ -33,7 +34,7 @@ public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
 
     @Override
     protected VirtualDirEx getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
+        inputFile = getFileInput(input);
         AlosAV2ProductReaderPlugin readerPlugin = (AlosAV2ProductReaderPlugin) getReaderPlugIn();
         try {
         productDirectory = readerPlugin.getInput(getInput());
@@ -123,7 +124,7 @@ public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
 
     @Override
     protected void addBands(Product product, AlosAV2Metadata componentMetadata, int componentIndex) {
-
+        product.setFileLocation(inputFile);
         super.addBands(product, componentMetadata, componentIndex);
         //add the band informations from the metadata
         for (Band band:product.getBands()) {
