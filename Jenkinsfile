@@ -28,7 +28,7 @@ pipeline {
             }
             steps {
                 echo "Build ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=true'
+                sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
             }
         }
         stage('Deploy') {
