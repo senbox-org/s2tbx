@@ -40,7 +40,7 @@ pipeline {
                     snapVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
                     branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2").trim()
                     deployDirName = "${env.JOB_NAME}-${snapVersion}-${branchVersion}-${env.GIT_COMMIT}"
-                    snapMajorVersion = "${snapVersion}".split('.')[0]
+                    snapMajorVersion = sh(returnStdout: true, script: "echo ${snapVersion} | cut -d '.' -f 1").trim()
                 }
                 // Copy nbm files to local update center
                 sh "mkdir -p /local-update-center/${deployDirName}"
