@@ -28,7 +28,7 @@ pipeline {
             }
             steps {
                 echo "Build ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
+                // sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
             }
         }
         stage('Deploy') {
@@ -36,10 +36,11 @@ pipeline {
             steps {
                 echo "Deploy ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                 script {
-                    snapVersion = sh(returnStdout: true, script: "ls -l s2tbx-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3")
+                    // Get snap version from .nbm file name
+                    snapVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3")
                 }
-                sh "mkdir -p /local_update_center/${env.JOB_NAME}-${snapVersion}-${env.GIT_COMMIT}"
-                sh 'cp s2tbx-kit/target/netbeans_site/* /local_update_center/${env.JOB_NAME}-${snapVersion}-${env.GIT_COMMIT}'
+                sh "mkdir -p /local_update_center/${env.JOB_NAME}-${env.GIT_BRANCH}-${snapVersion}-${env.GIT_COMMIT}"
+                sh 'cp s2tbx-kit/target/netbeans_site/* /local_update_center/${env.JOB_NAME}-${env.GIT_BRANCH}-${snapVersion}-${env.GIT_COMMIT}'
             }
         }
     }
