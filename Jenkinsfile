@@ -47,12 +47,11 @@ pipeline {
                 sh "cp s2tbx-kit/target/netbeans_site/* /local-update-center/${deployDirName}"
                 // Create updated snap image
                 sh "echo FROM snap-build-server.tilaa.cloud/snap:${snapMajorVersion}.x > /local-update-center/${deployDirName}/Dockerfile"
-                sh "echo ADD /local-update-center/${deployDirName}/*.nbm /local-update-center/ > /local-update-center/${deployDirName}/Dockerfile"
-                sh "echo ADD /local-update-center/${deployDirName}/updates.xml /local-update-center/ > /local-update-center/${deployDirName}/Dockerfile"
+                sh "echo ADD /local-update-center/${deployDirName}/*.nbm /local-update-center/ >> /local-update-center/${deployDirName}/Dockerfile"
+                sh "echo ADD /local-update-center/${deployDirName}/updates.xml /local-update-center/ >> /local-update-center/${deployDirName}/Dockerfile"
                 sh "echo 'RUN /home/snap/snap/bin/snap --nosplash --nogui --modules --update-all' >> /local-update-center/${deployDirName}/Dockerfile"
                 sh "more /local-update-center/${deployDirName}/Dockerfile"
-                sh "cd /local-update-center/${deployDirName}/"
-                sh "docker build . -t snap-build-server.tilaa.cloud/snap:${snapMajorVersion}.x"
+                sh "cd /local-update-center/${deployDirName}/ && docker build . -t snap-build-server.tilaa.cloud/snap:${snapMajorVersion}.x"
                 sh "docker push snap-build-server.tilaa.cloud/snap:${snapMajorVersion}.x"
             }
         }
