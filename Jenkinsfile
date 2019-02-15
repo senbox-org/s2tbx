@@ -39,11 +39,10 @@ pipeline {
                     // Get snap version from .nbm file name
                     snapVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
                     branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2").trim()
+                    deployDirName = "${env.JOB_NAME}-${snapVersion}-${branchVersion}-${env.GIT_COMMIT}"
                 }
-                sh "id"
-                sh "ls -l /"
-                sh "mkdir -p /local-update-center/${env.JOB_NAME}-${branchVersion}-${snapVersion}-${env.GIT_COMMIT}"
-                sh 'cp s2tbx-kit/target/netbeans_site/* /local-update-center/${env.JOB_NAME}-${branchVersion}-${snapVersion}-${env.GIT_COMMIT}'
+                sh "mkdir -p /local-update-center/${deployDirName}"
+                sh "cp s2tbx-kit/target/netbeans_site/* /local-update-center/${deployDirName}"
             }
         }
     }
