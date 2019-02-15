@@ -42,8 +42,8 @@ pipeline {
                 }
                 sh "id"
                 sh "ls -l /"
-                sh "mkdir -p /local_update_center/${env.JOB_NAME}-${branchVersion}-${snapVersion}-${env.GIT_COMMIT}"
-                sh 'cp s2tbx-kit/target/netbeans_site/* /local_update_center/${env.JOB_NAME}-${branchVersion}-${snapVersion}-${env.GIT_COMMIT}'
+                sh "mkdir -p /local-update-center/${env.JOB_NAME}-${branchVersion}-${snapVersion}-${env.GIT_COMMIT}"
+                sh 'cp s2tbx-kit/target/netbeans_site/* /local-update-center/${env.JOB_NAME}-${branchVersion}-${snapVersion}-${env.GIT_COMMIT}'
             }
         }
     }
