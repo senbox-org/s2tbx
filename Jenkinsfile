@@ -38,7 +38,7 @@ pipeline {
                 script {
                     // Get snap version from .nbm file name
                     snapVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3")
-                    branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2)
+                    branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2")
                 }
                 sh "id"
                 sh "ls -l /"
