@@ -24,9 +24,9 @@ import javax.imageio.stream.FileCacheImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 
 /**
  * Wrapper over <code>ChannelImageInputStreamSpi</code>.
@@ -45,7 +45,8 @@ public class FileImageInputStreamSpi extends ChannelImageInputStreamSpi {
         // We need to make sure the underlying channel is closed, because it may hold a reference to our file and
         // the respective Java classes do not close it.
         //return super.createInputStreamInstance(new RandomAccessFile(inputFile.getAbsolutePath(), "r").getChannel(), useCache, cacheDir);
-        FileChannel channel = new RandomAccessFile(inputFile.getAbsolutePath(), "r").getChannel();
+//        FileChannel channel = new RandomAccessFile(inputFile.getAbsolutePath(), "r").getChannel();
+        FileChannel channel = FileChannel.open(inputFile.toPath(), StandardOpenOption.READ);
         if (useCache) {
             stream = new FileCacheImageInputStream(Channels.newInputStream(channel), cacheDir) {
                 @Override
