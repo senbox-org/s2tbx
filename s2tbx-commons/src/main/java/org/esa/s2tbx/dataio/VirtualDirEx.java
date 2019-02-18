@@ -208,7 +208,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                 }
             } else {
                 //listFiles(new File(path), fileNames);
-                fileNames.addAll(listFiles(new File(path), patterns));
+                fileNames.addAll(listFiles(getBaseFile(), patterns));
             }
             return fileNames.toArray(new String[fileNames.size()]);
         }
@@ -286,6 +286,11 @@ public abstract class VirtualDirEx extends VirtualDir {
         @Override
         public String getBasePath() {
             return wrapped.getBasePath();
+        }
+
+        @Override
+        public File getBaseFile() {
+            return wrapped.getBaseFile();
         }
 
         @Override
@@ -568,6 +573,11 @@ public abstract class VirtualDirEx extends VirtualDir {
         @Override
         public String getBasePath() {
             return archiveFile.getPath();
+        }
+
+        @Override
+        public File getBaseFile() {
+            return archiveFile;
         }
 
         @Override
