@@ -79,7 +79,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>6.0.5</snap.version>
+        <snap.version>6.0.6</snap.version>
         <snap-reader-tests.version>6.0.0</snap-reader-tests.version>
         <s2tbx.version>6.0.4-SNAPSHOT</s2tbx.version>
         <geotools.version>17.1</geotools.version>
