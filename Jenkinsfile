@@ -77,7 +77,9 @@ pipeline {
                     return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
                 }
             }
-            build job: 'snap-gpt-tests', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: ${env.GIT_COMMIT}],[$class: 'StringParameterValue', name: 'snapVersion', value: ${snapVersion}]]
+            steps {
+                build job: 'snap-gpt-tests', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: ${env.GIT_COMMIT}],[$class: 'StringParameterValue', name: 'snapVersion', value: ${snapVersion}]]
+            }
         }
     }
     post {
