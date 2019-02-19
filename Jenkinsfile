@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     // Get snap version from .nbm file name
-                    launchUnitTests = ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" = "6.x"
+                    launchUnitTests = "${env.GIT_BRANCH}" = 'master' || "${env.GIT_BRANCH}" = "6.x"
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                 sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=${launchUnitTests}'
@@ -63,7 +63,7 @@ pipeline {
             agent any
             when {
                 expression {
-                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
+                    return "${env.GIT_BRANCH}" = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
                 }
             }
             steps {
@@ -74,7 +74,7 @@ pipeline {
             agent any
             when {
                 expression {
-                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
+                    return "${env.GIT_BRANCH}" = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
                 }
             }
             build job: 'snap-gpt-tests', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: ${env.GIT_COMMIT}],[$class: 'StringParameterValue', name: 'snapVersion', value: ${snapVersion}]]
