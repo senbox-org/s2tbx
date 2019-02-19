@@ -26,12 +26,6 @@ pipeline {
                     args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml'
                 }
             }
-            when {
-                expression {
-                    // Only launch treatment on branch called master, *.x or *_validation
-                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/" || "${env.GIT_BRANCH}" =~ "/*_validation/";
-                }
-            }
             steps {
                 script {
                     // Get snap version from .nbm file name
@@ -43,12 +37,6 @@ pipeline {
         }
         stage('Deploy') {
             agent any
-            when {
-                expression {
-                    // Only launch treatment on branch called master, *.x or *_validation
-                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/" || "${env.GIT_BRANCH}" =~ "/*_validation/";
-                }
-            }
             steps {
                 echo "Deploy ${env.JOB_NAME} from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
                 script {
