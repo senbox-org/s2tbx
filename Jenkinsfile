@@ -26,13 +26,25 @@ pipeline {
                     args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml'
                 }
             }
+            when {
+                expression {
+                    // Only launch treatment on branch called master, *.x or *_validation
+                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/*\.x/" || "${env.GIT_BRANCH}" =~ "/*_validation/";
+                }
+            }
             steps {
                 echo "Build ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                // sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
+                sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=false'
             }
         }
         stage('Deploy') {
             agent any
+            when {
+                expression {
+                    // Only launch treatment on branch called master, *.x or *_validation
+                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/*\.x/" || "${env.GIT_BRANCH}" =~ "/*_validation/";
+                }
+            }
             steps {
                 echo "Deploy ${env.JOB_NAME} from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
                 script {
@@ -44,16 +56,36 @@ pipeline {
                 }
                 // Copy nbm files to local update center
                 sh "mkdir -p /local-update-center/${deployDirName}"
-                sh "cp s2tbx-kit/target/netbeans_site/* /local-update-center/${deployDirName}"
+                sh "cp *-kit/target/netbeans_site/* /local-update-center/${deployDirName}"
                 // Create updated snap image
                 sh "echo FROM snap-build-server.tilaa.cloud/snap:${snapMajorVersion}.x > /local-update-center/${deployDirName}/Dockerfile"
                 sh "echo 'ADD ./*.nbm /local-update-center/' >> /local-update-center/${deployDirName}/Dockerfile"
                 sh "echo ADD ./updates.xml /local-update-center/ >> /local-update-center/${deployDirName}/Dockerfile"
-                sh "echo 'RUN /home/snap/snap/bin/snap --nosplash --nogui --modules --update-all' >> /local-update-center/${deployDirName}/Dockerfile"
+                sh "echo 'RUN /home/snap/snap/bin/snap --nosplash --nogui --modules --refresh --update-all' >> /local-update-center/${deployDirName}/Dockerfile"
                 sh "more /local-update-center/${deployDirName}/Dockerfile"
-                sh "cd /local-update-center/${deployDirName}/ && docker build . -t snap-build-server.tilaa.cloud/snap:${snapMajorVersion}.x"
-                sh "docker push snap-build-server.tilaa.cloud/snap:${snapMajorVersion}.x"
+                sh "cd /local-update-center/${deployDirName}/ && docker build . -t snap-build-server.tilaa.cloud/snap:${snapVersion}-${env.GIT_COMMIT}"
+                sh "docker push snap-build-server.tilaa.cloud/snap:${snapVersion}-${env.GIT_COMMIT}"
             }
+        }
+        stage('Pre-release') {
+            agent any
+            when {
+                expression {
+                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/*\.x/";
+                }
+            }
+            steps {
+                echo "Pre release from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
+            }
+        }
+        stage ('Starting GPT Tests') {
+            agent any
+            when {
+                expression {
+                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/*\.x/";
+                }
+            }
+            build job: 'snap-gpt-tests', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: ${env.GIT_COMMIT}],[$class: 'StringParameterValue', name: 'snapVersion', value: ${snapVersion}]]
         }
     }
     post {
