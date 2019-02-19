@@ -78,9 +78,9 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         String canonicalPathString = "";
         Path canonicalPath;
         try {
-            canonicalPathString = file.getCanonicalPath();
-            canonicalPath = Paths.get(canonicalPathString);
-        } catch (IOException e) {
+            canonicalPath = Paths.get(file.toURI());
+            canonicalPathString = canonicalPath.toAbsolutePath().toString();
+        } catch (Exception e) {
             return DecodeQualification.UNABLE;
         }
 
