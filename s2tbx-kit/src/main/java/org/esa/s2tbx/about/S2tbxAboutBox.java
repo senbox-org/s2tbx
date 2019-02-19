@@ -39,7 +39,7 @@ import java.net.URISyntaxException;
 @AboutBox(displayName = "S2TBX", position = 20)
 public class S2tbxAboutBox extends JPanel {
 
-    private final static String releaseNotesHTTP = "https://github.com/senbox-org/s2tbx/blob/master/ReleaseNotes.md";
+    private final static String releaseNotesHTTP = "https://github.com/senbox-org/s2tbx/blob/6.x/ReleaseNotes.md";
 
     public S2tbxAboutBox() {
         super(new BorderLayout(4, 4));
