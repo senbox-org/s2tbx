@@ -46,7 +46,7 @@ pipeline {
             when {
                 expression {
                     // Only launch treatment on branch called master, *.x or *_validation
-                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/*\.x/" || "${env.GIT_BRANCH}" =~ "/*_validation/";
+                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/" || "${env.GIT_BRANCH}" =~ "/*_validation/";
                 }
             }
             steps {
@@ -75,7 +75,7 @@ pipeline {
             agent any
             when {
                 expression {
-                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/*\.x/";
+                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
                 }
             }
             steps {
@@ -86,7 +86,7 @@ pipeline {
             agent any
             when {
                 expression {
-                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/*\.x/";
+                    return ${env.GIT_BRANCH} = 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
                 }
             }
             build job: 'snap-gpt-tests', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: ${env.GIT_COMMIT}],[$class: 'StringParameterValue', name: 'snapVersion', value: ${snapVersion}]]
