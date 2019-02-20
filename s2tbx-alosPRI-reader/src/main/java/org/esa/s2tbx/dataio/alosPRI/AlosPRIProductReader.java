@@ -93,6 +93,8 @@ public class AlosPRIProductReader extends AbstractProductReader {
 
                 } else {
                     this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
+                    productDirectory = VirtualDirEx.create(new File(metadata.getImageDirectoryPath()));
+                    productDirectory.setFolderDepth(4);
                 }
             }
             for (String file : productDirectory.listAllFiles()) {
