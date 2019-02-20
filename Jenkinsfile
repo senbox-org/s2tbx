@@ -41,38 +41,35 @@ pipeline {
                 echo "Deploy ${env.JOB_NAME} from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
                 script {
                     // Get snap version from .nbm file name
-                    snapVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
+                    toolVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
                     branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2").trim()
-                    deployDirName = "${env.JOB_NAME}-${snapVersion}-${branchVersion}-${env.GIT_COMMIT}"
-                    snapMajorVersion = sh(returnStdout: true, script: "echo ${snapVersion} | cut -d '.' -f 1").trim()
+                    deployDirName = "${env.JOB_NAME}-${toolVersion}-${branchVersion}-${env.GIT_COMMIT}"
+                    dockerName = "${env.JOB_NAME}:${toolVersion}-${env.GIT_COMMIT}"
+                    snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                 }
                 // Copy nbm files to local update center
-                sh "mkdir -p /local-update-center/${deployDirName}"
-                sh "cp *-kit/target/netbeans_site/* /local-update-center/${deployDirName}"
-                // Create updated snap image
-                sh "echo FROM snap-build-server.tilaa.cloud/snap:${snapMajorVersion}.x > /local-update-center/${deployDirName}/Dockerfile"
-                sh "echo 'ADD ./*.nbm /local-update-center/' >> /local-update-center/${deployDirName}/Dockerfile"
-                sh "echo ADD ./updates.xml /local-update-center/ >> /local-update-center/${deployDirName}/Dockerfile"
-                sh "echo 'RUN /home/snap/snap/bin/snap --nosplash --nogui --modules --refresh --update-all' >> /local-update-center/${deployDirName}/Dockerfile"
-                sh "more /local-update-center/${deployDirName}/Dockerfile"
-                sh "cd /local-update-center/${deployDirName}/ && docker build . -t snap-build-server.tilaa.cloud/snap:${snapVersion}-${env.GIT_COMMIT}"
-                sh "docker push snap-build-server.tilaa.cloud/snap:${snapVersion}-${env.GIT_COMMIT}"
+                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ /local-update-center/${deployDirName} ${dockerName} ${env.JOB_NAME}"
             }
         }
         stage('Pre-release') {
             agent any
             when {
                 expression {
-                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
+                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/" || "${env.GIT_BRANCH}" == "testJenkins_validation";
                 }
             }
             steps {
                 script {
                     // Get snap version from .nbm file name
-                    snapVersion = "${env.GIT_BRANCH}"
+                    toolVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
+                    branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2").trim()
+                    dockerName = "${env.JOB_NAME}:${branchVersion}"
+                    snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
+                    deployDirName = "${env.JOB_NAME}-${snapMajorVersion}.x"
+                    nbmSrcDirName = "nbm-${env.GIT_COMMIT}"
                 }
                 echo "Pre release from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
-                sh "docker tag snap-build-server.tilaa.cloud/snap:${snapVersion}-${env.GIT_COMMIT} snap-build-server.tilaa.cloud/snap:${snapVersion}"
+                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ /local-update-center/${deployDirName} ${dockerName} ${env.JOB_NAME}"
             }
         }
         stage ('Starting GPT Tests') {
@@ -85,9 +82,9 @@ pipeline {
             steps {
                 script {
                     // Get snap version from .nbm file name
-                    snapVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
+                    toolVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
                 }
-                build job: 'snap-gpt-tests/master', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: "${env.GIT_COMMIT}"],[$class: 'StringParameterValue', name: 'snapVersion', value: "${snapVersion}"]]
+                build job: 'snap-gpt-tests/master', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: "${env.GIT_COMMIT}"],[$class: 'StringParameterValue', name: 'toolVersion', value: "${toolVersion}"]]
             }
         }
     }
