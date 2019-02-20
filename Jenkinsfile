@@ -78,6 +78,10 @@ pipeline {
                 }
             }
             steps {
+                script {
+                    // Get snap version from .nbm file name
+                    snapVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
+                }
                 build job: 'snap-gpt-tests', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: ${env.GIT_COMMIT}],[$class: 'StringParameterValue', name: 'snapVersion', value: ${snapVersion}]]
             }
         }
