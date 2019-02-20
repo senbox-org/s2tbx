@@ -34,8 +34,9 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.ProductUtils;
 
-import java.awt.Color;
+import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -147,6 +148,8 @@ public abstract class BaseIndexOp extends Operator {
         String name = getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
+        ProductUtils.copyTimeInformation(sourceProduct, targetProduct);
+
         final GeoCoding sceneGeoCoding = sourceProduct.getSceneGeoCoding();
         if (sceneGeoCoding instanceof TiePointGeoCoding) {
             for (TiePointGrid tiePointGrid : sourceProduct.getTiePointGrids()) {
