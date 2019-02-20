@@ -32,7 +32,7 @@ pipeline {
                     //launchUnitTests = "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/"
                 //}
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=${launchUnitTests}'
+                // sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=${launchUnitTests}'
             }
         }
         stage('Deploy') {
@@ -74,7 +74,7 @@ pipeline {
             agent any
             when {
                 expression {
-                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/";
+                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/" || "${env.GIT_BRANCH}" == "testJenkins_validation";
                 }
             }
             steps {
