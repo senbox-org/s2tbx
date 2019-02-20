@@ -47,7 +47,7 @@ public class IkonosComponent {
     /**
      * Transform UTM format (ex: UTM_34N) to EPSG
      */
-    public static String decodeUTMtoEPSG(String crsCode){
+    public static String decodeUTMtoEPSG(final String crsCode){
         String tempCrsCode = null;
         if(crsCode.contains("N")){
             tempCrsCode = "EPSG:326";

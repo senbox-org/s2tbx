@@ -15,11 +15,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class IkonosMetadata extends XmlMetadata {
+
+    private static final Logger logger = Logger.getLogger(IkonosMetadata.class.getName());
 
     private static final int BUFFER_SIZE = 4096;
     private IkonosComponent component;
@@ -38,7 +42,7 @@ public class IkonosMetadata extends XmlMetadata {
         }
     }
 
-    public IkonosMetadata(String name) {
+    public IkonosMetadata(final String name) {
         super(name);
     }
 
@@ -49,7 +53,7 @@ public class IkonosMetadata extends XmlMetadata {
      * @return IkonosMetadata object
      * @throws IOException
      */
-    public static IkonosMetadata create(Path path) throws IOException {
+    public static IkonosMetadata create(final Path path) throws IOException {
         Assert.notNull(path);
         IkonosMetadata result = null;
 
@@ -60,13 +64,13 @@ public class IkonosMetadata extends XmlMetadata {
             result.setFileName(path.getFileName().toString());
             String directoryName = IkonosConstants.PATH_ZIP_FILE_NAME_PATTERN;
 
-            String tiePointGridPointsString = result.getAttributeValue(IkonosConstants.PATH_TIE_POINT_GRID, null);
-            String crsCode = result.getAttributeValue(IkonosConstants.PATH_CRS_NAME, null);
+            final String tiePointGridPointsString = result.getAttributeValue(IkonosConstants.PATH_TIE_POINT_GRID, null);
+            final String crsCode = result.getAttributeValue(IkonosConstants.PATH_CRS_NAME, null);
 
-            String originPos = result.getAttributeValue(IkonosConstants.PATH_ORIGIN, null);
+            final String originPos = result.getAttributeValue(IkonosConstants.PATH_ORIGIN, null);
 
             if (directoryName != null) {
-                IkonosComponent component = new IkonosComponent(path.getParent());
+                final IkonosComponent component = new IkonosComponent(path.getParent());
                 if (tiePointGridPointsString != null) {
                     component.setTiePointGridPoints(parseTiePointGridAttribute(tiePointGridPointsString));
                 }
@@ -80,7 +84,7 @@ public class IkonosMetadata extends XmlMetadata {
                 result.component = component;
             }
         } catch (ParserConfigurationException | SAXException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
         return result;
     }
@@ -91,10 +95,9 @@ public class IkonosMetadata extends XmlMetadata {
      *
      * @param tiePointGridPointsString the tie point grid from metadata file to be parsed
      */
-    private static float[][] parseTiePointGridAttribute(String tiePointGridPointsString) {
-        String[] values;
-        values = tiePointGridPointsString.split(" ");
-        float[][] tiePoint = new float[2][values.length / 2 - 1];
+    private static float[][] parseTiePointGridAttribute(final String tiePointGridPointsString) {
+        final String[] values = tiePointGridPointsString.split(" ");
+        final float[][] tiePoint = new float[2][values.length / 2 - 1];
         for (int x = 0; x < 8; x += 2) {
             tiePoint[0][x / 2] = Float.parseFloat(values[x]);
             tiePoint[1][x / 2] = Float.parseFloat(values[x + 1]);
@@ -223,15 +226,15 @@ public class IkonosMetadata extends XmlMetadata {
      *
      * @param path path to image zip files
      */
-    public void unZipImageFiles(String path) {
+    public void unZipImageFiles(final String path) {
         try {
-            File tempImageFile = VirtualDir.createUniqueTempDir();
+            final File tempImageFile = VirtualDir.createUniqueTempDir();
             this.imageDirectoryPath = tempImageFile.getPath();
             byte[] buffer;
-            Path directoryFilePath = Paths.get(this.getImageDirectoryPath());
+            final Path directoryFilePath = Paths.get(this.getImageDirectoryPath());
             try (ZipFile zipFile = new ZipFile(path)) {
                 ZipEntry entry;
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                final Enumeration<? extends ZipEntry> entries = zipFile.entries();
                 while (entries.hasMoreElements()) {
                     entry = entries.nextElement();
                     Path filePath = directoryFilePath.resolve(entry.getName());
@@ -263,7 +266,7 @@ public class IkonosMetadata extends XmlMetadata {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+           logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -272,12 +275,12 @@ public class IkonosMetadata extends XmlMetadata {
      *
      * @param path path to image gzip files
      */
-    public void unGZipImageFiles(String path) {
+    public void unGZipImageFiles(final String path) {
         try {
-            Path directoryFilePath = Paths.get(this.getImageDirectoryPath());
+            final Path directoryFilePath = Paths.get(this.getImageDirectoryPath());
             if (path.endsWith(IkonosConstants.IMAGE_ARCHIVE_EXTENSION)) {
                 try (GZIPInputStream in = new GZIPInputStream(new FileInputStream(path))) {
-                    File outFile = new File(directoryFilePath.resolve(path).toString().substring(0, path.lastIndexOf(".")));
+                    final File outFile = new File(directoryFilePath.resolve(path).toString().substring(0, path.lastIndexOf(".")));
                     try (FileOutputStream out = new FileOutputStream(outFile)) {
                         byte[] buffer = new byte[1024];
                         int len;
@@ -288,7 +291,7 @@ public class IkonosMetadata extends XmlMetadata {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -297,15 +300,15 @@ public class IkonosMetadata extends XmlMetadata {
      */
     public void createBandMetadata() {
         this.bandMetadatas = new ArrayList<>();
-        String imageDirectoryName = this.component.getImageDirectoryName();
-        Path folderPath = Paths.get(this.getImageDirectoryPath()).resolve(imageDirectoryName.substring(0, imageDirectoryName.lastIndexOf(".")));
+        final String imageDirectoryName = this.component.getImageDirectoryName();
+        final Path folderPath = Paths.get(this.getImageDirectoryPath()).resolve(imageDirectoryName.substring(0, imageDirectoryName.lastIndexOf(".")));
 
-        File imageDirectory = folderPath.toFile();
-        HashMap<String, Double> metadataInformationList = new HashMap<String, Double>();
-        for (final File fileEntry : imageDirectory.listFiles()) {
+        final File imageDirectory = folderPath.toFile();
+        final Map<String, Double> metadataInformationList = new HashMap<>();
+        for (File fileEntry : imageDirectory.listFiles()) {
             if (fileEntry.getName().endsWith(IkonosConstants.IMAGE_METADATA_EXTENSION)) {
-                String fileEntryName = fileEntry.getName();
-                BandMetadata bandMetadata = new BandMetadata(fileEntryName.substring(0, fileEntryName.lastIndexOf(".")));
+                final String fileEntryName = fileEntry.getName();
+                final BandMetadata bandMetadata = new BandMetadata(fileEntryName.substring(0, fileEntryName.lastIndexOf(".")));
                 parseIMGMetadataFile(fileEntry, bandMetadata);
                 this.bandMetadatas.add(bandMetadata);
             } else if (fileEntry.getName().endsWith(IkonosConstants.IMAGE_COMMON_METADATA_EXTENSION)) {
@@ -333,65 +336,61 @@ public class IkonosMetadata extends XmlMetadata {
      * @param fileEntry   band metadata file to be parsed
      * @param imgMetadata reference to band metadata object to be filled
      */
-    private void parseIMGMetadataFile(File fileEntry, BandMetadata imgMetadata) {
-        try (FileInputStream in = new FileInputStream(fileEntry)) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+    private void parseIMGMetadataFile(final File fileEntry, final BandMetadata imgMetadata) {
+        try (final FileInputStream in = new FileInputStream(fileEntry)) {
+            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
                 String line = reader.readLine();
                 while (line != null) {
                     if (line.startsWith(IkonosConstants.TAG_BITS_PER_PIXEL)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         imgMetadata.setBitsPerPixel(Integer.parseInt(splitLine[1]));
                     } else if (line.startsWith(IkonosConstants.TAG_NUMBER_COLUMNS_IMAGE)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         imgMetadata.setNumColumns(Integer.parseInt(splitLine[1]));
                     } else if (line.startsWith(IkonosConstants.TAG_NUMBER_ROWS_IMAGE)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         imgMetadata.setNumLines(Integer.parseInt(splitLine[1]));
                     } else if (line.startsWith(IkonosConstants.TAG_PIXEL_SIZE_X)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         imgMetadata.setPixelSizeX(Double.parseDouble(splitLine[3]));
                     } else if (line.startsWith(IkonosConstants.TAG_PIXEL_SIZE_Y)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         imgMetadata.setPixelSizeY(Double.parseDouble(splitLine[3]));
                     }
                     line = reader.readLine();
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
-    private void parseMetadataFile(File fileEntry, HashMap<String, Double> metadataInformationList) {
-        try (FileInputStream in = new FileInputStream(fileEntry)) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+    private void parseMetadataFile(final File fileEntry, final Map<String, Double> metadataInformationList) {
+        try (final FileInputStream in = new FileInputStream(fileEntry)) {
+            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
                 String line = reader.readLine();
                 while (line != null) {
                     if (line.startsWith(IkonosConstants.TAG_NOMINAL_AZIMUTH)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         metadataInformationList.put(IkonosConstants.TAG_NOMINAL_AZIMUTH, Double.parseDouble(splitLine[3]));
                     } else if (line.startsWith(IkonosConstants.TAG_NOMINAL_ELEVATION)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         metadataInformationList.put(IkonosConstants.TAG_NOMINAL_ELEVATION, Double.parseDouble(splitLine[3]));
                     } else if (line.startsWith(IkonosConstants.TAG_SUN_ANGLE_ELEVATION)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         metadataInformationList.put(IkonosConstants.TAG_SUN_ANGLE_ELEVATION, Double.parseDouble(splitLine[3]));
                     } else if (line.startsWith(IkonosConstants.TAG_SUN_ANGLE_AZIMUTH)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         metadataInformationList.put(IkonosConstants.TAG_SUN_ANGLE_AZIMUTH, Double.parseDouble(splitLine[3]));
                     } else if (line.startsWith(IkonosConstants.TAG_ORDER_PIXEL_SIZE)) {
-                        String[] splitLine = line.split("\\s");
+                        final String[] splitLine = line.split("\\s");
                         metadataInformationList.put(IkonosConstants.TAG_ORDER_PIXEL_SIZE, Double.parseDouble(splitLine[4]));
                     }
                     line = reader.readLine();
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 

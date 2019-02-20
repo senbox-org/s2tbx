@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -26,23 +27,23 @@ import java.util.logging.Logger;
  */
 public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
+    private static final Logger logger = Logger.getLogger(MosaicMultiLevelSource.class.getName());
+
     private final Band sourceBand;
     private final int imageWidth;
     private final int imageHeight;
     private final int tileWidth;
     private final int tileHeight;
-    private final Logger logger;
 
-    public MosaicMultiLevelSource(Band sourceBand, int imageWidth, int imageHeight,
-                                  int tileWidth, int tileHeight, int levels,
-                                  AffineTransform transform) {
+    public MosaicMultiLevelSource(final Band sourceBand, final int imageWidth, final int imageHeight,
+                                  final int tileWidth, final int tileHeight, final int levels,
+                                  final AffineTransform transform) {
         super(new DefaultMultiLevelModel(levels, transform, imageWidth, imageHeight));
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
         this.sourceBand = sourceBand;
-        this.logger = Logger.getLogger(MosaicMultiLevelSource.class.getName());
     }
 
     private PlanarImage createTileImage(final int level) throws IOException {
@@ -50,7 +51,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
     }
 
     @Override
-    protected RenderedImage createImage(int level) {
+    protected RenderedImage createImage(final int level) {
         final List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>());
         PlanarImage opImage;
         try {
@@ -63,6 +64,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
                         null);
             }
         } catch (IOException ex) {
+            logger.log(Level.WARNING, ex.getMessage(), ex);
             opImage = ConstantDescriptor.create((float) tileWidth, (float) tileHeight, new Number[]{0}, null);
         }
         tileImages.add(opImage);
@@ -71,7 +73,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
             return null;
         }
 
-        ImageLayout imageLayout = new ImageLayout();
+        final ImageLayout imageLayout = new ImageLayout();
         imageLayout.setMinX(0);
         imageLayout.setMinY(0);
         imageLayout.setTileWidth(JAI.getDefaultTileSize().width);
@@ -106,9 +108,9 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         System.gc();
     }
 
-    private int scaleValue(int source, int level) {
+    private int scaleValue(final int source, final int level) {
         int size = source >> level;
-        int sizeTest = size << level;
+        final int sizeTest = size << level;
         if (sizeTest < source) {
             size++;
         }

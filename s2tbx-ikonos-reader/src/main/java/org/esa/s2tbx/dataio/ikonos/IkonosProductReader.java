@@ -41,7 +41,6 @@ import java.util.regex.Pattern;
  */
 
 public class IkonosProductReader extends AbstractProductReader {
-    private static final Logger logger = Logger.getLogger(IkonosProductReader.class.getName());
 
     private VirtualDirEx productDirectory;
     private Product product;
@@ -55,7 +54,7 @@ public class IkonosProductReader extends AbstractProductReader {
      * @param readerPlugIn the reader plug-in which created this reader, can be {@code null} for internal reader
      *                     implementations
      */
-    protected IkonosProductReader(ProductReaderPlugIn readerPlugIn) {
+    protected IkonosProductReader(final ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
 
@@ -65,9 +64,9 @@ public class IkonosProductReader extends AbstractProductReader {
      * @param path path to file/directory
      * @return return true if successful
      */
-    private static boolean deleteDirectory(File path) {
+    private static boolean deleteDirectory(final File path) {
         if (path.exists()) {
-            File[] files = path.listFiles();
+            final File[] files = path.listFiles();
             if (files != null) {
                 for (File file : files) {
                     if (file.isDirectory()) {
@@ -83,11 +82,11 @@ public class IkonosProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        IkonosProductReaderPlugin readerPlugin = (IkonosProductReaderPlugin) getReaderPlugIn();
+        final IkonosProductReaderPlugin readerPlugin = (IkonosProductReaderPlugin) getReaderPlugIn();
         final File inputFile = getInputFile();
         this.productDirectory = readerPlugin.getInput(getInput());
         this.tiffProduct = new ArrayList<>();
-        String productFilePath = this.productDirectory.getBasePath();
+        final String productFilePath = this.productDirectory.getBasePath();
         String fileName;
         //product file name differs from archive file name
         if (this.productDirectory.isCompressed()) {
@@ -102,22 +101,22 @@ public class IkonosProductReader extends AbstractProductReader {
 
             this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + IkonosConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
 
-            String dir = metadata.getImageDirectoryPath();
-            File[] imageDirectoryFileList = new File(dir).listFiles();
+            final String dir = metadata.getImageDirectoryPath();
+            final File[] imageDirectoryFileList = new File(dir).listFiles();
             Matcher matcher = Pattern.compile(IkonosConstants.PATH_ZIP_FILE_NAME_PATTERN).matcher(imageDirectoryFileList[0].getName());
             String imageDirectoryName = null;
             while (matcher.find()) {
-                imageDirectoryName = matcher.group().toString();
+                imageDirectoryName = matcher.group();
             }
 
             this.metadata.getMetadataComponent().setImageDirectoryName(imageDirectoryName + ".ZIP");
 
             this.metadata.createBandMetadata();
 
-            List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
-            BandMetadataUtil bUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
-            int width = bUtil.getMaxNumColumns();
-            int height = bUtil.getMaxNumLines();
+            final List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
+            final BandMetadataUtil bUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
+            final int width = bUtil.getMaxNumColumns();
+            final int height = bUtil.getMaxNumLines();
             this.product = new Product(this.metadata.getProductName(), IkonosConstants.PRODUCT_GENERIC_NAME, width, height);
             this.product.setStartTime(this.metadata.getProductStartTime());
             this.product.setEndTime(this.metadata.getProductEndTime());
@@ -126,16 +125,16 @@ public class IkonosProductReader extends AbstractProductReader {
             this.product.setFileLocation(inputFile);
             this.product.setProductReader(this);
 
-            String dirPath = this.metadata.getImageDirectoryPath();
-            String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
-            String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
+            final String dirPath = this.metadata.getImageDirectoryPath();
+            final String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
+            final String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
             int levels;
             Double bandGainPan = 0.0;
             for (BandMetadata aBandMetadataList : bandMetadataList) {
-                String imageFileName = aBandMetadataList.getImageFileName();
+                final String imageFileName = aBandMetadataList.getImageFileName();
                 this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + IkonosConstants.IMAGE_EXTENSION).toFile()));
                 this.tiffImageIndex++;
-                Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
+                final Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
                 if (this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding() == null &&
                         this.product.getSceneGeoCoding() == null) {
                     initProductTiePointGeoCoding(this.metadata, this.product);
@@ -168,13 +167,13 @@ public class IkonosProductReader extends AbstractProductReader {
                 if (bandName == null) {
                     bandName = IkonosConstants.BAND_NAMES[4];
                     bandGain = bandGainPan / (IkonosConstants.BAND_NAMES.length - 1);
-                    GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
+                    final GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
                     if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
                         this.product.setSceneGeoCoding(bandGeoCoding);
                     }
                 }
 
-                Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
+                final Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
                 targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
                 targetBand.setSpectralWavelength(band.getSpectralWavelength());
                 targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
@@ -189,14 +188,14 @@ public class IkonosProductReader extends AbstractProductReader {
                     targetBand.setGeoCoding(band.getGeoCoding());
                 } else {
                     if (width != band.getRasterWidth()) {
-                        AffineTransform2D transform2D =
+                        final AffineTransform2D transform2D =
                                 new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
                                                       (float) height / band.getRasterHeight(), 0.0, 0.0);
                         targetBand.setGeoCoding(addTiePointGridGeo(this.metadata, targetBand));
                         targetBand.setImageToModelTransform(transform2D);
                     }
                 }
-                MosaicMultiLevelSource bandSource =
+                final MosaicMultiLevelSource bandSource =
                         new MosaicMultiLevelSource(band,
                                                    band.getRasterWidth(), band.getRasterHeight(),
                                                    tileSize.width, tileSize.height,
@@ -228,25 +227,25 @@ public class IkonosProductReader extends AbstractProductReader {
      * @param ikonosMetadata IkonosMetadata parameter
      * @param product        Product to add TiePointGrid and TiePointGridGeoCoding
      */
-    private void initProductTiePointGeoCoding(IkonosMetadata ikonosMetadata, Product product) {
+    private void initProductTiePointGeoCoding(final IkonosMetadata ikonosMetadata, final Product product) {
         float[][] cornerLonsLats = ikonosMetadata.getMetadataComponent().getTiePointGridPoints();
-        int sceneWidth = product.getSceneRasterWidth();
-        int sceneHeight = product.getSceneRasterHeight();
-        TiePointGrid latGrid = createTiePointGrid(IkonosConstants.LAT_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
+        final int sceneWidth = product.getSceneRasterWidth();
+        final int sceneHeight = product.getSceneRasterHeight();
+        final TiePointGrid latGrid = createTiePointGrid(IkonosConstants.LAT_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
         product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = createTiePointGrid(IkonosConstants.LON_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
+        final TiePointGrid lonGrid = createTiePointGrid(IkonosConstants.LON_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
         product.addTiePointGrid(lonGrid);
         if (latGrid != null && lonGrid != null) {
             product.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
         }
     }
 
-    private GeoCoding addTiePointGridGeo(IkonosMetadata metadata, Band targetBand) {
-        float[][] cornerLonsLats = metadata.getMetadataComponent().getTiePointGridPoints();
-        int sceneWidth = targetBand.getRasterWidth();
-        int sceneHeight = targetBand.getRasterHeight();
-        TiePointGrid latGrid = createTiePointGrid(IkonosConstants.LAT_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
-        TiePointGrid lonGrid = createTiePointGrid(IkonosConstants.LON_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
+    private GeoCoding addTiePointGridGeo(final IkonosMetadata metadata, final Band targetBand) {
+        final float[][] cornerLonsLats = metadata.getMetadataComponent().getTiePointGridPoints();
+        final int sceneWidth = targetBand.getRasterWidth();
+        final int sceneHeight = targetBand.getRasterHeight();
+        final TiePointGrid latGrid = createTiePointGrid(IkonosConstants.LAT_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
+        final TiePointGrid lonGrid = createTiePointGrid(IkonosConstants.LON_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
