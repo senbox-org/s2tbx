@@ -67,7 +67,12 @@ pipeline {
                 }
             }
             steps {
+                script {
+                    // Get snap version from .nbm file name
+                    snapVersion = "${env.GIT_BRANCH}"
+                }
                 echo "Pre release from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
+                sh "docker tag snap-build-server.tilaa.cloud/snap:${snapVersion}-${env.GIT_COMMIT} snap-build-server.tilaa.cloud/snap:${snapVersion}"
             }
         }
         stage ('Starting GPT Tests') {
@@ -82,7 +87,7 @@ pipeline {
                     // Get snap version from .nbm file name
                     snapVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
                 }
-                build job: 'snap-gpt-tests', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: "${env.GIT_COMMIT}"],[$class: 'StringParameterValue', name: 'snapVersion', value: "${snapVersion}"]]
+                build job: 'snap-gpt-tests/master', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: "${env.GIT_COMMIT}"],[$class: 'StringParameterValue', name: 'snapVersion', value: "${snapVersion}"]]
             }
         }
     }
