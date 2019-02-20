@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.alosPRI;
 
-import org.esa.s2tbx.dataio.alosPRI.internal.AlosPRIConstants;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.TreeNode;

@@ -163,7 +163,8 @@ public class ImageMetadata extends XmlMetadata {
     }
 
     public int getPixelDataType() {
-        int retVal, value = 8;
+        int retVal;
+        int value = 8;
         try {
             value = Integer.parseInt(getAttributeValue(AlosPRIConstants.PATH_IMG_NBITS, "8"));
         } catch (NumberFormatException e) {

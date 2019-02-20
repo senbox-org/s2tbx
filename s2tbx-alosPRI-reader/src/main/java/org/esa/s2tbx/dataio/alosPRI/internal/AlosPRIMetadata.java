@@ -15,11 +15,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -193,7 +189,7 @@ public class AlosPRIMetadata extends XmlMetadata {
                             try (InputStream inputStream = zipFile.getInputStream(entry)) {
                                 try (BufferedOutputStream outputStream = new BufferedOutputStream(
                                         new FileOutputStream(filePath.toFile()))) {
-                                    buffer = new byte[this.BUFFER_SIZE];
+                                    buffer = new byte[AlosPRIMetadata.BUFFER_SIZE];
                                     int read;
                                     while ((read = inputStream.read(buffer)) > 0) {
                                         outputStream.write(buffer, 0, read);
@@ -271,8 +267,8 @@ public class AlosPRIMetadata extends XmlMetadata {
                 .get();
     }
 
-    public HashMap<String, Float[]> bandOffset() {
-        HashMap<String, Float[]> bandOffset = new HashMap<>();
+    public Map<String, Float[]> bandOffset() {
+        Map<String, Float[]> bandOffset = new HashMap<>();
         for (ImageMetadata imageMetadata : componentMetadata) {
             float originX = (imageMetadata.getInsertPointX() - upperLeftPointOrigin.x) / imageMetadata.getPixelSizeX();
             float originY = (upperLeftPointOrigin.y - imageMetadata.getInsertPointY()) / imageMetadata.getPixelSizeY();
@@ -305,7 +301,7 @@ public class AlosPRIMetadata extends XmlMetadata {
         return upperLeftPointOrigin;
     }
 
-    public HashMap<String, Float> getMaxPoint() {
+    public Map<String, Float> getMaxPoint() {
         ArrayList<Float> maxPointXList = new ArrayList<>();
         ArrayList<Float> maxPointYList = new ArrayList<>();
         for (ImageMetadata metadata : componentMetadata) {
@@ -324,7 +320,7 @@ public class AlosPRIMetadata extends XmlMetadata {
         float[][] maxCornerValue = new float[2][4];
         for (ImageMetadata metadata : componentMetadata) {
             float[][] cornerLats = metadata.getCornerLonsLats();
-            if (maxCornerValue[0][0] == 0) {
+            if (Float.floatToIntBits(maxCornerValue[0][0]) == 0) {
                 maxCornerValue = cornerLats;
             } else {
                 if (maxCornerValue[0][0] < cornerLats[0][0]) {

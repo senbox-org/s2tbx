@@ -19,7 +19,7 @@ public class AlosPRIProductReaderPlugin extends BaseProductReaderPlugIn {
     private static final String COLOR_PALETTE_FILE_NAME = "AlosPRI_color_palette.cpd";
 
     public AlosPRIProductReaderPlugin() {
-        super("org/esa/s2tbx/dataio/alosPRI/" + AlosPRIProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+        super("org/esa/s2tbx/dataio/alospri/" + AlosPRIProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
     }
 
     @Override

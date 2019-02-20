@@ -84,26 +84,38 @@ public class AlosPRIProductReader extends AbstractProductReader {
             if (productDirectory.isCompressed()) {
                 this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
                 productDirectory = VirtualDirEx.create(new File(metadata.getImageDirectoryPath()));
-                productDirectory.setFolderDepth(4);
+                if (productDirectory != null)
+                {
+                    productDirectory.setFolderDepth(4);
+                }
+
             } else {
                 productDirectory.setFolderDepth(4);
                 if (productDirectory.exists(fileName)) {
                     productDirectory = VirtualDirEx.create(new File(inputFile.getAbsolutePath().substring(0, inputFile.getAbsolutePath().indexOf(AlosPRIConstants.METADATA_FILE_SUFFIX))));
-                    productDirectory.setFolderDepth(4);
+                    if (productDirectory != null)
+                    {
+                        productDirectory.setFolderDepth(4);
+                    }
 
                 } else {
                     this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
                     productDirectory = VirtualDirEx.create(new File(metadata.getImageDirectoryPath()));
-                    productDirectory.setFolderDepth(4);
+                    if (productDirectory != null)
+                    {
+                        productDirectory.setFolderDepth(4);
+                    }
                 }
             }
-            for (String file : productDirectory.listAllFiles()) {
-                if (file.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION)) {
-                    metadata.addComponentMetadata(productDirectory.getFile(file));
+            if (productDirectory != null) {
+                for (String file : productDirectory.listAllFiles()) {
+                    if (file.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION)) {
+                        metadata.addComponentMetadata(productDirectory.getFile(file));
+                    }
                 }
             }
             List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
-            if (imageMetadataList.size() == 0) {
+            if (imageMetadataList.isEmpty()) {
                 throw new IOException("No raster found");
             }
 
@@ -144,7 +156,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
 
                 this.tiffProduct.add(ProductIO.readProduct(rasterFile));
                 this.tiffImageIndex++;
-                Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
+                final Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
 
                 levels = band.getSourceImage().getModel().getLevelCount();
                 final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
@@ -177,8 +189,8 @@ public class AlosPRIProductReader extends AbstractProductReader {
         return this.product;
     }
 
-    private void addMasks(Product target, ImageMetadata metadata) {
-        ProductNodeGroup<Mask> maskGroup = target.getMaskGroup();
+    private void addMasks(final Product target, final ImageMetadata metadata) {
+        final ProductNodeGroup<Mask> maskGroup = target.getMaskGroup();
         if (!maskGroup.contains(AlosPRIConstants.NODATA)) {
             int noDataValue = metadata.getNoDataValue();
             maskGroup.add(Mask.BandMathsType.create(AlosPRIConstants.NODATA, AlosPRIConstants.NODATA,
@@ -193,32 +205,32 @@ public class AlosPRIProductReader extends AbstractProductReader {
         }
     }
 
-    private void initProductTiePointGeoCoding(Product product, float offsetX, float offsetY) {
-        float[][] cornerLonsLats = metadata.getMaxCorners();
-        int sceneWidth = product.getSceneRasterWidth();
-        int sceneHeight = product.getSceneRasterHeight();
-        TiePointGrid latGrid = createTiePointGrid(AlosPRIConstants.LAT_DS_NAME, 2, 2, offsetX, offsetY, sceneWidth, sceneHeight, cornerLonsLats[1]);
+    private void initProductTiePointGeoCoding(final Product product, final float offsetX, final float offsetY) {
+        final float[][] cornerLonsLats = metadata.getMaxCorners();
+        final int sceneWidth = product.getSceneRasterWidth();
+        final int sceneHeight = product.getSceneRasterHeight();
+        final TiePointGrid latGrid = createTiePointGrid(AlosPRIConstants.LAT_DS_NAME, 2, 2, offsetX, offsetY, sceneWidth, sceneHeight, cornerLonsLats[1]);
         product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = createTiePointGrid(AlosPRIConstants.LON_DS_NAME, 2, 2, offsetX, offsetY, sceneWidth, sceneHeight, cornerLonsLats[0]);
+        final TiePointGrid lonGrid = createTiePointGrid(AlosPRIConstants.LON_DS_NAME, 2, 2, offsetX, offsetY, sceneWidth, sceneHeight, cornerLonsLats[0]);
         product.addTiePointGrid(lonGrid);
         product.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
     }
 
-    private GeoCoding addTiePointGridGeo(int width, int height, float offsetX, float offsetY) {
-        float[][] cornerLonsLats = this.metadata.getMaxCorners();
-        TiePointGrid latGrid = createTiePointGrid(AlosPRIConstants.LAT_DS_NAME, 2, 2, offsetX, offsetY, width, height, cornerLonsLats[1]);
-        TiePointGrid lonGrid = createTiePointGrid(AlosPRIConstants.LON_DS_NAME, 2, 2, offsetX, offsetY, width, height, cornerLonsLats[0]);
+    private GeoCoding addTiePointGridGeo(final int width, final int height, final float offsetX, final float offsetY) {
+        final float[][] cornerLonsLats = this.metadata.getMaxCorners();
+        final TiePointGrid latGrid = createTiePointGrid(AlosPRIConstants.LAT_DS_NAME, 2, 2, offsetX, offsetY, width, height, cornerLonsLats[1]);
+        final TiePointGrid lonGrid = createTiePointGrid(AlosPRIConstants.LON_DS_NAME, 2, 2, offsetX, offsetY, width, height, cornerLonsLats[0]);
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight) {
-        int bandWidth = imageMetadata.getRasterWidth();
-        int bandHeight = imageMetadata.getRasterHeight();
+    private void initBandGeoCoding(final ImageMetadata imageMetadata, final Band band, final int sceneWidth, final int sceneHeight) {
+        final int bandWidth = imageMetadata.getRasterWidth();
+        final int bandHeight = imageMetadata.getRasterHeight();
         GeoCoding geoCoding = null;
-        ImageMetadata.InsertionPoint insertPoint = imageMetadata.getInsertPoint();
-        String crsCode = imageMetadata.getCrsCode();
+        final ImageMetadata.InsertionPoint insertPoint = imageMetadata.getInsertPoint();
+        final String crsCode = imageMetadata.getCrsCode();
         try {
-            CoordinateReferenceSystem crs = CRS.decode(crsCode);
+            final CoordinateReferenceSystem crs = CRS.decode(crsCode);
             if (imageMetadata.hasInsertPoint()) {
                 geoCoding = new CrsGeoCoding(crs,
                                              bandWidth, bandHeight,
@@ -245,7 +257,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
      * @param input the input object
      * @return Either a new instance of File, if the input represents the file name, or the casted input File.
      */
-    protected File getFileInput(Object input) {
+    protected File getFileInput(final Object input) {
         if (input instanceof String) {
             return new File((String) input);
         } else if (input instanceof File) {
@@ -289,7 +301,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
         }
         if (this.tiffProduct != null) {
             for (Iterator<Product> iterator = this.tiffProduct.listIterator(); iterator.hasNext(); ) {
-                Product product = iterator.next();
+                final Product product = iterator.next();
                 if (product != null) {
                     product.closeIO();
                     product.dispose();
@@ -312,9 +324,9 @@ public class AlosPRIProductReader extends AbstractProductReader {
      * @param path path to file/directory
      * @return return true if successful
      */
-    private static boolean deleteDirectory(File path) {
+    private static boolean deleteDirectory(final File path) {
         if (path.exists()) {
-            File[] files = path.listFiles();
+            final File[] files = path.listFiles();
             if (files != null) {
                 for (File file : files) {
                     if (file.isDirectory()) {

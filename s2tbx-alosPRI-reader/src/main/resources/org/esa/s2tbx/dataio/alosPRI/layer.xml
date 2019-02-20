@@ -20,7 +20,7 @@
 
     <folder name="Actions">
         <folder name="Readers">
-            <file name="org-esa-s2tbx-dataio-alosPRI-ImportAlosPRIProduct.instance">
+            <file name="org-esa-s2tbx-dataio-alospri-ImportAlosPRIProduct.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="Alos PRISM"/>
@@ -35,9 +35,9 @@
             <folder name="Import">
                 <folder name="Optical Sensors">
                     <folder name="Alos PRISM">
-                        <file name="org-esa-s2tbx-dataio-alosPRI-ImportAlosPRIProduct.shadow">
+                        <file name="org-esa-s2tbx-dataio-alospri-ImportAlosPRIProduct.shadow">
                             <attr name="originalFile"
-                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-alosPRI-ImportAlosPRIProduct.instance"/>
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-alospri-ImportAlosPRIProduct.instance"/>
                         </file>
                     </folder>
                 </folder>

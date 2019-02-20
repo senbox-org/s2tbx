@@ -20,7 +20,7 @@
 
     <folder name="Actions">
         <folder name="Readers">
-            <file name="org-esa-s2tbx-dataio-alosAV2-ImportAlosAV2Product.instance">
+            <file name="org-esa-s2tbx-dataio-alosav2-ImportAlosAV2Product.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="Alos AVNIR-2"/>
@@ -35,9 +35,9 @@
             <folder name="Import">
                 <folder name="Optical Sensors">
                     <folder name="Alos AVNIR-2">
-                        <file name="org-esa-s2tbx-dataio-alosAV2-ImportAlosAV2Product.shadow">
+                        <file name="org-esa-s2tbx-dataio-alosav2-ImportAlosAV2Product.shadow">
                             <attr name="originalFile"
-                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-alosAV2-ImportAlosAV2Product.instance"/>
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-alosav2-ImportAlosAV2Product.instance"/>
                         </file>
                     </folder>
                 </folder>

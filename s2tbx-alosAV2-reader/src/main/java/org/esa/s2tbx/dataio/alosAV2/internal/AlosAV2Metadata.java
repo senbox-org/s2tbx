@@ -1,12 +1,12 @@
 package org.esa.s2tbx.dataio.alosAV2.internal;
 
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Holder class for DIMAP metadata file.
@@ -34,6 +34,7 @@ public class AlosAV2Metadata extends XmlMetadata {
         return name;
     }
 
+    @Override
     public String getProductDescription() {
         return AlosAV2Constants.DESCRIPTION;
     }
@@ -128,9 +129,9 @@ public class AlosAV2Metadata extends XmlMetadata {
         return names;
     }
 
-    public HashMap<String, String> getBandUnits() {
-        int nBands = getNumBands();
-        HashMap<String,String> units = new HashMap<>();
+    public Map<String, String> getBandUnits() {
+        final int nBands = getNumBands();
+        final Map<String,String> units = new HashMap<>();
         for (int i = 0; i < nBands; i++) {
             units.put(getBandNames()[i],getAttributeValue(AlosAV2Constants.PATH_BAND_UNIT, i, AlosAV2Constants.DEFAULT_UNIT));
         }
@@ -162,9 +163,9 @@ public class AlosAV2Metadata extends XmlMetadata {
     public Color getNoDataColor() {
         Color color;
         try {
-            int red = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.NODATA, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, AlosAV2Constants.STRING_ZERO)));
-            int green = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.NODATA, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, AlosAV2Constants.STRING_ZERO)));
-            int blue = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.NODATA, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_BLUE_LEVEL, AlosAV2Constants.STRING_ZERO)));
+            final int red = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.NODATA, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, AlosAV2Constants.STRING_ZERO)));
+            final int green = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.NODATA, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, AlosAV2Constants.STRING_ZERO)));
+            final int blue = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.NODATA, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_BLUE_LEVEL, AlosAV2Constants.STRING_ZERO)));
             color = new Color(red, green, blue);
         } catch (NumberFormatException e) {
             color = Color.BLACK;
@@ -185,9 +186,9 @@ public class AlosAV2Metadata extends XmlMetadata {
     public Color getSaturatedColor() {
         Color color;
         try {
-            int red = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.SATURATED, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, AlosAV2Constants.STRING_ZERO)));
-            int green = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.SATURATED, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, AlosAV2Constants.STRING_ZERO)));
-            int blue = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.SATURATED, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_BLUE_LEVEL, AlosAV2Constants.STRING_ZERO)));
+            final int red = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.SATURATED, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, AlosAV2Constants.STRING_ZERO)));
+            final int green = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.SATURATED, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, AlosAV2Constants.STRING_ZERO)));
+            final int blue = (int) (AlosAV2Constants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(AlosAV2Constants.PATH_IMG_SPECIAL_VALUE_TEXT, AlosAV2Constants.SATURATED, AlosAV2Constants.PATH_SPECIAL_VALUE_COLOR_BLUE_LEVEL, AlosAV2Constants.STRING_ZERO)));
             color = new Color(red, green, blue);
         } catch (NumberFormatException e) {
             color = Color.WHITE;
@@ -205,14 +206,14 @@ public class AlosAV2Metadata extends XmlMetadata {
     }
 
 
-    public float getGain(String bandName) {
+    public float getGain(final String bandName) {
         if (bandGains == null) {
             extractGainsAndBiases();
         }
         return bandGains.get(bandName);
     }
 
-    public float getBias(String bandName) {
+    public float getBias(final String bandName) {
         if (bandBiases == null) {
             extractGainsAndBiases();
         }
@@ -221,7 +222,7 @@ public class AlosAV2Metadata extends XmlMetadata {
 
     private void extractGainsAndBiases() {
         if (bandGains == null || bandBiases == null) {
-            int nBands = getNumBands();
+            final int nBands = getNumBands();
             bandGains = new HashMap<>();
             // we extract both, because they are used in conjunction
             bandBiases = new HashMap<>();
@@ -272,7 +273,8 @@ public class AlosAV2Metadata extends XmlMetadata {
     }
 
     public int getPixelDataType() {
-        int retVal, value = 8;
+        int retVal;
+        int value = 8;
         try {
             value = Integer.parseInt(getAttributeValue(AlosAV2Constants.PATH_IMG_NBITS, "8"));
         } catch (NumberFormatException e) {
