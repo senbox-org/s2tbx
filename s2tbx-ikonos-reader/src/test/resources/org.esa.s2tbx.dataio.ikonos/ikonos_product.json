@@ -1,0 +1,191 @@
+{
+  "id": "ikonos_product",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 4101,
+    "sceneHeight": 3983,
+    "geoCoding": {
+      "coordinates": [
+        {
+          "x": 768674.54,
+          "y": 4222746.57,
+          "lat": 38.1126560000,
+          "lon": 23.9046830000
+        },
+        {
+          "x": 768912.56,
+          "y": 4218353.79,
+          "lat": 38.1120740000,
+          "lon": 23.9844950000
+        },
+        {
+          "x": 769153.63,
+          "y": 4214171.25,
+          "lat": 38.1126100000,
+          "lon": 24.0645090000
+        }
+      ]
+    },
+    "bands": [
+      {
+        "name": "1",
+        //blue
+        "noDataValue": "0.0",
+        "bandWidth": 4101,
+        "bandHeight": 3983,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 21,
+            "y": 22,
+            "value": 0.46580
+          },
+          {
+            "x": 87,
+            "y": 87,
+            "value": 0.47265
+          },
+          {
+            "x": 166,
+            "y": 182,
+            "value": 0.43018          }
+        ]
+      },
+      {
+        "name": "2",
+        //green
+        "noDataValue": "0.0",
+        "bandWidth": 4101,
+        "bandHeight": 3983,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 21,
+            "y": 22,
+            "value": 0.53430
+          },
+          {
+            "x": 87,
+            "y": 87,
+            "value": 0.57677
+          },
+          {
+            "x": 166,
+            "y": 182,
+            "value": 0.46443
+          }
+        ]
+      },
+      {
+        "name": "3",
+        //red
+        "noDataValue": "0.0",
+        "bandWidth": 4101,
+        "bandHeight": 3983,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 21,
+            "y": 22,
+            "value": 0.33915
+          },
+          {
+            "x": 87,
+            "y": 87,
+            "value": 0.40110
+          },
+          {
+            "x": 166,
+            "y": 182,
+            "value": 0.29085
+          }
+        ]
+      },
+      {
+        "name": "4",
+        //nir
+        "noDataValue": "0.0",
+        "bandWidth": 4101,
+        "bandHeight": 3983,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 21,
+            "y": 22,
+            "value": 0.61880
+          },
+          {
+            "x": 87,
+            "y": 87,
+            "value": 0.63308
+          },
+          {
+            "x": 166,
+            "y": 182,
+            "value": 0.70329
+          }
+        ]
+      },
+      {
+        "name": "Pan",
+        "noDataValue": "0.0",
+        "bandWidth": 4101,
+        "bandHeight": 3983,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 21,
+            "y": 22,
+            "value": 0.38219
+          },
+          {
+            "x": 87,
+            "y": 87,
+            "value": 0.45195
+          },
+          {
+            "x": 166,
+            "y": 182,
+            "value": 0.41167
+          }
+        ]
+      }
+    ],
+    "metadata": [
+      {
+        "path": "Metadata/phenomenonTime/TimePeriod/endPosition",
+        "value": "2008-08-20T09:26:00Z"
+      },
+      {
+        "path": "Metadata/phenomenonTime/TimePeriod/beginPosition",
+        "value": "2008-08-20T09:26:00Z"
+      },
+      {
+        "path": "Metadata/result/EarthObservationResult/browse/BrowseInformation/referenceSystemIdentifier",
+        "value": "UTM_34N"
+      },
+      {
+        "path": "Metadata/metaDataProperty/EarthObservationMetaData/identifier",
+        "value": "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001"
+      },
+      {
+        "path": "Metadata/featureOfInterest/Footprint/centerOf/Point/pos",
+        "value": "38.0548528801 23.9865276316"
+      },
+      {
+        "path": "Metadata/featureOfInterest/Footprint/multiExtentOf/MultiSurface/surfaceMember/Polygon/exterior/LinearRing/posList",
+        "value": "38.1166697339 23.9048421125 37.9972505388 23.9001216511 37.9929852559 24.0680760263 38.1123862139 24.0730688435 38.1166697339 23.9048421125"
+      }
+    ]
+  }
+}

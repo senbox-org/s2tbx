@@ -74,6 +74,9 @@
         <!--<module>s2tbx-vector-formats</module>-->
         <module>s2tbx-coregistration</module>
         <module>s2tbx-coregistration-ui</module>
+        <module>s2tbx-ikonos-reader</module>
+        <module>s2tbx-alosAV2-reader</module>
+        <module>s2tbx-alosPRI-reader</module>
     </modules>
 
     <packaging>pom</packaging>
