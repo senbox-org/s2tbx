@@ -42,13 +42,14 @@ pipeline {
                 script {
                     // Get snap version from .nbm file name
                     toolVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
+                    toolName = sh(returnStdout: true, script: "echo ${env.JOB_NAME} | cut -d '/' -f 1").trim()
                     branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2").trim()
-                    deployDirName = "${env.JOB_NAME}-${toolVersion}-${branchVersion}-${env.GIT_COMMIT}"
+                    deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                     dockerName = "${env.JOB_NAME}:${toolVersion}-${env.GIT_COMMIT}"
                     snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                 }
-                // Copy nbm files to local update center
-                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ /local-update-center/${deployDirName} ${dockerName} ${env.JOB_NAME}"
+                // Launch deploy script
+                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ ${deployDirName} ${dockerName} ${env.JOB_NAME}"
             }
         }
         stage('Pre-release') {
@@ -69,7 +70,7 @@ pipeline {
                     nbmSrcDirName = "nbm-${env.GIT_COMMIT}"
                 }
                 echo "Pre release from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
-                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ /local-update-center/${deployDirName} ${dockerName} ${env.JOB_NAME}"
+                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ ${deployDirName} ${dockerName} ${env.JOB_NAME}"
             }
         }
         stage ('Starting GPT Tests') {
