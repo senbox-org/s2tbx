@@ -45,7 +45,7 @@ pipeline {
                     toolName = sh(returnStdout: true, script: "echo ${env.JOB_NAME} | cut -d '/' -f 1").trim()
                     branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2").trim()
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
-                    dockerName = "${env.JOB_NAME}:${toolVersion}-${env.GIT_COMMIT}"
+                    dockerName = "${toolName}:${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                     snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                 }
                 // Launch deploy script
