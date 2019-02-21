@@ -49,7 +49,7 @@ pipeline {
                     snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                 }
                 // Launch deploy script
-                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ ${deployDirName} ${dockerName} ${env.JOB_NAME}"
+                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ ${deployDirName} ${dockerName} ${toolName}"
             }
         }
         stage('Pre-release') {
@@ -63,14 +63,15 @@ pipeline {
                 script {
                     // Get snap version from .nbm file name
                     toolVersion = sh(returnStdout: true, script: "ls -l *-kit/target/netbeans_site/ | grep kit | tr -s ' ' | cut -d ' ' -f 9 | cut -d'-' -f 3").trim()
+                    toolName = sh(returnStdout: true, script: "echo ${env.JOB_NAME} | cut -d '/' -f 1").trim()
                     branchVersion = sh(returnStdout: true, script: "echo ${env.GIT_BRANCH} | cut -d '/' -f 2").trim()
-                    dockerName = "${env.JOB_NAME}:${branchVersion}"
+                    dockerName = "${toolName}:${branchVersion}"
                     snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                     deployDirName = "${env.JOB_NAME}-${snapMajorVersion}.x"
                     nbmSrcDirName = "nbm-${env.GIT_COMMIT}"
                 }
                 echo "Pre release from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
-                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ ${deployDirName} ${dockerName} ${env.JOB_NAME}"
+                sh "/opt/scripts/deploy.sh ${snapMajorVersion} *-kit/target/netbeans_site/ ${deployDirName} ${dockerName} ${toolName}"
             }
         }
         stage ('Starting GPT Tests') {
