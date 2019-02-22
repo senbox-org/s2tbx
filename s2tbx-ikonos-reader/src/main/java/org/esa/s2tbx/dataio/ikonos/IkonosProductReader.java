@@ -90,9 +90,9 @@ public class IkonosProductReader extends AbstractProductReader {
         String fileName;
         //product file name differs from archive file name
         if (this.productDirectory.isCompressed()) {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf("\\") + 1, productFilePath.lastIndexOf(IkonosConstants.PRODUCT_FILE_SUFFIX));
+            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf(IkonosConstants.PRODUCT_FILE_SUFFIX));
         } else {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf("\\") + 1, productFilePath.lastIndexOf("."));
+            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf("."));
         }
 
         this.metadata = IkonosMetadata.create(this.productDirectory.getFile(fileName + IkonosConstants.METADATA_FILE_SUFFIX).toPath());
