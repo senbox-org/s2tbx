@@ -74,9 +74,9 @@ public class AlosPRIProductReader extends AbstractProductReader {
         String fileName;
 
         if (this.productDirectory.isCompressed()) {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf("\\") + 1, productFilePath.lastIndexOf(AlosPRIConstants.PRODUCT_FILE_SUFFIX));
+            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf(AlosPRIConstants.PRODUCT_FILE_SUFFIX));
         } else {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf("\\") + 1, productFilePath.lastIndexOf("."));
+            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf("."));
         }
 
         this.metadata = XmlMetadata.create(AlosPRIMetadata.class, this.productDirectory.getFile(fileName + AlosPRIConstants.METADATA_FILE_SUFFIX).toPath());
@@ -84,8 +84,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
             if (productDirectory.isCompressed()) {
                 this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
                 productDirectory = VirtualDirEx.create(new File(metadata.getImageDirectoryPath()));
-                if (productDirectory != null)
-                {
+                if (productDirectory != null) {
                     productDirectory.setFolderDepth(4);
                 }
 
@@ -93,16 +92,14 @@ public class AlosPRIProductReader extends AbstractProductReader {
                 productDirectory.setFolderDepth(4);
                 if (productDirectory.exists(fileName)) {
                     productDirectory = VirtualDirEx.create(new File(inputFile.getAbsolutePath().substring(0, inputFile.getAbsolutePath().indexOf(AlosPRIConstants.METADATA_FILE_SUFFIX))));
-                    if (productDirectory != null)
-                    {
+                    if (productDirectory != null) {
                         productDirectory.setFolderDepth(4);
                     }
 
                 } else {
                     this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
                     productDirectory = VirtualDirEx.create(new File(metadata.getImageDirectoryPath()));
-                    if (productDirectory != null)
-                    {
+                    if (productDirectory != null) {
                         productDirectory.setFolderDepth(4);
                     }
                 }
@@ -153,7 +150,10 @@ public class AlosPRIProductReader extends AbstractProductReader {
 
                 product.getMetadataRoot().addElement(imageMetadata.getRootElement());
                 File rasterFile = productDirectory.getFile(imageMetadata.getFileName().substring(0, imageMetadata.getFileName().indexOf(".")) + AlosPRIConstants.IMAGE_EXTENSION);
-
+                //workaround for issue on VirtualDirEx: getTempDir() returns null when a file has to be found iterating through all the product directories
+                if (!rasterFile.exists()) {
+                    rasterFile = new File(productDirectory.getBasePath() + rasterFile.getPath().substring(rasterFile.getPath().indexOf(File.separator)));
+                }
                 this.tiffProduct.add(ProductIO.readProduct(rasterFile));
                 this.tiffImageIndex++;
                 final Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
@@ -179,8 +179,8 @@ public class AlosPRIProductReader extends AbstractProductReader {
                                                    band.getRasterWidth(), band.getRasterHeight(),
                                                    tileSize.width, tileSize.height,
                                                    levels, targetBand.getGeoCoding() != null ?
-                                Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                                Product.findImageToModelTransform(product.getSceneGeoCoding()));
+                                                           Product.findImageToModelTransform(targetBand.getGeoCoding()) :
+                                                           Product.findImageToModelTransform(product.getSceneGeoCoding()));
                 targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
                 this.product.addBand(targetBand);
                 addMasks(product, imageMetadata);
