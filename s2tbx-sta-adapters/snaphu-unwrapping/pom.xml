@@ -44,6 +44,7 @@
                     <keystore>${project.basedir}/../../keystore/s2tbx.ks</keystore>
                     <keystorealias>snap</keystorealias>
                     <keystorepassword>snap-123</keystorepassword>
+                    <requiresRestart>true</requiresRestart>
                 </configuration>
             </plugin>
         </plugins>
