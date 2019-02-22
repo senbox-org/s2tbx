@@ -37,7 +37,7 @@ public class IkonosProductReaderPluginTest {
     @Test
     public void testDecodeQualificationForXML() throws IOException {
         Date startDate = Calendar.getInstance().getTime();
-        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "IK2_OPER_OSA_GEO_1P_20080715T105300_N43-318_E003-351_0001.SIP\\IK2_OPER_OSA_GEO_1P_20080715T105300_N43-318_E003-351_0001.MD.XML"));
+        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP"+File.separator+"IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML"));
         assertEquals(DecodeQualification.INTENDED, decodeQualification);
         Date endDate = Calendar.getInstance().getTime();
         assertTrue("The decoding time for the file is too big!", (endDate.getTime() - startDate.getTime()) / 1000 < 30);
