@@ -1,6 +1,38 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 6.0.4
+--------------------
+
+### Main features
+
+#### IKONOS Product Reader
+
+This module enables the Sentinel Toolbox to read IKONOS data products.
+
+#### ALOS AVNIR-2 Product Reader
+
+This module enables the Sentinel Toolbox to read ALOS AVNIR-2 data products.
+
+#### ALOS PRISM Product Reader
+
+This module enables the Sentinel Toolbox to read ALOS PRISM data products.
+
+### List of solved issues
+#### Bug
+    * [SIITBX-299] - Negative values getting lost when reading jp2 files (direct mode)
+    * [SIITBX-305] - Help link does not work from menu.
+
+#### New Feature
+    * [STEP-8]  - IKONOS Product Reader
+    * [STEP-29] - ALOS AVNIR-2 / PRISM Reader
+
+#### Improvement
+    * [SIITBX-304] - Use object tag for external link.
+    * [SIITBX-306] - Entry in ToC of Help should be renamed.
+
+
+
 Changes in S2TBX 6.0.3
 --------------------
 

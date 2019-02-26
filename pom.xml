@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>6.0.4-SNAPSHOT</version>
+    <version>6.0.4</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -84,7 +84,7 @@
     <properties>
         <snap.version>6.0.6</snap.version>
         <snap-reader-tests.version>6.0.0</snap-reader-tests.version>
-        <s2tbx.version>6.0.4-SNAPSHOT</s2tbx.version>
+        <s2tbx.version>6.0.4</s2tbx.version>
         <geotools.version>17.1</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
