@@ -30,7 +30,7 @@ pipeline {
                 docker {
                     image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8'
                     // We add the docker group from host (i.e. 999)
-                    args ' --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v docker_local-update-center:/local-update-center'
+                    args '-u 1000:1000 --group-add 999 -e MAVEN_CONFIG=/var/maven/.m2 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v docker_local-update-center:/local-update-center'
                 }
             }
             steps {
@@ -41,7 +41,7 @@ pipeline {
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/testData/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=${launchUnitTests}'
+                // sh 'mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -Dsnap.reader.tests.data.dir=/data/ssd/testData/s2tbx/ -Dsnap.reader.tests.execute=false -DskipTests=${launchUnitTests}'
                 sh "/opt/scripts/saveToLocalUpdateCenter.sh *-kit/target/netbeans_site/ ${deployDirName} ${branchVersion} ${toolName}"
             }
         }
@@ -50,7 +50,7 @@ pipeline {
                 docker {
                     image 'snap-build-server.tilaa.cloud/scripts:1.0'
                     // We add the docker group from host (i.e. 999)
-                    args ' --group-add 999 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v docker_local-update-center:/local-update-center -v /home/obarrilero/.docker:/home/snap/.docker'
+                    args ' --group-add 999 -u 1000 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v docker_local-update-center:/local-update-center -v /home/obarrilero/.docker:/home/snap/.docker'
                 }
             }
             steps {
