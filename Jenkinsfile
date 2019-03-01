@@ -85,14 +85,29 @@ pipeline {
             }
         }
         stage ('Starting Tests') {
-            agent any
-            when {
-                expression {
-                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/" || "${env.GIT_BRANCH}" == "testJenkins_validation";
+            parallel {
+                stage ('Starting GPT Tests') {
+                    agent any
+                    when {
+                        expression {
+                            return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/" || "${env.GIT_BRANCH}" == "testJenkins_validation";
+                        }
+                    }
+                    steps {
+                        build job: 'snap-gpt-tests/master', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: "${env.GIT_COMMIT}"],[$class: 'StringParameterValue', name: 'toolVersion', value: "${toolVersion}"]]
+                    }
                 }
-            }
-            steps {
-                build job: 'snap-gpt-tests/master', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: "${env.GIT_COMMIT}"],[$class: 'StringParameterValue', name: 'toolVersion', value: "${toolVersion}"]]
+                stage ('Starting GUI Tests') {
+                    agent any
+                    when {
+                        expression {
+                            return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ "/.\\.x/" || "${env.GIT_BRANCH}" == "testJenkins_validation";
+                        }
+                    }
+                    steps {
+                        build job: 'snap-gui-tests/testJenkins_validation', parameters: [[$class: 'StringParameterValue', name: 'dockerTagName', value: "${toolName}:${branchVersion}"]]
+                    }
+                }
             }
         }
     }
