@@ -94,7 +94,7 @@ pipeline {
                         }
                     }
                     steps {
-                        build job: 'snap-gpt-tests/master', parameters: [[$class: 'StringParameterValue', name: 'commitHash', value: "${env.GIT_COMMIT}"],[$class: 'StringParameterValue', name: 'toolVersion', value: "${toolVersion}"]]
+                        build job: 'snap-gpt-tests/master', parameters: [[$class: 'StringParameterValue', name: 'dockerTagName', value: "${toolName}:${branchVersion}"]]
                     }
                 }
                 stage ('Starting GUI Tests') {
