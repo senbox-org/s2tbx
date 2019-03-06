@@ -48,7 +48,8 @@ public class WdviOp extends BaseIndexOp{
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
     private float nirFactor;
 
-    @Parameter(label = "Slope of the soil line", defaultValue = "0.5F", description = "Soil line has an arbitrary slope and passes through origin")
+    // 20190305: update default value according to https://senbox.atlassian.net/browse/SIITBX-341, https://forum.step.esa.int/t/wdvi-processor/14238
+    @Parameter(label = "Slope of the soil line", defaultValue = "1.5F", description = "Soil line has an arbitrary slope and passes through origin")
     private float slopeSoilLine; /* slope = tan(angle) */
 
     @Parameter(label = "Red source band",
