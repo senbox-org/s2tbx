@@ -354,7 +354,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-worldviewESAarchive-reader</artifactId>
+            <artifactId>s2tbx-worldview2ESA-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
