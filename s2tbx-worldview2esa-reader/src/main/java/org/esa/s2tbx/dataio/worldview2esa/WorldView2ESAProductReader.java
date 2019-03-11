@@ -224,16 +224,20 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                     final int tileRows = tileMetadata.getTileRowsCount();
                     final int tileCols = tileMetadata.getTileColsCount();
                     final Product[][] tiles = new Product[tileCols][tileRows];
-                    for (String rasterFile : tileInfo.keySet()) {
-                        final int[] coords = tileInfo.get(rasterFile);
+                    for (String rasterString : tileInfo.keySet()) {
+                        final int[] coords = tileInfo.get(rasterString);
                         if (imageDirectoryFileList != null) {
                             for (String file : selectedProductFiles) {
-                                if (file.contains(rasterFile)) {
-                                    rasterFile = file;
+                                if (file.contains(rasterString)) {
+                                    rasterString = file;
                                 }
                             }
                         }
-                        tiles[coords[1]][coords[0]] = ProductIO.readProduct(productDirectory.getFile(rasterFile));
+                        File rasterFile = productDirectory.getFile(rasterString);
+                        if (!rasterFile.exists()) {
+                            rasterFile = new File(productDirectory.getBasePath() + rasterFile.getPath().substring(rasterFile.getPath().indexOf(File.separator)));
+                        }
+                        tiles[coords[1]][coords[0]] = ProductIO.readProduct(rasterFile);
                         tileRefs.add(new WeakReference<Product>(tiles[coords[1]][coords[0]]));
                     }
 
