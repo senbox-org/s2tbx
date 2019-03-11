@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>nbm</packaging>
-    <artifactId>s2tbx-worldview2ESA-reader</artifactId>
+    <artifactId>s2tbx-worldview2esa-reader</artifactId>
     <name>Sentinel-2 Toolbox WorldView ESA archive Reader</name>
     <description>
         This module enables the Sentinel Toolbox to read WorldView data products

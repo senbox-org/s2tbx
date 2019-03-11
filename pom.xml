@@ -68,7 +68,7 @@
         <module>s2tbx-spectral-angle-mapper</module>
         <module>s2tbx-spectral-angle-mapper-ui</module>
         <module>s2tbx-vector-formats</module>
-        <module>s2tbx-worldview2ESA-reader</module>
+        <module>s2tbx-worldview2esa-reader</module>
     </modules>
 
     <packaging>pom</packaging>
