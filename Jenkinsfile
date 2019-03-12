@@ -109,7 +109,8 @@ pipeline {
                         }
                     }
                     steps {
-                        build job: 'snap-gui-tests/testJenkins_validation', parameters: [[$class: 'StringParameterValue', name: 'dockerTagName', value: "${toolName}:${branchVersion}"]]
+                        echo "Launch snap-gui-tests ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
+                        // build job: 'snap-gui-tests/testJenkins_validation', parameters: [[$class: 'StringParameterValue', name: 'dockerTagName', value: "${toolName}:${branchVersion}"]]
                     }
                 }
             }
