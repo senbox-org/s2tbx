@@ -132,6 +132,7 @@
             <artifactId>s2tbx-mosaic</artifactId>
             <version>${s2tbx.version}</version>
         </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
