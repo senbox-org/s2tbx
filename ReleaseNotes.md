@@ -37,17 +37,32 @@ vectors in a space with dimensionality equal to the number of bands.
 
 The GeFolki algorithm allows the registration of images in a nonparametric and dense way. GeFolki is based on a local method of optical flow derived from the Lucas-Kanade algorithm, with a multiscale implementation, and a specific filtering including rank filtering, rolling guidance filtering and local contrast inversion.
 
+#### IKONOS Product Reader
+
+This module enables the Sentinel Toolbox to read IKONOS data products.
+
+#### ALOS AVNIR-2 Product Reader
+
+This module enables the Sentinel Toolbox to read ALOS AVNIR-2 data products.
+
+#### ALOS PRISM Product Reader
+
+This module enables the Sentinel Toolbox to read ALOS PRISM data products.
+
 ### List of solved issues
 #### Bug
-    * [SIITBX-305] - Help link does not work from menu.
     * Pleiades Reader, raster operations (resample, reprojection, subset) return error.
     * Pleiades Reader tests are not passed.
     * Kompsat2 Reader, pixels values are incorrectly calculated.
     * WorldView-2 Reader tests are not passed.
     * Spectral Angle Mapper help images are not displayed in Linux.
+    * [SIITBX-299] - Negative values getting lost when reading jp2 files (direct mode)
+    * [SIITBX-305] - Help link does not work from menu.
 
 #### New Feature
     * [SIITBX-141] - Add PLEIADES reader
+    * [STEP-8]  - IKONOS Product Reader
+    * [STEP-29] - ALOS AVNIR-2 / PRISM Reader
 
 #### Improvement
     * [SIITBX-304] - Use object tag for external link.
