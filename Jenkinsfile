@@ -46,7 +46,6 @@ pipeline {
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                 sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -DskipTests=false"
                 // Launch reader tests -Dsnap.reader.tests.data.dir=/data/ssd/testData/s2tbx/ -Dsnap.reader.tests.execute=${params.launchReaderTests}
-
                 sh "/opt/scripts/saveToLocalUpdateCenter.sh *-kit/target/netbeans_site/ ${deployDirName} ${branchVersion} ${toolName}"
             }
         }
