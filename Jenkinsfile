@@ -98,7 +98,10 @@ pipeline {
                         }
                     }
                     steps {
-                        build job: 'snap-gpt-tests/master', parameters: [[$class: 'StringParameterValue', name: 'dockerTagName', value: "${toolName}:${branchVersion}"]]
+                        build job: 'snap-gpt-tests/workCS', parameters: [
+                            [$class: 'StringParameterValue', name: 'dockerTagName', value: "${toolName}:${branchVersion}"],
+                            [$class: 'StringParameterValue', name: 'testScope', value: "REGULAR"]
+                        ]
                     }
                 }
                 stage ('Starting GUI Tests') {
