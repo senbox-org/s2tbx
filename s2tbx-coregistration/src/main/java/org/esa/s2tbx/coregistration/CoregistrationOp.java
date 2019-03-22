@@ -48,10 +48,11 @@ public class CoregistrationOp extends Operator {
     @TargetProduct(description = "The target product which will use the master's location.")
     private Product targetProduct;
 
-    @Parameter(label = "Master band", description = "The band...", rasterDataNodeType = Band.class)
+    @Parameter(label = "Master band", description = "The master product band", rasterDataNodeType = Band.class)
     private String masterSourceBand;
 
-    @Parameter(label = "Slave band", description = "The band...", valueSet = {""})
+    //@Parameter(label = "Slave band", description = "The band...", valueSet = {""})
+    @Parameter(label = "Slave band", description = "The slave product band", rasterDataNodeType = Band.class)
     private String slaveSourceBand;
 
     private boolean contrast = false;
@@ -96,6 +97,12 @@ public class CoregistrationOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
+        // 20190315 OH: when using gpt, the setter for slaveSourceBand (where hiddenSlaveBand is initialized) is not called, so hiddenSlaveBand remains null
+        if (hiddenSlaveBand == null)
+        {
+            hiddenSlaveBand = slaveSourceBand;
+        }
+
         int[] radArray;
         try {
             radArray = Arrays.stream(radius.split(","))
@@ -385,7 +392,7 @@ public class CoregistrationOp extends Operator {
             targetProduct.addBand(targetBand);
 
             for (Band b : Arrays.asList(sourceSlaveProduct.getBands())) {
-                if (b.getName() != hiddenSlaveBand) {
+                if (!b.getName().equals(hiddenSlaveBand)) {
 
                     BufferedImage bImage = ImageOperations.interpolate(
                             ImageOperations.convertBufferedImage(b.getSourceImage().getImage(0))
