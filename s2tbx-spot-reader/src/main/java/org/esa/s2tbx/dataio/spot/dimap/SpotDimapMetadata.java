@@ -18,8 +18,6 @@
 package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.spot.internal.DimapSchemaHelper;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
@@ -44,25 +42,6 @@ public class SpotDimapMetadata extends XmlMetadata {
     private float[] bandGains;
     private float[] bandBiases;
     private List<HashMap<String, Double>> bandStatistics;
-
-    public static class SpotDimapMetadataParser extends XmlMetadataParser<SpotDimapMetadata> {
-
-        public SpotDimapMetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-            setSchemaLocations(DimapSchemaHelper.getSchemaLocations());
-        }
-
-        @Override
-        protected ProductData inferType(String elementName, String value) {
-            return DimapSchemaHelper.createProductData(elementName, value);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return true;
-        }
-    }
-
     public SpotDimapMetadata(String name) {
         super(name);
     }
