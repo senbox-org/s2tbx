@@ -19,6 +19,8 @@ package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.datamodel.MetadataElement;
 
 import java.io.File;
@@ -43,6 +45,9 @@ public class SpotSceneMetadata {
     private int numComponents;
     private final MetadataElement rootElement;
 
+    static {
+        XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
+    }
     private SpotSceneMetadata(VirtualDirEx folder, Logger logger) {
         this.folder = folder;
         this.logger = logger;
