@@ -2,12 +2,12 @@
   "testProducts": [
     {
       "id": "Pleiades_Short",
-      "relativePath": "_pleiades\\PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.SIP",
+      "relativePath": "_pleiades\\PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.SIP\\TPP1600462598\\VOL_PHR.XML",
       "description": "Pleiades shorted product"
     },
     {
       "id": "Pleiades_Archive",
-      "relativePath": "_pleiades\\PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.SIP",
+      "relativePath": "_pleiades\\PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.SIP\\PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.ZIP",
       "description": "Pleiades archived shorted product"
     }
   ]
