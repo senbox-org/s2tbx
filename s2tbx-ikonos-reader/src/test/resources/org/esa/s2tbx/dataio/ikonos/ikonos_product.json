@@ -7,156 +7,128 @@
     "geoCoding": {
       "coordinates": [
         {
-          "x": 768674.54,
-          "y": 4222746.57,
-          "lat": 38.1126560000,
-          "lon": 23.9046830000
+          "x": 1768.0,
+          "y": 2141.0,
+          "lat": 38.087617988676826,
+          "lon": 23.935240332498644
         },
         {
-          "x": 768912.56,
-          "y": 4218353.79,
-          "lat": 38.1120740000,
-          "lon": 23.9844950000
-        },
-        {
-          "x": 769153.63,
-          "y": 4214171.25,
-          "lat": 38.1126100000,
-          "lon": 24.0645090000
+          "x": 3044.0,
+          "y": 2584.0,
+          "lat": 38.08326646648784,
+          "lon": 23.94961151776738
         }
-      ]
+      ],
+      "reverseAccuracy": 4.319474101066589E-6
     },
     "bands": [
       {
-        "name": "1",
-        //blue
+        "name": "Blue",
+        "bandWidth": 50,
+        "bandHeight": 50,
+        "geophysicalUnit": "mW/cm^2*sr",
         "noDataValue": "0.0",
-        "bandWidth": 4101,
-        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 21,
-            "y": 22,
-            "value": 0.46580
+            "x": 2,
+            "y": 8,
+            "value": 0.50005
           },
           {
-            "x": 87,
-            "y": 87,
-            "value": 0.47265
-          },
-          {
-            "x": 166,
-            "y": 182,
-            "value": 0.43018          }
-        ]
-      },
-      {
-        "name": "2",
-        //green
-        "noDataValue": "0.0",
-        "bandWidth": 4101,
-        "bandHeight": 3983,
-        "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
-        "spectralBandwidth": "0.0",
-        "expectedPixels": [
-          {
-            "x": 21,
-            "y": 22,
-            "value": 0.53430
-          },
-          {
-            "x": 87,
-            "y": 87,
-            "value": 0.57677
-          },
-          {
-            "x": 166,
-            "y": 182,
-            "value": 0.46443
+            "x": 34,
+            "y": 42,
+            "value": 0.44936
           }
         ]
       },
       {
-        "name": "3",
-        //red
+        "name": "Green",
+        "bandWidth": 50,
+        "bandHeight": 50,
+        "geophysicalUnit": "mW/cm^2*sr",
         "noDataValue": "0.0",
-        "bandWidth": 4101,
-        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 21,
-            "y": 22,
-            "value": 0.33915
+            "x": 14,
+            "y": 12,
+            "value": 0.50964
           },
           {
-            "x": 87,
-            "y": 87,
-            "value": 0.40110
-          },
-          {
-            "x": 166,
-            "y": 182,
-            "value": 0.29085
+            "x": 30,
+            "y": 18,
+            "value": 0.48361
           }
         ]
       },
       {
-        "name": "4",
-        //nir
+        "name": "Near",
+        "bandWidth": 50,
+        "bandHeight": 50,
+        "geophysicalUnit": "mW/cm^2*sr",
         "noDataValue": "0.0",
-        "bandWidth": 4101,
-        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 21,
-            "y": 22,
-            "value": 0.61880
+            "x": 27,
+            "y": 37,
+            "value": 0.55811
           },
           {
-            "x": 87,
-            "y": 87,
-            "value": 0.63308
-          },
-          {
-            "x": 166,
-            "y": 182,
-            "value": 0.70329
+            "x": 30,
+            "y": 46,
+            "value": 0.56049
           }
         ]
       },
       {
         "name": "Pan",
+        "bandWidth": 200,
+        "bandHeight": 200,
+        "geophysicalUnit": "mW/cm^2*sr",
         "noDataValue": "0.0",
-        "bandWidth": 4101,
-        "bandHeight": 3983,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 21,
-            "y": 22,
-            "value": 0.38219
+            "x": 31,
+            "y": 133,
+            "value": 0.3468225
           },
           {
-            "x": 87,
-            "y": 87,
-            "value": 0.45195
-          },
-          {
-            "x": 166,
+            "x": 103,
             "y": 182,
-            "value": 0.41167
+            "value": 0.622905
+          }
+        ]
+      },
+      {
+        "name": "Red",
+        "bandWidth": 50,
+        "bandHeight": 50,
+        "geophysicalUnit": "mW/cm^2*sr",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 37,
+            "y": 24,
+            "value": 0.30975
+          },
+          {
+            "x": 47,
+            "y": 24,
+            "value": 0.60585
           }
         ]
       }

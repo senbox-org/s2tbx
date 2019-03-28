@@ -1,0 +1,154 @@
+{
+  "id": "AlosPRIProduct",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 25629,
+    "sceneHeight": 22640,
+    "startTime": "17-OCT-2006 21:27:24.567000",
+    "endTime": "17-OCT-2006 21:27:30.491000",
+    "geoCoding": {
+      "coordinates": [
+        {
+          "x": 11054.0,
+          "y": 12170.0,
+          "lat": 81.25048503595445,
+          "lon": -93.22089342343784
+        },
+        {
+          "x": 19028.0,
+          "y": 14691.0,
+          "lat": 81.19290281008514,
+          "lon": -92.05315757027068
+        }
+      ],
+      "reverseAccuracy": 2.0372681319713593E-10
+    },
+    "bands": [
+      {
+        "name": "ALPSMB038921910",
+        "description": "Band 1 (pan, 0.52 uM to 0.77 uM)",
+        "bandWidth": 20416,
+        "bandHeight": 20550,
+        "geophysicalUnit": "W.M-2.SR-1.uM-1",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 1065,
+            "y": 3661,
+            "value": "NaN"
+          },
+          {
+            "x": 13986,
+            "y": 17479,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "ALPSMF038921800",
+        "description": "Band 1 (pan, 0.52 uM to 0.77 uM)",
+        "bandWidth": 20585,
+        "bandHeight": 20475,
+        "geophysicalUnit": "W.M-2.SR-1.uM-1",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 5988,
+            "y": 5259,
+            "value": "NaN"
+          },
+          {
+            "x": 12567,
+            "y": 7479,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "ALPSMN038921855",
+        "description": "Band 1 (pan, 0.52 uM to 0.77 uM)",
+        "bandWidth": 19930,
+        "bandHeight": 19068,
+        "geophysicalUnit": "W.M-2.SR-1.uM-1",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 10962,
+            "y": 14212,
+            "value": 1.503
+          },
+          {
+            "x": 12124,
+            "y": 17703,
+            "value": "NaN"
+          }
+        ]
+      }
+    ],
+    "masks": [
+      {
+        "name": "no data",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,0",
+        "description": "no data"
+      },
+      {
+        "name": "saturated",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,200,0",
+        "description": "saturated"
+      }
+    ],
+    "metadata": [
+      {
+        "path": "Metadata/featureOfInterest/Footprint/centerOf/Point/gml:id",
+        "value": "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410_8"
+      },
+      {
+        "path": "ALOS[3]/Raster_CS/RASTER_CS_TYPE",
+        "value": "POINT"
+      },
+      {
+        "path": "ALOS[3]/Metadata_Id/METADATA_FORMAT",
+        "value": "DIMAP"
+      },
+      {
+        "path": "ALOS/Dataset_Use/DATASET_CONTENT",
+        "value": "ALOS PRISM Level 1C Product"
+      },
+      {
+        "path": "Metadata/metaDataProperty/EarthObservationMetaData/vendorSpecific[3]/SpecificInformation/localAttribute",
+        "value": "boundingBox"
+      },
+      {
+        "path": "ALOS/Dataset_Components/Component[3]/COMPONENT_PATH/href",
+        "value": "AL01_PRI_M1B_1C_20061017T212809_20061017T212815_ESR_003892_2B3E_QL.GTIF"
+      },
+      {
+        "path": "ALOS/Coordinate_Reference_System/Horizontal_CS/Geographic_CS/Horizontal_Datum/Prime_Meridian/PRIME_MERIDIAN_OFFSET",
+        "value": "0.017453"
+      },
+      {
+        "path": "ALOS/Data_Strip/Satellite_Attitudes/Angles_List/Angles[37]/Angular_Speed/PITCH",
+        "value": "0.001"
+      },
+      {
+        "path": "ALOS[2]/Geoposition/Geoposition_Insert/XDIM",
+        "value": "2.500000"
+      },
+      {
+        "path": "Metadata/procedure/EarthObservationEquipment/acquisitionParameters/Acquisition/illuminationElevationAngle",
+        "value": "-3"
+      }
+    ]
+  }
+}
