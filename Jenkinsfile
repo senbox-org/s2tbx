@@ -30,7 +30,6 @@ pipeline {
                 docker {
                     label 'snap-test'
                     image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8'
-                    // We add the docker group from host (i.e. 999)
                     args '-e MAVEN_CONFIG=/var/maven/.m2 -v /data/ssd/testData/:/data/ssd/testData/ -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v docker_local-update-center:/local-update-center'
                 }
             }
@@ -43,7 +42,6 @@ pipeline {
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                 sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install deploy -U -DskipTests=false"
-                // Launch reader tests -Dsnap.reader.tests.data.dir=/data/ssd/testData/s2tbx/ -Dsnap.reader.tests.execute=${params.launchReaderTests}
                 sh "/opt/scripts/saveToLocalUpdateCenter.sh *-kit/target/netbeans_site/ ${deployDirName} ${branchVersion} ${toolName}"
             }
         }
@@ -75,9 +73,9 @@ pipeline {
                         }
                     }
                     steps {
-                        echo "Launch snap-gpt-tests using docker image ${toolName}:${branchVersion} and scope REGULAR"
+                        echo "Launch snap-gpt-tests using docker image snap:${branchVersion} and scope REGULAR"
                         /*build job: 'snap-gpt-tests/master', parameters: [
-                            [$class: 'StringParameterValue', name: 'dockerTagName', value: "${toolName}:${branchVersion}"],
+                            [$class: 'StringParameterValue', name: 'dockerTagName', value: "snap:${branchVersion}"],
                             [$class: 'StringParameterValue', name: 'testScope', value: "REGULAR"]
                         ]*/
                     }
@@ -90,8 +88,8 @@ pipeline {
                         }
                     }
                     steps {
-                        echo "Launch snap-gui-tests ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                        // build job: 'snap-gui-tests/testJenkins_validation', parameters: [[$class: 'StringParameterValue', name: 'dockerTagName', value: "${toolName}:${branchVersion}"]]
+                        echo "Launch snap-gui-tests using docker image snap:${branchVersion}"
+                        // build job: 'snap-gui-tests/testJenkins_validation', parameters: [[$class: 'StringParameterValue', name: 'dockerTagName', value: "snap:${branchVersion}"]]
                     }
                 }
             }
