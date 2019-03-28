@@ -1,0 +1,9 @@
+{
+  "testProducts": [
+    {
+      "id": "ikonos_product",
+      "relativePath": "_ikonos/IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP/IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML",
+      "description": "Ikonos product in an folder"
+    }
+  ]
+}
