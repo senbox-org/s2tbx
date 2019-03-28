@@ -1,0 +1,55 @@
+#set($systemClass=$sourceProductFile.Class.forName("java.lang.System"))
+#set($fileClass=$sourceProductFile.Class.forName("java.io.File"))
+#set($ctors = $fileClass.Constructors)
+#foreach ($ctor in $ctors)
+#if ($ctor.toString() == "public java.io.File(java.lang.String)")
+#set($fileCtor = $ctor)
+#end
+#end
+
+#set($os=$systemClass.getProperty("os.name"))
+#if ($os.startsWith("Windows"))
+	#set($targetName = $USERPROFILE)
+#else
+	#set($targetName = $HOME)
+#end
+
+#set($paramList = [$targetName])
+#set($paramArray = $paramList.toArray())
+#set($targetPath = $fileCtor.newInstance($paramArray).toPath())
+#set($fileReaderClass = $sourceProductFile.Class.forName("java.io.FileReader"))
+#set($ctors = $fileReaderClass.Constructors)
+#foreach ($ctor in $ctors)
+#if ($ctor.toString() == "public java.io.FileReader(java.io.File) throws java.io.FileNotFoundException")
+#set($fileReaderCtor = $ctor)
+#end
+#end
+#set($bufReaderClass = $sourceProductFile.Class.forName("java.io.BufferedReader"))
+#set($ctors = $bufReaderClass.Constructors)
+#foreach ($ctor in $ctors)
+#if ($ctor.toString() == "public java.io.BufferedReader(java.io.Reader)")
+#set($bufReaderCtor = $ctor)
+#end
+#end
+#set($targetCfgFilePath = $targetPath.resolve('snaphu.conf'))
+#set($paramList = [$targetCfgFilePath.toFile()])
+#set($paramArray = $paramList.toArray())
+#set($fileReader = $fileReaderCtor.newInstance($paramArray))
+#set($paramList = [$fileReader])
+#set($paramArray = $paramList.toArray())
+#set($bufReader = $bufReaderCtor.newInstance($paramArray))
+#foreach($i in [0..10])
+#set($line = $bufReader.readLine())
+#if($line.contains('snaphu -f snaphu.conf'))
+#set($confLine = $line)
+#break
+#end
+#end
+#set($bclose = $bufReader.close())
+#set($fclose = $fileReader.close())
+#set($index=$confLine.indexOf('snaphu -f'))
+#set($index=$index+7)
+#set($EXEC_LINE=$confLine.substring($index))
+#foreach($line in $EXEC_LINE.split(' '))
+$line
+#end

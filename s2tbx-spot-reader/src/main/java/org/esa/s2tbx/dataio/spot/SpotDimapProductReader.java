@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.spot;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
@@ -28,7 +29,6 @@ import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.spot.dimap.VolumeMetadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -58,7 +58,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
     private SpotProductReader internalReader;
 
     static {
-        XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new SpotDimapMetadata.SpotDimapMetadataParser(SpotDimapMetadata.class));
+        XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
     }
 
     protected SpotDimapProductReader(SpotDimapProductReaderPlugin readerPlugIn) {

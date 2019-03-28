@@ -101,6 +101,8 @@ public class ReipOp extends BaseIndexOp{
             Tile redB5Tile = getSourceTile(getSourceProduct().getBand(redSourceBand5), rectangle);
             Tile redB6Tile = getSourceTile(getSourceProduct().getBand(redSourceBand6), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
+            final float redB5SpectralWaveLength = ((Band)redB5Tile.getRasterDataNode()).getSpectralWavelength();
+            final float redB6B5SpectralWaveLengthDiff = ((Band)redB6Tile.getRasterDataNode()).getSpectralWavelength() - ((Band)redB5Tile.getRasterDataNode()).getSpectralWavelength();
 
             Tile reip = targetTiles.get(targetProduct.getBand(BAND_NAME));
             Tile reipFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
@@ -115,7 +117,9 @@ public class ReipOp extends BaseIndexOp{
                     final float redB5 = redB5Factor * redB5Tile.getSampleFloat(x, y);
                     final float redB6 = redB6Factor * redB6Tile.getSampleFloat(x, y);
 
-                    reipValue = 700.0f + 40.0f * ( ( ( (nir + redB4) / 2.0f ) - redB5 ) / (redB6 - redB5) );
+                    // 20190305: update forumula according to https://senbox.atlassian.net/browse/SIITBX-340, https://forum.step.esa.int/t/reip-processor/14239
+                    //reipValue = 700.0f + 40.0f * ( ( ( (nir + redB4) / 2.0f ) - redB5 ) / (redB6 - redB5) );
+                    reipValue = redB5SpectralWaveLength + redB6B5SpectralWaveLengthDiff * ( ( ( (nir + redB4) / 2.0f ) - redB5 ) / (redB6 - redB5) );
 
                     reip.setSample(x, y, computeFlag(x, y, reipValue, reipFlags));
                 }

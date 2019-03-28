@@ -1,0 +1,86 @@
+<graph id="Graph">
+  <version>1.0</version>
+  <node id="Read">
+    <operator>Read</operator>
+    <sources/>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <file/>
+    </parameters>
+  </node>
+  <node id="Resample">
+    <operator>Resample</operator>
+    <sources>
+      <sourceProduct refid="Read"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <referenceBand>B1</referenceBand>
+      <targetWidth/>
+      <targetHeight/>
+      <targetResolution/>
+      <upsampling>Nearest</upsampling>
+      <downsampling>First</downsampling>
+      <flagDownsampling>First</flagDownsampling>
+      <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
+    </parameters>
+  </node>
+  <node id="Idepix.Sentinel2">
+    <operator>Idepix.Sentinel2</operator>
+    <sources>
+      <sourceProduct refid="Resample"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <copyToaReflectances>true</copyToaReflectances>
+      <copyFeatureValues>false</copyFeatureValues>
+      <computeMountainShadow>true</computeMountainShadow>
+      <computeCloudShadow>false</computeCloudShadow>
+      <computeCloudBuffer>true</computeCloudBuffer>
+      <computeCloudBufferForCloudAmbiguous>true</computeCloudBufferForCloudAmbiguous>
+      <cloudBufferWidth>2</cloudBufferWidth>
+      <demName>SRTM 3Sec</demName>
+    </parameters>
+  </node>
+  <node id="Subset">
+    <operator>Subset</operator>
+    <sources>
+      <sourceProduct refid="Idepix.Sentinel2"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <sourceBands/>
+      <region>0,0,1830,1830</region>
+      <geoRegion/>
+      <subSamplingX>1</subSamplingX>
+      <subSamplingY>1</subSamplingY>
+      <fullSwath>false</fullSwath>
+      <tiePointGridNames/>
+      <copyMetadata>true</copyMetadata>
+    </parameters>
+  </node>
+  <node id="Write">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct refid="Subset"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <file/>
+      <formatName>BEAM-DIMAP</formatName>
+    </parameters>
+  </node>
+  <applicationData id="Presentation">
+    <Description/>
+    <node id="Read">
+            <displayPosition x="31.0" y="105.0"/>
+    </node>
+    <node id="Resample">
+      <displayPosition x="140.0" y="105.0"/>
+    </node>
+    <node id="Idepix.Sentinel2">
+      <displayPosition x="251.0" y="105.0"/>
+    </node>
+    <node id="Subset">
+      <displayPosition x="387.0" y="105.0"/>
+    </node>
+    <node id="Write">
+      <displayPosition x="492.0" y="105.0"/>
+    </node>
+  </applicationData>
+</graph>

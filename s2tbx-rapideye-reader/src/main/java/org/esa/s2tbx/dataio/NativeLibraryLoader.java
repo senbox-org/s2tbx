@@ -55,7 +55,7 @@ public class NativeLibraryLoader {
     public static void loadLibrary(String path, String libraryName) throws IOException {
         path = URLDecoder.decode(path, "UTF-8");
         String libPath = "/lib/" + NativeLibraryLoader.getOSFamily() + "/" + System.mapLibraryName(libraryName);
-        if (path.contains(".jar!")) {
+        if (path.contains(".jar!") || path.endsWith(".jar")) {
             try (InputStream in = NativeLibraryLoader.class.getResourceAsStream(libPath)) {
                 File fileOut = new File(System.getProperty("java.io.tmpdir"), libPath);
                 try (OutputStream out = FileUtils.openOutputStream(fileOut)) {

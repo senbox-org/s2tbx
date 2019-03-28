@@ -58,7 +58,7 @@ public class CoregistrationOpTest {
             fail("The test directory path '" + testDirectoryPathProperty + "' is not valid.");
         }
 
-        this.coregistrationTestsFolderPath = testFolderPath.resolve(File.separator + "_coregistration");
+        this.coregistrationTestsFolderPath = testFolderPath.resolve("_coregistration");
         if (!Files.exists(coregistrationTestsFolderPath)) {
             fail("The Co-registration test directory path '" + coregistrationTestsFolderPath.toString() + "' is not valid.");
         }

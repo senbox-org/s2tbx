@@ -36,9 +36,9 @@ public class ReipOpTest extends BaseIndexOpTest<ReipOp> {
             put("nirFactor", 1.0f);
         }});
         setTargetValues(new float[] {
-                720.0f, 720.0f, 720.0f,
-                720.0f, 720.0f, 720.0f,
-                720.0f, 720.0f, 720.0f } );
+                722.5f, 722.5f, 722.5f,
+                722.5f, 722.5f, 722.5f,
+                722.5f, 722.5f, 722.5f } );
         super.setUp();
     }
 }
