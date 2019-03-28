@@ -24,9 +24,6 @@ pipeline {
         snapMajorVersion = ''
     }
     agent { label 'snap-test' }
-    parameters {
-        string(name: 'launchReaderTests', defaultValue: 'true', description: 'Job will launch the reader test (true) or not (false)')
-    }
     stages {
         stage('Package') {
             agent {
