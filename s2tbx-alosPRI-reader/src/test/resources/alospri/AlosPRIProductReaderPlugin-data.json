@@ -1,9 +1,0 @@
-{
-  "testProducts": [
-    {
-      "id": "AlosPRIProduct",
-      "relativePath": "_alos/AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410.SIP",
-      "description": "Alos PRISM product"
-    }
-  ]
-}
