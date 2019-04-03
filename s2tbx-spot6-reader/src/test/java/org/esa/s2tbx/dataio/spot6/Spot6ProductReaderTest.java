@@ -57,7 +57,7 @@ public class Spot6ProductReaderTest {
     @Test
     public void testReadProductNodes() {
         Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short\\SPOT_LIST.XML");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short/SPOT_LIST.XML");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
