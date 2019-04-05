@@ -91,7 +91,7 @@ pipeline {
             }
             steps {
                 echo "Launch snap-installer"
-                build job: 'snap-installer/master']
+                build job: 'snap-installer/master'
             }
         }
         stage('Create docker image') {
