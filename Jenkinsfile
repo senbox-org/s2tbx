@@ -77,8 +77,21 @@ pipeline {
                 }
             }
             steps {
-                echo "Create SNAP Installer ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
+                echo "Save data for SNAP Installer ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                 sh "/opt/scripts/saveInstallData.sh ${toolName}"
+            }
+        }
+        stage('Create SNAP Installer') {
+            agent { label 'snap-test' }
+            }
+            when {
+                expression {
+                    return "${env.GIT_BRANCH}" == 'master';
+                }
+            }
+            steps {
+                echo "Launch snap-installer"
+                build job: 'snap-installer/master']
             }
         }
         stage('Create docker image') {
