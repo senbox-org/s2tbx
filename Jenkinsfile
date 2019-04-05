@@ -83,7 +83,6 @@ pipeline {
         }
         stage('Create SNAP Installer') {
             agent { label 'snap-test' }
-            }
             when {
                 expression {
                     return "${env.GIT_BRANCH}" == 'master';
