@@ -125,7 +125,7 @@ pipeline {
                         build job: "snap-gpt-tests/${branchVersion}", parameters: [
                             [$class: 'StringParameterValue', name: 'dockerTagName', value: "snap:${branchVersion}"],
                             [$class: 'StringParameterValue', name: 'testScope', value: "REGULAR"]
-                        ]*/
+                        ]
                     }
                 }
                 stage ('Starting GUI Tests') {
