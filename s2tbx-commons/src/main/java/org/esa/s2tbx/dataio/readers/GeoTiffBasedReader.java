@@ -386,7 +386,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                 }
             }
         } catch (Exception e) {
-            logger.severe(e.getMessage());
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 

@@ -61,15 +61,16 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
 
-        INamingConvention namingConvention = null;
-        try {
-            namingConvention = NamingConventionFactory.createL1BNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
-        } catch (IOException e) {
-            return DecodeQualification.UNABLE;
-        }
-        if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
-            return DecodeQualification.INTENDED;
-        }
+        //TODO Jean uncoment the lines when implementing for remote files
+//        INamingConvention namingConvention = null;
+//        try {
+//            namingConvention = NamingConventionFactory.createL1BNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+//        } catch (IOException e) {
+//            return DecodeQualification.UNABLE;
+//        }
+//        if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
+//            return DecodeQualification.INTENDED;
+//        }
         return DecodeQualification.UNABLE;
 
     }
