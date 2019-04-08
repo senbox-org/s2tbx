@@ -11,8 +11,6 @@ import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,35 +133,30 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
 
         if(indexMax > 0) {
             //build color index using ColorPalette file
-            try {
-                String palettePath = SystemUtils.getAuxDataPath().resolve(paletteRelativePath).resolve(paletteSpectrum).toString();
-                ColorPaletteDef colorPalette = loadColorPaletteDef(new File(palettePath));
-                int numPoints = colorPalette.getNumPoints();
-                float interval = ((float) numPoints - 1) / indexMax;
 
-                for (int i = 0; i <= indexMax; i++) {
-                    float f = interval * i;
-                    int point1 = (int) floor(f);
-                    float dec = f - point1;
+            ColorPaletteDef colorPalette = createDefaultColorPalette();
+            int numPoints = colorPalette.getNumPoints();
+            float interval = ((float) numPoints - 1) / indexMax;
 
-                    int red,green,blue;
-                    if(point1<numPoints-1) {
-                        red = (int) (colorPalette.getColors()[point1].getRed() + (colorPalette.getColors()[point1 + 1].getRed() - colorPalette.getColors()[point1].getRed()) * dec);
-                        green = (int) (colorPalette.getColors()[point1].getGreen() + (colorPalette.getColors()[point1 + 1].getGreen() - colorPalette.getColors()[point1].getGreen()) * dec);
-                        blue = (int) (colorPalette.getColors()[point1].getBlue() + (colorPalette.getColors()[point1 + 1].getBlue() - colorPalette.getColors()[point1].getBlue()) * dec);
-                    } else {
-                        red = colorPalette.getColors()[point1].getRed();
-                        green = colorPalette.getColors()[point1].getGreen();
-                        blue = colorPalette.getColors()[point1].getBlue();
-                    }
+            for (int i = 0; i <= indexMax; i++) {
+                float f = interval * i;
+                int point1 = (int) floor(f);
+                float dec = f - point1;
 
-                    indexList.add(S2IndexBandInformation.makeIndex(i, new Color(red, green, blue), String.valueOf(i), String.valueOf(i)));
+                int red,green,blue;
+                if(point1<numPoints-1) {
+                    red = (int) (colorPalette.getColors()[point1].getRed() + (colorPalette.getColors()[point1 + 1].getRed() - colorPalette.getColors()[point1].getRed()) * dec);
+                    green = (int) (colorPalette.getColors()[point1].getGreen() + (colorPalette.getColors()[point1 + 1].getGreen() - colorPalette.getColors()[point1].getGreen()) * dec);
+                    blue = (int) (colorPalette.getColors()[point1].getBlue() + (colorPalette.getColors()[point1 + 1].getBlue() - colorPalette.getColors()[point1].getBlue()) * dec);
+                } else {
+                    red = colorPalette.getColors()[point1].getRed();
+                    green = colorPalette.getColors()[point1].getGreen();
+                    blue = colorPalette.getColors()[point1].getBlue();
                 }
-                return new S2IndexBandInformation(MOSAIC_BAND_NAME + "_" + resolution.resolution + "m", resolution, NamingConventionFactory.getMSCTemplate_L3(format), "Pixel count", "", indexList, "msc_" + resolution.resolution + "m_");
 
-            } catch (IOException e) {
-
+                indexList.add(S2IndexBandInformation.makeIndex(i, new Color(red, green, blue), String.valueOf(i), String.valueOf(i)));
             }
+            return new S2IndexBandInformation(MOSAIC_BAND_NAME + "_" + resolution.resolution + "m", resolution, NamingConventionFactory.getMSCTemplate_L3(format), "Pixel count", "", indexList, "msc_" + resolution.resolution + "m_");
         }
 
         //Default color index
@@ -175,6 +168,22 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
             indexList.add(S2IndexBandInformation.makeIndex(i, getHSBColor(f, (float)1.0, (float)1.0),  String.valueOf(i), String.valueOf(i)));
         }
         return new S2IndexBandInformation(MOSAIC_BAND_NAME + "_" + resolution.resolution + "m", resolution, NamingConventionFactory.getMSCTemplate_L3(format), "Pixel count", "", indexList, "msc_" + resolution.resolution + "m_");
+    }
 
+    private static ColorPaletteDef createDefaultColorPalette () {
+        ColorPaletteDef.Point[] points = new ColorPaletteDef.Point[8];
+
+        points[0] = new ColorPaletteDef.Point(0.0, new Color(0,0,0));
+        points[1] = new ColorPaletteDef.Point(1.0, new Color(85,0,136));
+        points[2] = new ColorPaletteDef.Point(2.0, new Color(0,0,255));
+        points[3] = new ColorPaletteDef.Point(3.0, new Color(0,255,255));
+        points[4] = new ColorPaletteDef.Point(4.0, new Color(0,255,0));
+        points[5] = new ColorPaletteDef.Point(5.0, new Color(255,255,0));
+        points[6] = new ColorPaletteDef.Point(6.0, new Color(255,140,0));
+        points[7] = new ColorPaletteDef.Point(7.0, new Color(255,0,0));
+
+        ColorPaletteDef colorPaletteDef = new ColorPaletteDef(points, 256);
+        colorPaletteDef.setAutoDistribute(true);
+        return colorPaletteDef;
     }
 }

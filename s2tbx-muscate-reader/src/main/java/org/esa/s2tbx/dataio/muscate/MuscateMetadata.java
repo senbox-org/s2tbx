@@ -164,7 +164,13 @@ public class MuscateMetadata extends XmlMetadata {
                 MetadataElement imageElement = imageListElement.getElementAt(i);
                 MetadataElement propertiesElement = imageElement.getElement("Image_Properties");
                 muscateImage.nature = propertiesElement.getAttribute("NATURE").getData().getElemString();
-                muscateImage.compression = propertiesElement.getAttribute("COMPRESSION").getData().getElemString();
+
+                if(propertiesElement.getAttribute("COMPRESSION") != null) { //in some versions this element does not exist
+                    muscateImage.compression = propertiesElement.getAttribute("COMPRESSION").getData().getElemString();
+                } else {
+                    muscateImage.compression = "None";
+                }
+                
                 muscateImage.encoding = propertiesElement.getAttribute("ENCODING").getData().getElemString();
                 muscateImage.endianness = propertiesElement.getAttribute("ENDIANNESS").getData().getElemString();
                 muscateImage.format = propertiesElement.getAttribute("FORMAT").getData().getElemString();
