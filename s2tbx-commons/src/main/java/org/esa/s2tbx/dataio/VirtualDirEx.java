@@ -213,6 +213,9 @@ public abstract class VirtualDirEx extends VirtualDir {
                             @Override
                             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                                 String zipEntryPath = file.toString();
+                                if (zipEntryPath.startsWith("/")) {
+                                    zipEntryPath = zipEntryPath.substring(1);
+                                }
                                 if (isTar(zipEntryPath)) {
                                     File file1 = getFile(zipEntryPath);
                                     TarVirtualDir innerTar = new TarVirtualDir(file1) {
