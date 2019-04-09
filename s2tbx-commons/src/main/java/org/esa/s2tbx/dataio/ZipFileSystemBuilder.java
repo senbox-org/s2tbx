@@ -2,21 +2,13 @@ package org.esa.s2tbx.dataio;
 
 import com.sun.nio.zipfs.ZipFileSystem;
 import com.sun.nio.zipfs.ZipFileSystemProvider;
-import org.esa.snap.vfs.remote.TransferFileContentMain;
+import org.esa.snap.vfs.remote.TransferFileContentUtil;
 import org.esa.snap.vfs.remote.http.HttpFileSystemProvider;
 
-import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileVisitResult;
@@ -30,8 +22,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * Created by jcoravu on 4/4/2019.
@@ -160,7 +150,7 @@ public class ZipFileSystemBuilder {
                 if (!Files.exists(parentFolder)) {
                     Files.createDirectories(parentFolder);
                 }
-                TransferFileContentMain.copyFileUsingInputStream(file, this.copiedFile.toString());
+                TransferFileContentUtil.copyFileUsingInputStream(file, this.copiedFile.toString());
                 return FileVisitResult.TERMINATE;
             }
             return FileVisitResult.CONTINUE;
@@ -358,7 +348,7 @@ public class ZipFileSystemBuilder {
                         Path localPath = Paths.get("D:/_test-extract-zip/extract/"+file.hashCode());
                         System.out.println("visitFile file="+file+"  size="+Files.size(file));
 
-                        TransferFileContentMain.copyFileUsingInputStream(file, localPath.toString());
+                        TransferFileContentUtil.copyFileUsingInputStream(file, localPath.toString());
 
                         return FileVisitResult.CONTINUE;
                     }
@@ -366,6 +356,6 @@ public class ZipFileSystemBuilder {
             }
         }
 //        Path localPath = Paths.get(localFile);
-//        TransferFileContentMain.copyFile(path, localPath);
+//        TransferFileContentUtil.copyFile(path, localPath);
     }
 }
