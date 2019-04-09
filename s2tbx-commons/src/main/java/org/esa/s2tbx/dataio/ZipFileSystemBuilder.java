@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio;
 
 import com.sun.nio.zipfs.ZipFileSystem;
 import com.sun.nio.zipfs.ZipFileSystemProvider;
-import org.esa.snap.vfs.remote.TransferFileContentMain;
+import org.esa.snap.vfs.remote.TransferFileContentUtil;
 import org.esa.snap.vfs.remote.http.HttpFileSystemProvider;
 
 import java.io.FileNotFoundException;
@@ -175,7 +175,7 @@ public class ZipFileSystemBuilder {
                     copyFile = (localFileSizeInBytes != zipEntryFileSizeInBytes);
                 }
                 if (copyFile) {
-                    TransferFileContentMain.copyFileUsingInputStream(file, this.localFile.toString());
+                    TransferFileContentUtil.copyFileUsingInputStream(file, this.localFile.toString());
                 }
                 return FileVisitResult.TERMINATE;
             }
@@ -415,7 +415,7 @@ public class ZipFileSystemBuilder {
                         Path localPath = Paths.get("D:/_test-extract-zip/extract/"+file.hashCode());
                         System.out.println("visitFile file="+file+"  size="+Files.size(file));
 
-                        TransferFileContentMain.copyFileUsingInputStream(file, localPath.toString());
+                        TransferFileContentUtil.copyFileUsingInputStream(file, localPath.toString());
 
                         return FileVisitResult.CONTINUE;
                     }
