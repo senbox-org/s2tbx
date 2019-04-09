@@ -66,11 +66,10 @@ public class RapidEyeL3Reader extends GeoTiffBasedReader<RapidEyeMetadata> {
 
     @Override
     public TreeNode<File> getProductComponents() {
-        if (productDirectory.isArchive()) {
-            return super.getProductComponents();
-        } else {
+        TreeNode<File> result = super.getProductComponents();
+
+        if (!this.productDirectory.isArchive()) {
             RapidEyeMetadata firstMetadata = metadata.get(0);
-            TreeNode<File> result = super.getProductComponents();
             String metaFileName = firstMetadata.getFileName();
             try{
                 addProductComponentIfNotPresent(metaFileName, productDirectory.getFile(metaFileName), result);
@@ -93,7 +92,7 @@ public class RapidEyeL3Reader extends GeoTiffBasedReader<RapidEyeMetadata> {
                     logger.warning(String.format("Error encountered while searching file %s", maskFileName));
                 }
             }
-            return result;
         }
+        return result;
     }
 }

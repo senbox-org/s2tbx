@@ -13,7 +13,7 @@ import java.util.TreeSet;
 /**
  * Created by jcoravu on 3/4/2019.
  */
-public class VirtualZipPath extends VirtualDir {
+public class VirtualZipPath extends AbstractVirtualPath {
 
     private final Path zipPath;
 
@@ -36,27 +36,15 @@ public class VirtualZipPath extends VirtualDir {
     @Override
     public InputStream getInputStream(String zipEntryPath) throws IOException {
         throw new UnsupportedOperationException("Not implemented yet!");
-//        InputStream inputStream = Files.newInputStream(this.zipPath);
-//        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-//        ZipInputStream zipInputStream = new ZipInputStream(bufferedInputStream);
-//
-//        boolean foundZipEntry = false;
-//        ZipEntry zipEntry;
-//        while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-//            if (zipEntry.getName().equals(zipEntryPath)) {
-//                foundZipEntry = true;
-//            }
-//        }
-//        if (foundZipEntry) {
-//            if (zipEntryPath.endsWith(".gz")) {
-//                return new GZIPInputStream(zipInputStream);
-//            }
-//            return zipInputStream;
-//        } else {
-//            //TODO Jean close the streams
-//            // the zip entry does not exist
-//            throw new FileNotFoundException(this.zipPath.toString() + "!" + zipEntryPath);
-//        }
+    }
+
+    @Override
+    public <ResultType> ResultType loadData(String zipEntryPath, ICallbackCommand<ResultType> command) throws IOException {
+        try {
+            return ZipFileSystemBuilder.loadZipEntryDataFromZipArchive(this.zipPath, zipEntryPath, command);
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
@@ -67,11 +55,7 @@ public class VirtualZipPath extends VirtualDir {
         try {
             Path copiedFilePath = ZipFileSystemBuilder.copyFileFromZipArchive(this.zipPath, zipEntryPath, this.tempZipFileDir.toPath());
             return (copiedFilePath == null) ? null : copiedFilePath.toFile();
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e);
-        } catch (InstantiationException e) {
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -81,11 +65,7 @@ public class VirtualZipPath extends VirtualDir {
         TreeSet<String> nameSet;
         try {
             nameSet = ZipFileSystemBuilder.listDirectoryEntriesFromZipArchive(this.zipPath, path);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e);
-        } catch (InstantiationException e) {
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         }
         if (nameSet == null) {
@@ -98,11 +78,7 @@ public class VirtualZipPath extends VirtualDir {
     public boolean exists(String zipEntryPath) {
         try {
             return ZipFileSystemBuilder.existFileInZipArchive(this.zipPath, zipEntryPath);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (InstantiationException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -114,11 +90,7 @@ public class VirtualZipPath extends VirtualDir {
         try {
             TreeSet<String> nameSet = ZipFileSystemBuilder.listAllFileEntriesFromZipArchive(this.zipPath);
             return nameSet.toArray(new String[0]);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e);
-        } catch (InstantiationException e) {
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         }
     }

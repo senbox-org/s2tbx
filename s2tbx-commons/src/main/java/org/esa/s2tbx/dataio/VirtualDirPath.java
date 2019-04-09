@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,7 +22,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * Created by jcoravu on 3/4/2019.
  */
-public class VirtualDirPath extends VirtualDir {
+public class VirtualDirPath extends AbstractVirtualPath {
 
     private final Path dirPath;
 
@@ -37,6 +38,15 @@ public class VirtualDirPath extends VirtualDir {
     @Override
     public File getBaseFile() {
         return this.dirPath.toFile();
+    }
+
+    @Override
+    public <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException {
+        Path child = this.dirPath.resolve(path);
+        if (!Files.exists(child)) {
+            throw new FileNotFoundException(child.toString());
+        }
+        return command.execute(child);
     }
 
     @Override
