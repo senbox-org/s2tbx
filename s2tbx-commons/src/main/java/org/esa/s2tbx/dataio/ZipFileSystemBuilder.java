@@ -5,7 +5,9 @@ import com.sun.nio.zipfs.ZipFileSystemProvider;
 import org.esa.snap.vfs.remote.TransferFileContentUtil;
 import org.esa.snap.vfs.remote.http.HttpFileSystemProvider;
 
+import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -423,6 +425,6 @@ public class ZipFileSystemBuilder {
             }
         }
 //        Path localPath = Paths.get(localFile);
-//        TransferFileContentMain.copyFile(path, localPath);
+//        TransferFileContentUtil.copyFile(path, localPath);
     }
 }
