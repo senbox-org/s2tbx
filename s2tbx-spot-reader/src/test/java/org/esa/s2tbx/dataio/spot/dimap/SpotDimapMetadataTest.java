@@ -27,6 +27,7 @@ import org.junit.Test;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -242,7 +243,7 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testSetPath() throws Exception {
-        metadata.setPath("testname");
-        assertEquals("testname", metadata.getPath());
+        metadata.setPath(Paths.get("testname"));
+        assertEquals("testname", metadata.getPath().toString());
     }
 }

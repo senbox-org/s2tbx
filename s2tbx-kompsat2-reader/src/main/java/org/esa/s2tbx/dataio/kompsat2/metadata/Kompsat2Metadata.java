@@ -184,7 +184,7 @@ public class Kompsat2Metadata extends XmlMetadata {
         try (InputStream inputStream = Files.newInputStream(path)) {
             Kompsat2MetadataParser parser = new Kompsat2MetadataParser(Kompsat2Metadata.class);
             result = parser.parse(inputStream);
-            result.setPath(path.toString());
+            result.setPath(path);
             result.setFileName(path.getFileName().toString());
             String directoryName = result.getAttributeValue(Kompsat2Constants.PATH_ZIP_FILE_NAME, null);
             String tiePointGridPointsString = result.getAttributeValue(Kompsat2Constants.PATH_TIE_POINT_GRID, null);

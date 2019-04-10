@@ -49,7 +49,7 @@ public abstract class GenericXmlMetadata {
     protected int width;
     protected int height;
     protected int numBands;
-    protected String path;
+    protected Path path;
     protected Logger logger;
 
     protected Map<String, List<MetadataAttribute>> attributeMap;
@@ -82,7 +82,7 @@ public abstract class GenericXmlMetadata {
         if (Files.exists(inputFile)) {
             try (InputStream inputStream = Files.newInputStream(inputFile, StandardOpenOption.READ)) {
                 result = (T) XmlMetadataParserFactory.getParser(clazz).parse(inputStream);
-                result.setPath(inputFile.toAbsolutePath().toString());
+                result.setPath(inputFile);
                 String metadataProfile = result.getMetadataProfile();
                 if (metadataProfile != null) {
                     result.setName(metadataProfile);
@@ -208,8 +208,8 @@ public abstract class GenericXmlMetadata {
      *
      * @return The path of the metadata file.
      */
-    public String getPath() {
-        return path;
+    public Path getPath() {
+        return this.path;
     }
 
     /**
@@ -217,8 +217,8 @@ public abstract class GenericXmlMetadata {
      *
      * @param value The path of the file.
      */
-    public void setPath(String value) {
-        path = value;
+    public void setPath(Path value) {
+        this.path = value;
     }
 
     /**

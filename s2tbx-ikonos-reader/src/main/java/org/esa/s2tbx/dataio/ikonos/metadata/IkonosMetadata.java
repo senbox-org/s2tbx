@@ -60,7 +60,7 @@ public class IkonosMetadata extends XmlMetadata {
         try (InputStream inputStream = Files.newInputStream(path)) {
             IkonosMetadataParser parser = new IkonosMetadataParser(IkonosMetadata.class);
             result = parser.parse(inputStream);
-            result.setPath(path.toString());
+            result.setPath(path);
             result.setFileName(path.getFileName().toString());
             String directoryName = IkonosConstants.PATH_ZIP_FILE_NAME_PATTERN;
 

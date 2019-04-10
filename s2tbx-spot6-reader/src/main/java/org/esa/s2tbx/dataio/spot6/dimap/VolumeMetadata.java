@@ -70,7 +70,7 @@ public class VolumeMetadata extends GenericXmlMetadata {
         try (InputStream inputStream = Files.newInputStream(path)) {
             VolumeMetadataParser parser = new VolumeMetadataParser(VolumeMetadata.class);
             result = parser.parse(inputStream);
-            result.setPath(path.toString());
+            result.setPath(path);
             result.setFileName(path.getFileName().toString());
             String[] titles = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TITLE);
             if (titles == null) {

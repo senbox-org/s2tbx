@@ -70,47 +70,54 @@ public class VolumeMetadata extends GenericXmlMetadata {
         try (InputStream inputStream = Files.newInputStream(path)) {
             VolumeMetadataParser parser = new VolumeMetadataParser(VolumeMetadata.class);
             result = parser.parse(inputStream);
-            result.setPath(path.toString());
+            result.setPath(path);
             result.setFileName(path.getFileName().toString());
             String[] titles = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TITLE);
             if (titles == null) {
                 titles = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TITLE_ALT);
             }
-            String[] types = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TYPE);
-            if (types == null) {
-                types = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TYPE_ALT);
-            }
-            String[] paths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_PATH);
-            if (paths == null) {
-                paths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_PATH_ALT);
-            }
-            String[] tnPaths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_PATH);
-            if (tnPaths == null) {
-                tnPaths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_PATH_ALT);
-            }
-            String[] tnFormats = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_FORMAT);
-            if (tnFormats == null) {
-                tnFormats = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_FORMAT_ALT);
-            }
             if (titles != null && titles.length > 0) {
+                String[] types = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TYPE);
+                if (types == null) {
+                    types = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TYPE_ALT);
+                }
+                String[] paths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_PATH);
+                if (paths == null) {
+                    paths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_PATH_ALT);
+                }
+                String[] tnPaths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_PATH);
+                if (tnPaths == null) {
+                    tnPaths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_PATH_ALT);
+                }
+                String[] tnFormats = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_FORMAT);
+                if (tnFormats == null) {
+                    tnFormats = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_FORMAT_ALT);
+                }
+
+                Path parentFolderPath = path.getParent();
+
                 for (int i = 0; i < titles.length; i++) {
-                    VolumeComponent component = new VolumeComponent(path.getParent());
-                    component.title = titles[i];
+                    VolumeComponent component = new VolumeComponent(parentFolderPath);
+                    component.setTitle(titles[i]);
                     if (types != null && types.length == titles.length) {
-                        component.type = types[i];
+                        component.setType(types[i]);
                     }
                     if (paths != null && paths.length == titles.length) {
+                        Path child = null;
                         try {
-                            component.path = Paths.get(paths[i]);
+                            child = parentFolderPath.resolve(paths[i]);
                         } catch (InvalidPathException ignored) {
-                            //component.path = Paths.get(URI.create(paths[i]));
+                            // ignore
+                        }
+                        if (child != null && Files.exists(child)) {
+                            component.setRelativePath(paths[i]);
                         }
                     }
                     if (tnPaths != null && tnPaths.length == titles.length) {
-                        component.thumbnailPath = tnPaths[i];
+                        component.setThumbnailPath(tnPaths[i]);
                     }
                     if (tnFormats != null && tnFormats.length == titles.length) {
-                        component.thumbnailFormat = tnFormats[i];
+                        component.setThumbnailFormat(tnFormats[i]);
                     }
                     result.components.add(component);
                 }

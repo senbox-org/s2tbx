@@ -135,7 +135,7 @@ public abstract class VirtualDirEx extends VirtualDir {
         }
     }
 
-    public static VirtualDirEx buildVirtualDir(Path path) throws IOException {
+    public static VirtualDirEx build(Path path) throws IOException {
         if (Files.isRegularFile(path) && !VirtualDirEx.isPackedFile(path)) {
             Path parentPath = path.getParent();
             if (parentPath == null) {
@@ -261,7 +261,6 @@ public abstract class VirtualDirEx extends VirtualDir {
                                     };
                                     innerTar.ensureUnpacked(getTempDir());
                                     fileNames.addAll(Arrays.asList(innerTar.listAll()));
-                                    //noinspection ResultOfMethodCallIgnored
                                     file1.delete();
                                 } else {
                                     fileNames.add(zipEntryPath);
@@ -671,7 +670,8 @@ public abstract class VirtualDirEx extends VirtualDir {
 
         @Override
         public <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException {
-            throw new UnsupportedOperationException("Not implemented yet!");
+            File file = getFile(path);
+            return command.execute(file.toPath());
         }
 
         @Override
@@ -704,7 +704,7 @@ public abstract class VirtualDirEx extends VirtualDir {
             }
             final File file = new File(extractDir, path);
             if (!(file.isFile() || file.isDirectory())) {
-                throw new IOException();
+                throw new FileNotFoundException("The path '"+path+"' does not exist in the folder '"+extractDir.getAbsolutePath()+"'.");
             }
             return file;
         }
@@ -850,17 +850,14 @@ public abstract class VirtualDirEx extends VirtualDir {
         public String[] listAll(Pattern...patterns) {
             List<String> fileNames = new ArrayList<>();
             TarInputStream tis;
-            try (
-                FileInputStream fileStream = new FileInputStream(archiveFile)
-            ) {
-                if (isTgz(archiveFile.getName())) {
-                    tis = new TarInputStream(
-                            new GZIPInputStream(new BufferedInputStream(fileStream)));
+            try (FileInputStream fileStream = new FileInputStream(this.archiveFile)) {
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(fileStream);
+                if (isTgz(this.archiveFile.getName())) {
+                    tis = new TarInputStream(new GZIPInputStream(bufferedInputStream));
                 } else {
-                    tis = new TarInputStream(new BufferedInputStream(fileStream));
+                    tis = new TarInputStream(bufferedInputStream);
                 }
                 TarEntry entry;
-
                 String longLink = null;
                 while ((entry = tis.getNextEntry()) != null) {
                     String entryName = entry.getName();

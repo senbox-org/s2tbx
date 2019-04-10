@@ -230,8 +230,12 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
+        if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
+            throw new IOException("The selected product cannot be read with the current reader.");
+        }
+
         Path path = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.productDirectory = VirtualDirEx.buildVirtualDir(path);
+        this.productDirectory = VirtualDirEx.build(path);
 
         String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
         if (metadataFiles != null) {
@@ -252,7 +256,14 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                             }
                         }
                     };
-                    M metaDataItem = this.productDirectory.loadData(file, command);
+
+                    // if archive load the metadata without extracting the file from the zip archive on the local disk
+                    //M metaDataItem = this.productDirectory.loadData(file, command);
+
+                    // if archive extracting the file from the zip archive on the local disk and then load the metadata
+                    File metadataFile = this.productDirectory.getFile(file);
+                    M metaDataItem = command.execute(metadataFile.toPath());
+
                     if (metaDataItem != null) {
                         this.metadata.add(metaDataItem);
                     }

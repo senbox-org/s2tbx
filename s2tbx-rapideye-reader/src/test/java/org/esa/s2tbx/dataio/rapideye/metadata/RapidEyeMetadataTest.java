@@ -195,12 +195,6 @@ public class RapidEyeMetadataTest {
     }
 
     @Test
-    public void testSetPath() throws Exception {
-        metadata.setPath("testpath");
-        assertEquals("testpath", metadata.getPath());
-    }
-
-    @Test
     public void testSetName() throws Exception {
         metadata.setName("testname");
         assertEquals("testname", metadata.getFileName());

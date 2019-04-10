@@ -25,7 +25,6 @@ import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.utils.FileHelper;
-import org.esa.snap.vfs.remote.VFSPath;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +35,6 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.ProviderMismatchException;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +58,7 @@ import java.util.regex.Pattern;
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     private static final Logger logger = Logger.getLogger(BaseProductReaderPlugIn.class.getName());
 
-    private static Map<Object, String[]> cachedFiles = new WeakHashMap<>();
+    private static Map<Object, String[]> CACHED_FILES = new WeakHashMap<>();
 
     protected final ProductContentEnforcer enforcer;
     private final Path colorPaletteFilePath;
@@ -123,14 +121,14 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         DecodeQualification retVal = DecodeQualification.UNABLE;
         VirtualDirEx virtualDir;
         try {
-            virtualDir = VirtualDirEx.buildVirtualDir(path);
+            virtualDir = VirtualDirEx.build(path);
             if (virtualDir != null) {
                 String[] files = null;
                 if (virtualDir.isCompressed()) {
-                    if (!cachedFiles.containsKey(input)) {
-                        cachedFiles.put(input, virtualDir.listAll());
+                    if (!CACHED_FILES.containsKey(input)) {
+                        CACHED_FILES.put(input, virtualDir.listAll());
                     }
-                    files = cachedFiles.get(input);
+                    files = CACHED_FILES.get(input);
                     if (this.enforcer.isConsistent(files)) {
                         retVal = DecodeQualification.INTENDED;
                     }
@@ -280,13 +278,14 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     /**
      * Default implementation for a file filter using product naming rules.
      */
-    public class BaseProductFileFilter extends SnapFileFilter {
+    private class BaseProductFileFilter extends SnapFileFilter {
 
-        private Map<File, Boolean> processed;
-        final private int depth;
+        private final Map<File, Boolean> processed;
+        private final int depth;
 
         public BaseProductFileFilter(BaseProductReaderPlugIn plugIn, int folderDepth) {
             super(plugIn.getFormatNames()[0], plugIn.getDefaultFileExtensions(), plugIn.getDescription(Locale.getDefault()));
+
             this.processed = new HashMap<>();
             this.depth = folderDepth;
         }
@@ -310,6 +309,5 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             }
             return shouldAccept;
         }
-
     }
 }

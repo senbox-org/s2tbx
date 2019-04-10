@@ -32,10 +32,12 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class PleiadesProductReaderPlugin extends BaseProductReaderPlugIn {
+
     private static final String COLOR_PALETTE_FILE_NAME = "Pleiades_color_palette.cpd";
 
     public PleiadesProductReaderPlugin() {
         super("org/esa/s2tbx/dataio/pleiades/" + PleiadesProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+
         this.folderDepth = 3;
     }
 
