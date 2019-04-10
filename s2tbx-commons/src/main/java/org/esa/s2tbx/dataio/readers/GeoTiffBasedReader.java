@@ -19,7 +19,7 @@ package org.esa.s2tbx.dataio.readers;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
-import org.esa.s2tbx.dataio.FileImageInputStreamSpi;
+import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
