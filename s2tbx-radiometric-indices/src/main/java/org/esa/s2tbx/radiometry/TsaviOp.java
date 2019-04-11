@@ -105,7 +105,12 @@ public class TsaviOp extends BaseIndexOp {
                     final float nir = nirFactor * nirTile.getSampleFloat(x, y);
                     final float red = redFactor * redTile.getSampleFloat(x, y);
 
-                    tsaviValue = slope * (nir - slope * red - intercept) / (intercept * nir + red - constant1 + constant2);
+                    /**
+                     * https://senbox.atlassian.net/browse/SIITBX-351
+                     * The formula should be as follow:
+                     TSAVI = s * (IR_factor * near_IR - s * red_factor * red - a) / (s * IR_factor * near_IR + red_factor * red - a * s + X * ( 1 + s * s))
+                     */
+                    tsaviValue = slope * (nir - slope * red - intercept) / (slope * nir + red - constant1 + constant2);
 
                     tsavi.setSample(x, y, computeFlag(x, y, tsaviValue, tsaviFlags));
                 }
