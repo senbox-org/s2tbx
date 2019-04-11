@@ -109,7 +109,9 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         } else if (input instanceof File) {
             return ((File)input).toPath();
         } else if (input instanceof Path) {
-            return (Path)input;
+            return (Path) input;
+        } else if (input instanceof String) {
+            return Paths.get((String) input);
         } else {
             throw new IllegalArgumentException("Unknown input '"+input+"'.");
         }

@@ -117,10 +117,8 @@ public class PleiadesProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        Path path = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.productDirectory = VirtualDirEx.build(path);
-
-        PleiadesProductReaderPlugin readerPlugin = (PleiadesProductReaderPlugin)getReaderPlugIn();
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.productDirectory = VirtualDirEx.build(inputPath);
 
         File metadataFile = this.productDirectory.getFile(Constants.ROOT_METADATA);
         this.metadata = VolumeMetadata.create(metadataFile.toPath());
@@ -151,6 +149,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                 initProductTiePointGeoCoding(maxResImageMetadata, product);
             }
 
+            PleiadesProductReaderPlugin readerPlugin = (PleiadesProductReaderPlugin)getReaderPlugIn();
             Path colorPaletteFilePath = readerPlugin.getColorPaletteFilePath();
 
             for (ImageMetadata imageMetadata : imageMetadataList) {
@@ -174,8 +173,8 @@ public class PleiadesProductReader extends AbstractProductReader {
                 Product[][] tiles = new Product[tileCols][tileRows];
                 for (String rasterFile : tileInfo.keySet()) {
                     int[] coords = tileInfo.get(rasterFile);
-                    Path p = imageMetadata.getPath().resolve(rasterFile);
-                    tiles[coords[1]][coords[0]] = ProductIO.readProduct(p.toFile());
+                    Path path = imageMetadata.getPath().resolve(rasterFile);
+                    tiles[coords[1]][coords[0]] = ProductIO.readProduct(path.toFile());
                     tileRefs.add(new WeakReference<Product>(tiles[coords[1]][coords[0]]));
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
@@ -183,9 +182,10 @@ public class PleiadesProductReader extends AbstractProductReader {
                     product.setNumResolutionsMax(levels);
                 }
 
+                int colorWidth = Math.round(width / factorX);
+                int colorHeight = Math.round(height / factorY);
                 for (int i = 0; i < numBands; i++) {
-                    Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, Math.round(width / factorX),
-                                                           Math.round(height / factorY), colorPaletteFilePath);
+                    Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, colorWidth, colorHeight, colorPaletteFilePath);
                     targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
                     targetBand.setSpectralWavelength(bandInfos[i].getCentralWavelength());
                     targetBand.setSpectralBandwidth(bandInfos[i].getBandwidth());
@@ -220,6 +220,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                     targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
                     product.addBand(targetBand);
                 }
+
                 addMasks(product, imageMetadata);
                 addGMLMasks(product, imageMetadata);
             }
@@ -236,7 +237,6 @@ public class PleiadesProductReader extends AbstractProductReader {
             Product product = ref.get();
             if (product != null) {
                 product.closeIO();
-                product = null;
             }
             ref.clear();
         }
@@ -245,13 +245,11 @@ public class PleiadesProductReader extends AbstractProductReader {
     }
 
     @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY,
-                                          int sourceWidth, int sourceHeight,
-                                          int sourceStepX, int sourceStepY,
-                                          Band destBand,
-                                          int destOffsetX, int destOffsetY,
-                                          int destWidth, int destHeight,
-                                          ProductData destBuffer, ProgressMonitor pm) throws IOException {
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight,
+                                          ProductData destBuffer, ProgressMonitor pm)
+                                          throws IOException {
+        // do nothing
     }
 
     private void initProductTiePointGeoCoding(ImageMetadata imageMetadata, Product product) {
@@ -340,7 +338,7 @@ public class PleiadesProductReader extends AbstractProductReader {
         });
     }
 
-    private Band findReferenceBand(Product product, int width) {
+    private static Band findReferenceBand(Product product, int width) {
         Band referenceBand = null;
         for (Band band : product.getBands()) {
             if (band.getRasterWidth() == width) {
@@ -351,11 +349,10 @@ public class PleiadesProductReader extends AbstractProductReader {
         return referenceBand;
     }
 
-    private void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
+    private static void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
         TreeNode<File> resultComponent = null;
         for (TreeNode node : currentComponents.getChildren()) {
             if (node.getId().toLowerCase().equals(componentId.toLowerCase())) {
-                //noinspection unchecked
                 resultComponent = node;
                 break;
             }
@@ -365,5 +362,4 @@ public class PleiadesProductReader extends AbstractProductReader {
             currentComponents.addChild(resultComponent);
         }
     }
-
 }
