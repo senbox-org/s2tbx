@@ -137,7 +137,7 @@ public class WorldView2Metadata extends XmlMetadata {
         try (InputStream inputStream = Files.newInputStream(path)) {
             WorldView2MetadataParser parser = new WorldView2MetadataParser(WorldView2Metadata.class);
             result = parser.parse(inputStream);
-            result.setPath(path.toString());
+            result.setPath(path);
             result.setFileName(path.getFileName().toString());
         } catch (ParserConfigurationException | SAXException e) {
             e.printStackTrace();

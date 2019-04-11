@@ -64,10 +64,6 @@ public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
         return Spot6Constants.DIMAP_DESCRIPTION;
     }
 
-    public File getFileInput(Object input) {
-        return super.getFileInput(input);
-    }
-
     @Override
     protected String[] getMinimalPatternList() {
         return Spot6Constants.MINIMAL_PATTERN_LIST;

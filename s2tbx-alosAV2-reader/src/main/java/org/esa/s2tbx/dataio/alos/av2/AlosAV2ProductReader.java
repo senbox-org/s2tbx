@@ -95,7 +95,7 @@ public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
 
 
     @Override
-    protected void addMetadataMasks(final Product product, final AlosAV2Metadata componentMetadata) {
+    protected void addMetadataMasks(final AlosAV2Metadata componentMetadata) {
         _logger.info("Create masks");
         int noDataValue;
         int saturatedValue;
@@ -120,9 +120,10 @@ public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
     }
 
     @Override
-    protected void addBands(final Product product, final AlosAV2Metadata componentMetadata, final int componentIndex) {
+    protected void addBands(final AlosAV2Metadata componentMetadata, final int componentIndex) {
         product.setFileLocation(inputFile);
-        super.addBands(product, componentMetadata, componentIndex);
+
+        super.addBands(componentMetadata, componentIndex);
         //add the band informations from the metadata
         for (Band band : product.getBands()) {
             band.setScalingFactor(componentMetadata.getGain(band.getName()));

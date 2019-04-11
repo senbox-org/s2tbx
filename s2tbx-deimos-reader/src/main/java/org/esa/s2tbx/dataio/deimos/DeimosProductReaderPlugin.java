@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.deimos;
 
 import org.esa.s2tbx.dataio.deimos.dimap.DeimosConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -77,5 +78,10 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("DEIMOS-1", new String[] { "Red", "Green", "NIR" }));
+    }
+
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+        return super.getDecodeQualification(input);
     }
 }

@@ -80,7 +80,7 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
     }
 
     @Override
-    protected void addMetadataMasks(Product product, DeimosMetadata componentMetadata) {
+    protected void addMetadataMasks(DeimosMetadata componentMetadata) {
         logger.info("Create masks");
         int noDataValue,saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {
@@ -104,8 +104,8 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
     }
 
     @Override
-    protected void addBands(Product product, DeimosMetadata componentMetadata, int componentIndex) {
-        super.addBands(product, componentMetadata, componentIndex);
+    protected void addBands(DeimosMetadata componentMetadata, int componentIndex) {
+        super.addBands(componentMetadata, componentIndex);
 
         if (DeimosConstants.PROCESSING_1R.equals(componentMetadata.getProcessingLevel())) {
             initGeoCoding(product);

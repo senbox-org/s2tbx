@@ -26,6 +26,7 @@ import org.esa.snap.core.datamodel.MetadataElement;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -202,7 +203,7 @@ public class SpotSceneMetadata {
                                     metadataFile.getName()));
                         } else {
                             metadata.setFileName(metadataFile.getName());
-                            metadata.setPath(component.getPath());
+                            metadata.setPath(Paths.get(component.getPath()));
                             componentMetadata.add(metadata);
                         }
                     }

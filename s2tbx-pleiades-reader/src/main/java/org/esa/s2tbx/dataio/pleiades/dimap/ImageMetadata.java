@@ -91,8 +91,9 @@ public class ImageMetadata extends XmlMetadata {
         ImageMetadata result = null;
         try (InputStream inputStream = Files.newInputStream(path)) {
             ImageMetadataParser parser = new ImageMetadataParser(ImageMetadata.class);
+            Path parentFolderPath = path.getParent();
             result = parser.parse(inputStream);
-            result.setPath(path.getParent().toAbsolutePath().toString());
+            result.setPath(parentFolderPath);
             result.setFileName(path.getFileName().toString());
         } catch (ParserConfigurationException | SAXException e) {
             e.printStackTrace();
@@ -461,7 +462,7 @@ public class ImageMetadata extends XmlMetadata {
                 MaskInfo mask = new MaskInfo();
                 mask.name = maskNames[i];
                 mask.description = (maskDescs != null && maskDescs.length == maskNames.length) ? maskDescs[i] : maskNames[i];
-                mask.path = Paths.get(this.path).resolve(paths[i]);
+                mask.path = this.path.resolve(paths[i]);
                 masks.add(mask);
             }
         }

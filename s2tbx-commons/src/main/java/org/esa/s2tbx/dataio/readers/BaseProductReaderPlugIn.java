@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     private static final Logger logger = Logger.getLogger(BaseProductReaderPlugIn.class.getName());
 
-    private static Map<Object, String[]> cachedFiles = new WeakHashMap<>();
+    private static Map<Object, String[]> CACHED_FILES = new WeakHashMap<>();
 
     protected final ProductContentEnforcer enforcer;
     private final Path colorPaletteFilePath;
@@ -103,35 +103,48 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         return this.colorPaletteFilePath;
     }
 
+    public static Path convertInputToPath(Object input) {
+        if (input == null) {
+            throw new NullPointerException();
+        } else if (input instanceof File) {
+            return ((File)input).toPath();
+        } else if (input instanceof Path) {
+            return (Path)input;
+        } else {
+            throw new IllegalArgumentException("Unknown input '"+input+"'.");
+        }
+    }
+
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
+        Path path = convertInputToPath(input);
         DecodeQualification retVal = DecodeQualification.UNABLE;
         VirtualDirEx virtualDir;
         try {
-            virtualDir = getInput(input);
+            virtualDir = VirtualDirEx.build(path);
             if (virtualDir != null) {
                 String[] files = null;
                 if (virtualDir.isCompressed()) {
-                    if (!cachedFiles.containsKey(input)) {
-                        cachedFiles.put(input, virtualDir.listAll());
+                    if (!CACHED_FILES.containsKey(input)) {
+                        CACHED_FILES.put(input, virtualDir.listAll());
                     }
-                    files = cachedFiles.get(input);
-                    if (enforcer.isConsistent(files)) {
+                    files = CACHED_FILES.get(input);
+                    if (this.enforcer.isConsistent(files)) {
                         retVal = DecodeQualification.INTENDED;
                     }
                 } else {
-                    Pattern[] patternList = enforcer.getMinimalFilePatternList();
-                    File inputFile = getFileInput(input);
-                    if (inputFile.isFile() &&
-                            Arrays.stream(patternList).anyMatch(p -> p.matcher(inputFile.getName()).matches())) {
-                        virtualDir.setFolderDepth(folderDepth);
-                        files = virtualDir.listAll(patternList);
-                        if (files.length >= patternList.length && enforcer.isConsistent(files)) {
-                            retVal = DecodeQualification.INTENDED;
+                    Pattern[] patternList = this.enforcer.getMinimalFilePatternList();
+                    if (Files.isRegularFile(path)) {
+                        boolean matches = Arrays.stream(patternList).anyMatch(p -> p.matcher(path.getFileName().toString()).matches());
+                        if (matches) {
+                            virtualDir.setFolderDepth(this.folderDepth);
+                            files = virtualDir.listAll(patternList);
+                            if (files.length >= patternList.length && this.enforcer.isConsistent(files)) {
+                                retVal = DecodeQualification.INTENDED;
+                            }
                         }
                     }
                 }
-
             }
         } catch (IOException e) {
             retVal = DecodeQualification.UNABLE;
@@ -187,6 +200,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
      * @return  An instance of a VirtualDir or VirtualDirEx implementations.
      * @throws IOException  If unable to retrieve the parent of the input.
      */
+    @Deprecated
     public VirtualDirEx getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
         if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
@@ -204,6 +218,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
      * @param input the plugin input
      * @return  a File object instance
      */
+    @Deprecated
     protected File getFileInput(Object input) {
         File outFile = null;
         if (input instanceof String) {
@@ -263,13 +278,14 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     /**
      * Default implementation for a file filter using product naming rules.
      */
-    public class BaseProductFileFilter extends SnapFileFilter {
+    private class BaseProductFileFilter extends SnapFileFilter {
 
-        private Map<File, Boolean> processed;
-        final private int depth;
+        private final Map<File, Boolean> processed;
+        private final int depth;
 
         public BaseProductFileFilter(BaseProductReaderPlugIn plugIn, int folderDepth) {
             super(plugIn.getFormatNames()[0], plugIn.getDefaultFileExtensions(), plugIn.getDescription(Locale.getDefault()));
+
             this.processed = new HashMap<>();
             this.depth = folderDepth;
         }
@@ -293,6 +309,5 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             }
             return shouldAccept;
         }
-
     }
 }

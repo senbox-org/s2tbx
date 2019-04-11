@@ -29,6 +29,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,10 +90,12 @@ public abstract class VirtualDirEx extends VirtualDir {
         add(".tbz");
     }};
 
-    private int depth = 1;
+    private int depth;
 
     protected VirtualDirEx() {
         super();
+
+        this.depth = 1;
     }
     /**
      * Factory method to create an instance of either a VirtualDir object (File, Dir)
@@ -100,32 +103,53 @@ public abstract class VirtualDirEx extends VirtualDir {
      * @param file  The file object to be wrapped.
      * @return  See the description
      */
+    @Deprecated
     public static VirtualDirEx create(File file) {
-        Path path = file.toPath();
+        return create(file.toPath());
+    }
+
+    private static VirtualDirEx create(Path path) {
         String fileName = path.getFileName().toString();
         if (Files.isRegularFile(path) && (TarVirtualDir.isTgz(fileName) || TarVirtualDir.isTar(fileName))) {
             try {
-                return new TarVirtualDir(file);
+                return new TarVirtualDir(path.toFile());
             } catch (IOException ignored) {
                 return null;
             }
         } else {
-            VirtualDir virtualDir = null;
+            AbstractVirtualPath virtualDir = null;
             if (Files.isDirectory(path)) {
                 virtualDir = new VirtualDirPath(path);
-            } else if (isZipFile(path)) {
-                virtualDir = new VirtualZipPath(path);
+            } else {
+                try {
+                    if (isZipFile(path)) {
+                        virtualDir = new VirtualZipPath(path);
+                    }
+                } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                    throw new IllegalStateException(e);
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "Failed to check if the file '"+path+"' is a zip archive.", e);
+                }
             }
             return (virtualDir == null) ? null : new VirtualDirWrapper(virtualDir);
         }
     }
 
-    private static boolean isZipFile(Path zipPath) {
+    public static VirtualDirEx build(Path path) throws IOException {
+        if (Files.isRegularFile(path) && !VirtualDirEx.isPackedFile(path)) {
+            Path parentPath = path.getParent();
+            if (parentPath == null) {
+                throw new IOException("Unable to retrieve parent to file '" + path.toString()+"'.");
+            } else {
+                return VirtualDirEx.create(parentPath);
+            }
+        }
+        return VirtualDirEx.create(path);
+    }
+
+    private static boolean isZipFile(Path zipPath) throws IllegalAccessException, InstantiationException, InvocationTargetException, IOException {
         try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(zipPath)) {
             return (fileSystem != null);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to check if the file '"+zipPath+"' is a zip archive.", e);
-            return false;
         }
     }
 
@@ -135,8 +159,18 @@ public abstract class VirtualDirEx extends VirtualDir {
      * @param file  The file to be tested
      * @return  <code>true</code> if the file is packed or compressed, <code>false</code> otherwise
      */
+    @Deprecated
     public static boolean isPackedFile(File file) {
-        String extension = FileUtils.getExtension(file);
+        return isPackedFile(file.toPath());
+    }
+
+    public static boolean isPackedFile(Path filePath) {
+        String fileName = filePath.getFileName().toString();
+        int pointIndex = fileName.lastIndexOf(".");
+        if (pointIndex <= 0) {
+            return false;
+        }
+        String extension = fileName.substring(pointIndex);
         return !StringUtils.isNullOrEmpty(extension) && COMPRESSED_EXTENSIONS.contains(extension.toLowerCase());
     }
 
@@ -181,7 +215,7 @@ public abstract class VirtualDirEx extends VirtualDir {
      * @throws IOException
      */
     public String[] findAll(String pattern) throws IOException {
-        List<String> found = null; // = new ArrayList<>();
+        List<String> found = null;
         String[] entries = listAll();
         if (entries != null) {
             found = Arrays.stream(entries).filter(e -> e.toLowerCase().contains(pattern)).collect(Collectors.toList());
@@ -193,6 +227,8 @@ public abstract class VirtualDirEx extends VirtualDir {
     public String[] listAllFiles() throws IOException {
         return listAll();
     }
+
+    public abstract <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException;
 
     /**
      * List all the files contained in this virtual directory instance.
@@ -225,7 +261,6 @@ public abstract class VirtualDirEx extends VirtualDir {
                                     };
                                     innerTar.ensureUnpacked(getTempDir());
                                     fileNames.addAll(Arrays.asList(innerTar.listAll()));
-                                    //noinspection ResultOfMethodCallIgnored
                                     file1.delete();
                                 } else {
                                     fileNames.add(zipEntryPath);
@@ -304,10 +339,10 @@ public abstract class VirtualDirEx extends VirtualDir {
      */
     private static class VirtualDirWrapper extends VirtualDirEx {
 
-        private VirtualDir wrapped;
+        private AbstractVirtualPath wrapped;
         private Map<String, String> files;
 
-        public VirtualDirWrapper(VirtualDir dir) {
+        public VirtualDirWrapper(AbstractVirtualPath dir) {
             this.wrapped = dir;
             this.files = new HashMap<>();
         }
@@ -353,6 +388,35 @@ public abstract class VirtualDirEx extends VirtualDir {
                 }
             }
             return inputStream;
+        }
+
+        @Override
+        public <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException {
+            try {
+                return this.wrapped.loadData(relativePath, command);
+            } catch (FileNotFoundException e1) {
+                try {
+                    return this.wrapped.loadData(relativePath.toUpperCase(), command);
+                } catch (FileNotFoundException e2) {
+                    String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
+                    String path = findKeyFile(key);
+                    if (path == null) {
+                        throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
+                    } else {
+                        return this.wrapped.loadData(path, command);
+//                        try {
+//                            // the "classic" way
+//                            file = getFileInner(path);
+//                        } catch (IOException e) {
+//                            if (isArchive()) {
+//                                file = getFileInner(path);
+//                            } else {
+//                                file = getFileFromTempDir(path);
+//                            }
+//                        }
+                    }
+                }
+            }
         }
 
         @Override
@@ -605,6 +669,12 @@ public abstract class VirtualDirEx extends VirtualDir {
         }
 
         @Override
+        public <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException {
+            File file = getFile(path);
+            return command.execute(file.toPath());
+        }
+
+        @Override
         public String getBasePath() {
             return archiveFile.getPath();
         }
@@ -634,7 +704,7 @@ public abstract class VirtualDirEx extends VirtualDir {
             }
             final File file = new File(extractDir, path);
             if (!(file.isFile() || file.isDirectory())) {
-                throw new IOException();
+                throw new FileNotFoundException("The path '"+path+"' does not exist in the folder '"+extractDir.getAbsolutePath()+"'.");
             }
             return file;
         }
@@ -780,17 +850,14 @@ public abstract class VirtualDirEx extends VirtualDir {
         public String[] listAll(Pattern...patterns) {
             List<String> fileNames = new ArrayList<>();
             TarInputStream tis;
-            try (
-                FileInputStream fileStream = new FileInputStream(archiveFile)
-            ) {
-                if (isTgz(archiveFile.getName())) {
-                    tis = new TarInputStream(
-                            new GZIPInputStream(new BufferedInputStream(fileStream)));
+            try (FileInputStream fileStream = new FileInputStream(this.archiveFile)) {
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(fileStream);
+                if (isTgz(this.archiveFile.getName())) {
+                    tis = new TarInputStream(new GZIPInputStream(bufferedInputStream));
                 } else {
-                    tis = new TarInputStream(new BufferedInputStream(fileStream));
+                    tis = new TarInputStream(bufferedInputStream);
                 }
                 TarEntry entry;
-
                 String longLink = null;
                 while ((entry = tis.getNextEntry()) != null) {
                     String entryName = entry.getName();

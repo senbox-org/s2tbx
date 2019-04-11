@@ -9,6 +9,7 @@ import org.esa.s2tbx.dataio.pleiades.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.pleiades.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.pleiades.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.pleiades.internal.MosaicMultiLevelSource;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.snap.core.dataio.AbstractProductReader;
@@ -50,9 +51,10 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public class PleiadesProductReader extends AbstractProductReader {
+
     private static final Logger logger = Logger.getLogger(PleiadesProductReader.class.getName());
 
-    private final static Map<Integer, Integer> typeMap = new HashMap<Integer, Integer>() {{
+    private final static Map<Integer, Integer> TYPE_MAP = new HashMap<Integer, Integer>() {{
         put(ProductData.TYPE_UINT8, DataBuffer.TYPE_BYTE);
         put(ProductData.TYPE_INT8, DataBuffer.TYPE_BYTE);
         put(ProductData.TYPE_UINT16, DataBuffer.TYPE_USHORT);
@@ -74,27 +76,26 @@ public class PleiadesProductReader extends AbstractProductReader {
 
     @Override
     public TreeNode<File> getProductComponents() {
-        if (productDirectory.isCompressed()) {
-            return super.getProductComponents();
-        } else {
-            TreeNode<File> result = super.getProductComponents();
-            //if the volume metadata file is present, but it is not in the list, add it!
+        TreeNode<File> result = super.getProductComponents();
+
+        if (!this.productDirectory.isCompressed()) {
+            // if the volume metadata file is present, but it is not in the list, add it!
             try {
-                File volumeMetadataPhysicalFile = productDirectory.getFile(Constants.ROOT_METADATA);
-                if (metadata != null) {
+                File volumeMetadataPhysicalFile = this.productDirectory.getFile(Constants.ROOT_METADATA);
+                if (this.metadata != null) {
                     addProductComponentIfNotPresent(Constants.ROOT_METADATA, volumeMetadataPhysicalFile, result);
-                    for (VolumeMetadata component : metadata.getVolumeMetadataList()) {
+                    for (VolumeMetadata component : this.metadata.getVolumeMetadataList()) {
                         try {
-                            File fullPathComp = productDirectory.getFile(component.getPath());
+                            File fullPathComp = this.productDirectory.getFile(component.getPath().toString());
                             addProductComponentIfNotPresent(component.getFileName(), fullPathComp, result);
                             for (VolumeComponent vComponent: component.getComponents()){
-                                if(vComponent.getType().equals(Constants.METADATA_FORMAT)){
-                                    File fullPathVComp = productDirectory.getFile(fullPathComp.getParent() + File.separator + vComponent.getPath().toString());
-                                    addProductComponentIfNotPresent(vComponent.getPath().getFileName().toString(), fullPathVComp, result);
+                                if (vComponent.getType().equals(Constants.METADATA_FORMAT)) {
+                                    File fullPathVComp = this.productDirectory.getFile(fullPathComp.getParent() + File.separator + vComponent.getRelativePath());
+                                    addProductComponentIfNotPresent(vComponent.getRelativePath(), fullPathVComp, result);
                                     if(vComponent.getComponentMetadata() != null && vComponent.getComponentMetadata() instanceof ImageMetadata){
                                         ImageMetadata image = (ImageMetadata)vComponent.getComponentMetadata();
                                         for (String raster : image.getRasterFileNames()){
-                                            addProductComponentIfNotPresent(raster, productDirectory.getFile(fullPathVComp.getParent() + File.separator + raster), result);
+                                            addProductComponentIfNotPresent(raster, this.productDirectory.getFile(fullPathVComp.getParent() + File.separator + raster), result);
                                         }
                                         for (ImageMetadata.MaskInfo mask : image.getMasks()){
                                             addProductComponentIfNotPresent(mask.name, mask.path.toFile(), result);
@@ -110,41 +111,38 @@ public class PleiadesProductReader extends AbstractProductReader {
             } catch (IOException ex) {
                 logger.warning(ex.getMessage());
             }
-
-            return result;
         }
+        return result;
     }
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
+        Path path = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.productDirectory = VirtualDirEx.build(path);
+
         PleiadesProductReaderPlugin readerPlugin = (PleiadesProductReaderPlugin)getReaderPlugIn();
-        productDirectory = readerPlugin.getInput(getInput());
-        metadata = VolumeMetadata.create(productDirectory.getFile(Constants.ROOT_METADATA).toPath());
+
+        File metadataFile = this.productDirectory.getFile(Constants.ROOT_METADATA);
+        this.metadata = VolumeMetadata.create(metadataFile.toPath());
         Product product = null;
-        if (metadata != null) {
-            List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
+        if (this.metadata != null) {
+            List<ImageMetadata> imageMetadataList = this.metadata.getImageMetadataList();
             if (imageMetadataList.size() == 0) {
                 throw new IOException("No raster found");
             }
             int width = metadata.getSceneWidth();
             int height = metadata.getSceneHeight();
-            product = new Product(metadata.getInternalReference(),
-                                  metadata.getProductType(),
-                                  width, height);
-            product.setFileLocation(new File(metadata.getPath()));
+            product = new Product(metadata.getInternalReference(), metadata.getProductType(), width, height);
+            product.setFileLocation(this.metadata.getPath().toFile());//new File(metadata.getPath()));
             ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
             product.setDescription(maxResImageMetadata.getProductDescription());
-            //product.setNumResolutionsMax(imageMetadataList.size());
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
             if (maxResImageMetadata.hasInsertPoint()) {
                 String crsCode = maxResImageMetadata.getCRSCode();
                 try {
-                    GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
-                                                            width, height,
-                                                            origin.x, origin.y,
-                                                            origin.stepX, origin.stepY);
+                    GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode), width, height, origin.x, origin.y, origin.stepX, origin.stepY);
                     product.setSceneGeoCoding(geoCoding);
                 } catch (Exception e) {
                     logger.warning(e.getMessage());
@@ -172,19 +170,18 @@ public class PleiadesProductReader extends AbstractProductReader {
                 float factorY = (float) height / bandHeight;
 
                 Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
-                double[][] scalingAndOffsets = imageMetadata.getScalingAndOffsets();
                 Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
                 Product[][] tiles = new Product[tileCols][tileRows];
                 for (String rasterFile : tileInfo.keySet()) {
                     int[] coords = tileInfo.get(rasterFile);
-                    tiles[coords[1]][coords[0]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
+                    Path p = imageMetadata.getPath().resolve(rasterFile);
+                    tiles[coords[1]][coords[0]] = ProductIO.readProduct(p.toFile());
                     tileRefs.add(new WeakReference<Product>(tiles[coords[1]][coords[0]]));
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
                 if (levels > product.getNumResolutionsMax()) {
                     product.setNumResolutionsMax(levels);
                 }
-                //final Stx[] statistics = imageMetadata.getBandsStatistics();
 
                 for (int i = 0; i < numBands; i++) {
                     Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, Math.round(width / factorX),
@@ -214,23 +211,13 @@ public class PleiadesProductReader extends AbstractProductReader {
                             new MosaicMultiLevelSource(srcBands,
                                     bandWidth, bandHeight,
                                     tileWidth, tileHeight, tileCols, tileRows,
-                                    levels, typeMap.get(pixelDataType),
+                                    levels, TYPE_MAP.get(pixelDataType),
                                     imageMetadata.isGeocoded() ?
                                             targetBand.getGeoCoding() != null ?
                                                     Product.findImageToModelTransform(targetBand.getGeoCoding()) :
                                                     Product.findImageToModelTransform(product.getSceneGeoCoding()) :
                                             targetBand.getImageToModelTransform());
                     targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-                    /*if (statistics[i] != null) {
-                        targetBand.setStx(statistics[i]);
-                        targetBand.setImageInfo(
-                                new ImageInfo(
-                                        new ColorPaletteDef(new ColorPaletteDef.Point[] {
-                                                new ColorPaletteDef.Point(statistics[i].getMinimum(), Color.BLACK),
-                                                new ColorPaletteDef.Point(statistics[i].getMean(), Color.GRAY),
-                                                new ColorPaletteDef.Point(statistics[i].getMaximum(), Color.WHITE)
-                                        })));
-                    }*/
                     product.addBand(targetBand);
                 }
                 addMasks(product, imageMetadata);

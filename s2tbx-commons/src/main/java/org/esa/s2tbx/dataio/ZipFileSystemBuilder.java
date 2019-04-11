@@ -5,6 +5,9 @@ import com.sun.nio.zipfs.ZipFileSystemProvider;
 import org.esa.snap.vfs.remote.TransferFileContentUtil;
 import org.esa.snap.vfs.remote.http.HttpFileSystemProvider;
 
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -59,6 +62,23 @@ public class ZipFileSystemBuilder {
         return ZIP_FILE_SYSTEM_CONSTRUCTOR.newInstance(ZIP_FILE_SYSTEM_PROVIDER, zipPath, Collections.emptyMap());
     }
 
+    public static <ResultType> ResultType loadZipEntryDataFromZipArchive(Path zipPath, String zipEntryPath, ICallbackCommand<ResultType> command)
+                                                        throws IllegalAccessException, InvocationTargetException, InstantiationException, IOException {
+
+        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(zipPath)) {
+            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
+            while (it.hasNext()) {
+                Path root = it.next();
+                LoadZipEntryDataFileVisitor<ResultType> visitor = new LoadZipEntryDataFileVisitor<ResultType>(zipEntryPath, command);
+                Files.walkFileTree(root, visitor);
+                if (visitor.isFoundZipEntry()) {
+                    return visitor.getZipEntryData();
+                }
+            }
+            throw new FileNotFoundException("The zip entry path '"+zipEntryPath+"' does not exist in the zip archive '"+zipPath.toString()+"'.");
+        }
+    }
+
     public static TreeSet<String> listAllFileEntriesFromZipArchive(Path zipPath)
                                                 throws IllegalAccessException, InvocationTargetException, InstantiationException, IOException {
 
@@ -96,11 +116,11 @@ public class ZipFileSystemBuilder {
                 Path root = it.next();
                 CopyZipEntryFileVisitor visitor = new CopyZipEntryFileVisitor(zipEntryPath, destinationFolder);
                 Files.walkFileTree(root, visitor);
-                if (visitor.getCopiedFile() != null) {
-                    return visitor.getCopiedFile();
+                if (visitor.getLocalFile() != null) {
+                    return visitor.getLocalFile();
                 }
             }
-            return null;
+            throw new FileNotFoundException("The zip entry path '"+zipEntryPath+"' does not exist in the zip archive '"+zipPath.toString()+"'.");
         }
     }
 
@@ -126,14 +146,13 @@ public class ZipFileSystemBuilder {
         private final String zipEntryPath;
         private final Path destinationFolder;
 
-        private Path copiedFile;
+        private Path localFile;
 
         private CopyZipEntryFileVisitor(String zipEntryPath, Path destinationFolder) {
             if (zipEntryPath.startsWith("/")) {
                 this.zipEntryPath = zipEntryPath.substring(1);
             } else {
                 this.zipEntryPath = zipEntryPath;
-
             }
             this.destinationFolder = destinationFolder;
         }
@@ -145,19 +164,69 @@ public class ZipFileSystemBuilder {
                 currentZipEntryPath = currentZipEntryPath.substring(1);
             }
             if (this.zipEntryPath.equals(currentZipEntryPath)) {
-                this.copiedFile = this.destinationFolder.resolve(currentZipEntryPath);
-                Path parentFolder = this.copiedFile.getParent();
+                this.localFile = this.destinationFolder.resolve(currentZipEntryPath);
+                Path parentFolder = this.localFile.getParent();
                 if (!Files.exists(parentFolder)) {
                     Files.createDirectories(parentFolder);
                 }
-                TransferFileContentUtil.copyFileUsingInputStream(file, this.copiedFile.toString());
+                boolean copyFile = true;
+                if (Files.isRegularFile(this.localFile)) {
+                    // the local file already exists
+                    long localFileSizeInBytes = Files.size(this.localFile);
+                    long zipEntryFileSizeInBytes = Files.size(file);
+                    copyFile = (localFileSizeInBytes != zipEntryFileSizeInBytes);
+                }
+                if (copyFile) {
+                    TransferFileContentUtil.copyFileUsingInputStream(file, this.localFile.toString());
+                }
                 return FileVisitResult.TERMINATE;
             }
             return FileVisitResult.CONTINUE;
         }
 
-        Path getCopiedFile() {
-            return this.copiedFile;
+        Path getLocalFile() {
+            return this.localFile;
+        }
+    }
+
+    private static class LoadZipEntryDataFileVisitor<ResultType> extends SimpleFileVisitor<Path> {
+
+        private final String zipEntryPath;
+        private final ICallbackCommand<ResultType> command;
+
+        private ResultType zipEntryData;
+        private boolean foundZipEntry;
+
+        private LoadZipEntryDataFileVisitor(String zipEntryPath, ICallbackCommand<ResultType> command) {
+            if (zipEntryPath.startsWith("/")) {
+                this.zipEntryPath = zipEntryPath.substring(1);
+            } else {
+                this.zipEntryPath = zipEntryPath;
+            }
+            this.command = command;
+            this.foundZipEntry = false;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            String currentZipEntryPath = file.toString();
+            if (currentZipEntryPath.startsWith("/")) {
+                currentZipEntryPath = currentZipEntryPath.substring(1);
+            }
+            if (this.zipEntryPath.equals(currentZipEntryPath)) {
+                this.foundZipEntry = true;
+                this.zipEntryData = this.command.execute(file);
+                return FileVisitResult.TERMINATE;
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        boolean isFoundZipEntry() {
+            return foundZipEntry;
+        }
+
+        ResultType getZipEntryData() {
+            return zipEntryData;
         }
     }
 
