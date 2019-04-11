@@ -27,9 +27,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -129,7 +129,6 @@ public class IkonosProductReader extends AbstractProductReader {
             final String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
             final String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
             int levels;
-            Double bandGainPan = 0.0;
             for (BandMetadata aBandMetadataList : bandMetadataList) {
                 final String imageFileName = aBandMetadataList.getImageFileName();
                 this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + IkonosConstants.IMAGE_EXTENSION).toFile()));
@@ -161,12 +160,11 @@ public class IkonosProductReader extends AbstractProductReader {
                                 break;
                         }
                         bandGain = IkonosConstants.BAND_GAIN[bandNameIndex];
-                        bandGainPan += IkonosConstants.BAND_GAIN[bandNameIndex];
                     }
                 }
                 if (bandName == null) {
                     bandName = IkonosConstants.BAND_NAMES[4];
-                    bandGain = bandGainPan / (IkonosConstants.BAND_NAMES.length - 1);
+                    bandGain = Arrays.asList(IkonosConstants.BAND_GAIN).stream().mapToDouble(p -> p).sum() / (IkonosConstants.BAND_NAMES.length - 1);
                     final GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
                     if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
                         this.product.setSceneGeoCoding(bandGeoCoding);

@@ -130,10 +130,6 @@
         "value": "boundingBox"
       },
       {
-        "path": "ALOS/Dataset_Components/Component[3]/COMPONENT_PATH/href",
-        "value": "AL01_PRI_M1B_1C_20061017T212809_20061017T212815_ESR_003892_2B3E_QL.GTIF"
-      },
-      {
         "path": "ALOS/Coordinate_Reference_System/Horizontal_CS/Geographic_CS/Horizontal_Datum/Prime_Meridian/PRIME_MERIDIAN_OFFSET",
         "value": "0.017453"
       },
