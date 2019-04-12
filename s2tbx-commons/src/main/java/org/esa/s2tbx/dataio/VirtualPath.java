@@ -45,31 +45,37 @@ public class VirtualPath implements Path {
     private final String separator; //separator used in the dir file system
 
     public VirtualPath(Path path, VirtualDirEx dir) {
-        FileSystem fsys = FileSystems.getDefault();
-        if(dir != null && dir.isCompressed()) {
-            try {
-                fsys = FileSystems.newFileSystem(Paths.get(dir.getBasePath()),null);
-            } catch (Exception e) {
-                fsys = null;
+        if (path.getFileSystem() == FileSystems.getDefault()) {
+            FileSystem fsys = FileSystems.getDefault();
+            if (dir != null && dir.isCompressed()) {
+                try {
+                    fsys = FileSystems.newFileSystem(Paths.get(dir.getBasePath()),null);
+                } catch (Exception e) {
+                    fsys = null;
+                }
             }
-        }
 
-        if(fsys == null) {
-            if (path != null && !path.toString().equals("")) {
-                this.path = path;
+            if (fsys == null) {
+                if (path != null && !path.toString().equals("")) {
+                    this.path = path;
+                } else {
+                    this.path = Paths.get(".");
+                }
+                this.separator = File.separator;
             } else {
-                this.path = Paths.get(".");
+                if (path != null && !path.toString().equals("")) {
+                    this.path = fsys.getPath(Paths.get(path.toString()).toString());
+                } else {
+                    this.path = Paths.get(".");
+                }
+                this.separator = fsys.getSeparator();
             }
-            separator = File.separator;
+            this.dir = dir;
         } else {
-            if (path != null && !path.toString().equals("")) {
-                this.path = fsys.getPath(Paths.get(path.toString()).toString());
-            } else {
-                this.path = Paths.get(".");
-            }
-            separator = fsys.getSeparator();
+            this.dir = dir;
+            this.path = path;
+            this.separator = this.path.getFileSystem().getSeparator();
         }
-        this.dir = dir;
 
     }
 

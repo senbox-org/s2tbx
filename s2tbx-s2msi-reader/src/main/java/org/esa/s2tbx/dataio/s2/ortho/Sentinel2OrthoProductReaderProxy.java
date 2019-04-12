@@ -26,9 +26,7 @@ import java.io.IOException;
  */
 public class Sentinel2OrthoProductReaderProxy implements ProductReader {
 
-
     private Sentinel2OrthoProductReader reader;
-    private static S2ProductCRSCache crsCache = new S2ProductCRSCache();
     private final S2OrthoProductReaderPlugIn readerPlugIn;
     private final String epsgCode;
 
@@ -38,66 +36,65 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
         this.epsgCode = epsgCode;
     }
 
-    public ProductReaderPlugIn getReaderPlugIn(){
-        return readerPlugIn;
+    @Override
+    public ProductReaderPlugIn getReaderPlugIn() {
+        return this.readerPlugIn;
     }
 
+    @Override
     public Object getInput() {
-        if(reader == null){
+        if (this.reader == null) {
             return null;
         }
-        return reader.getInput();
+        return this.reader.getInput();
     }
 
+    @Override
     public ProductSubsetDef getSubsetDef() {
-        if(reader == null){
+        if (this.reader == null) {
             return null;
         }
-        return reader.getSubsetDef();
+        return this.reader.getSubsetDef();
     }
 
-    public Product readProductNodes(Object input,
-                             ProductSubsetDef subsetDef) throws IOException, IllegalFileFormatException {
-
-        File file = null;
-        VirtualPath virtualPath = null;
-        if(!(input instanceof File)){
+    @Override
+    public Product readProductNodes(Object input, ProductSubsetDef subsetDef) throws IOException {
+        if (!(input instanceof File)) {
             throw new IOException("Invalid input");
         }
-        if(reader == null) {
-            file = (File) input;
-            INamingConvention namingConvention = NamingConventionFactory.createOrthoNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+        VirtualPath virtualPath = null;
+        if (this.reader == null) {
+            File file = (File) input;
+            VirtualPath sentinel2VirtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath());
+            INamingConvention namingConvention = NamingConventionFactory.createOrthoNamingConvention(sentinel2VirtualPath);
             if (namingConvention == null) {
                 throw new IOException("Invalid input");
             }
             S2Config.Sentinel2ProductLevel level = namingConvention.getProductLevel();
             virtualPath = namingConvention.getInputXml();
             if (level == S2Config.Sentinel2ProductLevel.L2A) {
-                reader = new Sentinel2L2AProductReader(readerPlugIn, epsgCode);
+                this.reader = new Sentinel2L2AProductReader(this.readerPlugIn, this.epsgCode);
             } else if (level == S2Config.Sentinel2ProductLevel.L1C) {
-                reader = new Sentinel2L1CProductReader(readerPlugIn, epsgCode);
+                this.reader = new Sentinel2L1CProductReader(this.readerPlugIn, this.epsgCode);
             } else if (level == S2Config.Sentinel2ProductLevel.L3) {
-                reader = new Sentinel2L3ProductReader(readerPlugIn, epsgCode);
+                this.reader = new Sentinel2L3ProductReader(this.readerPlugIn, this.epsgCode);
             } else {
                 throw new IOException("Invalid input");
             }
         }
-        return reader.readProductNodes(virtualPath, subsetDef);
-
+        return this.reader.readProductNodes(virtualPath, subsetDef);
     }
 
-
-    public void readBandRasterData(Band destBand,
-                            int destOffsetX, int destOffsetY,
-                            int destWidth, int destHeight,
-                            ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        return;
+    @Override
+    public void readBandRasterData(Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
+                                   throws IOException {
+        // so nothing
     }
 
-    public void close() throws IOException{
-        if(reader == null){
-            return;
+    @Override
+    public void close() throws IOException {
+        if (this.reader != null) {
+            this.reader.close();
         }
-        reader.close();
     }
 }

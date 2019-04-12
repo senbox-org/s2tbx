@@ -29,6 +29,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -47,6 +48,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.Utils.GetLongPathNameW;
 import static org.esa.s2tbx.dataio.Utils.getMD5sum;
@@ -58,7 +60,7 @@ import static org.esa.s2tbx.dataio.Utils.getMD5sum;
  */
 public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
-
+    private static final Logger logger = Logger.getLogger(Sentinel2ProductReader.class.getName());
 
     private S2Config config;
     private File cacheDir;
@@ -67,9 +69,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     protected INamingConvention namingConvention;
 
-
-
-    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn) {
+    protected Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
 
         this.config = new S2Config();
@@ -135,10 +135,9 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        SystemUtils.LOG.fine("readProductNodeImpl, " + getInput().toString());
+        logger.fine("readProductNodeImpl, " + getInput().toString());
 
-        if(getInput() instanceof File) {
-            final File inputFile;
+        if (getInput() instanceof File) {
             File file;
 
             String longInput = GetLongPathNameW(getInput().toString());
@@ -297,27 +296,17 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      */
     private TileLayout retrieveTileLayoutFromGranuleDirectory(VirtualPath granuleMetadataPath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
-
         VirtualPath pathToImages = granuleMetadataPath.resolve("IMG_DATA");
-
         try {
-
-
             for (VirtualPath imageFilePath : getImageDirectories(pathToImages, resolution)) {
                 try {
-                    tileLayoutForResolution =
-                            OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.getFile().toPath());
+                    tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.getFile().toPath());
                     if (tileLayoutForResolution != null) {
                         break;
                     }
                 } catch (IOException | InterruptedException e) {
-                    // if we have an exception, we try with the next file (if any)
-                    // and log a warning
-                    SystemUtils.LOG.warning(
-                            "Could not retrieve tile layout for file " +
-                                    imageFilePath.toAbsolutePath().toString() +
-                                    " error returned: " +
-                                    e.getMessage());
+                    // if we have an exception, we try with the next file (if any) // and log a warning
+                    SystemUtils.LOG.warning("Could not retrieve tile layout for file " + imageFilePath.toAbsolutePath().toString() + " error returned: " + e.getMessage());
                 }
             }
         } catch (IOException e) {
@@ -372,17 +361,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         return imageDirectories;
-        /*return Files.newDirectoryStream(pathToImages, entry -> {
-            String[] bandNames = getBandNames(resolution);
-            if (bandNames != null) {
-                for (String bandName : bandNames) {
-                    if (entry.toString().endsWith(bandName + ".jp2")) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        });*/
     }
 
     protected Band addBand(Product product, BandInfo bandInfo, Dimension nativeResolutionDimensions) {
@@ -441,13 +419,13 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 if (sourceImage != null) {
                     sourceImage.reset();
                     sourceImage.dispose();
-                    sourceImage = null;
                 }
             }
         }
         if(inputPath != null) {
             inputPath.close();
         }
+
         super.close();
     }
 

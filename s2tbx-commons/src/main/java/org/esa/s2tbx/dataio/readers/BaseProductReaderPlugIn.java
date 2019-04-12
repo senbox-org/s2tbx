@@ -56,6 +56,7 @@ import java.util.regex.Pattern;
  * @author Cosmin Cara
  */
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
+
     private static final Logger logger = Logger.getLogger(BaseProductReaderPlugIn.class.getName());
 
     private static Map<Object, String[]> CACHED_FILES = new WeakHashMap<>();

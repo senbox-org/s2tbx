@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
@@ -32,6 +33,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
@@ -41,10 +44,15 @@ import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
  */
 public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
+    private static final Logger logger = Logger.getLogger(S2OrthoProductReaderPlugIn.class.getName());
+
     private static S2ProductCRSCache crsCache = new S2ProductCRSCache();
-    private S2Config.Sentinel2ProductLevel level = S2Config.Sentinel2ProductLevel.UNKNOWN;
+
+    private S2Config.Sentinel2ProductLevel level;
 
     public S2OrthoProductReaderPlugIn() {
+        this.level = S2Config.Sentinel2ProductLevel.UNKNOWN;
+
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural Colors", new String[]{"B4", "B3", "B2"}));
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI False-color Infrared", new String[]{"B8", "B4", "B3"}));
@@ -66,25 +74,24 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         return "Multi";
     }
 
-
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        SystemUtils.LOG.fine("Getting decoders...");
+        logger.log(Level.FINEST, "Getting decoders...");
 
-        if(!(input instanceof File)) {
+        if (!(input instanceof File)) {
             return DecodeQualification.UNABLE;
         }
         File file = (File) input;
         String canonicalPathString = "";
         Path canonicalPath;
         try {
-            canonicalPath = Paths.get(file.toURI());
+            canonicalPath = file.toPath();//Paths.get(file.toURI());
             canonicalPathString = canonicalPath.toAbsolutePath().toString();
         } catch (Exception e) {
             return DecodeQualification.UNABLE;
         }
 
-        if(!isValidExtension(file)) {
+        if (!isValidExtension(file)) {
             return DecodeQualification.UNABLE;
         }
 
@@ -123,7 +130,8 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        SystemUtils.LOG.info(String.format("Building product reader - %s", getEPSG()));
+        logger.info(String.format("Building product reader - %s", getEPSG()));
+
         return new Sentinel2OrthoProductReaderProxy(this, getEPSG());
     }
 
@@ -136,5 +144,4 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     public String getDescription(Locale locale) {
         return String.format("Sentinel-2 MSI %s - Native resolutions - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
-
 }

@@ -17,6 +17,7 @@
 
 package org.esa.snap.utils;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -47,13 +48,15 @@ public class FileHelper {
     }
 
     public static void copyFileUsingInputStream(Path sourcePath, String destinationLocalFilePath) throws IOException {
+        int maximumBufferSize = 1024 * 1024;
         try (InputStream inputStream = sourcePath.getFileSystem().provider().newInputStream(sourcePath);
-             ReadableByteChannel readableByteChannel = Channels.newChannel(inputStream);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, maximumBufferSize);
+             ReadableByteChannel readableByteChannel = Channels.newChannel(bufferedInputStream);
              FileOutputStream fileOutputStream = new FileOutputStream(destinationLocalFilePath, false)) {
 
             FileChannel destinationFileChannel = fileOutputStream.getChannel();
-            ByteBuffer buffer = ByteBuffer.allocate(64 * 1024);
-            while ((readableByteChannel.read(buffer)) > 0) {
+            ByteBuffer buffer = ByteBuffer.allocate(maximumBufferSize);
+            while (readableByteChannel.read(buffer) > 0) {
                 // prepare the buffer to be drained
                 buffer.flip();
                 // write to the channel, may block

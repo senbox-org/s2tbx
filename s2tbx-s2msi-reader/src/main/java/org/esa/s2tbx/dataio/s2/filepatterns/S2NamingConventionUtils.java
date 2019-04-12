@@ -302,19 +302,19 @@ public class S2NamingConventionUtils {
         }
     }
 
-    public static VirtualPath transformToSentinel2VirtualPath (Path path) throws IOException{
+    public static VirtualPath transformToSentinel2VirtualPath(Path path) throws IOException{
         VirtualPath virtualPath;
 
-        if(VirtualDirEx.isPackedFile(path.toFile())) {
-            VirtualDirEx virtualDirEx = VirtualDirEx.create(path.toFile());
-            if(virtualDirEx == null) {
+        if (VirtualDirEx.isPackedFile(path)) {
+            VirtualDirEx virtualDirEx = VirtualDirEx.build(path);
+            if (virtualDirEx == null) {
                 throw new IOException(String.format("Unable to read %s",path.toString()));
             }
             String folderName = PathUtils.getFileNameWithoutExtension(path);
-            if(!folderName.endsWith(".SAFE")) {
+            if (!folderName.endsWith(".SAFE")) {
                 folderName = folderName +".SAFE";
             }
-            if(virtualDirEx.exists(folderName)) {
+            if (virtualDirEx.exists(folderName)) {
                 virtualPath = new VirtualPath(folderName, virtualDirEx);
             } else {
                 virtualPath = new VirtualPath(".", virtualDirEx);
