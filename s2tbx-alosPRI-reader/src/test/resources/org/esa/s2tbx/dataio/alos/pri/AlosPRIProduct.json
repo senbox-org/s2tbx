@@ -134,8 +134,8 @@
         "value": "0.017453"
       },
       {
-        "path": "ALOS/Data_Strip/Satellite_Attitudes/Angles_List/Angles[37]/Angular_Speed/PITCH",
-        "value": "0.001"
+        "path": "Metadata/result/EarthObservationResult/browse/BrowseInformation/referenceSystemIdentifier",
+        "value": "EPSG_4326"
       },
       {
         "path": "ALOS[2]/Geoposition/Geoposition_Insert/XDIM",
