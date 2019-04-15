@@ -9,10 +9,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -28,6 +31,12 @@ public class VirtualDirPath extends AbstractVirtualPath {
 
     public VirtualDirPath(Path dirPath) {
         this.dirPath = dirPath;
+    }
+
+    @Override
+    public FileSystem newFileSystem() throws IOException {
+        FileSystemProvider fileSystemProvider = this.dirPath.getFileSystem().provider();
+        return fileSystemProvider.newFileSystem(this.dirPath, null);
     }
 
     @Override

@@ -1,10 +1,8 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-import com.bc.ceres.core.VirtualDir;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,24 +17,19 @@ public class NamingConventionFactory {
      * @param virtualPath
      * @return appropriated naming convention or null
      */
-    public static INamingConvention createNamingConvention(VirtualPath virtualPath)  {
-
-
+    public static INamingConvention createNamingConvention(VirtualPath virtualPath) {
         L1BNamingConvention l1bConvention = new L1BNamingConvention(virtualPath);
-        if(l1bConvention.getInputType() != null){
+        if (l1bConvention.getInputType() != null) {
             return l1bConvention;
         }
-
         SAFENamingConvention safe = new SAFENamingConvention(virtualPath);
-        if(safe.getInputType() != null){
+        if (safe.getInputType() != null) {
             return safe;
         }
-
         SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(virtualPath);
-        if(safeCompact.getInputType() != null){
+        if (safeCompact.getInputType() != null) {
             return safeCompact;
         }
-
         return null;
     }
 
@@ -49,17 +42,14 @@ public class NamingConventionFactory {
     }
 
     public static INamingConvention createOrthoNamingConvention(VirtualPath virtualPath)  {
-
         SAFENamingConvention safe = new SAFENamingConvention(virtualPath);
-        if(safe.getInputType() != null){
+        if (safe.getInputType() != null) {
             return safe;
         }
-
         SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(virtualPath);
-        if(safeCompact.getInputType() != null){
+        if (safeCompact.getInputType() != null) {
             return safeCompact;
         }
-
         return null;
     }
 
@@ -179,7 +169,7 @@ public class NamingConventionFactory {
      * @param path
      * @return
      */
-    public static String getGranuleFormat (Path path) {
+    public static String getGranuleFormat (VirtualPath path) {
         String filename = path.getFileName().toString();
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.GRANULE_XML_REGEX);
         Matcher matcher = pattern.matcher(filename);

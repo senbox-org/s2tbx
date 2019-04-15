@@ -17,8 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.ortho;
 
-import org.esa.s2tbx.dataio.VirtualPath;
-import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
@@ -26,12 +25,9 @@ import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
-import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +42,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     private static final Logger logger = Logger.getLogger(S2OrthoProductReaderPlugIn.class.getName());
 
-    private static S2ProductCRSCache crsCache = new S2ProductCRSCache();
+    private static S2ProductCRSCache CRS_CHACHE = new S2ProductCRSCache();
 
     private S2Config.Sentinel2ProductLevel level;
 
@@ -82,33 +78,33 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
         File file = (File) input;
-        String canonicalPathString = "";
-        Path canonicalPath;
-        try {
-            canonicalPath = file.toPath();//Paths.get(file.toURI());
-            canonicalPathString = canonicalPath.toAbsolutePath().toString();
-        } catch (Exception e) {
+        Path inputPath = file.toPath();
+        if (!inputPath.isAbsolute()) {
             return DecodeQualification.UNABLE;
         }
-
         if (!isValidExtension(file)) {
             return DecodeQualification.UNABLE;
         }
+        //TODO Jean remove
+//        if (file.toPath().getFileSystem() != FileSystems.getDefault()) {
+//            return DecodeQualification.UNABLE;
+//        }
 
-        crsCache.ensureIsCached(canonicalPath);
+        CRS_CHACHE.ensureIsCached(inputPath);
 
-        level = crsCache.getProductLevel(canonicalPathString);
-        S2Config.Sentinel2InputType  inputType = crsCache.getInputType(canonicalPathString);
+        String canonicalPathString = inputPath.toString();
+        this.level = CRS_CHACHE.getProductLevel(canonicalPathString);
+        S2Config.Sentinel2InputType inputType = CRS_CHACHE.getInputType(canonicalPathString);
 
-        if(inputType == null) {
+        if (inputType == null) {
             return DecodeQualification.UNABLE;
         }
 
-        if((level != S2Config.Sentinel2ProductLevel.L1C)  && (level != S2Config.Sentinel2ProductLevel.L2A) && (level != S2Config.Sentinel2ProductLevel.L3)) {
+        if ((level != S2Config.Sentinel2ProductLevel.L1C)  && (level != S2Config.Sentinel2ProductLevel.L2A) && (level != S2Config.Sentinel2ProductLevel.L3)) {
             return DecodeQualification.UNABLE;
         }
 
-        if(!crsCache.hasEPSG(canonicalPathString, getEPSG())) {
+        if(!CRS_CHACHE.hasEPSG(canonicalPathString, getEPSG())) {
             return DecodeQualification.UNABLE;
         }
 
@@ -117,9 +113,10 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         //if product is level2 or level3, check the specific folder//TODO revisar
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(new VirtualPath(canonicalPath,null), getResolution()))
+        VirtualPath pathMetadata = new VirtualPath(inputPath, null);
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(pathMetadata, getResolution()))
             return DecodeQualification.UNABLE;
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(new VirtualPath(canonicalPath,null), getResolution()))
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(pathMetadata, getResolution()))
             return DecodeQualification.UNABLE;
 
         //level=S2Config.Sentinel2ProductLevel.L2A;

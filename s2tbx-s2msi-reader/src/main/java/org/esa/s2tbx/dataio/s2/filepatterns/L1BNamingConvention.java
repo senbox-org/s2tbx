@@ -1,16 +1,14 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductNamingUtils;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -74,47 +72,49 @@ public class L1BNamingConvention implements INamingConvention {
     private S2SpatialResolution resolution = S2SpatialResolution.R10M;
 
 
-    public L1BNamingConvention(VirtualPath input){
+    public L1BNamingConvention(VirtualPath input) {
         String inputName = input.getFileName().toString();
         level = S2Config.Sentinel2ProductLevel.L1B;
 
-        if(/*Files.isDirectory(input)*/input.isDirectory()) {
+        if (input.isDirectory()) {
+            // the input is a directory
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
             Pattern patternCompact = Pattern.compile(PRODUCT_COMPACT_REGEX);
-            if (pattern.matcher(inputName).matches()||patternCompact.matcher(inputName).matches()) {
+            if (pattern.matcher(inputName).matches() || patternCompact.matcher(inputName).matches()) {
                 inputXmlPath = getXmlProductFromDir(input);
                 inputProductXml = inputXmlPath;
                 inputType = S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA;
             }
-            if(inputXmlPath == null) {
+            if (inputXmlPath == null) {
                 pattern = Pattern.compile(GRANULE_REGEX);
                 if (pattern.matcher(inputName).matches()) {
                     inputXmlPath = getXmlGranuleFromDir(input);
-                    inputProductXml = S2NamingConventionUtils.getProductXmlFromGranuleXml(inputXmlPath,getProductXmlREGEXs());
+                    inputProductXml = S2NamingConventionUtils.getProductXmlFromGranuleXml(inputXmlPath, getProductXmlREGEXs());
                     inputType = S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA;
                 }
             }
-            if(inputXmlPath == null) {
+            if (inputXmlPath == null) {
                 inputType = null;
                 return;
             }
         } else {
+            // the input is a file
             Pattern pattern = Pattern.compile(PRODUCT_XML_REGEX);
             if (pattern.matcher(inputName).matches()) {
                 inputXmlPath = input;
                 inputType = S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA;
                 inputProductXml = inputXmlPath;
             }
-            if(inputXmlPath == null) {
+            if (inputXmlPath == null) {
                 pattern = Pattern.compile(GRANULE_XML_REGEX);
                 if (pattern.matcher(inputName).matches()) {
                     inputXmlPath = input;
-                    inputProductXml = S2NamingConventionUtils.getProductXmlFromGranuleXml(inputXmlPath,getProductXmlREGEXs());
+                    inputProductXml = S2NamingConventionUtils.getProductXmlFromGranuleXml(inputXmlPath, getProductXmlREGEXs());
                     inputType = S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA;
                 }
             }
-            if(inputXmlPath == null) {
+            if (inputXmlPath == null) {
                 inputType = null;
                 return;
             }

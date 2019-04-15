@@ -1,20 +1,16 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by obarrile on 07/11/2016.
@@ -302,25 +298,25 @@ public class S2NamingConventionUtils {
         }
     }
 
-    public static VirtualPath transformToSentinel2VirtualPath(Path path) throws IOException{
+    public static VirtualPath transformToSentinel2VirtualPath(Path path) throws IOException {
         VirtualPath virtualPath;
-
         if (VirtualDirEx.isPackedFile(path)) {
+            // the path represents an archive
             VirtualDirEx virtualDirEx = VirtualDirEx.build(path);
             if (virtualDirEx == null) {
-                throw new IOException(String.format("Unable to read %s",path.toString()));
+                throw new IOException(String.format("Unable to read %s", path.toString()));
             }
             String folderName = PathUtils.getFileNameWithoutExtension(path);
             if (!folderName.endsWith(".SAFE")) {
-                folderName = folderName +".SAFE";
+                folderName = folderName + ".SAFE";
             }
-            if (virtualDirEx.exists(folderName)) {
-                virtualPath = new VirtualPath(folderName, virtualDirEx);
-            } else {
-                virtualPath = new VirtualPath(".", virtualDirEx);
+            if (!virtualDirEx.exists(folderName)) {
+                folderName = ".";
             }
+            Path folderNamePath = path.resolve(folderName).getFileName();
+            virtualPath = new VirtualPath(folderNamePath, virtualDirEx);
         } else {
-            virtualPath = new VirtualPath(path);
+            virtualPath = new VirtualPath(path, null);
         }
         return virtualPath;
     }

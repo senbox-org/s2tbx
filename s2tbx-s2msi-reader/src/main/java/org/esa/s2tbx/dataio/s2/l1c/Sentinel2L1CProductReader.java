@@ -18,7 +18,7 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -31,7 +31,6 @@ import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -56,9 +55,9 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
 
     protected final Logger logger;
 
-
     public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
-        super(readerPlugIn,epsgCode);
+        super(readerPlugIn, epsgCode);
+
         logger = SystemUtils.LOG;
     }
 
@@ -72,9 +71,7 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
         return L1C_CACHE_DIR;
     }
 
-    protected S2Metadata parseHeader(
-            VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
-
+    protected S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
         try {
             return L1cMetadata.parseHeader(path, granuleName, config, epsg, isAGranule, namingConvention);
         } catch (ParserConfigurationException | SAXException e) {

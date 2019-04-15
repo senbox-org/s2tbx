@@ -17,7 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.junit.Test;
 
 import java.io.File;

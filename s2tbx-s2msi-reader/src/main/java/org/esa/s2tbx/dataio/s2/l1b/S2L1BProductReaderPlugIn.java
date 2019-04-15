@@ -28,6 +28,9 @@ import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.Locale;
 
 /**
@@ -49,8 +52,6 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
     public DecodeQualification getDecodeQualification(Object input) {
         SystemUtils.LOG.fine("Getting decoders...");
 
-        DecodeQualification decodeQualification = DecodeQualification.UNABLE;
-
         if (!(input instanceof File)) {
             return DecodeQualification.UNABLE;
         }
@@ -60,19 +61,21 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
 
+        //TODO Jean remove
+        if (file.toPath().getFileSystem() != FileSystems.getDefault()) {
+            return DecodeQualification.UNABLE;
+        }
 
-        //TODO Jean uncoment the lines when implementing for remote files
-//        INamingConvention namingConvention = null;
-//        try {
-//            namingConvention = NamingConventionFactory.createL1BNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
-//        } catch (IOException e) {
-//            return DecodeQualification.UNABLE;
-//        }
-//        if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
-//            return DecodeQualification.INTENDED;
-//        }
+        INamingConvention namingConvention = null;
+        try {
+            namingConvention = NamingConventionFactory.createL1BNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+        } catch (IOException e) {
+            return DecodeQualification.UNABLE;
+        }
+        if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
+            return DecodeQualification.INTENDED;
+        }
         return DecodeQualification.UNABLE;
-
     }
 
     @Override

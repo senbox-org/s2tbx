@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductNamingUtils;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -8,7 +8,6 @@ import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;

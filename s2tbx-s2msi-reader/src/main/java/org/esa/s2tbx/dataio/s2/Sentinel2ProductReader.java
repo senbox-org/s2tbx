@@ -17,19 +17,15 @@
 
 package org.esa.s2tbx.dataio.s2;
 
-import com.bc.ceres.core.VirtualDir;
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
-import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
-import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -37,20 +33,24 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.quicklooks.Quicklook;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.utils.FileHelper;
 
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.Utils.GetLongPathNameW;
 import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 
 /**
@@ -62,10 +62,9 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     private static final Logger logger = Logger.getLogger(Sentinel2ProductReader.class.getName());
 
-    private S2Config config;
+    private final S2Config config;
     private File cacheDir;
     private Product product;
-    VirtualPath inputPath;
 
     protected INamingConvention namingConvention;
 
@@ -82,8 +81,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return config;
     }
 
-
-
     public S2SpatialResolution getProductResolution() {
         return S2SpatialResolution.R10M;
     }
@@ -96,7 +93,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return cacheDir;
     }
 
-    protected abstract Product getMosaicProduct(VirtualPath metadataPath) throws IOException;
+    protected abstract Product buildMosaicProduct(VirtualPath metadataPath) throws IOException;
 
     protected abstract String getReaderCacheDir();
 
@@ -116,9 +113,10 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             throw new IOException("Unable to get project.version property from " + versionFile);
         }
 
-        String md5sum = getMD5sum(productPath.getFullPathString());
+        String fullPathString = productPath.getFullPathString();
+        String md5sum = Utils.getMD5sum(fullPathString);
         if (md5sum == null) {
-            throw new IOException("Unable to get md5sum of path " + productPath.getFullPathString());
+            throw new IOException("Unable to get md5sum of path " + fullPathString);
         }
 
         cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() + File.separator + version + File.separator + md5sum),
@@ -132,58 +130,55 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         SystemUtils.LOG.fine("Successfully set up cache dir for product " + productPath.getFileName().toString() + " to " + cacheDir.toString());
     }
 
-
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        logger.fine("readProductNodeImpl, " + getInput().toString());
+        logger.fine("readProductNodeImpl, input: " + getInput().toString());
 
+        VirtualPath virtualPath;
         if (getInput() instanceof File) {
             File file;
-
-            String longInput = GetLongPathNameW(getInput().toString());
+            String longInput = Utils.GetLongPathNameW(getInput().toString());
             if (longInput.length() != 0) {
                 file = new File(longInput);
             } else {
                 file = new File(getInput().toString());
             }
-
-            namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
-        } else if(getInput() instanceof VirtualPath) {
-            namingConvention = NamingConventionFactory.createNamingConvention((VirtualPath) getInput());
+            virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath());
+        } else if (getInput() instanceof VirtualPath) {
+            virtualPath = (VirtualPath) getInput();
+        } else {
+            throw new IOException("Unhandled input type '" + getInput() + "'.");
         }
 
-
-        if(namingConvention == null) {
+        this.namingConvention = NamingConventionFactory.createNamingConvention(virtualPath);
+        if (this.namingConvention == null) {
             throw new IOException("Unhandled file type.");
         }
 
-        inputPath = namingConvention.getInputXml();
+        VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
 
-        if (!inputPath.exists()) {
-            throw new FileNotFoundException(inputPath.getFullPathString());
+        if (!inputVirtualPath.exists()) {
+            throw new FileNotFoundException(inputVirtualPath.getFullPathString());
         }
 
-        if (namingConvention.hasValidStructure()) {
-            product = getMosaicProduct(inputPath);
+        initCacheDir(inputVirtualPath.getParent());
 
-            addQuicklook(product, getQuicklookFile(inputPath));
-            if (product != null) {
-                product.setModified(false);
+        if (this.namingConvention.hasValidStructure()) {
+            this.product = buildMosaicProduct(inputVirtualPath);
+
+            File qlFile = getQuickLookFile(inputVirtualPath);
+            if (qlFile != null) {
+                this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile));
             }
+
+            this.product.setModified(false);
+            return this.product;
         } else {
             throw new IOException("Unhandled file type.");
         }
-
-        return product;
     }
 
-    private void addQuicklook(final Product product, final File qlFile) {
-        if (qlFile != null) {
-            product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile));
-        }
-    }
-
-    private File getQuicklookFile(final VirtualPath metadataPath) {
+    private File getQuickLookFile(VirtualPath metadataPath) throws IOException {
         String[] files = null;
         try {
             files = metadataPath.getParent().list();
@@ -191,13 +186,13 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             return null;
         }
 
-        if(files == null || files.length == 0) {
+        if (files == null || files.length == 0) {
             return null;
         }
 
-        for(String file : files) {
-            if(file.endsWith(".png") && (file.startsWith("S2") || file.startsWith("BWI_"))) {
-                return metadataPath.resolveSibling(file).toFile();
+        for (String file : files) {
+            if (file.endsWith(".png") && (file.startsWith("S2") || file.startsWith("BWI_"))) {
+                return metadataPath.resolveSibling(file).getFile();
             }
         }
 
@@ -216,12 +211,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
             TileLayout tileLayout;
             if (isGranule) {
-                tileLayout = retrieveTileLayoutFromGranuleMetadataFile(
-                        metadataFilePath, layoutResolution);
+                tileLayout = retrieveTileLayoutFromGranuleMetadataFile(metadataFilePath, layoutResolution);
             } else {
                 tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, layoutResolution);
             }
-            config.updateTileLayout(layoutResolution, tileLayout);
+            this.config.updateTileLayout(layoutResolution, tileLayout);
             if (tileLayout != null) {
                 valid = true;
             }
@@ -298,9 +292,29 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         TileLayout tileLayoutForResolution = null;
         VirtualPath pathToImages = granuleMetadataPath.resolve("IMG_DATA");
         try {
-            for (VirtualPath imageFilePath : getImageDirectories(pathToImages, resolution)) {
+            List<VirtualPath> imageDirectories = getImageDirectories(pathToImages, resolution);
+            VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
+            Path inputRelativeFolderPath = inputVirtualPath.getRelativePath().getParent();
+
+            for (VirtualPath imageFilePath : imageDirectories) {
+                Path jp2FilePath = imageFilePath.getFile().toPath();
+//                if (jp2FilePath.getFileSystem() != FileSystems.getDefault()) {
+//                    Path imageRelativePath = imageFilePath.getRelativePath();
+//                    if (!imageRelativePath.startsWith(inputRelativeFolderPath)) {
+//                        throw new IllegalStateException("The relative path '"+imageRelativePath.toString()+"' does not start with product input path '"+inputRelativeFolderPath.toString()+"'.");
+//                    } else {
+//                        int inputFolderNameCount = inputRelativeFolderPath.getNameCount();
+//                        int imageNameCount = imageRelativePath.getNameCount();
+//                        Path p = imageRelativePath.subpath(inputFolderNameCount, imageNameCount);
+//                        jp2FilePath = this.cacheDir.toPath().resolve(p.toString());
+//                        if (!Files.exists(jp2FilePath)) {
+//                            Files.createDirectories(jp2FilePath.getParent());
+//                            FileHelper.copyFileUsingInputStream(imageFilePath.getFile().toPath(), jp2FilePath.toString());
+//                        }
+//                    }
+//                }
                 try {
-                    tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.getFile().toPath());
+                    tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, jp2FilePath);
                     if (tileLayoutForResolution != null) {
                         break;
                     }
@@ -308,13 +322,20 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                     // if we have an exception, we try with the next file (if any) // and log a warning
                     SystemUtils.LOG.warning("Could not retrieve tile layout for file " + imageFilePath.toAbsolutePath().toString() + " error returned: " + e.getMessage());
                 }
+
+                //TODO Jean old code
+//                try {
+//                    tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.getFile().toPath());
+//                    if (tileLayoutForResolution != null) {
+//                        break;
+//                    }
+//                } catch (IOException | InterruptedException e) {
+//                    // if we have an exception, we try with the next file (if any) // and log a warning
+//                    SystemUtils.LOG.warning("Could not retrieve tile layout for file " + imageFilePath.toAbsolutePath().toString() + " error returned: " + e.getMessage());
+//                }
             }
         } catch (IOException e) {
-            SystemUtils.LOG.warning(
-                    "Could not retrieve tile layout for granule " +
-                            granuleMetadataPath.toAbsolutePath().toString() +
-                            " error returned: " +
-                            e.getMessage());
+            SystemUtils.LOG.warning("Could not retrieve tile layout for granule " + granuleMetadataPath.toAbsolutePath().toString() + " error returned: " + e.getMessage());
         }
 
         return tileLayoutForResolution;
@@ -341,18 +362,17 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @return a {@link DirectoryStream<Path>}, iterator on the list of image path
      * @throws IOException if an I/O error occurs
      */
-    protected ArrayList<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution resolution) throws IOException {
-
-        ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
+    protected List<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution resolution) throws IOException {
+        List<VirtualPath> imageDirectories = new ArrayList<>();
         VirtualPath[] imagePaths = pathToImages.listPaths();
-        if(imagePaths == null || imagePaths.length == 0) {
+        if (imagePaths == null || imagePaths.length == 0) {
             return imageDirectories;
         }
 
         String[] bandNames = getBandNames(resolution);
         if (bandNames != null) {
             for (String bandName : bandNames) {
-                for(VirtualPath imagePath : imagePaths) {
+                for (VirtualPath imagePath : imagePaths) {
                     if (imagePath.getFileName().toString().endsWith(bandName + ".jp2")) {
                         imageDirectories.add(imagePath);
                     }
@@ -422,8 +442,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 }
             }
         }
-        if(inputPath != null) {
-            inputPath.close();
+        if (this.namingConvention != null && this.namingConvention.getInputXml() != null) {
+            this.namingConvention.getInputXml().close();
         }
 
         super.close();

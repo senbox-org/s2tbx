@@ -1,15 +1,12 @@
 package org.esa.s2tbx.dataio.s2.l3;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
-import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
-import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
-import org.esa.s2tbx.dataio.s2.ortho.S2ProductCRSCache;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.xml.sax.SAXException;
@@ -17,9 +14,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by obarrile on 15/06/2016.
@@ -71,7 +67,7 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected ArrayList<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
+    protected List<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
         ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
         String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
         VirtualPath pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);

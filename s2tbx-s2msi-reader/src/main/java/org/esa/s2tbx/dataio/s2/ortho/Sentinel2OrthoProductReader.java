@@ -27,7 +27,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
@@ -115,24 +115,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     protected abstract String getReaderCacheDir();
 
-    public S2Metadata getMetadataHeader() {
-        return metadataHeader;
-    }
-
     protected abstract S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException;
 
     protected abstract String getImagePathString(String imageFileName, S2SpatialResolution resolution);
 
     @Override
-    protected Product getMosaicProduct(VirtualPath metadataPath) throws IOException {
-
+    protected Product buildMosaicProduct(VirtualPath metadataPath) throws IOException {
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
             throw new IOException("Invalid OpenJpeg executables");
         }
 
         Objects.requireNonNull(metadataPath);
 
-        boolean isAGranule = namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA/*S2OrthoGranuleMetadataFilename.isGranuleFilename(metadataFile.getName())*//*S2ProductNamingUtils.checkStructureFromGranuleXml(metadataFile.toPath())*/;
+        boolean isAGranule = namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA;
         boolean foundProductMetadata = true;
 
         if (isAGranule) {
@@ -169,7 +164,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             rootMetadataPath = metadataPath;
         }
 
-        /*S2Metadata*/ metadataHeader = parseHeader(rootMetadataPath, granuleDirName, getConfig(), epsgCode, !foundProductMetadata);
+        this.metadataHeader = parseHeader(rootMetadataPath, granuleDirName, getConfig(), epsgCode, !foundProductMetadata);
         SystemUtils.LOG.fine(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
@@ -194,30 +189,29 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         S2Metadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
-        Product product = new Product(namingConvention.getProductName(),
-                                      "S2_MSI_" + productCharacteristics.getProcessingLevel(),
-                                      sceneDescription.getSceneDimension(getProductResolution()).width,
-                                      sceneDescription.getSceneDimension(getProductResolution()).height);
+        int sceneRasterWidth = sceneDescription.getSceneDimension(getProductResolution()).width;
+        int sceneRasterHeight = sceneDescription.getSceneDimension(getProductResolution()).height;
+        Product product = new Product(this.namingConvention.getProductName(), "S2_MSI_" + productCharacteristics.getProcessingLevel(), sceneRasterWidth, sceneRasterHeight);
 
-        for (MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
+        for (MetadataElement metadataElement : this.metadataHeader.getMetadataElements()) {
             product.getMetadataRoot().addElement(metadataElement);
         }
 
-        if(metadataPath.getVirtualDir() == null || !metadataPath.getVirtualDir().isCompressed()) {
-            product.setFileLocation(metadataPath.getParent().toFile());
+        if (metadataPath.getVirtualDir() == null || !metadataPath.getVirtualDir().isCompressed()) {
+            product.setFileLocation(metadataPath.getParent().getFile());
         } else {
-            product.setFileLocation(new File(metadataPath.getVirtualDir().getBasePath()));
+            product.setFileLocation(metadataPath.getVirtualDir().getBaseFile());
         }
 
         try {
             product.setSceneGeoCoding(new CrsGeoCoding(CRS.decode(this.epsgCode),
-                                                       product.getSceneRasterWidth(),
-                                                       product.getSceneRasterHeight(),
-                                                       sceneDescription.getSceneOrigin()[0],
-                                                       sceneDescription.getSceneOrigin()[1],
-                                                       this.getProductResolution().resolution,
-                                                       this.getProductResolution().resolution,
-                                                       0.0, 0.0));
+                    product.getSceneRasterWidth(),
+                    product.getSceneRasterHeight(),
+                    sceneDescription.getSceneOrigin()[0],
+                    sceneDescription.getSceneOrigin()[1],
+                    this.getProductResolution().resolution,
+                    this.getProductResolution().resolution,
+                    0.0, 0.0));
         } catch (FactoryException e) {
             throw new IOException(e);
         } catch (TransformException e) {
@@ -227,19 +221,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("sun:view:quality:tile:detector_footprint:nodata:partially_corrected_crosstalk:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile:" +
-                                        "detector_footprint-B01:" +
-                                        "detector_footprint-B02:" +
-                                        "detector_footprint-B03:" +
-                                        "detector_footprint-B04:" +
-                                        "detector_footprint-B05:" +
-                                        "detector_footprint-B06:" +
-                                        "detector_footprint-B07:" +
-                                        "detector_footprint-B08:" +
-                                        "detector_footprint-B8A:" +
-                                        "detector_footprint-B09:" +
-                                        "detector_footprint-B10:" +
-                                        "detector_footprint-B11:" +
-                                        "detector_footprint-B12");
+                "detector_footprint-B01:" +
+                "detector_footprint-B02:" +
+                "detector_footprint-B03:" +
+                "detector_footprint-B04:" +
+                "detector_footprint-B05:" +
+                "detector_footprint-B06:" +
+                "detector_footprint-B07:" +
+                "detector_footprint-B08:" +
+                "detector_footprint-B8A:" +
+                "detector_footprint-B09:" +
+                "detector_footprint-B10:" +
+                "detector_footprint-B11:" +
+                "detector_footprint-B12");
 
         product.setStartTime(parseDate(productCharacteristics.getProductStartTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
@@ -255,27 +249,27 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
                 if (gf != null) {
                     String imgFilename;
-                    if(foundProductMetadata) {
+                    if (foundProductMetadata) {
                         imgFilename = String.format("GRANULE%s%s%s%s", File.separator, metadataHeader.resolveResource(tile.getId()).getFileName().toString(),
-                                                           File.separator,
-                                                           bandInformation.getImageFileTemplate()
-                                                            .replace("{{TILENUMBER}}", gf.getTileID())
-                                                            .replace("{{MISSION_ID}}", gf.missionID)
-                                                            .replace("{{SITECENTRE}}", gf.siteCentre)
-                                                            .replace("{{CREATIONDATE}}", gf.creationDate)
-                                                            .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                                                            .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
-                                                            .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
+                                File.separator,
+                                bandInformation.getImageFileTemplate()
+                                        .replace("{{TILENUMBER}}", gf.getTileID())
+                                        .replace("{{MISSION_ID}}", gf.missionID)
+                                        .replace("{{SITECENTRE}}", gf.siteCentre)
+                                        .replace("{{CREATIONDATE}}", gf.creationDate)
+                                        .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+                                        .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
+                                        .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
 
                     } else {
                         imgFilename = bandInformation.getImageFileTemplate()
-                                                            .replace("{{TILENUMBER}}", gf.getTileID())
-                                                            .replace("{{MISSION_ID}}", gf.missionID)
-                                                            .replace("{{SITECENTRE}}", gf.siteCentre)
-                                                            .replace("{{CREATIONDATE}}", gf.creationDate)
-                                                            .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                                                            .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
-                                                            .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
+                                .replace("{{TILENUMBER}}", gf.getTileID())
+                                .replace("{{MISSION_ID}}", gf.missionID)
+                                .replace("{{SITECENTRE}}", gf.siteCentre)
+                                .replace("{{CREATIONDATE}}", gf.creationDate)
+                                .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+                                .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
+                                .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
 
                     }
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
@@ -284,31 +278,31 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     if (path.exists()) {
                         tilePathMap.put(tile.getId(), path);
                         bFound = true;
-                    } else if(path.getParent() != null && path.getParent().exists()) { //Search a sibling containing the physicalBand name
+                    } else if (path.getParent() != null && path.getParent().exists()) { //Search a sibling containing the physicalBand name
                         S2BandConstants bandConstant = S2BandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
-                        if(bandConstant != null) {
+                        if (bandConstant != null) {
                             VirtualPath[] otherPaths = path.getParent().listPaths(bandConstant.getFilenameBandId());
                             if (otherPaths != null && otherPaths.length == 1) {
                                 tilePathMap.put(tile.getId(), otherPaths[0]);
                                 bFound = true;
                             } else if (otherPaths != null && otherPaths.length > 1) {
-                                VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths,bandInformation.getResolution().resolution);
-                                if(pathWithResolution != null) {
+                                VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths, bandInformation.getResolution().resolution);
+                                if (pathWithResolution != null) {
                                     tilePathMap.put(tile.getId(), pathWithResolution);
                                     bFound = true;
                                 }
                             }
                         } else { //try specific bands
                             S2SpecificBandConstants specificBandConstant = S2SpecificBandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
-                            if(specificBandConstant != null) {
+                            if (specificBandConstant != null) {
                                 VirtualPath[] otherPaths = path.getParent().listPaths(specificBandConstant.getFilenameBandId());
                                 if (otherPaths != null && otherPaths.length == 1) {
                                     tilePathMap.put(tile.getId(), otherPaths[0]);
                                     bFound = true;
-                                } else if(otherPaths != null && otherPaths.length > 1) {
+                                } else if (otherPaths != null && otherPaths.length > 1) {
 
-                                    VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths,bandInformation.getResolution().resolution);
-                                    if(pathWithResolution != null) {
+                                    VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths, bandInformation.getResolution().resolution);
+                                    if (pathWithResolution != null) {
                                         tilePathMap.put(tile.getId(), pathWithResolution);
                                         bFound = true;
                                     }
@@ -316,7 +310,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             }
                         }
                     }
-                    if(!bFound) {
+                    if (!bFound) {
                         logger.warning(String.format("Warning: missing file %s\n", path.getFullPathString()));
                     }
                 }
@@ -335,12 +329,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         timeProbe.reset();
 
         if (!bandInfoList.isEmpty()) {
-            addBands(product,
-                     bandInfoList,
-                     sceneDescription);
+            addBands(product, bandInfoList, sceneDescription);
             SystemUtils.LOG.fine(String.format("[timeprobe] addBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
-
 
             scaleBands(product, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] scaleBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
@@ -355,22 +346,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             timeProbe.reset();
         }
 
-
         //add TileIndex if there are more than 1 tile
-        if(sceneDescription.getOrderedTileIds().size()>1 && !bandInfoList.isEmpty()) {
+        if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoList.isEmpty()) {
             ArrayList<S2SpatialResolution> resolutions = new ArrayList<>();
             //look for the resolutions used in bandInfoList for generating the tile index only for them
-            for(BandInfo bandInfo : bandInfoList) {
-                if(!resolutions.contains(bandInfo.getBandInformation().getResolution())) {
+            for (BandInfo bandInfo : bandInfoList) {
+                if (!resolutions.contains(bandInfo.getBandInformation().getResolution())) {
                     resolutions.add(bandInfo.getBandInformation().getResolution());
                 }
             }
             addTileIndexes(product, resolutions, tileList, sceneDescription);
         }
 
-
         if (!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
-
             HashMap<String, S2BandAnglesGrid[]> anglesGridsMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
                 S2BandAnglesGrid[] bandAnglesGrids = createS2OrthoAnglesGrids(metadataHeader, tile.getId());
@@ -1251,9 +1239,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         if (getConfig().getTileLayout(spatialResolution.resolution) == null) {
             return null;
         }
-        return new BandInfo(tilePathMap,
-                            bandInformation,
-                            getConfig().getTileLayout(spatialResolution.resolution));
+        return new BandInfo(tilePathMap, bandInformation, getConfig().getTileLayout(spatialResolution.resolution));
     }
 
     static VirtualPath getProductDir(VirtualPath productPath) throws IOException {
@@ -1399,7 +1385,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                                Math.min(l1cTileLayout.height - y * l1cTileLayout.tileHeight, l1cTileLayout.tileHeight),
                                                                l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
                             }
-                            opImage = JP2TileOpImage.create(imagePath != null ? imagePath.toFile().toPath() : null, getCacheDir().toPath(),
+                            opImage = JP2TileOpImage.create(imagePath != null ? imagePath.getFile().toPath() : null, getCacheDir().toPath(),
                                     0, y, x, currentLayout, getModel(), TYPE_USHORT, level);
                             if (opImage != null) {
                                 opImage = TranslateDescriptor.create(opImage,

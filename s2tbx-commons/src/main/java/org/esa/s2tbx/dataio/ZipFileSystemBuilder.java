@@ -122,23 +122,6 @@ public class ZipFileSystemBuilder {
         }
     }
 
-    public static boolean existFileInZipArchive(Path zipPath, String zipEntryPath)
-                                                throws IllegalAccessException, InstantiationException, InvocationTargetException, IOException {
-
-        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(zipPath)) {
-            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
-            while (it.hasNext()) {
-                Path root = it.next();
-                ExistsZipEntryFileVisitor visitor = new ExistsZipEntryFileVisitor(zipEntryPath);
-                Files.walkFileTree(root, visitor);
-                if (visitor.existsZipEntry()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
     private static class CopyZipEntryFileVisitor extends SimpleFileVisitor<Path> {
 
         private final String zipEntryPath;
@@ -228,49 +211,6 @@ public class ZipFileSystemBuilder {
         }
     }
 
-    private static class ExistsZipEntryFileVisitor extends SimpleFileVisitor<Path> {
-
-        private final String zipEntryPath;
-
-        private boolean zipEntryExists;
-
-        private ExistsZipEntryFileVisitor(String zipEntryPath) {
-            if (zipEntryPath.startsWith("/")) {
-                this.zipEntryPath = zipEntryPath.substring(1);
-            } else {
-                this.zipEntryPath = zipEntryPath;
-
-            }
-            this.zipEntryExists = false;
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            return checkZipEntry(file);
-        }
-
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            return checkZipEntry(dir);
-        }
-
-        boolean existsZipEntry() {
-            return zipEntryExists;
-        }
-
-        private FileVisitResult checkZipEntry(Path path) {
-            String currentZipEntryPath = path.toString();
-            if (currentZipEntryPath.startsWith("/")) {
-                currentZipEntryPath = currentZipEntryPath.substring(1);
-            }
-            if (this.zipEntryPath.equals(currentZipEntryPath)) {
-                this.zipEntryExists = true;
-                return FileVisitResult.TERMINATE;
-            }
-            return FileVisitResult.CONTINUE;
-        }
-    }
-
     private static class ListDirectoryZipEntriesFileVisitor extends SimpleFileVisitor<Path> {
 
         private final String directoryZipEntryPath;
@@ -330,45 +270,6 @@ public class ZipFileSystemBuilder {
             return FileVisitResult.CONTINUE;
         }
     }
-//    @Override
-//    public String[] list(String path) throws IOException {
-//        try (InputStream inputStream = Files.newInputStream(this.zipPath);
-//             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-//             ZipInputStream zipInputStream = new ZipInputStream(bufferedInputStream)) {
-//
-//            if (".".equals(path) || path.isEmpty()) {
-//                path = "";
-//            } else if (!path.endsWith("/")) {
-//                path += "/";
-//            }
-//
-//            boolean dirSeen = false;
-//            TreeSet<String> nameSet = new TreeSet<>();
-//            ZipEntry zipEntry;
-//            while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-//                String zipEntryName = zipEntry.getName();
-//                if (zipEntryName.startsWith(path)) {
-//                    int i1 = path.length();
-//                    int i2 = zipEntryName.indexOf('/', i1);
-//                    String entryName;
-//                    if (i2 == -1) {
-//                        entryName = zipEntryName.substring(i1);
-//                    } else {
-//                        entryName = zipEntryName.substring(i1, i2);
-//                    }
-//                    if (!entryName.isEmpty() && !nameSet.contains(entryName)) {
-//                        nameSet.add(entryName);
-//                    }
-//                    dirSeen = true;
-//                }
-//            }
-//            if (!dirSeen) {
-//                throw new FileNotFoundException(getBasePath() + "!" + path);
-//            }
-//            return nameSet.toArray(new String[nameSet.size()]);
-//        }
-//    }
-
 
     private static class ListAllFileZipEntriesFileVisitor extends SimpleFileVisitor<Path> {
 

@@ -97,6 +97,7 @@ public abstract class VirtualDirEx extends VirtualDir {
 
         this.depth = 1;
     }
+
     /**
      * Factory method to create an instance of either a VirtualDir object (File, Dir)
      * or of a VirtualDirEx object (VirtualDirWrapper for zip files, TarVirtualDir).
@@ -182,6 +183,8 @@ public abstract class VirtualDirEx extends VirtualDir {
     public static boolean isTar(String filename) {
         return TarVirtualDir.isTar(filename);
     }
+
+    public abstract FileSystem newFileSystem() throws IOException;
 
     public void setFolderDepth(int value) {
         this.depth = value;
@@ -345,6 +348,11 @@ public abstract class VirtualDirEx extends VirtualDir {
         public VirtualDirWrapper(AbstractVirtualPath dir) {
             this.wrapped = dir;
             this.files = new HashMap<>();
+        }
+
+        @Override
+        public FileSystem newFileSystem() throws IOException {
+            return this.wrapped.newFileSystem();
         }
 
         @Override
@@ -645,6 +653,11 @@ public abstract class VirtualDirEx extends VirtualDir {
             extractDir = null;
             unpackTask = new FutureTask<>(new UnpackProcess());
             executor = Executors.newSingleThreadExecutor();
+        }
+
+        @Override
+        public FileSystem newFileSystem() throws IOException {
+            throw new UnsupportedOperationException();
         }
 
         public static String getFilenameFromPath(String path) {

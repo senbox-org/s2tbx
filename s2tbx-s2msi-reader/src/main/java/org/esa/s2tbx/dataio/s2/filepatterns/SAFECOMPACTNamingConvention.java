@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductNamingUtils;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -8,7 +8,6 @@ import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -144,24 +143,24 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
 
         VirtualPath path = null;
         VirtualPath granuleFolder = null;
-        if(getInputType()== S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
+        if (getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             granuleFolder = inputXmlPath.resolveSibling("GRANULE");
         } else {
-            if(inputXmlPath.getParent() == null) {
+            if (inputXmlPath.getParent() == null) {
                 return null;
             }
             granuleFolder = inputXmlPath.getParent().getParent();
         }
-        if(granuleFolder == null) {
+        if (granuleFolder == null) {
             return null;
         }
 
         String tileIdentifier = S2ProductNamingUtils.getTileIdFromString(tileId);
-        if(tileIdentifier == null) {
+        if (tileIdentifier == null) {
             return null;
         }
 
-        ArrayList<VirtualPath> granulePaths = S2NamingConventionUtils.getAllFilesFromDir(granuleFolder,getGranuleREGEXs());
+        ArrayList<VirtualPath> granulePaths = S2NamingConventionUtils.getAllFilesFromDir(granuleFolder, getGranuleREGEXs());
 
         for (VirtualPath granulePath : granulePaths) {
             String tileIdAux = S2ProductNamingUtils.getTileIdFromString(granulePath.getFileName().toString());
@@ -170,7 +169,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
             }
         }
 
-        if(path.exists() && path.isDirectory() && S2NamingConventionUtils.matches(path.getFileName().toString(),getGranuleREGEXs())) {
+        if (path.exists() && path.isDirectory() && S2NamingConventionUtils.matches(path.getFileName().toString(), getGranuleREGEXs())) {
             return path;
         }
         return null;
@@ -217,7 +216,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     public SAFECOMPACTNamingConvention(VirtualPath input){
         String inputName = input.getFileName().toString();
 
-        if(/*Files.isDirectory(input)*/input.isDirectory()) {
+        if(input.isDirectory()) {
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
             if (pattern.matcher(inputName).matches()) {

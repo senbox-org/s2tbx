@@ -1,10 +1,8 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Created by obarrile on 14/06/2016.

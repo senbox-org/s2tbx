@@ -1,17 +1,9 @@
 package org.esa.s2tbx.dataio.s2;
 
-import org.esa.s2tbx.dataio.VirtualPath;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper;
-import org.esa.snap.core.util.io.FileUtils;
-import org.esa.snap.core.util.math.Array;
-import org.esa.snap.utils.FileHelper;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -224,7 +216,7 @@ public class S2ProductNamingUtils {
             return level;
         }
 
-        Path parentPath = xmlPath.getParent();
+        VirtualPath parentPath = xmlPath.getParent();
         if(parentPath == null) {
             return level;
         }
