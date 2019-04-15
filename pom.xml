@@ -77,6 +77,7 @@
         <module>s2tbx-ikonos-reader</module>
         <module>s2tbx-alosAV2-reader</module>
         <module>s2tbx-alosPRI-reader</module>
+        <module>s2tbx-worldview2esa-reader</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -148,7 +149,7 @@
                 <artifactId>snap-engine</artifactId>
                 <version>${snap.version}</version>
             </dependency>
-          
+
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-engine-utilities</artifactId>

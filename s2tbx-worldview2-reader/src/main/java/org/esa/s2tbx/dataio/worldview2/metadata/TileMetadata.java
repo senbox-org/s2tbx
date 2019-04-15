@@ -4,7 +4,6 @@ import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.xml.sax.SAXException;
 
@@ -13,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 
 /**
  * Basic reader for WorldView 2 tiles.
@@ -128,6 +128,8 @@ public class TileMetadata extends XmlMetadata {
             result = parser.parse(inputStream);
             result.setPath(path.toString());
             result.setFileName(path.getFileName().toString());
+            HashMap<String, Double> abscalfactor = new HashMap<>();
+            HashMap<String, Double> effectivebandwidth = new HashMap<>();
             String[] tileNames = result.getAttributeValues(WorldView2Constants.PATH_TILE_FILENAME);
             String numRows = result.getAttributeValue(WorldView2Constants.PATH_NUM_ROWS, "0");
             String numColumns = result.getAttributeValue(WorldView2Constants.PATH_NUM_COLUMNS, "0");
@@ -147,6 +149,46 @@ public class TileMetadata extends XmlMetadata {
             String[] lowerLeftRowOffset = result.getAttributeValues(WorldView2Constants.PATH_LOWER_LEFT_ROW_OFFSET);
             String[] lowerRightColumnOffset = result.getAttributeValues(WorldView2Constants.PATH_LOWER_RIGHT_COLUMN_OFFSET);
             String[] lowerRightRowOffset = result.getAttributeValues(WorldView2Constants.PATH_LOWER_RIGHT_ROW_OFFSET);
+            if (bandID.equalsIgnoreCase("MS1")) {
+                for (String pathFactor : WorldView2Constants.BAND_MS1_ABSCALFACTOR_PATTERNS) {
+                    String caseVal = pathFactor.substring(pathFactor.indexOf("_") + 1, pathFactor.lastIndexOf("/"));
+                    switch (caseVal) {
+                        case "b":
+                            abscalfactor.put("Blue", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
+                            break;
+                        case "n":
+                            abscalfactor.put("NIR1", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
+                            break;
+                        case "g":
+                            abscalfactor.put("Green", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
+                            break;
+                        case "r":
+                            abscalfactor.put("Red", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
+                            break;
+                    }
+
+                }
+                for (String pathFactor : WorldView2Constants.BAND_MS1_EFFECTIVEBANDWIDTH_PATTERNS) {
+                    String caseVal = pathFactor.substring(pathFactor.indexOf("_") + 1, pathFactor.lastIndexOf("/"));
+                    switch (caseVal) {
+                        case "b":
+                            effectivebandwidth.put("Blue", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "n":
+                            effectivebandwidth.put("NIR1", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "g":
+                            effectivebandwidth.put("Green", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "r":
+                            effectivebandwidth.put("Red", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                    }
+                }
+            } else {
+                abscalfactor.put("Pan", Double.parseDouble(result.getAttributeValue(WorldView2Constants.BAND_P_ABSCALFACTOR, "0")));
+                effectivebandwidth.put("Pan", Double.parseDouble(result.getAttributeValue(WorldView2Constants.BAND_P_EFFECTIVEBANDWIDTH, "1")));
+            }
 
             tileComponent.setTileNames(tileNames);
             tileComponent.setBandID(bandID);
@@ -210,6 +252,7 @@ public class TileMetadata extends XmlMetadata {
             tileComponent.setLowerLeftRowOffset(lowerLeftRowOffsetInt);
             tileComponent.setLowerRightColumnOffset(lowerRightColumnOffsetInt);
             tileComponent.setLowerRightRowOffset(lowerRightRowOffsetInt);
+            tileComponent.setScalingFactor(abscalfactor, effectivebandwidth);
 
         } catch (ParserConfigurationException | SAXException e) {
             e.printStackTrace();

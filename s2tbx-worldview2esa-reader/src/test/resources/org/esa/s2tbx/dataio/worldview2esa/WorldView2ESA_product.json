@@ -1,28 +1,28 @@
 {
-  "id": "WorldView2_product",
+  "id": "WorldView2ESA_product",
   "decodeQualification": "INTENDED",
   "expectedContent":{
-    "sceneWidth": 9846,
-    "sceneHeight": 20079,
+    "sceneWidth": 47563,
+    "sceneHeight": 92201,
     "geoCoding": {
       "coordinates": [
         {
           "x": 1020,
           "y": 200,
-          "lat": 55.60127630985611,
-          "lon": 25.376550436682365
+          "lat": 23.773889,
+          "lon": 44.502500
         },
         {
           "x": 2000,
           "y": 1710,
-          "lat": 55.594597606818816,
-          "lon": 25.384602790043978
+          "lat": 23.778611,
+          "lon": 44.496944
         },
         {
           "x": 7000,
-          "y": 17010,
-          "lat": 55.5263998731464,
-          "lon": 25.42700641580592
+          "y": 16050,
+          "lat": 23.801111,
+          "lon": 44.444722
         }
       ]
     },
@@ -30,8 +30,8 @@
       {
         "name": "blue",
         "noDataValue": "0.0",
-        "bandWidth": 2462,
-        "bandHeight": 5020,
+        "bandWidth": 4096,
+        "bandHeight": 4096,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
@@ -39,12 +39,12 @@
           {
             "x": 374,
             "y": 247,
-            "value": 6.45505
+            "value": 0.0
           },
           {
             "x": 1214,
             "y": 1254,
-            "value": 6.64081
+            "value": 6.73354
           },
           {
             "x": 3014,
@@ -61,8 +61,8 @@
       {
         "name": "green",
         "noDataValue": "0.0",
-        "bandWidth": 2462,
-        "bandHeight": 5020,
+        "bandWidth": 4096,
+        "bandHeight": 4096,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
@@ -70,12 +70,12 @@
           {
             "x": 374,
             "y": 247,
-            "value": 5.71992
+            "value": 0.0
           },
           {
             "x": 1214,
             "y": 1254,
-            "value": 6.07452
+            "value": 5.37017
           },
           {
             "x": 3014,
@@ -92,8 +92,8 @@
       {
         "name": "red",
         "noDataValue": "0.0",
-        "bandWidth": 2462,
-        "bandHeight": 5020,
+        "bandWidth": 4096,
+        "bandHeight": 4096,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
@@ -101,12 +101,105 @@
           {
             "x": 374,
             "y": 247,
-            "value": 4.74904
+            "value": 0.0
           },
           {
             "x": 1214,
             "y": 1254,
-            "value": 5.30662
+            "value": 2.67760
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "red edge",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 0.0
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 5.41518
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "yellow",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 5.86377
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 3.71494
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "coastal",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 7.82171
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 7.07492
           },
           {
             "x": 3014,
@@ -123,8 +216,8 @@
       {
         "name": "NIR1",
         "noDataValue": "0.0",
-        "bandWidth": 2462,
-        "bandHeight": 5020,
+        "bandWidth": 4096,
+        "bandHeight": 4096,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
@@ -132,12 +225,43 @@
           {
             "x": 374,
             "y": 247,
-            "value": 7.40323
+            "value": 4.66637
           },
           {
             "x": 1214,
             "y": 1254,
-            "value": 6.74709
+            "value": 7.02963
+          },
+          {
+            "x": 3014,
+            "y": 2250,
+            "value": "NaN"
+          },
+          {
+            "x": 4514,
+            "y": 4701,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "NIR2",
+        "noDataValue": "0.0",
+        "bandWidth": 4096,
+        "bandHeight": 4096,
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 374,
+            "y": 247,
+            "value": 0.0
+          },
+          {
+            "x": 1214,
+            "y": 1254,
+            "value": 6.66637
           },
           {
             "x": 3014,
@@ -154,8 +278,8 @@
       {
         "name": "Pan",
         "noDataValue": "0.0",
-        "bandWidth": 9846,
-        "bandHeight": 20079,
+        "bandWidth": 16384,
+        "bandHeight": 16384,
         "noDataValueUsed": "true",
         "spectralWavelength": "0.0",
         "spectralBandwidth": "0.0",
@@ -168,12 +292,12 @@
           {
             "x": 1214,
             "y": 1254,
-            "value": 6.49666
+            "value": 6.48441
           },
           {
             "x": 3014,
             "y": 2250,
-            "value": 5.29851
+            "value": 6.76373
           },
           {
             "x": 9514,
@@ -186,11 +310,11 @@
     "metadata": [
       {
         "path": "Metadata[1]/imd/numrows",
-        "value": "20079"
+        "value": "16384"
       },
       {
         "path": "Metadata[1]/imd/numcolumns",
-        "value": "9846"
+        "value": "16384"
       },
       {
         "path": "Metadata[1]/imd/bitsperpixel",
@@ -198,7 +322,7 @@
       },
       {
         "path": "Metadata[1]/imd/map_projected_product/mapzone",
-        "value": "35"
+        "value": "34"
       },
       {
         "path": "Metadata[1]/imd/map_projected_product/maphemi",
@@ -206,27 +330,23 @@
       },
       {
         "path": "Metadata[1]/imd/map_projected_product/originx",
-        "value": "3.972042499947900e+05"
+        "value": "7.201042002090100e+05"
       },
       {
         "path": "Metadata[1]/imd/map_projected_product/originy",
-        "value": "6.162999749999220e+06"
+        "value": "4.931498999998590e+06"
       },
       {
         "path": "Metadata[1]/imd/map_projected_product/productgsd",
-        "value": "5.000000000000000e-01"
-      },
-      {
-        "path": "Metadata[1]/til/tile/filename",
-        "value": "17MAY02091354-P2AS-ZON24.TIF"
+        "value": "4.000000000000000e-01"
       },
       {
         "path": "Metadata[2]/imd/numrows",
-        "value": "5020"
+        "value": "23051"
       },
       {
         "path": "Metadata[2]/imd/numcolumns",
-        "value": "2462"
+        "value": "11891"
       },
       {
         "path": "Metadata[2]/imd/bitsperpixel",
@@ -234,7 +354,7 @@
       },
       {
         "path": "Metadata[2]/imd/map_projected_product/mapzone",
-        "value": "35"
+        "value": "34"
       },
       {
         "path": "Metadata[2]/imd/map_projected_product/maphemi",
@@ -242,19 +362,15 @@
       },
       {
         "path": "Metadata[2]/imd/map_projected_product/originx",
-        "value": "3.972049999947900e+05"
+        "value": "7.201048002090200e+05"
       },
       {
         "path": "Metadata[2]/imd/map_projected_product/originy",
-        "value": "6.162998999999220e+06"
+        "value": "4.931498399998600e+06"
       },
       {
         "path": "Metadata[2]/imd/map_projected_product/productgsd",
-        "value": "2.000000000000000e+00"
-      },
-      {
-        "path": "Metadata[2]/til/tile/filename",
-        "value": "17MAY02091354-M2AS-ZON24.TIF"
+        "value": "1.600000000000000e+00"
       }
     ]
   }
