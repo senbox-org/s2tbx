@@ -19,7 +19,6 @@ package org.esa.s2tbx.dataio.s2;
 
 
 
-import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.l1c.IL1cGranuleMetadata;
 import org.esa.s2tbx.dataio.s2.l1c.L1cMetadataFactory;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
