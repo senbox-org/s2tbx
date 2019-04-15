@@ -31,7 +31,7 @@ import java.util.zip.ZipFile;
 /**
  * Specialized <code>XmlMetadata</code> for Kompsat2.
  *
- * @author  Razvan Dumitrascu
+ * @author Razvan Dumitrascu
  * @see XmlMetadata
  */
 
@@ -68,7 +68,7 @@ public class Kompsat2Metadata extends XmlMetadata {
     public String getProductName() {
         String value = null;
         try {
-            value= getAttributeValue(Kompsat2Constants.PATH_ID, Kompsat2Constants.PRODUCT_GENERIC_NAME);
+            value = getAttributeValue(Kompsat2Constants.PATH_ID, Kompsat2Constants.PRODUCT_GENERIC_NAME);
         } catch (Exception e) {
             warn(MISSING_ELEMENT_WARNING, Kompsat2Constants.PATH_ID);
         }
@@ -99,7 +99,7 @@ public class Kompsat2Metadata extends XmlMetadata {
     public ProductData.UTC getProductStartTime() {
         ProductData.UTC date = null;
         String value = null;
-        try{
+        try {
             value = getAttributeValue(Kompsat2Constants.PATH_START_TIME, null);
         } catch (Exception e) {
             warn(MISSING_ELEMENT_WARNING, Kompsat2Constants.PATH_START_TIME);
@@ -193,13 +193,13 @@ public class Kompsat2Metadata extends XmlMetadata {
             if (directoryName != null) {
                 Kompsat2Component component = new Kompsat2Component(path.getParent());
                 component.setImageDirectoryName(directoryName);
-                if(tiePointGridPointsString!=null) {
-                    component.setTiePointGridPoints( parseTiePointGridAttribute(tiePointGridPointsString));
+                if (tiePointGridPointsString != null) {
+                    component.setTiePointGridPoints(parseTiePointGridAttribute(tiePointGridPointsString));
                 }
-                if(crsCode!=null){
+                if (crsCode != null) {
                     component.setCrsCode(crsCode);
                 }
-                if(originPos!= null){
+                if (originPos != null) {
                     component.setOriginPos(originPos);
                 }
                 result.component = component;
@@ -228,24 +228,28 @@ public class Kompsat2Metadata extends XmlMetadata {
         }
     }
 
+    public void setImageDirectoryPath(String imageDirectoryPath) {
+        this.imageDirectoryPath = imageDirectoryPath;
+    }
+
     public String getImageDirectoryPath() {
         return this.imageDirectoryPath;
     }
 
 
-    public List<BandMetadata> getBandsMetadata(){
+    public List<BandMetadata> getBandsMetadata() {
         return this.bandMetadatas;
     }
 
     /**
      * Parses band metadata file on a set of already given tags
      *
-     * @param fileEntry band metadata file to be parsed
+     * @param fileEntry   band metadata file to be parsed
      * @param imgMetadata reference to band metadata object to be filled
      */
     private void parseFile(File fileEntry, BandMetadata imgMetadata) {
-        try (FileInputStream in = new FileInputStream(fileEntry)){
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))){
+        try (FileInputStream in = new FileInputStream(fileEntry)) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
                 String line = reader.readLine();
                 while (line != null) {
                     if (line.startsWith(Kompsat2Constants.TAG_BAND_WIDTH)) {
@@ -254,12 +258,12 @@ public class Kompsat2Metadata extends XmlMetadata {
                     } else if (line.startsWith(Kompsat2Constants.TAG_BITS_PER_PIXEL)) {
                         String[] splitLine = line.split("\\t");
                         imgMetadata.setBitsPerPixel(Integer.parseInt(splitLine[1]));
-                    } else if (line.startsWith(Kompsat2Constants.TAG_NUMBER_COLUMNS_MS_IMAGE)||
+                    } else if (line.startsWith(Kompsat2Constants.TAG_NUMBER_COLUMNS_MS_IMAGE) ||
                             (line.startsWith(Kompsat2Constants.TAG_NUMBER_COLUMNS_PAN_IMAGE))) {
                         String[] splitLine = line.split("\\t");
                         imgMetadata.setNumColumns(Integer.parseInt(splitLine[1]));
-                    } else if(line. startsWith(Kompsat2Constants.TAG_NUMBER_ROWS_MS_IMAGE) ||
-                            (line. startsWith(Kompsat2Constants.TAG_NUMBER_ROWS_PAN_IMAGE))) {
+                    } else if (line.startsWith(Kompsat2Constants.TAG_NUMBER_ROWS_MS_IMAGE) ||
+                            (line.startsWith(Kompsat2Constants.TAG_NUMBER_ROWS_PAN_IMAGE))) {
                         String[] splitLine = line.split("\\t");
                         imgMetadata.setNumLines(Integer.parseInt(splitLine[1]));
                     } else if (line.startsWith(Kompsat2Constants.TAG_PIXEL_SIZE)) {
@@ -283,19 +287,20 @@ public class Kompsat2Metadata extends XmlMetadata {
             e.printStackTrace();
         }
     }
-/**
- *  Parse tie point grid elements and rearrange them so that the order matches the one used in the
- *  tie point grid constructor
- *
- *  @param tiePointGridPointsString the tie point grid from metadata file to be parsed
- */
+
+    /**
+     * Parse tie point grid elements and rearrange them so that the order matches the one used in the
+     * tie point grid constructor
+     *
+     * @param tiePointGridPointsString the tie point grid from metadata file to be parsed
+     */
     private static float[][] parseTiePointGridAttribute(String tiePointGridPointsString) {
         String[] values;
         values = tiePointGridPointsString.split(" ");
-        float[][] tiePoint = new float[2][values.length/2-1];
-        for (int x=0; x<8; x+=2) {
-            tiePoint[0][x/2] = Float.parseFloat(values[x]);
-            tiePoint[1][x/2] = Float.parseFloat(values[x+1]);
+        float[][] tiePoint = new float[2][values.length / 2 - 1];
+        for (int x = 0; x < 8; x += 2) {
+            tiePoint[0][x / 2] = Float.parseFloat(values[x]);
+            tiePoint[1][x / 2] = Float.parseFloat(values[x + 1]);
         }
         float[] interchangeLat = new float[4];
         float[] interchangeLon = new float[4];

@@ -19,13 +19,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public class IkonosMetadata extends XmlMetadata {
 
     private static final Logger logger = Logger.getLogger(IkonosMetadata.class.getName());
 
-    private static final int BUFFER_SIZE = 4096;
+    private static final int BUFFER_SIZE = 1024 * 1024;
     private IkonosComponent component;
     private String imageDirectoryPath;
     private List<BandMetadata> bandMetadatas;
@@ -115,6 +115,10 @@ public class IkonosMetadata extends XmlMetadata {
         tiePoint[0] = interchangeLat;
         tiePoint[1] = interchangeLon;
         return tiePoint;
+    }
+
+    public void setImageDirectoryPath(String imageDirectoryPath) {
+        this.imageDirectoryPath = imageDirectoryPath;
     }
 
     public String getImageDirectoryPath() {
@@ -226,17 +230,15 @@ public class IkonosMetadata extends XmlMetadata {
      *
      * @param path path to image zip files
      */
-    public void unZipImageFiles(final String path) {
+    public void unZipImageFiles(final Path path) {
         try {
             final File tempImageFile = VirtualDir.createUniqueTempDir();
             this.imageDirectoryPath = tempImageFile.getPath();
             byte[] buffer;
             final Path directoryFilePath = Paths.get(this.getImageDirectoryPath());
-            try (ZipFile zipFile = new ZipFile(path)) {
+            try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(Files.newInputStream(path)))) {
                 ZipEntry entry;
-                final Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                while (entries.hasMoreElements()) {
-                    entry = entries.nextElement();
+                while ((entry = zipInputStream.getNextEntry()) != null) {
                     Path filePath = directoryFilePath.resolve(entry.getName());
                     if (entry.isDirectory()) {
                         Files.createDirectories(filePath);
@@ -246,19 +248,17 @@ public class IkonosMetadata extends XmlMetadata {
                                 entry.getName().endsWith(IkonosConstants.IMAGE_COMMON_METADATA_EXTENSION) ||
                                 entry.getName().endsWith(IkonosConstants.IMAGE_ARCHIVE_EXTENSION)
                         ) {
-
-                            try (InputStream inputStream = zipFile.getInputStream(entry)) {
-                                try (BufferedOutputStream outputStream = new BufferedOutputStream(
-                                        new FileOutputStream(filePath.toFile()))) {
-                                    buffer = new byte[this.BUFFER_SIZE];
-                                    int read;
-                                    while ((read = inputStream.read(buffer)) > 0) {
-                                        outputStream.write(buffer, 0, read);
-                                    }
+                            try (BufferedOutputStream outputStream = new BufferedOutputStream(
+                                    new FileOutputStream(filePath.toFile()))) {
+                                buffer = new byte[this.BUFFER_SIZE];
+                                int read;
+                                while ((read = zipInputStream.read(buffer)) != -1) {
+                                    outputStream.write(buffer, 0, read);
                                 }
+                                outputStream.flush();
                             }
                             if (entry.getName().endsWith(IkonosConstants.IMAGE_ARCHIVE_EXTENSION)) {
-                                unGZipImageFiles(directoryFilePath.resolve(entry.getName()).toString());
+                                unGZipImageFiles(directoryFilePath.resolve(entry.getName()));
                             }
                         }
 
@@ -266,7 +266,7 @@ public class IkonosMetadata extends XmlMetadata {
                 }
             }
         } catch (IOException e) {
-           logger.log(Level.SEVERE, e.getMessage(), e);
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -275,19 +275,19 @@ public class IkonosMetadata extends XmlMetadata {
      *
      * @param path path to image gzip files
      */
-    public void unGZipImageFiles(final String path) {
+    public void unGZipImageFiles(final Path path) {
         try {
             final Path directoryFilePath = Paths.get(this.getImageDirectoryPath());
-            if (path.endsWith(IkonosConstants.IMAGE_ARCHIVE_EXTENSION)) {
-                try (GZIPInputStream in = new GZIPInputStream(new FileInputStream(path))) {
-                    final File outFile = new File(directoryFilePath.resolve(path).toString().substring(0, path.lastIndexOf(".")));
-                    try (FileOutputStream out = new FileOutputStream(outFile)) {
-                        byte[] buffer = new byte[1024];
-                        int len;
-                        while ((len = in.read(buffer)) != -1) {
-                            out.write(buffer, 0, len);
-                        }
+            try (GZIPInputStream in = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(path)))) {
+                Path filePath = directoryFilePath.resolve(path.toString().substring(0, path.toString().lastIndexOf(".")));
+                try (BufferedOutputStream outputStream = new BufferedOutputStream(
+                        new FileOutputStream(filePath.toFile()))) {
+                    byte[] buffer = new byte[this.BUFFER_SIZE];
+                    int len;
+                    while ((len = in.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, len);
                     }
+                    outputStream.flush();
                 }
             }
         } catch (IOException e) {

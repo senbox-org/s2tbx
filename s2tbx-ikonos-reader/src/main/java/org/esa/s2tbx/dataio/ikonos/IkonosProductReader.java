@@ -20,16 +20,18 @@ import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.transform.AffineTransform2D;
 import org.esa.snap.core.util.jai.JAIUtils;
+import org.esa.snap.vfs.NioPaths;
 
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,24 +85,37 @@ public class IkonosProductReader extends AbstractProductReader {
     @Override
     protected Product readProductNodesImpl() throws IOException {
         final IkonosProductReaderPlugin readerPlugin = (IkonosProductReaderPlugin) getReaderPlugIn();
-        final File inputFile = getInputFile();
+        final Path inputFile = getInputFile();
         this.productDirectory = readerPlugin.getInput(getInput());
         this.tiffProduct = new ArrayList<>();
-        final String productFilePath = this.productDirectory.getBasePath();
+
+        File file = this.productDirectory.getBaseFile();
+
         String fileName;
         //product file name differs from archive file name
         if (this.productDirectory.isCompressed()) {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf(IkonosConstants.PRODUCT_FILE_SUFFIX));
+            fileName = file.getName().substring(0, file.getName().lastIndexOf(IkonosConstants.PRODUCT_FILE_SUFFIX));
         } else {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf("."));
+            fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
         }
 
         this.metadata = IkonosMetadata.create(this.productDirectory.getFile(fileName + IkonosConstants.METADATA_FILE_SUFFIX).toPath());
 
         if (metadata != null) {
-
-            this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + IkonosConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
-
+            //unzip the necessary files in a temporary directory
+            productDirectory = VirtualDirEx.build(this.productDirectory.getFile(fileName + IkonosConstants.ARCHIVE_FILE_EXTENSION).toPath());
+            for (String item : this.productDirectory.listAllFiles()) {
+                if (item.endsWith(IkonosConstants.IMAGE_METADATA_EXTENSION) ||
+                        item.endsWith(IkonosConstants.IMAGE_EXTENSION) ||
+                        item.endsWith(IkonosConstants.IMAGE_COMMON_METADATA_EXTENSION)) {
+                    productDirectory.getFile(item);
+                    if (metadata.getImageDirectoryPath() == null) {
+                        metadata.setImageDirectoryPath(productDirectory.getTempDir().toString());
+                    }
+                } else if (item.endsWith(IkonosConstants.IMAGE_ARCHIVE_EXTENSION)) {
+                    this.metadata.unGZipImageFiles(this.productDirectory.getFile(item).toPath());
+                }
+            }
             final String dir = metadata.getImageDirectoryPath();
             final File[] imageDirectoryFileList = new File(dir).listFiles();
             Matcher matcher = Pattern.compile(IkonosConstants.PATH_ZIP_FILE_NAME_PATTERN).matcher(imageDirectoryFileList[0].getName());
@@ -122,7 +137,7 @@ public class IkonosProductReader extends AbstractProductReader {
             this.product.setEndTime(this.metadata.getProductEndTime());
             this.product.setDescription(this.metadata.getProductDescription());
             this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
-            this.product.setFileLocation(inputFile);
+            this.product.setFileLocation(inputFile.toFile());
             this.product.setProductReader(this);
 
             final String dirPath = this.metadata.getImageDirectoryPath();
@@ -290,10 +305,10 @@ public class IkonosProductReader extends AbstractProductReader {
      * @return inputFile
      * @throws FileNotFoundException
      */
-    private File getInputFile() throws FileNotFoundException {
-        final File inputFile = new File(getInput().toString());
-        if (!inputFile.exists()) {
-            throw new FileNotFoundException(inputFile.getPath());
+    private Path getInputFile() throws FileNotFoundException {
+        final Path inputFile = NioPaths.get(getInput().toString());
+        if (!Files.exists(inputFile)) {
+            throw new FileNotFoundException(inputFile.toString());
         }
 
         return inputFile;
