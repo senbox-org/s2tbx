@@ -97,11 +97,13 @@ class WorldView2ProductReader extends AbstractProductReader {
             throw new IOException("No product has been selected");
         }
         if (metadata != null) {
-            Set<String> selectedProductFiles = new HashSet<>();
+            List<String> selectedProductFiles = new ArrayList<>();
             for (String file : metadata.getAttributeValues(WorldView2Constants.PATH_FILE_LIST)) {
                 if (file.contains(productSelected) && (file.contains(WorldView2Constants.METADATA_EXTENSION) ||
                         file.contains(WorldView2Constants.IMAGE_EXTENSION))) {
-                    selectedProductFiles.add(file);
+                    if(!selectedProductFiles.contains(file)) {
+                        selectedProductFiles.add(file);
+                    }
                 }
             }
             List<TileMetadata> tileMetadataList = new ArrayList<>();
@@ -279,7 +281,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         targetBand.setDescription(band.getDescription());
     }
 
-    private void generateProductLists( Set<String> selectedProductFiles, List<TileMetadata>tileMetadataList) throws IOException{
+    private void generateProductLists( List<String> selectedProductFiles, List<TileMetadata>tileMetadataList) throws IOException{
         for (TileMetadata tileMetadata : tileMetadataList) {
             TileComponent tileComponent = tileMetadata.getTileComponent();
             for (int filesIndex = 0; filesIndex < tileComponent.getNumOfTiles(); filesIndex++) {
