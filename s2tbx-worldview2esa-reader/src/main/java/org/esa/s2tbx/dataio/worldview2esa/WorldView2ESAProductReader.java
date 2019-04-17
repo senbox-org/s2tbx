@@ -113,7 +113,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
 
         this.metadata = WorldView2ESAMetadata.create(this.productDirectory.getFile(fileName + WorldView2ESAConstants.METADATA_FILE_SUFFIX).toPath());
         if (metadata != null) {
-            final Set<String> selectedProductFiles = new HashSet<>();
+            final List<String> selectedProductFiles = new ArrayList<>();
             String dir = null;
             File[] imageDirectoryFileList = null;
             String[] directoryFileList = null;
@@ -138,7 +138,10 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                                         || subfile.getName().contains(WorldView2ESAConstants.IMAGE_EXTENSION))
                                         && !subfile.getName().contains(WorldView2ESAConstants.METADATA_FILE_SUFFIX)
                                         && !subfile.getName().contains(EXCLUSION_STRING)) {
-                                    selectedProductFiles.add(file.getName() + File.separator + subfile.getName());
+                                    String subfilePath = file.getName() + File.separator + subfile.getName();
+                                    if(!selectedProductFiles.contains(subfilePath)) {
+                                        selectedProductFiles.add(subfilePath);
+                                    }
                                 }
                             }
                         } else {
@@ -146,7 +149,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                                     || file.getName().contains(WorldView2ESAConstants.IMAGE_EXTENSION))
                                     && !file.getName().contains(WorldView2ESAConstants.METADATA_FILE_SUFFIX)
                                     && !file.getName().contains(EXCLUSION_STRING)) {
-                                selectedProductFiles.add(file.getName());
+                                if(!selectedProductFiles.contains(file.getName())) {
+                                    selectedProductFiles.add(file.getName());
+                                }
                             }
                         }
                     }
@@ -159,7 +164,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                             || file.contains(WorldView2ESAConstants.IMAGE_EXTENSION))
                             && !file.contains(WorldView2ESAConstants.METADATA_FILE_SUFFIX)
                             && !file.contains(EXCLUSION_STRING)) {
-                        selectedProductFiles.add(file);
+                        if(!selectedProductFiles.contains(file)) {
+                            selectedProductFiles.add(file);
+                        }
                     }
                 }
             }
@@ -482,7 +489,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         targetBand.setDescription(band.getDescription());
     }
 
-    private void generateProductLists(final Set<String> selectedProductFiles, final List<TileMetadata> tileMetadataList) throws IOException {
+    private void generateProductLists(final List<String> selectedProductFiles, final List<TileMetadata> tileMetadataList) throws IOException {
         for (TileMetadata tileMetadata : tileMetadataList) {
             final TileComponent tileComponent = tileMetadata.getTileComponent();
             for (int filesIndex = 0; filesIndex < tileComponent.getNumOfTiles(); filesIndex++) {
