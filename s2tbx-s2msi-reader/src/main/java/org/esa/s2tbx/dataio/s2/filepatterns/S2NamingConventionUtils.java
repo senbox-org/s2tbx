@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -299,25 +300,27 @@ public class S2NamingConventionUtils {
     }
 
     public static VirtualPath transformToSentinel2VirtualPath(Path path) throws IOException {
-        VirtualPath virtualPath;
-        if (VirtualDirEx.isPackedFile(path)) {
-            // the path represents an archive
-            VirtualDirEx virtualDirEx = VirtualDirEx.build(path);
-            if (virtualDirEx == null) {
-                throw new IOException(String.format("Unable to read %s", path.toString()));
-            }
-            String folderName = PathUtils.getFileNameWithoutExtension(path);
-            if (!folderName.endsWith(".SAFE")) {
-                folderName = folderName + ".SAFE";
-            }
-            if (!virtualDirEx.exists(folderName)) {
-                folderName = ".";
-            }
-            Path folderNamePath = path.resolve(folderName).getFileName();
-            virtualPath = new VirtualPath(folderNamePath, virtualDirEx);
+        boolean copyFilesOnLocalDisk = (path.getFileSystem() != FileSystems.getDefault());
+        VirtualDirEx virtualDirEx = VirtualDirEx.build(path, copyFilesOnLocalDisk);
+        if (virtualDirEx == null) {
+            throw new IllegalArgumentException("Unable to read the path '"+path.toString()+"'.");
         } else {
-            virtualPath = new VirtualPath(path, null);
+            Path relativePath;
+            if (virtualDirEx.isArchive()) {
+                // the path represents an archive
+                String folderName = PathUtils.getFileNameWithoutExtension(path);
+                if (!folderName.endsWith(".SAFE")) {
+                    folderName = folderName + ".SAFE";
+                }
+                if (!virtualDirEx.exists(folderName)) {
+                    folderName = ".";
+                }
+                relativePath = path.resolve(folderName).getFileName();
+            } else {
+                // the path represents a directory
+                relativePath = path.getFileName();
+            }
+            return new VirtualPath(relativePath, virtualDirEx);
         }
-        return virtualPath;
     }
 }

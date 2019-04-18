@@ -1,19 +1,11 @@
 package org.esa.s2tbx.dataio.s2;
 
-import com.bc.ceres.core.VirtualDir;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.snap.core.util.SystemUtils;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,28 +16,22 @@ import java.util.stream.Collectors;
  */
 
 /**
- * This class represents a Path to any resource, but it is useful to represent a path to a resource inside a compressed
- * file. It consists of the VirtualDir representing the folder or compressed file and a relative path starting there.
- * If the VirtualDir is null, the path is an absolute path.
+ * This class represents a Path to any resource, but it is useful to represent a relativePath to a resource inside a compressed
+ * file. It consists of the VirtualDir representing the folder or compressed file and a relative relativePath starting there.
+ * If the VirtualDir is null, the relativePath is an absolute relativePath.
  */
 
 public class VirtualPath {
 
-    private final Path path; // relative path starting from dir
-    private final VirtualDirEx dir; // if this is null, the path is an absolute path
+    private final Path relativePath; // relative relativePath starting from dir
+    private final VirtualDirEx dir;
 
-    private File tempZipFileDir;
-
-    public VirtualPath(Path path, VirtualDirEx dir) {
+    public VirtualPath(Path relativePath, VirtualDirEx dir) {
         this.dir = dir;
-        if (this.dir == null) {
-            this.path = path;
-        } else {
-            try (FileSystem fileSystem = this.dir.newFileSystem()) {
-                this.path = fileSystem.getPath(path.toString());
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+        try {
+            this.relativePath = this.dir.buildPath(relativePath.toString());
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 
@@ -53,51 +39,43 @@ public class VirtualPath {
         return dir;
     }
 
-    public Path getFileName() {
-        Path name = path.getFileName();
-        if(name != null && !name.toString().equals(".")) {
-            return name;
-        }
-        if(name != null && name.equals(".")) {
-            return this.getParent().getFileName();
-        }
+    public String getSeparator() {
+        return this.relativePath.getFileSystem().getSeparator();
+    }
 
-        return Paths.get(getVirtualDir().getBasePath()).getFileName();
+    public Path getFileName() {
+        if (this.relativePath.toString().equals(".")) {
+            return this.dir.getBaseFile().toPath().getFileName();
+        }
+        return this.relativePath.getFileName();
     }
 
     public VirtualPath getParent() {
-        Path normalizedPath = path.normalize();
-        if (normalizedPath.getParent() != null) {
-            return new VirtualPath(normalizedPath.getParent(), this.dir);
+        Path normalizedPath = this.relativePath.normalize();
+        Path parentPath = normalizedPath.getParent();
+        if (parentPath == null) {
+            // the relative path has sno parent
+            if (normalizedPath.toString().equals(".")) {
+                return null;
+            }
+            Path path = this.relativePath.resolve(".").getFileName();
+            return new VirtualPath(path, this.dir);
         }
-
-        if (normalizedPath.getNameCount() == 1 && !normalizedPath.toString().equals("")) {
-            Path p = path.resolve(".").getFileName();
-            return new VirtualPath(p, this.dir);
-        }
-        return null;
+        return new VirtualPath(parentPath, this.dir);
     }
 
     public VirtualPath resolve(String other) {
-        if (this.path.getFileName().toString().equals(".")) {
-            return new VirtualPath(this.path.resolveSibling(other), this.dir);
+        if (this.relativePath.getFileName().toString().equals(".")) {
+            return new VirtualPath(this.relativePath.resolveSibling(other), this.dir);
         }
-        return new VirtualPath(this.path.resolve(other), this.dir);
+        return new VirtualPath(this.relativePath.resolve(other), this.dir);
     }
 
     public VirtualPath resolveSibling(String other) {
-        if (path.getFileName().toString().equals(".")) {
-            return new VirtualPath(path.normalize().resolveSibling(other), this.dir);
+        if (this.relativePath.getFileName().toString().equals(".")) {
+            return new VirtualPath(this.relativePath.normalize().resolveSibling(other), this.dir);
         }
-        return new VirtualPath(path.resolveSibling(other), this.dir);
-    }
-
-    public Path toAbsolutePath() {
-        if (dir != null) {
-            return Paths.get(dir.getBasePath(), path.toString());
-        } else {
-            return Paths.get(path.toString());
-        }
+        return new VirtualPath(this.relativePath.resolveSibling(other), this.dir);
     }
 
     public boolean isDirectory() {
@@ -115,56 +93,15 @@ public class VirtualPath {
     }
 
     public InputStream getInputStream() throws IOException {
-        if (dir == null) {
-            return new BufferedInputStream(Files.newInputStream(path));
-        }
-        return this.dir.getInputStream(this.path.toString());
-    }
-
-    public Path getRelativePath() {
-        return this.path;
+        return this.dir.getInputStream(this.relativePath.toString());
     }
 
     public File getFile() throws IOException {
-        if (this.dir == null) {
-            if (this.path.getFileSystem() == FileSystems.getDefault()) {
-                return this.path.toFile();
-            } else {
-//                if (this.tempZipFileDir == null) {
-//                    this.tempZipFileDir = VirtualDir.createUniqueTempDir();
-//                }
-
-//                if (jp2FilePath.getFileSystem() != FileSystems.getDefault()) {
-//                    Path imageRelativePath = imageFilePath.getRelativePath();
-//                    if (!imageRelativePath.startsWith(inputRelativeFolderPath)) {
-//                        throw new IllegalStateException("The relative path '"+imageRelativePath.toString()+"' does not start with product input path '"+inputRelativeFolderPath.toString()+"'.");
-//                    } else {
-//                        int inputFolderNameCount = inputRelativeFolderPath.getNameCount();
-//                        int imageNameCount = imageRelativePath.getNameCount();
-//                        Path p = imageRelativePath.subpath(inputFolderNameCount, imageNameCount);
-//                        jp2FilePath = this.cacheDir.toPath().resolve(p.toString());
-//                        if (!Files.exists(jp2FilePath)) {
-//                            Files.createDirectories(jp2FilePath.getParent());
-//                            FileHelper.copyFileUsingInputStream(imageFilePath.getFile().toPath(), jp2FilePath.toString());
-//                        }
-//                    }
-//                }
-
-            }
-
-            throw new UnsupportedOperationException("Not implemented yet.");
-        }
-        return this.dir.getFile(this.path.toString());
+        return this.dir.getFile(this.relativePath.toString());
     }
 
     public String[] list() throws IOException {
-        if (dir == null) {
-            if (!Files.isDirectory(path)) {
-                return null;
-            }
-            return path.toFile().list();
-        }
-        return dir.list(path.toString());
+        return this.dir.list(this.relativePath.toString());
     }
 
     public String[] listEndingBy(String suffix) throws IOException {
@@ -177,71 +114,52 @@ public class VirtualPath {
     }
 
     public VirtualPath[] listPaths() throws IOException {
-        String[] list;
-        if (dir == null) {
-            if (!Files.exists(path) || !Files.isDirectory(path)) {
-                return null;
+        String[] list = dir.list(relativePath.toString());
+        if (list != null && list.length > 0) {
+            VirtualPath[] result = new VirtualPath[list.length];
+            for (int i=0; i<list.length; i++) {
+                result[i]  = resolve(list[i]);
             }
-            list = path.toFile().list();
-        } else {
-            list = dir.list(path.toString());
+            return result;
         }
-        if (list == null) {
-            return null;
-        }
-
-        ArrayList<VirtualPath> listPaths = new ArrayList<>();
-        for (String item : list) {
-            listPaths.add(this.resolve(item));
-        }
-        return listPaths.toArray(new VirtualPath[list.length]);
+        return null;
     }
 
     public VirtualPath[] listPaths(String pattern) throws IOException {
-        String[] list;
-        if (dir == null) {
-            if (!Files.exists(path) || !Files.isDirectory(path)) {
-                return null;
+        String[] list = dir.list(relativePath.toString());
+        if (list != null && list.length > 0) {
+            List<VirtualPath> listPaths = new ArrayList<>(list.length);
+            for (int i=0; i<list.length; i++) {
+                if (list[i].contains(pattern)) {
+                    listPaths.add(resolve(list[i]));
+                }
             }
-            list = path.toFile().list();
-        } else {
-            list = dir.list(path.toString());
-        }
-        if (list == null) {
-            return null;
-        }
-
-        ArrayList<VirtualPath> listPaths = new ArrayList<>();
-        for (String item : list) {
-            if (item.contains(pattern)) {
-                listPaths.add(this.resolve(item));
+            if (listPaths.size() > 0) {
+                return listPaths.toArray(new VirtualPath[listPaths.size()]);
             }
         }
-        if (listPaths.size() == 0) {
-            return null;
-        }
-
-        return listPaths.toArray(new VirtualPath[listPaths.size()]);
+        return null;
     }
 
     public boolean exists() {
-        if (this.dir == null) {
-            return Files.exists(this.path);
-        }
-        return this.dir.exists(this.path.toString());
+        return this.dir.exists(this.relativePath.toString());
     }
 
     public String getFullPathString() {
-        if(dir != null) {
-            return (dir.getBasePath() + File.separator + path.toString());
+        Path dirPath = this.dir.getBaseFile().toPath();
+        if (this.relativePath.toString().equals(".")) {
+            String result = dirPath.toString();
+            if (this.dir.isArchive()) {
+                result += "!" + this.relativePath.toString();
+            }
+            return result;
         } else {
+            Path path = dirPath.resolve(this.relativePath.toString());
             return path.toString();
         }
     }
     
     public void close() {
-        if (dir != null) {
-            dir.close();
-        }
+        this.dir.close();
     }
 }

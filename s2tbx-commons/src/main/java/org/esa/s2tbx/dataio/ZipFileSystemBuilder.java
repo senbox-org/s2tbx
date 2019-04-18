@@ -146,10 +146,6 @@ public class ZipFileSystemBuilder {
             }
             if (this.zipEntryPath.equals(currentZipEntryPath)) {
                 this.localFile = this.destinationFolder.resolve(currentZipEntryPath);
-                Path parentFolder = this.localFile.getParent();
-                if (!Files.exists(parentFolder)) {
-                    Files.createDirectories(parentFolder);
-                }
                 boolean copyFile = true;
                 if (Files.isRegularFile(this.localFile)) {
                     // the local file already exists
@@ -158,6 +154,10 @@ public class ZipFileSystemBuilder {
                     copyFile = (localFileSizeInBytes != zipEntryFileSizeInBytes);
                 }
                 if (copyFile) {
+                    Path parentFolder = this.localFile.getParent();
+                    if (!Files.exists(parentFolder)) {
+                        Files.createDirectories(parentFolder);
+                    }
                     FileHelper.copyFileUsingInputStream(file, this.localFile.toString());
                 }
                 return FileVisitResult.TERMINATE;

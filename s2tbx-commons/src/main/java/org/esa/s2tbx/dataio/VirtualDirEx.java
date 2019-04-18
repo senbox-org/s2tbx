@@ -112,40 +112,80 @@ public abstract class VirtualDirEx extends VirtualDir {
     private static VirtualDirEx create(Path path) {
         String fileName = path.getFileName().toString();
         if (Files.isRegularFile(path) && (TarVirtualDir.isTgz(fileName) || TarVirtualDir.isTar(fileName))) {
-            try {
-                return new TarVirtualDir(path.toFile());
-            } catch (IOException ignored) {
-                return null;
-            }
+            return new TarVirtualDir(path.toFile());
         } else {
             AbstractVirtualPath virtualDir = null;
             if (Files.isDirectory(path)) {
-                virtualDir = new VirtualDirPath(path);
+                virtualDir = new VirtualDirPath(path, false);
             } else {
                 try {
                     if (isZipFile(path)) {
                         virtualDir = new VirtualZipPath(path);
                     }
-                } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                } catch (IllegalAccessException | InstantiationException | InvocationTargetException | IOException e) {
                     throw new IllegalStateException(e);
-                } catch (IOException e) {
-                    logger.log(Level.SEVERE, "Failed to check if the file '"+path+"' is a zip archive.", e);
                 }
             }
             return (virtualDir == null) ? null : new VirtualDirWrapper(virtualDir);
         }
     }
 
+//    public static VirtualDirEx build(Path path) throws IOException {
+//        if (Files.isRegularFile(path) && !VirtualDirEx.isPackedFile(path)) {
+//            Path parentPath = path.getParent();
+//            if (parentPath == null) {
+//                throw new IOException("Unable to retrieve parent to file '" + path.toString()+"'.");
+//            } else {
+//                return VirtualDirEx.create(parentPath);
+//            }
+//        }
+//        return VirtualDirEx.create(path);
+//    }
+
     public static VirtualDirEx build(Path path) throws IOException {
-        if (Files.isRegularFile(path) && !VirtualDirEx.isPackedFile(path)) {
-            Path parentPath = path.getParent();
-            if (parentPath == null) {
-                throw new IOException("Unable to retrieve parent to file '" + path.toString()+"'.");
+        return build(path, false);
+    }
+
+    public static VirtualDirEx build(Path path, boolean copyFilesOnLocalDisk) throws IOException {
+        AbstractVirtualPath virtualDir = null;
+        if (Files.isRegularFile(path)) {
+            // the path represents a file
+            if (VirtualDirEx.isPackedFile(path)) {
+                // the path represents an archive
+                String fileName = path.getFileName().toString();
+                if (TarVirtualDir.isTgz(fileName) || TarVirtualDir.isTar(fileName)) {
+                    return new TarVirtualDir(path.toFile());
+                } else {
+                    // check if the file represents a zip archive
+                    boolean zipFile;
+                    try {
+                        zipFile = isZipFile(path);
+                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                        throw new IllegalStateException(e);
+                    }
+                    if (zipFile) {
+                        virtualDir = new VirtualZipPath(path);
+                    } else {
+                        throw new IllegalArgumentException("The path '"+path.toString()+"' does not represent a zip archive.");
+                    }
+                }
             } else {
-                return VirtualDirEx.create(parentPath);
+                Path parentPath = path.getParent();
+                if (parentPath == null) {
+                    throw new IllegalArgumentException("Unable to retrieve the parent of the file '" + path.toString()+"'.");
+                } else if (Files.isDirectory(parentPath)){
+                    virtualDir = new VirtualDirPath(parentPath, copyFilesOnLocalDisk);
+                } else {
+                    throw new IllegalArgumentException("Unable to check if the parent of the file '" + path.toString()+"' represents a directory.");
+                }
             }
+        } else if (Files.isDirectory(path)) {
+            // the path represents a directory
+            virtualDir = new VirtualDirPath(path, copyFilesOnLocalDisk);
+        } else {
+            throw new IllegalArgumentException("Unable to check if the path '"+path.toString()+"' represents a file or a directory.");
         }
-        return VirtualDirEx.create(path);
+        return (virtualDir == null) ? null : new VirtualDirWrapper(virtualDir);
     }
 
     private static boolean isZipFile(Path zipPath) throws IllegalAccessException, InstantiationException, InvocationTargetException, IOException {
@@ -184,7 +224,9 @@ public abstract class VirtualDirEx extends VirtualDir {
         return TarVirtualDir.isTar(filename);
     }
 
-    public abstract FileSystem newFileSystem() throws IOException;
+    public Path buildPath(String first, String... more) throws IOException {
+        return null;
+    }
 
     public void setFolderDepth(int value) {
         this.depth = value;
@@ -327,586 +369,5 @@ public abstract class VirtualDirEx extends VirtualDir {
             logger.warning(e.getMessage());
         }
         return files;
-    }
-
-    /**
-     * Private implementation of a wrapper over the "classic" VirtualDir class.
-     * It is needed because the implementations of VirtualDir are not visible, and hence their
-     * methods cannot be overridden.
-     * With the exception of the getFile() method, all the methods are delegated to the wrapped instance.
-     *
-     * Another difference from the File/Dir/Zip implementations of VirtualDir is the ability to get files
-     * on partial matches of the names (see findKeyFile() method)
-     *
-     * @author Cosmin Cara
-     */
-    private static class VirtualDirWrapper extends VirtualDirEx {
-
-        private AbstractVirtualPath wrapped;
-        private Map<String, String> files;
-
-        public VirtualDirWrapper(AbstractVirtualPath dir) {
-            this.wrapped = dir;
-            this.files = new HashMap<>();
-        }
-
-        @Override
-        public FileSystem newFileSystem() throws IOException {
-            return this.wrapped.newFileSystem();
-        }
-
-        @Override
-        public String getBasePath() {
-            return this.wrapped.getBasePath();
-        }
-
-        @Override
-        public File getBaseFile() {
-            return this.wrapped.getBaseFile();
-        }
-
-        @Override
-        public InputStream getInputStream(String relativePath) throws IOException {
-            InputStream inputStream;
-            try {
-                inputStream = this.wrapped.getInputStream(relativePath);
-            } catch (IOException e) {
-                try {
-                    inputStream = this.wrapped.getInputStream(relativePath.toUpperCase());
-                } catch (IOException ex) {
-                    inputStream = getInputStreamFromTempDir(relativePath);
-                }
-            }
-            if (inputStream == null) {
-                String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
-                String path = findKeyFile(key);
-                if (path == null) {
-                    throw new IOException(String.format("File %s does not exist", relativePath));
-                } else {
-                    try {
-                        // the "classic" way
-                        inputStream = getInputStreamInner(path);
-                    } catch (IOException e) {
-                        if (isArchive()) {
-                            inputStream = getInputStreamInner(path);
-                        } else {
-                            inputStream = getInputStreamFromTempDir(path);
-                        }
-                    }
-                }
-            }
-            return inputStream;
-        }
-
-        @Override
-        public <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException {
-            try {
-                return this.wrapped.loadData(relativePath, command);
-            } catch (FileNotFoundException e1) {
-                try {
-                    return this.wrapped.loadData(relativePath.toUpperCase(), command);
-                } catch (FileNotFoundException e2) {
-                    String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
-                    String path = findKeyFile(key);
-                    if (path == null) {
-                        throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
-                    } else {
-                        return this.wrapped.loadData(path, command);
-//                        try {
-//                            // the "classic" way
-//                            file = getFileInner(path);
-//                        } catch (IOException e) {
-//                            if (isArchive()) {
-//                                file = getFileInner(path);
-//                            } else {
-//                                file = getFileFromTempDir(path);
-//                            }
-//                        }
-                    }
-                }
-            }
-        }
-
-        @Override
-        public File getFile(String relativePath) throws IOException {
-            File file;
-            try {
-                file = this.wrapped.getFile(relativePath);
-            } catch (IOException e) {
-                try {
-                    file = this.wrapped.getFile(relativePath.toUpperCase());
-                } catch (IOException ex) {
-                    file = getFileFromTempDir(relativePath);
-                }
-            }
-            if (file == null || !Files.exists(file.toPath())) {
-                String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
-                String path = findKeyFile(key);
-                if (path == null) {
-                    throw new IOException(String.format("File %s does not exist", relativePath));
-                } else {
-                    try {
-                        // the "classic" way
-                        file = getFileInner(path);
-                    } catch (IOException e) {
-                        if (isArchive()) {
-                            file = getFileInner(path);
-                        } else {
-                            file = getFileFromTempDir(path);
-                        }
-                    }
-                }
-            }
-            return file;
-        }
-
-        private File getFileFromTempDir(String relativePath) throws IOException {
-            File tempDir = this.wrapped.getTempDir();
-            if (tempDir != null) {
-                Path tempPath = tempDir.toPath().resolve(relativePath);
-                return tempPath.toFile();
-            }
-            return null;
-        }
-
-        private InputStream getInputStreamFromTempDir(String relativePath) throws IOException {
-            File tempDir = this.wrapped.getTempDir();
-            if (tempDir != null) {
-                Path tempPath = tempDir.toPath().resolve(relativePath);
-                if (Files.exists(tempPath)) {
-                    return Files.newInputStream(tempPath);
-                }
-            }
-            return null;
-        }
-
-        private File getFileInner(String path) throws IOException {
-            String pathSeparator;
-            if (!this.wrapped.isArchive() && !this.wrapped.getBasePath().toLowerCase().endsWith("tar")) {
-                pathSeparator = "\\\\";
-                path = path.replaceAll("/", "\\\\");
-            } else {
-                pathSeparator = "/";
-            }
-            try {
-                //if the path letter case is correct, there is no need to read all the path tree
-                File result = this.wrapped.getFile(path);
-                if (result != null) {
-                    return result;
-                }
-            } catch (IOException ignored) {
-                // do nothing
-            }
-            String newRelativePath = computeNewRelativePath(path, pathSeparator);
-            return this.wrapped.getFile(newRelativePath);
-        }
-
-        private String computeNewRelativePath(String path, String pathSeparator) throws IOException {
-            String[] relativePathArray = path.split(pathSeparator);
-            String newRelativePath = "";
-            String[] files = this.wrapped.list("");
-            int index = 0;
-            while (files != null && files.length > 0 && index < relativePathArray.length) {
-                boolean found = false;
-                for (String file : files) {
-                    if (relativePathArray[index].equalsIgnoreCase(file)) {
-                        newRelativePath += file + pathSeparator;
-                        index++;
-                        found = true;
-                        if (index < relativePathArray.length) {//there are still subfolders/subfiles to be searched
-                            files = this.wrapped.list(newRelativePath);
-                        }
-                        break;
-                    }
-                }
-                if (!found) {//if no subfolder/subfile did not matched the search, it makes no sense to continue searching
-                    break;
-                }
-            }
-            if (index > 0) {//if the file was found (meaning the index is not 0), then the last path separator should be removed!
-                newRelativePath = newRelativePath.substring(0, newRelativePath.length() - pathSeparator.length());
-            }
-            if (index == 0) {
-                throw new IOException();
-            }
-            return newRelativePath;
-        }
-
-        private InputStream getInputStreamInner(String path) throws IOException {
-            String pathSeparator;
-            if (!this.wrapped.isArchive() && !this.wrapped.getBasePath().toLowerCase().endsWith("tar")) {
-                pathSeparator = "\\\\";
-                path = path.replaceAll("/", "\\\\");
-            } else {
-                pathSeparator = "/";
-            }
-            try {
-                //if the path letter case is correct, there is no need to read all the path tree
-                InputStream result = this.wrapped.getInputStream(path);
-                if (result != null) {
-                    return result;
-                }
-            } catch (IOException ignored) {
-                // do nothing
-            }
-            String newRelativePath = computeNewRelativePath(path, pathSeparator);
-            return this.wrapped.getInputStream(newRelativePath);
-        }
-
-        @Override
-        public String[] list(String s) throws IOException {
-            return this.wrapped.list(s);
-        }
-
-        @Override
-        public boolean exists(String s) {
-            return this.wrapped.exists(s);
-        }
-
-        @Override
-        public void close() {
-            this.wrapped.close();
-        }
-
-        @Override
-        public boolean isCompressed() {
-            return this.wrapped.isCompressed();
-        }
-
-        @Override
-        public boolean isArchive() {
-            return this.wrapped.isArchive();
-        }
-
-        @Override
-        public File getTempDir() throws IOException {
-            return this.wrapped.getTempDir();
-        }
-
-        @Override
-        protected void finalize() throws Throwable {
-            this.wrapped = null;
-            super.finalize();
-        }
-
-        @Override
-        public String[] listAll(Pattern...patterns) {
-            String[] list = super.listAll(patterns);
-            Arrays.stream(list).forEach(item -> this.files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
-            return list;
-        }
-
-        private String findKeyFile(String key) {
-            if (key == null || key.isEmpty()) {
-                return null;
-            }
-            String ret = this.files.get(key);
-            if (ret == null) {
-                String namePart = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(key));
-                String extPart = FileUtils.getExtension(key);
-                ret = firstOrDefault(this.files.keySet(),
-                                     k -> {
-                                         String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
-                                         name = name.substring(name.lastIndexOf("/") + 1);
-                                         return (extPart != null && extPart.equalsIgnoreCase(FileUtils.getExtension(k))) && namePart.equals(name);
-                                     });
-                //If no identical name found, look for a name that could be a truncated name of key (needed for some Deimos products)
-                if(ret == null) {
-                    ret = firstOrDefault(this.files.keySet(),
-                                         k -> {
-                                             String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
-                                             name = name.substring(name.lastIndexOf("/") + 1);
-                                             return (extPart != null && extPart.equalsIgnoreCase(FileUtils.getExtension(k))) && namePart.startsWith(name);
-                                         });
-                }
-            }
-            return ret;
-        }
-    }
-
-    /**
-     * Private implementation of a virtual directory representing the contents of a tar file.
-     */
-    private static class TarVirtualDir extends VirtualDirEx {
-
-        public static final byte LF_SPEC_LINK = (byte) 'L';
-
-        private final File archiveFile;
-        private File extractDir;
-        private FutureTask<Void> unpackTask;
-        private ExecutorService executor;
-        private boolean unpackStarted = false;
-
-        private class UnpackProcess implements Callable<Void> {
-            @Override
-            public Void call() throws Exception {
-                ensureUnpacked();
-                return null;
-            }
-        }
-
-        public TarVirtualDir(File tgz) throws IOException {
-            if (tgz == null) {
-                throw new IllegalArgumentException("Input file shall not be null");
-            }
-            archiveFile = tgz;
-            extractDir = null;
-            unpackTask = new FutureTask<>(new UnpackProcess());
-            executor = Executors.newSingleThreadExecutor();
-        }
-
-        @Override
-        public FileSystem newFileSystem() throws IOException {
-            throw new UnsupportedOperationException();
-        }
-
-        public static String getFilenameFromPath(String path) {
-            int lastSepIndex = path.lastIndexOf("/");
-            if (lastSepIndex == -1) {
-                lastSepIndex = path.lastIndexOf("\\");
-                if (lastSepIndex == -1) {
-                    return path;
-                }
-            }
-
-            return path.substring(lastSepIndex + 1, path.length());
-        }
-
-        public static boolean isTgz(String filename) {
-            final String extension = FileUtils.getExtension(filename);
-            return (".tgz".equals(extension) || ".gz".equals(extension));
-        }
-
-        public static boolean isTar(String filename) {
-            return ".tar".equals(FileUtils.getExtension(filename));
-        }
-
-        @Override
-        public <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException {
-            File file = getFile(path);
-            return command.execute(file.toPath());
-        }
-
-        @Override
-        public String getBasePath() {
-            return archiveFile.getPath();
-        }
-
-        @Override
-        public File getBaseFile() {
-            return archiveFile;
-        }
-
-        @Override
-        public InputStream getInputStream(String path) throws IOException {
-            final File file = getFile(path);
-            return new BufferedInputStream(new FileInputStream(file));
-        }
-
-        @Override
-        public File getFile(String path) throws IOException {
-            ensureUnpackedStarted();
-            try {
-                while (!unpackTask.isDone()) {
-                    Thread.sleep(100);
-                }
-            } catch (InterruptedException e) {
-                // swallowed exception
-            } finally {
-                executor.shutdown();
-            }
-            final File file = new File(extractDir, path);
-            if (!(file.isFile() || file.isDirectory())) {
-                throw new FileNotFoundException("The path '"+path+"' does not exist in the folder '"+extractDir.getAbsolutePath()+"'.");
-            }
-            return file;
-        }
-
-        @Override
-        public String[] list(String path) throws IOException {
-            final File file = getFile(path);
-            return file.list();
-        }
-
-        public boolean exists(String s) {
-            return archiveFile.exists();
-        }
-
-        @Override
-        public void close() {
-            if (extractDir != null) {
-                FileUtils.deleteTree(extractDir);
-                extractDir = null;
-            }
-        }
-
-        @Override
-        public boolean isCompressed() {
-            return isTgz(archiveFile.getName());
-        }
-
-        @Override
-        public boolean isArchive() {
-            return isTgz(archiveFile.getName());
-        }
-
-        @Override
-        public void finalize() throws Throwable {
-            super.finalize();
-            close();
-        }
-
-        @Override
-        public File getTempDir() throws IOException {
-            ensureUnpackedStarted();
-            return extractDir;
-        }
-
-        public void ensureUnpacked() throws IOException {
-            ensureUnpacked(null);
-        }
-
-        public void ensureUnpacked(File unpackFolder) throws IOException {
-            if (extractDir == null) {
-                //SystemUtils.LOG.info("Unpacking archive contents");
-                extractDir = unpackFolder != null ? unpackFolder : VirtualDir.createUniqueTempDir();
-                TarInputStream tis = null;
-                OutputStream outStream = null;
-                try {
-                    if (isTgz(archiveFile.getName())) {
-                        tis = new TarInputStream(
-                                new GZIPInputStream(new BufferedInputStream(new FileInputStream(archiveFile))));
-                    } else {
-                        tis = new TarInputStream(new BufferedInputStream(new FileInputStream(archiveFile)));
-                    }
-                    TarEntry entry;
-
-                    String longLink = null;
-                    while ((entry = tis.getNextEntry()) != null) {
-                        String entryName = entry.getName();
-                        boolean entryIsLink = entry.getHeader().linkFlag == TarHeader.LF_LINK || entry.getHeader().linkFlag == LF_SPEC_LINK;
-                        if (longLink != null && longLink.startsWith(entryName)) {
-                            entryName = longLink;
-                            longLink = null;
-                        }
-                        if (entry.isDirectory()) {
-                            final File directory = new File(extractDir, entryName);
-                            ensureDirectory(directory);
-                            continue;
-                        }
-
-                        final String fileNameFromPath = getFilenameFromPath(entryName);
-                        final int pathIndex = entryName.indexOf(fileNameFromPath);
-                        String tarPath = null;
-                        if (pathIndex > 0) {
-                            tarPath = entryName.substring(0, pathIndex - 1);
-                        }
-
-                        File targetDir;
-                        if (tarPath != null) {
-                            targetDir = new File(extractDir, tarPath);
-                        } else {
-                            targetDir = extractDir;
-                        }
-
-                        ensureDirectory(targetDir);
-                        final File targetFile = new File(targetDir, fileNameFromPath);
-                        if (!entryIsLink && targetFile.isFile()) {
-                            continue;
-                        }
-
-                        if (!entryIsLink && !targetFile.createNewFile()) {
-                            throw new IOException("Unable to create file: " + targetFile.getAbsolutePath());
-                        }
-
-                        outStream = new BufferedOutputStream(new FileOutputStream(targetFile));
-                        final byte data[] = new byte[1024 * 1024];
-                        int count;
-                        while ((count = tis.read(data)) != -1) {
-                            outStream.write(data, 0, count);
-                            //if the entry is a link, must be saved, since the name of the next entry depends on this
-                            if (entryIsLink) {
-                                longLink = (longLink == null ? "" : longLink) + new String(data, 0, count);
-                            } else {
-                                longLink = null;
-                            }
-                        }
-                        //the last character is \u0000, so it must be removed
-                        if (longLink != null) {
-                            longLink = longLink.substring(0, longLink.length() - 1);
-                        }
-                        outStream.flush();
-                        outStream.close();
-
-                    }
-                } finally {
-                    if (tis != null) {
-                        tis.close();
-                    }
-                    if (outStream != null) {
-                        outStream.flush();
-                        outStream.close();
-                    }
-                }
-            }
-        }
-
-        private void ensureDirectory(File targetDir) throws IOException {
-            if (!targetDir.isDirectory()) {
-                if (!targetDir.mkdirs()) {
-                    throw new IOException("unable to create directory: " + targetDir.getAbsolutePath());
-                }
-            }
-        }
-
-        @Override
-        public String[] listAll(Pattern...patterns) {
-            List<String> fileNames = new ArrayList<>();
-            TarInputStream tis;
-            try (FileInputStream fileStream = new FileInputStream(this.archiveFile)) {
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(fileStream);
-                if (isTgz(this.archiveFile.getName())) {
-                    tis = new TarInputStream(new GZIPInputStream(bufferedInputStream));
-                } else {
-                    tis = new TarInputStream(bufferedInputStream);
-                }
-                TarEntry entry;
-                String longLink = null;
-                while ((entry = tis.getNextEntry()) != null) {
-                    String entryName = entry.getName();
-                    boolean entryIsLink = entry.getHeader().linkFlag == TarHeader.LF_LINK || entry.getHeader().linkFlag == LF_SPEC_LINK;
-                    if (longLink != null && longLink.startsWith(entryName)) {
-                        entryName = longLink;
-                        longLink = null;
-                    }
-                    //if the entry is a link, must be saved, since the name of the next entry depends on this
-                    if (entryIsLink) {
-                        final byte data[] = new byte[1024 * 1024];
-                        int count;
-                        while ((count = tis.read(data)) != -1) {
-                            longLink = (longLink == null ? "" : longLink) + new String(data, 0, count);
-                        }
-                    } else {
-                        longLink = null;
-                        fileNames.add(entryName);
-                    }
-                    //the last character is \u0000, so it must be removed
-                    if (longLink != null) {
-                        longLink = longLink.substring(0, longLink.length() - 1);
-                    }
-                }
-            } catch (IOException e) {
-                // cannot open/read tar, list will be empty
-                fileNames = new ArrayList<>();
-            }
-            return fileNames.toArray(new String[fileNames.size()]);
-        }
-
-        public void ensureUnpackedStarted() {
-            if (!unpackStarted) {
-                unpackStarted = true;
-                executor.execute(unpackTask);
-            }
-        }
     }
 }

@@ -17,8 +17,5 @@ public abstract class AbstractVirtualPath extends VirtualDir {
 
     public abstract <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException;
 
-    public FileSystem newFileSystem() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
+    public abstract Path buildPath(String first, String... more) throws IOException;
 }

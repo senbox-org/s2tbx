@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.s2;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -49,6 +50,12 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -803,28 +810,48 @@ public abstract class S2Metadata {
      * @param path
      * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
      */
-    public static int getPSD(VirtualPath path){
-        try (InputStream stream = /*new FileInputStream(path.toString())*/path.getInputStream()){
-            //FileInputStream fileStream = new FileInputStream(path.toString());
-            String xmlStreamAsString = IOUtils.toString(stream);
+    public static int getPSD(VirtualPath path) {
+        try (InputStream inputStream = path.getInputStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset())){
+
             String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
-
             Pattern p = Pattern.compile(regex);
-            Matcher m = p.matcher(xmlStreamAsString);
-            if (m.find()) {
-                int position = m.start();
-                String psdNumber = xmlStreamAsString.substring(position+4,position+6);
-                return Integer.parseInt(psdNumber);
-            }
-            else {
-                return 0;
-            }
+            StringBuilder str = new StringBuilder();
+            char[] buffer = new char[4 * 1024];
+            int characterReadNow;
+            while ((characterReadNow = inputStreamReader.read(buffer)) >= 0) {
+                str.append(buffer, 0, characterReadNow);
 
+                Matcher m = p.matcher(str);
+                if (m.find()) {
+                    int position = m.start();
+                    String psdNumber = str.substring(position+4, position+6);
+                    return Integer.parseInt(psdNumber);
+                }
+            }
+            return 0;
         } catch (Exception e) {
             return 0;
         }
+        //TODO Jean old code
+//        try (InputStream stream = path.getInputStream()) {
+//            String xmlStreamAsString = IOUtils.toString(stream);
+//            String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
+//
+//            Pattern p = Pattern.compile(regex);
+//            Matcher m = p.matcher(xmlStreamAsString);
+//            if (m.find()) {
+//                int position = m.start();
+//                String psdNumber = xmlStreamAsString.substring(position + 4, position + 6);
+//                return Integer.parseInt(psdNumber);
+//            } else {
+//                return 0;
+//            }
+//
+//        } catch (Exception e) {
+//            return 0;
+//        }
     }
-
 
     /**
      * Get the angles grid of one detector (it mosaics the different tiles)

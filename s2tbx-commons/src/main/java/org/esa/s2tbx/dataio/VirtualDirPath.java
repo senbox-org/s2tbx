@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio;
 
 import com.bc.ceres.core.VirtualDir;
+import org.esa.snap.utils.FileHelper;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
@@ -28,15 +30,18 @@ import java.util.zip.GZIPInputStream;
 public class VirtualDirPath extends AbstractVirtualPath {
 
     private final Path dirPath;
+    private final boolean copyFilesOnLocalDisk;
 
-    public VirtualDirPath(Path dirPath) {
+    private File tempZipFileDir;
+
+    public VirtualDirPath(Path dirPath, boolean copyFilesOnLocalDisk) {
         this.dirPath = dirPath;
+        this.copyFilesOnLocalDisk = copyFilesOnLocalDisk;
     }
 
     @Override
-    public FileSystem newFileSystem() throws IOException {
-        FileSystemProvider fileSystemProvider = this.dirPath.getFileSystem().provider();
-        return fileSystemProvider.newFileSystem(this.dirPath, null);
+    public Path buildPath(String first, String... more) throws IOException {
+        return this.dirPath.getFileSystem().getPath(first, more);
     }
 
     @Override
@@ -50,42 +55,96 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
-    public <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException {
-        Path child = this.dirPath.resolve(path);
-        if (!Files.exists(child)) {
+    public <ResultType> ResultType loadData(String childRelativePath, ICallbackCommand<ResultType> command) throws IOException {
+        Path child = this.dirPath.resolve(childRelativePath);
+        if (Files.exists(child)) {
+            if (Files.isRegularFile(child)) {
+                return command.execute(child);
+            } else {
+                throw new NotRegularFileException(child.toString());
+            }
+        } else {
             throw new FileNotFoundException(child.toString());
         }
-        return command.execute(child);
     }
 
     @Override
-    public InputStream getInputStream(String path) throws IOException {
-        Path child = getFile(path).toPath();
-        InputStream inputStream = Files.newInputStream(child);
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-        if (path.endsWith(".gz")) {
-            return new GZIPInputStream(bufferedInputStream);
-        }
-        return bufferedInputStream;
-    }
+    public InputStream getInputStream(String childRelativePath) throws IOException {
+        Path child = this.dirPath.resolve(childRelativePath);
+        if (Files.exists(child)) {
+            // the child exists
+            if (Files.isRegularFile(child)) {
 
-    @Override
-    public File getFile(String path) throws IOException {
-        Path child = this.dirPath.resolve(path);
-        if (!Files.exists(child)) {
+                System.out.println("getInputStream child="+child.toString());
+
+                InputStream inputStream = Files.newInputStream(child);
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+                if (childRelativePath.endsWith(".gz")) {
+                    return new GZIPInputStream(bufferedInputStream);
+                }
+                return bufferedInputStream;
+            } else {
+                throw new NotRegularFileException(child.toString());
+            }
+        } else {
             throw new FileNotFoundException(child.toString());
         }
-        return child.toFile();
+    }
+
+    int fileCount = 0;
+    @Override
+    public File getFile(String childRelativePath) throws IOException {
+        Path child = this.dirPath.resolve(childRelativePath);
+
+        this.fileCount++;
+        System.out.println(this.fileCount + " getFile '"+child.toString()+"'");
+
+        if (Files.exists(child)) {
+            if (this.copyFilesOnLocalDisk && Files.isRegularFile(child)) {
+                if (this.tempZipFileDir == null) {
+                    this.tempZipFileDir = VirtualDir.createUniqueTempDir();
+                }
+                Path localFilePath = this.tempZipFileDir.toPath().resolve(childRelativePath);
+                boolean copyFile = true;
+                if (Files.exists(localFilePath)) {
+                    // the local file already exists
+                    if (Files.isRegularFile(localFilePath)) {
+                        long localFileSizeInBytes = Files.size(localFilePath);
+                        long childFileSizeInBytes = Files.size(child);
+                        copyFile = (localFileSizeInBytes != childFileSizeInBytes);
+                    } else {
+                        throw new NotRegularFileException(localFilePath.toString());
+                    }
+                }
+                if (copyFile) {
+                    System.out.println("\nstart copy file '"+child.toString()+"'");
+
+                    Path parentFolder = localFilePath.getParent();
+                    if (!Files.exists(parentFolder)) {
+                        Files.createDirectories(parentFolder);
+                    }
+                    FileHelper.copyFileUsingInputStream(child, localFilePath.toString());
+
+                    System.out.println("stop copy file '"+child.toString()+"'");
+                } else {
+                    System.out.println("file already exists '"+child.toString()+"'");
+                }
+                return localFilePath.toFile();
+            }
+            return child.toFile();
+        } else {
+            throw new FileNotFoundException(child.toString());
+        }
     }
 
     @Override
-    public String[] list(String path) throws IOException {
-        Path child = getFile(path).toPath();
+    public String[] list(String childRelativePath) throws IOException {
+        Path child = this.dirPath.resolve(childRelativePath);
         if (Files.isDirectory(child)) {
             List<String> files = new ArrayList<String>();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(child)) {
                 for (Path currentPath : stream) {
-                    files.add(currentPath.toString());
+                    files.add(currentPath.getFileName().toString());
                 }
                 return files.toArray(new String[files.size()]);
             }
@@ -94,8 +153,8 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
-    public boolean exists(String path) {
-        Path child = this.dirPath.resolve(path);
+    public boolean exists(String childRelativePath) {
+        Path child = this.dirPath.resolve(childRelativePath);
         return Files.exists(child);
     }
 
@@ -125,8 +184,20 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
+    public File getTempDir() throws IOException {
+        return this.tempZipFileDir;
+    }
+
+    @Override
     public void close() {
-        // do nothing
+        cleanup();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+
+        cleanup();
     }
 
     @Override
@@ -137,5 +208,12 @@ public class VirtualDirPath extends AbstractVirtualPath {
     @Override
     public boolean isArchive() {
         return false;
+    }
+
+    private void cleanup() {
+        if (this.tempZipFileDir != null) {
+            deleteFileTree(this.tempZipFileDir);
+            this.tempZipFileDir = null;
+        }
     }
 }

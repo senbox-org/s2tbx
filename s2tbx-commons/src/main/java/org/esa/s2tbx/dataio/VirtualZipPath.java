@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
@@ -29,9 +30,9 @@ public class VirtualZipPath extends AbstractVirtualPath {
     }
 
     @Override
-    public FileSystem newFileSystem() throws IOException {
-        try {
-            return ZipFileSystemBuilder.newZipFileSystem(this.zipPath);
+    public Path buildPath(String first, String... more) throws IOException {
+        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
+            return fileSystem.getPath(first, more);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         }
@@ -160,13 +161,13 @@ public class VirtualZipPath extends AbstractVirtualPath {
 
     @Override
     public File getTempDir() throws IOException {
-        return tempZipFileDir;
+        return this.tempZipFileDir;
     }
 
     private void cleanup() {
-        if (tempZipFileDir != null) {
-            deleteFileTree(tempZipFileDir);
-            tempZipFileDir = null;
+        if (this.tempZipFileDir != null) {
+            deleteFileTree(this.tempZipFileDir);
+            this.tempZipFileDir = null;
         }
     }
 

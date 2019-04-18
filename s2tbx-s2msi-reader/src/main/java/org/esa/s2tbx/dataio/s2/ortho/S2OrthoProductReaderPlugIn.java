@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.ortho;
 
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
@@ -27,6 +28,7 @@ import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -113,7 +115,15 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         //if product is level2 or level3, check the specific folder//TODO revisar
-        VirtualPath pathMetadata = new VirtualPath(inputPath, null);
+//        VirtualPath pathMetadata = new VirtualPath(inputPath, null);
+        VirtualDirEx virtualDirEx = null;
+        try {
+            virtualDirEx = VirtualDirEx.build(inputPath.getParent());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        VirtualPath pathMetadata = new VirtualPath(inputPath.getFileName(), virtualDirEx);
+
         if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(pathMetadata, getResolution()))
             return DecodeQualification.UNABLE;
         if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(pathMetadata, getResolution()))

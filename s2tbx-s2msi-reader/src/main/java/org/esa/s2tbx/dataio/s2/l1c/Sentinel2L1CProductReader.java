@@ -71,11 +71,12 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
         return L1C_CACHE_DIR;
     }
 
-    protected S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
+    @Override
+    protected S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsgCode, boolean isGranule) throws IOException {
         try {
-            return L1cMetadata.parseHeader(path, granuleName, config, epsg, isAGranule, namingConvention);
+            return L1cMetadata.parseHeader(path, granuleName, config, epsgCode, isGranule, this.namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
-            throw new IOException("Failed to parse metadata in " + path.getFileName().toString());
+            throw new IOException("Failed to parse metadata in " + path.getFileName().toString(), e);
         }
     }
 
