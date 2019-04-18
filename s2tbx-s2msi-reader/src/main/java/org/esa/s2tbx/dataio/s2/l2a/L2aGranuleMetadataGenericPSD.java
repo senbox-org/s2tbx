@@ -98,16 +98,16 @@ public class L2aGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
         boolean bFound = false;
-        if(folder.exists() && folder.isDirectory()) {
+        if (folder.existsAndHasChildren()) {
             VirtualPath[] resolutions;
             try {
                 resolutions = folder.listPaths();
             } catch (IOException e) {
                 resolutions = null;
             }
-            if(resolutions != null) {
+            if (resolutions != null) {
                 for (VirtualPath resolutionFolder : resolutions) {
-                    if (resolutionFolder.isDirectory()) {
+                    if (resolutionFolder.existsAndHasChildren()) {
                         VirtualPath[] images;
                         try {
                             images = resolutionFolder.listPaths();

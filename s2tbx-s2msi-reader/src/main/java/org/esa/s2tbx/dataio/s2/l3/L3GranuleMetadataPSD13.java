@@ -82,7 +82,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
         boolean bFound = false;
-        if(folder.exists() && folder.isDirectory()) {
+        if(folder.existsAndHasChildren()) {
             VirtualPath[] resolutions = null;
             try {
                 resolutions = folder.listPaths();
@@ -91,7 +91,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
 
             if(resolutions != null) {
                 for (VirtualPath resolutionFolder : resolutions) {
-                    if (resolutionFolder.isDirectory()) {
+                    if (resolutionFolder.existsAndHasChildren()) {
                         String[] images = null;
                         try {
                             images = resolutionFolder.list();

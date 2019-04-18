@@ -103,7 +103,7 @@ public class S2ProductNamingUtils {
                 return tilePaths;
             }
             for(VirtualPath granule : granulePaths) {
-                if (granule.isDirectory()){
+                if (granule.existsAndHasChildren()){
                     tilePaths.add(granuleFolder.resolve(granule.getFileName().toString()));
                 }
             }
@@ -122,8 +122,8 @@ public class S2ProductNamingUtils {
         VirtualPath datastripFolder = xmlPath.resolveSibling("DATASTRIP");
         try {
             VirtualPath[] datastripFiles = datastripFolder.listPaths();
-            for(VirtualPath datastrip : datastripFiles) {
-                if (datastrip.isDirectory()){
+            for (VirtualPath datastrip : datastripFiles) {
+                if (datastrip.existsAndHasChildren()) {
                     datastripPaths.add(datastripFolder.resolve(datastrip.getFileName().toString()));
                 }
             }
@@ -131,7 +131,6 @@ public class S2ProductNamingUtils {
         }
         return datastripPaths;
     }
-
 
     /**
      * Get the path to the xml in dirPath. Only xml files different to EXCLUDED_XML are considered.
@@ -141,7 +140,7 @@ public class S2ProductNamingUtils {
      */
     public static VirtualPath getXmlFromDir(VirtualPath dirPath) {
         //TODO try to replace by functions in NamingConventions and apply REGEX
-        if(!dirPath.isDirectory()) {
+        if (!dirPath.existsAndHasChildren()) {
             return null;
         }
         String[] listXmlFiles;
@@ -153,26 +152,25 @@ public class S2ProductNamingUtils {
         String xmlFile = "";
         int availableXmlCount = 0;
 
-        for(String xml : listXmlFiles) {
+        for (String xml : listXmlFiles) {
             boolean bExcluded = false;
-            for(String excluded : EXCLUDED_XML) {
+            for (String excluded : EXCLUDED_XML) {
                 if (xml.substring(0, xml.lastIndexOf(".xml")).equals(excluded)) {
                     bExcluded = true;
                     break;
                 }
             }
-            if(!bExcluded) {
+            if (!bExcluded) {
                 xmlFile = xml;
                 availableXmlCount++;
             }
         }
-        if(availableXmlCount != 1) {
+        if (availableXmlCount != 1) {
             return null;
         }
 
         return dirPath.resolve(xmlFile);
     }
-
 
     /**
      * Search the pattern "T[0-9]{2}[A-Z]{3}" in string

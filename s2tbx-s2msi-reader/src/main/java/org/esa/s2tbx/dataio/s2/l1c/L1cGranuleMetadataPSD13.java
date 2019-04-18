@@ -89,18 +89,18 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         VirtualPath folder = xmlPath.resolveSibling("IMG_DATA");
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
-        if(folder.exists() && folder.isDirectory()) {
+        if (folder.existsAndHasChildren()) {
             VirtualPath[] images;
             try {
                 images = folder.listPaths();
             } catch (IOException e) {
                 images = null;
             }
-            if(images!=null && images.length>0) {
-                for(VirtualPath image : images) {
+            if (images != null && images.length > 0) {
+                for (VirtualPath image : images) {
                     String imageName = image.getFileName().toString();
                     Matcher matcher = pattern.matcher(imageName);
-                    if(matcher.matches()) {
+                    if (matcher.matches()) {
                         characteristics.setDatatakeSensingStartTime(matcher.group(2));
                         break;
                     }
@@ -115,7 +115,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         double toaQuantification = L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION;
         characteristics.setQuantificationValue(toaQuantification);
 
-        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (getFormat(),toaQuantification);
+        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList(getFormat(), toaQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 

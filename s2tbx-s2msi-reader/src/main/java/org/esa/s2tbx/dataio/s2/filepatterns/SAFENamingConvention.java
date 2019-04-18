@@ -106,16 +106,16 @@ public class SAFENamingConvention implements INamingConvention{
     @Override
     public VirtualPath findGranuleFolderFromTileId(String tileId) {
         VirtualPath path = null;
-        if(getInputType()== S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
+        if (getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             path = inputXmlPath.resolveSibling("GRANULE").resolve(tileId);
 
         } else {
-            if(inputXmlPath.getParent() == null) {
+            if (inputXmlPath.getParent() == null) {
                 return null;
             }
             path = inputXmlPath.getParent().resolveSibling(tileId);
         }
-        if(path.exists() && path.isDirectory() && S2NamingConventionUtils.matches(path.getFileName().toString(),getGranuleREGEXs())) {
+        if (path.existsAndHasChildren() && S2NamingConventionUtils.matches(path.getFileName().toString(), getGranuleREGEXs())) {
             return path;
         }
         return null;
@@ -197,7 +197,7 @@ public class SAFENamingConvention implements INamingConvention{
     public SAFENamingConvention(VirtualPath input){
         String inputName = input.getFileName().toString();
 
-        if(input.isDirectory()) {
+        if(input.existsAndHasChildren()) {
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
             if (pattern.matcher(inputName).matches()) {

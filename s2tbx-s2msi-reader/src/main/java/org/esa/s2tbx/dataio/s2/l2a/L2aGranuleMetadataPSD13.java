@@ -88,16 +88,16 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
         boolean bFound = false;
-        if(folder.exists() && folder.isDirectory()) {
+        if (folder.existsAndHasChildren()) {
             VirtualPath[] resolutions;
             try {
                 resolutions = folder.listPaths();
             } catch (IOException e) {
                 resolutions = null;
             }
-            if(resolutions != null) {
+            if (resolutions != null) {
                 for (VirtualPath resolutionFolder : resolutions) {
-                    if (resolutionFolder.isDirectory()) {
+                    if (resolutionFolder.existsAndHasChildren()) {
                         VirtualPath[] images;
                         try {
                             images = resolutionFolder.listPaths();
@@ -131,7 +131,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         double aotQuantification = L2aPSD13Constants.DEFAULT_AOT_QUANTIFICATION;
         double wvpQuantification = L2aPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
 
-        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution,characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification);
+        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 

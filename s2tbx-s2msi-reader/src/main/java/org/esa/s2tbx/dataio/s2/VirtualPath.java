@@ -78,7 +78,7 @@ public class VirtualPath {
         return new VirtualPath(this.relativePath.resolveSibling(other), this.dir);
     }
 
-    public boolean isDirectory() {
+    public boolean existsAndHasChildren() {
         if (exists()) {
             try {
                 String[] children = list();

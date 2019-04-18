@@ -76,7 +76,6 @@ import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecut
 import static org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
 
-
 /**
  * <p>
  * Base class for Sentinel-2 readers of orthorectified products
@@ -251,30 +250,47 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             for (S2Metadata.Tile tile : tileList) {
                 S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
                 if (gf != null) {
+                    String imageFileTemplate = bandInformation.getImageFileTemplate()
+                            .replace("{{TILENUMBER}}", gf.getTileID())
+                            .replace("{{MISSION_ID}}", gf.missionID)
+                            .replace("{{SITECENTRE}}", gf.siteCentre)
+                            .replace("{{CREATIONDATE}}", gf.creationDate)
+                            .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+                            .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
+                            .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
                     String imageFileName;
                     if (foundProductMetadata) {
-                        imageFileName = String.format("GRANULE%s%s%s%s", separator, this.metadataHeader.resolveResource(tile.getId()).getFileName().toString(),
-                                separator,
-                                bandInformation.getImageFileTemplate()
-                                        .replace("{{TILENUMBER}}", gf.getTileID())
-                                        .replace("{{MISSION_ID}}", gf.missionID)
-                                        .replace("{{SITECENTRE}}", gf.siteCentre)
-                                        .replace("{{CREATIONDATE}}", gf.creationDate)
-                                        .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                                        .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
-                                        .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
-
+                        VirtualPath vp = this.metadataHeader.resolveResource(tile.getId());
+                        String fileName = vp.getFileName().toString();
+                        imageFileName = String.format("GRANULE%s%s%s%s", separator, fileName, separator, imageFileTemplate);
                     } else {
-                        imageFileName = bandInformation.getImageFileTemplate()
-                                .replace("{{TILENUMBER}}", gf.getTileID())
-                                .replace("{{MISSION_ID}}", gf.missionID)
-                                .replace("{{SITECENTRE}}", gf.siteCentre)
-                                .replace("{{CREATIONDATE}}", gf.creationDate)
-                                .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                                .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
-                                .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
-
+                        imageFileName = imageFileTemplate;
                     }
+
+                    //TODO Jean old code
+//                    if (foundProductMetadata) {
+//                        imageFileName = String.format("GRANULE%s%s%s%s", separator, this.metadataHeader.resolveResource(tile.getId()).getFileName().toString(),
+//                                separator,
+//                                bandInformation.getImageFileTemplate()
+//                                        .replace("{{TILENUMBER}}", gf.getTileID())
+//                                        .replace("{{MISSION_ID}}", gf.missionID)
+//                                        .replace("{{SITECENTRE}}", gf.siteCentre)
+//                                        .replace("{{CREATIONDATE}}", gf.creationDate)
+//                                        .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+//                                        .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
+//                                        .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
+//
+//                    } else {
+//                        imageFileName = bandInformation.getImageFileTemplate()
+//                                .replace("{{TILENUMBER}}", gf.getTileID())
+//                                .replace("{{MISSION_ID}}", gf.missionID)
+//                                .replace("{{SITECENTRE}}", gf.siteCentre)
+//                                .replace("{{CREATIONDATE}}", gf.creationDate)
+//                                .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+//                                .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
+//                                .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
+//
+//                    }
 
                     logger.finer("Adding file " + imageFileName + " to band: " + bandInformation.getPhysicalBand());
 
@@ -1102,7 +1118,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         S2Metadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
         S2Metadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
 
-        if(checkAnglesGrids(viewingIncidenceAnglesGrids, gridHeight, gridWidth)){
+        if (checkAnglesGrids(viewingIncidenceAnglesGrids, gridHeight, gridWidth)) {
             int iLastBandId = -1;
             int bandId;
             for (S2Metadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
@@ -1183,16 +1199,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 if (viewingZenithsCount[i] != 0) viewingZeniths[i] = viewingZeniths[i] / viewingZenithsCount[i];
                 if (viewingAzimuthsCount[i] != 0) viewingAzimuths[i] = viewingAzimuths[i] / viewingAzimuthsCount[i];
             }
-
-            //listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingZeniths));
-            //listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingAzimuths));
         }
 
         //out of the "if" because we want always the mean view angles (perhaps they will be NaN)
         listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingZeniths));
         listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingAzimuths));
 
-        if(sunAnglesGrid != null) {
+        if (sunAnglesGrid != null) {
             for (int y = 0; y < gridHeight; y++) {
                 for (int x = 0; x < gridWidth; x++) {
                     final int index = y * gridWidth + x;
@@ -1204,7 +1217,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             listBandAnglesGrid.add(new S2BandAnglesGrid(SUN_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, sunAzimuths));
         }
 
-        if(listBandAnglesGrid.size()>0) {
+        if (listBandAnglesGrid.size() > 0) {
             bandAnglesGrid = listBandAnglesGrid.toArray(new S2BandAnglesGrid[listBandAnglesGrid.size()]);
         }
 
@@ -1323,7 +1336,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         @Override
         protected RenderedImage createImage(int level) {
             ArrayList<RenderedImage> tileImages = new ArrayList<>();
-            Path cacheDir = getCacheDir().toPath();
+            Path cacheDir = getCacheDir();
 
             for (String tileId : this.sceneDescription.getOrderedTileIds()) {
                 // Get the a PlanarImage of the tile at native resolution, with a [0,0] origin
@@ -1331,9 +1344,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 Path imageFilePath = null;
 
                 // Get the band native resolution
-                S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
+                S2SpatialResolution bandNativeResolution = this.bandInfo.getBandInformation().getResolution();
                 // Get the position of the L1C tile in full scene at level 0
-                Rectangle l1cTileRectangleL0 = sceneDescription.getTilePositionInScene(tileId, bandNativeResolution);
+                Rectangle l1cTileRectangleL0 = this.sceneDescription.getTilePositionInScene(tileId, bandNativeResolution);
                 // Get the position of the L1C tile in full scene at current requested level
                 //Rectangle l1cTileRectangle = DefaultMultiLevelSource.getLevelImageBounds(l1cTileRectangleL0, getModel().getScale(level));
 
@@ -1411,8 +1424,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
              * Adjust size of output image
              */
             // Get dimension at level 0
-            S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
-            Dimension bandDimensionLevel0 = sceneDescription.getSceneDimension(bandNativeResolution);
+            S2SpatialResolution bandNativeResolution = this.bandInfo.getBandInformation().getResolution();
+            Dimension bandDimensionLevel0 = this.sceneDescription.getSceneDimension(bandNativeResolution);
             // Compute dimension at level 'level' according to "J2K rule"
             Rectangle bandRectangle = DefaultMultiLevelSource.getLevelImageBounds(
                     new Rectangle(bandDimensionLevel0.width, bandDimensionLevel0.height),

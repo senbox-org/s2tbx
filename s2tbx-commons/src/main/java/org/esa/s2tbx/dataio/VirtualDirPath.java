@@ -1,23 +1,15 @@
 package org.esa.s2tbx.dataio;
 
-import com.bc.ceres.core.VirtualDir;
-import org.esa.snap.utils.FileHelper;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;

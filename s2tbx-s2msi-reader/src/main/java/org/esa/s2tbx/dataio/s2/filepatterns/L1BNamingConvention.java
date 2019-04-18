@@ -76,7 +76,7 @@ public class L1BNamingConvention implements INamingConvention {
         String inputName = input.getFileName().toString();
         level = S2Config.Sentinel2ProductLevel.L1B;
 
-        if (input.isDirectory()) {
+        if (input.existsAndHasChildren()) {
             // the input is a directory
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
@@ -196,16 +196,16 @@ public class L1BNamingConvention implements INamingConvention {
     @Override
     public VirtualPath findGranuleFolderFromTileId(String tileId) {
         VirtualPath path = null;
-        if(getInputType()== S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
+        if (getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             path = inputXmlPath.resolveSibling("GRANULE").resolve(tileId);
 
         } else {
-            if(inputXmlPath.getParent() == null) {
+            if (inputXmlPath.getParent() == null) {
                 return null;
             }
             path = inputXmlPath.getParent().resolveSibling(tileId);
         }
-        if(path.exists() && path.isDirectory() && S2NamingConventionUtils.matches(path.getFileName().toString(),getGranuleREGEXs())) {
+        if (path.existsAndHasChildren() && S2NamingConventionUtils.matches(path.getFileName().toString(), getGranuleREGEXs())) {
             return path;
         }
         return null;

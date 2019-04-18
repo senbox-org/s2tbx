@@ -169,7 +169,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
             }
         }
 
-        if (path.exists() && path.isDirectory() && S2NamingConventionUtils.matches(path.getFileName().toString(), getGranuleREGEXs())) {
+        if (path.existsAndHasChildren() && S2NamingConventionUtils.matches(path.getFileName().toString(), getGranuleREGEXs())) {
             return path;
         }
         return null;
@@ -213,10 +213,10 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
         return S2NamingConventionUtils.getGranulesXmlPaths(inputType, getInputXml(), getGranuleREGEXs(), getGranuleXmlREGEXs());
     }
 
-    public SAFECOMPACTNamingConvention(VirtualPath input){
+    public SAFECOMPACTNamingConvention(VirtualPath input) {
         String inputName = input.getFileName().toString();
 
-        if(input.isDirectory()) {
+        if (input.existsAndHasChildren()) {
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
             if (pattern.matcher(inputName).matches()) {
@@ -224,15 +224,15 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
                 inputProductXml = inputXmlPath;
                 inputType = S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA;
             }
-            if(inputXmlPath == null) {
+            if (inputXmlPath == null) {
                 pattern = Pattern.compile(GRANULE_REGEX);
                 if (pattern.matcher(inputName).matches()) {
                     inputXmlPath = getXmlGranuleFromDir(input);
-                    inputProductXml = S2NamingConventionUtils.getProductXmlFromGranuleXml(inputXmlPath,getProductXmlREGEXs());
+                    inputProductXml = S2NamingConventionUtils.getProductXmlFromGranuleXml(inputXmlPath, getProductXmlREGEXs());
                     inputType = S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA;
                 }
             }
-            if(inputXmlPath == null) {
+            if (inputXmlPath == null) {
                 inputType = null;
                 return;
             }
@@ -243,15 +243,15 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
                 inputProductXml = inputXmlPath;
                 inputType = S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA;
             }
-            if(inputXmlPath == null) {
+            if (inputXmlPath == null) {
                 pattern = Pattern.compile(GRANULE_XML_REGEX);
                 if (pattern.matcher(inputName).matches()) {
                     inputXmlPath = input;
-                    inputProductXml = S2NamingConventionUtils.getProductXmlFromGranuleXml(inputXmlPath,getProductXmlREGEXs());
+                    inputProductXml = S2NamingConventionUtils.getProductXmlFromGranuleXml(inputXmlPath, getProductXmlREGEXs());
                     inputType = S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA;
                 }
             }
-            if(inputXmlPath == null) {
+            if (inputXmlPath == null) {
                 inputType = null;
                 return;
             }
@@ -260,11 +260,11 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
         //TODO implement an specific methd for each namingConvention
         level = S2ProductNamingUtils.getLevel(inputXmlPath, inputType);
 
-        if(level == S2Config.Sentinel2ProductLevel.L1C || level == S2Config.Sentinel2ProductLevel.L2A || level == S2Config.Sentinel2ProductLevel.L3) {
+        if (level == S2Config.Sentinel2ProductLevel.L1C || level == S2Config.Sentinel2ProductLevel.L2A || level == S2Config.Sentinel2ProductLevel.L3) {
             epsgCodeList = S2ProductNamingUtils.getEpsgCodeList(inputXmlPath, inputType);
         }
 
-        if(level == S2Config.Sentinel2ProductLevel.L2A || level == S2Config.Sentinel2ProductLevel.L3) {
+        if (level == S2Config.Sentinel2ProductLevel.L2A || level == S2Config.Sentinel2ProductLevel.L3) {
 
             if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
                 if (L2aUtils.checkGranuleSpecificFolder(getInputXml()/*.toFile()*/, "10m")) {

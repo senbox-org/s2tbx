@@ -24,7 +24,7 @@ public class L2aUtils {
 
         if (paths != null) {
             for (VirtualPath imgData : paths) {
-                if (imgData.isDirectory()) {
+                if (imgData.existsAndHasChildren()) {
                     if (imgData.getFileName().toString().equals("R" + specificFolder)) {
                         return true;
                     }
@@ -49,7 +49,7 @@ public class L2aUtils {
 
         if (paths != null) {
             for (VirtualPath granule : paths) {
-                if (granule.isDirectory()) {
+                if (granule.existsAndHasChildren()) {
 
                     VirtualPath internalGranuleFolder = granule.resolve("IMG_DATA");
                     VirtualPath[] files2 ;
@@ -60,7 +60,7 @@ public class L2aUtils {
                     }
                     if (files2 != null) {
                         for (VirtualPath imgData : files2) {
-                            if (imgData.isDirectory()) {
+                            if (imgData.existsAndHasChildren()) {
                                 if (imgData.getFileName().toString().equals("R" + specificFolder)) {
                                     return true;
                                 }

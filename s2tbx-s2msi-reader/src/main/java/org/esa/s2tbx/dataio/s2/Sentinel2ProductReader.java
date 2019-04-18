@@ -65,7 +65,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     private final S2Config config;
 
-    private File cacheDir;
+    private Path cacheDir;
     private Product product;
 
     protected INamingConvention namingConvention;
@@ -100,7 +100,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return true;
     }
 
-    public File getCacheDir() {
+    public Path getCacheDir() {
         return cacheDir;
     }
 
@@ -114,26 +114,31 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         try (InputStream inputStream = Files.newInputStream(versionFile)) {
             versionProp.load(inputStream);
         }
-
         String version = versionProp.getProperty("project.version");
         if (version == null) {
             throw new IOException("Unable to get project.version property from " + versionFile);
         }
-
         String fullPathString = productPath.getFullPathString();
         String md5sum = Utils.getMD5sum(fullPathString);
         if (md5sum == null) {
             throw new IOException("Unable to get md5sum of path " + fullPathString);
         }
-
-        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() + File.separator + version + File.separator + md5sum),
-                            productPath.getFileName().toString());
-
-        cacheDir.mkdirs();
-        if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
+        String readerDirName = getReaderCacheDir();
+        String productName = productPath.getFileName().toString();
+        Path cacheFolderPath = SystemUtils.getCacheDir().toPath();
+        cacheFolderPath = cacheFolderPath.resolve("s2tbx");
+        cacheFolderPath = cacheFolderPath.resolve(readerDirName);
+        cacheFolderPath = cacheFolderPath.resolve(version);
+        cacheFolderPath = cacheFolderPath.resolve(md5sum);
+        cacheFolderPath = cacheFolderPath.resolve(productName);
+        this.cacheDir = cacheFolderPath;
+        if (!Files.exists(this.cacheDir)) {
+            Files.createDirectories(this.cacheDir);
+        }
+        if (!Files.exists(this.cacheDir) || !Files.isDirectory(this.cacheDir) || !Files.isWritable(this.cacheDir)) {
             throw new IOException("Can't access package cache directory");
         }
-        logger.fine("Successfully set up cache dir for product " + productPath.getFileName().toString() + " to " + cacheDir.toString());
+        logger.fine("Successfully set up cache dir for product " + productName + " to " + this.cacheDir.toString());
     }
 
     @Override
