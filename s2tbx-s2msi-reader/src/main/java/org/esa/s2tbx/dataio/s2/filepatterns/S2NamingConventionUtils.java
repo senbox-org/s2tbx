@@ -300,8 +300,8 @@ public class S2NamingConventionUtils {
     }
 
     public static VirtualPath transformToSentinel2VirtualPath(Path path) throws IOException {
-        boolean copyFilesOnLocalDisk = (path.getFileSystem() != FileSystems.getDefault());
-        VirtualDirEx virtualDirEx = VirtualDirEx.build(path, copyFilesOnLocalDisk);
+        boolean copyFilesFromDirectoryOnLocalDisk = (path.getFileSystem() != FileSystems.getDefault());
+        VirtualDirEx virtualDirEx = VirtualDirEx.build(path, copyFilesFromDirectoryOnLocalDisk, true);
         if (virtualDirEx == null) {
             throw new IllegalArgumentException("Unable to read the path '"+path.toString()+"'.");
         } else {

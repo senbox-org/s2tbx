@@ -96,8 +96,9 @@ public class VirtualPath {
         return this.dir.getInputStream(this.relativePath.toString());
     }
 
-    public File getFile() throws IOException {
-        return this.dir.getFile(this.relativePath.toString());
+    public Path getFile() throws IOException {
+        File file = this.dir.getFile(this.relativePath.toString());
+        return file.toPath();
     }
 
     public String[] list() throws IOException {

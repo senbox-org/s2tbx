@@ -120,7 +120,7 @@ public abstract class VirtualDirEx extends VirtualDir {
             } else {
                 try {
                     if (isZipFile(path)) {
-                        virtualDir = new VirtualZipPath(path);
+                        virtualDir = new VirtualZipPath(path, true);
                     }
                 } catch (IllegalAccessException | InstantiationException | InvocationTargetException | IOException e) {
                     throw new IllegalStateException(e);
@@ -130,23 +130,11 @@ public abstract class VirtualDirEx extends VirtualDir {
         }
     }
 
-//    public static VirtualDirEx build(Path path) throws IOException {
-//        if (Files.isRegularFile(path) && !VirtualDirEx.isPackedFile(path)) {
-//            Path parentPath = path.getParent();
-//            if (parentPath == null) {
-//                throw new IOException("Unable to retrieve parent to file '" + path.toString()+"'.");
-//            } else {
-//                return VirtualDirEx.create(parentPath);
-//            }
-//        }
-//        return VirtualDirEx.create(path);
-//    }
-
     public static VirtualDirEx build(Path path) throws IOException {
-        return build(path, false);
+        return build(path, false, true);
     }
 
-    public static VirtualDirEx build(Path path, boolean copyFilesOnLocalDisk) throws IOException {
+    public static VirtualDirEx build(Path path, boolean copyFilesFromDirectoryOnLocalDisk, boolean copyFilesFromArchiveOnLocalDisk) throws IOException {
         AbstractVirtualPath virtualDir = null;
         if (Files.isRegularFile(path)) {
             // the path represents a file
@@ -164,7 +152,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                         throw new IllegalStateException(e);
                     }
                     if (zipFile) {
-                        virtualDir = new VirtualZipPath(path);
+                        virtualDir = new VirtualZipPath(path, copyFilesFromArchiveOnLocalDisk);
                     } else {
                         throw new IllegalArgumentException("The path '"+path.toString()+"' does not represent a zip archive.");
                     }
@@ -174,14 +162,14 @@ public abstract class VirtualDirEx extends VirtualDir {
                 if (parentPath == null) {
                     throw new IllegalArgumentException("Unable to retrieve the parent of the file '" + path.toString()+"'.");
                 } else if (Files.isDirectory(parentPath)){
-                    virtualDir = new VirtualDirPath(parentPath, copyFilesOnLocalDisk);
+                    virtualDir = new VirtualDirPath(parentPath, copyFilesFromDirectoryOnLocalDisk);
                 } else {
                     throw new IllegalArgumentException("Unable to check if the parent of the file '" + path.toString()+"' represents a directory.");
                 }
             }
         } else if (Files.isDirectory(path)) {
             // the path represents a directory
-            virtualDir = new VirtualDirPath(path, copyFilesOnLocalDisk);
+            virtualDir = new VirtualDirPath(path, copyFilesFromDirectoryOnLocalDisk);
         } else {
             throw new IllegalArgumentException("Unable to check if the path '"+path.toString()+"' represents a file or a directory.");
         }
@@ -272,8 +260,6 @@ public abstract class VirtualDirEx extends VirtualDir {
     public String[] listAllFiles() throws IOException {
         return listAll();
     }
-
-    public abstract <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException;
 
     /**
      * List all the files contained in this virtual directory instance.

@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio;
 
 import com.bc.ceres.core.VirtualDir;
+import org.esa.snap.utils.FileHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,9 +24,9 @@ public class VirtualZipPath extends AbstractVirtualPath {
 
     private final Path zipPath;
 
-    private File tempZipFileDir;
+    public VirtualZipPath(Path zipPath, boolean copyFilesOnLocalDisk) {
+        super(copyFilesOnLocalDisk);
 
-    public VirtualZipPath(Path zipPath) {
         this.zipPath = zipPath;
     }
 
@@ -59,8 +60,14 @@ public class VirtualZipPath extends AbstractVirtualPath {
                 Path root = it.next();
                 Path entryPath = buildZipEntryPath(root, zipEntryPath);
                 if (Files.exists(entryPath)) {
-                    InputStream inputStream = Files.newInputStream(entryPath);
-                    return new AutoCloseInputStream(inputStream, fileSystem);
+                    // the entry exists into the zip archive
+                    if (Files.isRegularFile(entryPath)) {
+                        // the entry is a file
+                        InputStream inputStream = Files.newInputStream(entryPath);
+                        return new AutoCloseInputStream(inputStream, fileSystem);
+                    } else {
+                        throw new NotRegularFileException(entryPath.toString());
+                    }
                 }
             }
             success = false;
@@ -75,22 +82,19 @@ public class VirtualZipPath extends AbstractVirtualPath {
     }
 
     @Override
-    public <ResultType> ResultType loadData(String zipEntryPath, ICallbackCommand<ResultType> command) throws IOException {
-        try {
-            return ZipFileSystemBuilder.loadZipEntryDataFromZipArchive(this.zipPath, zipEntryPath, command);
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @Override
     public File getFile(String zipEntryPath) throws IOException {
-        if (this.tempZipFileDir == null) {
-            this.tempZipFileDir = VirtualDir.createUniqueTempDir();
-        }
-        try {
-            Path copiedFilePath = ZipFileSystemBuilder.copyFileFromZipArchive(this.zipPath, zipEntryPath, this.tempZipFileDir.toPath());
-            return (copiedFilePath == null) ? null : copiedFilePath.toFile();
+        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
+            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
+            while (it.hasNext()) {
+                Path root = it.next();
+                Path entryPath = buildZipEntryPath(root, zipEntryPath);
+                if (Files.exists(entryPath)) {
+                    // the entry exists into the zip archive
+                    Path fileToReturn = copyFileOnLocalDiskIfNeeded(entryPath, zipEntryPath);
+                    return fileToReturn.toFile();
+                }
+            } // end 'while (it.hasNext())'
+            throw new FileNotFoundException("The zip entry path '"+zipEntryPath+"' does not exist in the zip archive '"+this.zipPath.toString()+"'.");
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         }
@@ -138,18 +142,6 @@ public class VirtualZipPath extends AbstractVirtualPath {
     }
 
     @Override
-    public void close() {
-        cleanup();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-
-        cleanup();
-    }
-
-    @Override
     public boolean isCompressed() {
         return true;
     }
@@ -157,18 +149,6 @@ public class VirtualZipPath extends AbstractVirtualPath {
     @Override
     public boolean isArchive() {
         return true;
-    }
-
-    @Override
-    public File getTempDir() throws IOException {
-        return this.tempZipFileDir;
-    }
-
-    private void cleanup() {
-        if (this.tempZipFileDir != null) {
-            deleteFileTree(this.tempZipFileDir);
-            this.tempZipFileDir = null;
-        }
     }
 
     private static Path buildZipEntryPath(Path root, String zipEntryPath) {

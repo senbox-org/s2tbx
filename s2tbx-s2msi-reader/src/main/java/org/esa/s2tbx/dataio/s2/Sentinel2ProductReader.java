@@ -171,9 +171,9 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (this.namingConvention.hasValidStructure()) {
             this.product = buildMosaicProduct(inputVirtualPath);
 
-            File qlFile = getQuickLookFile(inputVirtualPath);
+            Path qlFile = getQuickLookFile(inputVirtualPath);
             if (qlFile != null) {
-                this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile));
+                this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
             }
 
             this.product.setModified(false);
@@ -183,7 +183,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
     }
 
-    private File getQuickLookFile(VirtualPath inputVirtualPath) throws IOException {
+    private Path getQuickLookFile(VirtualPath inputVirtualPath) throws IOException {
         VirtualPath parentPath = inputVirtualPath.getParent();
         if (parentPath != null) {
             String[] files = parentPath.list();
@@ -288,8 +288,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         try {
             List<VirtualPath> imageDirectories = getImageDirectories(pathToImages, resolution);
             for (VirtualPath imageFilePath : imageDirectories) {
-                Path jp2FilePath = imageFilePath.getFile().toPath();
                 try {
+                    Path jp2FilePath = imageFilePath.getFile();
                     tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, jp2FilePath);
                     if (tileLayoutForResolution != null) {
                         break;

@@ -30,13 +30,11 @@ import java.util.zip.GZIPInputStream;
 public class VirtualDirPath extends AbstractVirtualPath {
 
     private final Path dirPath;
-    private final boolean copyFilesOnLocalDisk;
-
-    private File tempZipFileDir;
 
     public VirtualDirPath(Path dirPath, boolean copyFilesOnLocalDisk) {
+        super(copyFilesOnLocalDisk);
+
         this.dirPath = dirPath;
-        this.copyFilesOnLocalDisk = copyFilesOnLocalDisk;
     }
 
     @Override
@@ -52,20 +50,6 @@ public class VirtualDirPath extends AbstractVirtualPath {
     @Override
     public File getBaseFile() {
         return this.dirPath.toFile();
-    }
-
-    @Override
-    public <ResultType> ResultType loadData(String childRelativePath, ICallbackCommand<ResultType> command) throws IOException {
-        Path child = this.dirPath.resolve(childRelativePath);
-        if (Files.exists(child)) {
-            if (Files.isRegularFile(child)) {
-                return command.execute(child);
-            } else {
-                throw new NotRegularFileException(child.toString());
-            }
-        } else {
-            throw new FileNotFoundException(child.toString());
-        }
     }
 
     @Override
@@ -100,38 +84,8 @@ public class VirtualDirPath extends AbstractVirtualPath {
         System.out.println(this.fileCount + " getFile '"+child.toString()+"'");
 
         if (Files.exists(child)) {
-            if (this.copyFilesOnLocalDisk && Files.isRegularFile(child)) {
-                if (this.tempZipFileDir == null) {
-                    this.tempZipFileDir = VirtualDir.createUniqueTempDir();
-                }
-                Path localFilePath = this.tempZipFileDir.toPath().resolve(childRelativePath);
-                boolean copyFile = true;
-                if (Files.exists(localFilePath)) {
-                    // the local file already exists
-                    if (Files.isRegularFile(localFilePath)) {
-                        long localFileSizeInBytes = Files.size(localFilePath);
-                        long childFileSizeInBytes = Files.size(child);
-                        copyFile = (localFileSizeInBytes != childFileSizeInBytes);
-                    } else {
-                        throw new NotRegularFileException(localFilePath.toString());
-                    }
-                }
-                if (copyFile) {
-                    System.out.println("\nstart copy file '"+child.toString()+"'");
-
-                    Path parentFolder = localFilePath.getParent();
-                    if (!Files.exists(parentFolder)) {
-                        Files.createDirectories(parentFolder);
-                    }
-                    FileHelper.copyFileUsingInputStream(child, localFilePath.toString());
-
-                    System.out.println("stop copy file '"+child.toString()+"'");
-                } else {
-                    System.out.println("file already exists '"+child.toString()+"'");
-                }
-                return localFilePath.toFile();
-            }
-            return child.toFile();
+            Path fileToReturn = copyFileOnLocalDiskIfNeeded(child, childRelativePath);
+            return fileToReturn.toFile();
         } else {
             throw new FileNotFoundException(child.toString());
         }
@@ -184,23 +138,6 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
-    public File getTempDir() throws IOException {
-        return this.tempZipFileDir;
-    }
-
-    @Override
-    public void close() {
-        cleanup();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-
-        cleanup();
-    }
-
-    @Override
     public boolean isCompressed() {
         return false;
     }
@@ -208,12 +145,5 @@ public class VirtualDirPath extends AbstractVirtualPath {
     @Override
     public boolean isArchive() {
         return false;
-    }
-
-    private void cleanup() {
-        if (this.tempZipFileDir != null) {
-            deleteFileTree(this.tempZipFileDir);
-            this.tempZipFileDir = null;
-        }
     }
 }

@@ -361,13 +361,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             product = new Product(productMetadataPath.getFileName().toString(), "S2_MSI_" + productCharacteristics.getProcessingLevel());
         }
 
-//        if (productMetadataPath.getVirtualDir() == null || !productMetadataPath.getVirtualDir().isCompressed()) {
-//            product.setFileLocation(productMetadataPath.getParent().toFile());
-//        } else {
-//            product.setFileLocation(new File(productMetadataPath.getVirtualDir().getBasePath()));
-//        }
-        if (productMetadataPath.getVirtualDir() == null || !productMetadataPath.getVirtualDir().isCompressed()) {
-            product.setFileLocation(productMetadataPath.getParent().getFile());
+        if (!productMetadataPath.getVirtualDir().isCompressed()) {
+            product.setFileLocation(productMetadataPath.getParent().getFile().toFile());
         } else {
             product.setFileLocation(productMetadataPath.getVirtualDir().getBaseFile());
         }
@@ -687,7 +682,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         protected PlanarImage createL1bTileImage(String tileId, int level) {
-            VirtualPath imagePath = tileBandInfo.getTileIdToPathMap().get(tileId);
+            VirtualPath imagePath = this.tileBandInfo.getTileIdToPathMap().get(tileId);
 
             PlanarImage planarImage = null;
             try {
@@ -700,7 +695,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                                    getProductResolution(),
                                                    level);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Failed to create the image.", e);
             }
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));

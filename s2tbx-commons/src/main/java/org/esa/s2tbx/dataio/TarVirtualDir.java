@@ -77,12 +77,6 @@ class TarVirtualDir extends VirtualDirEx {
     }
 
     @Override
-    public <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException {
-        File file = getFile(path);
-        return command.execute(file.toPath());
-    }
-
-    @Override
     public String getBasePath() {
         return archiveFile.getPath();
     }

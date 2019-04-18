@@ -41,6 +41,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.rmi.UnexpectedException;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -86,14 +87,8 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
     protected final Logger logger;
 
-    public static PlanarImage create(File imageFile,
-                                     File cacheDir,
-                                     Point imagePos,
-                                     TileLayout tileLayout,
-                                     S2Config config,
-                                     MultiLevelModel imageModel,
-                                     S2SpatialResolution productResolution,
-                                     int level) {
+    public static PlanarImage create(Path imageFile, File cacheDir, Point imagePos, TileLayout tileLayout, S2Config config,
+                                     MultiLevelModel imageModel, S2SpatialResolution productResolution, int level) {
 
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "imageLayout");
@@ -101,13 +96,11 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         if (imageFile != null) {
             SystemUtils.LOG.fine("Image layout: " + tileLayout);
-            S2TileOpImage s2TileOpImage = new S2TileOpImage(imageFile, cacheDir, imagePos, tileLayout, imageModel, level);
+            S2TileOpImage s2TileOpImage = new S2TileOpImage(imageFile.toFile(), cacheDir, imagePos, tileLayout, imageModel, level);
             s2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
             return s2TileOpImage;
-
         } else {
             SystemUtils.LOG.fine("Using empty image !");
-
 
             TileLayout tileLaoutForProductResolution = config.getTileLayout(productResolution);
             int targetWidth = getSizeAtResolutionLevel(tileLaoutForProductResolution.width, level);

@@ -85,35 +85,6 @@ class VirtualDirWrapper extends VirtualDirEx {
     }
 
     @Override
-    public <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException {
-        try {
-            return this.wrapped.loadData(relativePath, command);
-        } catch (FileNotFoundException e1) {
-            try {
-                return this.wrapped.loadData(relativePath.toUpperCase(), command);
-            } catch (FileNotFoundException e2) {
-                String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
-                String path = findKeyFile(key);
-                if (path == null) {
-                    throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
-                } else {
-                    return this.wrapped.loadData(path, command);
-//                        try {
-//                            // the "classic" way
-//                            file = getFileInner(path);
-//                        } catch (IOException e) {
-//                            if (isArchive()) {
-//                                file = getFileInner(path);
-//                            } else {
-//                                file = getFileFromTempDir(path);
-//                            }
-//                        }
-                }
-            }
-        }
-    }
-
-    @Override
     public File getFile(String relativePath) throws IOException {
         File file;
         try {
