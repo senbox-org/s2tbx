@@ -70,7 +70,7 @@ public abstract class AbstractVirtualPath extends VirtualDir {
             }
         }
         if (copyFile) {
-            System.out.println("\nstart copy file '"+sourceFile.toString()+"'");
+//            System.out.println("\nstart copy file '"+sourceFile.toString()+"'");
 
             Path parentFolder = destinationFile.getParent();
             if (!Files.exists(parentFolder)) {
@@ -78,9 +78,9 @@ public abstract class AbstractVirtualPath extends VirtualDir {
             }
             FileHelper.copyFileUsingInputStream(sourceFile, destinationFile.toString());
 
-            System.out.println("stop copy file '"+sourceFile.toString()+"'");
+//            System.out.println("stop copy file '"+sourceFile.toString()+"'");
         } else {
-            System.out.println("file already exists '"+sourceFile.toString()+"'");
+//            System.out.println("file already exists '"+sourceFile.toString()+"'");
         }
     }
 
