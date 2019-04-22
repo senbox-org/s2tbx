@@ -37,8 +37,13 @@ class VirtualDirWrapper extends VirtualDirEx {
     }
 
     @Override
-    public Path buildPath(String first, String... more) throws IOException {
+    public Path buildPath(String first, String... more) {
         return this.wrapped.buildPath(first, more);
+    }
+
+    @Override
+    public String getFileSystemSeparator() {
+        return this.wrapped.getFileSystemSeparator();
     }
 
     @Override

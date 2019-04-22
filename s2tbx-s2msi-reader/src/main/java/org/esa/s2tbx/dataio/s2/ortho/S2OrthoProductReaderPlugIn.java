@@ -87,10 +87,6 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         if (!isValidExtension(file)) {
             return DecodeQualification.UNABLE;
         }
-        //TODO Jean remove
-//        if (file.toPath().getFileSystem() != FileSystems.getDefault()) {
-//            return DecodeQualification.UNABLE;
-//        }
 
         CRS_CHACHE.ensureIsCached(inputPath);
 
@@ -102,34 +98,33 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
 
-        if ((level != S2Config.Sentinel2ProductLevel.L1C)  && (level != S2Config.Sentinel2ProductLevel.L2A) && (level != S2Config.Sentinel2ProductLevel.L3)) {
+        if ((this.level != S2Config.Sentinel2ProductLevel.L1C) && (this.level != S2Config.Sentinel2ProductLevel.L2A) && (this.level != S2Config.Sentinel2ProductLevel.L3)) {
             return DecodeQualification.UNABLE;
         }
 
-        if(!CRS_CHACHE.hasEPSG(canonicalPathString, getEPSG())) {
+        if (!CRS_CHACHE.hasEPSG(canonicalPathString, getEPSG())) {
             return DecodeQualification.UNABLE;
         }
 
-        if (level != S2Config.Sentinel2ProductLevel.L2A && level != S2Config.Sentinel2ProductLevel.L3) {
+        if (this.level != S2Config.Sentinel2ProductLevel.L2A && this.level != S2Config.Sentinel2ProductLevel.L3) {
             return DecodeQualification.INTENDED;
         }
 
-        //if product is level2 or level3, check the specific folder//TODO revisar
-//        VirtualPath pathMetadata = new VirtualPath(inputPath, null);
-        VirtualDirEx virtualDirEx = null;
+        // if product is level2 or level3, check the specific folder//TODO revisar
+        VirtualDirEx virtualDirEx;
         try {
             virtualDirEx = VirtualDirEx.build(inputPath.getParent());
         } catch (IOException e) {
-            e.printStackTrace();
+            return DecodeQualification.UNABLE;
         }
         VirtualPath pathMetadata = new VirtualPath(inputPath.getFileName(), virtualDirEx);
 
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(pathMetadata, getResolution()))
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(pathMetadata, getResolution())) {
             return DecodeQualification.UNABLE;
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(pathMetadata, getResolution()))
+        }
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(pathMetadata, getResolution())) {
             return DecodeQualification.UNABLE;
-
-        //level=S2Config.Sentinel2ProductLevel.L2A;
+        }
         return DecodeQualification.INTENDED;
     }
 

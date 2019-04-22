@@ -23,7 +23,9 @@ public abstract class AbstractVirtualPath extends VirtualDir {
         this.copyFilesOnLocalDisk = copyFilesOnLocalDisk;
     }
 
-    public abstract Path buildPath(String first, String... more) throws IOException;
+    public abstract Path buildPath(String first, String... more);
+
+    public abstract String getFileSystemSeparator();
 
     @Override
     public void close() {

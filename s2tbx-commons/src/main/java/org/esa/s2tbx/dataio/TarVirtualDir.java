@@ -15,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -84,6 +86,18 @@ class TarVirtualDir extends VirtualDirEx {
     @Override
     public File getBaseFile() {
         return archiveFile;
+    }
+
+    @Override
+    public Path buildPath(String first, String... more) {
+        FileSystem fileSystem = this.archiveFile.toPath().getFileSystem();
+        return fileSystem.getPath(first, more);
+    }
+
+    @Override
+    public String getFileSystemSeparator() {
+        FileSystem fileSystem = this.archiveFile.toPath().getFileSystem();
+        return fileSystem.getSeparator();
     }
 
     @Override

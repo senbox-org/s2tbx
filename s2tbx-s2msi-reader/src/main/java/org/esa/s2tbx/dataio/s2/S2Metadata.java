@@ -48,6 +48,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -811,15 +812,17 @@ public abstract class S2Metadata {
      * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
      */
     public static int getPSD(VirtualPath path) {
+        int bufferSizeInBytes = 5 * 1024;
         try (InputStream inputStream = path.getInputStream();
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset())){
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSizeInBytes)) {
 
             String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
             Pattern p = Pattern.compile(regex);
             StringBuilder str = new StringBuilder();
-            char[] buffer = new char[4 * 1024];
+            char[] buffer = new char[bufferSizeInBytes];
             int characterReadNow;
-            while ((characterReadNow = inputStreamReader.read(buffer)) >= 0) {
+            while ((characterReadNow = bufferedReader.read(buffer)) >= 0) {
                 str.append(buffer, 0, characterReadNow);
 
                 Matcher m = p.matcher(str);
@@ -833,24 +836,6 @@ public abstract class S2Metadata {
         } catch (Exception e) {
             return 0;
         }
-        //TODO Jean old code
-//        try (InputStream stream = path.getInputStream()) {
-//            String xmlStreamAsString = IOUtils.toString(stream);
-//            String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
-//
-//            Pattern p = Pattern.compile(regex);
-//            Matcher m = p.matcher(xmlStreamAsString);
-//            if (m.find()) {
-//                int position = m.start();
-//                String psdNumber = xmlStreamAsString.substring(position + 4, position + 6);
-//                return Integer.parseInt(psdNumber);
-//            } else {
-//                return 0;
-//            }
-//
-//        } catch (Exception e) {
-//            return 0;
-//        }
     }
 
     /**
@@ -860,7 +845,6 @@ public abstract class S2Metadata {
      * @return S2BandAnglesGridByDetector[2] -> [0]: Zenith     [1]: Azimuth
      */
     public S2BandAnglesGridByDetector[] getAnglesGridByDetector(int bandId, int detectorId) {
-
         HashMap<Tile, S2BandAnglesGrid> zenithAnglesGridsMap = new HashMap<>();
         HashMap<Tile, S2BandAnglesGrid> azimuthAnglesGridsMap = new HashMap<>();
         for (S2Metadata.Tile tile : tileList) {

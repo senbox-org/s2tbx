@@ -25,10 +25,19 @@ public class VirtualZipPath extends AbstractVirtualPath {
     }
 
     @Override
-    public Path buildPath(String first, String... more) throws IOException {
+    public Path buildPath(String first, String... more) {
         try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
             return fileSystem.getPath(first, more);
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException | IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public String getFileSystemSeparator() {
+        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
+            return fileSystem.getSeparator();
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException | IOException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -57,6 +66,10 @@ public class VirtualZipPath extends AbstractVirtualPath {
                     // the entry exists into the zip archive
                     if (Files.isRegularFile(entryPath)) {
                         // the entry is a file
+
+                        //TODO Jean remote system.out
+                        System.out.println("getInputStream zip entryPath="+entryPath.toString());
+
                         InputStream inputStream = Files.newInputStream(entryPath);
                         return new AutoCloseInputStream(inputStream, fileSystem);
                     } else {
@@ -75,6 +88,8 @@ public class VirtualZipPath extends AbstractVirtualPath {
         }
     }
 
+    int fileCount = 0;
+
     @Override
     public File getFile(String zipEntryPath) throws IOException {
         try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
@@ -82,6 +97,10 @@ public class VirtualZipPath extends AbstractVirtualPath {
             while (it.hasNext()) {
                 Path root = it.next();
                 Path entryPath = buildZipEntryPath(root, zipEntryPath);
+
+                //TODO Jean remote system.out
+                System.out.println((++this.fileCount) + " zip getFile '"+entryPath.toString()+"'");
+
                 if (Files.exists(entryPath)) {
                     // the entry exists into the zip archive
                     Path fileToReturn = copyFileOnLocalDiskIfNeeded(entryPath, zipEntryPath);

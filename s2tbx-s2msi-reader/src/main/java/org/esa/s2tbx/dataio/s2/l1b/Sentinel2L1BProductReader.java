@@ -174,14 +174,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             throw new IOException("Invalid OpenJpeg executables");
         }
 
-        boolean isAGranule = (namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA);
+        boolean isGranule = (namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA);
         boolean foundProductMetadata = true;
 
-        if (isAGranule) {
+        if (isGranule) {
             logger.fine("Reading a granule");
         }
 
-        if (!updateTileLayout(metadataPath, isAGranule)) {
+        if (!updateTileLayout(metadataPath, isGranule)) {
             throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataPath.getFileName().toString()));
         }
 
@@ -192,7 +192,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         String granuleDirName = null;
 
         // we need to recover parent metadata file if we have a granule
-        if (isAGranule) {
+        if (isGranule) {
             try {
                 Objects.requireNonNull(metadataPath.getParent());
                 granuleDirName = metadataPath.getParent().getFileName().toString();
@@ -236,7 +236,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         List<L1bMetadata.Tile> tileList = metadataHeader.getTileList();
 
-        if (isAGranule) {
+        if (isGranule) {
             tileList = metadataHeader.getTileList().stream().filter(p -> p.getId().equalsIgnoreCase(aFilter)).collect(Collectors.toList());
         }
 
@@ -259,9 +259,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
                 for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
-                    String imgFilename;
+                    String imageFileName;
                     if (foundProductMetadata) {
-                        imgFilename = String.format("GRANULE%s%s%s%s", File.separator, metadataHeader.resolveResource(tile.getId()).getFileName().toString(),
+                        imageFileName = String.format("GRANULE%s%s%s%s", File.separator, metadataHeader.resolveResource(tile.getId()).getFileName().toString(),
                                 File.separator,
                                 bandInformation.getImageFileTemplate()
                                         .replace("{{TILENUMBER}}", gf.getTileID())
@@ -273,7 +273,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                         .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
 
                     } else {
-                        imgFilename = bandInformation.getImageFileTemplate()
+                        imageFileName = bandInformation.getImageFileTemplate()
                                 .replace("{{TILENUMBER}}", gf.getTileID())
                                 .replace("{{MISSION_ID}}", gf.missionID)
                                 .replace("{{SITECENTRE}}", gf.siteCentre)
@@ -283,9 +283,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                 .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
 
                     }
-                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand() + ", and detector: " + gf.getDetectorId());
+                    logger.finer("Adding file " + imageFileName + " to band: " + bandInformation.getPhysicalBand() + ", and detector: " + gf.getDetectorId());
 
-                    VirtualPath path = productDir.resolve(imgFilename);
+                    VirtualPath path = productDir.resolve(imageFileName);
                     if (path.exists()) {
                         Pair<String, String> key = new Pair<>(bandInformation.getPhysicalBand(), gf.getDetectorId());
                         Map<String, VirtualPath> pathMapper = detectorBandInfoMap.getOrDefault(key, new HashMap<>());
@@ -302,8 +302,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             if (!detectorBandInfoMap.isEmpty()) {
                 for (Pair<String, String> key : detectorBandInfoMap.keySet()) {
-                    L1BBandInfo tileBandInfo = createBandInfoFromHeaderInfo(
-                            key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
+                    L1BBandInfo tileBandInfo = createBandInfoFromHeaderInfo(key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
 
                     // composite band name : detector + band
                     String keyMix = key.getSecond() + key.getFirst();

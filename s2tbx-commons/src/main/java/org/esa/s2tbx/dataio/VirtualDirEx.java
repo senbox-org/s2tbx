@@ -212,9 +212,9 @@ public abstract class VirtualDirEx extends VirtualDir {
         return TarVirtualDir.isTar(filename);
     }
 
-    public Path buildPath(String first, String... more) throws IOException {
-        return null;
-    }
+    public abstract Path buildPath(String first, String... more);
+
+    public abstract String getFileSystemSeparator();
 
     public void setFolderDepth(int value) {
         this.depth = value;

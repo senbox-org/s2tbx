@@ -30,8 +30,13 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
-    public Path buildPath(String first, String... more) throws IOException {
+    public Path buildPath(String first, String... more) {
         return this.dirPath.getFileSystem().getPath(first, more);
+    }
+
+    @Override
+    public String getFileSystemSeparator() {
+        return this.dirPath.getFileSystem().getSeparator();
     }
 
     @Override
@@ -51,7 +56,8 @@ public class VirtualDirPath extends AbstractVirtualPath {
             // the child exists
             if (Files.isRegularFile(child)) {
 
-//                System.out.println("getInputStream child="+child.toString());
+                //TODO Jean remote system.out
+                System.out.println("getInputStream dir child="+child.toString());
 
                 InputStream inputStream = Files.newInputStream(child);
                 BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
@@ -67,13 +73,14 @@ public class VirtualDirPath extends AbstractVirtualPath {
         }
     }
 
-//    int fileCount = 0;
+    int fileCount = 0;
+
     @Override
     public File getFile(String childRelativePath) throws IOException {
         Path child = this.dirPath.resolve(childRelativePath);
 
-//        this.fileCount++;
-//        System.out.println(this.fileCount + " getFile '"+child.toString()+"'");
+        //TODO Jean remote system.out
+        System.out.println((++this.fileCount) + " dir getFile '"+child.toString()+"'");
 
         if (Files.exists(child)) {
             Path fileToReturn = copyFileOnLocalDiskIfNeeded(child, childRelativePath);

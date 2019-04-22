@@ -150,42 +150,60 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (inputObject instanceof File) {
             File file;
             String longInput = Utils.GetLongPathNameW(inputObject.toString());
-            if (longInput.length() != 0) {
-                file = new File(longInput);
+            if (longInput.length() == 0) {
+                file = (File)inputObject;
             } else {
-                file = new File(inputObject.toString());
+                file = new File(longInput);
             }
             virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath());
         } else if (inputObject instanceof VirtualPath) {
             virtualPath = (VirtualPath) getInput();
         } else {
-            throw new IOException("Unhandled input type '" + inputObject + "'.");
+            throw new IllegalArgumentException("Unknown input type '" + inputObject + "'.");
         }
 
         this.namingConvention = NamingConventionFactory.createNamingConvention(virtualPath);
         if (this.namingConvention == null) {
-            throw new IOException("Unhandled file type.");
-        }
+            throw new NullPointerException("The naming convention is null.");
+        } else if (this.namingConvention.hasValidStructure()) {
+            VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
+            if (inputVirtualPath.exists()) {
+                this.product = buildMosaicProduct(inputVirtualPath);
 
-        VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
+                Path qlFile = getQuickLookFile(inputVirtualPath);
+                if (qlFile != null) {
+                    this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
+                }
 
-        if (!inputVirtualPath.exists()) {
-            throw new FileNotFoundException(inputVirtualPath.getFullPathString());
-        }
-
-        if (this.namingConvention.hasValidStructure()) {
-            this.product = buildMosaicProduct(inputVirtualPath);
-
-            Path qlFile = getQuickLookFile(inputVirtualPath);
-            if (qlFile != null) {
-                this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
+                this.product.setModified(false);
+                return this.product;
+            } else {
+                throw new FileNotFoundException(inputVirtualPath.getFullPathString());
             }
-
-            this.product.setModified(false);
-            return this.product;
         } else {
-            throw new IOException("Unhandled file type.");
+            throw new IllegalStateException("The naming convention structure is invalid.");
         }
+
+        //TODO Jean old code
+//        VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
+//
+//        if (!inputVirtualPath.exists()) {
+//            throw new FileNotFoundException(inputVirtualPath.getFullPathString());
+//        }
+//
+//        if (this.namingConvention.hasValidStructure()) {
+//            this.product = buildMosaicProduct(inputVirtualPath);
+//
+//            Path qlFile = getQuickLookFile(inputVirtualPath);
+//            if (qlFile != null) {
+//                this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
+//            }
+//
+//            this.product.setModified(false);
+//            return this.product;
+//        } else {
+//            throw new IOException("Unhandled file type.");
+//        }
     }
 
     private Path getQuickLookFile(VirtualPath inputVirtualPath) throws IOException {
