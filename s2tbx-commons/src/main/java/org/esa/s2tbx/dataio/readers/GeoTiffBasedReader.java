@@ -85,24 +85,8 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         this.metadataClass = getTypeArgument();
         registerMetadataParser();
         registerSpi();
-        bandMap = new HashMap<>();
-        metadata = new ArrayList<>();
-    }
-
-    protected Class<M> getTypeArgument() {
-        Class<M> arg;
-        Type superclass = getClass().getGenericSuperclass();
-        Type type;
-        if (superclass instanceof  ParameterizedType) {
-            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
-            arg = (Class<M>) type;
-        } else if ((superclass = getClass().getSuperclass().getGenericSuperclass()) instanceof ParameterizedType) {
-            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
-            arg = (Class<M>) type;
-        } else {
-            throw new ClassCastException("Cannot find parameterized type");
-        }
-        return arg;
+        this.bandMap = new HashMap<>();
+        this.metadata = new ArrayList<>();
     }
 
     /**
@@ -145,7 +129,24 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         if (this.imageInputStreamSpi != null) {
             IIORegistry.getDefaultInstance().deregisterServiceProvider(this.imageInputStreamSpi);
         }
+
         super.close();
+    }
+
+    protected Class<M> getTypeArgument() {
+        Class<M> arg;
+        Type superclass = getClass().getGenericSuperclass();
+        Type type;
+        if (superclass instanceof  ParameterizedType) {
+            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+            arg = (Class<M>) type;
+        } else if ((superclass = getClass().getSuperclass().getGenericSuperclass()) instanceof ParameterizedType) {
+            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+            arg = (Class<M>) type;
+        } else {
+            throw new ClassCastException("Cannot find parameterized type");
+        }
+        return arg;
     }
 
     /**
@@ -159,11 +160,11 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
      * Registers a file image input strwM SPI for image input stream, if none is yet registered.
      */
     protected void registerSpi() {
-        final IIORegistry defaultInstance = IIORegistry.getDefaultInstance();
-        Iterator<ImageInputStreamSpi> serviceProviders = defaultInstance.getServiceProviders(ImageInputStreamSpi.class, true);
-        ImageInputStreamSpi toUnorder = null;
+        IIORegistry defaultInstance = IIORegistry.getDefaultInstance();
         if (defaultInstance.getServiceProviderByClass(FileImageInputStreamSpi.class) == null) {
             // register only if not already registered
+            ImageInputStreamSpi toUnorder = null;
+            Iterator<ImageInputStreamSpi> serviceProviders = defaultInstance.getServiceProviders(ImageInputStreamSpi.class, true);
             while (serviceProviders.hasNext()) {
                 ImageInputStreamSpi current = serviceProviders.next();
                 if (current.getInputClass() == File.class) {
@@ -171,29 +172,14 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                     break;
                 }
             }
-            imageInputStreamSpi = new FileImageInputStreamSpi();
-            defaultInstance.registerServiceProvider(imageInputStreamSpi);
+            this.imageInputStreamSpi = new FileImageInputStreamSpi();
+            defaultInstance.registerServiceProvider(this.imageInputStreamSpi);
             if (toUnorder != null) {
                 // Make the custom Spi to be the first one to be used.
-                defaultInstance.setOrdering(ImageInputStreamSpi.class, imageInputStreamSpi, toUnorder);
+                defaultInstance.setOrdering(ImageInputStreamSpi.class, this.imageInputStreamSpi, toUnorder);
             }
         }
     }
-
-//    /**
-//     * Returns a File object from the input of the reader.
-//     * @param input the input object
-//     * @return  Either a new instance of File, if the input represents the file name, or the casted input File.
-//     */
-//    @Deprecated
-//    protected File getFileInput(Object input) {
-//        if (input instanceof String) {
-//            return new File((String) input);
-//        } else if (input instanceof File) {
-//            return (File) input;
-//        }
-//        return null;
-//    }
 
     /**
      * Returns a wrapping VirtualDirEx object over the input product.

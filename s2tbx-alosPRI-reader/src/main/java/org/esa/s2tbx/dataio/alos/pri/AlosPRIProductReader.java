@@ -24,10 +24,13 @@ import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.jai.JAIUtils;
+import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageInputStreamSpi;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +54,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
     private Product product;
     private List<Product> tiffProduct;
     private int tiffImageIndex;
+    private ImageInputStreamSpi imageInputStreamSpi;
 
     static {
         XmlMetadataParserFactory.registerParser(AlosPRIMetadata.class, new AlosPRIMetadata.AlosPRIMetadataParser(AlosPRIMetadata.class));
@@ -64,6 +68,8 @@ public class AlosPRIProductReader extends AbstractProductReader {
      */
     public AlosPRIProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
+
+        registerSpi();
     }
 
     @Override
@@ -185,6 +191,31 @@ public class AlosPRIProductReader extends AbstractProductReader {
         return this.product;
     }
 
+    /**
+     * Registers a file image input strwM SPI for image input stream, if none is yet registered.
+     */
+    private void registerSpi() {
+        IIORegistry defaultInstance = IIORegistry.getDefaultInstance();
+        if (defaultInstance.getServiceProviderByClass(FileImageInputStreamSpi.class) == null) {
+            // register only if not already registered
+            ImageInputStreamSpi toUnorder = null;
+            Iterator<ImageInputStreamSpi> serviceProviders = defaultInstance.getServiceProviders(ImageInputStreamSpi.class, true);
+            while (serviceProviders.hasNext()) {
+                ImageInputStreamSpi current = serviceProviders.next();
+                if (current.getInputClass() == File.class) {
+                    toUnorder = current;
+                    break;
+                }
+            }
+            this.imageInputStreamSpi = new FileImageInputStreamSpi();
+            defaultInstance.registerServiceProvider(this.imageInputStreamSpi);
+            if (toUnorder != null) {
+                // Make the custom Spi to be the first one to be used.
+                defaultInstance.setOrdering(ImageInputStreamSpi.class, this.imageInputStreamSpi, toUnorder);
+            }
+        }
+    }
+
     private void addMasks(final Product target, final ImageMetadata metadata) {
         final ProductNodeGroup<Mask> maskGroup = target.getMaskGroup();
         if (!maskGroup.contains(AlosPRIConstants.NODATA)) {
@@ -282,8 +313,8 @@ public class AlosPRIProductReader extends AbstractProductReader {
     @Override
     public void close() throws IOException {
         System.gc();
-        if (product != null) {
-            for (Band band : product.getBands()) {
+        if (this.product != null) {
+            for (Band band : this.product.getBands()) {
                 MultiLevelImage sourceImage = band.getSourceImage();
                 if (sourceImage != null) {
                     sourceImage.reset();
@@ -311,6 +342,10 @@ public class AlosPRIProductReader extends AbstractProductReader {
                 deleteDirectory(imageDir);
             }
         }
+        if (this.imageInputStreamSpi != null) {
+            IIORegistry.getDefaultInstance().deregisterServiceProvider(this.imageInputStreamSpi);
+        }
+
         super.close();
     }
 
