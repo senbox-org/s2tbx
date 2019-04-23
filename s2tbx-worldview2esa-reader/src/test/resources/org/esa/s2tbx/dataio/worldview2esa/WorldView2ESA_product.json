@@ -216,68 +216,44 @@
     ],
     "metadata": [
       {
-        "path": "Metadata[1]/imd/numrows",
-        "value": "23051"
+        "path": "Metadata/imd/productlevel",
+        "value": "LV2A"
       },
       {
-        "path": "Metadata[1]/imd/numcolumns",
-        "value": "11891"
-      },
-      {
-        "path": "Metadata[1]/imd/bitsperpixel",
+        "path": "Metadata/imd/bitsperpixel",
         "value": "16"
       },
       {
-        "path": "Metadata[1]/imd/map_projected_product/mapzone",
+        "path": "Metadata/imd/outputformat",
+        "value": "GeoTIFF"
+      },
+      {
+        "path": "Metadata/imd/map_projected_product/mapzone",
         "value": "34"
       },
       {
-        "path": "Metadata[1]/imd/map_projected_product/maphemi",
+        "path": "Metadata/imd/map_projected_product/maphemi",
         "value": "N"
       },
       {
-        "path": "Metadata[1]/imd/map_projected_product/originx",
-        "value": "7.201048002090200e+05"
+        "path": "Metadata/imd/image/cloudcover",
+        "value": "0.000000000000000e+00"
       },
       {
-        "path": "Metadata[1]/imd/map_projected_product/originy",
-        "value": "4.931498399998600e+06"
+        "path": "Metadata/imd/map_projected_product/ulh",
+        "value": "1.956700000000000e+02"
       },
       {
-        "path": "Metadata[1]/imd/map_projected_product/productgsd",
-        "value": "1.600000000000000e+00"
+        "path": "Metadata/imd/map_projected_product/urh",
+        "value": "1.956700000000000e+02"
       },
       {
-        "path": "Metadata[2]/imd/numrows",
-        "value": "92201"
+        "path": "Metadata/imd/map_projected_product/lrh",
+        "value": "1.956700000000000e+02"
       },
       {
-        "path": "Metadata[2]/imd/numcolumns",
-        "value": "47563"
-      },
-      {
-        "path": "Metadata[2]/imd/bitsperpixel",
-        "value": "16"
-      },
-      {
-        "path": "Metadata[2]/imd/map_projected_product/mapzone",
-        "value": "34"
-      },
-      {
-        "path": "Metadata[2]/imd/map_projected_product/maphemi",
-        "value": "N"
-      },
-      {
-        "path": "Metadata[2]/imd/map_projected_product/originx",
-        "value": "7.201042002090100e+05"
-      },
-      {
-        "path": "Metadata[2]/imd/map_projected_product/originy",
-        "value": "4.931498999998590e+06"
-      },
-      {
-        "path": "Metadata[2]/imd/map_projected_product/productgsd",
-        "value": "4.000000000000000e-01"
+        "path": "Metadata/imd/map_projected_product/llh",
+        "value": "1.956700000000000e+02"
       }
     ]
   }
