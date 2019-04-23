@@ -1,6 +1,7 @@
 package org.esa.s2tbx.mapper;
 
 import org.esa.s2tbx.mapper.common.SpectralAngleMapperConstants;
+import org.esa.s2tbx.mapper.common.SpectrumInputDomConverter;
 import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixelsContainer;
 import org.esa.s2tbx.mapper.pixels.mean.Spectrum;
 import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassPixelsComputing;
@@ -66,10 +67,10 @@ public class SpectralAngleMapperOp extends Operator {
     @Parameter(description = "thresholds", defaultValue = "0.0")
     private String thresholds;
 
-    @Parameter(description = "The list of spectra.", alias = "spectra")
+    @Parameter(alias = "spectra", itemAlias = "spectrum", domConverter = SpectrumInputDomConverter.class, description = "The list of spectra.")
     private SpectrumInput[] spectra;
 
-    @Parameter(description = "The list of spectra.", alias = "hiddenSpectra")
+    @Parameter(alias = "hiddenSpectra", itemAlias = "spectrum", domConverter = SpectrumInputDomConverter.class, description = "The list of spectra.")
     private SpectrumInput[] hiddenSpectra;
 
     @Parameter(label = "Resample Type",
