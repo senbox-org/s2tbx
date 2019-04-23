@@ -10,6 +10,7 @@ import org.esa.s2tbx.dataio.alos.pri.internal.ImageMetadata;
 import org.esa.s2tbx.dataio.alos.pri.internal.MosaicMultiLevelSource;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -30,6 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -66,51 +68,45 @@ public class AlosPRIProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        File inputFile = getFileInput(getInput());
-        AlosPRIProductReaderPlugin readerPlugin = (AlosPRIProductReaderPlugin) getReaderPlugIn();
-        productDirectory = readerPlugin.getInput(getInput());
-        this.tiffProduct = new ArrayList<>();
-        String productFilePath = this.productDirectory.getBasePath();
-        String fileName;
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        boolean copyFilesFromDirectoryOnLocalDisk = false;
+        boolean copyFilesFromArchiveOnLocalDisk = true;
+        this.productDirectory = VirtualDirEx.build(inputPath, copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
 
+        this.tiffProduct = new ArrayList<>();
+        String fileName = this.productDirectory.getBaseFile().getName();
         if (this.productDirectory.isCompressed()) {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf(AlosPRIConstants.PRODUCT_FILE_SUFFIX));
+            fileName = fileName.substring(0, fileName.lastIndexOf(AlosPRIConstants.PRODUCT_FILE_SUFFIX));
         } else {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf("."));
+            fileName = fileName.substring(0, fileName.lastIndexOf("."));
         }
 
-        this.metadata = XmlMetadata.create(AlosPRIMetadata.class, this.productDirectory.getFile(fileName + AlosPRIConstants.METADATA_FILE_SUFFIX).toPath());
+        File metadataFile = this.productDirectory.getFile(fileName + AlosPRIConstants.METADATA_FILE_SUFFIX);
+        this.metadata = XmlMetadata.create(AlosPRIMetadata.class, metadataFile.toPath());
         if (metadata != null) {
+            File file;
             if (productDirectory.isCompressed()) {
                 this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
-                productDirectory = VirtualDirEx.create(new File(metadata.getImageDirectoryPath()));
-                if (productDirectory != null) {
-                    productDirectory.setFolderDepth(4);
-                }
-
+                file = new File(metadata.getImageDirectoryPath());
             } else {
                 productDirectory.setFolderDepth(4);
                 if (productDirectory.exists(fileName)) {
-                    productDirectory = VirtualDirEx.create(new File(inputFile.getAbsolutePath().substring(0, inputFile.getAbsolutePath().indexOf(AlosPRIConstants.METADATA_FILE_SUFFIX))));
-                    if (productDirectory != null) {
-                        productDirectory.setFolderDepth(4);
-                    }
-
+                    file = this.productDirectory.getFile(fileName);
                 } else {
                     this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
-                    productDirectory = VirtualDirEx.create(new File(metadata.getImageDirectoryPath()));
-                    if (productDirectory != null) {
-                        productDirectory.setFolderDepth(4);
-                    }
+                    file = new File(metadata.getImageDirectoryPath());
                 }
             }
+            productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
             if (productDirectory != null) {
-                for (String file : productDirectory.listAllFiles()) {
-                    if (file.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION)) {
-                        metadata.addComponentMetadata(productDirectory.getFile(file));
+                productDirectory.setFolderDepth(4);
+                for (String availableFile : productDirectory.listAllFiles()) {
+                    if (availableFile.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION)) {
+                        metadata.addComponentMetadata(productDirectory.getFile(availableFile));
                     }
                 }
             }
+
             List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
             if (imageMetadataList.isEmpty()) {
                 throw new IOException("No raster found");
@@ -128,7 +124,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
             this.product.setEndTime(this.metadata.getProductEndTime());
             this.product.setDescription(this.metadata.getProductDescription());
             this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
-            this.product.setFileLocation(inputFile);
+            this.product.setFileLocation(inputPath.toFile());
             this.product.setProductReader(this);
             if (metadata.hasInsertPoint()) {
                 String crsCode = metadata.getCrsCode();

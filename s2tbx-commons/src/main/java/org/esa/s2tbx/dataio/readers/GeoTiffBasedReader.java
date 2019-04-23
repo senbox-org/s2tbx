@@ -180,40 +180,29 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         }
     }
 
-    /**
-     * Returns a File object from the input of the reader.
-     * @param input the input object
-     * @return  Either a new instance of File, if the input represents the file name, or the casted input File.
-     */
-    @Deprecated
-    protected File getFileInput(Object input) {
-        if (input instanceof String) {
-            return new File((String) input);
-        } else if (input instanceof File) {
-            return (File) input;
-        }
-        return null;
-    }
+//    /**
+//     * Returns a File object from the input of the reader.
+//     * @param input the input object
+//     * @return  Either a new instance of File, if the input represents the file name, or the casted input File.
+//     */
+//    @Deprecated
+//    protected File getFileInput(Object input) {
+//        if (input instanceof String) {
+//            return new File((String) input);
+//        } else if (input instanceof File) {
+//            return (File) input;
+//        }
+//        return null;
+//    }
 
     /**
      * Returns a wrapping VirtualDirEx object over the input product.
      *
-     * @param input The reader input as received from the caller.
      * @return  An instance of VirtualDirEx
      * @throws IOException
      */
-    protected VirtualDirEx getInput(Object input) throws IOException {
-        throw new UnsupportedOperationException();
-
-//        File inputFile = getFileInput(input);
-//        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
-//            final File absoluteFile = inputFile.getAbsoluteFile();
-//            inputFile = absoluteFile.getParentFile();
-//            if (inputFile == null) {
-//                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
-//            }
-//        }
-//        return VirtualDirEx.build(inputFile.toPath());
+    protected VirtualDirEx buildProductDirectory(Path inputPath) throws IOException {
+        return VirtualDirEx.build(inputPath, false, true);
     }
 
     /**
@@ -239,8 +228,9 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
             throw new IOException("The selected product cannot be read with the current reader.");
         }
 
-        Path path = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.productDirectory = VirtualDirEx.build(path, false, true);
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+
+        this.productDirectory = buildProductDirectory(inputPath);
 
         String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
         if (metadataFiles != null) {
@@ -279,6 +269,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         } else {
             logger.info("No metadata file found");
         }
+
         if (this.metadata != null && this.metadata.size() > 0) {
             List<M> rasterMetadataList = CollectionHelper.where(this.metadata, m -> m.getFileName().endsWith(getMetadataFileSuffix()));
             M firstMetadata = getFirstMetadataItem(rasterMetadataList);

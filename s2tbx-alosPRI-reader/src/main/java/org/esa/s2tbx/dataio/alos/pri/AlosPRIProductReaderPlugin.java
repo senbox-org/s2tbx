@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.alos.pri;
 
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -60,5 +61,10 @@ public class AlosPRIProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Alos PRISM", new String[]{"Band_1(pan)", "Band_1(pan)", "Band_1(pan)"}));
+    }
+
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+        return super.getDecodeQualification(input);
     }
 }

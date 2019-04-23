@@ -25,33 +25,31 @@ import java.util.logging.Logger;
  * @author Denisa Stefanescu
  */
 public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
-    private static final Logger _logger = Logger.getLogger(AlosAV2ProductReader.class.getName());
-    private File inputFile;
 
     protected AlosAV2ProductReader(final ProductReaderPlugIn readerPlugIn, final Path colorPaletteFilePath) {
         super(readerPlugIn, colorPaletteFilePath);
     }
 
     @Override
-    protected VirtualDirEx getInput(final Object input) {
-        inputFile = getFileInput(input);
-        AlosAV2ProductReaderPlugin readerPlugin = (AlosAV2ProductReaderPlugin) getReaderPlugIn();
-        try {
-            productDirectory = readerPlugin.getInput(getInput());
+    protected VirtualDirEx buildProductDirectory(Path inputPath) throws IOException {
+        VirtualDirEx productDirectory = super.buildProductDirectory(inputPath);
 
-            if (this.productDirectory.isCompressed()) {
-                productDirectory = VirtualDirEx.create(productDirectory.getFile(inputFile.getName().substring(0, inputFile.getName().indexOf(".")) + ".ZIP"));
+        boolean copyFilesFromDirectoryOnLocalDisk = false;
+        boolean copyFilesFromArchiveOnLocalDisk = true;
+        String inputFileName = inputPath.getFileName().toString();
+
+        if (productDirectory.isCompressed()) {
+            File file = productDirectory.getFile(inputFileName.substring(0, inputFileName.indexOf(".")) + ".ZIP");
+            productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
+        } else if (inputFileName.endsWith(AlosAV2Constants.METADATA_FILE_SUFFIX)) {
+            String fileNameWithoutExtension = inputFileName.substring(0, inputFileName.indexOf(AlosAV2Constants.METADATA_FILE_SUFFIX));
+            if (productDirectory.exists(fileNameWithoutExtension)) {
+                File file = productDirectory.getFile(fileNameWithoutExtension);
+                productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
             } else {
-                if (inputFile.getName().endsWith(AlosAV2Constants.METADATA_FILE_SUFFIX)) {
-                    if (productDirectory.exists(inputFile.getName().substring(0, inputFile.getName().indexOf(AlosAV2Constants.METADATA_FILE_SUFFIX)))) {
-                        productDirectory = VirtualDirEx.create(productDirectory.getFile(inputFile.getName().substring(0, inputFile.getName().indexOf(AlosAV2Constants.METADATA_FILE_SUFFIX))));
-                    } else {
-                        productDirectory = VirtualDirEx.create(productDirectory.getFile(inputFile.getName().substring(0, inputFile.getName().indexOf(AlosAV2Constants.METADATA_FILE_SUFFIX)) + ".ZIP"));
-                    }
-                }
+                File file = productDirectory.getFile(fileNameWithoutExtension + ".ZIP");
+                productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
             }
-        } catch (IOException e) {
-            _logger.log(Level.SEVERE, e.getMessage(), e);
         }
         return productDirectory;
     }
@@ -89,54 +87,51 @@ public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
         if (metadata != null && !metadata.isEmpty()) {
             return metadata.get(0).getBandNames();
         } else {
-            return new String[]{};
+            return new String[0];
         }
     }
 
-
     @Override
-    protected void addMetadataMasks(final AlosAV2Metadata componentMetadata) {
-        _logger.info("Create masks");
+    protected void addMetadataMasks(AlosAV2Metadata componentMetadata) {
         int noDataValue;
         int saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {
-            product.getMaskGroup().add(Mask.BandMathsType.create(AlosAV2Constants.NODATA,
-              AlosAV2Constants.NODATA,
-              product.getSceneRasterWidth(),
-              product.getSceneRasterHeight(),
-              String.valueOf(noDataValue),
-              componentMetadata.getNoDataColor(),
-              0.5));
+            this.product.getMaskGroup().add(Mask.BandMathsType.create(AlosAV2Constants.NODATA,
+                    AlosAV2Constants.NODATA,
+                    this.product.getSceneRasterWidth(),
+                    this.product.getSceneRasterHeight(),
+                    String.valueOf(noDataValue),
+                    componentMetadata.getNoDataColor(),
+                    0.5));
         }
         if ((saturatedValue = componentMetadata.getSaturatedPixelValue()) >= 0) {
-            product.getMaskGroup().add(Mask.BandMathsType.create(AlosAV2Constants.SATURATED,
-              AlosAV2Constants.SATURATED,
-              product.getSceneRasterWidth(),
-              product.getSceneRasterHeight(),
-              String.valueOf(saturatedValue),
-              componentMetadata.getSaturatedColor(),
-              0.5));
+            this.product.getMaskGroup().add(Mask.BandMathsType.create(AlosAV2Constants.SATURATED,
+                    AlosAV2Constants.SATURATED,
+                    this.product.getSceneRasterWidth(),
+                    this.product.getSceneRasterHeight(),
+                    String.valueOf(saturatedValue),
+                    componentMetadata.getSaturatedColor(),
+                    0.5));
         }
     }
 
     @Override
     protected void addBands(final AlosAV2Metadata componentMetadata, final int componentIndex) {
-        product.setFileLocation(inputFile);
-
         super.addBands(componentMetadata, componentIndex);
-        //add the band informations from the metadata
-        for (Band band : product.getBands()) {
+
+        // add the band information from the metadata
+        for (Band band : this.product.getBands()) {
             band.setScalingFactor(componentMetadata.getGain(band.getName()));
             band.setScalingOffset(componentMetadata.getBias(band.getName()));
             band.setUnit(componentMetadata.getBandUnits().get(band.getName()));
         }
         if (!AlosAV2Constants.PROCESSING_1B.equals(componentMetadata.getProcessingLevel())) {
-            initGeoCoding(product);
+            initGeoCoding();
         }
     }
 
-    private void initGeoCoding(final Product product) {
-        final AlosAV2Metadata alosav2metadata = metadata.get(0);
+    private void initGeoCoding() {
+        final AlosAV2Metadata alosav2metadata = this.metadata.get(0);
         final AlosAV2Metadata.InsertionPoint[] geopositionPoints = alosav2metadata.getGeopositionPoints();
         if (geopositionPoints != null) {
             int numPoints = geopositionPoints.length;
@@ -149,18 +144,18 @@ public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
                     latitudes[i] = geopositionPoints[i].y;
                     longitudes[i] = geopositionPoints[i].x;
                 }
-                final TiePointGrid latGrid = addTiePointGrid(stepX, stepY, product, AlosAV2Constants.LAT_DS_NAME, latitudes);
-                final TiePointGrid lonGrid = addTiePointGrid(stepX, stepY, product, AlosAV2Constants.LON_DS_NAME, longitudes);
+                final TiePointGrid latGrid = addTiePointGrid(stepX, stepY, AlosAV2Constants.LAT_DS_NAME, latitudes);
+                final TiePointGrid lonGrid = addTiePointGrid(stepX, stepY, AlosAV2Constants.LON_DS_NAME, longitudes);
                 final GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-                product.setSceneGeoCoding(geoCoding);
+                this.product.setSceneGeoCoding(geoCoding);
             }
         }
     }
 
-    private TiePointGrid addTiePointGrid(final float subSamplingX, final float subSamplingY, final Product product, final String gridName, final float[] tiePoints) {
+    private TiePointGrid addTiePointGrid(final float subSamplingX, final float subSamplingY, final String gridName, final float[] tiePoints) {
         final int gridDim = (int) Math.sqrt(tiePoints.length);
         final TiePointGrid tiePointGrid = createTiePointGrid(gridName, gridDim, gridDim, 0, 0, subSamplingX, subSamplingY, tiePoints);
-        product.addTiePointGrid(tiePointGrid);
+        this.product.addTiePointGrid(tiePointGrid);
         return tiePointGrid;
     }
 }
