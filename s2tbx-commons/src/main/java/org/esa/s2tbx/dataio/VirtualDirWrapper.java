@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio;
 
+import com.bc.ceres.core.VirtualDir;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
@@ -54,6 +55,11 @@ class VirtualDirWrapper extends VirtualDirEx {
     @Override
     public File getBaseFile() {
         return this.wrapped.getBaseFile();
+    }
+
+    @Override
+    public <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException {
+        return this.wrapped.loadData(relativePath, command);
     }
 
     @Override

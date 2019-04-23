@@ -5,10 +5,8 @@ import org.esa.snap.utils.FileHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 
 /**
  * Created by jcoravu on 9/4/2019.
@@ -17,7 +15,7 @@ public abstract class AbstractVirtualPath extends VirtualDir {
 
     private final boolean copyFilesOnLocalDisk;
 
-    private File tempZipFileDir;
+    private File localTempDir;
 
     protected AbstractVirtualPath(boolean copyFilesOnLocalDisk) {
         this.copyFilesOnLocalDisk = copyFilesOnLocalDisk;
@@ -26,6 +24,8 @@ public abstract class AbstractVirtualPath extends VirtualDir {
     public abstract Path buildPath(String first, String... more);
 
     public abstract String getFileSystemSeparator();
+
+    public abstract <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException;
 
     @Override
     public void close() {
@@ -41,16 +41,16 @@ public abstract class AbstractVirtualPath extends VirtualDir {
 
     @Override
     public File getTempDir() throws IOException {
-        return this.tempZipFileDir;
+        return this.localTempDir;
     }
 
     protected final Path copyFileOnLocalDiskIfNeeded(Path entryPath, String childRelativePath) throws IOException {
         if (this.copyFilesOnLocalDisk && Files.isRegularFile(entryPath)) {
             // copy the file from the zip archive on the local disk
-            if (this.tempZipFileDir == null) {
-                this.tempZipFileDir = VirtualDir.createUniqueTempDir();
+            if (this.localTempDir == null) {
+                this.localTempDir = VirtualDir.createUniqueTempDir();
             }
-            Path localFilePath = this.tempZipFileDir.toPath().resolve(childRelativePath);
+            Path localFilePath = this.localTempDir.toPath().resolve(childRelativePath);
             copyFileOnLocalDiskIfMissing(entryPath, localFilePath);
             return localFilePath;
         } else {
@@ -72,24 +72,19 @@ public abstract class AbstractVirtualPath extends VirtualDir {
             }
         }
         if (copyFile) {
-//            System.out.println("\nstart copy file '"+sourceFile.toString()+"'");
-
             Path parentFolder = destinationFile.getParent();
             if (!Files.exists(parentFolder)) {
                 Files.createDirectories(parentFolder);
             }
             FileHelper.copyFileUsingInputStream(sourceFile, destinationFile.toString());
-
-//            System.out.println("stop copy file '"+sourceFile.toString()+"'");
         } else {
-//            System.out.println("file already exists '"+sourceFile.toString()+"'");
         }
     }
 
     private void cleanup() {
-        if (this.tempZipFileDir != null) {
-            deleteFileTree(this.tempZipFileDir);
-            this.tempZipFileDir = null;
+        if (this.localTempDir != null) {
+            deleteFileTree(this.localTempDir);
+            this.localTempDir = null;
         }
     }
 }

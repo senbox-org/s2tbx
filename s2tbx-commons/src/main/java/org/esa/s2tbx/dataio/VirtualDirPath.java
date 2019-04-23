@@ -91,6 +91,16 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
+    public <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException {
+        Path child = this.dirPath.resolve(path);
+        if (Files.exists(child)) {
+            return command.execute(child);
+        } else {
+            throw new FileNotFoundException(child.toString());
+        }
+    }
+
+    @Override
     public String[] list(String childRelativePath) throws IOException {
         Path child = this.dirPath.resolve(childRelativePath);
         if (Files.isDirectory(child)) {

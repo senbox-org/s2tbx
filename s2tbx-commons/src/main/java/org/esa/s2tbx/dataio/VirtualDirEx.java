@@ -112,7 +112,7 @@ public abstract class VirtualDirEx extends VirtualDir {
     private static VirtualDirEx create(Path path) {
         String fileName = path.getFileName().toString();
         if (Files.isRegularFile(path) && (TarVirtualDir.isTgz(fileName) || TarVirtualDir.isTar(fileName))) {
-            return new TarVirtualDir(path.toFile());
+            return new TarVirtualDir(path);
         } else {
             AbstractVirtualPath virtualDir = null;
             if (Files.isDirectory(path)) {
@@ -142,7 +142,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                 // the path represents an archive
                 String fileName = path.getFileName().toString();
                 if (TarVirtualDir.isTgz(fileName) || TarVirtualDir.isTar(fileName)) {
-                    return new TarVirtualDir(path.toFile());
+                    return new TarVirtualDir(path);
                 } else {
                     // check if the file represents a zip archive
                     boolean zipFile;
@@ -216,6 +216,8 @@ public abstract class VirtualDirEx extends VirtualDir {
 
     public abstract String getFileSystemSeparator();
 
+    public abstract <ResultType> ResultType loadData(String zipEntryPath, ICallbackCommand<ResultType> command) throws IOException;
+
     public void setFolderDepth(int value) {
         this.depth = value;
     }
@@ -284,15 +286,17 @@ public abstract class VirtualDirEx extends VirtualDir {
                                     zipEntryPath = zipEntryPath.substring(1);
                                 }
                                 if (isTar(zipEntryPath)) {
-                                    File file1 = getFile(zipEntryPath);
-                                    TarVirtualDir innerTar = new TarVirtualDir(file1) {
+                                    File temporaryFile = getFile(zipEntryPath);
+                                    TarVirtualDir innerTar = new TarVirtualDir(temporaryFile.toPath()) {
                                         @Override
                                         public void close() {
+                                            // do nothing
                                         }
                                     };
                                     innerTar.ensureUnpacked(getTempDir());
-                                    fileNames.addAll(Arrays.asList(innerTar.listAll()));
-                                    file1.delete();
+                                    String[] innerFiles = innerTar.listAll();
+                                    fileNames.addAll(Arrays.asList(innerFiles));
+                                    temporaryFile.delete();
                                 } else {
                                     fileNames.add(zipEntryPath);
                                 }
@@ -300,10 +304,11 @@ public abstract class VirtualDirEx extends VirtualDir {
                             }
                         });
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (IOException e) {
                     // cannot open zip, list will be empty
-                    Logger.getLogger(VirtualDirEx.class.getName()).severe(e.getMessage());
+                    logger.log(Level.SEVERE, e.getMessage(), e);
+                } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                    throw new IllegalStateException(e);
                 }
             } else {
                 fileNames.addAll(listFiles(getBaseFile(), patterns));

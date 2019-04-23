@@ -45,9 +45,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -200,15 +203,17 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
      * @throws IOException
      */
     protected VirtualDirEx getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
-        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
-            final File absoluteFile = inputFile.getAbsoluteFile();
-            inputFile = absoluteFile.getParentFile();
-            if (inputFile == null) {
-                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
-            }
-        }
-        return VirtualDirEx.create(inputFile);
+        throw new UnsupportedOperationException();
+
+//        File inputFile = getFileInput(input);
+//        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
+//            final File absoluteFile = inputFile.getAbsoluteFile();
+//            inputFile = absoluteFile.getParentFile();
+//            if (inputFile == null) {
+//                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
+//            }
+//        }
+//        return VirtualDirEx.build(inputFile.toPath());
     }
 
     /**
@@ -235,7 +240,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         }
 
         Path path = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.productDirectory = VirtualDirEx.build(path);
+        this.productDirectory = VirtualDirEx.build(path, false, true);
 
         String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
         if (metadataFiles != null) {

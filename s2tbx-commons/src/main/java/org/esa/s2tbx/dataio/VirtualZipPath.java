@@ -114,6 +114,25 @@ public class VirtualZipPath extends AbstractVirtualPath {
     }
 
     @Override
+    public <ResultType> ResultType loadData(String zipEntryPath, ICallbackCommand<ResultType> command) throws IOException {
+        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
+            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
+            while (it.hasNext()) {
+                Path root = it.next();
+                Path entryPath = buildZipEntryPath(root, zipEntryPath);
+                if (Files.exists(entryPath)) {
+                    // the entry exists into the zip archive
+                    Path file = copyFileOnLocalDiskIfNeeded(entryPath, zipEntryPath);
+                    return command.execute(file);
+                }
+            } // end 'while (it.hasNext())'
+            throw new FileNotFoundException("The zip entry path '"+zipEntryPath+"' does not exist in the zip archive '"+this.zipPath.toString()+"'.");
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
     public String[] list(String path) throws IOException {
         TreeSet<String> nameSet;
         try {

@@ -120,39 +120,38 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        Path path = convertInputToPath(input);
-        DecodeQualification retVal = DecodeQualification.UNABLE;
+        Path inputPath = convertInputToPath(input);
         VirtualDirEx virtualDir;
         try {
-            virtualDir = VirtualDirEx.build(path);
-            if (virtualDir != null) {
-                String[] files = null;
-                if (virtualDir.isCompressed()) {
-                    if (!CACHED_FILES.containsKey(input)) {
-                        CACHED_FILES.put(input, virtualDir.listAll());
-                    }
-                    files = CACHED_FILES.get(input);
-                    if (this.enforcer.isConsistent(files)) {
-                        retVal = DecodeQualification.INTENDED;
-                    }
-                } else {
-                    Pattern[] patternList = this.enforcer.getMinimalFilePatternList();
-                    if (Files.isRegularFile(path)) {
-                        boolean matches = Arrays.stream(patternList).anyMatch(p -> p.matcher(path.getFileName().toString()).matches());
-                        if (matches) {
-                            virtualDir.setFolderDepth(this.folderDepth);
-                            files = virtualDir.listAll(patternList);
-                            if (files.length >= patternList.length && this.enforcer.isConsistent(files)) {
-                                retVal = DecodeQualification.INTENDED;
-                            }
-                        }
-                    }
+            virtualDir = VirtualDirEx.build(inputPath, false, true);
+        } catch (IOException e) {
+            return DecodeQualification.UNABLE;
+        }
+        DecodeQualification returnValue = DecodeQualification.UNABLE;
+        if (virtualDir.isCompressed()) {
+            String[] files = CACHED_FILES.get(input);
+            if (files == null) {
+                files = virtualDir.listAll();
+                if (files == null) {
+                    throw new NullPointerException("The files array is null.");
+                }
+                CACHED_FILES.put(input, files);
+            }
+            if (this.enforcer.isConsistent(files)) {
+                returnValue = DecodeQualification.INTENDED;
+            }
+        } else if (Files.isRegularFile(inputPath)) {
+            Pattern[] patternList = this.enforcer.getMinimalFilePatternList();
+            boolean matches = Arrays.stream(patternList).anyMatch(p -> p.matcher(inputPath.getFileName().toString()).matches());
+            if (matches) {
+                virtualDir.setFolderDepth(this.folderDepth);
+                String[] files = virtualDir.listAll(patternList);
+                if (files.length >= patternList.length && this.enforcer.isConsistent(files)) {
+                    returnValue = DecodeQualification.INTENDED;
                 }
             }
-        } catch (IOException e) {
-            retVal = DecodeQualification.UNABLE;
         }
-        return retVal;
+        return returnValue;
     }
 
     @Override
@@ -175,12 +174,6 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         return new BaseProductFileFilter(this, folderDepth);
     }
 
-    /**
-     * Returns the list of possible file patterns of a product.
-     * @return  The list of regular expressions.
-     *//*
-    protected abstract String[] getProductFilePatterns();
-*/
     /**
      * Returns the minimal list of file patterns of a product.
      * @return  The list of regular expressions.
