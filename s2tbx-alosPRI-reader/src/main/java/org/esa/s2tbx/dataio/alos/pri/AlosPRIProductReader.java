@@ -153,7 +153,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                 product.getMetadataRoot().addElement(imageMetadata.getRootElement());
                 File rasterFile = productDirectory.getFile(imageMetadata.getFileName().substring(0, imageMetadata.getFileName().indexOf(".")) + AlosPRIConstants.IMAGE_EXTENSION);
                 //workaround for issue on VirtualDirEx: getTempDir() returns null when a file has to be found iterating through all the product directories
-                if (!rasterFile.exists() || !rasterFile.getName().endsWith(AlosPRIConstants.IMAGE_EXTENSION)) {
+                if (rasterFile == null || !rasterFile.exists() || !rasterFile.getName().endsWith(AlosPRIConstants.IMAGE_EXTENSION)) {
                     rasterFile = new File(imageMetadata.getPath().toString().substring(0,imageMetadata.getPath().toString().lastIndexOf("."))+AlosPRIConstants.IMAGE_EXTENSION);
                 }
                 this.tiffProduct.add(ProductIO.readProduct(rasterFile));
