@@ -7,6 +7,7 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -127,7 +128,7 @@ public class L1BNamingConvention implements INamingConvention {
     }
 
     @Override
-    public boolean hasValidStructure() {
+    public boolean hasValidStructure() throws IOException {
         return S2ProductNamingUtils.hasValidStructure(inputType, getInputXml());
     }
 
