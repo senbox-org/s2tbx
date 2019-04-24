@@ -24,6 +24,9 @@ pipeline {
         snapMajorVersion = ''
     }
     agent { label 'snap-test' }
+    parameters {
+        booleanParam(name: 'launchTests', defaultValue: true, description: 'When true, only stages "Package", "Deploy" and "Save installer data" are launched. When false, all stages are launched')
+    }
     stages {
         stage('Package') {
             agent {
@@ -73,7 +76,8 @@ pipeline {
             }
             when {
                 expression {
-                    return "${env.GIT_BRANCH}" == 'master';
+                    // We save snap installer data on master branch and branch x.x.x (Ex: 8.0.0) when we want to create a release
+                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/);
                 }
             }
             steps {
@@ -85,7 +89,7 @@ pipeline {
             agent { label 'snap-test' }
             when {
                 expression {
-                    return "${env.GIT_BRANCH}" == 'master';
+                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && ${params.launchTests};
                 }
             }
             steps {
@@ -100,6 +104,11 @@ pipeline {
                     image 'snap-build-server.tilaa.cloud/scripts:1.0'
                     // We add the docker group from host (i.e. 999)
                     args ' --group-add 999 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7 -v docker_local-update-center:/local-update-center -v /opt/maven/.docker:/home/snap/.docker -v docker_snap-installer:/snap-installer'
+                }
+            }
+            when {
+                expression {
+                    return ${params.launchTests};
                 }
             }
             steps {
@@ -117,7 +126,7 @@ pipeline {
                     agent { label 'snap-test' }
                     when {
                         expression {
-                            return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/;
+                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && ${params.launchTests};
                         }
                     }
                     steps {
@@ -132,7 +141,7 @@ pipeline {
                     agent { label 'snap-test' }
                     when {
                         expression {
-                            return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/;
+                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && ${params.launchTests};
                         }
                     }
                     steps {
