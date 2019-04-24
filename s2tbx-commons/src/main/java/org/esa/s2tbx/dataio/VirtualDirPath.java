@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,16 +106,21 @@ public class VirtualDirPath extends AbstractVirtualPath {
     @Override
     public String[] list(String childRelativePath) throws IOException {
         Path child = this.dirPath.resolve(childRelativePath);
-        if (Files.isDirectory(child)) {
-            List<String> files = new ArrayList<String>();
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(child)) {
-                for (Path currentPath : stream) {
-                    files.add(currentPath.getFileName().toString());
+        if (Files.exists(child)) {
+            if (Files.isDirectory(child)) {
+                List<String> files = new ArrayList<String>();
+                try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(child)) {
+                    for (Path currentPath : directoryStream) {
+                        files.add(currentPath.getFileName().toString());
+                    }
+                    return files.toArray(new String[files.size()]);
                 }
-                return files.toArray(new String[files.size()]);
+            } else {
+                throw new NotDirectoryException(child.toString());
             }
+        } else {
+            throw new FileNotFoundException(child.toString());
         }
-        return new String[0];
     }
 
     @Override

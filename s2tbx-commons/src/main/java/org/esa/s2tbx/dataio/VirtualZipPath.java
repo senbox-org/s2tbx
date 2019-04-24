@@ -2,10 +2,14 @@ package org.esa.s2tbx.dataio;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -132,17 +136,37 @@ public class VirtualZipPath extends AbstractVirtualPath {
     }
 
     @Override
-    public String[] list(String path) throws IOException {
-        TreeSet<String> nameSet;
-        try {
-            nameSet = ZipFileSystemBuilder.listDirectoryEntriesFromZipArchive(this.zipPath, path);
+    public String[] list(String zipEntryPath) throws IOException {
+        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
+            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
+            while (it.hasNext()) {
+                Path root = it.next();
+                Path entryPath = buildZipEntryPath(root, zipEntryPath);
+                if (Files.exists(entryPath)) {
+                    // the zip entry exists
+                    if (Files.isDirectory(entryPath)) {
+                        List<String> files = new ArrayList<String>();
+                        String zipFileSystemSeparator = fileSystem.getSeparator();
+                        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(entryPath)) {
+                            for (Path currentPath : directoryStream) {
+                                String fileName = currentPath.getFileName().toString();
+                                if (fileName.endsWith(zipFileSystemSeparator)) {
+                                    int index = fileName.length() - zipFileSystemSeparator.length();
+                                    fileName = fileName.substring(0, index);
+                                }
+                                files.add(fileName);
+                            }
+                            return files.toArray(new String[files.size()]);
+                        }
+                    } else {
+                        throw new NotDirectoryException(entryPath.toString());
+                    }
+                }
+            } // end 'while (it.hasNext())'
+            throw new FileNotFoundException(getMissingZipEntryExceptionMessage(zipEntryPath));
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         }
-        if (nameSet == null) {
-            throw new FileNotFoundException(getBasePath() + "!" + path);
-        }
-        return nameSet.toArray(new String[nameSet.size()]);
     }
 
     @Override
@@ -155,7 +179,7 @@ public class VirtualZipPath extends AbstractVirtualPath {
                 if (Files.exists(entryPath)) {
                     return true;
                 }
-            }
+            } // end 'while (it.hasNext())'
             return false;
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | IOException e) {
             throw new IllegalStateException(e);

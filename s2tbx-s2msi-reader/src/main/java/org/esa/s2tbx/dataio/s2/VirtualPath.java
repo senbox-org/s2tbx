@@ -28,7 +28,7 @@ public class VirtualPath {
 
     public VirtualPath(Path relativePath, VirtualDirEx dir) {
         this.dir = dir;
-        String path = replaceFileSeparator(relativePath.toString());
+        String path = replaceFileSeparator(relativePath.toString(), this.dir.getFileSystemSeparator());
         this.relativePath = this.dir.buildPath(path);
     }
 
@@ -62,7 +62,7 @@ public class VirtualPath {
     }
 
     public VirtualPath resolve(String other) {
-        String path = replaceFileSeparator(other);
+        String path = replaceFileSeparator(other, this.dir.getFileSystemSeparator());
         if (this.relativePath.getFileName().toString().equals(".")) {
             return new VirtualPath(this.relativePath.resolveSibling(path), this.dir);
         }
@@ -70,7 +70,7 @@ public class VirtualPath {
     }
 
     public VirtualPath resolveSibling(String other) {
-        String path = replaceFileSeparator(other);
+        String path = replaceFileSeparator(other, this.dir.getFileSystemSeparator());
         if (this.relativePath.getFileName().toString().equals(".")) {
             return new VirtualPath(this.relativePath.normalize().resolveSibling(path), this.dir);
         }
@@ -117,13 +117,16 @@ public class VirtualPath {
     }
 
     public VirtualPath[] listPaths() throws IOException {
-        String[] list = this.dir.list(this.relativePath.toString());
-        if (list != null && list.length > 0) {
-            VirtualPath[] result = new VirtualPath[list.length];
-            for (int i=0; i<list.length; i++) {
-                result[i] = resolve(list[i]);
+        String childRelativePath = this.relativePath.toString();
+        if (this.dir.exists(childRelativePath)) {
+            String[] list = this.dir.list(childRelativePath);
+            if (list != null && list.length > 0) {
+                VirtualPath[] result = new VirtualPath[list.length];
+                for (int i = 0; i < list.length; i++) {
+                    result[i] = resolve(list[i]);
+                }
+                return result;
             }
-            return result;
         }
         return null;
     }
@@ -166,13 +169,24 @@ public class VirtualPath {
         this.dir.close();
     }
 
-    private String replaceFileSeparator(String path) {
-        String fileSystemSeparator = this.dir.getFileSystemSeparator();
-        String[] separatorsToReplace = new String[] {"\\\\", "/"};
+    private static String replaceFileSeparator(String path, String fileSystemSeparator) {
+        String[] separatorsToReplace = new String[] {"\\", "/"};
         String result = path;
         for (int i=0; i<separatorsToReplace.length; i++) {
             if (!separatorsToReplace[i].equals(fileSystemSeparator)) {
-                result = result.replaceAll(separatorsToReplace[i], fileSystemSeparator);
+                // different file system separator
+                StringBuilder str = new StringBuilder();
+                int index = 0;
+                while (index < result.length()) {
+                    if (result.regionMatches(index, separatorsToReplace[i], 0, separatorsToReplace[i].length())) {
+                        str.append(fileSystemSeparator);
+                        index += separatorsToReplace[i].length();
+                    } else {
+                        str.append(result.charAt(index));
+                        index++;
+                    }
+                }
+                result = str.toString();
             }
         }
         return result;

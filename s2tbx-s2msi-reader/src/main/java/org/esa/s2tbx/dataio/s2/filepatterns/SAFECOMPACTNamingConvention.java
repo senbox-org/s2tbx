@@ -8,8 +8,10 @@ import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -140,8 +142,6 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
 
     @Override
     public VirtualPath findGranuleFolderFromTileId(String tileId) {
-
-        VirtualPath path = null;
         VirtualPath granuleFolder = null;
         if (getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             granuleFolder = inputXmlPath.resolveSibling("GRANULE");
@@ -160,15 +160,16 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
             return null;
         }
 
-        ArrayList<VirtualPath> granulePaths = S2NamingConventionUtils.getAllFilesFromDir(granuleFolder, getGranuleREGEXs());
+        List<VirtualPath> granulePaths = S2NamingConventionUtils.getAllFilesFromDir(granuleFolder, getGranuleREGEXs());
 
+        VirtualPath path = null;
         for (VirtualPath granulePath : granulePaths) {
             String tileIdAux = S2ProductNamingUtils.getTileIdFromString(granulePath.getFileName().toString());
             if (tileIdentifier.equals(tileIdAux)) {
                 path = granulePath;
+                break;
             }
         }
-
         if (path.existsAndHasChildren() && S2NamingConventionUtils.matches(path.getFileName().toString(), getGranuleREGEXs())) {
             return path;
         }
@@ -194,7 +195,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     }
 
     @Override
-    public boolean hasValidStructure() {
+    public boolean hasValidStructure() throws IOException {
         return S2ProductNamingUtils.hasValidStructure(inputType, getInputXml());
     }
 

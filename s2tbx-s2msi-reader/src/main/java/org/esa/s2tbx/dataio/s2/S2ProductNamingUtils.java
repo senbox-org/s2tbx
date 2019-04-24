@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public class S2ProductNamingUtils {
 
     // list of files to be ignored when searching xml files into a folder
-    private static String[] EXCLUDED_XML = {"INSPIRE","L2A_Manifest", "manifest"};
+    private static String[] EXCLUDED_XML = {"INSPIRE", "L2A_Manifest", "manifest"};
 
     //Pattern used to find the tile identifier in a string
     private static String SIMPLIFIED_TILE_ID_REGEX = "(.*)(T[0-9]{2}[A-Z]{3})(.*)";
@@ -34,36 +34,37 @@ public class S2ProductNamingUtils {
      * checks if there is a not empty datastrip folder
      * checks if there is a not empty granule folder
      * checks that subfolders contain a xml file
+     *
      * @param xmlPath path to product metadata
      * @return
      */
-    public static boolean checkStructureFromProductXml(VirtualPath xmlPath) {
-        if(!xmlPath.resolveSibling("DATASTRIP").exists()) {
+    public static boolean checkStructureFromProductXml(VirtualPath xmlPath) throws IOException {
+        if (!xmlPath.resolveSibling("DATASTRIP").exists()) {
             return false;
         }
 
-        if(!xmlPath.resolveSibling("GRANULE").exists()) {
+        if (!xmlPath.resolveSibling("GRANULE").exists()) {
             return false;
         }
 
         ArrayList<VirtualPath> datastripPaths = getDatastripsFromProductXml(xmlPath);
-        if(datastripPaths.isEmpty()) {
+        if (datastripPaths.isEmpty()) {
             return false;
         }
 
         ArrayList<VirtualPath> tileDirs = getTilesFromProductXml(xmlPath);
-        if(tileDirs.isEmpty()) {
+        if (tileDirs.isEmpty()) {
             return false;
         }
 
-        for(VirtualPath datastripPath : datastripPaths) {
-            if(getXmlFromDir(datastripPath) == null) {
+        for (VirtualPath datastripPath : datastripPaths) {
+            if (getXmlFromDir(datastripPath) == null) {
                 return false;
             }
         }
 
-        for(VirtualPath tileDir : tileDirs) {
-            if(getXmlFromDir(tileDir) == null) {
+        for (VirtualPath tileDir : tileDirs) {
+            if (getXmlFromDir(tileDir) == null) {
                 return false;
             }
         }
@@ -74,15 +75,16 @@ public class S2ProductNamingUtils {
      * Checks whether the structure of a granule is right:
      * checks if it contains "IMG_DATA"
      * checks if it contains "QI_DATA"
+     *
      * @param xmlPath path to granule metadata
      * @return
      */
     public static boolean checkStructureFromGranuleXml(VirtualPath xmlPath) {
-        if(!xmlPath.resolveSibling("IMG_DATA").exists()) {
+        if (!xmlPath.resolveSibling("IMG_DATA").exists()) {
             return false;
         }
 
-        if(!xmlPath.resolveSibling("QI_DATA").exists()) {
+        if (!xmlPath.resolveSibling("QI_DATA").exists()) {
             return false;
         }
 
@@ -91,6 +93,7 @@ public class S2ProductNamingUtils {
 
     /**
      * Get the paths of the folders contained in the GRANULE folder
+     *
      * @param xmlPath path to product metadata
      * @return
      */
@@ -99,11 +102,11 @@ public class S2ProductNamingUtils {
         VirtualPath granuleFolder = xmlPath.resolveSibling("GRANULE");
         try {
             VirtualPath[] granulePaths = granuleFolder.listPaths();
-            if(granulePaths == null) {
+            if (granulePaths == null) {
                 return tilePaths;
             }
-            for(VirtualPath granule : granulePaths) {
-                if (granule.existsAndHasChildren()){
+            for (VirtualPath granule : granulePaths) {
+                if (granule.existsAndHasChildren()) {
                     tilePaths.add(granuleFolder.resolve(granule.getFileName().toString()));
                 }
             }
@@ -114,20 +117,18 @@ public class S2ProductNamingUtils {
 
     /**
      * Get the paths of the folders contained in the DATASTRIP folder
+     *
      * @param xmlPath path to product metadata
      * @return
      */
-    public static ArrayList<VirtualPath> getDatastripsFromProductXml(VirtualPath xmlPath) {
+    public static ArrayList<VirtualPath> getDatastripsFromProductXml(VirtualPath xmlPath) throws IOException {
         ArrayList<VirtualPath> datastripPaths = new ArrayList<>();
         VirtualPath datastripFolder = xmlPath.resolveSibling("DATASTRIP");
-        try {
-            VirtualPath[] datastripFiles = datastripFolder.listPaths();
-            for (VirtualPath datastrip : datastripFiles) {
-                if (datastrip.existsAndHasChildren()) {
-                    datastripPaths.add(datastripFolder.resolve(datastrip.getFileName().toString()));
-                }
+        VirtualPath[] datastripFiles = datastripFolder.listPaths();
+        for (VirtualPath datastrip : datastripFiles) {
+            if (datastrip.existsAndHasChildren()) {
+                datastripPaths.add(datastripFolder.resolve(datastrip.getFileName().toString()));
             }
-        } catch (Exception e) {
         }
         return datastripPaths;
     }
@@ -135,6 +136,7 @@ public class S2ProductNamingUtils {
     /**
      * Get the path to the xml in dirPath. Only xml files different to EXCLUDED_XML are considered.
      * No REGEX is calculated.
+     *
      * @param dirPath path to folder
      * @return path to xml or null if two or more files different to EXCLUDED_XML are found
      */
@@ -174,13 +176,14 @@ public class S2ProductNamingUtils {
 
     /**
      * Search the pattern "T[0-9]{2}[A-Z]{3}" in string
+     *
      * @param string
      * @return a string with REGEX "T[0-9]{2}[A-Z]{3}", or null if not found
      */
     public static String getTileIdFromString(String string) {
         Pattern pattern = Pattern.compile(SIMPLIFIED_TILE_ID_REGEX);
         Matcher matcher = pattern.matcher(string);
-        if(!matcher.matches()) {
+        if (!matcher.matches()) {
             return null;
         }
         return matcher.group(2);
@@ -189,12 +192,13 @@ public class S2ProductNamingUtils {
 
     /**
      * Obtains the level from xmlPath
+     *
      * @param xmlPath
      * @param inputType
      * @return
      */
     public static S2Config.Sentinel2ProductLevel getLevel(VirtualPath xmlPath, S2Config.Sentinel2InputType inputType) {
-        if(inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
+        if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
             return getLevelFromGranuleXml(xmlPath);
         } else if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA)) {
             return getLevelFromProductXml(xmlPath);
@@ -204,18 +208,19 @@ public class S2ProductNamingUtils {
 
     /**
      * Obtains the level from xmlPath or from its parent
+     *
      * @param xmlPath
      * @return
      */
     private static S2Config.Sentinel2ProductLevel getLevelFromGranuleXml(VirtualPath xmlPath) {
         String filename = xmlPath.getFileName().toString();
         S2Config.Sentinel2ProductLevel level = getLevelFromString(filename);
-        if(level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
+        if (level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
             return level;
         }
 
         VirtualPath parentPath = xmlPath.getParent();
-        if(parentPath == null) {
+        if (parentPath == null) {
             return level;
         }
 
@@ -226,56 +231,59 @@ public class S2ProductNamingUtils {
 
     /**
      * Obtains the level from xmlPath, from its parent, or from the tiles
+     *
      * @param xmlPath
      * @return
      */
     private static S2Config.Sentinel2ProductLevel getLevelFromProductXml(VirtualPath xmlPath) {
         String filename = xmlPath.getFileName().toString();
         S2Config.Sentinel2ProductLevel level = getLevelFromString(filename);
-        if(level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
+        if (level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
             return level;
         }
 
         VirtualPath parentPath = xmlPath.getParent();
-        if(parentPath == null) {
+        if (parentPath == null) {
             return level;
         }
 
         filename = parentPath.getFileName().toString();
         level = getLevelFromString(filename);
-        if(level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
+        if (level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
             return level;
         }
 
-        for(VirtualPath tile : getTilesFromProductXml(xmlPath)) {
+        for (VirtualPath tile : getTilesFromProductXml(xmlPath)) {
             VirtualPath xmlGranule = getXmlFromDir(tile);
-            if(xmlGranule == null) {
+            if (xmlGranule == null) {
                 return level;
             }
             level = getLevelFromGranuleXml(xmlGranule);
-            if(level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
+            if (level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
                 return level;
             }
         }
 
         return level;
     }
+
     /**
      * Searches L1C, L2A, L03 or L1C in string
+     *
      * @param string
      * @return the corresponding Sentinel2ProductLevel or UNKNOWN if it is not found
      */
-    private static  S2Config.Sentinel2ProductLevel getLevelFromString(String string) {
-        if(string.contains("L1C")) {
+    private static S2Config.Sentinel2ProductLevel getLevelFromString(String string) {
+        if (string.contains("L1C")) {
             return S2Config.Sentinel2ProductLevel.L1C;
         }
-        if(string.contains("L2A")) {
+        if (string.contains("L2A")) {
             return S2Config.Sentinel2ProductLevel.L2A;
         }
-        if(string.contains("L03")) {
+        if (string.contains("L03")) {
             return S2Config.Sentinel2ProductLevel.L3;
         }
-        if(string.contains("L1B")) {
+        if (string.contains("L1B")) {
             return S2Config.Sentinel2ProductLevel.L1B;
         }
         return S2Config.Sentinel2ProductLevel.UNKNOWN;
@@ -284,19 +292,19 @@ public class S2ProductNamingUtils {
     public static Set<String> getEpsgCodeList(VirtualPath xmlPath, S2Config.Sentinel2InputType inputType) {
         Set<String> epsgCodeList = new HashSet<>();
 
-        if(inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) {
+        if (inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) {
             String epsg = getEpsgCodeFromGranule(xmlPath);
-            if(epsg != null) {
+            if (epsg != null) {
                 epsgCodeList.add(epsg);
             }
-        } else if(inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
-            for(VirtualPath tile : getTilesFromProductXml(xmlPath)) {
+        } else if (inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
+            for (VirtualPath tile : getTilesFromProductXml(xmlPath)) {
                 VirtualPath xmlGranule = getXmlFromDir(tile);
-                if(xmlGranule == null) {
+                if (xmlGranule == null) {
                     continue;
                 }
                 String epsg = getEpsgCodeFromGranule(xmlGranule);
-                if(epsg != null) {
+                if (epsg != null) {
                     epsgCodeList.add(epsg);
                 }
             }
@@ -309,11 +317,11 @@ public class S2ProductNamingUtils {
         String epsgCode = null;
 
         String tileId = getTileIdFromString(xmlPath.getFileName().toString());
-        if(tileId == null && xmlPath.getParent() != null) {
+        if (tileId == null && xmlPath.getParent() != null) {
             tileId = getTileIdFromString(xmlPath.getParent().getFileName().toString());
         }
 
-        if(tileId != null) {
+        if (tileId != null) {
             epsgCode = S2CRSHelper.tileIdentifierToEPSG(tileId);
         }
         return epsgCode;
@@ -322,32 +330,33 @@ public class S2ProductNamingUtils {
     /**
      * Search the tileId from granuleFolder (TXXABC) and return the granuleId in
      * availableGranuleIds which contains the same. If it is not found returns null
+     *
      * @param availableGranuleIds
      * @param granuleFolder
      * @return
      */
     public static String searchGranuleId(Collection<String> availableGranuleIds, String granuleFolder) {
         String tileId = getTileIdFromString(granuleFolder);
-        if(tileId == null) {
+        if (tileId == null) {
             return null;
         }
-        for(String tileName : availableGranuleIds) {
+        for (String tileName : availableGranuleIds) {
             String auxTileId = getTileIdFromString(tileName);
-            if(auxTileId == null) {
+            if (auxTileId == null) {
                 continue;
             }
-            if(auxTileId.equals(tileId)) {
+            if (auxTileId.equals(tileId)) {
                 return tileName;
             }
         }
         return null;
     }
 
-    public static boolean hasValidStructure(S2Config.Sentinel2InputType inputType, VirtualPath xmlPath) {
-        if(inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
+    public static boolean hasValidStructure(S2Config.Sentinel2InputType inputType, VirtualPath xmlPath) throws IOException {
+        if (inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             return S2ProductNamingUtils.checkStructureFromProductXml(xmlPath);
         }
-        if(inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) {
+        if (inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) {
             return S2ProductNamingUtils.checkStructureFromGranuleXml(xmlPath);
         }
         return false;
