@@ -57,7 +57,7 @@ pipeline {
             }
             when {
                 expression {
-                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/;
+                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/;
                 }
             }
             steps {
@@ -76,8 +76,8 @@ pipeline {
             }
             when {
                 expression {
-                    // We save snap installer data on master branch and branch x.x.x (Ex: 8.0.0) when we want to create a release
-                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/);
+                    // We save snap installer data on master branch and branch x.x.x (Ex: 8.0.0) of branch x.x.x-rcx (ex: 8.0.0-rc1) when we want to create a release
+                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/);
                 }
             }
             steps {
@@ -89,7 +89,7 @@ pipeline {
             agent { label 'snap-test' }
             when {
                 expression {
-                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && "${params.launchTests}" == "true";
+                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) && "${params.launchTests}" == "true";
                 }
             }
             steps {
@@ -126,7 +126,7 @@ pipeline {
                     agent { label 'snap-test' }
                     when {
                         expression {
-                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && "${params.launchTests}" == "true";
+                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) && "${params.launchTests}" == "true";
                         }
                     }
                     steps {
@@ -141,14 +141,15 @@ pipeline {
                     agent { label 'snap-test' }
                     when {
                         expression {
-                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && "${params.launchTests}" == "true";
+                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) && "${params.launchTests}" == "true";
                         }
                     }
                     steps {
                         echo "Launch snap-gui-tests using docker image snap:${branchVersion}"
                         build job: "snap-gui-tests/${branchVersion}", parameters: [
                             [$class: 'StringParameterValue', name: 'dockerTagName', value: "snap:${branchVersion}"],
-                            [$class: 'StringParameterValue', name: 'testFileList', value: "qftests.lst"]]
+                            [$class: 'StringParameterValue', name: 'testFileList', value: "qftests.lst"]
+                        ]
                     }
                 }
             }
