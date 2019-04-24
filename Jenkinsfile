@@ -25,7 +25,7 @@ pipeline {
     }
     agent { label 'snap-test' }
     parameters {
-        booleanParam(name: 'launchTests', defaultValue: true, description: 'When true, only stages "Package", "Deploy" and "Save installer data" are launched. When false, all stages are launched')
+        booleanParam(name: 'launchTests', defaultValue: true, description: 'When true all stages are launched, When false only stages "Package", "Deploy" and "Save installer data" are launched.')
     }
     stages {
         stage('Package') {
@@ -89,7 +89,7 @@ pipeline {
             agent { label 'snap-test' }
             when {
                 expression {
-                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && ${params.launchTests};
+                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && "${params.launchTests}" == "true";
                 }
             }
             steps {
@@ -108,7 +108,7 @@ pipeline {
             }
             when {
                 expression {
-                    return ${params.launchTests};
+                    return "${params.launchTests}" == "true";
                 }
             }
             steps {
@@ -126,7 +126,7 @@ pipeline {
                     agent { label 'snap-test' }
                     when {
                         expression {
-                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && ${params.launchTests};
+                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && "${params.launchTests}" == "true";
                         }
                     }
                     steps {
@@ -141,7 +141,7 @@ pipeline {
                     agent { label 'snap-test' }
                     when {
                         expression {
-                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && ${params.launchTests};
+                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+/) && "${params.launchTests}" == "true";
                         }
                     }
                     steps {
