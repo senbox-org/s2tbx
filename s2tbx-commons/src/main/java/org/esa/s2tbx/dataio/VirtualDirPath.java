@@ -55,12 +55,13 @@ public class VirtualDirPath extends AbstractVirtualPath {
         if (Files.exists(child)) {
             // the child exists
             if (Files.isRegularFile(child)) {
+                // the chils is a file
 
                 //TODO Jean remote system.out
                 System.out.println("getInputStream dir child="+child.toString());
 
                 InputStream inputStream = Files.newInputStream(child);
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
                 if (childRelativePath.endsWith(".gz")) {
                     return new GZIPInputStream(bufferedInputStream);
                 }
@@ -73,6 +74,7 @@ public class VirtualDirPath extends AbstractVirtualPath {
         }
     }
 
+    //TODO Jean remote attribute
     int fileCount = 0;
 
     @Override

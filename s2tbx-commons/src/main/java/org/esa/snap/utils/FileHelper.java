@@ -47,8 +47,7 @@ public class FileHelper {
     private FileHelper() {
     }
 
-    public static void copyFileUsingInputStream(Path sourcePath, String destinationLocalFilePath) throws IOException {
-        int maximumBufferSize = 1024 * 1024;
+    public static void copyFileUsingInputStream(Path sourcePath, String destinationLocalFilePath, int maximumBufferSize) throws IOException {
         try (InputStream inputStream = sourcePath.getFileSystem().provider().newInputStream(sourcePath);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, maximumBufferSize);
              ReadableByteChannel readableByteChannel = Channels.newChannel(bufferedInputStream);
@@ -76,14 +75,14 @@ public class FileHelper {
     public static void copyFileUsingByteChannel(Path sourcePath, Path destinationPath) throws IOException {
         Set<? extends OpenOption> options = Collections.emptySet();
         FileSystemProvider fileSystemProvider = sourcePath.getFileSystem().provider();
-        try (FileChannel sourceFileChannel = fileSystemProvider.newFileChannel(sourcePath, options)) {
+        try (FileChannel sourceFileChannel = fileSystemProvider.newFileChannel(sourcePath, options);
+             WritableByteChannel writableByteChannel = Channels.newChannel(Files.newOutputStream(destinationPath))) {
+
             long sourceFileSize = sourceFileChannel.size();
-            try (WritableByteChannel writableByteChannel = Channels.newChannel(Files.newOutputStream(destinationPath))) {
-                long transferredSize = 0;
-                long bytesReadNow;
-                while ((bytesReadNow = sourceFileChannel.transferTo(transferredSize, sourceFileSize - transferredSize, writableByteChannel)) > 0) {
-                    transferredSize += bytesReadNow;
-                }
+            long transferredSize = 0;
+            long bytesReadNow;
+            while ((bytesReadNow = sourceFileChannel.transferTo(transferredSize, sourceFileSize - transferredSize, writableByteChannel)) > 0) {
+                transferredSize += bytesReadNow;
             }
         }
     }
@@ -91,15 +90,15 @@ public class FileHelper {
     public static void copyFileUsingFileChannel(Path sourcePath, String destinationLocalFilePath) throws IOException {
         Set<? extends OpenOption> options = Collections.emptySet();
         FileSystemProvider fileSystemProvider = sourcePath.getFileSystem().provider();
-        try (FileChannel sourceFileChannel = fileSystemProvider.newFileChannel(sourcePath, options)) {
+        try (FileChannel sourceFileChannel = fileSystemProvider.newFileChannel(sourcePath, options);
+             FileOutputStream fileOutputStream = new FileOutputStream(destinationLocalFilePath, false)) {
+
             long sourceFileSize = sourceFileChannel.size();
-            try (FileOutputStream fileOutputStream = new FileOutputStream(destinationLocalFilePath, false)) {
-                FileChannel destinationFileChannel = fileOutputStream.getChannel();
-                long transferredSize = 0;
-                long bytesReadNow;
-                while ((bytesReadNow = sourceFileChannel.transferTo(transferredSize, sourceFileSize - transferredSize, destinationFileChannel)) > 0) {
-                    transferredSize += bytesReadNow;
-                }
+            FileChannel destinationFileChannel = fileOutputStream.getChannel();
+            long transferredSize = 0;
+            long bytesReadNow;
+            while ((bytesReadNow = sourceFileChannel.transferTo(transferredSize, sourceFileSize - transferredSize, destinationFileChannel)) > 0) {
+                transferredSize += bytesReadNow;
             }
         }
     }

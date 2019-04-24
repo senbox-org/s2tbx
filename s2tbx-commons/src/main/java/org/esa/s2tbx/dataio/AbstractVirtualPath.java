@@ -76,8 +76,7 @@ public abstract class AbstractVirtualPath extends VirtualDir {
             if (!Files.exists(parentFolder)) {
                 Files.createDirectories(parentFolder);
             }
-            FileHelper.copyFileUsingInputStream(sourceFile, destinationFile.toString());
-        } else {
+            FileHelper.copyFileUsingInputStream(sourceFile, destinationFile.toString(), VirtualDirEx.BUFFER_SIZE);
         }
     }
 

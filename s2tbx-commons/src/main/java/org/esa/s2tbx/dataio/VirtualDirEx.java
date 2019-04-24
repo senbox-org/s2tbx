@@ -79,6 +79,8 @@ public abstract class VirtualDirEx extends VirtualDir {
 
     private static final Logger logger = Logger.getLogger(VirtualDirEx.class.getName());
 
+    public static final int BUFFER_SIZE = 1024 * 1024;
+
     private final static HashSet<String> COMPRESSED_EXTENSIONS = new HashSet<String>() {{
         add(".zip");
         add(".tgz");
@@ -109,6 +111,7 @@ public abstract class VirtualDirEx extends VirtualDir {
         return create(file.toPath());
     }
 
+    @Deprecated
     private static VirtualDirEx create(Path path) {
         String fileName = path.getFileName().toString();
         if (Files.isRegularFile(path) && (TarVirtualDir.isTgz(fileName) || TarVirtualDir.isTar(fileName))) {
@@ -154,26 +157,30 @@ public abstract class VirtualDirEx extends VirtualDir {
                     if (zipFile) {
                         virtualDir = new VirtualZipPath(path, copyFilesFromArchiveOnLocalDisk);
                     } else {
-                        throw new IllegalArgumentException("The path '"+path.toString()+"' does not represent a zip archive.");
+                        throw new IllegalArgumentException("The path '"+path.toString()+"' does not represent a zip archive. " + getPathClassNameExceptionMessage(path));
                     }
                 }
             } else {
                 Path parentPath = path.getParent();
                 if (parentPath == null) {
-                    throw new IllegalArgumentException("Unable to retrieve the parent of the file '" + path.toString()+"'.");
+                    throw new IllegalArgumentException("Unable to retrieve the parent of the file '" + path.toString()+"'. " + getPathClassNameExceptionMessage(path));
                 } else if (Files.isDirectory(parentPath)){
                     virtualDir = new VirtualDirPath(parentPath, copyFilesFromDirectoryOnLocalDisk);
                 } else {
-                    throw new IllegalArgumentException("Unable to check if the parent of the file '" + path.toString()+"' represents a directory.");
+                    throw new IllegalArgumentException("Unable to check if the parent of the file '" + path.toString()+"' represents a directory. " + getPathClassNameExceptionMessage(path));
                 }
             }
         } else if (Files.isDirectory(path)) {
             // the path represents a directory
             virtualDir = new VirtualDirPath(path, copyFilesFromDirectoryOnLocalDisk);
         } else {
-            throw new IllegalArgumentException("Unable to check if the path '"+path.toString()+"' represents a file or a directory.");
+            throw new IllegalArgumentException("Unable to check if the path '"+path.toString()+"' represents a file or a directory. " + getPathClassNameExceptionMessage(path));
         }
         return (virtualDir == null) ? null : new VirtualDirWrapper(virtualDir);
+    }
+
+    private static String getPathClassNameExceptionMessage(Path path) {
+        return "The path type is '" + path.getClass().getName()+"'.";
     }
 
     private static boolean isZipFile(Path zipPath) throws IllegalAccessException, InstantiationException, InvocationTargetException, IOException {

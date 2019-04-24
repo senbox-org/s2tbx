@@ -3,16 +3,10 @@ package org.esa.s2tbx.dataio;
 import com.sun.nio.zipfs.ZipFileSystem;
 import com.sun.nio.zipfs.ZipFileSystemProvider;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Collections;
@@ -56,23 +50,6 @@ public class ZipFileSystemBuilder {
         return ZIP_FILE_SYSTEM_CONSTRUCTOR.newInstance(ZIP_FILE_SYSTEM_PROVIDER, zipPath, Collections.emptyMap());
     }
 
-    public static <ResultType> ResultType loadZipEntryDataFromZipArchive(Path zipPath, String zipEntryPath, ICallbackCommand<ResultType> command)
-                                                        throws IllegalAccessException, InvocationTargetException, InstantiationException, IOException {
-
-        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(zipPath)) {
-            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
-            while (it.hasNext()) {
-                Path root = it.next();
-                LoadZipEntryDataFileVisitor<ResultType> visitor = new LoadZipEntryDataFileVisitor<ResultType>(zipEntryPath, command);
-                Files.walkFileTree(root, visitor);
-                if (visitor.isFoundZipEntry()) {
-                    return visitor.getZipEntryData();
-                }
-            }
-            throw new FileNotFoundException("The zip entry path '"+zipEntryPath+"' does not exist in the zip archive '"+zipPath.toString()+"'.");
-        }
-    }
-
     public static TreeSet<String> listAllFileEntriesFromZipArchive(Path zipPath)
                                                 throws IllegalAccessException, InvocationTargetException, InstantiationException, IOException {
 
@@ -98,47 +75,6 @@ public class ZipFileSystemBuilder {
                 Files.walkFileTree(root, visitor);
             }
             return visitor.getNameSet();
-        }
-    }
-
-    private static class LoadZipEntryDataFileVisitor<ResultType> extends SimpleFileVisitor<Path> {
-
-        private final String zipEntryPath;
-        private final ICallbackCommand<ResultType> command;
-
-        private ResultType zipEntryData;
-        private boolean foundZipEntry;
-
-        private LoadZipEntryDataFileVisitor(String zipEntryPath, ICallbackCommand<ResultType> command) {
-            if (zipEntryPath.startsWith("/")) {
-                this.zipEntryPath = zipEntryPath.substring(1);
-            } else {
-                this.zipEntryPath = zipEntryPath;
-            }
-            this.command = command;
-            this.foundZipEntry = false;
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            String currentZipEntryPath = file.toString();
-            if (currentZipEntryPath.startsWith("/")) {
-                currentZipEntryPath = currentZipEntryPath.substring(1);
-            }
-            if (this.zipEntryPath.equals(currentZipEntryPath)) {
-                this.foundZipEntry = true;
-                this.zipEntryData = this.command.execute(file);
-                return FileVisitResult.TERMINATE;
-            }
-            return FileVisitResult.CONTINUE;
-        }
-
-        boolean isFoundZipEntry() {
-            return foundZipEntry;
-        }
-
-        ResultType getZipEntryData() {
-            return zipEntryData;
         }
     }
 

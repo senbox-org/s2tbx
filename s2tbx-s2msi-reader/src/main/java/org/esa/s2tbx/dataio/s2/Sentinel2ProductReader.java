@@ -148,16 +148,14 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         Object inputObject = getInput();
         VirtualPath virtualPath;
         if (inputObject instanceof File) {
-            File file;
-            String longInput = Utils.GetLongPathNameW(inputObject.toString());
-            if (longInput.length() == 0) {
-                file = (File)inputObject;
-            } else {
-                file = new File(longInput);
-            }
-            virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath());
+            File inputFile = (File)inputObject;
+            Path inputPath = processInputPath(inputFile.toPath());
+            virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
         } else if (inputObject instanceof VirtualPath) {
             virtualPath = (VirtualPath) getInput();
+        } else if (inputObject instanceof Path) {
+            Path inputPath = processInputPath((Path)inputObject);
+            virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
         } else {
             throw new IllegalArgumentException("Unknown input type '" + inputObject + "'.");
         }
@@ -183,27 +181,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         } else {
             throw new IllegalStateException("The naming convention structure is invalid.");
         }
-
-        //TODO Jean old code
-//        VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
-//
-//        if (!inputVirtualPath.exists()) {
-//            throw new FileNotFoundException(inputVirtualPath.getFullPathString());
-//        }
-//
-//        if (this.namingConvention.hasValidStructure()) {
-//            this.product = buildMosaicProduct(inputVirtualPath);
-//
-//            Path qlFile = getQuickLookFile(inputVirtualPath);
-//            if (qlFile != null) {
-//                this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
-//            }
-//
-//            this.product.setModified(false);
-//            return this.product;
-//        } else {
-//            throw new IOException("Unhandled file type.");
-//        }
     }
 
     private Path getQuickLookFile(VirtualPath inputVirtualPath) throws IOException {
@@ -415,6 +392,19 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         super.close();
+    }
+
+    private static Path processInputPath(Path inputPath) {
+        if (inputPath.getFileSystem() == FileSystems.getDefault()) {
+            // the local file system
+            if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+                String longInput = Utils.GetLongPathNameW(inputPath.toString());
+                if (longInput.length() > 0) {
+                    return Paths.get(longInput);
+                }
+            }
+        }
+        return inputPath;
     }
 
     public static class BandInfo {
