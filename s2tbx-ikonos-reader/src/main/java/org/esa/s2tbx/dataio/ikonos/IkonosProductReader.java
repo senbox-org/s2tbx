@@ -112,7 +112,10 @@ public class IkonosProductReader extends AbstractProductReader {
                     if (metadata.getImageDirectoryPath() == null) {
                         metadata.setImageDirectoryPath(productDirectory.getTempDir().toString());
                     }
-                } else if (item.endsWith(IkonosConstants.IMAGE_ARCHIVE_EXTENSION)) {
+                }
+            }
+            for (String item:this.productDirectory.listAllFiles()) {
+                if (item.endsWith(IkonosConstants.IMAGE_ARCHIVE_EXTENSION)) {
                     this.metadata.unGZipImageFiles(this.productDirectory.getFile(item).toPath());
                 }
             }
