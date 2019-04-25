@@ -127,6 +127,12 @@
             <artifactId>ceres-glayer</artifactId>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-cache</artifactId>
