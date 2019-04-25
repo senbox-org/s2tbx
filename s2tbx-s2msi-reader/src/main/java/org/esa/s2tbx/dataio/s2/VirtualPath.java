@@ -51,8 +51,8 @@ public class VirtualPath {
         Path normalizedPath = this.relativePath.normalize();
         Path parentPath = normalizedPath.getParent();
         if (parentPath == null) {
-            // the relative path has sno parent
-            if (normalizedPath.toString().equals(".")) {
+            // the relative path has no parent
+            if (normalizedPath.toString().equals(".") || normalizedPath.toString().isEmpty()) {
                 return null;
             }
             Path path = this.relativePath.resolve(".").getFileName();
