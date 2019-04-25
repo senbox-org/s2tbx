@@ -5,8 +5,12 @@ import org.esa.snap.utils.FileHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * Created by jcoravu on 9/4/2019.
@@ -26,6 +30,10 @@ public abstract class AbstractVirtualPath extends VirtualDir {
     public abstract String getFileSystemSeparator();
 
     public abstract <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException;
+
+    public abstract Path getFileIgnoreCaseIfExists(String relativePath) throws IOException;
+
+    public abstract InputStream getInputStreamIgnoreCaseIfExists(String relativePath) throws IOException;
 
     @Override
     public void close() {
@@ -84,6 +92,43 @@ public abstract class AbstractVirtualPath extends VirtualDir {
         if (this.localTempDir != null) {
             deleteFileTree(this.localTempDir);
             this.localTempDir = null;
+        }
+    }
+
+    public static String replaceFileSeparator(String path, String fileSystemSeparator) {
+        return path.replace("\\", fileSystemSeparator).replace("/", fileSystemSeparator);
+    }
+
+    protected static class FindChildFileVisitor extends SimpleFileVisitor<Path> {
+
+        private final Path childPathToFind;
+
+        private Path existingChildPath;
+
+        public FindChildFileVisitor(Path childPathToFind) {
+            this.childPathToFind = childPathToFind;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            return checkItem(dir);
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            return checkItem(file);
+        }
+
+        private FileVisitResult checkItem(Path currentPath) {
+            if (currentPath.toString().equalsIgnoreCase(this.childPathToFind.toString())) {
+                this.existingChildPath = currentPath;
+                return FileVisitResult.TERMINATE;
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        Path getExistingChildPath() {
+            return this.existingChildPath;
         }
     }
 }

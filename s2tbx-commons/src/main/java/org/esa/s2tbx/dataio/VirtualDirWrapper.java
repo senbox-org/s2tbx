@@ -7,8 +7,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,11 +70,10 @@ class VirtualDirWrapper extends VirtualDirEx {
         InputStream inputStream;
         try {
             inputStream = this.wrapped.getInputStream(relativePath);
-        } catch (IOException e) {
-            try {
-                inputStream = this.wrapped.getInputStream(relativePath.toUpperCase());
-            } catch (IOException ex) {
-                inputStream = getInputStreamFromTempDir(relativePath);
+        } catch (FileNotFoundException e) {
+            inputStream = this.wrapped.getInputStreamIgnoreCaseIfExists(relativePath);
+            if (inputStream == null) {
+                inputStream = getInputStreamIgnoreCaseFromTempDirIfExists(relativePath);
             }
         }
         if (inputStream == null) {
@@ -87,7 +89,7 @@ class VirtualDirWrapper extends VirtualDirEx {
                     if (isArchive()) {
                         inputStream = getInputStreamInner(path);
                     } else {
-                        inputStream = getInputStreamFromTempDir(path);
+                        inputStream = getInputStreamIgnoreCaseFromTempDirIfExists(path);
                     }
                 }
             }
@@ -100,11 +102,12 @@ class VirtualDirWrapper extends VirtualDirEx {
         File file;
         try {
             file = this.wrapped.getFile(relativePath);
-        } catch (IOException e) {
-            try {
-                file = this.wrapped.getFile(relativePath.toUpperCase());
-            } catch (IOException ex) {
-                file = getFileFromTempDir(relativePath);
+        } catch (FileNotFoundException e) {
+            Path path = this.wrapped.getFileIgnoreCaseIfExists(relativePath);
+            if (path == null) {
+                file = getFileIgnoreCaseFromTempDirIfExists(relativePath);
+            } else {
+                file = path.toFile();
             }
         }
         if (file == null || !Files.exists(file.toPath())) {
@@ -120,7 +123,7 @@ class VirtualDirWrapper extends VirtualDirEx {
                     if (isArchive()) {
                         file = getFileInner(path);
                     } else {
-                        file = getFileFromTempDir(path);
+                        file = getFileIgnoreCaseFromTempDirIfExists(path);
                     }
                 }
             }
@@ -128,22 +131,21 @@ class VirtualDirWrapper extends VirtualDirEx {
         return file;
     }
 
-    private File getFileFromTempDir(String relativePath) throws IOException {
+    private File getFileIgnoreCaseFromTempDirIfExists(String childRelativePath) throws IOException {
         File tempDir = this.wrapped.getTempDir();
         if (tempDir != null) {
-            Path tempPath = tempDir.toPath().resolve(relativePath);
-            return tempPath.toFile();
+            Path file = VirtualDirPath.findFileIgnoreCase(tempDir.toPath(), childRelativePath);
+            if (file != null) {
+                return file.toFile();
+            }
         }
         return null;
     }
 
-    private InputStream getInputStreamFromTempDir(String relativePath) throws IOException {
-        File tempDir = this.wrapped.getTempDir();
-        if (tempDir != null) {
-            Path tempPath = tempDir.toPath().resolve(relativePath);
-            if (Files.exists(tempPath)) {
-                return Files.newInputStream(tempPath);
-            }
+    private InputStream getInputStreamIgnoreCaseFromTempDirIfExists(String childRelativePath) throws IOException {
+        File file = getFileIgnoreCaseFromTempDirIfExists(childRelativePath);
+        if (file != null) {
+            return Files.newInputStream(file.toPath());
         }
         return null;
     }
@@ -254,6 +256,7 @@ class VirtualDirWrapper extends VirtualDirEx {
     @Override
     protected void finalize() throws Throwable {
         this.wrapped = null;
+
         super.finalize();
     }
 

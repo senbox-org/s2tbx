@@ -5,10 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.NotDirectoryException;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -55,24 +52,20 @@ public class VirtualDirPath extends AbstractVirtualPath {
         Path child = this.dirPath.resolve(childRelativePath);
         if (Files.exists(child)) {
             // the child exists
-            if (Files.isRegularFile(child)) {
-                // the chils is a file
-
-                //TODO Jean remote system.out
-                System.out.println("getInputStream dir child="+child.toString());
-
-                InputStream inputStream = Files.newInputStream(child);
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
-                if (childRelativePath.endsWith(".gz")) {
-                    return new GZIPInputStream(bufferedInputStream);
-                }
-                return bufferedInputStream;
-            } else {
-                throw new NotRegularFileException(child.toString());
-            }
+            return getInputStream(child);
         } else {
             throw new FileNotFoundException(child.toString());
         }
+    }
+
+    @Override
+    public InputStream getInputStreamIgnoreCaseIfExists(String childRelativePath) throws IOException {
+        Path fileToReturn = findFileIgnoreCase(this.dirPath, childRelativePath);
+        if (fileToReturn != null) {
+            // the child exists
+            return getInputStream(fileToReturn);
+        }
+        return null;
     }
 
     //TODO Jean remote attribute
@@ -136,6 +129,16 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
+    public Path getFileIgnoreCaseIfExists(String childRelativePath) throws IOException {
+        Path fileToReturn = findFileIgnoreCase(this.dirPath, childRelativePath);
+        if (fileToReturn != null) {
+            // the child exists
+            return copyFileOnLocalDiskIfNeeded(fileToReturn, childRelativePath);
+        }
+        return null;
+    }
+
+    @Override
     public String[] listAllFiles() throws IOException {
         try (Stream<Path> pathStream = Files.walk(this.dirPath)) {
             Stream<Path> filteredStream = pathStream.filter(new Predicate<Path>() {
@@ -168,5 +171,42 @@ public class VirtualDirPath extends AbstractVirtualPath {
     @Override
     public boolean isArchive() {
         return false;
+    }
+
+    private static Path buildChildPath(Path parentDirPath, String childRelativePath) {
+        String fileSystemSeparator = parentDirPath.getFileSystem().getSeparator();
+        String relativePath = replaceFileSeparator(childRelativePath, fileSystemSeparator);
+        if (relativePath.startsWith(fileSystemSeparator)) {
+            relativePath = relativePath.substring(fileSystemSeparator.length());
+        }
+        return parentDirPath.resolve(relativePath);
+    }
+
+    public static Path findFileIgnoreCase(Path parentDirPath, String childRelativePath) throws IOException {
+        Path childPathToFind = buildChildPath(parentDirPath, childRelativePath);
+        FindChildFileVisitor findChildFileVisitor = new FindChildFileVisitor(childPathToFind);
+        Files.walkFileTree(parentDirPath, findChildFileVisitor);
+        if (findChildFileVisitor.getExistingChildPath() != null) {
+            return findChildFileVisitor.getExistingChildPath();
+        }
+        return null;
+    }
+
+    private static InputStream getInputStream(Path child) throws IOException {
+        if (Files.isRegularFile(child)) {
+            // the child is a file
+
+            //TODO Jean remote system.out
+            System.out.println("getInputStream dir child="+child.toString());
+
+            InputStream inputStream = Files.newInputStream(child);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
+            if (child.toString().endsWith(".gz")) {
+                return new GZIPInputStream(bufferedInputStream);
+            }
+            return bufferedInputStream;
+        } else {
+            throw new NotRegularFileException(child.toString());
+        }
     }
 }
