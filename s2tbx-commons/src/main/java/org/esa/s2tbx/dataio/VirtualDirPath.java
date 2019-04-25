@@ -105,7 +105,10 @@ public class VirtualDirPath extends AbstractVirtualPath {
 
     @Override
     public String[] list(String childRelativePath) throws IOException {
-        Path child = this.dirPath.resolve(childRelativePath);
+        Path child = this.dirPath;
+        if (childRelativePath != null) {
+            child = this.dirPath.resolve(childRelativePath);
+        }
         if (Files.exists(child)) {
             if (Files.isDirectory(child)) {
                 List<String> files = new ArrayList<String>();
@@ -125,7 +128,10 @@ public class VirtualDirPath extends AbstractVirtualPath {
 
     @Override
     public boolean exists(String childRelativePath) {
-        Path child = this.dirPath.resolve(childRelativePath);
+        Path child = this.dirPath;
+        if (childRelativePath != null) {
+            child = this.dirPath.resolve(childRelativePath);
+        }
         return Files.exists(child);
     }
 

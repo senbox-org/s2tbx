@@ -148,13 +148,13 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         Object inputObject = getInput();
         VirtualPath virtualPath;
         if (inputObject instanceof File) {
-            File inputFile = (File)inputObject;
+            File inputFile = (File) inputObject;
             Path inputPath = processInputPath(inputFile.toPath());
             virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
         } else if (inputObject instanceof VirtualPath) {
             virtualPath = (VirtualPath) getInput();
         } else if (inputObject instanceof Path) {
-            Path inputPath = processInputPath((Path)inputObject);
+            Path inputPath = processInputPath((Path) inputObject);
             virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
         } else {
             throw new IllegalArgumentException("Unknown input type '" + inputObject + "'.");
@@ -167,6 +167,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
             if (inputVirtualPath.exists()) {
                 this.product = buildMosaicProduct(inputVirtualPath);
+
+                this.product.setFileLocation(inputVirtualPath.getVirtualDir().getBaseFile());
 
                 Path qlFile = getQuickLookFile(inputVirtualPath);
                 if (qlFile != null) {

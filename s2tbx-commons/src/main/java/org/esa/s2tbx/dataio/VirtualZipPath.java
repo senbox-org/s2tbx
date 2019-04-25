@@ -141,7 +141,10 @@ public class VirtualZipPath extends AbstractVirtualPath {
             Iterator<Path> it = fileSystem.getRootDirectories().iterator();
             while (it.hasNext()) {
                 Path root = it.next();
-                Path entryPath = buildZipEntryPath(root, zipEntryPath);
+                Path entryPath = root;
+                if (zipEntryPath != null) {
+                    entryPath = buildZipEntryPath(root, zipEntryPath);
+                }
                 if (Files.exists(entryPath)) {
                     // the zip entry exists
                     if (Files.isDirectory(entryPath)) {
@@ -175,7 +178,10 @@ public class VirtualZipPath extends AbstractVirtualPath {
             Iterator<Path> it = fileSystem.getRootDirectories().iterator();
             while (it.hasNext()) {
                 Path root = it.next();
-                Path entryPath = buildZipEntryPath(root, zipEntryPath);
+                Path entryPath = root;
+                if (zipEntryPath != null) {
+                    entryPath = buildZipEntryPath(root, zipEntryPath);
+                }
                 if (Files.exists(entryPath)) {
                     return true;
                 }

@@ -360,11 +360,11 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             product = new Product(productMetadataPath.getFileName().toString(), "S2_MSI_" + productCharacteristics.getProcessingLevel());
         }
 
-        if (!productMetadataPath.getVirtualDir().isCompressed()) {
-            product.setFileLocation(productMetadataPath.getParent().getFile().toFile());
-        } else {
-            product.setFileLocation(productMetadataPath.getVirtualDir().getBaseFile());
-        }
+//        if (!productMetadataPath.getVirtualDir().isCompressed()) {
+//            product.setFileLocation(productMetadataPath.getParent().getFile().toFile());
+//        } else {
+//            product.setFileLocation(productMetadataPath.getVirtualDir().getBaseFile());
+//        }
 
         for (MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
             product.getMetadataRoot().addElement(metadataElement);

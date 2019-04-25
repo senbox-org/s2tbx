@@ -320,7 +320,7 @@ public class S2NamingConventionUtils {
                 // the path represents a directory
                 relativePath = path.getFileName();
             }
-            return new VirtualPath(relativePath, virtualDirEx);
+            return new VirtualPath(relativePath.toString(), virtualDirEx);
         }
     }
 }

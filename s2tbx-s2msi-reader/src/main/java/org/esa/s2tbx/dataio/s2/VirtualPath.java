@@ -26,9 +26,9 @@ public class VirtualPath {
     private final Path relativePath; // relative relativePath starting from dir
     private final VirtualDirEx dir;
 
-    public VirtualPath(Path relativePath, VirtualDirEx dir) {
+    public VirtualPath(String relativePath, VirtualDirEx dir) {
         this.dir = dir;
-        String path = replaceFileSeparator(relativePath.toString(), this.dir.getFileSystemSeparator());
+        String path = replaceFileSeparator(relativePath, this.dir.getFileSystemSeparator());
         this.relativePath = this.dir.buildPath(path);
     }
 
@@ -56,25 +56,25 @@ public class VirtualPath {
                 return null;
             }
             Path path = this.relativePath.resolve(".").getFileName();
-            return new VirtualPath(path, this.dir);
+            return new VirtualPath(path.toString(), this.dir);
         }
-        return new VirtualPath(parentPath, this.dir);
+        return new VirtualPath(parentPath.toString(), this.dir);
     }
 
     public VirtualPath resolve(String other) {
         String path = replaceFileSeparator(other, this.dir.getFileSystemSeparator());
         if (this.relativePath.getFileName().toString().equals(".")) {
-            return new VirtualPath(this.relativePath.resolveSibling(path), this.dir);
+            return new VirtualPath(this.relativePath.resolveSibling(path).toString(), this.dir);
         }
-        return new VirtualPath(this.relativePath.resolve(path), this.dir);
+        return new VirtualPath(this.relativePath.resolve(path).toString(), this.dir);
     }
 
     public VirtualPath resolveSibling(String other) {
         String path = replaceFileSeparator(other, this.dir.getFileSystemSeparator());
         if (this.relativePath.getFileName().toString().equals(".")) {
-            return new VirtualPath(this.relativePath.normalize().resolveSibling(path), this.dir);
+            return new VirtualPath(this.relativePath.normalize().resolveSibling(path).toString(), this.dir);
         }
-        return new VirtualPath(this.relativePath.resolveSibling(path), this.dir);
+        return new VirtualPath(this.relativePath.resolveSibling(path).toString(), this.dir);
     }
 
     public boolean existsAndHasChildren() {
@@ -85,7 +85,7 @@ public class VirtualPath {
                     return true;
                 }
             } catch (IOException e) {
-                return false;
+                // ignore exception
             }
         }
         return false;
@@ -99,12 +99,16 @@ public class VirtualPath {
     }
 
     public Path getFile() throws IOException {
+        if (isCurrentDirectory()) {
+            throw new IllegalStateException("Unable to get the file for path '"+this.relativePath.toString()+"'.");
+        }
         File file = this.dir.getFile(this.relativePath.toString());
         return file.toPath();
     }
 
     public String[] list() throws IOException {
-        return this.dir.list(this.relativePath.toString());
+        String childRelativePath = isCurrentDirectory() ? null : this.relativePath.toString();
+        return this.dir.list(childRelativePath);
     }
 
     public String[] listEndingBy(String suffix) throws IOException {
@@ -117,7 +121,7 @@ public class VirtualPath {
     }
 
     public VirtualPath[] listPaths() throws IOException {
-        String childRelativePath = this.relativePath.toString();
+        String childRelativePath = isCurrentDirectory() ? null : this.relativePath.toString();
         if (this.dir.exists(childRelativePath)) {
             String[] list = this.dir.list(childRelativePath);
             if (list != null && list.length > 0) {
@@ -132,7 +136,8 @@ public class VirtualPath {
     }
 
     public VirtualPath[] listPaths(String pattern) throws IOException {
-        String[] list = this.dir.list(this.relativePath.toString());
+        String childRelativePath = isCurrentDirectory() ? null : this.relativePath.toString();
+        String[] list = this.dir.list(childRelativePath);
         if (list != null && list.length > 0) {
             List<VirtualPath> listPaths = new ArrayList<>(list.length);
             for (int i=0; i<list.length; i++) {
@@ -148,12 +153,22 @@ public class VirtualPath {
     }
 
     public boolean exists() {
-        return this.dir.exists(this.relativePath.toString());
+        String childRelativePath = isCurrentDirectory() ? null : this.relativePath.toString();
+        return this.dir.exists(childRelativePath);
     }
 
     public String getFullPathString() {
+//        Path dirPath = this.dir.getBaseFile().toPath();
+//        if (isCurrentDirectory()) {
+//            return dirPath.toString();
+//        } else {
+//            Path path = dirPath.resolve(this.relativePath.toString());
+//            return path.toString();
+//        }
+
+        //TODO Jean old code
         Path dirPath = this.dir.getBaseFile().toPath();
-        if (this.relativePath.toString().equals(".")) {
+        if (isCurrentDirectory()) {
             String result = dirPath.toString();
             if (this.dir.isArchive()) {
                 result += "!" + this.relativePath.toString();
@@ -169,26 +184,11 @@ public class VirtualPath {
         this.dir.close();
     }
 
+    private boolean isCurrentDirectory() {
+        return this.relativePath.toString().equals(".");
+    }
+
     private static String replaceFileSeparator(String path, String fileSystemSeparator) {
-        String[] separatorsToReplace = new String[] {"\\", "/"};
-        String result = path;
-        for (int i=0; i<separatorsToReplace.length; i++) {
-            if (!separatorsToReplace[i].equals(fileSystemSeparator)) {
-                // different file system separator
-                StringBuilder str = new StringBuilder();
-                int index = 0;
-                while (index < result.length()) {
-                    if (result.regionMatches(index, separatorsToReplace[i], 0, separatorsToReplace[i].length())) {
-                        str.append(fileSystemSeparator);
-                        index += separatorsToReplace[i].length();
-                    } else {
-                        str.append(result.charAt(index));
-                        index++;
-                    }
-                }
-                result = str.toString();
-            }
-        }
-        return result;
+        return path.replace("\\", fileSystemSeparator).replace("/", fileSystemSeparator);
     }
 }

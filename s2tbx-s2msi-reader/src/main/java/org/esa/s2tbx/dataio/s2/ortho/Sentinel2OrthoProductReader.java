@@ -201,11 +201,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             product.getMetadataRoot().addElement(metadataElement);
         }
 
-        if (!inputVirtualPath.getVirtualDir().isCompressed()) {
-            product.setFileLocation(inputVirtualPath.getParent().getFile().toFile());
-        } else {
-            product.setFileLocation(inputVirtualPath.getVirtualDir().getBaseFile());
-        }
+//        if (inputVirtualPath.getVirtualDir().isCompressed()) {
+//            product.setFileLocation(inputVirtualPath.getVirtualDir().getBaseFile());
+//        } else {
+//            product.setFileLocation(inputVirtualPath.getParent().getFile().toFile());
+//        }
+//        product.setFileLocation(inputVirtualPath.getVirtualDir().getBaseFile());
 
         try {
             CoordinateReferenceSystem mapCRS = CRS.decode(this.epsgCode);

@@ -117,7 +117,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         } catch (IOException e) {
             return DecodeQualification.UNABLE;
         }
-        VirtualPath pathMetadata = new VirtualPath(inputPath.getFileName(), virtualDirEx);
+        VirtualPath pathMetadata = new VirtualPath(inputPath.getFileName().toString(), virtualDirEx);
 
         if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(pathMetadata, getResolution())) {
             return DecodeQualification.UNABLE;
