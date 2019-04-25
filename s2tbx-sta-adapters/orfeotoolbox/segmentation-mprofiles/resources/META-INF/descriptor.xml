@@ -11,7 +11,7 @@
   <menuLocation>Menu/Optical/OrfeoToolbox</menuLocation>
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
-  <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINSEGMENTATION_MPROFILES_EXEC</mainToolFileLocation>
+  <mainToolFileLocation>$OTB_BIN_DIR/bin/$OTB_BINSEGMENTATION_MPROFILES_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
   <templateType>VELOCITY</templateType>
   <template type="file">
@@ -184,6 +184,89 @@
   <source>user</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>true</isHandlingOutputName>
+  <windowsBundle>
+    <bundleType>ZIP</bundleType>
+    <bundleLocation>REMOTE</bundleLocation>
+    <downloadURL>https://www.orfeo-toolbox.org/packages/OTB-6.6.1-Win64.zip</downloadURL>
+    <templateparameter>
+      <template type="simple">
+        <contents></contents>
+      </template>
+    </templateparameter>
+    <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
+    <entryPoint>OTB-6.6.1-Win64.zip</entryPoint>
+    <updateVariable>OTB_BIN_DIR</updateVariable>
+  </windowsBundle>
+  <linuxBundle>
+    <bundleType>INSTALLER</bundleType>
+    <bundleLocation>REMOTE</bundleLocation>
+    <downloadURL>https://www.orfeo-toolbox.org/packages/OTB-6.6.1-Linux64.run</downloadURL>
+    <templateparameter>
+      <name>arguments</name>
+      <dataType>java.io.File</dataType>
+      <defaultValue>Command Template</defaultValue>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>TemplateParameter</parameterType>
+      <parameters>
+        <parameter>
+          <name>targetLocation</name>
+          <dataType>java.io.File</dataType>
+          <defaultValue>~\.snap\auxdata</defaultValue>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+      </parameters>
+      <template type="simple">
+        <contents>--nox11
+          --target
+          $targetLocation/OTB-6.6.1-Linux64.run</contents>
+      </template>
+      <outputFile>Command Template</outputFile>
+    </templateparameter>
+    <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
+    <entryPoint>OTB-6.6.1-Linux64.run</entryPoint>
+    <updateVariable>OTB_BIN_DIR</updateVariable>
+  </linuxBundle>
+  <macosxBundle>
+    <bundleType>INSTALLER</bundleType>
+    <bundleLocation>REMOTE</bundleLocation>
+    <downloadURL>https://www.orfeo-toolbox.org/packages/OTB-6.6.1-Darwin64.run</downloadURL>
+    <templateparameter>
+      <name>arguments</name>
+      <dataType>java.io.File</dataType>
+      <defaultValue>Command Template</defaultValue>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>TemplateParameter</parameterType>
+      <parameters>
+        <parameter>
+          <name>targetLocation</name>
+          <dataType>java.io.File</dataType>
+          <defaultValue>$USERPROFILE\.snap\auxdata</defaultValue>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+      </parameters>
+      <template type="simple">
+        <contents>--nox11
+          --target
+          $targetLocation/OTB-6.6.1-Darwin64</contents>
+      </template>
+      <outputFile>Command Template</outputFile>
+    </templateparameter>
+    <targetLocation>$USER_HOME/.snap/auxdata</targetLocation>
+    <entryPoint>OTB-6.6.1-Darwin64.run</entryPoint>
+    <updateVariable></updateVariable>
+  </macosxBundle>
   <sourceProductDescriptors>
     <org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
       <name>Input Image</name>
