@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.esa.s2tbx</groupId>
         <artifactId>s2tbx</artifactId>
-        <version>7.0.0-rc1</version>
+        <version>7.0.0-rc2</version>
     </parent>
 
     <artifactId>s2tbx-s2msi-aerosol-retrieval</artifactId>
