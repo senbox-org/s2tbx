@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.pleiades;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
@@ -33,7 +34,9 @@ import java.awt.Color;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -118,21 +121,24 @@ public class PleiadesProductReader extends AbstractProductReader {
     @Override
     protected Product readProductNodesImpl() throws IOException {
         Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+
         this.productDirectory = VirtualDirEx.build(inputPath);
 
-        File metadataFile = this.productDirectory.getFile(Constants.ROOT_METADATA);
-        this.metadata = VolumeMetadata.create(metadataFile.toPath());
+        try (FilePathInputStream inputStream = this.productDirectory.getInputStream(Constants.ROOT_METADATA)) {
+            this.metadata = VolumeMetadata.create(inputStream);
+        }
+
         Product product = null;
         if (this.metadata != null) {
             List<ImageMetadata> imageMetadataList = this.metadata.getImageMetadataList();
             if (imageMetadataList.size() == 0) {
                 throw new IOException("No raster found");
             }
-            int width = metadata.getSceneWidth();
-            int height = metadata.getSceneHeight();
-            product = new Product(metadata.getInternalReference(), metadata.getProductType(), width, height);
-            product.setFileLocation(this.metadata.getPath().toFile());//new File(metadata.getPath()));
-            ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
+            int width = this.metadata.getSceneWidth();
+            int height = this.metadata.getSceneHeight();
+            product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), width, height);
+            product.setFileLocation(this.metadata.getPath().toFile());
+            ImageMetadata maxResImageMetadata = this.metadata.getMaxResolutionImage();
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
             product.setDescription(maxResImageMetadata.getProductDescription());
@@ -175,7 +181,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                     int[] coords = tileInfo.get(rasterFile);
                     Path path = imageMetadata.getPath().resolve(rasterFile);
                     tiles[coords[1]][coords[0]] = ProductIO.readProduct(path.toFile());
-                    tileRefs.add(new WeakReference<Product>(tiles[coords[1]][coords[0]]));
+                    this.tileRefs.add(new WeakReference<Product>(tiles[coords[1]][coords[0]]));
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
                 if (levels > product.getNumResolutionsMax()) {

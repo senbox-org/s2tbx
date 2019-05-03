@@ -1,4 +1,6 @@
-package org.esa.s2tbx.dataio;
+package org.esa.s2tbx.commons;
+
+import org.esa.s2tbx.dataio.VirtualDirEx;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -7,7 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -48,7 +52,7 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
-    public InputStream getInputStream(String childRelativePath) throws IOException {
+    public FilePathInputStream getInputStream(String childRelativePath) throws IOException {
         Path child = this.dirPath.resolve(childRelativePath);
         if (Files.exists(child)) {
             // the child exists
@@ -59,7 +63,7 @@ public class VirtualDirPath extends AbstractVirtualPath {
     }
 
     @Override
-    public InputStream getInputStreamIgnoreCaseIfExists(String childRelativePath) throws IOException {
+    public FilePathInputStream getInputStreamIgnoreCaseIfExists(String childRelativePath) throws IOException {
         Path fileToReturn = findFileIgnoreCase(this.dirPath, childRelativePath);
         if (fileToReturn != null) {
             // the child exists
@@ -81,16 +85,6 @@ public class VirtualDirPath extends AbstractVirtualPath {
         if (Files.exists(child)) {
             Path fileToReturn = copyFileOnLocalDiskIfNeeded(child, childRelativePath);
             return fileToReturn.toFile();
-        } else {
-            throw new FileNotFoundException(child.toString());
-        }
-    }
-
-    @Override
-    public <ResultType> ResultType loadData(String path, ICallbackCommand<ResultType> command) throws IOException {
-        Path child = this.dirPath.resolve(path);
-        if (Files.exists(child)) {
-            return command.execute(child);
         } else {
             throw new FileNotFoundException(child.toString());
         }
@@ -140,27 +134,10 @@ public class VirtualDirPath extends AbstractVirtualPath {
 
     @Override
     public String[] listAllFiles() throws IOException {
-        try (Stream<Path> pathStream = Files.walk(this.dirPath)) {
-            Stream<Path> filteredStream = pathStream.filter(new Predicate<Path>() {
-                @Override
-                public boolean test(Path path) {
-                    return Files.isRegularFile(path);
-                }
-            });
-            final int baseLength = this.dirPath.toUri().toString().length();
-            Stream<String> fileStream = filteredStream.map(new Function<Path, String>() {
-                @Override
-                public String apply(Path path) {
-                    return path.toUri().toString().substring(baseLength);
-                }
-            });
-            return fileStream.toArray(new IntFunction<String[]>() {
-                @Override
-                public String[] apply(int value) {
-                    return new String[value];
-                }
-            });
-        }
+        ListAllFilesVisitor filesVisitor = new ListAllFilesVisitor();
+        Files.walkFileTree(this.dirPath, filesVisitor);
+        TreeSet<String> nameSet = filesVisitor.getNameSet();
+        return nameSet.toArray(new String [nameSet.size()]);
     }
 
     @Override
@@ -192,7 +169,7 @@ public class VirtualDirPath extends AbstractVirtualPath {
         return null;
     }
 
-    private static InputStream getInputStream(Path child) throws IOException {
+    private static FilePathInputStream getInputStream(Path child) throws IOException {
         if (Files.isRegularFile(child)) {
             // the child is a file
 
@@ -201,10 +178,13 @@ public class VirtualDirPath extends AbstractVirtualPath {
 
             InputStream inputStream = Files.newInputStream(child);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
+            InputStream inputStreamToReturn;
             if (child.toString().endsWith(".gz")) {
-                return new GZIPInputStream(bufferedInputStream);
+                inputStreamToReturn = new GZIPInputStream(bufferedInputStream);
+            } else {
+                inputStreamToReturn = bufferedInputStream;
             }
-            return bufferedInputStream;
+            return new FilePathInputStream(child, inputStreamToReturn, null);
         } else {
             throw new NotRegularFileException(child.toString());
         }

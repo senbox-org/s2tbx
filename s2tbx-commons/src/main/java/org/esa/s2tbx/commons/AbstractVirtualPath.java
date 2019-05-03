@@ -1,6 +1,7 @@
-package org.esa.s2tbx.dataio;
+package org.esa.s2tbx.commons;
 
 import com.bc.ceres.core.VirtualDir;
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.snap.utils.FileHelper;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.TreeSet;
 
 /**
  * Created by jcoravu on 9/4/2019.
@@ -29,11 +31,11 @@ public abstract class AbstractVirtualPath extends VirtualDir {
 
     public abstract String getFileSystemSeparator();
 
-    public abstract <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException;
-
     public abstract Path getFileIgnoreCaseIfExists(String relativePath) throws IOException;
 
-    public abstract InputStream getInputStreamIgnoreCaseIfExists(String relativePath) throws IOException;
+    public abstract FilePathInputStream getInputStreamIgnoreCaseIfExists(String relativePath) throws IOException;
+
+    public abstract FilePathInputStream getInputStream(String path) throws IOException;
 
     @Override
     public void close() {
@@ -131,4 +133,24 @@ public abstract class AbstractVirtualPath extends VirtualDir {
             return this.existingChildPath;
         }
     }
+
+    protected static class ListAllFilesVisitor extends SimpleFileVisitor<Path> {
+
+        private final TreeSet<String> nameSet;
+
+        public ListAllFilesVisitor() {
+            this.nameSet = new TreeSet<>();
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            this.nameSet.add(file.toString());
+            return FileVisitResult.CONTINUE;
+        }
+
+        TreeSet<String> getNameSet() {
+            return this.nameSet;
+        }
+    }
+
 }

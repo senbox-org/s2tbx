@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.pleiades.dimap;
 
 import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
@@ -25,6 +26,7 @@ import org.esa.snap.utils.DateHelper;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -66,65 +68,75 @@ public class VolumeMetadata extends GenericXmlMetadata {
 
     public static VolumeMetadata create(Path path) throws IOException {
         Assert.notNull(path);
+        try (InputStream inputStream = Files.newInputStream(path);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+             FilePathInputStream filePathInputStream = new FilePathInputStream(path, bufferedInputStream, null)) {
+
+            return create(filePathInputStream);
+        }
+    }
+
+    public static VolumeMetadata create(FilePathInputStream filePathInputStream) throws IOException {
         VolumeMetadata result = null;
-        try (InputStream inputStream = Files.newInputStream(path)) {
+        try {
             VolumeMetadataParser parser = new VolumeMetadataParser(VolumeMetadata.class);
-            result = parser.parse(inputStream);
-            result.setPath(path);
-            result.setFileName(path.getFileName().toString());
-            String[] titles = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TITLE);
-            if (titles == null) {
-                titles = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TITLE_ALT);
-            }
-            if (titles != null && titles.length > 0) {
-                String[] types = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TYPE);
-                if (types == null) {
-                    types = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TYPE_ALT);
-                }
-                String[] paths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_PATH);
-                if (paths == null) {
-                    paths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_PATH_ALT);
-                }
-                String[] tnPaths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_PATH);
-                if (tnPaths == null) {
-                    tnPaths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_PATH_ALT);
-                }
-                String[] tnFormats = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_FORMAT);
-                if (tnFormats == null) {
-                    tnFormats = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_FORMAT_ALT);
-                }
-
-                Path parentFolderPath = path.getParent();
-
-                for (int i = 0; i < titles.length; i++) {
-                    VolumeComponent component = new VolumeComponent(parentFolderPath);
-                    component.setTitle(titles[i]);
-                    if (types != null && types.length == titles.length) {
-                        component.setType(types[i]);
-                    }
-                    if (paths != null && paths.length == titles.length) {
-                        Path child = null;
-                        try {
-                            child = parentFolderPath.resolve(paths[i]);
-                        } catch (InvalidPathException ignored) {
-                            // ignore
-                        }
-                        if (child != null && Files.exists(child)) {
-                            component.setRelativePath(paths[i]);
-                        }
-                    }
-                    if (tnPaths != null && tnPaths.length == titles.length) {
-                        component.setThumbnailPath(tnPaths[i]);
-                    }
-                    if (tnFormats != null && tnFormats.length == titles.length) {
-                        component.setThumbnailFormat(tnFormats[i]);
-                    }
-                    result.components.add(component);
-                }
-                result.componentMetadata = result.getNextLevelMetadata();
-            }
+            result = parser.parse(filePathInputStream);
         } catch (ParserConfigurationException | SAXException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
+        }
+        Path path = filePathInputStream.getFilePath();
+        result.setPath(path);
+        result.setFileName(path.getFileName().toString());
+        String[] titles = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TITLE);
+        if (titles == null) {
+            titles = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TITLE_ALT);
+        }
+        if (titles != null && titles.length > 0) {
+            String[] types = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TYPE);
+            if (types == null) {
+                types = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TYPE_ALT);
+            }
+            String[] paths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_PATH);
+            if (paths == null) {
+                paths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_PATH_ALT);
+            }
+            String[] tnPaths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_PATH);
+            if (tnPaths == null) {
+                tnPaths = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_PATH_ALT);
+            }
+            String[] tnFormats = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_FORMAT);
+            if (tnFormats == null) {
+                tnFormats = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TN_FORMAT_ALT);
+            }
+
+            Path parentFolderPath = path.getParent();
+
+            for (int i = 0; i < titles.length; i++) {
+                VolumeComponent component = new VolumeComponent(parentFolderPath);
+                component.setTitle(titles[i]);
+                if (types != null && types.length == titles.length) {
+                    component.setType(types[i]);
+                }
+                if (paths != null && paths.length == titles.length) {
+                    Path child = null;
+                    try {
+                        child = parentFolderPath.resolve(paths[i]);
+                    } catch (InvalidPathException ignored) {
+                        // ignore
+                    }
+                    if (child != null && Files.exists(child)) {
+                        component.setRelativePath(paths[i]);
+                    }
+                }
+                if (tnPaths != null && tnPaths.length == titles.length) {
+                    component.setThumbnailPath(tnPaths[i]);
+                }
+                if (tnFormats != null && tnFormats.length == titles.length) {
+                    component.setThumbnailFormat(tnFormats[i]);
+                }
+                result.components.add(component);
+            }
+            result.componentMetadata = result.getNextLevelMetadata();
         }
         return result;
     }

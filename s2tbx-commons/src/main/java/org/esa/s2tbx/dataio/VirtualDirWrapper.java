@@ -1,17 +1,16 @@
 package org.esa.s2tbx.dataio;
 
-import com.bc.ceres.core.VirtualDir;
+import org.esa.s2tbx.commons.AbstractVirtualPath;
+import org.esa.s2tbx.commons.FilePathInputStream;
+import org.esa.s2tbx.commons.VirtualDirPath;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,13 +60,8 @@ class VirtualDirWrapper extends VirtualDirEx {
     }
 
     @Override
-    public <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException {
-        return this.wrapped.loadData(relativePath, command);
-    }
-
-    @Override
-    public InputStream getInputStream(String relativePath) throws IOException {
-        InputStream inputStream;
+    public FilePathInputStream getInputStream(String relativePath) throws IOException {
+        FilePathInputStream inputStream;
         try {
             inputStream = this.wrapped.getInputStream(relativePath);
         } catch (FileNotFoundException e) {
@@ -80,7 +74,7 @@ class VirtualDirWrapper extends VirtualDirEx {
             String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
             String path = findKeyFile(key);
             if (path == null) {
-                throw new IOException(String.format("File %s does not exist", relativePath));
+                throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
             } else {
                 try {
                     // the "classic" way
@@ -114,12 +108,12 @@ class VirtualDirWrapper extends VirtualDirEx {
             String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
             String path = findKeyFile(key);
             if (path == null) {
-                throw new IOException(String.format("File %s does not exist", relativePath));
+                throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
             } else {
                 try {
                     // the "classic" way
                     file = getFileInner(path);
-                } catch (IOException e) {
+                } catch (FileNotFoundException e) {
                     if (isArchive()) {
                         file = getFileInner(path);
                     } else {
@@ -142,10 +136,12 @@ class VirtualDirWrapper extends VirtualDirEx {
         return null;
     }
 
-    private InputStream getInputStreamIgnoreCaseFromTempDirIfExists(String childRelativePath) throws IOException {
+    private FilePathInputStream getInputStreamIgnoreCaseFromTempDirIfExists(String childRelativePath) throws IOException {
         File file = getFileIgnoreCaseFromTempDirIfExists(childRelativePath);
         if (file != null) {
-            return Files.newInputStream(file.toPath());
+            Path filePath = file.toPath();
+            InputStream inputStream = Files.newInputStream(filePath);
+            return new FilePathInputStream(filePath, inputStream, null);
         }
         return null;
     }
@@ -164,7 +160,7 @@ class VirtualDirWrapper extends VirtualDirEx {
             if (result != null) {
                 return result;
             }
-        } catch (IOException ignored) {
+        } catch (FileNotFoundException ignored) {
             // do nothing
         }
         String newRelativePath = computeNewRelativePath(path, pathSeparator);
@@ -202,7 +198,7 @@ class VirtualDirWrapper extends VirtualDirEx {
         return newRelativePath;
     }
 
-    private InputStream getInputStreamInner(String path) throws IOException {
+    private FilePathInputStream getInputStreamInner(String path) throws IOException {
         String pathSeparator;
         if (!this.wrapped.isArchive() && !this.wrapped.getBasePath().toLowerCase().endsWith("tar")) {
             pathSeparator = "\\\\";
@@ -212,11 +208,11 @@ class VirtualDirWrapper extends VirtualDirEx {
         }
         try {
             //if the path letter case is correct, there is no need to read all the path tree
-            InputStream result = this.wrapped.getInputStream(path);
+            FilePathInputStream result = this.wrapped.getInputStream(path);
             if (result != null) {
                 return result;
             }
-        } catch (IOException ignored) {
+        } catch (FileNotFoundException ignored) {
             // do nothing
         }
         String newRelativePath = computeNewRelativePath(path, pathSeparator);

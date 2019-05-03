@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio;
 
 import com.bc.ceres.core.VirtualDir;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.snap.core.util.io.FileUtils;
 import org.xeustechnologies.jtar.TarEntry;
 import org.xeustechnologies.jtar.TarHeader;
@@ -9,7 +10,6 @@ import org.xeustechnologies.jtar.TarInputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -102,19 +102,11 @@ class TarVirtualDir extends VirtualDirEx {
     }
 
     @Override
-    public <ResultType> ResultType loadData(String relativePath, ICallbackCommand<ResultType> command) throws IOException {
-        Path file = getFile(relativePath).toPath();
-        if (Files.exists(file)) {
-            return command.execute(file);
-        } else {
-            throw new FileNotFoundException(file.toString());
-        }
-    }
-
-    @Override
-    public InputStream getInputStream(String path) throws IOException {
-        File file = getFile(path);
-        return new BufferedInputStream(new FileInputStream(file));
+    public FilePathInputStream getInputStream(String path) throws IOException {
+        Path file = getFile(path).toPath();
+        InputStream inputStream = Files.newInputStream(file);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+        return new FilePathInputStream(file, bufferedInputStream, null);
     }
 
     @Override

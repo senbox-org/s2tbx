@@ -1,4 +1,6 @@
-package org.esa.s2tbx.dataio;
+package org.esa.s2tbx.commons;
+
+import org.esa.s2tbx.dataio.VirtualDirEx;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -54,7 +56,7 @@ public class VirtualZipPath extends AbstractVirtualPath {
     }
 
     @Override
-    public InputStream getInputStream(String zipEntryPath) throws IOException {
+    public FilePathInputStream getInputStream(String zipEntryPath) throws IOException {
         boolean success = true;
         FileSystem fileSystem = null;
         try {
@@ -80,7 +82,7 @@ public class VirtualZipPath extends AbstractVirtualPath {
     }
 
     @Override
-    public InputStream getInputStreamIgnoreCaseIfExists(String zipEntryPath) throws IOException {
+    public FilePathInputStream getInputStreamIgnoreCaseIfExists(String zipEntryPath) throws IOException {
         boolean success = true;
         FileSystem fileSystem = null;
         try {
@@ -125,25 +127,6 @@ public class VirtualZipPath extends AbstractVirtualPath {
                     // the entry exists into the zip archive
                     Path fileToReturn = copyFileOnLocalDiskIfNeeded(entryPath, zipEntryPath);
                     return fileToReturn.toFile();
-                }
-            } // end 'while (it.hasNext())'
-            throw new FileNotFoundException(getMissingZipEntryExceptionMessage(zipEntryPath));
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @Override
-    public <ResultType> ResultType loadData(String zipEntryPath, ICallbackCommand<ResultType> command) throws IOException {
-        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
-            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
-            while (it.hasNext()) {
-                Path zipArchiveRoot = it.next();
-                Path entryPath = buildZipEntryPath(zipArchiveRoot, zipEntryPath);
-                if (Files.exists(entryPath)) {
-                    // the entry exists into the zip archive
-                    Path file = copyFileOnLocalDiskIfNeeded(entryPath, zipEntryPath);
-                    return command.execute(file);
                 }
             } // end 'while (it.hasNext())'
             throw new FileNotFoundException(getMissingZipEntryExceptionMessage(zipEntryPath));
@@ -231,9 +214,15 @@ public class VirtualZipPath extends AbstractVirtualPath {
 
     @Override
     public String[] listAllFiles() throws IOException {
-        try {
-            TreeSet<String> nameSet = ZipFileSystemBuilder.listAllFileEntriesFromZipArchive(this.zipPath);
-            return nameSet.toArray(new String[0]);
+        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
+            ListAllFilesVisitor filesVisitor = new ListAllFilesVisitor();
+            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
+            while (it.hasNext()) {
+                Path zipArchiveRoot = it.next();
+                Files.walkFileTree(zipArchiveRoot, filesVisitor);
+            } // end 'while (it.hasNext())'
+            TreeSet<String> nameSet = filesVisitor.getNameSet();
+            return nameSet.toArray(new String [nameSet.size()]);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         }
@@ -267,7 +256,7 @@ public class VirtualZipPath extends AbstractVirtualPath {
         return zipArchiveRoot.resolve(childRelativePath);
     }
 
-    private static InputStream getInputStream(Path entryPath, FileSystem fileSystem) throws IOException {
+    private static FilePathInputStream getInputStream(Path entryPath, FileSystem fileSystem) throws IOException {
         if (Files.isRegularFile(entryPath)) {
             // the entry is a file
 
@@ -276,7 +265,7 @@ public class VirtualZipPath extends AbstractVirtualPath {
 
             InputStream inputStream = Files.newInputStream(entryPath);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
-            return new AutoCloseInputStream(bufferedInputStream, fileSystem);
+            return new FilePathInputStream(entryPath, bufferedInputStream, fileSystem);
         } else {
             throw new NotRegularFileException(entryPath.toString());
         }

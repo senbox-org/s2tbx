@@ -1,18 +1,16 @@
-package org.esa.s2tbx.dataio;
+package org.esa.s2tbx.commons;
 
 import com.sun.nio.zipfs.ZipFileSystem;
 import com.sun.nio.zipfs.ZipFileSystemProvider;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeSet;
 
 /**
  * Created by jcoravu on 4/4/2019.
@@ -48,39 +46,6 @@ public class ZipFileSystemBuilder {
             throw new IllegalArgumentException("Can't create a ZIP file system nested in a ZIP file system. (" + zipPath + " is nested in " + zipPath.getFileSystem() + ")");
         }
         return ZIP_FILE_SYSTEM_CONSTRUCTOR.newInstance(ZIP_FILE_SYSTEM_PROVIDER, zipPath, Collections.emptyMap());
-    }
-
-    public static TreeSet<String> listAllFileEntriesFromZipArchive(Path zipPath)
-                                                throws IllegalAccessException, InvocationTargetException, InstantiationException, IOException {
-
-        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(zipPath)) {
-            ListAllFileZipEntriesFileVisitor visitor = new ListAllFileZipEntriesFileVisitor();
-            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
-            while (it.hasNext()) {
-                Path root = it.next();
-                Files.walkFileTree(root, visitor);
-            }
-            return visitor.getNameSet();
-        }
-    }
-
-    private static class ListAllFileZipEntriesFileVisitor extends SimpleFileVisitor<Path> {
-
-        private final TreeSet<String> nameSet;
-
-        private ListAllFileZipEntriesFileVisitor() {
-            this.nameSet = new TreeSet<>();
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            this.nameSet.add(file.toString());
-            return FileVisitResult.CONTINUE;
-        }
-
-        TreeSet<String> getNameSet() {
-            return this.nameSet;
-        }
     }
 
 //    public static void main(String[] args) throws Exception {

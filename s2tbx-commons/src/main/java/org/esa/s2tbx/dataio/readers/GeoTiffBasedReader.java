@@ -18,9 +18,8 @@
 package org.esa.s2tbx.dataio.readers;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
-import org.esa.s2tbx.dataio.ICallbackCommand;
-import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -35,6 +34,7 @@ import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.utils.CollectionHelper;
 import org.xml.sax.SAXException;
@@ -42,15 +42,12 @@ import org.xml.sax.SAXException;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -219,41 +216,28 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         this.productDirectory = buildProductDirectory(inputPath);
 
         String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
-        if (metadataFiles != null) {
+        if (metadataFiles == null) {
+            logger.info("No metadata file found");
+        } else {
             logger.info("Reading product metadata");
             for (String file : metadataFiles) {
                 try {
-                    ICallbackCommand<M> command = new ICallbackCommand<M>() {
-                        @Override
-                        public M execute(Path metadataFilePath) throws IOException {
-                            try {
-                                M metaDataItem = XmlMetadata.loadMetadata(metadataClass, metadataFilePath);
-                                if (metaDataItem != null) {
-                                    metaDataItem.setFileName(metadataFilePath.getFileName().toString());
-                                }
-                                return metaDataItem;
-                            } catch (InstantiationException | ParserConfigurationException | SAXException e) {
-                                throw new IllegalStateException(e);
-                            }
+                    try (FilePathInputStream filePathInputStream = this.productDirectory.getInputStream(file)) {
+                        M metaDataItem;
+                        try {
+                            metaDataItem = (M) XmlMetadataParserFactory.getParser(this.metadataClass).parse(filePathInputStream);
+                        } catch (InstantiationException | ParserConfigurationException | SAXException e) {
+                            throw new IllegalStateException(e);
                         }
-                    };
-
-                    // if archive load the metadata without extracting the file from the zip archive on the local disk
-                    //M metaDataItem = this.productDirectory.loadData(file, command);
-
-                    // if archive extracting the file from the zip archive on the local disk and then load the metadata
-                    File metadataFile = this.productDirectory.getFile(file);
-                    M metaDataItem = command.execute(metadataFile.toPath());
-
-                    if (metaDataItem != null) {
+                        Path filePath = filePathInputStream.getFilePath();
+                        metaDataItem.setPath(filePath);
+                        metaDataItem.setFileName(filePath.getFileName().toString());
                         this.metadata.add(metaDataItem);
                     }
                 } catch (IOException mex) {
                     logger.warning(String.format("Error while reading metadata file %s", file));
                 }
             }
-        } else {
-            logger.info("No metadata file found");
         }
 
         if (this.metadata != null && this.metadata.size() > 0) {

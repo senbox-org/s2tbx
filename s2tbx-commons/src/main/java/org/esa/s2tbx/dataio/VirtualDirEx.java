@@ -18,26 +18,17 @@
 package org.esa.s2tbx.dataio;
 
 import com.bc.ceres.core.VirtualDir;
-import org.apache.commons.io.IOUtils;
+import org.esa.s2tbx.commons.AbstractVirtualPath;
+import org.esa.s2tbx.commons.FilePathInputStream;
+import org.esa.s2tbx.commons.VirtualDirPath;
+import org.esa.s2tbx.commons.VirtualZipPath;
+import org.esa.s2tbx.commons.ZipFileSystemBuilder;
 import org.esa.snap.core.util.StringUtils;
-import org.esa.snap.core.util.io.FileUtils;
-import org.xeustechnologies.jtar.TarEntry;
-import org.xeustechnologies.jtar.TarHeader;
-import org.xeustechnologies.jtar.TarInputStream;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -48,26 +39,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-
-import static org.esa.snap.utils.CollectionHelper.firstOrDefault;
 
 /**
  * This class extends or alters the features of com.bc.ceres.core.VirtualDir class with a Tar/Tgz implementation
@@ -223,7 +201,7 @@ public abstract class VirtualDirEx extends VirtualDir {
 
     public abstract String getFileSystemSeparator();
 
-    public abstract <ResultType> ResultType loadData(String zipEntryPath, ICallbackCommand<ResultType> command) throws IOException;
+    public abstract FilePathInputStream getInputStream(String path) throws IOException;
 
     public void setFolderDepth(int value) {
         this.depth = value;

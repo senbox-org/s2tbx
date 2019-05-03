@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio;
+package org.esa.s2tbx.commons;
 
 import java.nio.file.FileSystemException;
 
