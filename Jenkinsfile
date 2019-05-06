@@ -44,7 +44,7 @@ pipeline {
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install sonar:sonar -U -DskipTests=false"
+                sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install sonar:sonar -Dsnap.reader.tests.data.dir=/data/ssd/testData/${toolName} -U -DskipTests=false"
             }
             post {
                 always {
