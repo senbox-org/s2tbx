@@ -44,7 +44,13 @@ pipeline {
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -DskipTests=false"
+                sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install sonar:sonar -U -DskipTests=false"
+            }
+            post {
+                always {
+                    junit "**/target/surefire-reports/*.xml"
+                    jacoco(execPattern: '**/*.exec')
+                }
             }
         }
         stage('Deploy') {
@@ -150,23 +156,6 @@ pipeline {
                             [$class: 'StringParameterValue', name: 'dockerTagName', value: "snap:${branchVersion}"],
                             [$class: 'StringParameterValue', name: 'testFileList', value: "qftests.lst"]
                         ]
-                    }
-                }
-                stage('Analyse') {
-                    agent {
-                        docker {
-                            image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8'
-                            args '-e MAVEN_CONFIG=/home/snap/.m2 -v /opt/maven/.m2/settings.xml:/home/snap/.m2/settings.xml'
-                        }
-                    }
-                    when {
-                        expression {
-                            return "${env.GIT_BRANCH}" == 'master' && "${params.launchTests}" == "true";
-                        }
-                    }
-                    steps {
-                        echo "Analyse ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                        sh "mvn -Duser.home=/home/snap/ -Dsnap.userdir=/home/snap/ clean test sonar:sonar -U -DskipTests=false"
                     }
                 }
             }
