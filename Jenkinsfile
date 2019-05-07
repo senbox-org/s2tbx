@@ -44,7 +44,7 @@ pipeline {
                     snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                     if ("${branchVersion}" == "master") {
-                        // ONly use sonar on master branch
+                        // Only use sonar on master branch
                         sonarOption = "sonar:sonar"
                     }
                 }
