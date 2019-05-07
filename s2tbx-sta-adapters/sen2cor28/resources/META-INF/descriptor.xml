@@ -1,7 +1,7 @@
 <operator>
-  <name>Sen2Cor28</name>
+  <name>Sen2Cor v2.8</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
-  <alias>Sen2Cor28</alias>
+  <alias>Sen2Cor v2.8</alias>
   <label>SEN2COR</label>
   <version>280</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
@@ -9,7 +9,7 @@
   <copyright></copyright>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>
-  <menuLocation>Menu/Optical/Thematic Land Processing</menuLocation>
+  <menuLocation>Menu/Optical/Thematic Land Processing/Sen2Cor Processor</menuLocation>
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$SEN2COR28_BIN\$SEN2COR_EXE</mainToolFileLocation>
@@ -725,20 +725,20 @@
   <windowsBundle>
     <bundleType>ZIP</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.5.5/Sen2Cor-02.05.05-win64.zip</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.8.0/Sen2Cor-02.08.00-win64.zip</downloadURL>
     <templateparameter>
       <template type="simple">
         <contents></contents>
       </template>
     </templateparameter>
     <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint>Sen2Cor-02.05.05-win64.zip</entryPoint>
+    <entryPoint>Sen2Cor-02.08.00-win64.zip</entryPoint>
     <updateVariable>SEN2COR28_BIN</updateVariable>
   </windowsBundle>
   <linuxBundle>
     <bundleType>INSTALLER</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.5.5/Sen2Cor-02.05.05-Linux64.run</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.8.0/Sen2Cor-02.08.00-Linux64.run</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
@@ -762,18 +762,18 @@
       <template type="simple">
         <contents>--nox11
           --target
-          $targetLocation/Sen2Cor-02.05.05-Linux64</contents>
+          $targetLocation/Sen2Cor-02.08.00-Linux64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
     <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint>Sen2Cor-02.05.05-Linux64.run</entryPoint>
+    <entryPoint>Sen2Cor-02.08.00-Linux64.run</entryPoint>
     <updateVariable>SEN2COR_BIN28</updateVariable>
   </linuxBundle>
   <macosxBundle>
     <bundleType>INSTALLER</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.5.5/Sen2Cor-02.05.05-Darwin64.run</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/sen2cor/2.8.0/Sen2Cor-02.08.00-Darwin64.run</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
@@ -797,12 +797,12 @@
       <template type="simple">
         <contents>--nox11
           --target
-          $targetLocation/Sen2Cor-02.05.05-Darwin64</contents>
+          $targetLocation/Sen2Cor-02.08.00-Darwin64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
     <targetLocation>$USER_HOME/.snap/auxdata</targetLocation>
-    <entryPoint>Sen2Cor-02.05.05-Darwin64.run</entryPoint>
+    <entryPoint>Sen2Cor-02.08.00-Darwin64.run</entryPoint>
     <updateVariable></updateVariable>
   </macosxBundle>
   <sourceProductDescriptors>
