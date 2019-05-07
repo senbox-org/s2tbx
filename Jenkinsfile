@@ -22,6 +22,7 @@ pipeline {
         toolVersion = ''
         deployDirName = ''
         snapMajorVersion = ''
+        sonarOption = ""
     }
     agent { label 'snap-test' }
     parameters {
@@ -42,7 +43,6 @@ pipeline {
                     toolVersion = sh(returnStdout: true, script: "cat pom.xml | grep '<version>' | head -1 | cut -d '>' -f 2 | cut -d '-' -f 1").trim()
                     snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
-                    sonarOption = ""
                     if (${branchVersion} == "master") {
                         // ONly use sonar on master branch
                         sonarOption = "sonar:sonar"
