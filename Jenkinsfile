@@ -24,6 +24,9 @@ pipeline {
         snapMajorVersion = ''
     }
     agent { label 'snap-test' }
+    parameters {
+        booleanParam(name: 'launchTests', defaultValue: true, description: 'When true all stages are launched, When false only stages "Package", "Deploy" and "Save installer data" are launched.')
+    }
     stages {
         stage('Package') {
             agent {
@@ -41,7 +44,13 @@ pipeline {
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install -U -DskipTests=false"
+                sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install sonar:sonar -Dsnap.reader.tests.data.dir=/data/ssd/testData/${toolName} -U -DskipTests=false"
+            }
+            post {
+                always {
+                    junit "**/target/surefire-reports/*.xml"
+                    jacoco(execPattern: '**/*.exec')
+                }
             }
         }
         stage('Deploy') {
@@ -54,7 +63,7 @@ pipeline {
             }
             when {
                 expression {
-                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/;
+                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/;
                 }
             }
             steps {
@@ -73,24 +82,25 @@ pipeline {
             }
             when {
                 expression {
-                    return "${env.GIT_BRANCH}" == 'master';
+                    // We save snap installer data on master branch and branch x.x.x (Ex: 8.0.0) of branch x.x.x-rcx (ex: 8.0.0-rc1) when we want to create a release
+                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/);
                 }
             }
             steps {
                 echo "Save data for SNAP Installer ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh "/opt/scripts/saveInstallData.sh ${toolName}"
+                sh "/opt/scripts/saveInstallData.sh ${toolName} ${env.GIT_BRANCH}"
             }
         }
         stage('Create SNAP Installer') {
             agent { label 'snap-test' }
             when {
                 expression {
-                    return "${env.GIT_BRANCH}" == 'master';
+                    return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) && "${params.launchTests}" == "true";
                 }
             }
             steps {
                 echo "Launch snap-installer"
-                build job: 'snap-installer/master'
+                build job: "snap-installer/${env.GIT_BRANCH}"
             }
         }
         stage('Create docker image') {
@@ -100,6 +110,11 @@ pipeline {
                     image 'snap-build-server.tilaa.cloud/scripts:1.0'
                     // We add the docker group from host (i.e. 999)
                     args ' --group-add 999 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7 -v docker_local-update-center:/local-update-center -v /opt/maven/.docker:/home/snap/.docker -v docker_snap-installer:/snap-installer'
+                }
+            }
+            when {
+                expression {
+                    return "${params.launchTests}" == "true";
                 }
             }
             steps {
@@ -117,7 +132,7 @@ pipeline {
                     agent { label 'snap-test' }
                     when {
                         expression {
-                            return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/;
+                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) && "${params.launchTests}" == "true";
                         }
                     }
                     steps {
@@ -132,14 +147,15 @@ pipeline {
                     agent { label 'snap-test' }
                     when {
                         expression {
-                            return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/;
+                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) && "${params.launchTests}" == "true";
                         }
                     }
                     steps {
                         echo "Launch snap-gui-tests using docker image snap:${branchVersion}"
                         build job: "snap-gui-tests/${branchVersion}", parameters: [
                             [$class: 'StringParameterValue', name: 'dockerTagName', value: "snap:${branchVersion}"],
-                            [$class: 'StringParameterValue', name: 'testFileList', value: "qftests.lst"]]
+                            [$class: 'StringParameterValue', name: 'testFileList', value: "qftests.lst"]
+                        ]
                     }
                 }
             }

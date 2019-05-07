@@ -91,6 +91,8 @@
         <netbeans.version>RELEASE82</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
         <brandingToken>s2tbx</brandingToken>
+        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
+        <buildDate>${maven.build.timestamp}</buildDate>
     </properties>
 
     <repositories>
@@ -439,7 +441,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.5.201505241946</version>
+                <version>0.8.3</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -510,10 +512,10 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.10</version>
+                    <version>3.0.0</version>
                     <executions>
                         <execution>
-                            <id>regex-property</id>
+                            <id>create-nbmSpecVersion</id>
                             <goals>
                                 <goal>regex-property</goal>
                             </goals>
@@ -523,6 +525,39 @@
                                 <regex>-SNAPSHOT</regex>
                                 <replacement>.0</replacement>
                                 <failIfNoMatch>false</failIfNoMatch>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>create-nbmImplVersion</id>
+                            <goals>
+                                <goal>regex-property</goal>
+                            </goals>
+                            <configuration>
+                                <name>project.nbmImplVersion</name>
+                                <value>${project.version}</value>
+                                <regex>(-SNAPSHOT)|(-rc[0-9]+)</regex>
+                                <replacement>.${buildDate}</replacement>
+                                <failIfNoMatch>false</failIfNoMatch>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>parse-version</id>
+                            <goals>
+                                <goal>parse-version</goal>
+                            </goals>
+                            <configuration>
+                                <propertyPrefix>s2tbx</propertyPrefix>
+                                <versionString>${s2tbx.version}</versionString>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>build-date</id>
+                            <goals>
+                                <goal>timestamp-property</goal>
+                            </goals>
+                            <configuration>
+                                <name>s2tbx.buildDate</name>
+                                <pattern>yyyy-MM-dd</pattern>
                             </configuration>
                         </execution>
                     </executions>
@@ -548,7 +583,7 @@
                             <snap.reader.tests.data.dir>${snap.reader.tests.data.dir}</snap.reader.tests.data.dir>
                             <snap.reader.tests.class.name>${snap.reader.tests.class.name}</snap.reader.tests.class.name>
                         </systemPropertyVariables>
-                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8 -da:org.geotools.referencing.operation.projection.MapProjection</argLine>
+                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8 -da:org.geotools.referencing.operation.projection.MapProjection @{argLine}</argLine>
                     </configuration>
                 </plugin>
 
