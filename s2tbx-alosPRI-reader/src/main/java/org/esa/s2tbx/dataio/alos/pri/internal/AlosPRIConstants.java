@@ -34,7 +34,7 @@ public class AlosPRIConstants {
     public static final String PRODUCT_FILE_SUFFIX = ".SIP.ZIP";
     public static final String IMAGE_METADATA_EXTENSION = ".DIMA";
     public static final String IMAGE_EXTENSION = ".GTIF";
-    public static final String ARCHIVE_FILE_EXTENSION = ".zip";
+    public static final String ARCHIVE_FILE_EXTENSION = ".ZIP";
     protected static final String[] DEFAULT_BAND_NAMES = new String[]{"Band_1(pan)"};
     public static final String DEFAULT_BAND_DESCRIPTION = "Band 1 (pan, 0.52 uM to 0.77 uM)";
 

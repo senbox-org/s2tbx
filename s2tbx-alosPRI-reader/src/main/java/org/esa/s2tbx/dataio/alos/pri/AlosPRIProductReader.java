@@ -77,118 +77,111 @@ public class AlosPRIProductReader extends AbstractProductReader {
         Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
         boolean copyFilesFromDirectoryOnLocalDisk = false;
         boolean copyFilesFromArchiveOnLocalDisk = true;
-        this.productDirectory = VirtualDirEx.build(inputPath, copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
+        VirtualDirEx productDirectoryTemp = VirtualDirEx.build(inputPath, copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
+        try {
 
-        this.tiffProduct = new ArrayList<>();
-        String fileName = this.productDirectory.getBaseFile().getName();
-        if (this.productDirectory.isCompressed()) {
-            fileName = fileName.substring(0, fileName.lastIndexOf(AlosPRIConstants.PRODUCT_FILE_SUFFIX));
-        } else {
-            fileName = fileName.substring(0, fileName.lastIndexOf("."));
-        }
-
-        File metadataFile = this.productDirectory.getFile(fileName + AlosPRIConstants.METADATA_FILE_SUFFIX);
-        this.metadata = XmlMetadata.create(AlosPRIMetadata.class, metadataFile.toPath());
-        if (metadata != null) {
-            File file;
-            if (productDirectory.isCompressed()) {
-                this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
-                file = new File(metadata.getImageDirectoryPath());
+            this.tiffProduct = new ArrayList<>();
+            String fileName = productDirectoryTemp.getBaseFile().getName();
+            if (productDirectoryTemp.isCompressed()) {
+                fileName = fileName.substring(0, fileName.lastIndexOf(AlosPRIConstants.PRODUCT_FILE_SUFFIX));
             } else {
-                productDirectory.setFolderDepth(4);
-                if (productDirectory.exists(fileName)) {
-                    file = this.productDirectory.getFile(fileName);
-                } else {
-                    this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
-                    file = new File(metadata.getImageDirectoryPath());
-                }
+                fileName = fileName.substring(0, fileName.lastIndexOf("."));
             }
-            productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
-            if (productDirectory != null) {
-                productDirectory.setFolderDepth(4);
-                for (String availableFile : productDirectory.listAllFiles()) {
-                    if (availableFile.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION)) {
-                        metadata.addComponentMetadata(productDirectory.getFile(availableFile));
+
+            File metadataFile = productDirectoryTemp.getFile(fileName + AlosPRIConstants.METADATA_FILE_SUFFIX);
+            this.metadata = XmlMetadata.create(AlosPRIMetadata.class, metadataFile.toPath());
+            if (metadata != null) {
+                File file = productDirectoryTemp.getFile(fileName + AlosPRIConstants.ARCHIVE_FILE_EXTENSION);
+
+                productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
+                if (productDirectory != null) {
+                    for (String availableFile : productDirectory.listAllFiles()) {
+                        if (availableFile.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION) ||
+                                availableFile.endsWith(AlosPRIConstants.IMAGE_EXTENSION)) {
+                            productDirectory.getFile(availableFile);
+                        }
+                        if (availableFile.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION)) {
+                            metadata.addComponentMetadata(productDirectory.getFile(availableFile));
+                        }
                     }
+                    metadata.setImageDirectoryPath(productDirectory.getTempDir().toString());
+                }
+
+                List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
+                if (imageMetadataList.isEmpty()) {
+                    throw new IOException("No raster found");
+                }
+
+                ImageMetadata.InsertionPoint origin = metadata.getProductOrigin();
+                float offsetX = (metadata.getMaxInsertPointX() - metadata.getMinInsertPointX()) / metadata.getStepSizeX();
+                float offsetY = (metadata.getMaxInsertPointY() - metadata.getMinInsertPointY()) / metadata.getStepSizeY();
+
+                int width = metadata.getRasterWidth();
+                int height = metadata.getRasterHeight();
+
+                this.product = new Product(this.metadata.getProductName(), AlosPRIConstants.PRODUCT_GENERIC_NAME, width, height);
+                this.product.setStartTime(this.metadata.getProductStartTime());
+                this.product.setEndTime(this.metadata.getProductEndTime());
+                this.product.setDescription(this.metadata.getProductDescription());
+                this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
+                this.product.setFileLocation(inputPath.toFile());
+                this.product.setProductReader(this);
+                if (metadata.hasInsertPoint()) {
+                    String crsCode = metadata.getCrsCode();
+                    try {
+                        GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
+                                                               width, height,
+                                                               origin.x, origin.y,
+                                                               origin.stepX, origin.stepY);
+                        product.setSceneGeoCoding(geoCoding);
+                    } catch (Exception e) {
+                        logger.warning(e.getMessage());
+                    }
+                } else {
+                    initProductTiePointGeoCoding(this.product, offsetX, offsetY);
+                }
+                int levels;
+                for (ImageMetadata imageMetadata : imageMetadataList) {
+
+                    product.getMetadataRoot().addElement(imageMetadata.getRootElement());
+                    File rasterFile = new File(imageMetadata.getPath().toString().substring(0, imageMetadata.getPath().toString().lastIndexOf(".")) + AlosPRIConstants.IMAGE_EXTENSION);
+
+                    this.tiffProduct.add(ProductIO.readProduct(rasterFile));
+                    this.tiffImageIndex++;
+                    final Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
+
+                    levels = band.getSourceImage().getModel().getLevelCount();
+                    final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
+
+                    Band targetBand = new Band(imageMetadata.getBandName(), band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
+                    targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
+                    targetBand.setSpectralWavelength(band.getSpectralWavelength());
+                    targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
+                    targetBand.setSolarFlux(band.getSolarFlux());
+                    targetBand.setUnit(imageMetadata.getBandUnit());
+                    targetBand.setNoDataValue(imageMetadata.getNoDataValue());
+                    targetBand.setNoDataValueUsed(true);
+                    targetBand.setDescription(imageMetadata.getBandDescription());
+                    targetBand.setScalingFactor(imageMetadata.getGain());
+                    targetBand.setScalingOffset(band.getScalingOffset());
+                    initBandGeoCoding(imageMetadata, targetBand, width, height);
+
+                    MosaicMultiLevelSource bandSource =
+                            new MosaicMultiLevelSource(band,
+                                                       band.getRasterWidth(), band.getRasterHeight(),
+                                                       tileSize.width, tileSize.height,
+                                                       levels, targetBand.getGeoCoding() != null ?
+                                                               Product.findImageToModelTransform(targetBand.getGeoCoding()) :
+                                                               Product.findImageToModelTransform(product.getSceneGeoCoding()));
+                    targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+                    this.product.addBand(targetBand);
+                    addMasks(product, imageMetadata);
                 }
             }
-
-            List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
-            if (imageMetadataList.isEmpty()) {
-                throw new IOException("No raster found");
-            }
-
-            ImageMetadata.InsertionPoint origin = metadata.getProductOrigin();
-            float offsetX = (metadata.getMaxInsertPointX() - metadata.getMinInsertPointX()) / metadata.getStepSizeX();
-            float offsetY = (metadata.getMaxInsertPointY() - metadata.getMinInsertPointY()) / metadata.getStepSizeY();
-
-            int width = metadata.getRasterWidth();
-            int height = metadata.getRasterHeight();
-
-            this.product = new Product(this.metadata.getProductName(), AlosPRIConstants.PRODUCT_GENERIC_NAME, width, height);
-            this.product.setStartTime(this.metadata.getProductStartTime());
-            this.product.setEndTime(this.metadata.getProductEndTime());
-            this.product.setDescription(this.metadata.getProductDescription());
-            this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
-            this.product.setFileLocation(inputPath.toFile());
-            this.product.setProductReader(this);
-            if (metadata.hasInsertPoint()) {
-                String crsCode = metadata.getCrsCode();
-                try {
-                    GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
-                                                           width, height,
-                                                           origin.x, origin.y,
-                                                           origin.stepX, origin.stepY);
-                    product.setSceneGeoCoding(geoCoding);
-                } catch (Exception e) {
-                    logger.warning(e.getMessage());
-                }
-            } else {
-                initProductTiePointGeoCoding(this.product, offsetX, offsetY);
-            }
-            int levels;
-
-            for (ImageMetadata imageMetadata : imageMetadataList) {
-
-                product.getMetadataRoot().addElement(imageMetadata.getRootElement());
-                File rasterFile = productDirectory.getFile(imageMetadata.getFileName().substring(0, imageMetadata.getFileName().indexOf(".")) + AlosPRIConstants.IMAGE_EXTENSION);
-                //workaround for issue on VirtualDirEx: getTempDir() returns null when a file has to be found iterating through all the product directories
-                if (rasterFile == null || !rasterFile.exists() || !rasterFile.getName().endsWith(AlosPRIConstants.IMAGE_EXTENSION)) {
-                    rasterFile = new File(imageMetadata.getPath().toString().substring(0,imageMetadata.getPath().toString().lastIndexOf("."))+AlosPRIConstants.IMAGE_EXTENSION);
-                }
-                this.tiffProduct.add(ProductIO.readProduct(rasterFile));
-                this.tiffImageIndex++;
-                final Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
-
-                levels = band.getSourceImage().getModel().getLevelCount();
-                final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
-
-                Band targetBand = new Band(imageMetadata.getBandName(), band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
-                targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
-                targetBand.setSpectralWavelength(band.getSpectralWavelength());
-                targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
-                targetBand.setSolarFlux(band.getSolarFlux());
-                targetBand.setUnit(imageMetadata.getBandUnit());
-                targetBand.setNoDataValue(imageMetadata.getNoDataValue());
-                targetBand.setNoDataValueUsed(true);
-                targetBand.setDescription(imageMetadata.getBandDescription());
-                targetBand.setScalingFactor(imageMetadata.getGain());
-                targetBand.setScalingOffset(band.getScalingOffset());
-                initBandGeoCoding(imageMetadata, targetBand, width, height);
-
-                MosaicMultiLevelSource bandSource =
-                        new MosaicMultiLevelSource(band,
-                                                   band.getRasterWidth(), band.getRasterHeight(),
-                                                   tileSize.width, tileSize.height,
-                                                   levels, targetBand.getGeoCoding() != null ?
-                                                           Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                                                           Product.findImageToModelTransform(product.getSceneGeoCoding()));
-                targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-                this.product.addBand(targetBand);
-                addMasks(product, imageMetadata);
-            }
+            return this.product;
+        } finally {
+            productDirectoryTemp.close();
         }
-        return this.product;
     }
 
     /**
