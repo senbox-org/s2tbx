@@ -17,6 +17,8 @@
 
     <modules>
         <module>sen2cor</module>
+        <module>sen2cor255</module>
+        <module>sen2cor280</module>
         <module>sen2three</module>
         <module>orfeotoolbox</module>
         <module>snaphu-unwrapping</module>
