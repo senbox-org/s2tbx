@@ -259,7 +259,12 @@ class VirtualDirWrapper extends VirtualDirEx {
     @Override
     public String[] listAll(Pattern...patterns) {
         String[] list = super.listAll(patterns);
-        Arrays.stream(list).forEach(item -> this.files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
+        //If the input is archive, the list should contain the full item path(needed for some Deimos products opened on linux)
+        if(wrapped.isArchive() && wrapped.getBasePath().toLowerCase().contains("deimos")){
+            Arrays.stream(list).forEach(item -> files.put(item.toLowerCase(), item));
+        }else {
+            Arrays.stream(list).forEach(item -> files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
+        }
         return list;
     }
 
