@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -98,16 +98,16 @@ public class L2aGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
         boolean bFound = false;
-        if(folder.exists() && folder.isDirectory()) {
+        if (folder.existsAndHasChildren()) {
             VirtualPath[] resolutions;
             try {
                 resolutions = folder.listPaths();
             } catch (IOException e) {
                 resolutions = null;
             }
-            if(resolutions != null) {
+            if (resolutions != null) {
                 for (VirtualPath resolutionFolder : resolutions) {
-                    if (resolutionFolder.isDirectory()) {
+                    if (resolutionFolder.existsAndHasChildren()) {
                         VirtualPath[] images;
                         try {
                             images = resolutionFolder.listPaths();

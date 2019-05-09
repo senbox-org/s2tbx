@@ -17,7 +17,8 @@
 
 package org.esa.s2tbx.dataio.s2.ortho;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
@@ -25,13 +26,13 @@ import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
-import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
@@ -41,10 +42,15 @@ import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
  */
 public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
-    private static S2ProductCRSCache crsCache = new S2ProductCRSCache();
-    private S2Config.Sentinel2ProductLevel level = S2Config.Sentinel2ProductLevel.UNKNOWN;
+    private static final Logger logger = Logger.getLogger(S2OrthoProductReaderPlugIn.class.getName());
+
+    private static S2ProductCRSCache CRS_CHACHE = new S2ProductCRSCache();
+
+    private S2Config.Sentinel2ProductLevel level;
 
     public S2OrthoProductReaderPlugIn() {
+        this.level = S2Config.Sentinel2ProductLevel.UNKNOWN;
+
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural Colors", new String[]{"B4", "B3", "B2"}));
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI False-color Infrared", new String[]{"B8", "B4", "B3"}));
@@ -66,56 +72,59 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         return "Multi";
     }
 
-
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        SystemUtils.LOG.fine("Getting decoders...");
+        logger.log(Level.FINEST, "Getting decoders...");
 
-        if(!(input instanceof File)) {
+        if (!(input instanceof File)) {
             return DecodeQualification.UNABLE;
         }
         File file = (File) input;
-        String canonicalPathString = "";
-        Path canonicalPath;
-        try {
-            canonicalPathString = file.getCanonicalPath();
-            canonicalPath = Paths.get(canonicalPathString);
-        } catch (IOException e) {
+        Path inputPath = file.toPath();
+        if (!inputPath.isAbsolute()) {
+            return DecodeQualification.UNABLE;
+        }
+        if (!isValidExtension(file)) {
             return DecodeQualification.UNABLE;
         }
 
-        if(!isValidExtension(file)) {
+        CRS_CHACHE.ensureIsCached(inputPath);
+
+        String canonicalPathString = inputPath.toString();
+        this.level = CRS_CHACHE.getProductLevel(canonicalPathString);
+        S2Config.Sentinel2InputType inputType = CRS_CHACHE.getInputType(canonicalPathString);
+
+        if (inputType == null) {
             return DecodeQualification.UNABLE;
         }
 
-        crsCache.ensureIsCached(canonicalPath);
-
-        level = crsCache.getProductLevel(canonicalPathString);
-        S2Config.Sentinel2InputType  inputType = crsCache.getInputType(canonicalPathString);
-
-        if(inputType == null) {
+        if ((this.level != S2Config.Sentinel2ProductLevel.L1C) && (this.level != S2Config.Sentinel2ProductLevel.L2A) && (this.level != S2Config.Sentinel2ProductLevel.L3)) {
             return DecodeQualification.UNABLE;
         }
 
-        if((level != S2Config.Sentinel2ProductLevel.L1C)  && (level != S2Config.Sentinel2ProductLevel.L2A) && (level != S2Config.Sentinel2ProductLevel.L3)) {
+        if (!CRS_CHACHE.hasEPSG(canonicalPathString, getEPSG())) {
             return DecodeQualification.UNABLE;
         }
 
-        if(!crsCache.hasEPSG(canonicalPathString, getEPSG())) {
-            return DecodeQualification.UNABLE;
-        }
-
-        if (level != S2Config.Sentinel2ProductLevel.L2A && level != S2Config.Sentinel2ProductLevel.L3) {
+        if (this.level != S2Config.Sentinel2ProductLevel.L2A && this.level != S2Config.Sentinel2ProductLevel.L3) {
             return DecodeQualification.INTENDED;
         }
 
-        //if product is level2 or level3, check the specific folder//TODO revisar
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(new VirtualPath(canonicalPath,null), getResolution()))
+        // if product is level2 or level3, check the specific folder//TODO revisar
+        VirtualDirEx virtualDirEx;
+        try {
+            virtualDirEx = VirtualDirEx.build(inputPath.getParent());
+        } catch (IOException e) {
             return DecodeQualification.UNABLE;
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(new VirtualPath(canonicalPath,null), getResolution()))
-            return DecodeQualification.UNABLE;
+        }
+        VirtualPath pathMetadata = new VirtualPath(inputPath.getFileName().toString(), virtualDirEx);
 
-        //level=S2Config.Sentinel2ProductLevel.L2A;
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(pathMetadata, getResolution())) {
+            return DecodeQualification.UNABLE;
+        }
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(pathMetadata, getResolution())) {
+            return DecodeQualification.UNABLE;
+        }
         return DecodeQualification.INTENDED;
     }
 
@@ -123,7 +132,8 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        SystemUtils.LOG.info(String.format("Building product reader - %s", getEPSG()));
+        logger.info(String.format("Building product reader - %s", getEPSG()));
+
         return new Sentinel2OrthoProductReaderProxy(this, getEPSG());
     }
 
@@ -136,5 +146,4 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     public String getDescription(Locale locale) {
         return String.format("Sentinel-2 MSI %s - Native resolutions - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
-
 }

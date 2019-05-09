@@ -17,13 +17,11 @@
 
 package org.esa.s2tbx.dataio.s2;
 
-import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -34,7 +32,11 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
     protected final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_.*";
     protected final static Pattern PATTERN = Pattern.compile(REGEX);
     protected final static String FORMAT_NAME = "SENTINEL-2-MSI";
-    protected static String[] allowedExtensions = new String[]{".zip",".SAFE",".xml"};
+
+    private static final String[] ALLOWED_EXTENSIONS = new String[] {".zip",".SAFE",".xml"};
+
+    protected S2ProductReaderPlugIn() {
+    }
 
     protected String getFormatName() {
         return FORMAT_NAME;
@@ -53,43 +55,16 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(null,
-                                  getDefaultFileExtensions(),
-                                  "Sentinel-2 MSI product or tile");
+        return new SnapFileFilter(null, getDefaultFileExtensions(), "Sentinel-2 MSI product or tile");
     }
 
-
-    public static File getInputXmlFileFromDirectory(File file) {
-        if (!file.isDirectory()) {
-            return null;
-        }
-        Matcher matcher;
-        String fileName = "";
-        // If it is a directory, search inside for a valid xml file
-        String[] listXmlFiles = file.list((f, s) -> s.endsWith(".xml"));
-        int countValidXml = 0;
-        for (int i = 0; i < listXmlFiles.length; i++) {
-            matcher = PATTERN.matcher(listXmlFiles[i]);
-            if (matcher.matches()) {
-                countValidXml++;
-                fileName = listXmlFiles[i];
-            }
-        }
-        // If there are more than one valid file, it is considered an invalid input
-        if (countValidXml != 1) {
-            return null;
-        }
-
-        return new File(file.getAbsolutePath() + File.separator + fileName);
-    }
-
-    public static boolean isValidExtension (File file) {
+    protected static boolean isValidExtension(File file) {
         boolean validExtension = false;
         final String extension = FileUtils.getExtension(file);
         if (extension == null) {
             validExtension = true;
         } else {
-            for (String allowedExtension : allowedExtensions) {
+            for (String allowedExtension : ALLOWED_EXTENSIONS) {
                 if (extension.startsWith(allowedExtension)) {
                     validExtension = true;
                     break;
@@ -98,5 +73,4 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
         }
         return validExtension;
     }
-
 }

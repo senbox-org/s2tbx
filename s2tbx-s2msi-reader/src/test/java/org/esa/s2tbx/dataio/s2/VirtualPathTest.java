@@ -1,11 +1,9 @@
-package org.esa.s2tbx.dataio;
+package org.esa.s2tbx.dataio.s2;
 
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.LineNumberReader;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,11 +18,12 @@ import static org.junit.Assert.fail;
  * Created by obarrile on 22/12/2016.
  */
 public class VirtualPathTest {
+
     @Test
     public void testZip() throws Exception {
-        VirtualPath virtualPath = new VirtualPath("",VirtualDirEx.create(getTestDataDir("VirtualDirTest.zip")));
+        VirtualPath virtualPath = new VirtualPath(".", VirtualDirEx.build(getTestDataDir("VirtualDirTest.zip").toPath()));
         VirtualPath dir1 = virtualPath.resolve("dir1");
-        VirtualPath virtualPathFile4 = new VirtualPath("dir1/File4",VirtualDirEx.create(getTestDataDir("VirtualDirTest.zip")));
+        VirtualPath virtualPathFile4 = new VirtualPath("dir1/File4",VirtualDirEx.build(getTestDataDir("VirtualDirTest.zip").toPath()));
         assertNotNull(virtualPath);
         try {
             String[] filesArray = virtualPath.list();
@@ -44,7 +43,7 @@ public class VirtualPathTest {
             List<String> allDir1Files = Arrays.asList(filesDir1Array);
 
             assertEquals(2, allDir1Files.size());
-            assertTrue(dir1.isDirectory());
+            assertTrue(dir1.existsAndHasChildren());
             assertTrue(allDir1Files.contains("File3"));
             assertTrue(allDir1Files.contains("File4"));
 
@@ -56,7 +55,7 @@ public class VirtualPathTest {
             assertTrue(virtualPathFile4.resolveSibling("File3").exists());
             assertFalse(virtualPathFile4.resolveSibling("File5").exists());
 
-            assertFalse(virtualPathFile4.isDirectory());
+            assertFalse(virtualPathFile4.existsAndHasChildren());
             assertTrue(virtualPathFile4.getVirtualDir().isCompressed());
 
         } finally {
@@ -68,9 +67,9 @@ public class VirtualPathTest {
 
     @Test
     public void testDir() throws Exception {
-        VirtualPath virtualPath = new VirtualPath("",VirtualDirEx.create(getTestDataDir("VirtualDirTest.dir")));
+        VirtualPath virtualPath = new VirtualPath(".",VirtualDirEx.build(getTestDataDir("VirtualDirTest.dir").toPath()));
         VirtualPath dir1 = virtualPath.resolve("dir1");
-        VirtualPath virtualPathFile4 = new VirtualPath("dir1/File4",VirtualDirEx.create(getTestDataDir("VirtualDirTest.dir")));
+        VirtualPath virtualPathFile4 = new VirtualPath("dir1/File4",VirtualDirEx.build(getTestDataDir("VirtualDirTest.dir").toPath()));
         assertNotNull(virtualPath);
         try {
             String[] filesArray = virtualPath.list();
@@ -89,11 +88,9 @@ public class VirtualPathTest {
             List<String> allDir1Files = Arrays.asList(filesDir1Array);
 
             assertEquals(2, allDir1Files.size());
-            assertTrue(dir1.isDirectory());
+            assertTrue(dir1.existsAndHasChildren());
             assertTrue(allDir1Files.contains("File3"));
             assertTrue(allDir1Files.contains("File4"));
-
-            assertNotNull(virtualPath.getParent());
 
             assertTrue(virtualPathFile4.exists());
             assertNotNull(virtualPathFile4.getParent().getParent());
@@ -101,7 +98,7 @@ public class VirtualPathTest {
             assertTrue(virtualPathFile4.resolveSibling("File3").exists());
             assertFalse(virtualPathFile4.resolveSibling("File5").exists());
 
-            assertFalse(virtualPathFile4.isDirectory());
+            assertFalse(virtualPathFile4.existsAndHasChildren());
             assertFalse(virtualPathFile4.getVirtualDir().isCompressed());
 
         } finally {
@@ -114,7 +111,7 @@ public class VirtualPathTest {
     private static File getTestDataDir() {
         File dir = new File("./src/test/data/");
         if (!dir.exists()) {
-            dir = new File("./s2tbx-commons/src/test/data/");
+            dir = new File("./s2tbx-s2msi-reader/src/test/data/");
             if (!dir.exists()) {
                 fail("Can't find my test data. Where is '" + dir + "'?");
             }

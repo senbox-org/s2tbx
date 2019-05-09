@@ -18,7 +18,7 @@
 package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.dataio.FileImageInputStreamSpi;
+import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
@@ -155,7 +155,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                     String[] fileNames = componentMetadata.getRasterFileNames();
                     if (fileNames == null || fileNames.length == 0)
                         throw new InvalidMetadataException("No raster file found in metadata");
-                    String fileId = componentMetadata.getPath().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(),
+                    String fileId = componentMetadata.getPath().toString().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(),
                                                                                       fileNames[0].toLowerCase());
                     addProductComponentIfNotPresent(fileId, productDirectory.getFile(fileId), result);
                 } catch (IOException e) {

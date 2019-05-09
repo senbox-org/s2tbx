@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.s2.l3;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -13,11 +13,8 @@ import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -85,7 +82,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
         boolean bFound = false;
-        if(folder.exists() && folder.isDirectory()) {
+        if(folder.existsAndHasChildren()) {
             VirtualPath[] resolutions = null;
             try {
                 resolutions = folder.listPaths();
@@ -94,7 +91,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
 
             if(resolutions != null) {
                 for (VirtualPath resolutionFolder : resolutions) {
-                    if (resolutionFolder.isDirectory()) {
+                    if (resolutionFolder.existsAndHasChildren()) {
                         String[] images = null;
                         try {
                             images = resolutionFolder.list();

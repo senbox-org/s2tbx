@@ -1,9 +1,10 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -19,7 +20,7 @@ public interface INamingConvention {
     String[] getDatastripREGEXs();
     String[] getDatastripXmlREGEXs();
     boolean matches(String filename);
-    boolean hasValidStructure();
+    boolean hasValidStructure() throws IOException;
     VirtualPath getXmlFromDir(VirtualPath path);
     S2Config.Sentinel2InputType getInputType();
     S2Config.Sentinel2ProductLevel getProductLevel();

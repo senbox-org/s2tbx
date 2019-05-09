@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.nio.ByteOrder;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
@@ -194,8 +195,8 @@ public class SpotViewMetadataTest {
 
     @Test
     public void testSetPath() throws Exception {
-        metadata.setPath("D:/testtets");
-        assertEquals("D:/testtets", metadata.getPath());
+        metadata.setPath(Paths.get("D:/testtets"));
+        assertEquals("D:/testtets", metadata.getPath().toString());
     }
 
     @Test
