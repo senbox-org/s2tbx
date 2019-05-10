@@ -1,0 +1,9 @@
+{
+  "testProducts": [
+    {
+      "id": "AlosAV2Product",
+      "relativePath": "_alos/AL1_NESR_AV2_OBS_1C_20080715T181736_20080715T181748_013182_0539_1810_0410.SIP/AL1_NESR_AV2_OBS_1C_20080715T181736_20080715T181748_013182_0539_1810_0410.MD.XML",
+      "description": "Alos AVNIR-2 product"
+    }
+  ]
+}

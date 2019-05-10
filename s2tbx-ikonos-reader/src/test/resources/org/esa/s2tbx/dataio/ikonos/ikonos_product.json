@@ -1,0 +1,163 @@
+{
+  "id": "ikonos_product",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 4101,
+    "sceneHeight": 3983,
+    "geoCoding": {
+      "coordinates": [
+        {
+          "x": 1768.0,
+          "y": 2141.0,
+          "lat": 38.087617988676826,
+          "lon": 23.935240332498644
+        },
+        {
+          "x": 3044.0,
+          "y": 2584.0,
+          "lat": 38.08326646648784,
+          "lon": 23.94961151776738
+        }
+      ],
+      "reverseAccuracy": 4.319474101066589E-6
+    },
+    "bands": [
+      {
+        "name": "Blue",
+        "bandWidth": 50,
+        "bandHeight": 50,
+        "geophysicalUnit": "mW/cm^2*sr",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2,
+            "y": 8,
+            "value": 0.50005
+          },
+          {
+            "x": 34,
+            "y": 42,
+            "value": 0.44936
+          }
+        ]
+      },
+      {
+        "name": "Green",
+        "bandWidth": 50,
+        "bandHeight": 50,
+        "geophysicalUnit": "mW/cm^2*sr",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 14,
+            "y": 12,
+            "value": 0.50964
+          },
+          {
+            "x": 30,
+            "y": 18,
+            "value": 0.48361
+          }
+        ]
+      },
+      {
+        "name": "Near",
+        "bandWidth": 50,
+        "bandHeight": 50,
+        "geophysicalUnit": "mW/cm^2*sr",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 27,
+            "y": 37,
+            "value": 0.55811
+          },
+          {
+            "x": 30,
+            "y": 46,
+            "value": 0.56049
+          }
+        ]
+      },
+      {
+        "name": "Pan",
+        "bandWidth": 200,
+        "bandHeight": 200,
+        "geophysicalUnit": "mW/cm^2*sr",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 31,
+            "y": 133,
+            "value": 0.439485
+          },
+          {
+            "x": 103,
+            "y": 182,
+            "value": 0.789330
+          }
+        ]
+      },
+      {
+        "name": "Red",
+        "bandWidth": 50,
+        "bandHeight": 50,
+        "geophysicalUnit": "mW/cm^2*sr",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 37,
+            "y": 24,
+            "value": 0.30975
+          },
+          {
+            "x": 47,
+            "y": 24,
+            "value": 0.60585
+          }
+        ]
+      }
+    ],
+    "metadata": [
+      {
+        "path": "Metadata/phenomenonTime/TimePeriod/endPosition",
+        "value": "2008-08-20T09:26:00Z"
+      },
+      {
+        "path": "Metadata/phenomenonTime/TimePeriod/beginPosition",
+        "value": "2008-08-20T09:26:00Z"
+      },
+      {
+        "path": "Metadata/result/EarthObservationResult/browse/BrowseInformation/referenceSystemIdentifier",
+        "value": "UTM_34N"
+      },
+      {
+        "path": "Metadata/metaDataProperty/EarthObservationMetaData/identifier",
+        "value": "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001"
+      },
+      {
+        "path": "Metadata/featureOfInterest/Footprint/centerOf/Point/pos",
+        "value": "38.0548528801 23.9865276316"
+      },
+      {
+        "path": "Metadata/featureOfInterest/Footprint/multiExtentOf/MultiSurface/surfaceMember/Polygon/exterior/LinearRing/posList",
+        "value": "38.1166697339 23.9048421125 37.9972505388 23.9001216511 37.9929852559 24.0680760263 38.1123862139 24.0730688435 38.1166697339 23.9048421125"
+      }
+    ]
+  }
+}

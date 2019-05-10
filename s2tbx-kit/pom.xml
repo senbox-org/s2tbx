@@ -127,6 +127,12 @@
             <artifactId>ceres-glayer</artifactId>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-cache</artifactId>
@@ -428,6 +434,12 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-modules</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-worldview2esa-reader</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

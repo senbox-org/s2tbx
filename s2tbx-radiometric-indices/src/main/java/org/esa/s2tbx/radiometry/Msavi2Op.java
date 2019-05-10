@@ -94,7 +94,12 @@ public class Msavi2Op extends BaseIndexOp {
                     final float nir = nirFactor * nirTile.getSampleFloat(x, y);
                     final float red = redFactor * redTile.getSampleFloat(x, y);
 
-                    msavi2Value = (float) ((1f/2f) * (2*(nir + 1) - Math.sqrt( (2*nir + 1)*(2*nir + 1) - 8*(nir - red))));
+                    /**
+                     * https://senbox.atlassian.net/browse/SIITBX-352
+                     * The formula should be:
+                     MSAVI2 = (1/2) * (2 * IR_factor * near_IR + 1 - sqrt((2 * IR_factor * near_IR + 1) * (2 * IR_factor * near_IR + 1) - 8 * (IR_factor * near_IR - red_factor * red)))
+                      */
+                    msavi2Value = (float) ((1f/2f) * (2*nir + 1 - Math.sqrt( (2*nir + 1)*(2*nir + 1) - 8*(nir - red))));
 
                     msavi2.setSample(x, y, computeFlag(x, y, msavi2Value, msavi2Flags));
                 }
