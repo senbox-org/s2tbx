@@ -4,6 +4,7 @@ AutoUpdate-Essential-Module: false
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Specification-Version: ${project.nbmSpecVersion}
+OpenIDE-Module-Implementation-Version: ${project.nbmImplVersion}
 OpenIDE-Module-Long-Description: <p>Aerosol retrieval from S2-MSI following USwansea algorithm as used in GlobAlbedo project for MERIS/VGT.</p><p><b>Vendor:</b> Brockmann Consult Gmb
  H</p><p><b>Contact address:</b> Max-Planck-Str. 2, 21502 Geesthacht (
  Germany)</p><p><b>Copyright:</b> (C) 2014 by Brockmann Consult GmbH</

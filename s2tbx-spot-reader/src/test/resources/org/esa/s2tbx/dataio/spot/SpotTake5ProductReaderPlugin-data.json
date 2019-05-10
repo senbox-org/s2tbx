@@ -2,7 +2,7 @@
     "testProducts": [
         {
             "id": "Spot4Take5-Argentina",
-            "relativePath": "_spot\\SPOT4_HRVIR1_XS_20130608_N2A.tgz",
+            "relativePath": "_spot/SPOT4_HRVIR1_XS_20130608_N2A.tgz",
             "description": "Spot4Take5 product in an archive"
         }
     ]

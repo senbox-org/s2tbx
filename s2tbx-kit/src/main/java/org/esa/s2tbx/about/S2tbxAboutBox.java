@@ -22,6 +22,7 @@
  */
 package org.esa.s2tbx.about;
 
+import com.bc.ceres.core.runtime.Version;
 import org.esa.snap.rcp.about.AboutBox;
 import org.esa.snap.rcp.util.BrowserUtils;
 import org.openide.modules.ModuleInfo;
@@ -30,8 +31,6 @@ import org.openide.modules.Modules;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * @author Norman
@@ -39,7 +38,7 @@ import java.net.URISyntaxException;
 @AboutBox(displayName = "S2TBX", position = 20)
 public class S2tbxAboutBox extends JPanel {
 
-    private final static String releaseNotesHTTP = "https://github.com/senbox-org/s2tbx/blob/master/ReleaseNotes.md";
+    private final static String releaseNotesUrlString = "https://senbox.atlassian.net/issues/?filter=-4&jql=project%20%3D%20SIITBX%20AND%20fixVersion%20%3D%20";
 
     public S2tbxAboutBox() {
         super(new BorderLayout(4, 4));
@@ -56,22 +55,13 @@ public class S2tbxAboutBox extends JPanel {
         final ModuleInfo moduleInfo = Modules.getDefault().ownerOf(S2tbxAboutBox.class);
         panel.add(new JLabel("<html><b>Sentinel-2 Toolbox (S2TBX) version " + moduleInfo.getImplementationVersion() + "</b>",
                 SwingConstants.RIGHT));
-        final URI releaseNotesURI = getReleaseNotesURI();
-        if (releaseNotesURI != null) {
-            final JLabel releaseNoteLabel = new JLabel("<html><a href=\"" + releaseNotesURI.toString() + "\">Release Notes</a>",
-                    SwingConstants.RIGHT);
-            releaseNoteLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            releaseNoteLabel.addMouseListener(new BrowserUtils.URLClickAdaptor(releaseNotesHTTP));
-            panel.add(releaseNoteLabel);
-        }
+        Version specVersion = Version.parseVersion(moduleInfo.getSpecificationVersion().toString());
+        String versionString = String.format("%s.%s.%s", specVersion.getMajor(), specVersion.getMinor(), specVersion.getMicro());
+        String changelogUrl = releaseNotesUrlString + versionString;
+        final JLabel releaseNoteLabel = new JLabel("<html><a href=\"" + changelogUrl + "\">Release Notes</a>", SwingConstants.RIGHT);
+        releaseNoteLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        releaseNoteLabel.addMouseListener(new BrowserUtils.URLClickAdaptor(changelogUrl));
+        panel.add(releaseNoteLabel);
         return panel;
-    }
-
-    private URI getReleaseNotesURI() {
-        try {
-            return new URI(releaseNotesHTTP);
-        } catch (URISyntaxException e) {
-            return null;
-        }
     }
 }

@@ -77,6 +77,7 @@
         <module>s2tbx-ikonos-reader</module>
         <module>s2tbx-alosAV2-reader</module>
         <module>s2tbx-alosPRI-reader</module>
+        <module>s2tbx-worldview2esa-reader</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -90,13 +91,15 @@
         <netbeans.version>RELEASE82</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
         <brandingToken>s2tbx</brandingToken>
+        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
+        <buildDate>${maven.build.timestamp}</buildDate>
     </properties>
 
     <repositories>
         <repository>
             <id>snap-repo-public</id>
             <name>Public Maven Repository for SNAP</name>
-            <url>http://nexus.senbox.net/nexus/content/repositories/public/</url>
+            <url>https://snap-build-server.tilaa.cloud/nexus/repository/snap-maven-public/</url>
             <releases>
                 <enabled>true</enabled>
                 <checksumPolicy>warn</checksumPolicy>
@@ -112,7 +115,7 @@
         <pluginRepository>
             <id>snap-repo-public</id>
             <name>Public Maven Repository for SNAP</name>
-            <url>http://nexus.senbox.net/nexus/content/repositories/public/</url>
+            <url>https://snap-build-server.tilaa.cloud/nexus/repository/snap-maven-public/</url>
             <releases>
                 <enabled>true</enabled>
                 <checksumPolicy>warn</checksumPolicy>
@@ -128,13 +131,13 @@
         <repository>
             <id>snap-repo-public</id>
             <name>Public Maven Repository for SNAP</name>
-            <url>http://nexus.senbox.net/nexus/content/repositories/releases/</url>
+            <url>https://snap-build-server.tilaa.cloud/nexus/repository/snap-maven-releases/</url>
             <uniqueVersion>false</uniqueVersion>
         </repository>
         <snapshotRepository>
             <id>snap-repo-public</id>
             <name>Public Maven Snapshot Repository for SNAP</name>
-            <url>http://nexus.senbox.net/nexus/content/repositories/snapshots/</url>
+            <url>https://snap-build-server.tilaa.cloud/nexus/repository/snap-maven-snapshot/</url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
@@ -148,7 +151,7 @@
                 <artifactId>snap-engine</artifactId>
                 <version>${snap.version}</version>
             </dependency>
-          
+
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-engine-utilities</artifactId>
@@ -248,23 +251,6 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-sta-ui</artifactId>
-                <version>${snap.version}</version>
-            </dependency>
-
-            <!-- snap-reader-tests -->
-
-            <dependency>
-                <groupId>org.esa.snap</groupId>
-                <artifactId>snap-reader-tests</artifactId>
-                <version>${snap.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.snap</groupId>
-                <artifactId>snap-reader-tests</artifactId>
-                <type>test-jar</type>
-                <scope>test</scope>
                 <version>${snap.version}</version>
             </dependency>
 
@@ -387,6 +373,29 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>[3.2.5,3.6.0]</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>1.8</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -416,11 +425,23 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.5.201505241946</version>
+                <version>0.8.3</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -441,6 +462,12 @@
                     </sourceDirectories>
                     <scanForSources>true</scanForSources>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.19</version>
             </plugin>
 
         </plugins>
@@ -485,10 +512,10 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.10</version>
+                    <version>3.0.0</version>
                     <executions>
                         <execution>
-                            <id>regex-property</id>
+                            <id>create-nbmSpecVersion</id>
                             <goals>
                                 <goal>regex-property</goal>
                             </goals>
@@ -500,12 +527,45 @@
                                 <failIfNoMatch>false</failIfNoMatch>
                             </configuration>
                         </execution>
+                        <execution>
+                            <id>create-nbmImplVersion</id>
+                            <goals>
+                                <goal>regex-property</goal>
+                            </goals>
+                            <configuration>
+                                <name>project.nbmImplVersion</name>
+                                <value>${project.version}</value>
+                                <regex>(-SNAPSHOT)|(-rc[0-9]+)</regex>
+                                <replacement>.${buildDate}</replacement>
+                                <failIfNoMatch>false</failIfNoMatch>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>parse-version</id>
+                            <goals>
+                                <goal>parse-version</goal>
+                            </goals>
+                            <configuration>
+                                <propertyPrefix>s2tbx</propertyPrefix>
+                                <versionString>${s2tbx.version}</versionString>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>build-date</id>
+                            <goals>
+                                <goal>timestamp-property</goal>
+                            </goals>
+                            <configuration>
+                                <name>s2tbx.buildDate</name>
+                                <pattern>yyyy-MM-dd</pattern>
+                            </configuration>
+                        </execution>
                     </executions>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.19</version>
+                    <version>3.0.0-M3</version>
                     <configuration>
                         <enableAssertions>true</enableAssertions>
                         <!--<skip>true</skip>-->
@@ -523,7 +583,7 @@
                             <snap.reader.tests.data.dir>${snap.reader.tests.data.dir}</snap.reader.tests.data.dir>
                             <snap.reader.tests.class.name>${snap.reader.tests.class.name}</snap.reader.tests.class.name>
                         </systemPropertyVariables>
-                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8 -da:org.geotools.referencing.operation.projection.MapProjection</argLine>
+                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8 -da:org.geotools.referencing.operation.projection.MapProjection @{argLine}</argLine>
                     </configuration>
                 </plugin>
 

@@ -205,6 +205,10 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         return tileSize;
     }
 
+    protected String[] getMetadataFiles() throws IOException {
+        return this.productDirectory.findAll(getMetadataExtension());
+    }
+
     @Override
     protected Product readProductNodesImpl() throws IOException {
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
@@ -215,7 +219,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
         this.productDirectory = buildProductDirectory(inputPath);
 
-        String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
+        String[] metadataFiles = getMetadataFiles();
         if (metadataFiles == null) {
             logger.info("No metadata file found");
         } else {

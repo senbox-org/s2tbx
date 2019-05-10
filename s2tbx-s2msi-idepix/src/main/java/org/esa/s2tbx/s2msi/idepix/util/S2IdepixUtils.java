@@ -12,8 +12,8 @@ import org.esa.snap.core.util.BitSetter;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JOptionPane;
+import java.awt.Color;
 import java.util.Random;
 
 /**
@@ -149,7 +149,7 @@ public class S2IdepixUtils {
         int w = gaCloudProduct.getSceneRasterWidth();
         int h = gaCloudProduct.getSceneRasterHeight();
         Mask mask;
-        Random r = new Random();
+        Random r = new Random(1234567);
 
         mask = Mask.BandMathsType.create("IDEPIX_INVALID",
                                          IDEPIX_INVALID_DESCR_TEXT, w, h,

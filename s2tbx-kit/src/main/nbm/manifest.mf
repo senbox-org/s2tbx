@@ -1,5 +1,13 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Specification-Version: ${project.nbmSpecVersion}
+OpenIDE-Module-Implementation-Version: ${project.nbmImplVersion}
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: false
+OpenIDE-Module-Long-Description: The Sentinel-2 Toolbox is a SNAP extension dedicated to the exploitation of Sentinel-2 MSI data and
+  data of other optical, high resolution sensors.
+ <p>The changes for this version can be viewed in our
+  <a href="https://senbox.atlassian.net/issues/?filter=-4&jql=project%20%3D%20SIITBX%20AND%20fixVersion%20%3D%20${s2tbx.majorVersion}.${s2tbx.minorVersion}.${s2tbx.incrementalVersion}">issue tracker</a></p>
+ <p><b>Publication date:</b> ${s2tbx.buildDate}<br/>
+ <b>Vendor:</b> CS <br/>
+ <b>License:</b> http://www.gnu.org/licenses/gpl.html</p>

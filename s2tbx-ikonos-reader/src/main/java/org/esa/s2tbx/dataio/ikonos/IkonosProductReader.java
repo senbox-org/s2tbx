@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -143,53 +144,51 @@ public class IkonosProductReader extends AbstractProductReader {
                 this.product.setFileLocation(inputFile.toFile());
                 this.product.setProductReader(this);
 
-                final String dirPath = this.metadata.getImageDirectoryPath();
-                final String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
-                final String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
-                int levels;
-                Double bandGainPan = 0.0;
-                for (BandMetadata aBandMetadataList : bandMetadataList) {
-                    final String imageFileName = aBandMetadataList.getImageFileName();
-                    this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + IkonosConstants.IMAGE_EXTENSION).toFile()));
-                    this.tiffImageIndex++;
-                    final Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
-                    if (this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding() == null &&
-                            this.product.getSceneGeoCoding() == null) {
-                        initProductTiePointGeoCoding(this.metadata, this.product);
-                    }
-                    levels = band.getSourceImage().getModel().getLevelCount();
-                    final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
-                    String bandName = null;
-                    Double bandGain = null;
+            final String dirPath = this.metadata.getImageDirectoryPath();
+            final String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
+            final String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
+            int levels;
+            for (BandMetadata aBandMetadataList : bandMetadataList) {
+                final String imageFileName = aBandMetadataList.getImageFileName();
+                this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + IkonosConstants.IMAGE_EXTENSION).toFile()));
+                this.tiffImageIndex++;
+                final Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
+                if (this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding() == null &&
+                        this.product.getSceneGeoCoding() == null) {
+                    initProductTiePointGeoCoding(this.metadata, this.product);
+                }
+                levels = band.getSourceImage().getModel().getLevelCount();
+                final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
+                String bandName = null;
+                Double bandGain = null;
 
-                    for (int bandNameIndex = 0; bandNameIndex < IkonosConstants.BAND_NAMES.length - 1; bandNameIndex++) {
-                        if (imageFileName.contains(IkonosConstants.FILE_NAMES[bandNameIndex])) {
-                            switch (IkonosConstants.BAND_NAMES[bandNameIndex]) {
-                                case "1":
-                                    bandName = "Blue";
-                                    break;
-                                case "2":
-                                    bandName = "Green";
-                                    break;
-                                case "3":
-                                    bandName = "Red";
-                                    break;
-                                case "4":
-                                    bandName = "Near";
-                                    break;
-                            }
-                            bandGain = IkonosConstants.BAND_GAIN[bandNameIndex];
-                            bandGainPan += IkonosConstants.BAND_GAIN[bandNameIndex];
+                for (int bandNameIndex = 0; bandNameIndex < IkonosConstants.BAND_NAMES.length - 1; bandNameIndex++) {
+                    if (imageFileName.contains(IkonosConstants.FILE_NAMES[bandNameIndex])) {
+                        switch (IkonosConstants.BAND_NAMES[bandNameIndex]) {
+                            case "1":
+                                bandName = "Blue";
+                                break;
+                            case "2":
+                                bandName = "Green";
+                                break;
+                            case "3":
+                                bandName = "Red";
+                                break;
+                            case "4":
+                                bandName = "Near";
+                                break;
                         }
+                        bandGain = IkonosConstants.BAND_GAIN[bandNameIndex];
                     }
-                    if (bandName == null) {
-                        bandName = IkonosConstants.BAND_NAMES[4];
-                        bandGain = bandGainPan / (IkonosConstants.BAND_NAMES.length - 1);
-                        final GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
-                        if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
-                            this.product.setSceneGeoCoding(bandGeoCoding);
-                        }
+                }
+                if (bandName == null) {
+                    bandName = IkonosConstants.BAND_NAMES[4];
+                    bandGain = Arrays.asList(IkonosConstants.BAND_GAIN).stream().mapToDouble(p -> p).sum() / (IkonosConstants.BAND_NAMES.length - 1);
+                    final GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
+                    if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
+                        this.product.setSceneGeoCoding(bandGeoCoding);
                     }
+                }
 
                     final Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
                     targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
