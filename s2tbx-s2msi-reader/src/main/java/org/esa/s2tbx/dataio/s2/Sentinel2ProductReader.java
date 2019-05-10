@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.s2;
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
@@ -33,26 +34,24 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.quicklooks.Quicklook;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.core.util.io.FileUtils;
-import org.esa.snap.utils.FileHelper;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 
 /**
  * Base class for all Sentinel-2 product readers
@@ -192,7 +191,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             if (files != null && files.length > 0) {
                 for (String relativePath : files) {
                     if (relativePath.endsWith(".png") && (relativePath.startsWith("S2") || relativePath.startsWith("BWI_"))) {
-                        return inputVirtualPath.resolveSibling(relativePath).getFile();
+                        return inputVirtualPath.resolveSibling(relativePath).getLocalFile();
                     }
                 }
             }
@@ -234,12 +233,10 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      */
     public TileLayout retrieveTileLayoutFromGranuleMetadataFile(VirtualPath granuleMetadataFilePath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
-
         if (granuleMetadataFilePath.exists() && granuleMetadataFilePath.getFileName().toString().endsWith(".xml")) {
             VirtualPath granuleDirPath = granuleMetadataFilePath.getParent();
             tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granuleDirPath, resolution);
         }
-
         return tileLayoutForResolution;
     }
 
@@ -254,12 +251,10 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      */
     public TileLayout retrieveTileLayoutFromProduct(VirtualPath productMetadataFilePath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
-
         if (productMetadataFilePath.exists() && productMetadataFilePath.getFileName().toString().endsWith(".xml")) {
             VirtualPath granulesFolder = productMetadataFilePath.resolveSibling("GRANULE");
             try {
                 VirtualPath[] granulesFolderList = granulesFolder.listPaths();
-
                 if (granulesFolderList != null && granulesFolderList.length > 0) {
                     for (VirtualPath granulePath : granulesFolderList) {
                         tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granulePath, resolution);
@@ -272,7 +267,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 logger.log(Level.WARNING, "Could not retrieve tile layout for product " + productMetadataFilePath.getFullPathString() + " error returned: " + e.getMessage(), e);
             }
         }
-
         return tileLayoutForResolution;
     }
 
@@ -291,8 +285,15 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             List<VirtualPath> imageDirectories = getImageDirectories(pathToImages, resolution);
             for (VirtualPath imageFilePath : imageDirectories) {
                 try {
-                    Path jp2FilePath = imageFilePath.getFile();
-                    tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, jp2FilePath);
+                    if (OpenJpegUtils.canReadJP2FileHeaderWithOpenJPEG()) {
+                        Path jp2FilePath = imageFilePath.getLocalFile();
+                        tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, jp2FilePath);
+                    } else {
+                        try (FilePath filePath = imageFilePath.getFilePath()) {
+                            boolean canSetFilePosition = !imageFilePath.getVirtualDir().isArchive();
+                            tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithInputStream(filePath.getPath(), 5 * 1024, canSetFilePosition);
+                        }
+                    }
                     if (tileLayoutForResolution != null) {
                         break;
                     }

@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio;
 
 import com.bc.ceres.core.VirtualDir;
 import org.esa.s2tbx.commons.AbstractVirtualPath;
+import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.commons.VirtualDirPath;
 import org.esa.s2tbx.commons.VirtualZipPath;
@@ -202,6 +203,8 @@ public abstract class VirtualDirEx extends VirtualDir {
     public abstract String getFileSystemSeparator();
 
     public abstract FilePathInputStream getInputStream(String path) throws IOException;
+
+    public abstract FilePath getFilePath(String childRelativePath) throws IOException;
 
     public void setFolderDepth(int value) {
         this.depth = value;

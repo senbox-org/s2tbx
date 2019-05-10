@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio;
 
 import org.esa.s2tbx.commons.AbstractVirtualPath;
+import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.commons.VirtualDirPath;
 import org.esa.snap.core.util.io.FileUtils;
@@ -57,6 +58,11 @@ class VirtualDirWrapper extends VirtualDirEx {
     @Override
     public File getBaseFile() {
         return this.wrapped.getBaseFile();
+    }
+
+    @Override
+    public FilePath getFilePath(String childRelativePath) throws IOException {
+        return this.wrapped.getFilePath(childRelativePath);
     }
 
     @Override

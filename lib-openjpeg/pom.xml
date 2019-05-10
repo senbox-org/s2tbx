@@ -90,6 +90,7 @@
                         <publicPackage>org.esa.s2tbx.dataio.jp2.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.openjp2.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.openjpeg.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.lib.openjpeg.*</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

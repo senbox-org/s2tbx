@@ -1,10 +1,12 @@
 package org.esa.s2tbx.dataio.s2;
 
+import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +43,7 @@ public class VirtualPath {
     }
 
     public Path getFileName() {
-        if (this.relativePath.toString().equals(".")) {
+        if (isCurrentDirectory()) {
             return this.dir.getBaseFile().toPath().getFileName();
         }
         return this.relativePath.getFileName();
@@ -63,7 +65,7 @@ public class VirtualPath {
 
     public VirtualPath resolve(String other) {
         String path = replaceFileSeparator(other, this.dir.getFileSystemSeparator());
-        if (this.relativePath.getFileName().toString().equals(".")) {
+        if (isCurrentDirectory()) {
             return new VirtualPath(this.relativePath.resolveSibling(path).toString(), this.dir);
         }
         return new VirtualPath(this.relativePath.resolve(path).toString(), this.dir);
@@ -71,7 +73,7 @@ public class VirtualPath {
 
     public VirtualPath resolveSibling(String other) {
         String path = replaceFileSeparator(other, this.dir.getFileSystemSeparator());
-        if (this.relativePath.getFileName().toString().equals(".")) {
+        if (isCurrentDirectory()) {
             return new VirtualPath(this.relativePath.normalize().resolveSibling(path).toString(), this.dir);
         }
         return new VirtualPath(this.relativePath.resolveSibling(path).toString(), this.dir);
@@ -92,18 +94,27 @@ public class VirtualPath {
     }
 
     public InputStream getInputStream() throws IOException {
-        if (this.relativePath.getFileName().toString().equals(".")) {
+        if (isCurrentDirectory()) {
             throw new IllegalStateException("Unable to get the input stream for path '"+this.relativePath.toString()+"'.");
         }
         return this.dir.getInputStream(this.relativePath.toString());
     }
 
-    public Path getFile() throws IOException {
+    public FilePath getFilePath() throws IOException {
+        return this.dir.getFilePath(this.relativePath.toString());
+    }
+
+    public Path getLocalFile() throws IOException {
         if (isCurrentDirectory()) {
             throw new IllegalStateException("Unable to get the file for path '"+this.relativePath.toString()+"'.");
         }
         File file = this.dir.getFile(this.relativePath.toString());
-        return file.toPath();
+        Path filePath = file.toPath();
+        if (filePath.getFileSystem() == FileSystems.getDefault()) {
+            return filePath;
+        } else {
+            throw new IllegalStateException("The file '"+filePath.toString()+"' is not a local file.");
+        }
     }
 
     public String[] list() throws IOException {

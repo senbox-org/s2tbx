@@ -6,18 +6,21 @@ import org.esa.snap.utils.FileHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by jcoravu on 9/4/2019.
  */
 public abstract class AbstractVirtualPath extends VirtualDir {
+
+    private static final Logger logger = Logger.getLogger(AbstractVirtualPath.class.getName());
 
     private final boolean copyFilesOnLocalDisk;
 
@@ -36,6 +39,8 @@ public abstract class AbstractVirtualPath extends VirtualDir {
     public abstract FilePathInputStream getInputStreamIgnoreCaseIfExists(String relativePath) throws IOException;
 
     public abstract FilePathInputStream getInputStream(String path) throws IOException;
+
+    public abstract FilePath getFilePath(String childRelativePath) throws IOException;
 
     @Override
     public void close() {
@@ -61,32 +66,22 @@ public abstract class AbstractVirtualPath extends VirtualDir {
                 this.localTempDir = VirtualDir.createUniqueTempDir();
             }
             Path localFilePath = this.localTempDir.toPath().resolve(childRelativePath);
-            copyFileOnLocalDiskIfMissing(entryPath, localFilePath);
+            if (FileHelper.canCopyOrReplaceFile(entryPath, localFilePath)) {
+                Path parentFolder = localFilePath.getParent();
+
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Copy file '" + entryPath.toString() + "' to local folder '" + parentFolder.toString() + "'.");
+                }
+
+                if (!Files.exists(parentFolder)) {
+                    Files.createDirectories(parentFolder);
+                }
+                FileHelper.copyFileUsingInputStream(entryPath, localFilePath.toString(), VirtualDirEx.BUFFER_SIZE);
+            }
             return localFilePath;
         } else {
             // do not copy the file from the zip archive on the local disk
             return entryPath;
-        }
-    }
-
-    private static void copyFileOnLocalDiskIfMissing(Path sourceFile, Path destinationFile) throws IOException {
-        boolean copyFile = true;
-        if (Files.exists(destinationFile)) {
-            // the destination file already exists
-            if (Files.isRegularFile(destinationFile)) {
-                long sourceFileSizeInBytes = Files.size(sourceFile);
-                long destinationFileSizeInBytes = Files.size(destinationFile);
-                copyFile = (destinationFileSizeInBytes != sourceFileSizeInBytes);
-            } else {
-                throw new NotRegularFileException(destinationFile.toString());
-            }
-        }
-        if (copyFile) {
-            Path parentFolder = destinationFile.getParent();
-            if (!Files.exists(parentFolder)) {
-                Files.createDirectories(parentFolder);
-            }
-            FileHelper.copyFileUsingInputStream(sourceFile, destinationFile.toString(), VirtualDirEx.BUFFER_SIZE);
         }
     }
 

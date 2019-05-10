@@ -28,6 +28,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
+import org.esa.s2tbx.dataio.s2.AbstractMultiLevelImageFactory;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -411,7 +413,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, MultiLevelImageFactory mlif) throws IOException {
+    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, AbstractMultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(getProductResolution().resolution).numResolutions);
 
@@ -589,7 +591,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             band.setDescription(bandInfo.getBandInformation().getDescription());
             band.setValidPixelExpression(String.format("%s.raw > 0",bandInfo.getBandInformation().getPhysicalBand()));
 
-            MultiLevelImageFactory mlif = new L1bTileIndexMultiLevelImageFactory(
+            AbstractMultiLevelImageFactory mlif = new L1bTileIndexMultiLevelImageFactory(
                     sceneDescription,
                     Product.findImageToModelTransform(band.getGeoCoding()));
 
@@ -597,21 +599,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             product.addBand(band);
 
         }
-
     }
 
-
-    private abstract class MultiLevelImageFactory {
-        protected final AffineTransform imageToModelTransform;
-
-        protected MultiLevelImageFactory(AffineTransform imageToModelTransform) {
-            this.imageToModelTransform = imageToModelTransform;
-        }
-
-        public abstract MultiLevelImage createSourceImage(L1BBandInfo tileBandInfo);
-    }
-
-    private class L1bSceneMultiLevelImageFactory extends MultiLevelImageFactory {
+    private class L1bSceneMultiLevelImageFactory extends AbstractMultiLevelImageFactory<L1BBandInfo> {
 
         private final L1bSceneDescription sceneDescription;
 
@@ -628,11 +618,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         public MultiLevelImage createSourceImage(L1BBandInfo tileBandInfo) {
             BandL1bSceneMultiLevelSource bandScene = new BandL1bSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
             SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), "BandScene: " + bandScene);
-            return new DefaultMultiLevelImage(bandScene);
+
+            int level = 0;
+            TileLayout tileLayout = tileBandInfo.getImageLayout();
+            ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, S2Config.SAMPLE_DATA_BUFFER_TYPE, level);
+            return new DefaultMultiLevelImage(bandScene, imageLayout);
         }
     }
 
-    private class L1bTileIndexMultiLevelImageFactory extends MultiLevelImageFactory {
+    private class L1bTileIndexMultiLevelImageFactory extends AbstractMultiLevelImageFactory<L1BBandInfo> {
 
         private final L1bSceneDescription sceneDescription;
 
@@ -652,7 +646,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             return new DefaultMultiLevelImage(bandScene);
         }
     }
-
 
     /**
      * A MultiLevelSource for a scene made of multiple L1C tiles.
@@ -680,15 +673,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             this.tileBandInfo = tileBandInfo;
         }
 
-        protected PlanarImage createL1bTileImage(String tileId, int level) {
+        private PlanarImage createL1bTileImage(String tileId, int level) {
             VirtualPath imagePath = this.tileBandInfo.getTileIdToPathMap().get(tileId);
 
             PlanarImage planarImage = null;
             try {
-                planarImage = S2TileOpImage.create(imagePath.getFile(),
+                planarImage = S2TileOpImage.create(imagePath.getLocalFile(),
                                                    getCacheDir(),
-                                                   null, // tileRectangle.getLocation(),
-                                                   tileBandInfo.getImageLayout(),
+                                                   null,
+                                                   this.tileBandInfo.getImageLayout(),
                                                    getConfig(),
                                                    getModel(),
                                                    getProductResolution(),
@@ -713,12 +706,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             List<String> tiles = sceneDescription.getTileIds().stream().filter(x -> x.contains(tileBandInfo.detectorId)).collect(Collectors.toList());
 
-
             TileLayout thisBandTileLayout = this.tileBandInfo.getImageLayout();
             TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
             float layoutRatioX = (float) productTileLayout.width / thisBandTileLayout.width;
             float layoutRatioY = (float) productTileLayout.height / thisBandTileLayout.height;
-
 
             for (String tileId : tiles) {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
@@ -760,11 +751,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                                           null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
-
-            int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() /
-                    (layoutRatioX * getProductResolution().resolution));
-            int fitRectHeight = (int) (sceneDescription.getSceneEnvelope().getHeight() /
-                    (layoutRatioY * getProductResolution().resolution));
+            int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() / (layoutRatioX * getProductResolution().resolution));
+            int fitRectHeight = (int) (sceneDescription.getSceneEnvelope().getHeight() / (layoutRatioY * getProductResolution().resolution));
 
             Rectangle fitRect = new Rectangle(0, 0, fitRectWidht, fitRectHeight);
             final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
@@ -799,8 +787,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             this.tileBandInfo = tileBandInfo;
         }
 
-        protected PlanarImage createConstantTileImage(String tileId, int level) {
-
+        private PlanarImage createConstantTileImage(String tileId, int level) {
             S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) tileBandInfo.getBandInformation();
             IndexCoding indexCoding = indexBandInformation.getIndexCoding();
             Integer indexValue = indexCoding.getIndexValue(S2L1BGranuleDirFilename.create(tileId).getTileID());

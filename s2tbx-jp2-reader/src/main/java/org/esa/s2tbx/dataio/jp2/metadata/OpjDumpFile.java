@@ -17,11 +17,27 @@
 
 package org.esa.s2tbx.dataio.jp2.metadata;
 
+import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.openjpeg.CommandOutput;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
+import org.esa.s2tbx.lib.openjpeg.BufferedRandomAccessFile;
+import org.esa.s2tbx.lib.openjpeg.CODMarkerSegment;
+import org.esa.s2tbx.lib.openjpeg.ContiguousCodestreamBox;
+import org.esa.s2tbx.lib.openjpeg.IMarkers;
+import org.esa.s2tbx.lib.openjpeg.JP2FileReader;
+import org.esa.s2tbx.lib.openjpeg.QCDMarkerSegment;
+import org.esa.s2tbx.lib.openjpeg.SIZMarkerSegment;
 import org.esa.snap.core.datamodel.MetadataElement;
 
+import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -33,17 +49,11 @@ import java.util.Map;
  */
 public class OpjDumpFile {
 
-    private Path file;
     private ImageInfo imageInfo;
     private CodeStreamInfo codeStreamInfo;
-    private boolean isParsed;
+    private Jp2XmlMetadata metadata;
 
-    public OpjDumpFile(Path dumpFile) {
-        file = dumpFile;
-    }
-
-    public String getPath() {
-        return file != null ? file.toString() : null;
+    public OpjDumpFile() {
     }
 
     public ImageInfo getImageInfo() {
@@ -52,44 +62,118 @@ public class OpjDumpFile {
 
     public CodeStreamInfo getCodeStreamInfo() { return codeStreamInfo; }
 
-    public MetadataElement toMetadataElement() {
-        if (!isParsed) {
-            parse();
-        }
-        MetadataElement element = new MetadataElement("JP2 Metadata");
-        if (imageInfo != null) {
-            element.addElement(imageInfo.toMetadataElement());
-        }
-        if (codeStreamInfo != null) {
-            element.addElement(codeStreamInfo.toMetadataElement());
-        }
-        return element;
+    public Jp2XmlMetadata getMetadata() {
+        return metadata;
     }
 
-    public void parse() {
-        if (file != null && Files.exists(file) && Files.isReadable(file)) {
-            try {
-                List<String> lines = Files.readAllLines(file);
-                Iterator<String> iterator = lines.iterator();
-                String currentLine;
-                while(iterator.hasNext()) {
-                    currentLine = iterator.next();
-                    if (currentLine.startsWith("Image info")) {
-                        extractImageInfo(iterator);
-                    } else if (currentLine.startsWith("Codestream info")) {
-                        extractCodeStreamInfo(iterator);
+    public void readHeaderWithInputStream(Path jp2File, int bufferSize, boolean canSetFilePosition) throws IOException {
+        JP2FileReader fileFormatReader = new JP2FileReader();
+        fileFormatReader.readFileFormat(jp2File, bufferSize, canSetFilePosition);
+
+        ContiguousCodestreamBox contiguousCodestreamBox = fileFormatReader.getHeaderDecoder();
+        SIZMarkerSegment sizMarkerSegment = contiguousCodestreamBox.getSiz();
+        CODMarkerSegment codMarkerSegment = contiguousCodestreamBox.getCod();
+        QCDMarkerSegment qcdMarkerSegment = contiguousCodestreamBox.getQcd();
+
+        this.imageInfo = new ImageInfo();
+        this.imageInfo.setX0(sizMarkerSegment.getImageLeftX());
+        this.imageInfo.setY0(sizMarkerSegment.getImageTopY());
+        this.imageInfo.setWidth(sizMarkerSegment.getImageWidth());
+        this.imageInfo.setHeight(sizMarkerSegment.getImageHeight());
+
+        for (int i = 0; i < sizMarkerSegment.getNumComps(); i++) {
+            int dx = sizMarkerSegment.getComponentDxAt(i);
+            int dy = sizMarkerSegment.getComponentDyAt(i);
+            int precision = sizMarkerSegment.getComponentOriginBitDepthAt(i);
+            boolean signed = sizMarkerSegment.isComponentOriginSignedAt(i);
+            this.imageInfo.addComponent(dx, dy, precision, signed);
+        }
+
+        this.codeStreamInfo = new CodeStreamInfo();
+
+        this.codeStreamInfo.setTx0(sizMarkerSegment.getTileLeftX());
+        this.codeStreamInfo.setTy0(sizMarkerSegment.getTileTopY());
+        this.codeStreamInfo.setTileWidth(sizMarkerSegment.getNominalTileWidth());
+        this.codeStreamInfo.setTileHeight(sizMarkerSegment.getNominalTileHeight());
+        this.codeStreamInfo.setNumTilesX(sizMarkerSegment.computeNumTilesX());
+        this.codeStreamInfo.setNumTilesY(sizMarkerSegment.computeNumTilesY());
+        this.codeStreamInfo.setNumLayers(codMarkerSegment.getNumberOfLayers());
+        this.codeStreamInfo.setMct(codMarkerSegment.getMultipleComponenTransform());
+
+        for (int i = 0; i < sizMarkerSegment.getNumComps(); i++) {
+            CodeStreamInfo.TileComponentInfo tcInfo = new CodeStreamInfo.TileComponentInfo();
+            tcInfo.setNumResolutions(codMarkerSegment.getNumberOfLevels() + 1);
+            for (int k = 0; k < codMarkerSegment.getBlockCount(); k++) {
+                tcInfo.addPreccInt(codMarkerSegment.computeBlockWidthExponentOffset(k), codMarkerSegment.computeBlockHeightExponentOffset(k));
+            }
+            if (qcdMarkerSegment.getQuantizationType() == IMarkers.SQCX_NO_QUANTIZATION) {
+                for (int r = 0; r < qcdMarkerSegment.getResolutionLevels(); r++) {
+                    for (int s = 0; s < qcdMarkerSegment.getSubbandsAtResolutionLevel(r); s++) {
+                        tcInfo.addStepSize(0, qcdMarkerSegment.computeNoQuantizationExponent(r, s));
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } else {
+                for (int r = 0; r < qcdMarkerSegment.getResolutionLevels(); r++) {
+                    for (int s = 0; s < qcdMarkerSegment.getSubbandsAtResolutionLevel(r); s++) {
+                        int exponent = qcdMarkerSegment.computeExponent(r, s);
+                        int mantissa = (int) qcdMarkerSegment.computeMantissa(r, s, exponent);
+                        tcInfo.addStepSize(mantissa, exponent);
+                    }
+                }
+            }
+            this.codeStreamInfo.addComponentTileInfo(tcInfo);
+        }
+
+        List<String> xmlMetadata = fileFormatReader.getXmlMetadata();
+        if (xmlMetadata != null && xmlMetadata.size() > 0) {
+            this.metadata = Jp2XmlMetadata.create(Jp2XmlMetadata.class, xmlMetadata.get(0));
+            this.metadata.setName("XML Metadata");
+            for (int i= 1; i< xmlMetadata.size(); i++) {
+                MetadataElement element = Jp2XmlMetadata.create(Jp2XmlMetadata.class, xmlMetadata.get(i)).getRootElement();
+                metadata.getRootElement().addElement(element);
             }
         }
-        isParsed = true;
+    }
+
+    public void readHeaderWithOpenJPEG(Path localJp2File) throws InterruptedException, IOException {
+        String pathToImageFile = localJp2File.toString();
+        if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            pathToImageFile = Utils.GetIterativeShortPathNameW(pathToImageFile);
+        }
+
+        ProcessBuilder builder = new ProcessBuilder(OpenJpegExecRetriever.getOpjDump(), "-i", pathToImageFile);
+        builder.redirectErrorStream(true);
+
+        String newLineSeparator = "\n";
+        CommandOutput exit = OpenJpegUtils.runProcess(builder, newLineSeparator);
+        if (exit.getErrorCode() == 0) {
+            List<String> lines = new ArrayList<String>();
+            Collections.addAll(lines, exit.getTextOutput().split(newLineSeparator));
+            Iterator<String> iterator = lines.iterator();
+            String currentLine;
+            while (iterator.hasNext()) {
+                currentLine = iterator.next();
+                if (currentLine.startsWith("Image info")) {
+                    extractImageInfo(iterator);
+                } else if (currentLine.startsWith("Codestream info")) {
+                    extractCodeStreamInfo(iterator);
+                }
+            }
+
+            this.metadata = new Jp2XmlMetadataReader(localJp2File).read();
+        } else {
+            StringBuilder sbu = new StringBuilder();
+            for (String fragment : builder.command()) {
+                sbu.append(fragment);
+                sbu.append(' ');
+            }
+            throw new IOException(String.format("Command [%s] failed with error code [%d], stdoutput [%s] and stderror [%s]", sbu.toString(), exit.getErrorCode(), exit.getTextOutput(), exit.getErrorOutput()));
+        }
     }
 
     private void extractImageInfo(Iterator<String> iterator) {
+        this.imageInfo = new ImageInfo();
         String currentLine;
-        imageInfo = new ImageInfo();
         Map<String, String> values = new HashMap<>();
         while (iterator.hasNext()) {
             currentLine = iterator.next();
@@ -109,16 +193,16 @@ public class OpjDumpFile {
         for (String key : values.keySet()) {
             switch (key) {
                 case "x0":
-                    imageInfo.setX0(Integer.parseInt(values.get(key)));
+                    this.imageInfo.setX0(Integer.parseInt(values.get(key)));
                     break;
                 case "y0":
-                    imageInfo.setY0(Integer.parseInt(values.get(key)));
+                    this.imageInfo.setY0(Integer.parseInt(values.get(key)));
                     break;
                 case "x1":
-                    imageInfo.setWidth(Integer.parseInt(values.get(key)));
+                    this.imageInfo.setWidth(Integer.parseInt(values.get(key)));
                     break;
                 case "y1":
-                    imageInfo.setHeight(Integer.parseInt(values.get(key)));
+                    this.imageInfo.setHeight(Integer.parseInt(values.get(key)));
                     break;
             }
         }
@@ -158,12 +242,12 @@ public class OpjDumpFile {
                     break;
             }
         }
-        imageInfo.addComponent(dx, dy, prec, sgnd);
+        this.imageInfo.addComponent(dx, dy, prec, sgnd);
     }
 
     private void extractCodeStreamInfo(Iterator<String> iterator) {
         String currentLine;
-        codeStreamInfo = new CodeStreamInfo();
+        this.codeStreamInfo = new CodeStreamInfo();
         Map<String, String> values = new HashMap<>();
         while (iterator.hasNext()) {
             currentLine = iterator.next();
@@ -219,7 +303,7 @@ public class OpjDumpFile {
     private void extractTileComponent(Iterator<String> iterator) {
         String currentLine;
         Map<String, String> values = new LinkedHashMap<>();
-        CodeStreamInfo.TileComponentInfo tcInfo = codeStreamInfo.new TileComponentInfo();
+        CodeStreamInfo.TileComponentInfo tcInfo = new CodeStreamInfo.TileComponentInfo();
         while (iterator.hasNext()) {
             currentLine = iterator.next();
             if (currentLine.endsWith("}")) {
@@ -280,6 +364,8 @@ public class OpjDumpFile {
                     break;
             }
         }
-        codeStreamInfo.addComponentTileInfo(tcInfo);
+        this.codeStreamInfo.addComponentTileInfo(tcInfo);
     }
+
+
 }

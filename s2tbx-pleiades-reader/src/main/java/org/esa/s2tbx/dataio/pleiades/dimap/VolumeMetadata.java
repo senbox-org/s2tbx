@@ -84,7 +84,7 @@ public class VolumeMetadata extends GenericXmlMetadata {
         } catch (ParserConfigurationException | SAXException e) {
             throw new IllegalStateException(e);
         }
-        Path path = filePathInputStream.getFilePath();
+        Path path = filePathInputStream.getPath();
         result.setPath(path);
         result.setFileName(path.getFileName().toString());
         String[] titles = result.getAttributeValues(Constants.PATH_VOL_COMPONENT_TITLE);

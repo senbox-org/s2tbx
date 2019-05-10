@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio;
 
 import com.bc.ceres.core.VirtualDir;
+import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.snap.core.util.io.FileUtils;
 import org.xeustechnologies.jtar.TarEntry;
@@ -107,6 +108,12 @@ class TarVirtualDir extends VirtualDirEx {
         InputStream inputStream = Files.newInputStream(file);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
         return new FilePathInputStream(file, bufferedInputStream, null);
+    }
+
+    @Override
+    public FilePath getFilePath(String childRelativePath) throws IOException {
+        Path file = getFile(childRelativePath).toPath();
+        return new FilePath(file, null);
     }
 
     @Override

@@ -229,7 +229,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                         } catch (InstantiationException | ParserConfigurationException | SAXException e) {
                             throw new IllegalStateException(e);
                         }
-                        Path filePath = filePathInputStream.getFilePath();
+                        Path filePath = filePathInputStream.getPath();
                         metaDataItem.setPath(filePath);
                         metaDataItem.setFileName(filePath.getFileName().toString());
                         this.metadata.add(metaDataItem);

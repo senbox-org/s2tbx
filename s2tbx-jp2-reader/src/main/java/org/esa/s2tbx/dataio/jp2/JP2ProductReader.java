@@ -20,21 +20,18 @@ package org.esa.s2tbx.dataio.jp2;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import org.esa.s2tbx.dataio.BucketMap;
-import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
-import org.esa.s2tbx.dataio.jp2.internal.OpjExecutor;
+import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
 import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
 import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
-import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadataReader;
 import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
-import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -46,28 +43,18 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.core.util.ResourceInstaller;
-import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.utils.FileHelper;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import java.awt.geom.Point2D;
-import java.awt.image.DataBuffer;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.spi.FileSystemProvider;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 
 /**
@@ -79,24 +66,10 @@ public class JP2ProductReader extends AbstractProductReader {
 
     private static final Logger logger = Logger.getLogger(JP2ProductReader.class.getName());
 
-    private static final BucketMap<Integer, Integer> PRECISION_TYPE_MAP = new BucketMap<Integer, Integer>() {{
-        put(1, 8, ProductData.TYPE_UINT8);
-        put(9, 15, ProductData.TYPE_UINT16);
-        put(16, ProductData.TYPE_INT16);
-        put(17, 32, ProductData.TYPE_FLOAT32);
-    }};
-
-    private static final BucketMap<Integer, Integer> DATA_TYPE_MAP = new BucketMap<Integer, Integer>() {{
-        put(1, 8, DataBuffer.TYPE_BYTE);
-        put(9, 15, DataBuffer.TYPE_USHORT);
-        put(16, DataBuffer.TYPE_SHORT);
-        put(17, 32, DataBuffer.TYPE_FLOAT);
-    }};
-
     private Product product;
-    private Path tempFolder;
+    private VirtualFile virtualJp2File;
 
-    protected JP2ProductReader(ProductReaderPlugIn readerPlugIn) {
+    public JP2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
 
         registerMetadataParser();
@@ -113,101 +86,87 @@ public class JP2ProductReader extends AbstractProductReader {
                 }
             }
         }
-        List<Path> files = PathUtils.listFiles(this.tempFolder);
-        this.tempFolder.toFile().deleteOnExit();
-        if (files != null) {
-            for (Path file : files) {
-                file.toFile().deleteOnExit();
-            }
-        }
+        this.virtualJp2File.deleteLocalFilesOnExit();
 
         super.close();
     }
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
+        Path jp2File = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Reading product from the JP2 file '" + jp2File.toString() + "'.");
+        }
+
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
 
-        if(!validateOpenJpegExecutables(OpenJpegExecRetriever.getOpjDump(),OpenJpegExecRetriever.getOpjDecompress())){
-            throw new IOException("Invalid OpenJpeg executables");
-        }
-
-        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(getInput());
-
-        createTempFolder(inputPath);
-
-        Path localInputPath;
-        FileSystemProvider fileSystemProvider = inputPath.getFileSystem().provider();
-        if (fileSystemProvider == FileSystems.getDefault().provider()) {
-            localInputPath = inputPath;
-        } else {
-            localInputPath = this.tempFolder.resolve(inputPath.getFileName().toString());
-            FileHelper.copyFileUsingFileChannel(inputPath, localInputPath.toString());
-        }
-
-        logger.fine("Reading product metadata");
+        this.virtualJp2File = new VirtualFile(jp2File, getClass());
 
         try {
-            Path dumpFilePath = PathUtils.get(this.tempFolder, String.format(JP2ProductReaderConstants.JP2_INFO_FILE, PathUtils.getFileNameWithoutExtension(inputPath)));
-            OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getOpjDump());
-            OpjDumpFile dumpFile = new OpjDumpFile(dumpFilePath);
-            Map<String, String> params = new HashMap<String, String>();
-            params.put("-i", Utils.GetIterativeShortPathNameW(localInputPath.toString()));
-            params.put("-o", dumpFile.getPath());
-            int exitCode = dumper.execute(params);
-            if (exitCode == 0) {
-                String lastOutput = dumper.getLastOutput();
-                if (lastOutput != null && !lastOutput.isEmpty()) {
-                    logger.info(lastOutput);
-                }
-                dumpFile.parse();
-                ImageInfo imageInfo = dumpFile.getImageInfo();
-                CodeStreamInfo csInfo = dumpFile.getCodeStreamInfo();
-                int imageWidth = imageInfo.getWidth();
-                int imageHeight = imageInfo.getHeight();
-                this.product = new Product(localInputPath.getFileName().toString(), JP2ProductReaderConstants.TYPE, imageWidth, imageHeight);
-
-                MetadataElement metadataRoot = this.product.getMetadataRoot();
-                metadataRoot.addElement(imageInfo.toMetadataElement());
-                metadataRoot.addElement(csInfo.toMetadataElement());
-                Jp2XmlMetadata metadata = new Jp2XmlMetadataReader(localInputPath).read();
-                String[] bandNames = null;
-                double[] bandScales = null;
-                double[] bandOffsets = null;
-                if (metadata != null) {
-                    metadata.setFileName(localInputPath.toAbsolutePath().toString());
-                    metadataRoot.addElement(metadata.getRootElement());
-                    addGeoCoding(metadata);
+            OpjDumpFile opjDumpFile = new OpjDumpFile();
+            if (OpenJpegUtils.canReadJP2FileHeaderWithOpenJPEG()) {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Use external application to read the header of the JP2 file '" + jp2File.toString() + "'.");
                 }
 
-                addBands(imageInfo, bandNames, localInputPath, csInfo, bandScales, bandOffsets);
-
-                this.product.setPreferredTileSize(JAI.getDefaultTileSize());
+                if (!validateOpenJpegExecutables(OpenJpegExecRetriever.getOpjDump(), OpenJpegExecRetriever.getOpjDecompress())) {
+                    throw new IOException("Invalid OpenJpeg executables");
+                }
+                Path localJp2File = this.virtualJp2File.getLocalFile();
+                opjDumpFile.readHeaderWithOpenJPEG(localJp2File);
             } else {
-                logger.warning(dumper.getLastError());
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Use input stream to read the header of the JP2 file '" + jp2File.toString() + "'.");
+                }
+
+                opjDumpFile.readHeaderWithInputStream(jp2File, 5 * 1024, true);
             }
+
+            ImageInfo imageInfo = opjDumpFile.getImageInfo();
+            CodeStreamInfo csInfo = opjDumpFile.getCodeStreamInfo();
+            Jp2XmlMetadata metadata = opjDumpFile.getMetadata();
+
+            int imageWidth = imageInfo.getWidth();
+            int imageHeight = imageInfo.getHeight();
+            this.product = new Product(this.virtualJp2File.getFileName(), JP2ProductReaderConstants.TYPE, imageWidth, imageHeight);
+
+            MetadataElement metadataRoot = this.product.getMetadataRoot();
+            metadataRoot.addElement(imageInfo.toMetadataElement());
+            metadataRoot.addElement(csInfo.toMetadataElement());
+            if (metadata != null) {
+                metadata.setFileName(jp2File.toString());
+                metadataRoot.addElement(metadata.getRootElement());
+                addGeoCoding(metadata);
+            }
+
+            double[] bandScales = null;
+            double[] bandOffsets = null;
+            addBands(imageInfo, csInfo, bandScales, bandOffsets);
+
+            this.product.setPreferredTileSize(JAI.getDefaultTileSize());
+            this.product.setFileLocation(jp2File.toFile());
+            this.product.setModified(false);
+
+            return this.product;
         } catch (IOException e) {
             throw e;
-        } catch (Exception mex) {
-            String msg = String.format("Error while reading file %s", localInputPath);
-            throw new IOException(msg);
+        } catch (Exception e) {
+            throw new IOException("Error while reading file '" + jp2File.toString() + "'.", e);
         }
-        if (this.product != null) {
-            this.product.setFileLocation(localInputPath.toFile());
-            this.product.setModified(false);
-        }
-        return this.product;
     }
 
     @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
+                                          throws IOException {
+        // do nothing
     }
 
     private void addGeoCoding(Jp2XmlMetadata metadata) {
-        int imageWidth = product.getSceneRasterWidth();
-        int imageHeight = product.getSceneRasterHeight();
+        int imageWidth = this.product.getSceneRasterWidth();
+        int imageHeight = this.product.getSceneRasterHeight();
 
         String crsGeoCoding = metadata.getCrsGeocoding();
         Point2D origin = metadata.getOrigin();
@@ -248,8 +207,8 @@ public class JP2ProductReader extends AbstractProductReader {
                     TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, imageWidth, imageHeight, latPoints);
                     TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, imageWidth, imageHeight, lonPoints);
                     geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-                    product.addTiePointGrid(latGrid);
-                    product.addTiePointGrid(lonGrid);
+                    this.product.addTiePointGrid(latGrid);
+                    this.product.addTiePointGrid(lonGrid);
                 }
             } catch (Exception ignored) {
                 // ignore
@@ -260,64 +219,32 @@ public class JP2ProductReader extends AbstractProductReader {
         }
     }
 
-    private void addBands(ImageInfo imageInfo, String[] bandNames,
-                          Path localInputPath, CodeStreamInfo csInfo, double[] bandScales, double[] bandOffsets) {
-
+    private void addBands(ImageInfo imageInfo, CodeStreamInfo csInfo, double[] bandScales, double[] bandOffsets) {
         List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
 
-        int imageWidth = product.getSceneRasterWidth();
-        int imageHeight = product.getSceneRasterHeight();
+        int imageWidth = this.product.getSceneRasterWidth();
+        int imageHeight = this.product.getSceneRasterHeight();
 
         int numBands = componentTilesInfo.size();
         for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
             int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
-            Band virtualBand = new Band(bandNames != null ? bandNames[bandIdx] : "band_" + String.valueOf(bandIdx + 1),
-                    PRECISION_TYPE_MAP.get(precision),
-                    imageWidth,
-                    imageHeight);
-            JP2MultiLevelSource source = new JP2MultiLevelSource(
-                    localInputPath,
-                    tempFolder,
-                    bandIdx,
-                    numBands,
-                    imageWidth, imageHeight,
+            Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1), OpenJpegUtils.PRECISION_TYPE_MAP.get(precision), imageWidth, imageHeight);
+            int dataType = OpenJpegUtils.DATA_TYPE_MAP.get(precision);
+            JP2MultiLevelSource source = new JP2MultiLevelSource(this.virtualJp2File, bandIdx, numBands, imageWidth, imageHeight,
                     csInfo.getTileWidth(), csInfo.getTileHeight(),
                     csInfo.getNumTilesX(), csInfo.getNumTilesY(),
-                    csInfo.getNumResolutions(), DATA_TYPE_MAP.get(precision),
-                    product.getSceneGeoCoding());
-            virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
+                    csInfo.getNumResolutions(), dataType,
+                    this.product.getSceneGeoCoding());
+
+            int level = 0;
+            ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(csInfo.getTileWidth(), csInfo.getTileHeight(), dataType, level);
+            virtualBand.setSourceImage(new DefaultMultiLevelImage(source, imageLayout));
+
             if (bandScales != null && bandOffsets != null) {
                 virtualBand.setScalingFactor(bandScales[bandIdx]);
                 virtualBand.setScalingOffset(bandOffsets[bandIdx]);
             }
-            product.addBand(virtualBand);
-        }
-    }
-
-    private void createTempFolder(Path inputFile) throws IOException {
-        Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
-        Properties versionProp = new Properties();
-
-        try (InputStream inputStream = Files.newInputStream(versionFile)) {
-            versionProp.load(inputStream);
-        } catch (IOException e) {
-            SystemUtils.LOG.severe("JP2-reader configuration error: Failed to read " + versionFile.toString());
-            return;
-        }
-
-        String version = versionProp.getProperty("project.version");
-        if (version == null) {
-            throw new IOException("Unable to get project.version property from " + versionFile);
-        }
-
-        String md5sum = getMD5sum(inputFile.toString());
-        if (md5sum == null) {
-            throw new IOException("Unable to get md5sum of path " + inputFile.toString());
-        }
-
-        this.tempFolder = PathUtils.get(SystemUtils.getCacheDir(), "s2tbx", "jp2-reader", version, md5sum, PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
-        if (!Files.exists(this.tempFolder)) {
-            Files.createDirectories(this.tempFolder);
+            this.product.addBand(virtualBand);
         }
     }
 

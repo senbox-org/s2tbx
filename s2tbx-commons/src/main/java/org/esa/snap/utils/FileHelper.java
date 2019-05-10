@@ -17,6 +17,8 @@
 
 package org.esa.snap.utils;
 
+import org.esa.s2tbx.commons.NotRegularFileException;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -45,6 +47,21 @@ import java.util.zip.ZipFile;
 public class FileHelper {
 
     private FileHelper() {
+    }
+
+    public static boolean canCopyOrReplaceFile(Path sourceFile, Path destinationFile) throws IOException {
+        boolean copyOrReplaceFile = true;
+        if (Files.exists(destinationFile)) {
+            // the destination file already exists
+            if (Files.isRegularFile(destinationFile)) {
+                long sourceFileSizeInBytes = Files.size(sourceFile);
+                long destinationFileSizeInBytes = Files.size(destinationFile);
+                copyOrReplaceFile = (destinationFileSizeInBytes != sourceFileSizeInBytes);
+            } else {
+                throw new NotRegularFileException(destinationFile.toString());
+            }
+        }
+        return copyOrReplaceFile;
     }
 
     public static void copyFileUsingInputStream(Path sourcePath, String destinationLocalFilePath, int maximumBufferSize) throws IOException {

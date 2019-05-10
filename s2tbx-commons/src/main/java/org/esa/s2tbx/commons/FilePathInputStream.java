@@ -11,13 +11,13 @@ import java.nio.file.Path;
  */
 public class FilePathInputStream extends FilterInputStream {
 
-    private final Path filePath;
+    private final Path path;
     private final Closeable closeable;
 
-    public FilePathInputStream(Path filePath, InputStream inputStream, Closeable closeable) {
+    public FilePathInputStream(Path path, InputStream inputStream, Closeable closeable) {
         super(inputStream);
 
-        this.filePath = filePath;
+        this.path = path;
         this.closeable = closeable;
     }
 
@@ -32,7 +32,7 @@ public class FilePathInputStream extends FilterInputStream {
         }
     }
 
-    public Path getFilePath() {
-        return filePath;
+    public Path getPath() {
+        return this.path;
     }
 }

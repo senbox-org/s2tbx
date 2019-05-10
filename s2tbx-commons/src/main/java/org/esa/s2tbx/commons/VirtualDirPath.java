@@ -7,15 +7,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.*;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -72,19 +73,23 @@ public class VirtualDirPath extends AbstractVirtualPath {
         return null;
     }
 
-    //TODO Jean remote attribute
-    int fileCount = 0;
-
     @Override
     public File getFile(String childRelativePath) throws IOException {
         Path child = this.dirPath.resolve(childRelativePath);
-
-        //TODO Jean remote system.out
-        System.out.println((++this.fileCount) + " dir getFile '"+child.toString()+"'");
-
         if (Files.exists(child)) {
             Path fileToReturn = copyFileOnLocalDiskIfNeeded(child, childRelativePath);
             return fileToReturn.toFile();
+        } else {
+            throw new FileNotFoundException(child.toString());
+        }
+    }
+
+    @Override
+    public FilePath getFilePath(String childRelativePath) throws IOException {
+        Path child = this.dirPath.resolve(childRelativePath);
+        if (Files.exists(child)) {
+            // the child exists
+            return new FilePath(child, null);
         } else {
             throw new FileNotFoundException(child.toString());
         }
@@ -172,10 +177,6 @@ public class VirtualDirPath extends AbstractVirtualPath {
     private static FilePathInputStream getInputStream(Path child) throws IOException {
         if (Files.isRegularFile(child)) {
             // the child is a file
-
-            //TODO Jean remote system.out
-            System.out.println("getInputStream dir child="+child.toString());
-
             InputStream inputStream = Files.newInputStream(child);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
             InputStream inputStreamToReturn;

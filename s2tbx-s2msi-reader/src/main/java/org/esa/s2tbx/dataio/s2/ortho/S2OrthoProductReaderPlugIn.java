@@ -113,7 +113,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         // if product is level2 or level3, check the specific folder//TODO revisar
         VirtualDirEx virtualDirEx;
         try {
-            virtualDirEx = VirtualDirEx.build(inputPath.getParent());
+            virtualDirEx = VirtualDirEx.build(inputPath.getParent(), false, true);
         } catch (IOException e) {
             return DecodeQualification.UNABLE;
         }
