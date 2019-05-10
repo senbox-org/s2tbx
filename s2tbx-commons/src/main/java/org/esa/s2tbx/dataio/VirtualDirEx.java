@@ -243,6 +243,10 @@ public abstract class VirtualDirEx extends VirtualDir {
         return found != null ? found.toArray(new String[found.size()]) : null;
     }
 
+    public String[] listAllFilesWithPath() {
+        return listAll();
+    }
+
     @Override
     public String[] listAllFiles() throws IOException {
         return listAll();
