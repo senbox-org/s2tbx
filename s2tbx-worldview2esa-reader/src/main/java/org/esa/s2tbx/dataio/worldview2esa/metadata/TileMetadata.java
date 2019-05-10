@@ -142,7 +142,7 @@ public class TileMetadata extends XmlMetadata {
         try (InputStream inputStream = Files.newInputStream(path)) {
             TileMetadataParser parser = new TileMetadataParser(TileMetadata.class);
             result = parser.parse(inputStream);
-            result.setPath(path.toString());
+            result.setPath(path);
             result.setFileName(path.getFileName().toString());
             final Map<String, Double> abscalfactor = new HashMap<>();
             final Map<String, Double> effectivebandwidth = new HashMap<>();
