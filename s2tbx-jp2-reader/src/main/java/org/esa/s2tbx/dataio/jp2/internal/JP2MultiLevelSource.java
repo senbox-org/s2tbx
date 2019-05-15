@@ -21,7 +21,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.jp2.VirtualFile;
+import org.esa.s2tbx.dataio.jp2.VirtualJP2File;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 
@@ -58,7 +58,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     private final Logger logger;
     private final int bandIndex;
     private final TileImageDisposer tileManager;
-    private VirtualFile virtualInputFile;
+    private VirtualJP2File virtualInputFile;
 
     /**
      * Constructs an instance of a single band multi-level image source
@@ -74,7 +74,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param dataType    The pixel data type
      * @param geoCoding   (optional) The geocoding found (if any) in the JP2 header
      */
-    public JP2MultiLevelSource(VirtualFile virtualInputFile, int bandIndex, int numBands,
+    public JP2MultiLevelSource(VirtualJP2File virtualInputFile, int bandIndex, int numBands,
                                int imageWidth, int imageHeight, int tileWidth, int tileHeight,
                                int numTilesX, int numTilesY, int levels, int dataType, GeoCoding geoCoding) {
 
