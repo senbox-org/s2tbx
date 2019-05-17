@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.muscate;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -43,6 +42,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,14 +58,18 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
     private static final Logger logger = Logger.getLogger(MuscateProductReader.class.getName());
 
-    private ArrayList<MuscateMetadata.Geoposition> geopositions = new ArrayList<>();
+    private List<MuscateMetadata.Geoposition> geoPositions;
     private VirtualDirEx virtualDir;
-    protected ArrayList<Product> associatedProducts = new ArrayList<>();
-    protected ArrayList<String> addedFiles = new ArrayList<>();
-    protected MuscateMetadata metadata;
+    private List<Product> associatedProducts;
+    private List<String> addedFiles;
+    private MuscateMetadata metadata;
 
     protected MuscateProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
+
+        this.geoPositions = new ArrayList<>();
+        this.associatedProducts = new ArrayList<>();
+        this.addedFiles = new ArrayList<>();
 
         XmlMetadataParserFactory.registerParser(MuscateMetadata.class, new XmlMetadataParser<>(MuscateMetadata.class));
     }
@@ -73,9 +78,17 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     protected Product readProductNodesImpl() throws IOException {
         Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Reading Muscate product from the file '" + inputPath.toString() + "'.");
+        }
+
         this.virtualDir = VirtualDirEx.build(inputPath, false, true);
         if (this.virtualDir == null) {
             throw new NullPointerException("The virtual dir is null for input path '" + inputPath.toString() + "'.");
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Reading Muscate product metadata.");
         }
 
         String metadataFile = findFirstMetadataFile();
@@ -89,7 +102,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         // read resolutions
         for (String resolution : this.metadata.getResolutionStrings()) {
-            this.geopositions.add(this.metadata.getGeoposition(resolution));
+            this.geoPositions.add(this.metadata.getGeoposition(resolution));
         }
 
         // create product
@@ -101,16 +114,24 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         product.setFileLocation(inputPath.toFile());
 
         product.setSceneGeoCoding(this.metadata.getCrsGeoCoding());
-        product.setNumResolutionsMax(this.geopositions.size());
+        product.setNumResolutionsMax(this.geoPositions.size());
         product.setAutoGrouping("Aux_Mask:AOT_Interpolation:AOT:Surface_Reflectance:Flat_Reflectance:WVC:cloud:MG2:mg2:sun:view:edge:" +
                 "detector_footprint-B01:detector_footprint-B02:detector_footprint-B03:detector_footprint-B04:detector_footprint-B05:detector_footprint-B06:detector_footprint-B07:detector_footprint-B08:" +
                 "detector_footprint-B8A:detector_footprint-B09:detector_footprint-B10:detector_footprint-B11:detector_footprint-B12:defective:saturation");
         product.setStartTime(parseDate(this.metadata.getAcquisitionDate(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         product.setEndTime(parseDate(this.metadata.getAcquisitionDate(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Adding Muscate product bands.");
+        }
+
         // add bands
         for (MuscateImage image : this.metadata.getImages()) {
             addImage(product, image);
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Adding Muscate product masks.");
         }
 
         // add masks
@@ -118,32 +139,43 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             addMask(product, mask);
         }
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Adding Muscate product angles.");
+        }
+
         MuscateMetadata.AnglesGrid sunAnglesGrid = this.metadata.getSunAnglesGrid();
 
         // add Zenith
         addAngles(product, "sun_zenith", "Sun zenith angles", sunAnglesGrid.getWidth(),
-                sunAnglesGrid.getHeight(), sunAnglesGrid.getZenith(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY());
+                  sunAnglesGrid.getHeight(), sunAnglesGrid.getZenith(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY());
 
         // add Azimuth
         addAngles(product, "sun_azimuth", "Sun azimuth angles", sunAnglesGrid.getWidth(),
-                sunAnglesGrid.getHeight(), sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY());
+                  sunAnglesGrid.getHeight(), sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY());
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Adding Muscate product viewing angles.");
+        }
 
         // viewing angles
         for (String bandId : this.metadata.getBandNames()) {
             MuscateMetadata.AnglesGrid anglesGrid = this.metadata.getViewingAnglesGrid(bandId);
             // add Zenith
             addAngles(product, "view_zenith_" + anglesGrid.getBandId(), "Viewing zenith angles", anglesGrid.getWidth(),
-                    anglesGrid.getHeight(), anglesGrid.getZenith(), anglesGrid.getResX(), anglesGrid.getResY());
+                      anglesGrid.getHeight(), anglesGrid.getZenith(), anglesGrid.getResX(), anglesGrid.getResY());
 
             // add Azimuth
             addAngles(product, "view_azimuth_" + anglesGrid.getBandId(), "Viewing azimuth angles", anglesGrid.getWidth(),
-                    anglesGrid.getHeight(), anglesGrid.getAzimuth(), anglesGrid.getResX(), anglesGrid.getResY());
+                      anglesGrid.getHeight(), anglesGrid.getAzimuth(), anglesGrid.getResX(), anglesGrid.getResY());
         }
 
         // add mean angles
         MuscateMetadata.AnglesGrid meanViewingAnglesGrid = this.metadata.getMeanViewingAnglesGrid();
         if (meanViewingAnglesGrid != null) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Adding Muscate product mean angles.");
+            }
+
             // add Zenith
             addAngles(product, "view_zenith_mean", "Mean viewing zenith angles", meanViewingAnglesGrid.getWidth(),
                     meanViewingAnglesGrid.getHeight(), meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY());
@@ -159,21 +191,21 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
                                           Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
-            throws IOException {
-        //TODO use this instead of source image?
+                                          throws IOException {
+        // do nothing
     }
 
     @Override
     public void close() throws IOException {
         super.close();
 
-        for (Product product : associatedProducts) {
+        for (Product product : this.associatedProducts) {
             product.dispose();
         }
-        associatedProducts.clear();
-        virtualDir.close();
-        geopositions = null;
-        associatedProducts = null;
+        this.associatedProducts.clear();
+        this.virtualDir.close();
+        this.geoPositions = null;
+        this.associatedProducts = null;
     }
 
     private String findFirstMetadataFile() throws IOException {
@@ -209,11 +241,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         band.setNoDataValueUsed(true);
 
         try {
-            band.setGeoCoding(new CrsGeoCoding(CRS.decode("EPSG:" + metadata.getEPSG()),
+            band.setGeoCoding(new CrsGeoCoding(CRS.decode("EPSG:" + this.metadata.getEPSG()),
                     band.getRasterWidth(),
                     band.getRasterHeight(),
-                    geopositions.get(0).ulx,
-                    geopositions.get(0).uly,
+                    this.geoPositions.get(0).ulx,
+                    this.geoPositions.get(0).uly,
                     resX,
                     resY,
                     0.0, 0.0));
@@ -229,39 +261,34 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addImage(Product product, MuscateImage image) {
-        // some checks
         if (image == null || image.nature == null) {
             logger.warning(String.format("Unable to add an image with a null nature to the product: %s", product.getName()));
-            return;
-        }
-        //TODO Read together AOT and WVC? they should be in the same tif file
-        if (image.nature.equals("Aerosol_Optical_Thickness")) {
-            for (String file : image.getImageFiles()) {
-                addAOTImage(product, file);
-            }
-        } else if (image.nature.equals("Flat_Reflectance")) {
-            for (String file : image.getImageFiles()) {
-                addReflectanceImage(product, file, "Flat");
-            }
-        } else if (image.nature.equals("Surface_Reflectance")) {
-            for (String file : image.getImageFiles()) {
-                addReflectanceImage(product, file, "Surface");
-            }
-        } else if (image.nature.equals("Water_Vapor_Content")) {
-            for (String file : image.getImageFiles()) {
-                addWVCImage(product, file);
-            }
         } else {
-            logger.warning(String.format("Unable to add image. Unknown nature: %s", image.nature));
+            //TODO Read together AOT and WVC? they should be in the same tif file
+            if (image.nature.equals("Aerosol_Optical_Thickness")) {
+                for (String file : image.getImageFiles()) {
+                    addAOTImage(product, file);
+                }
+            } else if (image.nature.equals("Flat_Reflectance")) {
+                for (String file : image.getImageFiles()) {
+                    addReflectanceImage(product, file, "Flat");
+                }
+            } else if (image.nature.equals("Surface_Reflectance")) {
+                for (String file : image.getImageFiles()) {
+                    addReflectanceImage(product, file, "Surface");
+                }
+            } else if (image.nature.equals("Water_Vapor_Content")) {
+                for (String file : image.getImageFiles()) {
+                    addWVCImage(product, file);
+                }
+            } else {
+                logger.warning(String.format("Unable to add image. Unknown nature: %s", image.nature));
+            }
         }
     }
 
     private void addMask(Product product, MuscateMask mask) {
         // some checks
-        if (product == null) {
-            logger.warning("Unable to add mask to a null product");
-            return;
-        }
         if (mask == null || mask.nature == null) {
             logger.warning(String.format("Unable to add a mask with a null nature to the product: %s", product.getName()));
             return;
@@ -282,14 +309,6 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 }
 
             }
-//        } else if (mask.nature.equals("Cloud_Shadow")) {
-//            for (String file : mask.getMaskFiles()) {
-//                if (!addedFiles.contains(file)) {
-//                    addedFiles.add(file);
-//                    addCloudShadowMask(product, file);
-//                }
-//
-//            }
         } else if (mask.nature.equals("Edge")) {
             for (String file : mask.getMaskFiles()) {
                 if (!addedFiles.contains(file)) {
@@ -332,10 +351,10 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     // get the bands and include the product in associated product, to be properly closed when closing Muscate product
-    private Band getTifBand(String pathString, int bandIndex) {
+    private Band readGeoTiffProductBand(String pathString, int bandIndex) {
         Band band = null;
         try {
-            File inputFile = null;
+            File inputFile;
             try {
                 inputFile = this.virtualDir.getFile(pathString);
             } catch (FileNotFoundException e) {
@@ -355,7 +374,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private MuscateMetadata.Geoposition getGeoposition(int width, int height) {
-        for (MuscateMetadata.Geoposition geoposition : this.geopositions) {
+        for (MuscateMetadata.Geoposition geoposition : this.geoPositions) {
             if (geoposition.nRows == height && geoposition.nCols == width) {
                 return geoposition;
             }
@@ -364,15 +383,15 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addAOTImage(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 1);
+        Band srcBand = readGeoTiffProductBand(pathString, 1);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
         } else {
-            MuscateMetadata.Geoposition geoposition = getGeoposition(srcBand.getRasterWidth(), srcBand.getRasterHeight());
-            if (geoposition == null) {
+            MuscateMetadata.Geoposition geoPosition = getGeoposition(srcBand.getRasterWidth(), srcBand.getRasterHeight());
+            if (geoPosition == null) {
                 logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.", pathString, product.getName()));
             } else {
-                String bandName = "AOT_" + geoposition.id;
+                String bandName = "AOT_" + geoPosition.id;
                 Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
                 product.addBand(targetBand);
                 ProductUtils.copyGeoCoding(srcBand, targetBand);
@@ -382,14 +401,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 targetBand.setScalingOffset(0.0d);
                 targetBand.setSampleCoding(srcBand.getSampleCoding());
                 targetBand.setImageInfo(srcBand.getImageInfo());
-                targetBand.setDescription(String.format("Aerosol Optical Thickness at %.0fm resolution", geoposition.xDim));
+                targetBand.setDescription(String.format("Aerosol Optical Thickness at %.0fm resolution", geoPosition.xDim));
                 targetBand.setSourceImage(srcBand.getSourceImage());
             }
         }
     }
 
     private void addWVCImage(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
         } else {
@@ -416,15 +435,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addReflectanceImage(Product product, String pathString, String prefix) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
             return;
         }
         MuscateMetadata.Geoposition geoposition = getGeoposition(srcBand.getRasterWidth(), srcBand.getRasterHeight());
         if (geoposition == null) {
-            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
-                    pathString, product.getName()));
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.", pathString, product.getName()));
             return;
         }
         String bandId = getBandFromFileName(pathString);
@@ -450,7 +468,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addAOTMask(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
             return;
@@ -468,7 +486,6 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         String bandName = "Aux_Mask_aot_interpolation_" + geoposition.id;
         String maskName = "AOT_Interpolation_Mask_" + geoposition.id;
-
 
         Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
         product.addBand(targetBand);
@@ -492,7 +509,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addEdgeMask(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
             return;
@@ -533,7 +550,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addSaturationMask(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
             return;
@@ -580,7 +597,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addCloudMask(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
             return;
@@ -591,8 +608,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         MuscateMetadata.Geoposition geoposition = getGeoposition(width, height);
         if (geoposition == null) {
-            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
-                    pathString, product.getName()));
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.", pathString, product.getName()));
             return;
         }
 
@@ -686,7 +702,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addGeophysicsMask(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
             return;
@@ -697,8 +713,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         MuscateMetadata.Geoposition geoposition = getGeoposition(width, height);
         if (geoposition == null) {
-            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
-                    pathString, product.getName()));
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.", pathString, product.getName()));
             return;
         }
 
@@ -809,7 +824,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addDetectorFootprintMask(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
             return;
@@ -820,8 +835,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         MuscateMetadata.Geoposition geoposition = getGeoposition(width, height);
         if (geoposition == null) {
-            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
-                    pathString, product.getName()));
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.", pathString, product.getName()));
             return;
         }
 
@@ -831,7 +845,6 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         int detector = getDetectorFromFilename(pathString);
 
         String bandName = String.format("Aux_Mask_Detector_Footprint_%s_%02d", geoposition.id, detector);
-
 
         Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
         product.addBand(targetBand);
@@ -844,7 +857,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         Color color = ColorIterator.next();
 
-        //addMasks
+        // add masks
         for (int i = 0; i < orderedBandNames.length; i++) {
             Mask mask = Mask.BandMathsType.create(String.format("detector_footprint-%s-%02d", formatBandNameTo3characters(orderedBandNames[i]), detector),
                     "Detector footprint",
@@ -859,7 +872,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addDefectivePixelMask(Product product, String pathString) {
-        Band srcBand = getTifBand(pathString, 0);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
             return;
@@ -870,17 +883,13 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         MuscateMetadata.Geoposition geoposition = getGeoposition(width, height);
         if (geoposition == null) {
-            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
-                    pathString, product.getName()));
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.", pathString, product.getName()));
             return;
         }
 
-
         String[] orderedBandNames = metadata.getOrderedBandNames(geoposition.id);
 
-
         String bandName = String.format("Aux_Mask_Defective_Pixel_%s", geoposition.id);
-
 
         Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
         product.addBand(targetBand);
@@ -917,7 +926,9 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     public S2BandAnglesGridByDetector[] getViewingIncidenceAnglesGrids(int bandId, int detectorId) {
-        if (metadata == null) return null;
+        if (this.metadata == null) {
+            return null;
+        }
         MuscateMetadata.AnglesGrid[] viewingAnglesList = metadata.getViewingAnglesGrid();
         S2BandConstants bandConstants = S2BandConstants.getBand(bandId);
 
@@ -931,11 +942,12 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         }
 
         return null;
-
     }
 
     public S2BandAnglesGrid[] getSunAnglesGrid() {
-        if (metadata == null) return null;
+        if (this.metadata == null) {
+            return null;
+        }
         MuscateMetadata.AnglesGrid sunAngles = metadata.getSunAnglesGrid();
 
         S2BandAnglesGrid[] bandAnglesGrid = new S2BandAnglesGrid[2];
