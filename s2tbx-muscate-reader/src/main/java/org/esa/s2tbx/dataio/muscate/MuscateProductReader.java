@@ -122,11 +122,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         // add Zenith
         addAngles(product, "sun_zenith", "Sun zenith angles", sunAnglesGrid.getWidth(),
-                  sunAnglesGrid.getHeight(), sunAnglesGrid.getZenith(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY());
+                sunAnglesGrid.getHeight(), sunAnglesGrid.getZenith(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY());
 
         // add Azimuth
         addAngles(product, "sun_azimuth", "Sun azimuth angles", sunAnglesGrid.getWidth(),
-                  sunAnglesGrid.getHeight(), sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY());
+                sunAnglesGrid.getHeight(), sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY());
 
 
         // viewing angles
@@ -134,11 +134,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             MuscateMetadata.AnglesGrid anglesGrid = this.metadata.getViewingAnglesGrid(bandId);
             // add Zenith
             addAngles(product, "view_zenith_" + anglesGrid.getBandId(), "Viewing zenith angles", anglesGrid.getWidth(),
-                      anglesGrid.getHeight(), anglesGrid.getZenith(), anglesGrid.getResX(), anglesGrid.getResY());
+                    anglesGrid.getHeight(), anglesGrid.getZenith(), anglesGrid.getResX(), anglesGrid.getResY());
 
             // add Azimuth
             addAngles(product, "view_azimuth_" + anglesGrid.getBandId(), "Viewing azimuth angles", anglesGrid.getWidth(),
-                      anglesGrid.getHeight(), anglesGrid.getAzimuth(), anglesGrid.getResX(), anglesGrid.getResY());
+                    anglesGrid.getHeight(), anglesGrid.getAzimuth(), anglesGrid.getResX(), anglesGrid.getResY());
         }
 
         // add mean angles
@@ -146,11 +146,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         if (meanViewingAnglesGrid != null) {
             // add Zenith
             addAngles(product, "view_zenith_mean", "Mean viewing zenith angles", meanViewingAnglesGrid.getWidth(),
-                      meanViewingAnglesGrid.getHeight(), meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY());
+                    meanViewingAnglesGrid.getHeight(), meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY());
 
             // add Azimuth
             addAngles(product, "view_azimuth_mean", "Mean viewing azimuth angles", meanViewingAnglesGrid.getWidth(),
-                      meanViewingAnglesGrid.getHeight(), meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY());
+                    meanViewingAnglesGrid.getHeight(), meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY());
         }
 
         return product;
@@ -159,7 +159,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
                                           Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
-                                          throws IOException {
+            throws IOException {
         //TODO use this instead of source image?
     }
 
