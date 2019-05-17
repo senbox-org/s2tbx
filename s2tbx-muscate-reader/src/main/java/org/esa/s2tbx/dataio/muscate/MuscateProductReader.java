@@ -925,6 +925,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         return ("UNKNOWN");
     }
 
+    @Override
     public S2BandAnglesGridByDetector[] getViewingIncidenceAnglesGrids(int bandId, int detectorId) {
         if (this.metadata == null) {
             return null;
@@ -944,6 +945,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         return null;
     }
 
+    @Override
     public S2BandAnglesGrid[] getSunAnglesGrid() {
         if (this.metadata == null) {
             return null;
