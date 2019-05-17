@@ -20,6 +20,7 @@ import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReaderPlugIn;
+import org.esa.snap.vfs.NioPaths;
 import org.geotools.referencing.CRS;
 
 import javax.media.jai.PlanarImage;
@@ -38,6 +39,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -54,12 +57,12 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
     private ArrayList<MuscateMetadata.Geoposition> geopositions = new ArrayList<>();
     private VirtualDirEx virtualDir;
-    protected ArrayList<Product> associatedProducts = new ArrayList<>();
-    protected ArrayList<String> addedFiles = new ArrayList<>();
-    protected final Logger logger;
-    protected MuscateMetadata metadata = null;
+    private ArrayList<Product> associatedProducts = new ArrayList<>();
+    private ArrayList<String> addedFiles = new ArrayList<>();
+    private final Logger logger;
+    private MuscateMetadata metadata = null;
 
-    protected MuscateProductReader(ProductReaderPlugIn readerPlugIn) {
+    MuscateProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
         logger = SystemUtils.LOG;
     }
@@ -90,7 +93,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         }
 
         //close stream
-        if (metadataInputStream != null) try {
+        try {
             metadataInputStream.close();
         } catch (IOException e) {
             // swallowed exception
@@ -120,7 +123,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             logger.warning(e.getMessage());
         }
         if (fileLocation == null) {
-            fileLocation = new File(virtualDir.getBasePath());
+            fileLocation = virtualDir.getBaseFile();
         }
         product.setFileLocation(fileLocation);
 
@@ -197,27 +200,28 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         //TODO use this instead of source image?
     }
 
-
-    private File getFileInput(Object input) {
-        File outFile = null;
+    private Path getPathInput(Object input) {
+        Path outPath = null;
         if (input instanceof String) {
-            outFile = new File((String) input);
+            outPath = NioPaths.get((String) input);
         } else if (input instanceof File) {
-            outFile = (File) input;
+            outPath = ((File) input).toPath();
+        }else if(input instanceof Path){
+            outPath= (Path) input;
         }
-        return outFile;
+        return outPath;
     }
 
     private VirtualDirEx getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
-        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
-            final File absoluteFile = inputFile.getAbsoluteFile();
-            inputFile = absoluteFile.getParentFile();
-            if (inputFile == null) {
-                throw new IOException("Unable to retrieve parent file: " + absoluteFile.getAbsolutePath());
+        Path inputPath = getPathInput(input);
+        if (inputPath!=null && Files.isRegularFile(inputPath) && !VirtualDirEx.isPackedFile(inputPath)) {
+            final Path absolutePath = inputPath.toAbsolutePath();
+            inputPath = absolutePath.getParent();
+            if (inputPath == null) {
+                throw new IOException("Unable to retrieve parent file: " + absolutePath.toString());
             }
         }
-        return VirtualDirEx.create(inputFile);
+        return VirtualDirEx.build(inputPath);
     }
 
     private InputStream getInputStreamXml() {
@@ -305,7 +309,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             logger.warning(String.format("Unable to set geocoding to the band %s",angleBandName));
         }
 
-        band.setImageToModelTransform(product.findImageToModelTransform(band.getGeoCoding()));
+        band.setImageToModelTransform(Product.findImageToModelTransform(band.getGeoCoding()));
 
         //set source image mut be done after setGeocoding and setImageToModelTransform
         band.setSourceImage(opImage);
@@ -1010,7 +1014,6 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             ProductUtils.copyGeoCoding(srcBand, mask);
             product.addMask(mask);
         }
-        return;
     }
 
 
@@ -1019,7 +1022,6 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         super.close();
         for (Product product : associatedProducts) {
             product.dispose();
-            product = null;
         }
         associatedProducts.clear();
         virtualDir.close();
