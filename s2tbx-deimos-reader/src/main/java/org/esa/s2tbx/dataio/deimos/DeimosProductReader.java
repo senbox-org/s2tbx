@@ -28,6 +28,7 @@ import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.SystemUtils;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -139,5 +140,14 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
         final TiePointGrid tiePointGrid = createTiePointGrid(gridName, gridDim, gridDim, 0, 0, subSamplingX, subSamplingY, tiePoints);
         product.addTiePointGrid(tiePointGrid);
         return tiePointGrid;
+    }
+
+    protected String[] getMetadataFiles() throws IOException {
+        String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
+        //If the input is archive, the list should contain the full item path(needed for some Deimos products opened on linux)
+        if (productDirectory.isCompressed() && metadataFiles[0].contains("/")) {
+            this.productDirectory.listAllFilesWithPath();
+        }
+        return metadataFiles;
     }
 }
