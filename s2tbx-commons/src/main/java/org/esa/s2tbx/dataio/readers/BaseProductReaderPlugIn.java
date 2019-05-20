@@ -187,45 +187,6 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     protected abstract String[] getExclusionPatternList();
 
     /**
-     * Returns an abstraction of the given input.
-     * If the input is a (not compressed or packed) file, it returns a <code>com.bc.ceres.core.VirtualDir.File</code> object.
-     * If the input is a folder, it returns a <code>com.bc.ceres.core.VirtualDir.Dir</code> object.
-     * If the input is either a tar file or a tgz file, it returns a <code>org.sa.beam.dataio.VirtualDirEx.TarVirtualDir</code> object.
-     * If the input is a compressed file, it returns a wrapper over a <code>com.bc.ceres.core.VirtualDir.Zip</code> object.
-     * @param input The input object
-     * @return  An instance of a VirtualDir or VirtualDirEx implementations.
-     * @throws IOException  If unable to retrieve the parent of the input.
-     */
-    @Deprecated
-    public VirtualDirEx getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
-        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
-            final File absoluteFile = inputFile.getAbsoluteFile();
-            inputFile = absoluteFile.getParentFile();
-            if (inputFile == null) {
-                throw new IOException("Unable to retrieve parent to file: " + absoluteFile.getAbsolutePath());
-            }
-        }
-        return VirtualDirEx.create(inputFile);
-    }
-
-    /**
-     * Returns the input object as a File object.
-     * @param input the plugin input
-     * @return  a File object instance
-     */
-    @Deprecated
-    protected File getFileInput(Object input) {
-        File outFile = null;
-        if (input instanceof String) {
-            outFile = new File((String) input);
-        } else if (input instanceof File) {
-            outFile = (File) input;
-        }
-        return outFile;
-    }
-
-    /**
      * Registers a RGB profile for the reader plugin.
      */
     protected abstract void registerRGBProfile();

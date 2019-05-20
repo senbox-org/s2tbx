@@ -69,7 +69,9 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
+        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.productDirectory = VirtualDirEx.build(inputFile, false, true);
+
         metadata = SpotSceneMetadata.create(productDirectory, this.logger);
         VolumeMetadata volumeMetadata = metadata.getVolumeMetadata();
         SpotDimapProductReaderPlugin readerPlugIn = (SpotDimapProductReaderPlugin)getReaderPlugIn();

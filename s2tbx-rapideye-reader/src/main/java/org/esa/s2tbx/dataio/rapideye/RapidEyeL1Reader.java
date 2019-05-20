@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 
 /**
  * Reader for RapidEye L1 (NITF) products.

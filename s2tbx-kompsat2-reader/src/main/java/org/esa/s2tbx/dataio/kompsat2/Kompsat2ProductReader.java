@@ -9,6 +9,7 @@ import org.esa.s2tbx.dataio.kompsat2.internal.MosaicMultiLevelSource;
 import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadata;
 import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadataUtil;
 import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Metadata;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -59,9 +60,8 @@ public class Kompsat2ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        Kompsat2ProductReaderPlugin readerPlugin = (Kompsat2ProductReaderPlugin) getReaderPlugIn();
-        final Path inputFile = getInputFile();
-        VirtualDirEx productDirectoryTemp = readerPlugin.getInput(getInput());
+        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        VirtualDirEx productDirectoryTemp = VirtualDirEx.build(inputFile, false, true);
         this.tiffProduct = new ArrayList<>();
         try {
             File file = productDirectoryTemp.getBaseFile();
