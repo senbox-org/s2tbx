@@ -390,7 +390,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             int tileBandHeight = 0;
             for (int y = 0; y < tileRows; y++) {
                 if ((tileCols > tileRows && x != tileCols - 1) || tileCols <= tileRows) {
-                    if (y != tileRows - 1 || (y == tileRows - 1 && tileRows < tileCols) || tileCols == tileRows) {
+                    if ((y != tileRows - 1 && x < tileRows && y < tileCols) || (y == tileRows - 1 && tileRows < tileCols && x <tileRows) || tileCols == tileRows) {
                         tileBandWidth = tileBandWidth + tiles[y][x].getBandAt(bandIndex).getRasterWidth();
                     }
                 }
@@ -398,7 +398,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                     tileBandHeight = tileBandHeight + tiles[x][y].getBandAt(bandIndex).getRasterHeight();
                 }
             }
-            if (tileRows < tileCols && x != tileCols - 1) {
+            if (tileRows < tileCols && x != tileCols - 1 && x <tileRows) {
                 int a = tileCols - tileRows;
                 for (int i = 0; i < a; i++) {
                     tileBandWidth = tileBandWidth + tiles[tileRows + i][x].getBandAt(bandIndex).getRasterWidth();
@@ -411,7 +411,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 rasterValues.put(HEIGHT, tileBandHeight);
             }
         }
-        if (tileRows > tileCols) {
+        if (tileRows > tileCols && tileCols>1) {
             int a = tileRows - tileCols;
             int tileBandWidth = 0;
             for (int i = 0; i < a; i++) {
