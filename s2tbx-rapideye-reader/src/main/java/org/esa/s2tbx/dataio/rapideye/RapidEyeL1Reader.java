@@ -20,11 +20,13 @@ package org.esa.s2tbx.dataio.rapideye;
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -40,17 +42,19 @@ import org.esa.snap.core.util.TreeNode;
 import javax.imageio.IIOException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 /**
  * Reader for RapidEye L1 (NITF) products.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class RapidEyeL1Reader extends RapidEyeReader {
 
@@ -59,7 +63,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     private final ProductReader gdalReader;
     private String[] nitfFiles;
 
-    public RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+    RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
         this.gdalReader = ProductIO.getProductReader("GDAL-NITF-READER");
         this.colorPaletteFilePath = colorPaletteFilePath;
@@ -68,18 +72,30 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = RapidEyeReader.getInput(getInput());
-        //String dirName = productDirectory.getBasePath().substring(productDirectory.getBasePath().lastIndexOf(File.separator) + 1);
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Reading Muscate product from the file '" + inputPath.toString() + "'.");
+        }
+
+        productDirectory = VirtualDirEx.build(inputPath, true, true);
+
+        if (productDirectory == null) {
+            throw new NullPointerException("The virtual dir is null for input path '" + inputPath.toString() + "'.");
+        }
+
         String metadataFileName = productDirectory.findFirst(RapidEyeConstants.METADATA_FILE_SUFFIX);
-        File metadataFile = productDirectory.getFile(metadataFileName);
+        Path metadataFile = productDirectory.getFilePath(metadataFileName).getPath();
         // First parse *_metadata.xml
-        if (metadataFile.exists()) {
-            logger.info("Reading product metadata");
+        if (Files.exists(metadataFile)) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Reading RapidEye L1 product metadata.");
+            }
             metadata = XmlMetadata.create(RapidEyeMetadata.class, metadataFile);
             if (metadata == null) {
-                logger.warning(String.format("Error while reading metadata file %s", metadataFile.getName()));
+                logger.warning(String.format("Error while reading metadata file %s", metadataFile.getFileName().toString()));
             } else {
-                metadata.setFileName(metadataFile.getName());
+                metadata.setFileName(metadataFile.getFileName().toString());
                 String metadataProfile = metadata.getMetadataProfile();
                 if (metadataProfile == null || !metadataProfile.startsWith(RapidEyeConstants.PROFILE_L1)) {
                     IOException ex = new IOException("The selected product is not a RapidEye L1 product. Please use the appropriate filter");
@@ -94,7 +110,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         parseAdditionalMetadataFiles();
 
         try {
-            nitfFiles = getRasterFileNames();
+            this.nitfFiles = getRasterFileNames();
             for (int i = 0; i < nitfFiles.length; i++) {
                 NITFReaderWrapper reader = new NITFReaderWrapper(productDirectory.getFile(nitfFiles[i]));
                 if (product == null) {
@@ -124,7 +140,9 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         } catch (IIOException e) {
             logger.severe("Product is not a valid RapidEye L1 data product!");
         }
-        product.setFileLocation(new File(productDirectory.getBasePath()));
+        if (product != null) {
+            product.setFileLocation(productDirectory.getBaseFile());
+        }
         return product;
     }
 
@@ -132,7 +150,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
         if (this.gdalReader == null) {
             pm.beginTask("Reading band data...", 3);
-            NITFReaderWrapper reader = readerMap.get(destBand);
+            NITFReaderWrapper reader = this.readerMap.get(destBand);
 
             try {
                 reader.readBandData(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, destBuffer, pm);
@@ -144,12 +162,12 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     @Override
     public void close() throws IOException {
-        if (readerMap != null) {
-            readerMap.values().forEach(NITFReaderWrapper::close);
-            readerMap.clear();
+        if (this.readerMap != null) {
+            this.readerMap.values().forEach(NITFReaderWrapper::close);
+            this.readerMap.clear();
         }
-        if (gdalReader != null) {
-            gdalReader.close();
+        if (this.gdalReader != null) {
+            this.gdalReader.close();
         }
         super.close();
     }
@@ -180,13 +198,13 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         String[] fileNames;
         try {
             List<String> files = new ArrayList<>();
-            String[] productFiles = productDirectory.list(".");
+            String[] productFiles = productDirectory.listAllFiles();
             for (String file : productFiles) {
                 String lCase = file.toLowerCase();
                 if ((exclusion == null || !lCase.endsWith(exclusion)) && lCase.endsWith(RapidEyeConstants.METADATA_EXTENSION))
                     files.add(file);
             }
-            fileNames = files.toArray(new String[files.size()]);
+            fileNames = files.toArray(new String[0]);
         } catch (IOException e) {
             fileNames = new String[0];
             logger.warning(e.getMessage());
@@ -230,13 +248,9 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         String bandName = RapidEyeConstants.BAND_NAMES[bandIndex];
         if (this.gdalReader != null) {
             try {
-                Product nitfProduct = gdalReader.readProductNodes(productDirectory.getFile(nitfFiles[bandIndex]), null);
+                Product nitfProduct = gdalReader.readProductNodes(productDirectory.getFile(this.nitfFiles[bandIndex]), null);
                 if (nitfProduct != null) {
                     product.setNumResolutionsMax(nitfProduct.getNumResolutionsMax());
-                    /*MetadataElement nitfMetadata = nitfProduct.getMetadataRoot();
-                    if (nitfMetadata != null) {
-                        XmlMetadata.CopyChildElements(nitfMetadata, product.getMetadataRoot());
-                    }*/
                     nitfProduct.transferGeoCodingTo(product, null);
                     int numBands = nitfProduct.getNumBands();
                     for (int idx = 0; idx < numBands; idx++) {
@@ -247,7 +261,6 @@ public class RapidEyeL1Reader extends RapidEyeReader {
                         targetBand.setScalingOffset(srcBand.getScalingOffset());
                         targetBand.setSolarFlux(srcBand.getSolarFlux());
                         targetBand.setSampleCoding(srcBand.getSampleCoding());
-                        //targetBand.setImageInfo(srcBand.getImageInfo());
                         targetBand.setSpectralBandIndex(bandIndex);
                         targetBand.setDescription(srcBand.getDescription());
                         targetBand.setSourceImage(srcBand.getSourceImage());
@@ -258,7 +271,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
             }
         } else {
             targetBand = new ColorPaletteBand(bandName, metadata.getPixelFormat(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
-            readerMap.put(targetBand, reader);
+            this.readerMap.put(targetBand, reader);
         }
         if (targetBand != null) {
             targetBand.setSpectralWavelength(RapidEyeConstants.WAVELENGTHS[bandIndex]);
@@ -290,8 +303,8 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         } else {
             TreeNode<File> result = super.getProductComponents();
             String[] fileNames = getMetadataFileNames(RapidEyeConstants.METADATA_FILE_SUFFIX);
-            for(String fileName : fileNames){
-                try{
+            for (String fileName : fileNames) {
+                try {
                     addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
                 } catch (IOException e) {
                     logger.warning(String.format("Error encountered while searching file %s", fileName));
@@ -307,7 +320,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
             }
             String maskFileName = metadata.getMaskFileName();
             if (maskFileName != null) {
-                try{
+                try {
                     addProductComponentIfNotPresent(maskFileName, productDirectory.getFile(maskFileName), result);
                 } catch (IOException e) {
                     logger.warning(String.format("Error encountered while searching file %s", maskFileName));
