@@ -20,11 +20,13 @@ package org.esa.s2tbx.dataio.rapideye;
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -68,7 +70,11 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = RapidEyeReader.getInput(getInput());
+        //productDirectory = RapidEyeReader.getInput(getInput());
+
+        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.productDirectory = VirtualDirEx.build(inputFile, false, true);
+
         //String dirName = productDirectory.getBasePath().substring(productDirectory.getBasePath().lastIndexOf(File.separator) + 1);
         String metadataFileName = productDirectory.findFirst(RapidEyeConstants.METADATA_FILE_SUFFIX);
         File metadataFile = productDirectory.getFile(metadataFileName);

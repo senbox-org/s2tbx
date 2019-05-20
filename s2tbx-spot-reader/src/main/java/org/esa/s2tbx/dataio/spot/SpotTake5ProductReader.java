@@ -111,7 +111,11 @@ public class SpotTake5ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        input = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
+        //input = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
+
+        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.input = VirtualDirEx.build(inputFile, false, true);
+
         File imageMetadataFile = null;
         String metaSubFolder = "";
         if (VirtualDirEx.isPackedFile(new File(input.getBasePath()))) {

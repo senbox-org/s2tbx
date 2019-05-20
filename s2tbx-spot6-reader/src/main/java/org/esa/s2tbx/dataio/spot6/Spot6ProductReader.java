@@ -4,6 +4,7 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
@@ -105,7 +106,11 @@ public class Spot6ProductReader extends AbstractProductReader {
     @Override
     protected Product readProductNodesImpl() throws IOException {
         Spot6ProductReaderPlugin readerPlugin = (Spot6ProductReaderPlugin)getReaderPlugIn();
-        productDirectory = readerPlugin.getInput(getInput());
+//        productDirectory = readerPlugin.getInput(getInput());
+
+        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.productDirectory = VirtualDirEx.build(inputFile, false, true);
+
         metadata = VolumeMetadata.create(productDirectory.getFile(Spot6Constants.ROOT_METADATA).toPath());
         Product product = null;
         if (metadata != null) {

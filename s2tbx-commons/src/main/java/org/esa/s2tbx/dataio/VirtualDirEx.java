@@ -79,39 +79,6 @@ public abstract class VirtualDirEx extends VirtualDir {
         this.depth = 1;
     }
 
-    /**
-     * Factory method to create an instance of either a VirtualDir object (File, Dir)
-     * or of a VirtualDirEx object (VirtualDirWrapper for zip files, TarVirtualDir).
-     * @param file  The file object to be wrapped.
-     * @return  See the description
-     */
-    @Deprecated
-    public static VirtualDirEx create(File file) {
-        return create(file.toPath());
-    }
-
-    @Deprecated
-    private static VirtualDirEx create(Path path) {
-        String fileName = path.getFileName().toString();
-        if (Files.isRegularFile(path) && (TarVirtualDir.isTgz(fileName) || TarVirtualDir.isTar(fileName))) {
-            return new TarVirtualDir(path);
-        } else {
-            AbstractVirtualPath virtualDir = null;
-            if (Files.isDirectory(path)) {
-                virtualDir = new VirtualDirPath(path, false);
-            } else {
-                try {
-                    if (isZipFile(path)) {
-                        virtualDir = new VirtualZipPath(path, true);
-                    }
-                } catch (IllegalAccessException | InstantiationException | InvocationTargetException | IOException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-            return (virtualDir == null) ? null : new VirtualDirWrapper(virtualDir);
-        }
-    }
-
     public static VirtualDirEx build(Path path) throws IOException {
         return build(path, false, true);
     }

@@ -231,27 +231,4 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             return colorIterator.next();
         }
     }
-
-    static File getFileInput(Object input) {
-        if (input instanceof String) {
-            return new File((String) input);
-        } else if (input instanceof File) {
-            return (File) input;
-        }
-        return null;
-    }
-
-    static VirtualDirEx getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
-
-        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
-            final File absoluteFile = inputFile.getAbsoluteFile();
-            inputFile = absoluteFile.getParentFile();
-            if (inputFile == null) {
-                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
-            }
-        }
-
-        return VirtualDirEx.create(inputFile);
-    }
 }
