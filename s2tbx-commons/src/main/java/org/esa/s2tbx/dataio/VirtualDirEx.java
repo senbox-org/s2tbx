@@ -164,10 +164,6 @@ public abstract class VirtualDirEx extends VirtualDir {
         return found != null ? found.toArray(new String[found.size()]) : null;
     }
 
-    public String[] listAllFilesWithPath() {
-        return listAll();
-    }
-
     @Override
     public String[] listAllFiles() throws IOException {
         return listAll();
@@ -484,17 +480,12 @@ public abstract class VirtualDirEx extends VirtualDir {
         @Override
         public String[] listAll(Pattern...patterns) {
             String[] list = super.listAll(patterns);
-            Arrays.stream(list).forEach(item -> this.files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
-            return list;
-        }
-
-        @Override
-        public String[] listAllFilesWithPath() {
-            String[] list = super.listAll();
-            if(!this.files.isEmpty()) {
-                this.files.clear();
+            //If the input is archive, the list should contain the full item path(needed for some Deimos products opened on linux)
+            if(wrapped.isArchive() && wrapped.getBasePath().toLowerCase().contains("deimos")){
+                Arrays.stream(list).forEach(item -> files.put(item.toLowerCase(), item));
+            }else {
+                Arrays.stream(list).forEach(item -> files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
             }
-            Arrays.stream(list).forEach(item -> files.put(item.toLowerCase(), item));
             return list;
         }
 

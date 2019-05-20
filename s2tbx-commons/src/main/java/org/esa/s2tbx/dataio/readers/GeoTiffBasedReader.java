@@ -222,17 +222,13 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         return tileSize;
     }
 
-    protected String[] getMetadataFiles() throws IOException {
-        return this.productDirectory.findAll(getMetadataExtension());
-    }
-
     @Override
     protected Product readProductNodesImpl() throws IOException {
         productDirectory = getInput(super.getInput());
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
-        String[] metadataFiles = getMetadataFiles();
+        String[] metadataFiles = productDirectory.findAll(getMetadataExtension());
         if (metadataFiles != null) {
             logger.info("Reading product metadata");
             for (String file : metadataFiles) {
