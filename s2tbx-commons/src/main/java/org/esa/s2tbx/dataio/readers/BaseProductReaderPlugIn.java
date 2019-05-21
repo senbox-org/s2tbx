@@ -250,7 +250,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         @Override
         public boolean accept(File file) {
             boolean shouldAccept = super.accept(file);
-            if (shouldAccept && file.isFile() && !VirtualDirEx.isPackedFile(file)) {
+            if (shouldAccept && file.isFile() && !VirtualDirEx.isPackedFile(file.toPath())) {
                 File folder = file.getParentFile();
                 if (!processed.containsKey(folder)) {
                     try {
