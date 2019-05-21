@@ -110,20 +110,33 @@ class VirtualDirWrapper extends VirtualDirEx {
                 file = path.toFile();
             }
         }
-        if (file == null || !Files.exists(file.toPath())) {
-            String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
-            String path = findKeyFile(key);
-            if (path == null) {
-                throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
+        if (file == null || !file.exists()) {
+            //If no identical name found, look for a name in uppercase (needed for some Deimos products on Linux)
+            if (relativePath.contains("_")) {
+                String extension = relativePath.substring(relativePath.lastIndexOf("."));
+                String fileName = relativePath.substring(0, relativePath.lastIndexOf("_")).toUpperCase();
+                String fileSufix = relativePath.substring(relativePath.lastIndexOf("_"), relativePath.lastIndexOf("."));
+                file = new File(wrapped.getTempDir(), fileName + fileSufix + extension);
             } else {
-                try {
-                    // the "classic" way
-                    file = getFileInner(path);
-                } catch (FileNotFoundException e) {
-                    if (isArchive()) {
+                String extension = relativePath.substring(relativePath.lastIndexOf("."));
+                String fileName = relativePath.substring(0, relativePath.lastIndexOf(".")).toUpperCase();
+                file = new File(wrapped.getTempDir(), fileName + extension);
+            }
+            if(file == null || !file.exists()) {
+                String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
+                String path = findKeyFile(key);
+                if (path == null) {
+                    throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
+                } else {
+                    try {
+                        // the "classic" way
                         file = getFileInner(path);
-                    } else {
-                        file = getFileIgnoreCaseFromTempDirIfExists(path);
+                    } catch (FileNotFoundException e) {
+                        if (isArchive()) {
+                            file = getFileInner(path);
+                        } else {
+                            file = getFileIgnoreCaseFromTempDirIfExists(path);
+                        }
                     }
                 }
             }
