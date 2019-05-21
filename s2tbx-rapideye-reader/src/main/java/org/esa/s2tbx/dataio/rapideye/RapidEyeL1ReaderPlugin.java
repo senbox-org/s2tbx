@@ -17,8 +17,10 @@
 
 package org.esa.s2tbx.dataio.rapideye;
 
+import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -46,6 +48,13 @@ public class RapidEyeL1ReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     public ProductReader createReaderInstance() {
         return new RapidEyeL1Reader(this, getColorPaletteFilePath());
+    }
+
+    public DecodeQualification getDecodeQualification(Object input) {
+        if(SystemUtils.IS_OS_MAC){
+            return DecodeQualification.UNABLE;
+        }
+        return super.getDecodeQualification(input);
     }
 
     @Override

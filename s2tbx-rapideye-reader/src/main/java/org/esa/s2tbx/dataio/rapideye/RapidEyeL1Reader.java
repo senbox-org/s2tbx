@@ -21,6 +21,7 @@ import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
@@ -64,7 +65,11 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-        this.gdalReader = ProductIO.getProductReader("GDAL-NITF-READER");
+        if(GDALInstallInfo.INSTANCE.isPresent()) {
+            this.gdalReader =ProductIO.getProductReader("GDAL-NITF-READER");
+        }else{
+            this.gdalReader = null;
+        }
         this.colorPaletteFilePath = colorPaletteFilePath;
         this.readerMap = new HashMap<>();
     }
