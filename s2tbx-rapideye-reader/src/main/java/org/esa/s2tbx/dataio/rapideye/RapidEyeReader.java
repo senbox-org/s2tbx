@@ -17,7 +17,6 @@
 
 package org.esa.s2tbx.dataio.rapideye;
 
-import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
@@ -32,6 +31,7 @@ import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 
 import javax.imageio.spi.IIORegistry;
@@ -53,66 +53,65 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public abstract class RapidEyeReader extends AbstractProductReader {
-//    public static final int WIDTH_THRESHOLD = 8192;
-    protected RapidEyeMetadata metadata;
-    protected Product product;
-    protected final Logger logger;
-    protected VirtualDirEx productDirectory;
-    private ImageInputStreamSpi channelImageInputStreamSpi;
-
     static {
         XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<>(RapidEyeMetadata.class));
     }
 
-    public RapidEyeReader(ProductReaderPlugIn readerPlugIn) {
+    final Logger logger;
+    protected RapidEyeMetadata metadata;
+    protected Product product;
+    VirtualDirEx productDirectory;
+    private ImageInputStreamSpi channelImageInputStreamSpi;
+
+    RapidEyeReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        logger = Logger.getLogger(RapidEyeReader.class.getName());
+        this.logger = Logger.getLogger(RapidEyeReader.class.getName());
         registerSpi();
     }
 
     @Override
     public void close() throws IOException {
-        if (productDirectory != null) {
-            productDirectory.close();
+        if (this.productDirectory != null) {
+            this.productDirectory.close();
         }
-        if (channelImageInputStreamSpi != null) {
-            IIORegistry.getDefaultInstance().deregisterServiceProvider(channelImageInputStreamSpi);
+        if (this.channelImageInputStreamSpi != null) {
+            IIORegistry.getDefaultInstance().deregisterServiceProvider(this.channelImageInputStreamSpi);
         }
         super.close();
     }
 
-    protected void readMasks() {
+    void readMasks() {
         File file;
-        if (metadata != null) {
+        if (this.metadata != null) {
             try {
-                String maskFileName = metadata.getMaskFileName();
+                String maskFileName = this.metadata.getMaskFileName();
                 if (maskFileName != null) {
-                    file = productDirectory.getFile(maskFileName);
+                    file = this.productDirectory.getFile(maskFileName);
                     if (file != null && file.exists()) {
                         GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
                         Product udmProduct = reader.readProductNodes(file, null);
                         Band srcBand = udmProduct.getBandAt(0);
-                        float scaleX = (float)metadata.getRasterWidth() / (float)udmProduct.getSceneRasterWidth();
-                        float scaleY = (float)metadata.getRasterHeight() / (float)udmProduct.getSceneRasterHeight();
+                        float scaleX = (float) this.metadata.getRasterWidth() / (float) udmProduct.getSceneRasterWidth();
+                        float scaleY = (float) this.metadata.getRasterHeight() / (float) udmProduct.getSceneRasterHeight();
                         RenderedOp renderedOp = ScaleDescriptor.create(srcBand.getSourceImage(), scaleX, scaleY, 0.0f, 0.0f, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
-                        Band targetBand = product.addBand("unusable_data", srcBand.getDataType());
+                        Band targetBand = this.product.addBand("unusable_data", srcBand.getDataType());
                         targetBand.setSourceImage(renderedOp);
-                        FlagCoding cloudsFlagCoding = createFlagCoding(product);
+                        FlagCoding cloudsFlagCoding = createFlagCoding(this.product);
                         targetBand.setSampleCoding(cloudsFlagCoding);
 
-                        List<Mask> cloudsMasks = createMasksFromFlagCodding(product, cloudsFlagCoding);
+                        List<Mask> cloudsMasks = createMasksFromFlagCodding(this.product, cloudsFlagCoding);
                         for (Mask mask : cloudsMasks) {
-                            product.getMaskGroup().add(mask);
+                            this.product.getMaskGroup().add(mask);
                         }
                     }
                 }
             } catch (IOException e) {
-                logger.warning(e.getMessage());
+                this.logger.warning(e.getMessage());
             }
         }
     }
 
-    protected FlagCoding createFlagCoding(Product product) {
+    private FlagCoding createFlagCoding(Product product) {
         FlagCoding flagCoding = new FlagCoding("unusable_data");
         flagCoding.addFlag(RapidEyeConstants.FLAG_BLACK_FILL, 1, "area was not imaged by spacecraft");
         flagCoding.addFlag(RapidEyeConstants.FLAG_CLOUDS, 2, "cloud covered");
@@ -125,7 +124,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         return flagCoding;
     }
 
-    protected List<Mask> createMasksFromFlagCodding(Product product, FlagCoding flagCoding) {
+    private List<Mask> createMasksFromFlagCodding(Product product, FlagCoding flagCoding) {
         String flagCodingName = flagCoding.getName();
         ArrayList<Mask> masks = new ArrayList<>();
         final int width = product.getSceneRasterWidth();
@@ -134,21 +133,21 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         for (String flagName : flagCoding.getFlagNames()) {
             MetadataAttribute flag = flagCoding.getFlag(flagName);
             masks.add(Mask.BandMathsType.create(flagName,
-                                                flag.getDescription(),
-                                                width, height,
-                                                flagCodingName + "." + flagName,
-                                                ColorIterator.next(),
-                                                0.5));
+                    flag.getDescription(),
+                    width, height,
+                    flagCodingName + "." + flagName,
+                    ColorIterator.next(),
+                    0.5));
         }
         return masks;
     }
 
-    protected Dimension getPreferredTileSize() {
+    Dimension getPreferredTileSize() {
         Dimension tileSize = null;
-        if (product != null) {
-            tileSize = product.getPreferredTileSize();
+        if (this.product != null) {
+            tileSize = this.product.getPreferredTileSize();
             if (tileSize == null) {
-                Dimension suggestedTileSize = ImageManager.getPreferredTileSize(product);
+                Dimension suggestedTileSize = ImageManager.getPreferredTileSize(this.product);
                 tileSize = new Dimension((int) suggestedTileSize.getWidth(), (int) suggestedTileSize.getHeight());
             }
         }
@@ -169,19 +168,19 @@ public abstract class RapidEyeReader extends AbstractProductReader {
                     break;
                 }
             }
-            channelImageInputStreamSpi = new FileImageInputStreamSpi();
-            defaultInstance.registerServiceProvider(channelImageInputStreamSpi);
+            this.channelImageInputStreamSpi = new FileImageInputStreamSpi();
+            defaultInstance.registerServiceProvider(this.channelImageInputStreamSpi);
             if (toUnorder != null) {
                 // Make the custom Spi to be the first one to be used.
-                defaultInstance.setOrdering(ImageInputStreamSpi.class, channelImageInputStreamSpi, toUnorder);
+                defaultInstance.setOrdering(ImageInputStreamSpi.class, this.channelImageInputStreamSpi, toUnorder);
             }
         }
     }
 
-    protected void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
+    void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
         TreeNode<File> resultComponent = null;
         for (TreeNode node : currentComponents.getChildren()) {
-            if (node.getId().toLowerCase().equals(componentId.toLowerCase())) {
+            if (node.getId().equalsIgnoreCase(componentId.toLowerCase())) {
                 //noinspection unchecked
                 resultComponent = node;
                 break;
@@ -194,7 +193,6 @@ public abstract class RapidEyeReader extends AbstractProductReader {
     }
 
     protected static class ColorIterator {
-
         static final ArrayList<Color> colors;
         static Iterator<Color> colorIterator;
 
@@ -222,6 +220,9 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             colors.add(Color.magenta.darker().darker());
             colors.add(Color.pink.darker().darker());
             colorIterator = colors.iterator();
+        }
+
+        private ColorIterator() {
         }
 
         static Color next() {
