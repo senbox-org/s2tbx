@@ -91,7 +91,7 @@ public class SpotViewProductReader extends AbstractProductReader {
         logger.info("Reading product metadata");
         //zipDir = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.zipDir = VirtualDirEx.build(inputPath);
+        this.zipDir = VirtualDirEx.build(inputPath, false, true);
 
         File metadataFile = zipDir.getFile(SpotConstants.SPOTVIEW_METADATA_FILE);
         File imageMetadataFile = zipDir.getFile(SpotConstants.SPOTSCENE_METADATA_FILE);

@@ -114,13 +114,13 @@ public class SpotTake5ProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         //input = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.input = VirtualDirEx.build(inputPath);
+        this.input = VirtualDirEx.build(inputPath, false, true);
 
         File imageMetadataFile = null;
         String metaSubFolder = "";
 
         //if (VirtualDirEx.isPackedFile(new File(input.getBasePath()))) {
-        if (VirtualDirEx.isPackedFile(inputPath)) {
+        if (VirtualDirEx.isPackedFile(inputPath)) { // if (VirtualDirEx.isPackedFile(this.input.getBaseFile().toPath())) {
             //if the input is an archive, check the metadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
             String path = input.getBasePath();
             //String metaFile = path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));

@@ -79,39 +79,6 @@ public abstract class VirtualDirEx extends VirtualDir {
         this.depth = 1;
     }
 
-    /**
-     * Factory method to create an instance of either a VirtualDir object (File, Dir)
-     * or of a VirtualDirEx object (VirtualDirWrapper for zip files, TarVirtualDir).
-     * @param file  The file object to be wrapped.
-     * @return  See the description
-     */
-    @Deprecated
-    public static VirtualDirEx create(File file) {
-        return create(file.toPath());
-    }
-
-    @Deprecated
-    private static VirtualDirEx create(Path path) {
-        String fileName = path.getFileName().toString();
-        if (Files.isRegularFile(path) && (TarVirtualDir.isTgz(fileName) || TarVirtualDir.isTar(fileName))) {
-            return new TarVirtualDir(path);
-        } else {
-            AbstractVirtualPath virtualDir = null;
-            if (Files.isDirectory(path)) {
-                virtualDir = new VirtualDirPath(path, false);
-            } else {
-                try {
-                    if (isZipFile(path)) {
-                        virtualDir = new VirtualZipPath(path, true);
-                    }
-                } catch (IllegalAccessException | InstantiationException | InvocationTargetException | IOException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-            return (virtualDir == null) ? null : new VirtualDirWrapper(virtualDir);
-        }
-    }
-
     public static VirtualDirEx build(Path path) throws IOException {
         return build(path, false, true);
     }
@@ -171,14 +138,9 @@ public abstract class VirtualDirEx extends VirtualDir {
     /**
      * Helper method to check if a file is either packed (i.e. tar file) or compressed.
      * The test is performed agains a set of pre-defined file extensions.
-     * @param file  The file to be tested
+     * @param filePath  The file to be tested
      * @return  <code>true</code> if the file is packed or compressed, <code>false</code> otherwise
      */
-    @Deprecated
-    public static boolean isPackedFile(File file) {
-        return isPackedFile(file.toPath());
-    }
-
     public static boolean isPackedFile(Path filePath) {
         String fileName = filePath.getFileName().toString();
         int pointIndex = fileName.lastIndexOf(".");
@@ -279,16 +241,19 @@ public abstract class VirtualDirEx extends VirtualDir {
                                 }
                                 if (isTar(zipEntryPath)) {
                                     File temporaryFile = getFile(zipEntryPath);
-                                    TarVirtualDir innerTar = new TarVirtualDir(temporaryFile.toPath()) {
-                                        @Override
-                                        public void close() {
-                                            // do nothing
-                                        }
-                                    };
-                                    innerTar.ensureUnpacked(getTempDir());
-                                    String[] innerFiles = innerTar.listAll();
-                                    fileNames.addAll(Arrays.asList(innerFiles));
-                                    temporaryFile.delete();
+                                    try {
+                                        TarVirtualDir innerTar = new TarVirtualDir(temporaryFile.toPath()) {
+                                            @Override
+                                            public void close() {
+                                                // do nothing
+                                            }
+                                        };
+                                        innerTar.ensureUnpacked(getTempDir());
+                                        String[] innerFiles = innerTar.listAll();
+                                        fileNames.addAll(Arrays.asList(innerFiles));
+                                    } finally {
+                                        temporaryFile.delete();
+                                    }
                                 } else {
                                     fileNames.add(zipEntryPath);
                                 }

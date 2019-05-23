@@ -72,7 +72,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         //productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.productDirectory = VirtualDirEx.build(inputPath);
+        this.productDirectory = VirtualDirEx.build(inputPath, false, true);
 
         metadata = SpotSceneMetadata.create(productDirectory, this.logger);
         VolumeMetadata volumeMetadata = metadata.getVolumeMetadata();

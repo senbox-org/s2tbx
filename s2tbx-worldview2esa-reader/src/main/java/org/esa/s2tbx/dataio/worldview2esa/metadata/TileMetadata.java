@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.worldview2esa.metadata;
 
 import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
@@ -259,6 +260,135 @@ public class TileMetadata extends XmlMetadata {
         } catch (ParserConfigurationException | SAXException e) {
             log.log(Level.SEVERE, e.getMessage(), e);
         }
+        assert result != null;
+        result.setTileComponent(tileComponent);
+        return result;
+    }
+
+    public static TileMetadata create(final FilePathInputStream filePathInputStream) throws IOException {
+        TileMetadata result = null;
+        final TileComponent tileComponent = new TileComponent();
+        try {
+            TileMetadataParser parser = new TileMetadataParser(TileMetadata.class);
+            result = parser.parse(filePathInputStream);
+        } catch (ParserConfigurationException | SAXException e) {
+            throw new IllegalStateException(e);
+        }
+        Path path = filePathInputStream.getPath();
+            result.setPath(path);
+            result.setFileName(path.getFileName().toString());
+            final Map<String, Double> abscalfactor = new HashMap<>();
+            final Map<String, Double> effectivebandwidth = new HashMap<>();
+            final String[] tileNames = result.getAttributeValues(WorldView2ESAConstants.PATH_TILE_FILENAME);
+            final String numRows = result.getAttributeValue(WorldView2ESAConstants.PATH_TILE_NUM_ROWS, "0");
+            final String numColumns = result.getAttributeValue(WorldView2ESAConstants.PATH_TILE_NUM_COLUMNS, "0");
+            final String bitsPerPixel = result.getAttributeValue(WorldView2ESAConstants.PATH_BITS_PER_PIXEL, "0");
+            final String bandID = result.getAttributeValue(WorldView2ESAConstants.PATH_BAND_ID, null);
+            final String originX = result.getAttributeValue(WorldView2ESAConstants.PATH_ORIGIN_X, null);
+            final String originY = result.getAttributeValue(WorldView2ESAConstants.PATH_ORIGIN_Y, null);
+            final String stepSize = result.getAttributeValue(WorldView2ESAConstants.PATH_PIXEL_STEP_SIZE, null);
+            final String mapZone = result.getAttributeValue(WorldView2ESAConstants.PATH_MAP_ZONE, null);
+            final String mapHemisphere = result.getAttributeValue(WorldView2ESAConstants.PATH_MAP_HEMISPHERE, null);
+            final String numOfTiles = result.getAttributeValue(WorldView2ESAConstants.PATH_NUMBER_OF_TILES, null);
+            if (bandID.equalsIgnoreCase("MS1") || bandID.equalsIgnoreCase("Multi")) {
+                for (String pathFactor : WorldView2ESAConstants.BAND_MS1_ABSCALFACTOR_PATTERNS) {
+                    String caseVal = pathFactor.substring(pathFactor.indexOf('_') + 1, pathFactor.lastIndexOf('/'));
+                    switch (caseVal) {
+                        case "b":
+                            abscalfactor.put("Blue", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
+                            break;
+                        case "n":
+                            abscalfactor.put("NIR1", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
+                            break;
+                        case "g":
+                            abscalfactor.put("Green", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
+                            break;
+                        case "r":
+                            abscalfactor.put("Red", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
+                            break;
+                        case "c":
+                            abscalfactor.put("Coastal", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "y":
+                            abscalfactor.put("Yellow", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "re":
+                            abscalfactor.put("Red Edge", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "n2":
+                            abscalfactor.put("NIR2", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        default:
+                            log.log(Level.WARNING, "The " + pathFactor + " information are missing from the metadata");
+                    }
+
+                }
+                for (String pathFactor : WorldView2ESAConstants.BAND_MS1_EFFECTIVEBANDWIDTH_PATTERNS) {
+                    String caseVal = pathFactor.substring(pathFactor.indexOf('_') + 1, pathFactor.lastIndexOf('/'));
+                    switch (caseVal) {
+                        case "b":
+                            effectivebandwidth.put("Blue", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "n":
+                            effectivebandwidth.put("NIR1", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "g":
+                            effectivebandwidth.put("Green", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "r":
+                            effectivebandwidth.put("Red", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "c":
+                            effectivebandwidth.put("Coastal", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "y":
+                            effectivebandwidth.put("Yellow", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "re":
+                            effectivebandwidth.put("Red Edge", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        case "n2":
+                            effectivebandwidth.put("NIR2", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
+                            break;
+                        default:
+                            log.log(Level.WARNING, "The " + pathFactor + " information are missing from the metadata");
+
+                    }
+                }
+            } else {
+                abscalfactor.put("Pan", Double.parseDouble(result.getAttributeValue(WorldView2ESAConstants.BAND_P_ABSCALFACTOR, "0")));
+                effectivebandwidth.put("Pan", Double.parseDouble(result.getAttributeValue(WorldView2ESAConstants.BAND_P_EFFECTIVEBANDWIDTH, "1")));
+            }
+
+            tileComponent.setTileNames(tileNames);
+            tileComponent.setBandID(bandID);
+            if (numRows != null) {
+                tileComponent.setNumRows(Integer.parseInt(numRows));
+            }
+            if (numColumns != null) {
+                tileComponent.setNumColumns(Integer.parseInt(numColumns));
+            }
+            if (bitsPerPixel != null) {
+                tileComponent.setBitsPerPixel(Integer.parseInt(bitsPerPixel));
+            }
+            if (originX != null) {
+                tileComponent.setOriginX(Double.parseDouble(originX));
+            }
+            if (originY != null) {
+                tileComponent.setOriginY(Double.parseDouble(originY));
+            }
+            if (stepSize != null) {
+                tileComponent.setStepSize(Double.parseDouble(stepSize));
+            }
+            if (mapZone != null) {
+                tileComponent.setMapZone(Integer.parseInt(mapZone));
+            }
+            tileComponent.setMapHemisphere(mapHemisphere);
+            if (numOfTiles != null) {
+                tileComponent.setNumOfTiles(Integer.parseInt(numOfTiles));
+            }
+            tileComponent.setScalingFactor(abscalfactor, effectivebandwidth);
+
         assert result != null;
         result.setTileComponent(tileComponent);
         return result;

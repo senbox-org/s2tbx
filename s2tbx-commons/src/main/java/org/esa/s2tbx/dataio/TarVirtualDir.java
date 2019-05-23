@@ -15,16 +15,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -33,30 +28,18 @@ import java.util.zip.GZIPInputStream;
  */
 class TarVirtualDir extends VirtualDirEx {
 
-    public static final byte LF_SPEC_LINK = (byte) 'L';
+    private static final byte LF_SPEC_LINK = (byte) 'L';
+
+    private static final int TRANSFER_BUFFER_SIZE = 1024 * 1024;
 
     private final Path archiveFile;
     private File extractDir;
-    private FutureTask<Void> unpackTask;
-    private ExecutorService executor;
-    private boolean unpackStarted = false;
 
-    private class UnpackProcess implements Callable<Void> {
-        @Override
-        public Void call() throws Exception {
-            ensureUnpacked();
-            return null;
-        }
-    }
-
-    public TarVirtualDir(Path tgz) {
+    TarVirtualDir(Path tgz) {
         if (tgz == null) {
             throw new NullPointerException("Input file shall not be null");
         }
-        archiveFile = tgz;
-        extractDir = null;
-        unpackTask = new FutureTask<>(new TarVirtualDir.UnpackProcess());
-        executor = Executors.newSingleThreadExecutor();
+        this.archiveFile = tgz;
     }
 
     public static String getFilenameFromPath(String path) {
@@ -82,12 +65,12 @@ class TarVirtualDir extends VirtualDirEx {
 
     @Override
     public String getBasePath() {
-        return archiveFile.toFile().getPath();
+        return this.archiveFile.toFile().getPath();
     }
 
     @Override
     public File getBaseFile() {
-        return archiveFile.toFile();
+        return this.archiveFile.toFile();
     }
 
     @Override
@@ -103,8 +86,8 @@ class TarVirtualDir extends VirtualDirEx {
     }
 
     @Override
-    public FilePathInputStream getInputStream(String path) throws IOException {
-        Path file = getFile(path).toPath();
+    public FilePathInputStream getInputStream(String childRelativePath) throws IOException {
+        Path file = getFile(childRelativePath).toPath();
         InputStream inputStream = Files.newInputStream(file);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
         return new FilePathInputStream(file, bufferedInputStream, null);
@@ -117,20 +100,11 @@ class TarVirtualDir extends VirtualDirEx {
     }
 
     @Override
-    public File getFile(String path) throws IOException {
-        ensureUnpackedStarted();
-        try {
-            while (!unpackTask.isDone()) {
-                Thread.sleep(100);
-            }
-        } catch (InterruptedException e) {
-            // swallowed exception
-        } finally {
-            executor.shutdown();
-        }
-        final File file = new File(extractDir, path);
+    public File getFile(String childRelativePath) throws IOException {
+        ensureUnpacked(null);
+        File file = new File(this.extractDir, childRelativePath);
         if (!(file.isFile() || file.isDirectory())) {
-            throw new FileNotFoundException("The path '"+path+"' does not exist in the folder '"+extractDir.getAbsolutePath()+"'.");
+            throw new FileNotFoundException("The path '"+childRelativePath+"' does not exist in the folder '"+this.extractDir.getAbsolutePath()+"'.");
         }
         return file;
     }
@@ -155,12 +129,12 @@ class TarVirtualDir extends VirtualDirEx {
 
     @Override
     public boolean isCompressed() {
-        return isTgz(archiveFile.getFileName().toString());
+        return isTgz(this.archiveFile.getFileName().toString());
     }
 
     @Override
     public boolean isArchive() {
-        return isTgz(archiveFile.getFileName().toString());
+        return isTgz(this.archiveFile.getFileName().toString());
     }
 
     @Override
@@ -171,29 +145,18 @@ class TarVirtualDir extends VirtualDirEx {
 
     @Override
     public File getTempDir() throws IOException {
-        ensureUnpackedStarted();
-        return extractDir;
-    }
-
-    public void ensureUnpacked() throws IOException {
-        ensureUnpacked(null);
+        return this.extractDir;
     }
 
     public void ensureUnpacked(File unpackFolder) throws IOException {
         if (this.extractDir == null) {
-            this.extractDir = unpackFolder != null ? unpackFolder : VirtualDir.createUniqueTempDir();
-            TarInputStream tis = null;
-            OutputStream outStream = null;
+            this.extractDir = (unpackFolder == null) ? VirtualDir.createUniqueTempDir() : unpackFolder;
             try (InputStream inputStream = Files.newInputStream(this.archiveFile);
-                 BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
+                 BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+                 TarInputStream tis = buildTarInputStream(bufferedInputStream)) {
 
-                if (isTgz(this.archiveFile.getFileName().toString())) {
-                    tis = new TarInputStream(new GZIPInputStream(bufferedInputStream));
-                } else {
-                    tis = new TarInputStream(bufferedInputStream);
-                }
+                byte data[] = new byte[TRANSFER_BUFFER_SIZE];
                 TarEntry entry;
-
                 String longLink = null;
                 while ((entry = tis.getNextEntry()) != null) {
                     String entryName = entry.getName();
@@ -203,7 +166,7 @@ class TarVirtualDir extends VirtualDirEx {
                         longLink = null;
                     }
                     if (entry.isDirectory()) {
-                        final File directory = new File(this.extractDir, entryName);
+                        File directory = new File(this.extractDir, entryName);
                         ensureDirectory(directory);
                         continue;
                     }
@@ -216,14 +179,14 @@ class TarVirtualDir extends VirtualDirEx {
                     }
 
                     File targetDir;
-                    if (tarPath != null) {
-                        targetDir = new File(this.extractDir, tarPath);
-                    } else {
+                    if (tarPath == null) {
                         targetDir = this.extractDir;
+                    } else {
+                        targetDir = new File(this.extractDir, tarPath);
                     }
 
                     ensureDirectory(targetDir);
-                    final File targetFile = new File(targetDir, fileNameFromPath);
+                    File targetFile = new File(targetDir, fileNameFromPath);
                     if (!entryIsLink && targetFile.isFile()) {
                         continue;
                     }
@@ -232,36 +195,38 @@ class TarVirtualDir extends VirtualDirEx {
                         throw new IOException("Unable to create file: " + targetFile.getAbsolutePath());
                     }
 
-                    outStream = new BufferedOutputStream(new FileOutputStream(targetFile));
-                    final byte data[] = new byte[1024 * 1024];
-                    int count;
-                    while ((count = tis.read(data)) != -1) {
-                        outStream.write(data, 0, count);
-                        //if the entry is a link, must be saved, since the name of the next entry depends on this
-                        if (entryIsLink) {
-                            longLink = (longLink == null ? "" : longLink) + new String(data, 0, count);
-                        } else {
-                            longLink = null;
-                        }
-                    }
-                    //the last character is \u0000, so it must be removed
-                    if (longLink != null) {
-                        longLink = longLink.substring(0, longLink.length() - 1);
-                    }
-                    outStream.flush();
-                    outStream.close();
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(targetFile);
+                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream)) {
 
-                }
-            } finally {
-                if (tis != null) {
-                    tis.close();
-                }
-                if (outStream != null) {
-                    outStream.flush();
-                    outStream.close();
+                        int count;
+                        while ((count = tis.read(data)) != -1) {
+                            bufferedOutputStream.write(data, 0, count);
+                            //if the entry is a link, must be saved, since the name of the next entry depends on this
+                            if (entryIsLink) {
+                                longLink = (longLink == null ? "" : longLink) + new String(data, 0, count);
+                            } else {
+                                longLink = null;
+                            }
+                        }
+                        // the last character is \u0000, so it must be removed
+                        if (longLink != null) {
+                            longLink = longLink.substring(0, longLink.length() - 1);
+                        }
+                        bufferedOutputStream.flush();
+                    }
                 }
             }
         }
+    }
+
+    private TarInputStream buildTarInputStream(BufferedInputStream bufferedInputStream) throws IOException {
+        TarInputStream tis = null;
+        if (isTgz(this.archiveFile.getFileName().toString())) {
+            tis = new TarInputStream(new GZIPInputStream(bufferedInputStream));
+        } else {
+            tis = new TarInputStream(bufferedInputStream);
+        }
+        return tis;
     }
 
     private void ensureDirectory(File targetDir) throws IOException {
@@ -274,16 +239,13 @@ class TarVirtualDir extends VirtualDirEx {
 
     @Override
     public String[] listAll(Pattern...patterns) {
-        List<String> fileNames = new ArrayList<>();
-        TarInputStream tis;
+        List<String> fileNames;
         try (InputStream inputStream = Files.newInputStream(this.archiveFile);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+             TarInputStream tis = buildTarInputStream(bufferedInputStream)) {
 
-            if (isTgz(this.archiveFile.getFileName().toString())) {
-                tis = new TarInputStream(new GZIPInputStream(bufferedInputStream));
-            } else {
-                tis = new TarInputStream(bufferedInputStream);
-            }
+            fileNames = new ArrayList<>();
+            byte data[] = new byte[TRANSFER_BUFFER_SIZE];
             TarEntry entry;
             String longLink = null;
             while ((entry = tis.getNextEntry()) != null) {
@@ -293,9 +255,8 @@ class TarVirtualDir extends VirtualDirEx {
                     entryName = longLink;
                     longLink = null;
                 }
-                //if the entry is a link, must be saved, since the name of the next entry depends on this
+                // if the entry is a link, must be saved, since the name of the next entry depends on this
                 if (entryIsLink) {
-                    final byte data[] = new byte[1024 * 1024];
                     int count;
                     while ((count = tis.read(data)) != -1) {
                         longLink = (longLink == null ? "" : longLink) + new String(data, 0, count);
@@ -304,7 +265,7 @@ class TarVirtualDir extends VirtualDirEx {
                     longLink = null;
                     fileNames.add(entryName);
                 }
-                //the last character is \u0000, so it must be removed
+                // the last character is \u0000, so it must be removed
                 if (longLink != null) {
                     longLink = longLink.substring(0, longLink.length() - 1);
                 }
@@ -314,12 +275,5 @@ class TarVirtualDir extends VirtualDirEx {
             fileNames = new ArrayList<>();
         }
         return fileNames.toArray(new String[fileNames.size()]);
-    }
-
-    public void ensureUnpackedStarted() {
-        if (!unpackStarted) {
-            unpackStarted = true;
-            executor.execute(unpackTask);
-        }
     }
 }

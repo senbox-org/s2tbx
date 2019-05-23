@@ -67,7 +67,7 @@ public class JP2ProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(JP2ProductReader.class.getName());
 
     private Product product;
-    private VirtualFile virtualJp2File;
+    private VirtualJP2File virtualJp2File;
 
     public JP2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
@@ -103,7 +103,7 @@ public class JP2ProductReader extends AbstractProductReader {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
 
-        this.virtualJp2File = new VirtualFile(jp2File, getClass());
+        this.virtualJp2File = new VirtualJP2File(jp2File, getClass());
 
         try {
             OpjDumpFile opjDumpFile = new OpjDumpFile();
