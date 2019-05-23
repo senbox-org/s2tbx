@@ -164,6 +164,10 @@ public abstract class VirtualDirEx extends VirtualDir {
         return found != null ? found.toArray(new String[found.size()]) : null;
     }
 
+    public String[] listAllFilesWithPath() {
+        return listAll();
+    }
+
     @Override
     public String[] listAllFiles() throws IOException {
         return listAll();
@@ -334,16 +338,27 @@ public abstract class VirtualDirEx extends VirtualDir {
                 }
             }
             if (file == null || !file.exists()) {
-                String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
-                String path = findKeyFile(key);
-                if (path == null)
-                    throw new IOException(String.format("File %s does not exist", relativePath));
-                relativePath = path;
-                try {
-                    // the "classic" way
-                    file = getFileInner(relativePath);
-                } catch (IOException e) {
-                    file = !isArchive() ? new File(wrapped.getTempDir() + File.separator + relativePath) : getFileInner(relativePath);
+                //If no identical name found, look for a name in uppercase (needed for some Deimos products on Linux)
+                if(relativePath.contains("_")){
+                    String extension = relativePath.substring(relativePath.lastIndexOf("."));
+                    String fileName = relativePath.substring(0,relativePath.lastIndexOf("_"));
+                    String fileSufix = relativePath.substring(relativePath.lastIndexOf("_"),relativePath.lastIndexOf("."));
+                    file = new File(wrapped.getTempDir(), fileName.toUpperCase()+fileSufix+extension);
+                }else{
+                    file = new File(wrapped.getTempDir(), relativePath.substring(0,relativePath.lastIndexOf(".")).toUpperCase()+relativePath.substring(relativePath.lastIndexOf(".")));
+                }
+                if(file == null || !file.exists()) {
+                    String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
+                    String path = findKeyFile(key);
+                    if (path == null)
+                        throw new IOException(String.format("File %s does not exist", relativePath));
+                    relativePath = path;
+                    try {
+                        // the "classic" way
+                        file = getFileInner(relativePath);
+                    } catch (IOException e) {
+                        file = !isArchive() ? new File(wrapped.getTempDir() + File.separator + relativePath) : getFileInner(relativePath);
+                    }
                 }
             }
             return file;
@@ -480,12 +495,17 @@ public abstract class VirtualDirEx extends VirtualDir {
         @Override
         public String[] listAll(Pattern...patterns) {
             String[] list = super.listAll(patterns);
-            //If the input is archive, the list should contain the full item path(needed for some Deimos products opened on linux)
-            if(wrapped.isArchive() && wrapped.getBasePath().toLowerCase().contains("deimos")){
-                Arrays.stream(list).forEach(item -> files.put(item.toLowerCase(), item));
-            }else {
-                Arrays.stream(list).forEach(item -> files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
+            Arrays.stream(list).forEach(item -> this.files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
+            return list;
+        }
+
+        @Override
+        public String[] listAllFilesWithPath() {
+            String[] list = super.listAll();
+            if(!this.files.isEmpty()) {
+                this.files.clear();
             }
+            Arrays.stream(list).forEach(item -> files.put(item.toLowerCase(), item));
             return list;
         }
 
