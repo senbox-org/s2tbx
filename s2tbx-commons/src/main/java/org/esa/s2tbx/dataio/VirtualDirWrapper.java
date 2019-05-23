@@ -110,7 +110,7 @@ class VirtualDirWrapper extends VirtualDirEx {
                 file = path.toFile();
             }
         }
-        if (file == null || !file.exists()) {
+        if (file == null || !Files.exists(file.toPath())) {
             //If no identical name found, look for a name in uppercase (needed for some Deimos products on Linux)
             if (relativePath.contains("_")) {
                 String extension = relativePath.substring(relativePath.lastIndexOf("."));
@@ -122,7 +122,7 @@ class VirtualDirWrapper extends VirtualDirEx {
                 String fileName = relativePath.substring(0, relativePath.lastIndexOf(".")).toUpperCase();
                 file = new File(wrapped.getTempDir(), fileName + extension);
             }
-            if(file == null || !file.exists()) {
+            if(file == null || !Files.exists(file.toPath())) {
                 String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
                 String path = findKeyFile(key);
                 if (path == null) {
