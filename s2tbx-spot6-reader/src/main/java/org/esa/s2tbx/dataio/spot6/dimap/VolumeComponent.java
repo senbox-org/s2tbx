@@ -27,55 +27,84 @@ import java.nio.file.Path;
  * This maps to the corresponding DIMAP Component element.
  *
  * @author Cosmin Cara
+ * modified 20190513 for VFS compatibility by Oana H.
  */
 public class VolumeComponent {
-    private Path parentPath;
-    String title;
-    String content;
-    String type;
-    Path path;
-    String thumbnailPath;
-    String thumbnailFormat;
+    private final Path parentPath;
+    private String relativePath;
+    private String title;
+    private String content;
+    private String type;
+    private String thumbnailPath;
+    private String thumbnailFormat;
 
     public enum Type {
         VOLUME,
         IMAGE
     }
 
-    public VolumeComponent(Path parentPath) {
+    public VolumeComponent(final Path parentPath) {
         this.parentPath = parentPath;
+    }
+
+    public Path getParentPath() {
+        return parentPath;
+    }
+
+    public String getRelativePath() {
+        return relativePath;
+    }
+
+    public void setRelativePath(final String relativePath) {
+        this.relativePath = relativePath;
     }
 
     public String getTitle() {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getType() {
         return type;
     }
 
-    public Path getPath() {
-        return path;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getThumbnailPath() {
         return thumbnailPath;
     }
 
+    public void setThumbnailPath(String thumbnailPath) {
+        this.thumbnailPath = thumbnailPath;
+    }
+
     public String getContent() {
         return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public String getThumbnailFormat() {
         return thumbnailFormat;
     }
 
+    public void setThumbnailFormat(String thumbnailFormat) {
+        this.thumbnailFormat = thumbnailFormat;
+    }
+
     public GenericXmlMetadata getComponentMetadata() {
         GenericXmlMetadata metadata = null;
-        if (Spot6Constants.METADATA_FORMAT.equals(type)) {
-            Path fullPath = parentPath.resolve(getPath());
+        if (Spot6Constants.METADATA_FORMAT.equals(this.type)) {
+            Path fullPath = this.parentPath.resolve(this.relativePath);
             if (Files.exists(fullPath)) {
-                if (this.path.toString().contains("DIM_")) {
+                if (this.relativePath.toString().contains("DIM_")) {
                     try {
                         metadata = ImageMetadata.create(fullPath);
                     } catch (IOException e) {

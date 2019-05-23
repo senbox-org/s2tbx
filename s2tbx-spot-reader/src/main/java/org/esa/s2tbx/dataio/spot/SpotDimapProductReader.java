@@ -48,6 +48,7 @@ import java.util.logging.Logger;
  * from compressed archive files or from file system.
  *
  * @author Cosmin Cara
+ * modified 20190515 for VFS compatibility by Oana H.
  */
 public class SpotDimapProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(SpotDimapProductReader.class.getName());
@@ -69,7 +70,10 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
+        //productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.productDirectory = VirtualDirEx.build(inputPath);
+
         metadata = SpotSceneMetadata.create(productDirectory, this.logger);
         VolumeMetadata volumeMetadata = metadata.getVolumeMetadata();
         SpotDimapProductReaderPlugin readerPlugIn = (SpotDimapProductReaderPlugin)getReaderPlugIn();
