@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,6 +24,7 @@ import java.util.Map;
  * Metadata class for SPOT 6/7 raster metadata.
  *
  * @author Cosmin Cara
+ * modified 20190513 for VFS compatibility by Oana H.
  */
 public class ImageMetadata extends XmlMetadata {
 
@@ -91,8 +91,9 @@ public class ImageMetadata extends XmlMetadata {
         ImageMetadata result = null;
         try (InputStream inputStream = Files.newInputStream(path)) {
             ImageMetadataParser parser = new ImageMetadataParser(ImageMetadata.class);
+            Path parentFolderPath = path.getParent();
             result = parser.parse(inputStream);
-            result.setPath(path.getParent());
+            result.setPath(parentFolderPath);
             result.setFileName(path.getFileName().toString());
         } catch (ParserConfigurationException | SAXException e) {
             e.printStackTrace();

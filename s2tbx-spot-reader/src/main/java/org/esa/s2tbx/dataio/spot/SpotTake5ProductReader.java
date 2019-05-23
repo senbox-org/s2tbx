@@ -59,6 +59,7 @@ import java.util.logging.Logger;
  * In both cases, the input file (the archive or the metadata file) shoud start with "SPOT4_HRVIR1_XS_" (HVIR1 is the sensor of SPOT4 satellites).
  *
  * @author Ramona Manda
+ * modified 20190515 for VFS compatibility by Oana H.
  */
 public class SpotTake5ProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(SpotTake5ProductReader.class.getName());
@@ -112,16 +113,18 @@ public class SpotTake5ProductReader extends AbstractProductReader {
     @Override
     protected Product readProductNodesImpl() throws IOException {
         //input = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
-
-        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.input = VirtualDirEx.build(inputFile, false, true);
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.input = VirtualDirEx.build(inputPath);
 
         File imageMetadataFile = null;
         String metaSubFolder = "";
-        if (VirtualDirEx.isPackedFile(this.input.getBaseFile().toPath())) {
+
+        //if (VirtualDirEx.isPackedFile(new File(input.getBasePath()))) {
+        if (VirtualDirEx.isPackedFile(inputPath)) {
             //if the input is an archive, check the metadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
             String path = input.getBasePath();
-            String metaFile = path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));
+            //String metaFile = path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));
+            String metaFile = path.substring(path.lastIndexOf(inputPath.getFileSystem().getSeparator()) + 1, path.lastIndexOf("."));
             try {
                 imageMetadataFile = input.getFile(metaFile + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
             } catch (Exception ex) {
@@ -141,9 +144,12 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 }
             }
         } else {
-            imageMetadataFile = new File(getInput().toString());
+            //imageMetadataFile = new File(getInput().toString());
+            imageMetadataFile = this.input.getFile(getInput().toString());
+
             if (!imageMetadataFile.isFile()) {
-                imageMetadataFile = new File(input.getBasePath(), input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
+                //imageMetadataFile = new File(input.getBasePath(), input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
+                imageMetadataFile = this.input.getFile(input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
             }
         }
         if (imageMetadataFile != null) {
@@ -155,12 +161,14 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             // for N2, the masks may not be present in metadata, but in a folder named MASK
             String masksFolderName = imageMetadata.getMasksFolder();
             if (productLevel.startsWith("N2") && masksFolderName != null) {
-                File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
+                //File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
+                File masksFolder = this.input.getFile(masksFolderName);
                 String[] files = masksFolder.list();
                 Map<String, String> maskFiles = imageMetadata.getMaskFiles();
                 if (files != null) {
                     for (String file : files) {
-                        String path = masksFolderName + File.separator + file;
+                        //String path = masksFolderName + File.separator + file;
+                        String path = masksFolderName + this.input.getFileSystemSeparator() + file;
                         if (file.contains("SAT")) {
                             maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
                         } else if (file.contains("NUA")) {
@@ -186,7 +194,8 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                                   imageMetadata.getRasterHeight());
             product.setProductReader(this);
             //product.setFileLocation(imageMetadataFile);
-            product.setFileLocation(new File(input.getBasePath()));
+            //product.setFileLocation(new File(input.getBasePath()));
+            product.setFileLocation(inputPath.toFile());
             product.getMetadataRoot().addElement(imageMetadata.getRootElement());
             ProductData.UTC startTime = imageMetadata.getDatePdv();
             product.setStartTime(startTime);
