@@ -1,11 +1,10 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.core.datamodel.MetadataElement;
 
-import java.nio.file.Path;
 import java.util.Map;
 
 /**

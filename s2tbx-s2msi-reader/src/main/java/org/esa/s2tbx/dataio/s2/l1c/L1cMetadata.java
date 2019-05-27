@@ -18,7 +18,7 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -28,7 +28,6 @@ import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,16 +50,19 @@ public class L1cMetadata extends S2Metadata {
 
     protected Logger logger = SystemUtils.LOG;
 
-    public static L1cMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    public static L1cMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule, INamingConvention namingConvention)
+                                          throws IOException, ParserConfigurationException, SAXException {
+
         return new L1cMetadata(path, granuleName, config, epsg, isAGranule, namingConvention);
     }
 
+    private L1cMetadata(VirtualPath path, String granuleName, S2Config s2config, String epsg, boolean isGranule, INamingConvention namingConvention)
+                        throws IOException, ParserConfigurationException, SAXException {
 
-    private L1cMetadata(VirtualPath path, String granuleName, S2Config s2config, String epsg, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         super(s2config);
-        resetTileList();
 
-        if(!isAGranule) {
+        resetTileList();
+        if (!isGranule) {
             initProduct(path, granuleName, epsg, namingConvention);
         } else {
             initTile(path, epsg, namingConvention);

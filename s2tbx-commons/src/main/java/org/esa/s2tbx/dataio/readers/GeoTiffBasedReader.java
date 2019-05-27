@@ -18,8 +18,8 @@
 package org.esa.s2tbx.dataio.readers;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
-import org.esa.s2tbx.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -34,12 +34,15 @@ import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.utils.CollectionHelper;
+import org.xml.sax.SAXException;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
-import java.awt.*;
+import javax.xml.parsers.ParserConfigurationException;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
@@ -59,16 +62,18 @@ import java.util.logging.Logger;
  * This class has been created from the need of gathering all common code of several similar readers into a single place.
  */
 public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends AbstractProductReader {
+
     protected static final Logger logger = Logger.getLogger(GeoTiffBasedReader.class.getName());
 
     private final Class<M> metadataClass;
+    protected final Map<Band, Band> bandMap;
+    protected final Path colorPaletteFilePath;
+
     protected List<M> metadata;
     protected Product product;
     protected ImageInputStreamSpi imageInputStreamSpi;
     protected VirtualDirEx productDirectory;
-    protected final Map<Band, Band> bandMap;
-    protected List<String> rasterFileNames;
-    protected final Path colorPaletteFilePath;
+    private List<String> rasterFileNames;
 
     protected GeoTiffBasedReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
@@ -77,24 +82,8 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         this.metadataClass = getTypeArgument();
         registerMetadataParser();
         registerSpi();
-        bandMap = new HashMap<>();
-        metadata = new ArrayList<>();
-    }
-
-    protected Class<M> getTypeArgument() {
-        Class<M> arg;
-        Type superclass = getClass().getGenericSuperclass();
-        Type type;
-        if (superclass instanceof  ParameterizedType) {
-            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
-            arg = (Class<M>) type;
-        } else if ((superclass = getClass().getSuperclass().getGenericSuperclass()) instanceof ParameterizedType) {
-            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
-            arg = (Class<M>) type;
-        } else {
-            throw new ClassCastException("Cannot find parameterized type");
-        }
-        return arg;
+        this.bandMap = new HashMap<>();
+        this.metadata = new ArrayList<>();
     }
 
     /**
@@ -131,13 +120,30 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
     @Override
     public void close() throws IOException {
-        if (productDirectory != null) {
-            productDirectory.close();
+        if (this.productDirectory != null) {
+            this.productDirectory.close();
         }
-        if (imageInputStreamSpi != null) {
-            IIORegistry.getDefaultInstance().deregisterServiceProvider(imageInputStreamSpi);
+        if (this.imageInputStreamSpi != null) {
+            IIORegistry.getDefaultInstance().deregisterServiceProvider(this.imageInputStreamSpi);
         }
+
         super.close();
+    }
+
+    protected Class<M> getTypeArgument() {
+        Class<M> arg;
+        Type superclass = getClass().getGenericSuperclass();
+        Type type;
+        if (superclass instanceof  ParameterizedType) {
+            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+            arg = (Class<M>) type;
+        } else if ((superclass = getClass().getSuperclass().getGenericSuperclass()) instanceof ParameterizedType) {
+            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+            arg = (Class<M>) type;
+        } else {
+            throw new ClassCastException("Cannot find parameterized type");
+        }
+        return arg;
     }
 
     /**
@@ -151,11 +157,11 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
      * Registers a file image input strwM SPI for image input stream, if none is yet registered.
      */
     protected void registerSpi() {
-        final IIORegistry defaultInstance = IIORegistry.getDefaultInstance();
-        Iterator<ImageInputStreamSpi> serviceProviders = defaultInstance.getServiceProviders(ImageInputStreamSpi.class, true);
-        ImageInputStreamSpi toUnorder = null;
+        IIORegistry defaultInstance = IIORegistry.getDefaultInstance();
         if (defaultInstance.getServiceProviderByClass(FileImageInputStreamSpi.class) == null) {
             // register only if not already registered
+            ImageInputStreamSpi toUnorder = null;
+            Iterator<ImageInputStreamSpi> serviceProviders = defaultInstance.getServiceProviders(ImageInputStreamSpi.class, true);
             while (serviceProviders.hasNext()) {
                 ImageInputStreamSpi current = serviceProviders.next();
                 if (current.getInputClass() == File.class) {
@@ -163,46 +169,23 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                     break;
                 }
             }
-            imageInputStreamSpi = new FileImageInputStreamSpi();
-            defaultInstance.registerServiceProvider(imageInputStreamSpi);
+            this.imageInputStreamSpi = new FileImageInputStreamSpi();
+            defaultInstance.registerServiceProvider(this.imageInputStreamSpi);
             if (toUnorder != null) {
                 // Make the custom Spi to be the first one to be used.
-                defaultInstance.setOrdering(ImageInputStreamSpi.class, imageInputStreamSpi, toUnorder);
+                defaultInstance.setOrdering(ImageInputStreamSpi.class, this.imageInputStreamSpi, toUnorder);
             }
         }
-    }
-
-    /**
-     * Returns a File object from the input of the reader.
-     * @param input the input object
-     * @return  Either a new instance of File, if the input represents the file name, or the casted input File.
-     */
-    protected File getFileInput(Object input) {
-        if (input instanceof String) {
-            return new File((String) input);
-        } else if (input instanceof File) {
-            return (File) input;
-        }
-        return null;
     }
 
     /**
      * Returns a wrapping VirtualDirEx object over the input product.
      *
-     * @param input The reader input as received from the caller.
      * @return  An instance of VirtualDirEx
      * @throws IOException
      */
-    protected VirtualDirEx getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
-        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
-            final File absoluteFile = inputFile.getAbsoluteFile();
-            inputFile = absoluteFile.getParentFile();
-            if (inputFile == null) {
-                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
-            }
-        }
-        return VirtualDirEx.create(inputFile);
+    protected VirtualDirEx buildProductDirectory(Path inputPath) throws IOException {
+        return VirtualDirEx.build(inputPath, false, true);
     }
 
     /**
@@ -228,58 +211,73 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = getInput(super.getInput());
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
+
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+
+        this.productDirectory = buildProductDirectory(inputPath);
+
         String[] metadataFiles = getMetadataFiles();
-        if (metadataFiles != null) {
+        if (metadataFiles == null) {
+            logger.info("No metadata file found");
+        } else {
             logger.info("Reading product metadata");
             for (String file : metadataFiles) {
                 try {
-                    File metadataFile = productDirectory.getFile(file);
-                    M mData = XmlMetadata.create(metadataClass, metadataFile);
-                    mData.setFileName(metadataFile.getName());
-                    metadata.add(mData);
-                } catch (Exception mex) {
+                    try (FilePathInputStream filePathInputStream = this.productDirectory.getInputStream(file)) {
+                        M metaDataItem;
+                        try {
+                            metaDataItem = (M) XmlMetadataParserFactory.getParser(this.metadataClass).parse(filePathInputStream);
+                        } catch (InstantiationException | ParserConfigurationException | SAXException e) {
+                            throw new IllegalStateException(e);
+                        }
+                        Path filePath = filePathInputStream.getPath();
+                        metaDataItem.setPath(filePath);
+                        metaDataItem.setFileName(filePath.getFileName().toString());
+                        this.metadata.add(metaDataItem);
+                    }
+                } catch (IOException mex) {
                     logger.warning(String.format("Error while reading metadata file %s", file));
                 }
             }
-        } else {
-            logger.info("No metadata file found");
         }
-        if (metadata != null && metadata.size() > 0) {
-            List<M> rasterMetadataList = CollectionHelper.where(metadata, m -> m.getFileName().endsWith(getMetadataFileSuffix()));
 
-            M firstMetadata;
-            String metadataProfile;
-            if (rasterMetadataList == null || rasterMetadataList.size() == 0 || (firstMetadata = rasterMetadataList.get(0)) == null || ((metadataProfile = firstMetadata.getMetadataProfile()) == null || !metadataProfile.startsWith(getMetadataProfile()))) {
+        if (this.metadata != null && this.metadata.size() > 0) {
+            List<M> rasterMetadataList = CollectionHelper.where(this.metadata, m -> m.getFileName().endsWith(getMetadataFileSuffix()));
+            M firstMetadata = getFirstMetadataItem(rasterMetadataList);
+            if (firstMetadata == null) {
                 IOException ex = new IOException("The selected product is not readable by this reader. Please use the appropriate filter");
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                 throw ex;
             }
+
             if (firstMetadata.getRasterWidth() > 0 && firstMetadata.getRasterHeight() > 0) {
-                product = createProduct(firstMetadata.getRasterWidth(), firstMetadata.getRasterHeight(), firstMetadata);
+                createProduct(firstMetadata.getRasterWidth(), firstMetadata.getRasterHeight(), firstMetadata);
             }
             for (int i = 0; i < rasterMetadataList.size(); i++) {
                 M currentMetadata = rasterMetadataList.get(i);
-                addBands(product, currentMetadata, i);
+                addBands(currentMetadata, i);
             }
-            addMetadataMasks(product, firstMetadata);
-            readAdditionalMasks(productDirectory);
+            addMetadataMasks(firstMetadata);
+            readAdditionalMasks(this.productDirectory);
 
-            product.setModified(false);
+            this.product.setModified(false);
         } else {
-            if (product != null) {
-                product.setModified(false);
+            if (this.product != null) {
+                this.product.setModified(false);
             }
         }
-        return  product;
+        return this.product;
     }
 
     @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        Band sourceBand = bandMap.get(destBand);
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
+                                          throws IOException {
+
+        Band sourceBand = this.bandMap.get(destBand);
         GeoTiffReaderEx reader = (GeoTiffReaderEx)sourceBand.getProductReader();
         if (reader == null) {
             logger.severe("No reader found for band data");
@@ -296,82 +294,81 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
      * @param metadataFile  The (primary) metadata file
      * @return  An instance of the product
      */
-    protected Product createProduct(int width, int height, M metadataFile) {
+    protected void createProduct(int width, int height, M metadataFile) {
         String name = (metadataFile != null && metadataFile.getProductName() != null) ? metadataFile.getProductName() : getProductGenericName();
         String type = getReaderPlugIn().getFormatNames()[0];
-        product = new Product(name, type, width, height);
+        this.product = new Product(name, type, width, height);
         File fileLocation = null;
         try {
             // in case of zip products, getTempDir returns the temporary location of the uncompressed product
-            fileLocation = productDirectory.getTempDir();
+            fileLocation = this.productDirectory.getTempDir();
         } catch (IOException e) {
             logger.warning(e.getMessage());
         }
         if (fileLocation == null) {
-            fileLocation = new File(productDirectory.getBasePath());
+            fileLocation = this.productDirectory.getBaseFile();
         }
-        product.setFileLocation(fileLocation);
+        this.product.setFileLocation(fileLocation);
         if (metadataFile != null) {
-            product.getMetadataRoot().addElement(metadataFile.getRootElement());
+            this.product.getMetadataRoot().addElement(metadataFile.getRootElement());
             ProductData.UTC centerTime = metadataFile.getCenterTime();
             if (centerTime != null) {
-                product.setStartTime(centerTime);
-                product.setEndTime(centerTime);
+                this.product.setStartTime(centerTime);
+                this.product.setEndTime(centerTime);
             } else {
-                product.setStartTime(metadataFile.getProductStartTime());
-                product.setEndTime(metadataFile.getProductEndTime());
+                this.product.setStartTime(metadataFile.getProductStartTime());
+                this.product.setEndTime(metadataFile.getProductEndTime());
             }
-            product.setProductType(metadataFile.getMetadataProfile());
-            product.setDescription(metadataFile.getProductDescription());
+            this.product.setProductType(metadataFile.getMetadataProfile());
+            this.product.setDescription(metadataFile.getProductDescription());
         }
-        return product;
     }
 
     /**
      * Reads the product bands from the product rasters, using the given component metadata (a product may have several components, and hence
      * several metadata files).
      *
-     * @param product   The instance of the product to which bands will be added
      * @param componentMetadata The metadata of the original product component
      * @param componentIndex    The index of the current product component (0 if only one component)
      */
-    protected void addBands(Product product, M componentMetadata, int componentIndex) {
+    protected void addBands(M componentMetadata, int componentIndex) {
         try {
-            rasterFileNames = getRasterFileNames();
-            if (componentIndex >= rasterFileNames.size()) {
+            this.rasterFileNames = getRasterFileNames();
+            if (componentIndex >= this.rasterFileNames.size()) {
                 throw new ArrayIndexOutOfBoundsException(String.format("Invalid component index: %d", componentIndex));
             }
-            File rasterFile = productDirectory.getFile(rasterFileNames.get(componentIndex));
+            String rasterFileName = this.rasterFileNames.get(componentIndex);
+            File rasterFile = this.productDirectory.getFile(rasterFileName);
 
             GeoTiffProductReader reader = new GeoTiffReaderEx(getReaderPlugIn());
             Product tiffProduct = reader.readProductNodes(rasterFile, null);
             if (tiffProduct != null) {
-                if (product == null) {
-                    product = createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), componentMetadata);
+                if (this.product == null) {
+                    createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), componentMetadata);
                 }
                 MetadataElement tiffMetadata = tiffProduct.getMetadataRoot();
                 if (tiffMetadata != null) {
-                    XmlMetadata.CopyChildElements(tiffMetadata, product.getMetadataRoot());
+                    XmlMetadata.CopyChildElements(tiffMetadata, this.product.getMetadataRoot());
                 }
-                tiffProduct.transferGeoCodingTo(product, null);
+                tiffProduct.transferGeoCodingTo(this.product, null);
                 Dimension preferredTileSize = tiffProduct.getPreferredTileSize();
                 if (preferredTileSize == null) {
-                    preferredTileSize = getPreferredTileSize(product);
+                    preferredTileSize = getPreferredTileSize(this.product);
                 }
-                product.setPreferredTileSize(preferredTileSize);
+                this.product.setPreferredTileSize(preferredTileSize);
                 int numBands = tiffProduct.getNumBands();
                 String bandPrefix = "";
-                if (rasterFileNames.size() > 1) {
+                if (this.rasterFileNames.size() > 1) {
                     bandPrefix = "scene_" + String.valueOf(componentIndex) + "_";
                     String groupPattern = computeGroupPattern();
                     if (!StringUtils.isNullOrEmpty(groupPattern)) {
-                        product.setAutoGrouping(groupPattern);
+                        this.product.setAutoGrouping(groupPattern);
                     }
                 }
                 for (int idx = 0; idx < numBands; idx++) {
                     Band srcBand = tiffProduct.getBandAt(idx);
                     String bandName = bandPrefix + getBandNames()[idx];
-                    Band targetBand = new ColorPaletteBand(bandName, srcBand.getDataType(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
+                    Band targetBand = new ColorPaletteBand(bandName, srcBand.getDataType(), this.product.getSceneRasterWidth(), this.product.getSceneRasterHeight(), this.colorPaletteFilePath);
                     targetBand.setNoDataValue(srcBand.getNoDataValue());
                     targetBand.setNoDataValueUsed(srcBand.isNoDataValueUsed());
                     targetBand.setSpectralWavelength(srcBand.getSpectralWavelength());
@@ -385,22 +382,21 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                     targetBand.setSpectralBandIndex(srcBand.getSpectralBandIndex());
                     targetBand.setDescription(srcBand.getDescription());
 
-                    product.addBand(targetBand);
-                    bandMap.put(targetBand, srcBand);
+                    this.product.addBand(targetBand);
+                    this.bandMap.put(targetBand, srcBand);
                 }
             }
         } catch (Exception e) {
-            logger.severe(e.getMessage());
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
     /**
      * Reads from the given metadata object and adds product masks.
      * The default (i.e. base) implementation does nothing, therefore this method should be overridden by subclasses.
-     * @param product   The product to which masks should be added.
      * @param metadata  The metadata object from which masks are read.
      */
-    protected void addMetadataMasks(Product product, M metadata) {
+    protected void addMetadataMasks(M metadata) {
     }
 
     /**
@@ -462,9 +458,9 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
      */
     protected String computeGroupPattern() {
         String groupPattern = "";
-        rasterFileNames = getRasterFileNames();
-        if (rasterFileNames.size() > 1) {
-            for (int idx = 0; idx < rasterFileNames.size(); idx++) {
+        this.rasterFileNames = getRasterFileNames();
+        if (this.rasterFileNames.size() > 1) {
+            for (int idx = 0; idx < this.rasterFileNames.size(); idx++) {
                 groupPattern += "scene_" + String.valueOf(idx) + ":";
             }
         }
@@ -474,7 +470,8 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
     @Override
     public TreeNode<File> getProductComponents() {
         TreeNode<File> result = super.getProductComponents();
-        if (productDirectory.isCompressed()) {
+
+        if (this.productDirectory.isCompressed()) {
             return result;
         } else {
             TreeNode<File>[] nodesClone = result.getChildren().clone();
@@ -484,27 +481,26 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
             for(XmlMetadata metaFile: metadata){
                 TreeNode<File> productFile = new TreeNode<>(metaFile.getFileName());
                 result.addChild(productFile);
-                /*try {
-                    TreeNode<File> productFile = new TreeNode<File>(metaFile.getFileName());
-                    productFile.setContent(input.getFile(inputFile));
-                    result.addChild(productFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
             }
             for(String inputFile: getRasterFileNames()){
                 TreeNode<File> productFile = new TreeNode<>(inputFile);
                 result.addChild(productFile);
-                /*try {
-                    TreeNode<File> productFile = new TreeNode<File>(inputFile);
-                    productFile.setContent(input.getFile(inputFile));
-                    result.addChild(productFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
             }
             return result;
         }
+    }
+
+    private M getFirstMetadataItem(List<M> rasterMetadataList) {
+        if (rasterMetadataList != null && rasterMetadataList.size() > 0) {
+            M firstMetadata = rasterMetadataList.get(0);
+            if (firstMetadata != null) {
+                String metadataProfile = firstMetadata.getMetadataProfile();
+                if (metadataProfile != null && metadataProfile.startsWith(getMetadataProfile())) {
+                    return firstMetadata;
+                }
+            }
+        }
+        return null;
     }
 
     /**

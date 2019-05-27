@@ -19,24 +19,26 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
-import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * @author Norman Fomferra
  */
 public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
 
-    public final static String L1B_LEVEL = "L1B";
+    private static final Logger logger = Logger.getLogger(S2L1BProductReaderPlugIn.class.getName());
 
+    public final static String L1B_LEVEL = "L1B";
 
     public S2L1BProductReaderPlugIn() {
     }
@@ -47,36 +49,33 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        SystemUtils.LOG.fine("Getting decoders...");
-
-        DecodeQualification decodeQualification = DecodeQualification.UNABLE;
+        logger.fine("Getting decoders...");
 
         if (!(input instanceof File)) {
             return DecodeQualification.UNABLE;
         }
 
         File file = (File) input;
-        if(!isValidExtension(file)) {
+        if (!isValidExtension(file)) {
             return DecodeQualification.UNABLE;
         }
 
-
-        INamingConvention namingConvention = null;
+        INamingConvention namingConvention;
         try {
-            namingConvention = NamingConventionFactory.createL1BNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+            VirtualPath virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath());
+            namingConvention = NamingConventionFactory.createL1BNamingConvention(virtualPath);
         } catch (IOException e) {
             return DecodeQualification.UNABLE;
         }
-        if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
+        if (namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
             return DecodeQualification.INTENDED;
         }
         return DecodeQualification.UNABLE;
-
     }
 
     @Override
     public ProductReader createReaderInstance() {
-        SystemUtils.LOG.info("Building product reader L1B Multisize...");
+        logger.info("Building product reader L1B Multisize...");
 
         return new Sentinel2L1BProductReader(this, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_MULTI);
     }
@@ -85,7 +84,6 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
     public String[] getFormatNames() {
         return new String[]{String.format("%s-%s-MultiRes", FORMAT_NAME, L1B_LEVEL)};
     }
-
 
     @Override
     public String getDescription(Locale locale) {

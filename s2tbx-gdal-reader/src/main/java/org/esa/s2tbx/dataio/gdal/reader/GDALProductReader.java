@@ -2,6 +2,8 @@ package org.esa.s2tbx.dataio.gdal.reader;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.esa.s2tbx.commons.VirtualFile;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -20,6 +22,7 @@ import org.gdal.gdalconst.gdalconstConstants;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import javax.imageio.spi.IIORegistry;
 import javax.media.jai.JAI;
 import java.awt.Color;
 import java.awt.image.DataBuffer;
@@ -40,9 +43,9 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  */
 public class GDALProductReader extends AbstractProductReader {
+
     private static final Logger logger = Logger.getLogger(GDALProductReader.class.getName());
     private static final Map<Integer, BufferTypeDescriptor> bufferTypes;
-
     static {
         bufferTypes = new HashMap<>();
         bufferTypes.put(gdalconstConstants.GDT_Byte,
@@ -61,24 +64,34 @@ public class GDALProductReader extends AbstractProductReader {
                         new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
     }
 
+    private VirtualFile virtualFile;
+
     public GDALProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
 
     @Override
+    public void close() throws IOException {
+        if (this.virtualFile != null) {
+            this.virtualFile.close();
+        }
+
+        super.close();
+    }
+
+    @Override
     protected Product readProductNodesImpl() throws IOException {
-        Object input = getInput();
+        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(getInput());
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Loading the product from the file '" + input.toString() + "' using the GDAL plugin reader '" + getReaderPlugIn().getClass().getName() + "'.");
+            logger.log(Level.FINE, "Loading the product from the file '" + inputFile.toString() + "' using the GDAL plugin reader '" + getReaderPlugIn().getClass().getName() + "'.");
         }
 
-        Path inputFile = getFileInput(input);
-        if (inputFile == null) {
-            throw new IllegalArgumentException("The file '"+ input.toString() + "' to load the product is invalid.");
-        }
+        this.virtualFile = new VirtualFile(inputFile);
 
-        Dataset gdalDataset = gdal.Open(inputFile.toString(), gdalconst.GA_ReadOnly);
+        Path localFile = this.virtualFile.getLocalFile();
+
+        Dataset gdalDataset = gdal.Open(localFile.toString(), gdalconst.GA_ReadOnly);
         if (gdalDataset == null) {
             // unknown file format
             throw new NullPointerException("Failed opening a dataset from the file '" + inputFile.toString() + "' to load the product.");
@@ -87,7 +100,7 @@ public class GDALProductReader extends AbstractProductReader {
         try {
             int imageWidth = gdalDataset.getRasterXSize();
             int imageHeight = gdalDataset.getRasterYSize();
-            String productName = inputFile.getFileName().toString();
+            String productName = this.virtualFile.getFileName();
             String productType = "GDAL";
 
             Product product = new Product(productName, productType, imageWidth, imageHeight);
@@ -197,7 +210,7 @@ public class GDALProductReader extends AbstractProductReader {
                     productBand.setNoDataValue(noData[0]);
                     productBand.setNoDataValueUsed(true);
                 }
-                GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount, imageWidth, imageHeight, tileWidth,
+                GDALMultiLevelSource source = new GDALMultiLevelSource(localFile, bandIndex, bandCount, imageWidth, imageHeight, tileWidth,
                                                                        tileHeight, levels, dataBufferType.dataBufferType, geoCoding);
 
                 productBand.setSourceImage(new DefaultMultiLevelImage(source));
@@ -213,8 +226,7 @@ public class GDALProductReader extends AbstractProductReader {
                         maskName = "nodata_";
                     } else if ((maskFlags & (gdalconstConstants.GMF_PER_DATASET | gdalconstConstants.GMF_ALPHA)) != 0) {
                         maskName = "alpha_";
-                    } else if ((maskFlags & (gdalconstConstants.GMF_NODATA | gdalconstConstants.GMF_PER_DATASET |
-                            gdalconstConstants.GMF_ALPHA | gdalconstConstants.GMF_ALL_VALID)) != 0) {
+                    } else if ((maskFlags & (gdalconstConstants.GMF_NODATA | gdalconstConstants.GMF_PER_DATASET | gdalconstConstants.GMF_ALPHA | gdalconstConstants.GMF_ALL_VALID)) != 0) {
                         maskName = "mask_";
                     }
                     if (maskName != null) {
@@ -237,17 +249,6 @@ public class GDALProductReader extends AbstractProductReader {
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
         // do nothing
-    }
-
-    private static Path getFileInput(Object input) {
-        if (input instanceof String) {
-            return Paths.get((String) input);
-        } else if (input instanceof File) {
-            return ((File) input).toPath();
-        } else if (input instanceof Path) {
-            return (Path) input;
-        }
-        return null;
     }
 
     private static GeoCoding buildGeoCoding(Dataset gdalProduct) {

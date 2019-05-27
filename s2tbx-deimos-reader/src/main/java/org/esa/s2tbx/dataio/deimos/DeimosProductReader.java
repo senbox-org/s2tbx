@@ -34,7 +34,7 @@ import java.nio.file.Path;
  * This product reader is intended for reading DEIMOS-1 files
  * from compressed archive files, from tar files or from (uncompressed) file system.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
 
@@ -75,12 +75,12 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
         if (metadata != null && metadata.size() > 0) {
             return metadata.get(0).getBandNames();
         } else {
-            return new String[] { };
+            return new String[]{};
         }
     }
 
     @Override
-    protected void addMetadataMasks(Product product, DeimosMetadata componentMetadata) {
+    protected void addMetadataMasks(DeimosMetadata componentMetadata) {
         logger.info("Create masks");
         int noDataValue,saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {
@@ -104,8 +104,8 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
     }
 
     @Override
-    protected void addBands(Product product, DeimosMetadata componentMetadata, int componentIndex) {
-        super.addBands(product, componentMetadata, componentIndex);
+    protected void addBands(DeimosMetadata componentMetadata, int componentIndex) {
+        super.addBands(componentMetadata, componentIndex);
 
         if (DeimosConstants.PROCESSING_1R.equals(componentMetadata.getProcessingLevel())) {
             initGeoCoding(product);
@@ -141,6 +141,7 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
         return tiePointGrid;
     }
 
+  
     protected String[] getMetadataFiles() throws IOException {
         String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
         //If the input is archive, the list should contain the full item path(needed for some Deimos products opened on linux)

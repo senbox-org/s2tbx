@@ -35,11 +35,11 @@ import java.util.List;
  */
 public class L2aMetadataProc extends S2OrthoMetadataProc {
 
-    private static S2SpectralInformation makeSpectralInformation(String format,S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification) {
+    private static S2SpectralInformation makeSpectralInformation(String format, S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification) {
         return new S2SpectralInformation(
                 bandConstant.getPhysicalName(),
                 resolution,
-                NamingConventionFactory.getSpectralBandImageTemplate_L2a(format,bandConstant.getFilenameBandId()),
+                NamingConventionFactory.getSpectralBandImageTemplate_L2a(format, bandConstant.getFilenameBandId()),
                 "Reflectance in band " + bandConstant.getPhysicalName(),
                 "dl",
                 quantification,

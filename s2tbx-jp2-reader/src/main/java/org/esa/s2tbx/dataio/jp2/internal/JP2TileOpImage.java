@@ -77,7 +77,9 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     private final Logger logger;
 
     private JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
-                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level) throws IOException {
+                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level)
+                           throws IOException {
+
         super(dataType, null, tileLayout.tileWidth, tileLayout.tileHeight,
                 getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
                 null, ResolutionLevel.create(imageModel, level));
@@ -117,26 +119,27 @@ public class JP2TileOpImage extends SingleBandedOpImage {
      * @param dataType      The data type of the tile raster
      * @param level         The resolution at which the tile is created
      */
-    public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx,
-                                     int row, int col, TileLayout tileLayout,
-                                     MultiLevelModel imageModel, int dataType, int level) throws IOException {
+    public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx, int row, int col, TileLayout tileLayout,
+                                     MultiLevelModel imageModel, int dataType, int level)
+                                     throws IOException {
+
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
-        if (imageFile != null) {
-            //jp2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
-            return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
+        if (imageFile == null) {
+            ImageLayout imageLayout = buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, dataType, level);
+            return ConstantDescriptor.create((float) imageLayout.getWidth(null), (float) imageLayout.getHeight(null), new Short[]{0}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         } else {
-            int targetWidth = tileLayout.tileWidth;
-            int targetHeight = tileLayout.tileHeight;
-            Dimension targetTileDim = getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level);
-            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(dataType, targetWidth, targetHeight);
-            ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
-            return ConstantDescriptor.create((float) imageLayout.getWidth(null),
-                    (float) imageLayout.getHeight(null),
-                    new Short[]{0},
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+            return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
         }
+    }
+
+    public static ImageLayout buildImageLayout(int tileWidth, int tileHeight, int dataType, int level) {
+        int targetWidth = tileWidth;
+        int targetHeight = tileHeight;
+        Dimension targetTileDim = getTileDimAtResolutionLevel(tileWidth, tileHeight, level);
+        SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(dataType, targetWidth, targetHeight);
+        return new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
     }
 
     @Override

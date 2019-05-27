@@ -17,7 +17,8 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.junit.Test;
 
 import java.io.File;
@@ -36,7 +37,8 @@ public class MetadataReaderTest {
 
     public IL1cProductMetadata getUserProduct() throws Exception
     {
-        IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(new VirtualPath(buildPathResource("metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml"),null));
+        final Path path = buildPathResource("metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
+        IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(new VirtualPath(path.toString(), VirtualDirEx.build(path.getParent())));
 
         return productMetadata;
     }
@@ -64,14 +66,16 @@ public class MetadataReaderTest {
     @Test
     public void test2() throws Exception
     {
-        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(new VirtualPath(buildPathResource("metadata/S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLF.xml"),null));
+        final Path path = buildPathResource("metadata/S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLF.xml");
+        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(new VirtualPath(path.toString(), VirtualDirEx.build(path.getParent())));
         assertNotNull(granuleMetadata);
     }
 
     @Test
     public void test3() throws Exception
     {
-        IL1cDatastripMetadata datastripMetadata = L1cMetadataFactory.createL1cDatastripMetadata(new VirtualPath(buildPathResource("metadata/S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928.xml"),null));
+        final Path path = buildPathResource("metadata/S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928.xml");
+        IL1cDatastripMetadata datastripMetadata = L1cMetadataFactory.createL1cDatastripMetadata(new VirtualPath(path.toString(), VirtualDirEx.build(path.getParent())));
         assertNotNull(datastripMetadata);
     }
 }

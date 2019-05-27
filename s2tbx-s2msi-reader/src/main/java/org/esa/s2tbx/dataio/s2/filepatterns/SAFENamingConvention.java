@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductNamingUtils;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -8,7 +8,7 @@ import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
-import java.nio.file.Files;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -107,16 +107,16 @@ public class SAFENamingConvention implements INamingConvention{
     @Override
     public VirtualPath findGranuleFolderFromTileId(String tileId) {
         VirtualPath path = null;
-        if(getInputType()== S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
+        if (getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             path = inputXmlPath.resolveSibling("GRANULE").resolve(tileId);
 
         } else {
-            if(inputXmlPath.getParent() == null) {
+            if (inputXmlPath.getParent() == null) {
                 return null;
             }
             path = inputXmlPath.getParent().resolveSibling(tileId);
         }
-        if(path.exists() && path.isDirectory() && S2NamingConventionUtils.matches(path.getFileName().toString(),getGranuleREGEXs())) {
+        if (path.existsAndHasChildren() && S2NamingConventionUtils.matches(path.getFileName().toString(), getGranuleREGEXs())) {
             return path;
         }
         return null;
@@ -136,7 +136,7 @@ public class SAFENamingConvention implements INamingConvention{
     }
 
     @Override
-    public boolean hasValidStructure() {
+    public boolean hasValidStructure()throws IOException {
         return S2ProductNamingUtils.hasValidStructure(inputType, getInputXml());
     }
 
@@ -198,7 +198,7 @@ public class SAFENamingConvention implements INamingConvention{
     public SAFENamingConvention(VirtualPath input){
         String inputName = input.getFileName().toString();
 
-        if(input.isDirectory()) {
+        if(input.existsAndHasChildren()) {
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
             if (pattern.matcher(inputName).matches()) {
