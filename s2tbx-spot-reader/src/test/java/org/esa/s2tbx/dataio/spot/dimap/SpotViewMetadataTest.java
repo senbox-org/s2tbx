@@ -190,13 +190,13 @@ public class SpotViewMetadataTest {
             partialPath = partialPath.replaceAll("\\\\", "/");
         }
         
-        assertEquals(partialPath, metadata.getPath());
+        assertEquals(partialPath, metadata.getPath().toString());
     }
 
     @Test
     public void testSetPath() throws Exception {
-        metadata.setPath(Paths.get("D:/testtets"));
-        assertEquals("D:/testtets", metadata.getPath().toString());
+        metadata.setPath(Paths.get("D:/testsetpath"));
+        assertEquals("D:" + File.separator + "testsetpath", metadata.getPath().toString());
     }
 
     @Test
