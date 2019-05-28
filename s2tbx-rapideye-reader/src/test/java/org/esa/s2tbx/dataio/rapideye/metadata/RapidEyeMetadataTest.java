@@ -191,7 +191,7 @@ public class RapidEyeMetadataTest {
             partialPath = partialPath.replaceAll("\\\\", "/");
         }
 
-        assertEquals(partialPath, metadata.getPath());
+        assertEquals(partialPath, metadata.getPath().toString());
     }
 
     @Test
