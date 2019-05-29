@@ -135,25 +135,25 @@ public class GenericRegionMergingOp extends Operator {
             throw new OperatorException("Please select at least one band.");
         }
         Band firstSelectedSourceBand = this.sourceProduct.getBand(this.sourceBandNames[0]);
+        int targetWidth = firstSelectedSourceBand.getRasterWidth();
+        int targetHeight = firstSelectedSourceBand.getRasterHeight();
         for (int i=1; i<this.sourceBandNames.length; i++) {
             Band band = this.sourceProduct.getBand(this.sourceBandNames[i]);
-            if (firstSelectedSourceBand.getRasterWidth() != band.getRasterWidth() || firstSelectedSourceBand.getRasterHeight() != band.getRasterHeight()) {
+            if (targetWidth != band.getRasterWidth() || targetHeight != band.getRasterHeight()) {
                 throw new OperatorException("Please select the bands with the same resolution.");
             }
         }
-
-        int sceneWidth = this.sourceProduct.getSceneRasterWidth();
-        int sceneHeight = this.sourceProduct.getSceneRasterHeight();
         String productName = this.sourceProduct.getName() + "_grm";
         String productType = this.sourceProduct.getProductType();
 
-        this.targetProduct = new Product(productName, productType, sceneWidth, sceneHeight);
+        // At this stage all the bands have same resolutions (may be different from sourceProduct in case of multisize)
+        this.targetProduct = new Product(productName, productType, targetWidth, targetHeight);
         this.targetProduct.setPreferredTileSize(JAI.getDefaultTileSize());
 
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, sceneWidth, sceneHeight);
+        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, targetWidth, targetHeight);
         this.targetProduct.addBand(targetBand);
 
-        ProductUtils.copyGeoCoding(this.sourceProduct, this.targetProduct);
+        ProductUtils.copyGeoCoding(firstSelectedSourceBand, this.targetProduct);
 
         initTiles();
     }
