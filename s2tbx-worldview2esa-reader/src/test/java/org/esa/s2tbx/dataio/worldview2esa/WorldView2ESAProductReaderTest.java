@@ -64,7 +64,7 @@ public class WorldView2ESAProductReaderTest {
             assertEquals("WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061", finalProduct.getName());
             Date endDate = Calendar.getInstance().getTime();
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
         }
@@ -90,7 +90,7 @@ public class WorldView2ESAProductReaderTest {
             assertNotEquals(5, data.getElemFloatAt(3));
             Date endDate = Calendar.getInstance().getTime();
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
         }
@@ -104,7 +104,7 @@ public class WorldView2ESAProductReaderTest {
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(1, components.getChildren().length);
             assertEquals("WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.MD.XML", components.getChildren()[0].getId());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
         }
