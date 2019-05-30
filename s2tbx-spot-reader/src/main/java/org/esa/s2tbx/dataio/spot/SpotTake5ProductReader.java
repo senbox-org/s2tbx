@@ -41,7 +41,9 @@ import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -114,13 +116,15 @@ public class SpotTake5ProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         //input = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.input = VirtualDirEx.build(inputPath);
+        this.input = VirtualDirEx.build(inputPath, false, true);
 
         File imageMetadataFile = null;
         String metaSubFolder = "";
+        boolean isPacked = false;
 
         //if (VirtualDirEx.isPackedFile(new File(input.getBasePath()))) {
-        if (VirtualDirEx.isPackedFile(inputPath)) {
+        if (VirtualDirEx.isPackedFile(inputPath)) { // if (VirtualDirEx.isPackedFile(this.input.getBaseFile().toPath())) {
+            isPacked = true;
             //if the input is an archive, check the metadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
             String path = input.getBasePath();
             //String metaFile = path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));
@@ -133,9 +137,11 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 for (String entrySubFolder : input.getTempDir().list()) {
                     if (new File(input.getTempDir(), entrySubFolder).isDirectory()) {
                         try {
-                            imageMetadataFile = input.getFile(entrySubFolder + File.separator + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
+                            //imageMetadataFile = input.getFile(entrySubFolder + File.separator + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
+                            imageMetadataFile = input.getFile(entrySubFolder + inputPath.getFileSystem().getSeparator() + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
                             //if the metadata is found under a subfolder of the archive, this subfolder must be used in order to compute the path for the rest of the files found in the metadata file
-                            metaSubFolder = entrySubFolder + File.separator;
+                            //metaSubFolder = entrySubFolder + File.separator;
+                            metaSubFolder = entrySubFolder + inputPath.getFileSystem().getSeparator();
                             break;
                         } catch (Exception ex2) {
                             logger.warning(ex2.getMessage());
@@ -162,7 +168,16 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             String masksFolderName = imageMetadata.getMasksFolder();
             if (productLevel.startsWith("N2") && masksFolderName != null) {
                 //File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
-                File masksFolder = this.input.getFile(masksFolderName);
+                //File masksFolder = this.input.getFile(Paths.get(imageMetadataFile.getParent()).getFileName().toString() + inputPath.getFileSystem().getSeparator() + masksFolderName);
+                String parentFolderName = imageMetadataFile.toPath().getParent().getFileName().toString();
+                File masksFolder = null;
+                if (isPacked) {
+                    masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
+                }
+                else {
+                    masksFolder = this.input.getFile(masksFolderName);
+                }
+
                 String[] files = masksFolder.list();
                 Map<String, String> maskFiles = imageMetadata.getMaskFiles();
                 if (files != null) {
