@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -104,7 +105,6 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                 String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
                 String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
                 int levels;
-                Double bandGainPan = 0.0;
                 for (BandMetadata aBandMetadataList : bandMetadataList) {
                     String imageFileName = aBandMetadataList.getImageFileName();
                     this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + Kompsat2Constants.IMAGE_EXTENSION).toFile()));
@@ -122,12 +122,11 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                         if (imageFileName.contains(Kompsat2Constants.FILE_NAMES[bandNameIndex])) {
                             bandName = Kompsat2Constants.BAND_NAMES[bandNameIndex];
                             bandGain = Kompsat2Constants.KOMPSAT2_GAIN_VALUES[bandNameIndex];
-                            bandGainPan += Kompsat2Constants.KOMPSAT2_GAIN_VALUES[bandNameIndex];
                         }
                     }
                     if (bandName == null) {
                         bandName = Kompsat2Constants.BAND_NAMES[4];
-                        bandGain = bandGainPan / (Kompsat2Constants.BAND_NAMES.length - 1);
+                        bandGain = Arrays.asList(Kompsat2Constants.KOMPSAT2_GAIN_VALUES).stream().mapToDouble(p -> p).sum() / (Kompsat2Constants.BAND_NAMES.length - 1);
                         GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
                         if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
                             this.product.setSceneGeoCoding(bandGeoCoding);
