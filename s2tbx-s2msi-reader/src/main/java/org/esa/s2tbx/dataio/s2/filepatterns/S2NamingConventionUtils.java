@@ -7,7 +7,9 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
@@ -318,7 +320,11 @@ public class S2NamingConventionUtils {
                 relativePath = path.resolve(folderName).getFileName();
             } else {
                 // the path represents a directory
-                relativePath = path.getFileName();
+                if(Files.isDirectory(path)) {
+                    relativePath = Paths.get(".");
+                } else {
+                    relativePath = path.getFileName();
+                }
             }
             return new VirtualPath(relativePath.toString(), virtualDirEx);
         }
