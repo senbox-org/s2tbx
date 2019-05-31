@@ -11,11 +11,11 @@ import java.util.Set;
 
 public class JP2FileReader implements FileFormatBoxes {
 
-    private static final Set<Integer> BLOCK_TERMINATORS = new HashSet<Integer>();
-    static {
-    	BLOCK_TERMINATORS.add(0);
-    	BLOCK_TERMINATORS.add(7);
-    }
+	private static final Set<Integer> BLOCK_TERMINATORS = new HashSet<Integer>();
+	static {
+		BLOCK_TERMINATORS.add(0);
+		BLOCK_TERMINATORS.add(7);
+	}
 
 	private ContiguousCodestreamBox contiguousCodestreamBox;
 	private List<String> xmlMetadata;
@@ -30,7 +30,7 @@ public class JP2FileReader implements FileFormatBoxes {
 	public List<String> getXmlMetadata() {
 		return xmlMetadata;
 	}
-	
+
 	public void readFileFormat(Path file, int bufferSize, boolean canSetFilePosition) throws IOException {
 		BufferedRandomAccessFile jp2FileStream = new BufferedRandomAccessFile(file, bufferSize, canSetFilePosition);
 
@@ -40,7 +40,9 @@ public class JP2FileReader implements FileFormatBoxes {
 
 		// read all remaining boxes
 		long fileSizeInBytes = jp2FileStream.getLength();
+		long positionBeforeHeader = jp2FileStream.getPosition();
 		boolean jp2HeaderBoxFound = false;
+		boolean contiguousCodeStreamBoxFound = false;
 		boolean lastBoxFound = false;
 		while (!lastBoxFound) {
 			long boxPosition = jp2FileStream.getPosition();
@@ -64,7 +66,7 @@ public class JP2FileReader implements FileFormatBoxes {
 
 			if (boxType == JP2_HEADER_BOX) {
 				if (jp2HeaderBoxFound) {
-					throw new IOException("Invalid JP2 file: Multiple " + "JP2Header boxes found");
+					throw new IOException("Invalid JP2 file: Multiple JP2Header boxes found.");
 				} else {
 					readJP2HeaderBox(boxLength, boxExtendedLength, jp2FileStream);
 					jp2HeaderBoxFound = true;
@@ -72,21 +74,27 @@ public class JP2FileReader implements FileFormatBoxes {
 			} else if (boxType == CONTIGUOUS_CODESTREAM_BOX) {
 				if (jp2HeaderBoxFound) {
 					readContiguousCodeStreamBox(boxLength, boxExtendedLength, jp2FileStream);
+					contiguousCodeStreamBoxFound = true;
 				} else {
-					throw new IOException("Invalid JP2 file: JP2Header box not " + "found before Contiguous codestream " + "box ");
+					throw new IOException("Invalid JP2 file: JP2Header box not found before Contiguous codestream box.");
 				}
 			} else if (boxType == INTELLECTUAL_PROPERTY_BOX) {
 				readIntellectualPropertyBox(boxLength);
 			} else if (boxType == XML_BOX) {
-				readXMLBox(boxLength, jp2FileStream);
+				if (contiguousCodeStreamBoxFound) {
+					readXMLBox(boxLength, jp2FileStream);
+				} else {
+					throw new IOException("Invalid JP2 file: XML box found before Contiguous codestream box.");
+				}
 			} else if (boxType == UUID_BOX) {
 				readUUIDBox(boxLength);
 			} else if (boxType == UUID_INFO_BOX) {
 				readUUIDInfoBox(boxLength);
 			} else if (boxType == ASSOCIATION_BOX) {
+				// the association box contains the xml box sometimes
 				readAssociationBox(boxLength);
 			} else {
-				System.out.println("Unknown box-type: 0x" + Integer.toHexString(boxType));
+				//System.out.println("Unknown box-type: 0x" + Integer.toHexString(boxType));
 			}
 			if (!lastBoxFound) {
 				jp2FileStream.seek(boxPosition + boxLength);
@@ -95,11 +103,36 @@ public class JP2FileReader implements FileFormatBoxes {
 
 		if (this.contiguousCodestreamBox == null) {
 			// Not a valid JP2 file or codestream
-			throw new IOException("Invalid JP2 file: Contiguous codestream box " + "missing");
+			throw new IOException("Invalid JP2 file: Contiguous codestream box is missing.");
+		} else {
+			if (this.xmlMetadata == null) {
+				// parse again the file to extract the xml box
+				jp2FileStream.seek(positionBeforeHeader);
+
+				// start of any XML block (reversed)
+				int[] xmlBoxCodeInReverseOrder = { 0x20, 0x6C, 0x6D, 0x78 };
+				ByteSequenceMatcher xmlTagMatcher = new ByteSequenceMatcher(xmlBoxCodeInReverseOrder);
+
+				while (jp2FileStream.getPosition() < fileSizeInBytes) {
+					int currentByte = jp2FileStream.read();
+					if (xmlTagMatcher.matches(currentByte)) {
+						StringBuilder builder = new StringBuilder();
+						int current;
+						while (jp2FileStream.getPosition() < fileSizeInBytes && !BLOCK_TERMINATORS.contains(current = jp2FileStream.read())) {
+							builder.append(Character.toString((char) current));
+						}
+						if (this.xmlMetadata == null) {
+							this.xmlMetadata = new ArrayList<String>();
+						}
+						this.xmlMetadata.add(builder.toString());
+						break;
+					}
+				}
+			}
 		}
 	}
 
-	private void readJP2SignatureBox(IRandomAccessFile jp2FileStream) throws IOException, EOFException {
+	private void readJP2SignatureBox(IRandomAccessFile jp2FileStream) throws IOException {
 		if (jp2FileStream.readInt() == 0x0000000C) {
 			if (jp2FileStream.readInt() == JP2_SIGNATURE_BOX) {
 				if (jp2FileStream.readInt() == JP2_SIGNATURE_BOX_CONTENT) {
@@ -109,7 +142,7 @@ public class JP2FileReader implements FileFormatBoxes {
 		}
 		throw new IOException("nvalid JP2 file: file is neither valid JP2 file nor valid JPEG 2000 codestream");
 	}
-	
+
 	private void readFileTypeBox(IRandomAccessFile jp2FileStream) throws IOException, EOFException {
 		// read box length (LBox)
 		int length = jp2FileStream.readInt();
@@ -145,8 +178,8 @@ public class JP2FileReader implements FileFormatBoxes {
 			}
 		}
 	}
-	
-	private boolean readJP2HeaderBox(long boxLength, long longLength, IRandomAccessFile jp2FileStream) throws IOException {
+
+	private void readJP2HeaderBox(long boxLength, long longLength, IRandomAccessFile jp2FileStream) throws IOException {
 		if (boxLength == 0) { // This can not be last box
 			throw new IOException("Zero-length of JP2Header Box");
 		}
@@ -157,25 +190,23 @@ public class JP2FileReader implements FileFormatBoxes {
 		} else {
 			throw new IOException("Invalid image header box.");
 		}
-		
-		return true;
 	}
 
 	private void readContiguousCodeStreamBox(long boxLength, long longLength, IRandomAccessFile jp2FileStream) throws IOException {
 		this.contiguousCodestreamBox = new ContiguousCodestreamBox(jp2FileStream);
 	}
-	
+
 	private void readIntellectualPropertyBox(long boxLength) {
 	}
 
 	private void readXMLBox(long boxLength, IRandomAccessFile jp2FileStream) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        int index = 0;
-        int current;
-        while (index < boxLength && !BLOCK_TERMINATORS.contains(current = jp2FileStream.read())) {
-            builder.append(Character.toString((char) current));
-            index++;
-        }
+		StringBuilder builder = new StringBuilder();
+		int index = 0;
+		int current;
+		while (index < boxLength && !BLOCK_TERMINATORS.contains(current = jp2FileStream.read())) {
+			builder.append(Character.toString((char) current));
+			index++;
+		}
 		if (this.xmlMetadata == null) {
 			this.xmlMetadata = new ArrayList<String>();
 		}
@@ -191,6 +222,36 @@ public class JP2FileReader implements FileFormatBoxes {
 	private void readAssociationBox(long boxLength) {
 	}
 
+	private class ByteSequenceMatcher {
+		private int[] queue;
+		private int[] sequence;
+
+		ByteSequenceMatcher(int[] sequenceToMatch) {
+			sequence = sequenceToMatch;
+			queue = new int[sequenceToMatch.length];
+		}
+
+		public boolean matches(int unsignedByte) {
+			insert(unsignedByte);
+			return isMatch();
+		}
+
+		private void insert(int unsignedByte) {
+			System.arraycopy(queue, 0, queue, 1, sequence.length - 1);
+			queue[0] = unsignedByte;
+		}
+
+		private boolean isMatch() {
+			boolean result = true;
+			for (int i = 0; i < sequence.length; i++) {
+				result = (queue[i] == sequence[i]);
+				if (!result)
+					break;
+			}
+			return result;
+		}
+	}
+
 	public static void main(String argv[]) throws IOException {
 //		String filePath = "d:\\open-jpeg-files\\1_8bit_component_gamma_1_8_space.jp2";
 //		String filePath = "d:\\open-jpeg-files\\sample.jp2";
@@ -198,14 +259,15 @@ public class JP2FileReader implements FileFormatBoxes {
 //		String filePath = "d:\\open-jpeg-files\\IMG_test2.jp2";
 //		String filePath = "d:\\open-jpeg-files\\s2-l1c\\T34HFH_20161206T080312_B02.jp2";
 //		String filePath = "C:\\Apache24\\htdocs\\snap\\JP2\\IMG_PHR1A_1,5GB.JP2";
-		String filePath = "C:\\Apache24\\htdocs\\snap\\JP2\\IMG_PHR1A_358MB.JP2";
+//		String filePath = "C:\\Apache24\\htdocs\\snap\\JP2\\IMG_PHR1A_358MB.JP2";
+		String filePath = "D:\\shared\\IMG_PHR1A_PMS_201402040054228_ORT_1336649101-001_R1C1.JP2";
 
 		Path jp2File = Paths.get(filePath);
 
 		System.out.println("Reading file: "+ jp2File.toString()+"\n");
 
 		JP2FileReader fileFormatReader = new JP2FileReader();
-		fileFormatReader.readFileFormat(jp2File, 1024, true);
+		fileFormatReader.readFileFormat(jp2File, 1024 * 1024, true);
 
 		ContiguousCodestreamBox hd = fileFormatReader.getHeaderDecoder();
 		SIZMarkerSegment siz = hd.getSiz();
