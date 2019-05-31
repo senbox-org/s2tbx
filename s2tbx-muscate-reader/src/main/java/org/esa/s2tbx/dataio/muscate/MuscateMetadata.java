@@ -67,6 +67,11 @@ public class MuscateMetadata extends XmlMetadata {
         return descr;
     }
 
+    public String getProductVersion() {
+        String version = getAttributeValue(MuscateConstants.PATH_PRODUCT_VERSION, null);
+        return version;
+    }
+
     @Override
     public String getFormatName() {
         return getAttributeValue(MuscateConstants.PATH_METADATA_FORMAT, MuscateConstants.METADATA_MUSCATE);
@@ -202,8 +207,10 @@ public class MuscateMetadata extends XmlMetadata {
                 MetadataElement fileListElement = imageElement.getElement("Mask_File_List");
                 int numMasks = fileListElement.getNumAttributes();
                 for (int j = 0 ; j < numMasks ; j++) {
-                    String path = fileListElement.getAttributeAt(j).getData().getElemString();
-                    muscateMask.addMuscateMaskFile(path);
+                    MuscateMaskFile muscateMaskFile = new MuscateMaskFile();
+                    muscateMaskFile.path = fileListElement.getAttributeAt(j).getData().getElemString();
+                    //TODO add also bit_number, group_id...
+                    muscateMask.addMuscateMaskFile(muscateMaskFile);
                 }
                 masks.add(muscateMask);
             }

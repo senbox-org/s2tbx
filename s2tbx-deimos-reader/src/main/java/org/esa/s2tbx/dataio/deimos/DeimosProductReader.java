@@ -141,12 +141,12 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
         return tiePointGrid;
     }
 
-
+  
     protected String[] getMetadataFiles() throws IOException {
         String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
         //If the input is archive, the list should contain the full item path(needed for some Deimos products opened on linux)
         if (productDirectory.isCompressed() && metadataFiles[0].contains("/")) {
-                this.productDirectory.listAllFilesWithPath();
+            this.productDirectory.listAllFilesWithPath();
         }
         return metadataFiles;
     }

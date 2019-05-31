@@ -294,56 +294,164 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             return;
         }
 
+        //The mask depends on the version
+        String version = metadata.getProductVersion();
+        float versionFloat = 0.0f;
+
+        if(version != null) {
+            versionFloat = Float.valueOf(version);
+        }
+
         if (mask.nature.equals("AOT_Interpolation")) {
-            for (String file : mask.getMaskFiles()) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
-                    addAOTMask(product, file);
                 }
+                int bitNumber = 0;
+                if(versionFloat > 1.55) bitNumber = 1; //after this version the bitNumber has changed
+                addAOTMask(product, file, bitNumber);
             }
-        } else if (mask.nature.equals("Cloud")) {
-            for (String file : mask.getMaskFiles()) {
+        } else if (mask.nature.equals("Detailed_Cloud")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
                     addCloudMask(product, file);
                 }
-
+            }
+        } else if (mask.nature.equals("Cloud")) {
+            if(versionFloat < 1.95) {
+                for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                    String file = muscateMaskFile.path;
+                    if (!addedFiles.contains(file)) {
+                        addedFiles.add(file);
+                    }
+                    addCloudMask(product, file);
+                }
+            } else {
+                for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                    String file = muscateMaskFile.path;
+                    if (!addedFiles.contains(file)) {
+                        addedFiles.add(file);
+                    }
+                    addGeophysicsMask(product, file, MuscateConstants.GEOPHYSICAL_BIT.Cloud);
+                }
+            }
+        } else if (mask.nature.equals("Cloud_Shadow")) {
+            if(versionFloat < 2.05) {
+                //In some old products the Nature is Cloud_Shadow instead of Geophysics. Perhaps an error?
+                for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                    String file = muscateMaskFile.path;
+                    if (!addedFiles.contains(file)) {
+                        addedFiles.add(file);
+                    }
+                    addGeophysicsMask(product, file);
+                }
+            } else {
+                for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                    String file = muscateMaskFile.path;
+                    if (!addedFiles.contains(file)) {
+                        addedFiles.add(file);
+                    }
+                    addGeophysicsMask(product, file, MuscateConstants.GEOPHYSICAL_BIT.Cloud_Shadow);
+                }
             }
         } else if (mask.nature.equals("Edge")) {
-            for (String file : mask.getMaskFiles()) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
                     addEdgeMask(product, file);
                 }
             }
         } else if (mask.nature.equals("Saturation")) {
-            for (String file : mask.getMaskFiles()) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
                     addSaturationMask(product, file);
                 }
             }
-        } else if (mask.nature.equals("Geophysics") || mask.nature.equals("Cloud_Shadow")) {
-            //In some old products the Nature is Cloud_Shadow. Perhaps an error?
-            for (String file : mask.getMaskFiles()) {
+        } else if (mask.nature.equals("Geophysics")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
                     addGeophysicsMask(product, file);
                 }
             }
         } else if (mask.nature.equals("Detector_Footprint")) {
-            for (String file : mask.getMaskFiles()) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
                     addDetectorFootprintMask(product, file);
                 }
             }
         } else if (mask.nature.equals("Defective_Pixel")) {
-            for (String file : mask.getMaskFiles()) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
                 if (!addedFiles.contains(file)) {
                     addedFiles.add(file);
                     addDefectivePixelMask(product, file);
                 }
+            }
+        } else if (mask.nature.equals("Hidden_Surface")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                }
+                addGeophysicsMask(product, file, MuscateConstants.GEOPHYSICAL_BIT.Hidden_Surface);
+            }
+        } else if (mask.nature.equals("Snow")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                }
+                addGeophysicsMask(product, file, MuscateConstants.GEOPHYSICAL_BIT.Snow);
+            }
+        } else if (mask.nature.equals("Sun_Too_Low")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                }
+                addGeophysicsMask(product, file, MuscateConstants.GEOPHYSICAL_BIT.Sun_Too_Low);
+            }
+        } else if (mask.nature.equals("Tangent_Sun")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                }
+                addGeophysicsMask(product, file, MuscateConstants.GEOPHYSICAL_BIT.Tangent_Sun);
+            }
+        } else if (mask.nature.equals("Topography_Shadow")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                }
+                addGeophysicsMask(product, file, MuscateConstants.GEOPHYSICAL_BIT.Topography_Shadow);
+            }
+        } else if (mask.nature.equals("Water")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                }
+                addGeophysicsMask(product, file, MuscateConstants.GEOPHYSICAL_BIT.Water);
+            }
+        } else if (mask.nature.equals("WVC_Interpolation")) {
+            for (MuscateMaskFile muscateMaskFile : mask.getMaskFiles()) {
+                String file = muscateMaskFile.path;
+                if (!addedFiles.contains(file)) {
+                    addedFiles.add(file);
+                }
+                addWVCMask(product, file);
             }
         } else {
             logger.warning(String.format("Unable to add mask. Unknown nature: %s", mask.nature));
@@ -467,7 +575,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         targetBand.setSourceImage(srcBand.getSourceImage());
     }
 
-    private void addAOTMask(Product product, String pathString) {
+    private void addAOTMask(Product product, String pathString, int bitNumber) {
         Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
@@ -484,26 +592,73 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             return;
         }
 
-        String bandName = "Aux_Mask_aot_interpolation_" + geoposition.id;
+        String bandName = "Aux_IA_" + geoposition.id;
         String maskName = "AOT_Interpolation_Mask_" + geoposition.id;
 
-        Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
-        product.addBand(targetBand);
-        ProductUtils.copyGeoCoding(srcBand, targetBand);
-        targetBand.setNoDataValueUsed(false);
-        targetBand.setScalingFactor(1);
-        targetBand.setScalingOffset(0);
-        targetBand.setSampleCoding(srcBand.getSampleCoding());
-        targetBand.setImageInfo(srcBand.getImageInfo());
-        targetBand.setDescription("Interpolated AOT pixels mask");
-        targetBand.setSourceImage(srcBand.getSourceImage());
+        //Add aux band if it has not been added yet
+        if(!product.containsBand(bandName)) {
+            Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
+            product.addBand(targetBand);
+            ProductUtils.copyGeoCoding(srcBand, targetBand);
+            targetBand.setNoDataValueUsed(false);
+            targetBand.setScalingFactor(1);
+            targetBand.setScalingOffset(0);
+            targetBand.setSampleCoding(srcBand.getSampleCoding());
+            targetBand.setImageInfo(srcBand.getImageInfo());
+            targetBand.setDescription("Interpolated pixels mask");
+            targetBand.setSourceImage(srcBand.getSourceImage());
+        }
 
         Mask mask = Mask.BandMathsType.create(maskName,
                 "Interpolated AOT pixels mask",
                 width, height,
-                String.format("bit_set(%s,0)", bandName),
+                String.format("bit_set(%s,%d)", bandName, bitNumber),
                 Color.BLUE,
                 0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask);
+        product.addMask(mask);
+    }
+
+    private void addWVCMask(Product product, String pathString) {
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
+        if (srcBand == null) {
+            logger.warning(String.format("Image %s not added", pathString));
+            return;
+        }
+
+        int height = srcBand.getRasterHeight();
+        int width = srcBand.getRasterWidth();
+
+        MuscateMetadata.Geoposition geoposition = getGeoposition(width, height);
+        if (geoposition == null) {
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
+                                         pathString, product.getName()));
+            return;
+        }
+
+        String bandName = "Aux_IA_" + geoposition.id;
+        String maskName = "WVC_Interpolation_Mask_" + geoposition.id;
+
+        //Add aux band if it has not been added yet
+        if(!product.containsBand(bandName)) {
+            Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
+            product.addBand(targetBand);
+            ProductUtils.copyGeoCoding(srcBand, targetBand);
+            targetBand.setNoDataValueUsed(false);
+            targetBand.setScalingFactor(1);
+            targetBand.setScalingOffset(0);
+            targetBand.setSampleCoding(srcBand.getSampleCoding());
+            targetBand.setImageInfo(srcBand.getImageInfo());
+            targetBand.setDescription("Interpolated pixels mask");
+            targetBand.setSourceImage(srcBand.getSourceImage());
+        }
+
+        Mask mask = Mask.BandMathsType.create(maskName,
+                                              "Interpolated WVC pixels mask",
+                                              width, height,
+                                              String.format("bit_set(%s,0)", bandName),
+                                              Color.BLUE,
+                                              0.5);
         ProductUtils.copyGeoCoding(srcBand, mask);
         product.addMask(mask);
     }
@@ -702,6 +857,12 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addGeophysicsMask(Product product, String pathString) {
+        for(MuscateConstants.GEOPHYSICAL_BIT geophysical_bit : MuscateConstants.GEOPHYSICAL_BIT.values()) {
+            addGeophysicsMask(product, pathString, geophysical_bit);
+        }
+    }
+
+    private void addGeophysicsMask(Product product, String pathString, MuscateConstants.GEOPHYSICAL_BIT geophysical_bit) {
         Band srcBand = readGeoTiffProductBand(pathString, 0);
         if (srcBand == null) {
             logger.warning(String.format("Image %s not added", pathString));
@@ -713,97 +874,38 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         MuscateMetadata.Geoposition geoposition = getGeoposition(width, height);
         if (geoposition == null) {
-            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.", pathString, product.getName()));
+            logger.warning(String.format("Unrecognized geometry of image %s, it will not be added to the product %s.",
+                                         pathString, product.getName()));
             return;
         }
 
         String bandName = "Aux_Mask_MG2_" + geoposition.id;
 
-        Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
-        product.addBand(targetBand);
-        ProductUtils.copyGeoCoding(srcBand, targetBand);
-        targetBand.setNoDataValueUsed(false);
-        targetBand.setScalingFactor(1);
-        targetBand.setScalingOffset(0);
-        targetBand.setSampleCoding(srcBand.getSampleCoding());
-        targetBand.setImageInfo(srcBand.getImageInfo());
-        targetBand.setDescription("Geophysical mask of level 2, made of 1 band coded over 8 useful bits");
-        targetBand.setSourceImage(srcBand.getSourceImage());
+        //add band to product if it hasn't been added yet
+        if(!product.containsBand(bandName)) {
+            Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
+            product.addBand(targetBand);
+            ProductUtils.copyGeoCoding(srcBand, targetBand);
+            targetBand.setNoDataValueUsed(false);
+            targetBand.setScalingFactor(1);
+            targetBand.setScalingOffset(0);
+            targetBand.setSampleCoding(srcBand.getSampleCoding());
+            targetBand.setImageInfo(srcBand.getImageInfo());
+            targetBand.setDescription("Geophysical mask of level 2, made of 1 band coded over 8 useful bits");
+            targetBand.setSourceImage(srcBand.getSourceImage());
+        }
 
-        ColorIterator.reset();
+
 
         //addMasks
-        Mask mask0 = Mask.BandMathsType.create("MG2_Water_Mask_" + geoposition.id,
-                "Water mask",
-                width, height,
-                String.format("bit_set(%s,0)", bandName),
-                ColorIterator.next(),
-                0.5);
-        ProductUtils.copyGeoCoding(srcBand, mask0);
-        product.addMask(mask0);
-
-        Mask mask1 = Mask.BandMathsType.create("MG2_Cloud_Mask_All_Cloud_" + geoposition.id,
-                "Result of a 'logical OR' for all the cloud masks",
-                width, height,
-                String.format("bit_set(%s,1)", bandName),
-                ColorIterator.next(),
-                0.5);
-        ProductUtils.copyGeoCoding(srcBand, mask1);
-        product.addMask(mask1);
-
-        Mask mask2 = Mask.BandMathsType.create("MG2_Snow_Mask_" + geoposition.id,
-                "Snow mask",
-                width, height,
-                String.format("bit_set(%s,2)", bandName),
-                ColorIterator.next(),
-                0.5);
-        ProductUtils.copyGeoCoding(srcBand, mask2);
-        product.addMask(mask2);
-
-        Mask mask3 = Mask.BandMathsType.create("MG2_Shadow_Mask_Of_Cloud_" + geoposition.id,
-                "Shadow masks of cloud",
-                width, height,
-                String.format("bit_set(%s,3)", bandName),
-                ColorIterator.next(),
-                0.5);
-        ProductUtils.copyGeoCoding(srcBand, mask3);
-        product.addMask(mask3);
-
-        Mask mask4 = Mask.BandMathsType.create("MG2_Topographical_Shadows_Mask_" + geoposition.id,
-                "Topographical shadows mask",
-                width, height,
-                String.format("bit_set(%s,4)", bandName),
-                ColorIterator.next(),
-                0.5);
-        ProductUtils.copyGeoCoding(srcBand, mask4);
-        product.addMask(mask4);
-
-        Mask mask5 = Mask.BandMathsType.create("MG2_Hidden_Areas_Mask_" + geoposition.id,
-                "Hidden areas mask",
-                width, height,
-                String.format("bit_set(%s,5)", bandName),
-                ColorIterator.next(),
-                0.5);
-        ProductUtils.copyGeoCoding(srcBand, mask5);
-        product.addMask(mask5);
-
-        Mask mask6 = Mask.BandMathsType.create("MG2_Sun_Too_Low_Mask_" + geoposition.id,
-                "Sun too low mask",
-                width, height,
-                String.format("bit_set(%s,6)", bandName),
-                ColorIterator.next(),
-                0.5);
-        ProductUtils.copyGeoCoding(srcBand, mask6);
-        product.addMask(mask6);
-
-        Mask mask7 = Mask.BandMathsType.create("MG2_Tangent_Sun_Mask_" + geoposition.id,
-                "Tangent sun mask",
-                width, height,
-                String.format("bit_set(%s,7)", bandName),
-                ColorIterator.next(),
-                0.5);
-        ProductUtils.copyGeoCoding(srcBand, mask7);
-        product.addMask(mask7);
+        Mask mask = Mask.BandMathsType.create(geophysical_bit.getPrefixName() + geoposition.id,
+                                              geophysical_bit.getDescription(),
+                                              width, height,
+                                              String.format("bit_set(%s,%d)", bandName,geophysical_bit.getBit()),
+                                              geophysical_bit.getColor(),
+                                              0.5);
+        ProductUtils.copyGeoCoding(srcBand, mask);
+        product.addMask(mask);
     }
 
     private int getDetectorFromFilename(String pathString) {
