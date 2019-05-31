@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -78,7 +79,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                             for (VolumeComponent vComponent: component.getComponents()){
                                 if(vComponent.getType().equals(Spot6Constants.METADATA_FORMAT)){
                                     File fullPathVComp = this.productDirectory.getFile(fullPathComp.getParent() + File.separator + vComponent.getRelativePath());
-                                    addProductComponentIfNotPresent(vComponent.getRelativePath(), fullPathVComp, result);
+                                    addProductComponentIfNotPresent(Paths.get(vComponent.getRelativePath()).getFileName().toString(), fullPathVComp, result);
                                     if(vComponent.getComponentMetadata() != null && vComponent.getComponentMetadata() instanceof ImageMetadata){
                                         ImageMetadata image = (ImageMetadata)vComponent.getComponentMetadata();
                                         for (String raster : image.getRasterFileNames()){

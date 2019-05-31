@@ -44,12 +44,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -171,28 +167,47 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 //File masksFolder = this.input.getFile(Paths.get(imageMetadataFile.getParent()).getFileName().toString() + inputPath.getFileSystem().getSeparator() + masksFolderName);
                 String parentFolderName = imageMetadataFile.toPath().getParent().getFileName().toString();
                 File masksFolder = null;
-                if (isPacked) {
-                    masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
-                }
-                else {
-                    masksFolder = this.input.getFile(masksFolderName);
-                }
-
-                String[] files = masksFolder.list();
-                Map<String, String> maskFiles = imageMetadata.getMaskFiles();
-                if (files != null) {
-                    for (String file : files) {
-                        //String path = masksFolderName + File.separator + file;
-                        String path = masksFolderName + this.input.getFileSystemSeparator() + file;
-                        if (file.contains("SAT")) {
-                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
-                        } else if (file.contains("NUA")) {
-                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
-                        } else if (file.contains("DIV")) {
-                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
+                if (isPacked){
+                    // no way to verify the existence inside tgz, the method always returns true, so check at temp dir level where the tgz is unpacked
+                    File tempDir = this.input.getTempDir();
+                    if (tempDir != null && tempDir.list() != null){
+                        if(Arrays.asList(tempDir.list()).contains(masksFolderName)){
+                            masksFolder = this.input.getFile(masksFolderName);
+                        }
+                        else if (Arrays.asList(tempDir.list()).contains(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName)){
+                            masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
                         }
                     }
                 }
+                else {
+                    if (this.input.exists(masksFolderName) || this.input.exists(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName)) {
+                        if (this.input.exists(masksFolderName)){
+                            masksFolder = this.input.getFile(masksFolderName);
+                        }
+                        else {
+                            masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
+                        }
+                    }
+                }
+
+                if (masksFolder != null){
+                    String[] files = masksFolder.list();
+                    Map<String, String> maskFiles = imageMetadata.getMaskFiles();
+                    if (files != null) {
+                        for (String file : files) {
+                            //String path = masksFolderName + File.separator + file;
+                            String path = masksFolderName + this.input.getFileSystemSeparator() + file;
+                            if (file.contains("SAT")) {
+                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
+                            } else if (file.contains("NUA")) {
+                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
+                            } else if (file.contains("DIV")) {
+                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
+                            }
+                        }
+                    }
+                }
+
                 Map<String, String> rasterFiles = imageMetadata.getTiffFiles();
                 if (!rasterFiles.containsKey(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) ||
                         rasterFiles.get(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) == null ||
