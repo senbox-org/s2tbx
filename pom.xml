@@ -43,9 +43,6 @@
         <module>s2tbx-spot6-reader</module>
         <module>s2tbx-mosaic</module>
         <module>s2tbx-mosaic-ui</module>
-        <module>s2tbx-s2msi-aerosol-retrieval</module>
-        <module>s2tbx-s2msi-idepix</module>
-        <module>s2tbx-s2msi-idepix-ui</module>
         <module>s2tbx-s2msi-mci</module>
         <module>s2tbx-s2msi-mci-ui</module>
         <module>s2tbx-rapideye-reader</module>

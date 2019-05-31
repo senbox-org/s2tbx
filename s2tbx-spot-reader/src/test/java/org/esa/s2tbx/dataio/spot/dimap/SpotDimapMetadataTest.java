@@ -238,7 +238,7 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testGetPath() throws Exception {
-        assertEquals(TestUtil.getTestFile(productsFolder + "metadata.dim").getAbsolutePath(), metadata.getPath());
+        assertEquals(TestUtil.getTestFile(productsFolder + "metadata.dim").getAbsolutePath(), metadata.getPath().toString());
     }
 
     @Test
