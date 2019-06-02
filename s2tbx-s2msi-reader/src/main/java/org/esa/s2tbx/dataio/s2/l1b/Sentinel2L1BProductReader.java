@@ -622,7 +622,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             int level = 0;
             TileLayout tileLayout = tileBandInfo.getImageLayout();
             ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, S2Config.SAMPLE_DATA_BUFFER_TYPE, level);
-            return new DefaultMultiLevelImage(bandScene, imageLayout);
+            return new DefaultMultiLevelImage(bandScene/*, imageLayout*/ );
         }
     }
 
