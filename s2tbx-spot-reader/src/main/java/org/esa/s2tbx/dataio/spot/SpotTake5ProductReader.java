@@ -41,13 +41,11 @@ import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -59,6 +57,7 @@ import java.util.logging.Logger;
  * In both cases, the input file (the archive or the metadata file) shoud start with "SPOT4_HRVIR1_XS_" (HVIR1 is the sensor of SPOT4 satellites).
  *
  * @author Ramona Manda
+ * modified 20190515 for VFS compatibility by Oana H.
  */
 public class SpotTake5ProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(SpotTake5ProductReader.class.getName());
@@ -112,16 +111,20 @@ public class SpotTake5ProductReader extends AbstractProductReader {
     @Override
     protected Product readProductNodesImpl() throws IOException {
         //input = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
-
-        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.input = VirtualDirEx.build(inputFile, false, true);
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.input = VirtualDirEx.build(inputPath, false, true);
 
         File imageMetadataFile = null;
         String metaSubFolder = "";
-        if (VirtualDirEx.isPackedFile(this.input.getBaseFile().toPath())) {
+        boolean isPacked = false;
+
+        //if (VirtualDirEx.isPackedFile(new File(input.getBasePath()))) {
+        if (VirtualDirEx.isPackedFile(inputPath)) { // if (VirtualDirEx.isPackedFile(this.input.getBaseFile().toPath())) {
+            isPacked = true;
             //if the input is an archive, check the metadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
             String path = input.getBasePath();
-            String metaFile = path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));
+            //String metaFile = path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));
+            String metaFile = path.substring(path.lastIndexOf(inputPath.getFileSystem().getSeparator()) + 1, path.lastIndexOf("."));
             try {
                 imageMetadataFile = input.getFile(metaFile + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
             } catch (Exception ex) {
@@ -130,9 +133,11 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 for (String entrySubFolder : input.getTempDir().list()) {
                     if (new File(input.getTempDir(), entrySubFolder).isDirectory()) {
                         try {
-                            imageMetadataFile = input.getFile(entrySubFolder + File.separator + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
+                            //imageMetadataFile = input.getFile(entrySubFolder + File.separator + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
+                            imageMetadataFile = input.getFile(entrySubFolder + inputPath.getFileSystem().getSeparator() + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
                             //if the metadata is found under a subfolder of the archive, this subfolder must be used in order to compute the path for the rest of the files found in the metadata file
-                            metaSubFolder = entrySubFolder + File.separator;
+                            //metaSubFolder = entrySubFolder + File.separator;
+                            metaSubFolder = entrySubFolder + inputPath.getFileSystem().getSeparator();
                             break;
                         } catch (Exception ex2) {
                             logger.warning(ex2.getMessage());
@@ -141,9 +146,12 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 }
             }
         } else {
-            imageMetadataFile = new File(getInput().toString());
+            //imageMetadataFile = new File(getInput().toString());
+            imageMetadataFile = this.input.getFile(getInput().toString());
+
             if (!imageMetadataFile.isFile()) {
-                imageMetadataFile = new File(input.getBasePath(), input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
+                //imageMetadataFile = new File(input.getBasePath(), input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
+                imageMetadataFile = this.input.getFile(input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
             }
         }
         if (imageMetadataFile != null) {
@@ -155,21 +163,51 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             // for N2, the masks may not be present in metadata, but in a folder named MASK
             String masksFolderName = imageMetadata.getMasksFolder();
             if (productLevel.startsWith("N2") && masksFolderName != null) {
-                File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
-                String[] files = masksFolder.list();
-                Map<String, String> maskFiles = imageMetadata.getMaskFiles();
-                if (files != null) {
-                    for (String file : files) {
-                        String path = masksFolderName + File.separator + file;
-                        if (file.contains("SAT")) {
-                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
-                        } else if (file.contains("NUA")) {
-                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
-                        } else if (file.contains("DIV")) {
-                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
+                //File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
+                //File masksFolder = this.input.getFile(Paths.get(imageMetadataFile.getParent()).getFileName().toString() + inputPath.getFileSystem().getSeparator() + masksFolderName);
+                String parentFolderName = imageMetadataFile.toPath().getParent().getFileName().toString();
+                File masksFolder = null;
+                if (isPacked){
+                    // no way to verify the existence inside tgz, the method always returns true, so check at temp dir level where the tgz is unpacked
+                    File tempDir = this.input.getTempDir();
+                    if (tempDir != null && tempDir.list() != null){
+                        if(Arrays.asList(tempDir.list()).contains(masksFolderName)){
+                            masksFolder = this.input.getFile(masksFolderName);
+                        }
+                        else if (Arrays.asList(tempDir.list()).contains(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName)){
+                            masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
                         }
                     }
                 }
+                else {
+                    if (this.input.exists(masksFolderName) || this.input.exists(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName)) {
+                        if (this.input.exists(masksFolderName)){
+                            masksFolder = this.input.getFile(masksFolderName);
+                        }
+                        else {
+                            masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
+                        }
+                    }
+                }
+
+                if (masksFolder != null){
+                    String[] files = masksFolder.list();
+                    Map<String, String> maskFiles = imageMetadata.getMaskFiles();
+                    if (files != null) {
+                        for (String file : files) {
+                            //String path = masksFolderName + File.separator + file;
+                            String path = masksFolderName + this.input.getFileSystemSeparator() + file;
+                            if (file.contains("SAT")) {
+                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
+                            } else if (file.contains("NUA")) {
+                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
+                            } else if (file.contains("DIV")) {
+                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
+                            }
+                        }
+                    }
+                }
+
                 Map<String, String> rasterFiles = imageMetadata.getTiffFiles();
                 if (!rasterFiles.containsKey(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) ||
                         rasterFiles.get(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) == null ||
@@ -186,7 +224,8 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                                   imageMetadata.getRasterHeight());
             product.setProductReader(this);
             //product.setFileLocation(imageMetadataFile);
-            product.setFileLocation(new File(input.getBasePath()));
+            //product.setFileLocation(new File(input.getBasePath()));
+            product.setFileLocation(inputPath.toFile());
             product.getMetadataRoot().addElement(imageMetadata.getRootElement());
             ProductData.UTC startTime = imageMetadata.getDatePdv();
             product.setStartTime(startTime);

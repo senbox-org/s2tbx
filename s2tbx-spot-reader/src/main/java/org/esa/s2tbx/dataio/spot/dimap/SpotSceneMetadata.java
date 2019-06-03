@@ -24,8 +24,9 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.datamodel.MetadataElement;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.logging.Logger;
  * It exposes convenience methods for fetching various useful metadata values.
  *
  * @author Cosmin Cara
+ * modified 20190523 for VFS compatibility by Oana H.
  */
 public class SpotSceneMetadata {
 
@@ -184,9 +186,11 @@ public class SpotSceneMetadata {
             }
         } else { // vol_list.dim metadata file is present
             logger.info("Read volume metadata file");
-            FileInputStream stream = null;
+            //FileInputStream stream = null;
+            InputStream stream = null;
             try {
-                stream = new FileInputStream(file);
+                //stream = new FileInputStream(file);
+                stream = Files.newInputStream(file.toPath());
                 volumeMetadata = VolumeMetadata.create(stream);
             } finally {
                 if (stream != null) stream.close();

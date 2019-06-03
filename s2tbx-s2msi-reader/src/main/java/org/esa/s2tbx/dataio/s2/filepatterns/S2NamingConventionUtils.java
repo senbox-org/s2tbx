@@ -325,6 +325,17 @@ public class S2NamingConventionUtils {
                 } else {
                     relativePath = path.getFileName();
                 }
+
+                //if defaultFileSytem, try to use relativePaths longer in order to be able to get the parents for looking for product metadata
+                if(!copyFilesFromDirectoryOnLocalDisk) {
+                    if(path.getParent() != null && path.getParent().getParent() != null && path.getParent().getParent().getParent() != null) {
+                        virtualDirEx = VirtualDirEx.build(path.getParent().getParent().getParent(), copyFilesFromDirectoryOnLocalDisk, true);
+                        relativePath = Paths.get(path.getParent().getParent().getFileName().toString(),path.getParent().getFileName().toString(),path.getFileName().toString());
+                    } else if (path.getParent() != null && path.getParent().getParent() != null ) {
+                        virtualDirEx = VirtualDirEx.build(path.getParent().getParent(), copyFilesFromDirectoryOnLocalDisk, true);
+                        relativePath = Paths.get(path.getParent().getFileName().toString(),path.getFileName().toString());
+                    }
+                }
             }
             return new VirtualPath(relativePath.toString(), virtualDirEx);
         }

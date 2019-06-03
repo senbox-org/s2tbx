@@ -769,16 +769,19 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         String bandName = "Aux_Mask_Cloud_" + geoposition.id;
 
-        Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
-        product.addBand(targetBand);
-        ProductUtils.copyGeoCoding(srcBand, targetBand);
-        targetBand.setNoDataValueUsed(false);
-        targetBand.setScalingFactor(1);
-        targetBand.setScalingOffset(0);
-        targetBand.setSampleCoding(srcBand.getSampleCoding());
-        targetBand.setImageInfo(srcBand.getImageInfo());
-        targetBand.setDescription("Cloud mask computed by MACCS software, made of 1 band coded over 8 useful bits");
-        targetBand.setSourceImage(srcBand.getSourceImage());
+        //add band to product if it hasn't been added yet
+        if(!product.containsBand(bandName)) {
+            Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
+            product.addBand(targetBand);
+            ProductUtils.copyGeoCoding(srcBand, targetBand);
+            targetBand.setNoDataValueUsed(false);
+            targetBand.setScalingFactor(1);
+            targetBand.setScalingOffset(0);
+            targetBand.setSampleCoding(srcBand.getSampleCoding());
+            targetBand.setImageInfo(srcBand.getImageInfo());
+            targetBand.setDescription("Cloud mask computed by MACCS software, made of 1 band coded over 8 useful bits");
+            targetBand.setSourceImage(srcBand.getSourceImage());
+        }
 
         ColorIterator.reset();
 

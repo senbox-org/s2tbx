@@ -62,6 +62,7 @@ import java.util.logging.Logger;
  * There seems to be a precision problem with attaching a CrsGeoCoding using EPSG:3035.
  *
  * @author Cosmin Cara
+ * modified 20190516 for VFS compatibility by Oana H.
  */
 public class SpotViewProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(SpotViewProductReader.class.getName());
@@ -89,9 +90,8 @@ public class SpotViewProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         logger.info("Reading product metadata");
         //zipDir = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
-
-        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.zipDir = VirtualDirEx.build(inputFile, false, true);
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.zipDir = VirtualDirEx.build(inputPath);
 
         File metadataFile = zipDir.getFile(SpotConstants.SPOTVIEW_METADATA_FILE);
         File imageMetadataFile = zipDir.getFile(SpotConstants.SPOTSCENE_METADATA_FILE);
@@ -113,7 +113,8 @@ public class SpotViewProductReader extends AbstractProductReader {
                                   metadata.getRasterHeight());
             product.setProductReader(this);
             //product.setFileLocation(metadataFile);
-            product.setFileLocation(new File(zipDir.getBasePath()));
+            //product.setFileLocation(new File(zipDir.getBasePath()));
+            product.setFileLocation(inputPath.toFile());
             product.getMetadataRoot().addElement(metadata.getRootElement());
 
             logger.info("Trying to attach tiepoint geocoding");

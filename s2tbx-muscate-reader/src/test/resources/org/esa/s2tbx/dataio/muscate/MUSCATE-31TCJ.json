@@ -555,8 +555,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_aot_interpolation_R1",
-        "description": "Interpolated AOT pixels mask",
+        "name": "Aux_IA_R1",
+        "description": "Interpolated pixels mask",
         "bandWidth": 10980,
         "bandHeight": 10980,
         "noDataValue": "0.0",
@@ -577,8 +577,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_aot_interpolation_R2",
-        "description": "Interpolated AOT pixels mask",
+        "name": "Aux_IA_R2",
+        "description": "Interpolated pixels mask",
         "bandWidth": 5490,
         "bandHeight": 5490,
         "noDataValue": "0.0",

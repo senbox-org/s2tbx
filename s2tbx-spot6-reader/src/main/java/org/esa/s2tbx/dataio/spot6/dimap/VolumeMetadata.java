@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.spot6.dimap;
 
 import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
@@ -25,12 +26,12 @@ import org.esa.snap.utils.DateHelper;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
  * As of now, SPOT scene products have only one component.
  *
  * @author Cosmin Cara
+ * modified 20190513 for VFS compatibility by Oana H.
  */
 public class VolumeMetadata extends GenericXmlMetadata {
 
@@ -66,16 +68,32 @@ public class VolumeMetadata extends GenericXmlMetadata {
 
     public static VolumeMetadata create(Path path) throws IOException {
         Assert.notNull(path);
+        try (InputStream inputStream = Files.newInputStream(path);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+             FilePathInputStream filePathInputStream = new FilePathInputStream(path, bufferedInputStream, null)) {
+
+            return create(filePathInputStream);
+        }
+    }
+
+    public static VolumeMetadata create(FilePathInputStream filePathInputStream) throws IOException {
         VolumeMetadata result = null;
-        try (InputStream inputStream = Files.newInputStream(path)) {
+        try {
             VolumeMetadataParser parser = new VolumeMetadataParser(VolumeMetadata.class);
-            result = parser.parse(inputStream);
-            result.setPath(path);
-            result.setFileName(path.getFileName().toString());
-            String[] titles = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TITLE);
-            if (titles == null) {
-                titles = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TITLE_ALT);
-            }
+            result = parser.parse(filePathInputStream);
+        } catch (ParserConfigurationException | SAXException e) {
+            throw new IllegalStateException(e);
+        }
+        Path path = filePathInputStream.getPath();
+
+        result.setPath(path);
+        result.setFileName(path.getFileName().toString());
+        String[] titles = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TITLE);
+        if (titles == null) {
+            titles = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TITLE_ALT);
+        }
+
+        if (titles != null && titles.length > 0) {
             String[] types = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TYPE);
             if (types == null) {
                 types = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TYPE_ALT);
@@ -92,33 +110,37 @@ public class VolumeMetadata extends GenericXmlMetadata {
             if (tnFormats == null) {
                 tnFormats = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TN_FORMAT_ALT);
             }
-            if (titles != null && titles.length > 0) {
-                for (int i = 0; i < titles.length; i++) {
-                    VolumeComponent component = new VolumeComponent(path.getParent());
-                    component.title = titles[i];
-                    if (types != null && types.length == titles.length) {
-                        component.type = types[i];
-                    }
-                    if (paths != null && paths.length == titles.length) {
-                        try {
-                            component.path = Paths.get(paths[i]);
-                        } catch (InvalidPathException ignored) {
-                            //component.path = Paths.get(URI.create(paths[i]));
-                        }
-                    }
-                    if (tnPaths != null && tnPaths.length == titles.length) {
-                        component.thumbnailPath = tnPaths[i];
-                    }
-                    if (tnFormats != null && tnFormats.length == titles.length) {
-                        component.thumbnailFormat = tnFormats[i];
-                    }
-                    result.components.add(component);
+
+            Path parentFolderPath = path.getParent();
+
+            for (int i = 0; i < titles.length; i++) {
+                VolumeComponent component = new VolumeComponent(path.getParent());
+                component.setTitle(titles[i]);
+                if (types != null && types.length == titles.length) {
+                    component.setType(types[i]);
                 }
-                result.componentMetadata = result.getNextLevelMetadata();
+                if (paths != null && paths.length == titles.length) {
+                    Path child = null;
+                    try {
+                        child = parentFolderPath.resolve(paths[i]);
+                    } catch (InvalidPathException ignored) {
+                        //ignore
+                    }
+                    if (child != null && Files.exists(child)) {
+                        component.setRelativePath(paths[i]);
+                    }
+                }
+                if (tnPaths != null && tnPaths.length == titles.length) {
+                    component.setThumbnailPath(tnPaths[i]);
+                }
+                if (tnFormats != null && tnFormats.length == titles.length) {
+                    component.setThumbnailFormat(tnFormats[i]);
+                }
+                result.components.add(component);
             }
-        } catch (ParserConfigurationException | SAXException e) {
-            e.printStackTrace();
+            result.componentMetadata = result.getNextLevelMetadata();
         }
+
         return result;
     }
 
