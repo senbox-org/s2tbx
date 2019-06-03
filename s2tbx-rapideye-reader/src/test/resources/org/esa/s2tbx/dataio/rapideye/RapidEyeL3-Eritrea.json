@@ -81,15 +81,15 @@
         ],
         "metadata": [
             {
-                "path": "L3M/metaDataProperty/EarthObservationMetaData/productType",
+                "path": "Metadata/metaDataProperty/EarthObservationMetaData/productType",
                 "value": "L3M"
             },
             {
-                "path": "L3M/resultOf/earthObservationResult/product/productFormat",
+                "path": "Metadata/resultOf/earthObservationResult/product/productFormat",
                 "value": "GeoTIFF"
             },
             {
-                "path": "L3M/resultOf/earthObservationResult/product/numBands",
+                "path": "Metadata/resultOf/earthObservationResult/product/numBands",
                 "value": "3"
             },
             {
