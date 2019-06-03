@@ -89,7 +89,7 @@ public class MuscateConstants {
             ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D]_V[0-9|-]*[A-Z|_]*\\.(xml|XML|zip|ZIP)"
     };
 
-    public static final String XML_PATTERN = ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D].*\\.xml";
+    public static final String XML_PATTERN = ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D].*MTD_ALL\\.xml";
     public static final String QUICKLOOK_PATTERN = ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D].*\\.jpg";
     public static final String REFLECTANCE_PATTERN = "([A-Z|0-9|-]+)_([0-9]{8}-[0-9]{6}-[0-9]{3})_([A-Z|0-9|-]+)_([A-Z|0-9|-]+)_([C|H|D])_([A-Z|0-9|-]+)_([A-Z|0-9|-]+)_(B[A|0-9]+)\\.tif";
 
