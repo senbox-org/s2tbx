@@ -42,7 +42,6 @@ public class JP2FileReader implements FileFormatBoxes {
 		long fileSizeInBytes = jp2FileStream.getLength();
 		long positionBeforeHeader = jp2FileStream.getPosition();
 		boolean jp2HeaderBoxFound = false;
-		boolean contiguousCodeStreamBoxFound = false;
 		boolean lastBoxFound = false;
 		while (!lastBoxFound) {
 			long boxPosition = jp2FileStream.getPosition();
@@ -74,18 +73,13 @@ public class JP2FileReader implements FileFormatBoxes {
 			} else if (boxType == CONTIGUOUS_CODESTREAM_BOX) {
 				if (jp2HeaderBoxFound) {
 					readContiguousCodeStreamBox(boxLength, boxExtendedLength, jp2FileStream);
-					contiguousCodeStreamBoxFound = true;
 				} else {
 					throw new IOException("Invalid JP2 file: JP2Header box not found before Contiguous codestream box.");
 				}
 			} else if (boxType == INTELLECTUAL_PROPERTY_BOX) {
 				readIntellectualPropertyBox(boxLength);
 			} else if (boxType == XML_BOX) {
-				if (contiguousCodeStreamBoxFound) {
-					readXMLBox(boxLength, jp2FileStream);
-				} else {
-					throw new IOException("Invalid JP2 file: XML box found before Contiguous codestream box.");
-				}
+				readXMLBox(boxLength, jp2FileStream);
 			} else if (boxType == UUID_BOX) {
 				readUUIDBox(boxLength);
 			} else if (boxType == UUID_INFO_BOX) {
