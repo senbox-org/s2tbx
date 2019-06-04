@@ -1,20 +1,19 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by obarrile on 07/11/2016.
@@ -74,7 +73,7 @@ public class S2NamingConventionUtils {
     }
 
     public static VirtualPath getXmlFromDir(VirtualPath path, String PRODUCT_XML_REGEX, String GRANULE_XML_REGEX) {
-        if(!path.isDirectory()) {
+        if (!path.existsAndHasChildren()) {
             return null;
         }
         Pattern productPattern = Pattern.compile(PRODUCT_XML_REGEX);
@@ -88,20 +87,20 @@ public class S2NamingConventionUtils {
             return null;
         }
 
-        if(listXmlFiles == null) {
+        if (listXmlFiles == null) {
             return null;
         }
         String xmlFile = "";
         int availableXmlCount = 0;
 
-        for(String xml : listXmlFiles) {
+        for (String xml : listXmlFiles) {
             if (productPattern.matcher(xml).matches() || granulePattern.matcher(xml).matches()) {
                 xmlFile = xml;
                 availableXmlCount++;
             }
         }
 
-        if(availableXmlCount != 1) {
+        if (availableXmlCount != 1) {
             return null;
         }
 
@@ -116,11 +115,11 @@ public class S2NamingConventionUtils {
      * @return
      */
     public static VirtualPath getFileFromDir(VirtualPath path, String[] REGEXs) {
-        if(path == null || !path.isDirectory()) {
+        if (path == null || !path.existsAndHasChildren()) {
             return null;
         }
         Pattern[] patterns = new Pattern[REGEXs.length];
-        for(int i = 0 ; i < REGEXs.length ; i++) {
+        for (int i = 0; i < REGEXs.length; i++) {
             patterns[i] = Pattern.compile(REGEXs[i]);
         }
 
@@ -130,21 +129,21 @@ public class S2NamingConventionUtils {
         } catch (IOException e) {
             return null;
         }
-        if(listXmlFiles == null) {
+        if (listXmlFiles == null) {
             return null;
         }
 
         ArrayList<String> xmlCandidates = new ArrayList<>(5);
-        for(String xml : listXmlFiles) {
-            for(Pattern pattern : patterns) {
-                if (pattern.matcher(xml).matches() ) {
+        for (String xml : listXmlFiles) {
+            for (Pattern pattern : patterns) {
+                if (pattern.matcher(xml).matches()) {
                     xmlCandidates.add(xml);
                     break; //do not check the rest of the patterns
                 }
             }
         }
 
-        if(xmlCandidates.size() == 1) {
+        if (xmlCandidates.size() == 1) {
             return path.resolve(xmlCandidates.get(0));
         } else if (xmlCandidates.size() == 0) {
             return null;
@@ -154,12 +153,12 @@ public class S2NamingConventionUtils {
             Iterator<String> i = xmlCandidates.iterator();
             while (i.hasNext()) {
                 String xmlString = i.next();
-                if(xmlString.contains("report")) {
+                if (xmlString.contains("report")) {
                     i.remove();
                 }
             }
             //If only one remaining, return it
-            if(xmlCandidates.size() == 1) {
+            if (xmlCandidates.size() == 1) {
                 return path.resolve(xmlCandidates.get(0));
             }
             return null;
@@ -168,42 +167,42 @@ public class S2NamingConventionUtils {
 
     public static ArrayList<VirtualPath> getAllFilesFromDir(VirtualPath path, String[] REGEXs) {
         ArrayList<VirtualPath> paths = new ArrayList<>();
-        if(path == null || !path.isDirectory()) {
+        if (path == null || !path.existsAndHasChildren()) {
             return paths;
         }
-        if(REGEXs == null) {
+        if (REGEXs == null) {
             String[] listFiles;
             try {
                 listFiles = path.list();
             } catch (IOException e) {
                 return paths;
             }
-            if(listFiles == null) {
+            if (listFiles == null) {
                 return paths;
             }
-            for(String file : listFiles) {
+            for (String file : listFiles) {
                 paths.add(path.resolve(file));
             }
             return paths;
         }
 
         Pattern[] patterns = new Pattern[REGEXs.length];
-        for(int i = 0 ; i < REGEXs.length ; i++) {
+        for (int i = 0; i < REGEXs.length; i++) {
             patterns[i] = Pattern.compile(REGEXs[i]);
         }
 
-        String[] listFiles ;
+        String[] listFiles;
         try {
             listFiles = path.list();
         } catch (IOException e) {
             return paths;
         }
-        if(listFiles == null) {
+        if (listFiles == null) {
             return paths;
         }
-        for(String file : listFiles) {
-            for(Pattern pattern : patterns) {
-                if (pattern.matcher(file).matches() ) {
+        for (String file : listFiles) {
+            for (Pattern pattern : patterns) {
+                if (pattern.matcher(file).matches()) {
                     paths.add(path.resolve(file));
                 }
             }
@@ -214,12 +213,12 @@ public class S2NamingConventionUtils {
 
     public static ArrayList<VirtualPath> getDatastripXmlPaths(S2Config.Sentinel2InputType inputType, VirtualPath inputXml, String[] datastripREGEXs, String[] datastripXmlREGEXs) {
         ArrayList<VirtualPath> paths = new ArrayList<>();
-        if(inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA)){
+        if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA)) {
             VirtualPath datastripPath = inputXml.resolveSibling("DATASTRIP");
-            if(datastripPath == null) {
+            if (datastripPath == null) {
                 return paths;
             }
-            if(!datastripPath.isDirectory()) {
+            if (!datastripPath.existsAndHasChildren()) {
                 return paths;
             }
             VirtualPath[] datastripFiles;
@@ -228,39 +227,39 @@ public class S2NamingConventionUtils {
             } catch (IOException e) {
                 return paths;
             }
-            if(datastripFiles == null) {
+            if (datastripFiles == null) {
                 return paths;
             }
-            for(VirtualPath datastrip : datastripFiles) {
-                if(datastrip.isDirectory() && S2NamingConventionUtils.matches(datastrip.getFileName().toString(),datastripREGEXs)){
+            for (VirtualPath datastrip : datastripFiles) {
+                if (datastrip.existsAndHasChildren() && S2NamingConventionUtils.matches(datastrip.getFileName().toString(), datastripREGEXs)) {
                     VirtualPath xml = S2NamingConventionUtils.getFileFromDir(datastrip, datastripXmlREGEXs);
-                    if(xml != null) {
+                    if (xml != null) {
                         paths.add(xml);
                     }
                 }
             }
-        } else if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)){
+        } else if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
             VirtualPath parentPath = inputXml.getParent();
-            if(parentPath == null) {
+            if (parentPath == null) {
                 return paths;
             }
             VirtualPath parentPath2 = parentPath.getParent();
-            if(parentPath2 == null) {
+            if (parentPath2 == null) {
                 return paths;
             }
-            return getDatastripXmlPaths(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA,parentPath2,datastripREGEXs,datastripXmlREGEXs);
+            return getDatastripXmlPaths(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA, parentPath2, datastripREGEXs, datastripXmlREGEXs);
         }
         return paths;
     }
 
     public static ArrayList<VirtualPath> getGranulesXmlPaths(S2Config.Sentinel2InputType inputType, VirtualPath inputXml, String[] granuleREGEXs, String[] granuleXmlREGEXs) {
         ArrayList<VirtualPath> paths = new ArrayList<>();
-        if(inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA)){
+        if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA)) {
             VirtualPath granulePath = inputXml.resolveSibling("GRANULE");
-            if(granulePath == null) {
+            if (granulePath == null) {
                 return paths;
             }
-            if(!granulePath.isDirectory()) {
+            if (!granulePath.existsAndHasChildren()) {
                 return paths;
             }
             VirtualPath[] granules;
@@ -269,13 +268,13 @@ public class S2NamingConventionUtils {
             } catch (IOException e) {
                 return paths;
             }
-            if(granules == null) {
+            if (granules == null) {
                 return paths;
             }
-            for(VirtualPath granule : granules) {
-                if(granule.isDirectory() && S2NamingConventionUtils.matches(granule.getFileName().toString(),granuleREGEXs)){
+            for (VirtualPath granule : granules) {
+                if (granule.existsAndHasChildren() && S2NamingConventionUtils.matches(granule.getFileName().toString(), granuleREGEXs)) {
                     VirtualPath xml = S2NamingConventionUtils.getFileFromDir(granule, granuleXmlREGEXs);
-                    if(xml != null) {
+                    if (xml != null) {
                         paths.add(xml);
                     }
                 }
@@ -302,26 +301,43 @@ public class S2NamingConventionUtils {
         }
     }
 
-    public static VirtualPath transformToSentinel2VirtualPath (Path path) throws IOException{
-        VirtualPath virtualPath;
-
-        if(VirtualDirEx.isPackedFile(path.toFile())) {
-            VirtualDirEx virtualDirEx = VirtualDirEx.create(path.toFile());
-            if(virtualDirEx == null) {
-                throw new IOException(String.format("Unable to read %s",path.toString()));
-            }
-            String folderName = PathUtils.getFileNameWithoutExtension(path);
-            if(!folderName.endsWith(".SAFE")) {
-                folderName = folderName +".SAFE";
-            }
-            if(virtualDirEx.exists(folderName)) {
-                virtualPath = new VirtualPath(folderName, virtualDirEx);
-            } else {
-                virtualPath = new VirtualPath(".", virtualDirEx);
-            }
+    public static VirtualPath transformToSentinel2VirtualPath(Path path) throws IOException {
+        boolean copyFilesFromDirectoryOnLocalDisk = (path.getFileSystem() != FileSystems.getDefault());
+        VirtualDirEx virtualDirEx = VirtualDirEx.build(path, copyFilesFromDirectoryOnLocalDisk, true);
+        if (virtualDirEx == null) {
+            throw new IllegalArgumentException("Unable to read the path '"+path.toString()+"'.");
         } else {
-            virtualPath = new VirtualPath(path);
+            Path relativePath;
+            if (virtualDirEx.isArchive()) {
+                // the path represents an archive
+                String folderName = PathUtils.getFileNameWithoutExtension(path);
+                if (!folderName.endsWith(".SAFE")) {
+                    folderName = folderName + ".SAFE";
+                }
+                if (!virtualDirEx.exists(folderName)) {
+                    folderName = ".";
+                }
+                relativePath = path.resolve(folderName).getFileName();
+            } else {
+                // the path represents a directory
+                if(Files.isDirectory(path)) {
+                    relativePath = Paths.get(".");
+                } else {
+                    relativePath = path.getFileName();
+                }
+
+                //if defaultFileSytem, try to use relativePaths longer in order to be able to get the parents for looking for product metadata
+                if(!copyFilesFromDirectoryOnLocalDisk) {
+                    if(path.getParent() != null && path.getParent().getParent() != null && path.getParent().getParent().getParent() != null) {
+                        virtualDirEx = VirtualDirEx.build(path.getParent().getParent().getParent(), copyFilesFromDirectoryOnLocalDisk, true);
+                        relativePath = Paths.get(path.getParent().getParent().getFileName().toString(),path.getParent().getFileName().toString(),path.getFileName().toString());
+                    } else if (path.getParent() != null && path.getParent().getParent() != null ) {
+                        virtualDirEx = VirtualDirEx.build(path.getParent().getParent(), copyFilesFromDirectoryOnLocalDisk, true);
+                        relativePath = Paths.get(path.getParent().getFileName().toString(),path.getFileName().toString());
+                    }
+                }
+            }
+            return new VirtualPath(relativePath.toString(), virtualDirEx);
         }
-        return virtualPath;
     }
 }

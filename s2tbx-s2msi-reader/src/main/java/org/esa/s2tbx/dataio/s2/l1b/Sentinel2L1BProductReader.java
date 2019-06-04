@@ -28,7 +28,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
+import org.esa.s2tbx.dataio.s2.AbstractMultiLevelImageFactory;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
@@ -36,10 +38,7 @@ import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2TileOpImage;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -52,7 +51,6 @@ import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.core.util.io.FileUtils;
 import org.xml.sax.SAXException;
 
 import javax.media.jai.BorderExtender;
@@ -72,7 +70,6 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -173,20 +170,20 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     @Override
-    protected Product getMosaicProduct(VirtualPath metadataPath) throws IOException {
+    protected Product buildMosaicProduct(VirtualPath metadataPath) throws IOException {
 
-        if(!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE,S2Config.OPJ_DECOMPRESSOR_EXE)){
+        if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
             throw new IOException("Invalid OpenJpeg executables");
         }
 
-        boolean isAGranule = (namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA);
+        boolean isGranule = (namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA);
         boolean foundProductMetadata = true;
 
-        if (isAGranule) {
+        if (isGranule) {
             logger.fine("Reading a granule");
         }
 
-        if (!updateTileLayout(metadataPath, isAGranule)) {
+        if (!updateTileLayout(metadataPath, isGranule)) {
             throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataPath.getFileName().toString()));
         }
 
@@ -197,19 +194,18 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         String granuleDirName = null;
 
         // we need to recover parent metadata file if we have a granule
-        if (isAGranule) {
-
+        if (isGranule) {
             try {
                 Objects.requireNonNull(metadataPath.getParent());
                 granuleDirName = metadataPath.getParent().getFileName().toString();
                 VirtualPath tileIdFilter = metadataPath.getParent();
                 filterTileId = tileIdFilter.getFileName().toString();
-            }   catch (NullPointerException npe){
+            } catch (NullPointerException npe) {
                 throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataPath.getFileName().toString()));
             }
 
             VirtualPath rootMetadataPath = namingConvention.getInputProductXml();
-            if(rootMetadataPath != null) {
+            if (rootMetadataPath != null) {
                 productMetadataPath = rootMetadataPath;
             }
             if (productMetadataPath == null) {
@@ -225,14 +221,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         L1bMetadata metadataHeader;
 
         try {
-            metadataHeader = parseHeader(productMetadataPath, granuleDirName, getConfig(),!foundProductMetadata, namingConvention);
+            metadataHeader = parseHeader(productMetadataPath, granuleDirName, getConfig(), !foundProductMetadata, namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
             SystemUtils.LOG.severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + productMetadataPath.getFileName().toString());
         }
 
         L1bSceneDescription sceneDescription = L1bSceneDescription.create(metadataHeader, getProductResolution());
-        Map<S2SpatialResolution,Dimension> sceneDimensions = L1bSceneDescription.computeSceneDimensions(metadataHeader);
+        Map<S2SpatialResolution, Dimension> sceneDimensions = L1bSceneDescription.computeSceneDimensions(metadataHeader);
         logger.fine("Scene Description: " + sceneDescription);
 
         VirtualPath productDir = getProductDir(productMetadataPath);
@@ -242,7 +238,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         List<L1bMetadata.Tile> tileList = metadataHeader.getTileList();
 
-        if (isAGranule) {
+        if (isGranule) {
             tileList = metadataHeader.getTileList().stream().filter(p -> p.getId().equalsIgnoreCase(aFilter)).collect(Collectors.toList());
         }
 
@@ -264,22 +260,22 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 S2L1BGranuleDirFilename gf = (S2L1BGranuleDirFilename) S2L1BGranuleDirFilename.create(tile.getId());
                 Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
-                for(S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
-                    String imgFilename;
+                for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
+                    String imageFileName;
                     if (foundProductMetadata) {
-                        imgFilename = String.format("GRANULE%s%s%s%s", File.separator, metadataHeader.resolveResource(tile.getId()).getFileName().toString(),
-                                                    File.separator,
-                                                    bandInformation.getImageFileTemplate()
-                                                            .replace("{{TILENUMBER}}", gf.getTileID())
-                                                            .replace("{{MISSION_ID}}", gf.missionID)
-                                                            .replace("{{SITECENTRE}}", gf.siteCentre)
-                                                            .replace("{{CREATIONDATE}}", gf.creationDate)
-                                                            .replace("{{STARTDATE}}", gf.startDate)
-                                                            .replace("{{DETECTOR}}", gf.detectorId)
-                                                            .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
+                        imageFileName = String.format("GRANULE%s%s%s%s", File.separator, metadataHeader.resolveResource(tile.getId()).getFileName().toString(),
+                                File.separator,
+                                bandInformation.getImageFileTemplate()
+                                        .replace("{{TILENUMBER}}", gf.getTileID())
+                                        .replace("{{MISSION_ID}}", gf.missionID)
+                                        .replace("{{SITECENTRE}}", gf.siteCentre)
+                                        .replace("{{CREATIONDATE}}", gf.creationDate)
+                                        .replace("{{STARTDATE}}", gf.startDate)
+                                        .replace("{{DETECTOR}}", gf.detectorId)
+                                        .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
 
                     } else {
-                        imgFilename = bandInformation.getImageFileTemplate()
+                        imageFileName = bandInformation.getImageFileTemplate()
                                 .replace("{{TILENUMBER}}", gf.getTileID())
                                 .replace("{{MISSION_ID}}", gf.missionID)
                                 .replace("{{SITECENTRE}}", gf.siteCentre)
@@ -289,9 +285,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                 .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
 
                     }
-                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand() + ", and detector: " + gf.getDetectorId());
+                    logger.finer("Adding file " + imageFileName + " to band: " + bandInformation.getPhysicalBand() + ", and detector: " + gf.getDetectorId());
 
-                    VirtualPath path = productDir.resolve(imgFilename);
+                    VirtualPath path = productDir.resolve(imageFileName);
                     if (path.exists()) {
                         Pair<String, String> key = new Pair<>(bandInformation.getPhysicalBand(), gf.getDetectorId());
                         Map<String, VirtualPath> pathMapper = detectorBandInfoMap.getOrDefault(key, new HashMap<>());
@@ -308,8 +304,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             if (!detectorBandInfoMap.isEmpty()) {
                 for (Pair<String, String> key : detectorBandInfoMap.keySet()) {
-                    L1BBandInfo tileBandInfo = createBandInfoFromHeaderInfo(
-                            key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
+                    L1BBandInfo tileBandInfo = createBandInfoFromHeaderInfo(key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
 
                     // composite band name : detector + band
                     String keyMix = key.getSecond() + key.getFirst();
@@ -325,9 +320,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         if (sceneDescription != null) {
             product = new Product(namingConvention.getProductName(),
-                                  "S2_MSI_" + productCharacteristics.getProcessingLevel(),
-                                  sceneDescription.getSceneRectangle().width,
-                                  sceneDescription.getSceneRectangle().height);
+                    "S2_MSI_" + productCharacteristics.getProcessingLevel(),
+                    sceneDescription.getSceneRectangle().width,
+                    sceneDescription.getSceneRectangle().height);
 
 
             Map<String, GeoCoding> geoCodingsByDetector = new HashMap<>();
@@ -342,37 +337,36 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             addDetectorBands(product, bandInfoByKey,
-                             new L1bSceneMultiLevelImageFactory(sceneDescription, Product.findImageToModelTransform(product.getSceneGeoCoding())));
+                    new L1bSceneMultiLevelImageFactory(sceneDescription, Product.findImageToModelTransform(product.getSceneGeoCoding())));
 
             //add TileIndex if there are more than 1 tile
-            if(sceneDescription.getOrderedTileIds().size()>1 && !bandInfoByKey.isEmpty()) {
+            if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoByKey.isEmpty()) {
                 ArrayList<S2SpatialResolution> resolutions = new ArrayList<>();
                 //look for the resolutions used in bandInfoList for generating the tile index only for them
-                if(interpretation == ProductInterpretation.RESOLUTION_10M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
+                if (interpretation == ProductInterpretation.RESOLUTION_10M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
                     resolutions.add(S2SpatialResolution.R10M);
                 }
-                if(interpretation == ProductInterpretation.RESOLUTION_20M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
+                if (interpretation == ProductInterpretation.RESOLUTION_20M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
                     resolutions.add(S2SpatialResolution.R20M);
                 }
-                if(interpretation == ProductInterpretation.RESOLUTION_60M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
+                if (interpretation == ProductInterpretation.RESOLUTION_60M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
                     resolutions.add(S2SpatialResolution.R60M);
                 }
 
-                addTileIndexes(product, resolutions, tileList, sceneDescription,sceneDimensions);
+                addTileIndexes(product, resolutions, tileList, sceneDescription, sceneDimensions);
 
             }
 
         } else {
             //TODO remove extension
-            product = new Product(productMetadataPath.getFileName().toString(),
-                                  "S2_MSI_" + productCharacteristics.getProcessingLevel());
+            product = new Product(productMetadataPath.getFileName().toString(), "S2_MSI_" + productCharacteristics.getProcessingLevel());
         }
 
-        if(productMetadataPath.getVirtualDir() == null || !productMetadataPath.getVirtualDir().isCompressed()) {
-            product.setFileLocation(productMetadataPath.getParent().toFile());
-        } else {
-            product.setFileLocation(new File(productMetadataPath.getVirtualDir().getBasePath()));
-        }
+//        if (!productMetadataPath.getVirtualDir().isCompressed()) {
+//            product.setFileLocation(productMetadataPath.getParent().getFile().toFile());
+//        } else {
+//            product.setFileLocation(productMetadataPath.getVirtualDir().getBaseFile());
+//        }
 
         for (MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
             product.getMetadataRoot().addElement(metadataElement);
@@ -419,7 +413,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, MultiLevelImageFactory mlif) throws IOException {
+    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, AbstractMultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(getProductResolution().resolution).numResolutions);
 
@@ -597,7 +591,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             band.setDescription(bandInfo.getBandInformation().getDescription());
             band.setValidPixelExpression(String.format("%s.raw > 0",bandInfo.getBandInformation().getPhysicalBand()));
 
-            MultiLevelImageFactory mlif = new L1bTileIndexMultiLevelImageFactory(
+            AbstractMultiLevelImageFactory mlif = new L1bTileIndexMultiLevelImageFactory(
                     sceneDescription,
                     Product.findImageToModelTransform(band.getGeoCoding()));
 
@@ -605,21 +599,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             product.addBand(band);
 
         }
-
     }
 
-
-    private abstract class MultiLevelImageFactory {
-        protected final AffineTransform imageToModelTransform;
-
-        protected MultiLevelImageFactory(AffineTransform imageToModelTransform) {
-            this.imageToModelTransform = imageToModelTransform;
-        }
-
-        public abstract MultiLevelImage createSourceImage(L1BBandInfo tileBandInfo);
-    }
-
-    private class L1bSceneMultiLevelImageFactory extends MultiLevelImageFactory {
+    private class L1bSceneMultiLevelImageFactory extends AbstractMultiLevelImageFactory<L1BBandInfo> {
 
         private final L1bSceneDescription sceneDescription;
 
@@ -636,11 +618,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         public MultiLevelImage createSourceImage(L1BBandInfo tileBandInfo) {
             BandL1bSceneMultiLevelSource bandScene = new BandL1bSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
             SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), "BandScene: " + bandScene);
-            return new DefaultMultiLevelImage(bandScene);
+
+            int level = 0;
+            TileLayout tileLayout = tileBandInfo.getImageLayout();
+            ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, S2Config.SAMPLE_DATA_BUFFER_TYPE, level);
+            return new DefaultMultiLevelImage(bandScene/*, imageLayout*/ );
         }
     }
 
-    private class L1bTileIndexMultiLevelImageFactory extends MultiLevelImageFactory {
+    private class L1bTileIndexMultiLevelImageFactory extends AbstractMultiLevelImageFactory<L1BBandInfo> {
 
         private final L1bSceneDescription sceneDescription;
 
@@ -660,7 +646,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             return new DefaultMultiLevelImage(bandScene);
         }
     }
-
 
     /**
      * A MultiLevelSource for a scene made of multiple L1C tiles.
@@ -688,21 +673,21 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             this.tileBandInfo = tileBandInfo;
         }
 
-        protected PlanarImage createL1bTileImage(String tileId, int level) {
-            VirtualPath imagePath = tileBandInfo.getTileIdToPathMap().get(tileId);
+        private PlanarImage createL1bTileImage(String tileId, int level) {
+            VirtualPath imagePath = this.tileBandInfo.getTileIdToPathMap().get(tileId);
 
             PlanarImage planarImage = null;
             try {
-                planarImage = S2TileOpImage.create(imagePath.getFile(),
+                planarImage = S2TileOpImage.create(imagePath.getLocalFile(),
                                                    getCacheDir(),
-                                                   null, // tileRectangle.getLocation(),
-                                                   tileBandInfo.getImageLayout(),
+                                                   null,
+                                                   this.tileBandInfo.getImageLayout(),
                                                    getConfig(),
                                                    getModel(),
                                                    getProductResolution(),
                                                    level);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Failed to create the image.", e);
             }
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
@@ -721,12 +706,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             List<String> tiles = sceneDescription.getTileIds().stream().filter(x -> x.contains(tileBandInfo.detectorId)).collect(Collectors.toList());
 
-
             TileLayout thisBandTileLayout = this.tileBandInfo.getImageLayout();
             TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
             float layoutRatioX = (float) productTileLayout.width / thisBandTileLayout.width;
             float layoutRatioY = (float) productTileLayout.height / thisBandTileLayout.height;
-
 
             for (String tileId : tiles) {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
@@ -768,11 +751,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                                           null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
-
-            int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() /
-                    (layoutRatioX * getProductResolution().resolution));
-            int fitRectHeight = (int) (sceneDescription.getSceneEnvelope().getHeight() /
-                    (layoutRatioY * getProductResolution().resolution));
+            int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() / (layoutRatioX * getProductResolution().resolution));
+            int fitRectHeight = (int) (sceneDescription.getSceneEnvelope().getHeight() / (layoutRatioY * getProductResolution().resolution));
 
             Rectangle fitRect = new Rectangle(0, 0, fitRectWidht, fitRectHeight);
             final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
@@ -807,8 +787,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             this.tileBandInfo = tileBandInfo;
         }
 
-        protected PlanarImage createConstantTileImage(String tileId, int level) {
-
+        private PlanarImage createConstantTileImage(String tileId, int level) {
             S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) tileBandInfo.getBandInformation();
             IndexCoding indexCoding = indexBandInformation.getIndexCoding();
             Integer indexValue = indexCoding.getIndexValue(S2L1BGranuleDirFilename.create(tileId).getTileID());

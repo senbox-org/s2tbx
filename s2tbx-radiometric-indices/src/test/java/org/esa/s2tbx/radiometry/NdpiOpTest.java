@@ -28,15 +28,15 @@ public class NdpiOpTest extends BaseIndexOpTest<NdpiOp> {
 
     @Override
     public void setUp() throws Exception {
-        setupBands(new String[] { "GREEN", "SWIR" }, 3, 3, new float[] { 550, 1600 }, new float[] { 1, 2 }, new float[] { 9, 10 });
+        setupBands(new String[] { "GREEN", "MIR" }, 3, 3, new float[] { 550, 1600 }, new float[] { 1, 2 }, new float[] { 9, 10 });
         setOperatorParameters(new HashMap<String, Float>() {{
             put("greenFactor", 1.0f);
-            put("swirFactor", 1.0f);
+            put("mirFactor", 1.0f);
         }});
         setTargetValues(new float[] {
-                -0.333333f, -0.200000f, -0.142857f,
-                -0.111111f, -0.090909f, -0.076923f,
-                -0.066666f, -0.058823f, -0.052631f } );
+                0.33333334f, 0.200000f, 0.14285715f,
+                0.11111111f, 0.09090909f, 0.07692308f,
+                0.06666667f, 0.05882353f, 0.05263158f } );
         super.setUp();
     }
 }

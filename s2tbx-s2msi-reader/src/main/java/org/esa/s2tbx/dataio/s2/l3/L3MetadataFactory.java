@@ -1,12 +1,11 @@
 package org.esa.s2tbx.dataio.s2.l3;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Created by obarrile on 07/10/2016.

@@ -149,13 +149,13 @@ public class CodeStreamInfo {
         element.addAttribute(new MetadataAttribute("prg", ProductData.ASCII.createInstance(String.valueOf(this.prg)), false));
         element.addAttribute(new MetadataAttribute("numLayers", ProductData.ASCII.createInstance(String.valueOf(this.numLayers)), false));
         element.addAttribute(new MetadataAttribute("mct", ProductData.ASCII.createInstance(String.valueOf(this.mct)), false));
-        for (TileComponentInfo tcInfo : componentTilesInfo) {
+        for (TileComponentInfo tcInfo : this.componentTilesInfo) {
             element.addElement(tcInfo.toMetadataElement());
         }
         return element;
     }
 
-    public class TileComponentInfo {
+    public static class TileComponentInfo {
         private String csty;
         private int numResolutions;
         private int codeBlockWidth;
@@ -274,21 +274,23 @@ public class CodeStreamInfo {
             element.addAttribute(new MetadataAttribute("qntsty", ProductData.ASCII.createInstance(String.valueOf(this.qntsty)), false));
             element.addAttribute(new MetadataAttribute("numGBits", ProductData.ASCII.createInstance(String.valueOf(this.numGBits)), false));
             element.addAttribute(new MetadataAttribute("roiShift", ProductData.ASCII.createInstance(String.valueOf(this.roiShift)), false));
-            StringBuilder values = new StringBuilder();
-            for (int[] pair : this.preccIntSize) {
-                values.append("(").append(pair[0]).append(",").append(pair[1]).append(") ");
+            if (this.preccIntSize.size() > 0) {
+                StringBuilder values = new StringBuilder();
+                for (int[] pair : this.preccIntSize) {
+                    values.append("(").append(pair[0]).append(",").append(pair[1]).append(") ");
+                }
+                values.deleteCharAt(values.length() - 1);
+                element.addAttribute(new MetadataAttribute("preccintSize", ProductData.ASCII.createInstance(values.toString()), false));
             }
-            values.deleteCharAt(values.length() - 1);
-            element.addAttribute(new MetadataAttribute("preccintSize", ProductData.ASCII.createInstance(values.toString()), false));
-            values.setLength(0);
-            for (int[] pair : this.stepSizes) {
-                values.append("(").append(pair[0]).append(",").append(pair[1]).append(") ");
+            if (this.stepSizes.size() > 0) {
+                StringBuilder values = new StringBuilder();
+                for (int[] pair : this.stepSizes) {
+                    values.append("(").append(pair[0]).append(",").append(pair[1]).append(") ");
+                }
+                values.deleteCharAt(values.length() - 1);
+                element.addAttribute(new MetadataAttribute("stepSizes", ProductData.ASCII.createInstance(values.toString()), false));
             }
-            values.deleteCharAt(values.length() - 1);
-            element.addAttribute(new MetadataAttribute("stepSizes", ProductData.ASCII.createInstance(values.toString()), false));
-            values.setLength(0);
             return element;
         }
     }
-
 }

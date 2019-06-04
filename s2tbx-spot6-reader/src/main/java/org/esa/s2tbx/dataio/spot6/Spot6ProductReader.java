@@ -4,6 +4,7 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
@@ -35,6 +36,7 @@ import java.util.logging.Logger;
  * Reader for SPOT 6/7 products.
  *
  * @author Cosmin Cara
+ * modified 20190513 for VFS compatibility by Oana H.
  */
 public class Spot6ProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(Spot6ProductReader.class.getName());
@@ -67,21 +69,21 @@ public class Spot6ProductReader extends AbstractProductReader {
             TreeNode<File> result = super.getProductComponents();
             //if the volume metadata file is present, but it is not in the list, add it!
             try {
-                File volumeMetadataPhysicalFile = productDirectory.getFile(Spot6Constants.ROOT_METADATA);
-                if (metadata != null) {
+                File volumeMetadataPhysicalFile = this.productDirectory.getFile(Spot6Constants.ROOT_METADATA);
+                if (this.metadata != null) {
                     addProductComponentIfNotPresent(Spot6Constants.ROOT_METADATA, volumeMetadataPhysicalFile, result);
-                    for (VolumeMetadata component : metadata.getVolumeMetadataList()) {
+                    for (VolumeMetadata component : this.metadata.getVolumeMetadataList()) {
                         try {
-                            File fullPathComp = productDirectory.getFile(component.getPath());
+                            File fullPathComp = this.productDirectory.getFile(component.getPath().toString());
                             addProductComponentIfNotPresent(component.getFileName(), fullPathComp, result);
                             for (VolumeComponent vComponent: component.getComponents()){
                                 if(vComponent.getType().equals(Spot6Constants.METADATA_FORMAT)){
-                                    File fullPathVComp = productDirectory.getFile(fullPathComp.getParent() + File.separator + vComponent.getPath().toString());
-                                    addProductComponentIfNotPresent(vComponent.getPath().getFileName().toString(), fullPathVComp, result);
+                                    File fullPathVComp = this.productDirectory.getFile(fullPathComp.getParent() + File.separator + vComponent.getRelativePath());
+                                    addProductComponentIfNotPresent(Paths.get(vComponent.getRelativePath()).getFileName().toString(), fullPathVComp, result);
                                     if(vComponent.getComponentMetadata() != null && vComponent.getComponentMetadata() instanceof ImageMetadata){
                                         ImageMetadata image = (ImageMetadata)vComponent.getComponentMetadata();
                                         for (String raster : image.getRasterFileNames()){
-                                            addProductComponentIfNotPresent(raster, productDirectory.getFile(fullPathVComp.getParent() + File.separator + raster), result);
+                                            addProductComponentIfNotPresent(raster, this.productDirectory.getFile(fullPathVComp.getParent() + File.separator + raster), result);
                                         }
                                         for (ImageMetadata.MaskInfo mask : image.getMasks()){
                                             addProductComponentIfNotPresent(mask.name, mask.path.toFile(), result);
@@ -104,8 +106,10 @@ public class Spot6ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        Spot6ProductReaderPlugin readerPlugin = (Spot6ProductReaderPlugin)getReaderPlugIn();
-        productDirectory = readerPlugin.getInput(getInput());
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.productDirectory = VirtualDirEx.build(inputPath);
+        //productDirectory = readerPlugin.getInput(getInput());
+
         metadata = VolumeMetadata.create(productDirectory.getFile(Spot6Constants.ROOT_METADATA).toPath());
         Product product = null;
         if (metadata != null) {
@@ -118,7 +122,7 @@ public class Spot6ProductReader extends AbstractProductReader {
             product = new Product(metadata.getInternalReference(),
                                   metadata.getProductType(),
                                   width, height);
-            product.setFileLocation(new File(metadata.getPath()));
+            product.setFileLocation(metadata.getPath().toFile());//new File(metadata.getPath()));
             ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
@@ -140,6 +144,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 initProductTiePointGeoCoding(maxResImageMetadata, product);
             }
 
+            Spot6ProductReaderPlugin readerPlugin = (Spot6ProductReaderPlugin)getReaderPlugIn();
             Path colorPaletteFilePath = readerPlugin.getColorPaletteFilePath();
 
             for (ImageMetadata imageMetadata : imageMetadataList) {
@@ -164,7 +169,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 Product[][] tiles = new Product[tileRows][tileCols];
                 for (String rasterFile : tileInfo.keySet()) {
                     int[] coords = tileInfo.get(rasterFile);
-                    tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
+                    tiles[coords[0]][coords[1]] = ProductIO.readProduct(imageMetadata.getPath().resolve(rasterFile).toFile());
                     tileRefs.add(new WeakReference<Product>(tiles[coords[0]][coords[1]]));
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();

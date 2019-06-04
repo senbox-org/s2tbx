@@ -1,6 +1,75 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 7.0
+--------------------
+
+### Main features
+
+#### Snaphu Unwrapping tool adapter
+
+It is now possible to download directly from SNAP the current version of SNAPHU.
+
+#### Forest Cover Change Processor
+
+The Forest Cover Change Processor is a multi-steps iterative process that transform two date images into one forest change product.
+The overall principle of the algorithm is to identify the forest objects showing higher reflectance differences between the two images than the other forest objects.
+
+#### Pleiades Product Reader
+
+This module enables the Sentinel Toolbox to read Pleiades data products.
+
+#### Kompsat2 Product Reader
+
+This module enables the Sentinel Toolbox to read Kompsat2 data products.
+
+#### WorldView-2 Product Reader
+
+This module enables the Sentinel Toolbox to read WorldView-2 data products.
+
+#### Spectral Angle Mapper
+
+Spectral Angle Mapper (SAM) is a physically-based spectral classification that uses an n-D angle to match pixels to reference spectra.
+The algorithm determines the spectral similarity between two spectra by calculating the angle between the spectra and treating them as
+vectors in a space with dimensionality equal to the number of bands.
+
+#### GeFolki Co-registration Processor
+
+The GeFolki algorithm allows the registration of images in a nonparametric and dense way. GeFolki is based on a local method of optical flow derived from the Lucas-Kanade algorithm, with a multiscale implementation, and a specific filtering including rank filtering, rolling guidance filtering and local contrast inversion.
+
+#### IKONOS Product Reader
+
+This module enables the Sentinel Toolbox to read IKONOS data products.
+
+#### ALOS AVNIR-2 Product Reader
+
+This module enables the Sentinel Toolbox to read ALOS AVNIR-2 data products.
+
+#### ALOS PRISM Product Reader
+
+This module enables the Sentinel Toolbox to read ALOS PRISM data products.
+
+### List of solved issues
+#### Bug
+    * Pleiades Reader, raster operations (resample, reprojection, subset) return error.
+    * Pleiades Reader tests are not passed.
+    * Kompsat2 Reader, pixels values are incorrectly calculated.
+    * WorldView-2 Reader tests are not passed.
+    * Spectral Angle Mapper help images are not displayed in Linux.
+    * [SIITBX-299] - Negative values getting lost when reading jp2 files (direct mode)
+    * [SIITBX-305] - Help link does not work from menu.
+
+#### New Feature
+    * [SIITBX-141] - Add PLEIADES reader
+    * [STEP-8]  - IKONOS Product Reader
+    * [STEP-29] - ALOS AVNIR-2 / PRISM Reader
+
+#### Improvement
+    * [SIITBX-304] - Use object tag for external link.
+    * [SIITBX-306] - Entry in ToC of Help should be renamed.
+
+
+
 Changes in S2TBX 6.0
 --------------------
 
@@ -66,7 +135,6 @@ This beta version of the sen2cor plugin makes possible to execute sen2cor withou
 #### Sen2Three
 
 Added support for the new product format introduced in autumn 2016 (PSD 14).
-
 
 ### List of solved issues
 #### Bug

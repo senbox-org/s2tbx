@@ -96,7 +96,7 @@ public class ForestCoverChangeOp extends Operator {
     @SourceProduct(alias = "previousProduct", label = "Previous Date Product", description = "The source product to be modified.")
     private Product previousSourceProduct;
 
-    @TargetProduct
+    @TargetProduct(description = "The target product which represents the operator's output.")
     private Product targetProduct;
 
     @Parameter(defaultValue = "95.0", label = "Forest Cover Percentage", itemAlias = "percentage", description = "Specifies the percentage of forest cover per segment")
@@ -186,10 +186,15 @@ public class ForestCoverChangeOp extends Operator {
 
         this.threadCount = Runtime.getRuntime().availableProcessors() - 1;
         this.threadPool = Executors.newCachedThreadPool();
+
+        //20190325 workaround for using the operator in gpt, call directly in initialize the doExecute until GraphBuilder corrections
+        doExecute();
     }
 
-    @Override
-    public void doExecute(ProgressMonitor pm) throws OperatorException {
+    //20190325 workaround for using the operator in gpt, do not override doExecute (until GraphBuilder corrections)
+    //@Override
+    //public void doExecute(ProgressMonitor pm) throws OperatorException {
+    public void doExecute() {
         long startTime = System.currentTimeMillis();
 
         String folderPath = System.getProperty("fcc.temp.folder.path");

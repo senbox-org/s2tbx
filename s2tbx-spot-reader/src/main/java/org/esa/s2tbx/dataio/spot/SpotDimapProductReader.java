@@ -18,8 +18,9 @@
 package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.dataio.FileImageInputStreamSpi;
+import org.esa.snap.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
@@ -28,7 +29,6 @@ import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.spot.dimap.VolumeMetadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -48,6 +48,7 @@ import java.util.logging.Logger;
  * from compressed archive files or from file system.
  *
  * @author Cosmin Cara
+ * modified 20190515 for VFS compatibility by Oana H.
  */
 public class SpotDimapProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(SpotDimapProductReader.class.getName());
@@ -58,7 +59,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
     private SpotProductReader internalReader;
 
     static {
-        XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new SpotDimapMetadata.SpotDimapMetadataParser(SpotDimapMetadata.class));
+        XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
     }
 
     protected SpotDimapProductReader(SpotDimapProductReaderPlugin readerPlugIn) {
@@ -69,7 +70,10 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
+        //productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
+        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        this.productDirectory = VirtualDirEx.build(inputPath);
+
         metadata = SpotSceneMetadata.create(productDirectory, this.logger);
         VolumeMetadata volumeMetadata = metadata.getVolumeMetadata();
         SpotDimapProductReaderPlugin readerPlugIn = (SpotDimapProductReaderPlugin)getReaderPlugIn();
@@ -155,7 +159,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                     String[] fileNames = componentMetadata.getRasterFileNames();
                     if (fileNames == null || fileNames.length == 0)
                         throw new InvalidMetadataException("No raster file found in metadata");
-                    String fileId = componentMetadata.getPath().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(),
+                    String fileId = componentMetadata.getPath().toString().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(),
                                                                                       fileNames[0].toLowerCase());
                     addProductComponentIfNotPresent(fileId, productDirectory.getFile(fileId), result);
                 } catch (IOException e) {

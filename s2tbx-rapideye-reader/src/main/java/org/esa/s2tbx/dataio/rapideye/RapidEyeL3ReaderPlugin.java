@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.rapideye;
 
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -75,5 +76,10 @@ public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("RapidEye L3", new String[] { "red", "green", "blue" }));
+    }
+
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+        return super.getDecodeQualification(input);
     }
 }

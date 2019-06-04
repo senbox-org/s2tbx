@@ -91,8 +91,9 @@ public class ImageMetadata extends XmlMetadata {
         ImageMetadata result = null;
         try (InputStream inputStream = Files.newInputStream(path)) {
             ImageMetadataParser parser = new ImageMetadataParser(ImageMetadata.class);
+            Path parentFolderPath = path.getParent();
             result = parser.parse(inputStream);
-            result.setPath(path.getParent().toAbsolutePath().toString());
+            result.setPath(parentFolderPath);
             result.setFileName(path.getFileName().toString());
         } catch (ParserConfigurationException | SAXException e) {
             e.printStackTrace();
@@ -252,6 +253,15 @@ public class ImageMetadata extends XmlMetadata {
                 bandInfos[i] = new BandInfo();
                 bandInfos[i].id = "band_1" + String.valueOf(i);
                 bandInfos[i].index = i;
+                bandIndices.put( bandInfos[i].id, i);
+                bandInfos[i].gain = Double.parseDouble(getAttributeSiblingValue(Constants.PATH_IMG_BAND_ID,  bandInfos[i].id, Constants.PATH_IMG_BAND_GAIN, Constants.STRING_ONE));
+                bandInfos[i].bias = Double.parseDouble(getAttributeSiblingValue(Constants.PATH_IMG_BAND_ID,  bandInfos[i].id, Constants.PATH_IMG_BAND_BIAS, Constants.STRING_ZERO));
+                bandInfos[i].unit = getAttributeSiblingValue(Constants.PATH_IMG_BAND_ID,  bandInfos[i].id, Constants.PATH_IMG_BAND_MEASURE, Constants.VALUE_NOT_AVAILABLE);
+                float scale = bandInfos[i].unit.contains("micrometer") ? 1000f : 1f;
+                float min = Float.parseFloat(getAttributeSiblingValue(Constants.PATH_IMG_BAND_ID,  bandInfos[i].id, Constants.PATH_IMG_BAND_MIN, Constants.STRING_ZERO));
+                float max = Float.parseFloat(getAttributeSiblingValue(Constants.PATH_IMG_BAND_ID,  bandInfos[i].id, Constants.PATH_IMG_BAND_MAX, Constants.STRING_ZERO));
+                bandInfos[i].centralWavelength = (min + max) * scale / 2;
+                bandInfos[i].bandwidth = (max - min) * scale;
             }
         } else {
             //Arrays.sort(ids);
@@ -461,7 +471,7 @@ public class ImageMetadata extends XmlMetadata {
                 MaskInfo mask = new MaskInfo();
                 mask.name = maskNames[i];
                 mask.description = (maskDescs != null && maskDescs.length == maskNames.length) ? maskDescs[i] : maskNames[i];
-                mask.path = Paths.get(this.path).resolve(paths[i]);
+                mask.path = this.path.resolve(paths[i]);
                 masks.add(mask);
             }
         }

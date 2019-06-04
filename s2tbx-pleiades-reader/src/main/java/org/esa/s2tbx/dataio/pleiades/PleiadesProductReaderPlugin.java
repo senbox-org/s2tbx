@@ -18,6 +18,7 @@ package org.esa.s2tbx.dataio.pleiades;
 
 import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -31,10 +32,12 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class PleiadesProductReaderPlugin extends BaseProductReaderPlugIn {
+
     private static final String COLOR_PALETTE_FILE_NAME = "Pleiades_color_palette.cpd";
 
     public PleiadesProductReaderPlugin() {
         super("org/esa/s2tbx/dataio/pleiades/" + PleiadesProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+
         this.folderDepth = 3;
     }
 
@@ -63,10 +66,6 @@ public class PleiadesProductReaderPlugin extends BaseProductReaderPlugIn {
         return Constants.DIMAP_DESCRIPTION;
     }
 
-    public File getFileInput(Object input) {
-        return super.getFileInput(input);
-    }
-
     @Override
     protected String[] getMinimalPatternList() {
         return Constants.MINIMAL_PATTERN_LIST;
@@ -80,5 +79,10 @@ public class PleiadesProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Pleaides", Constants.RGB_PROFILE));
+    }
+
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+        return super.getDecodeQualification(input);
     }
 }

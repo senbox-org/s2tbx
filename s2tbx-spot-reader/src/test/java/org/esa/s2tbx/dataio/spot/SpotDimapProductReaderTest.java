@@ -162,7 +162,7 @@ public class SpotDimapProductReaderTest {
 
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3" + File.separator + "VOL_LIST.DIM");
         //System.setProperty("snap.dataio.reader.tileWidth", "100");
         //System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
@@ -188,7 +188,7 @@ public class SpotDimapProductReaderTest {
 
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3" + File.separator + "VOL_LIST.DIM");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "200");
         try {
@@ -216,7 +216,7 @@ public class SpotDimapProductReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3" + File.separator + "VOL_LIST.DIM");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
@@ -224,14 +224,15 @@ public class SpotDimapProductReaderTest {
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(7, components.getChildren().length);
-            String[] expectedIds = new String[]{"vol_list.dim", "SPVIEW01_0_0/ICON_0_0.JPG", "SPVIEW01_0_0/IMAGERY_0_0.TIF",
-                    "SPVIEW01_0_0/METADATA_0_0.dim", "SPVIEW01_0_1/ICON_0_1.JPG", "SPVIEW01_0_1/IMAGERY_0_1.TIF",
-                    "SPVIEW01_0_1/METADATA_0_1.dim"};
+            String[] expectedIds = new String[]{"vol_list.dim", "SPVIEW01_0_0" + File.separator + "ICON_0_0.JPG", "SPVIEW01_0_0" + File.separator + "IMAGERY_0_0.TIF",
+                    "SPVIEW01_0_0" + File.separator + "METADATA_0_0.dim", "SPVIEW01_0_1" + File.separator + "ICON_0_1.JPG", "SPVIEW01_0_1" + File.separator + "IMAGERY_0_1.TIF",
+                    "SPVIEW01_0_1" + File.separator + "METADATA_0_1.dim"};
             int componentsAsExpected = 0;
             for(TreeNode<File> component: components.getChildren()){
                 for(String expectedValue: expectedIds){
-                    if(component.getId().toLowerCase().equals(expectedValue.toLowerCase())){
+                    if(component.getId().toLowerCase().replace("/", "|").replace("\\", "|").equals(expectedValue.toLowerCase().replace("/", "|").replace("\\", "|"))){
                         componentsAsExpected++;
+                        break;
                     }
                 }
             }

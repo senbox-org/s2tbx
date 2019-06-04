@@ -39,14 +39,26 @@ import java.util.Map;
         copyright = "Copyright (C) 2016 by CS ROMANIA")
 public class NdpiOp extends BaseIndexOp{
 
+    /**
+     * https://senbox.atlassian.net/browse/SIITBX-353
+     * The formula should be as follow:
+     * NDPI = (mir_factor * middle_IR - green_factor * green) / (mir_factor * middle_IR + green_factor * green)
+     *
+     * instead of:
+     * NDPI = (green_factor * green - swir_factor * ShortWave_IR) / (green_factor * green + swir_factor * ShortWave_IR)
+     */
+
     // constants
     public static final String BAND_NAME = "ndpi";
 
     @Parameter(label = "Green factor", defaultValue = "1.0F", description = "The value of the green source band is multiplied by this value.")
     private float greenFactor;
 
-    @Parameter(label = "SWIR factor", defaultValue = "1.0F", description = "The value of the SWIR source band is multiplied by this value.")
-    private float swirFactor;
+    /*@Parameter(label = "SWIR factor", defaultValue = "1.0F", description = "The value of the SWIR source band is multiplied by this value.")
+    private float swirFactor;*/
+
+    @Parameter(label = "MIR factor", defaultValue = "1.0F", description = "The value of the MIR source band is multiplied by this value.")
+    private float mirFactor;
 
     @Parameter(label = "Green source band",
             description = "The green band for the NDPI computation. If not provided, the " +
@@ -55,12 +67,19 @@ public class NdpiOp extends BaseIndexOp{
     @BandParameter(minWavelength = 525, maxWavelength = 605)
     private String greenSourceBand;
 
-    @Parameter(label = "SWIR source band",
+    /*@Parameter(label = "SWIR source band",
             description = "The the short-wave infrared band-I for the NDPI computation. If not provided," +
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     @BandParameter(minWavelength = 1550, maxWavelength = 1750)
-    private String swirSourceBand;
+    private String swirSourceBand;*/
+
+    @Parameter(label = "MIR source band",
+      description = "The mid-infrared band for the NDPI computation. If not provided," +
+                " the operator will try to find the best fitting band.",
+      rasterDataNodeType = Band.class)
+    @BandParameter(minWavelength = 3000, maxWavelength = 8000)
+    private String mirSourceBand;
 
     public NdpiOp() {
         super();
@@ -78,7 +97,8 @@ public class NdpiOp extends BaseIndexOp{
         pm.beginTask("Computing NDPI", rectangle.height);
         try {
             Tile greenTile = getSourceTile(getSourceProduct().getBand(greenSourceBand), rectangle);
-            Tile swirTile = getSourceTile(getSourceProduct().getBand(swirSourceBand), rectangle);
+            //Tile swirTile = getSourceTile(getSourceProduct().getBand(swirSourceBand), rectangle);
+            Tile mirTile = getSourceTile(getSourceProduct().getBand(mirSourceBand), rectangle);
 
             Tile ndpi = targetTiles.get(targetProduct.getBand(BAND_NAME));
             Tile ndpiFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
@@ -88,10 +108,12 @@ public class NdpiOp extends BaseIndexOp{
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
 
-                    final float swir = swirFactor * swirTile.getSampleFloat(x, y);
+                    //final float swir = swirFactor * swirTile.getSampleFloat(x, y);
+                    final float mir = mirFactor * mirTile.getSampleFloat(x, y);
                     final float green = greenFactor * greenTile.getSampleFloat(x, y);
 
-                    ndpiValue = (green - swir)/(green + swir);// (1 - green/swir)/(1 + green/swir)
+                    //ndpiValue = (green - swir)/(green + swir);// (1 - green/swir)/(1 + green/swir)
+                    ndpiValue = (mir - green)/(mir + green);
 
                     ndpi.setSample(x, y, computeFlag(x, y, ndpiValue, ndpiFlags));
                 }

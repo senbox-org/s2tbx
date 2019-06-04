@@ -1,0 +1,261 @@
+{
+  "id": "WorldView2ESA_product",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 16384,
+    "sceneHeight": 16384,
+    "startTime": "25-MAY-2011 09:53:46.000000",
+    "endTime": "25-MAY-2011 09:53:51.000000",
+    "geoCoding": {
+      "coordinates": [
+        {
+          "x": 7066.0,
+          "y": 8807.0,
+          "lat": 44.47070350663709,
+          "lon": 23.802809969935122
+        },
+        {
+          "x": 12164.0,
+          "y": 10631.0,
+          "lat": 44.46351134920408,
+          "lon": 23.82809999518659
+        }
+      ],
+      "reverseAccuracy": 1.1721625924110413E-5
+    },
+    "bands": [
+      {
+        "name": "Coastal",
+        "bandWidth": 8192,
+        "bandHeight": 4096,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 427,
+            "y": 729,
+            "value": 78.02061
+          },
+          {
+            "x": 5612,
+            "y": 3484,
+            "value": 70.74916
+          }
+        ]
+      },
+      {
+        "name": "Blue",
+        "bandWidth": 8192,
+        "bandHeight": 4096,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2382,
+            "y": 1052,
+            "value": 72.91936
+          },
+          {
+            "x": 5001,
+            "y": 1496,
+            "value": 61.42306
+          }
+        ]
+      },
+      {
+        "name": "Green",
+        "bandWidth": 8192,
+        "bandHeight": 4096,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 4505,
+            "y": 3052,
+            "value": 54.1348
+          },
+          {
+            "x": 4983,
+            "y": 3802,
+            "value": 57.59943
+          }
+        ]
+      },
+      {
+        "name": "Yellow",
+        "bandWidth": 8192,
+        "bandHeight": 4096,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 1296,
+            "y": 2728,
+            "value": 40.97357
+          },
+          {
+            "x": 4252,
+            "y": 3741,
+            "value": 51.353542
+          }
+        ]
+      },
+      {
+        "name": "Red",
+        "bandWidth": 8192,
+        "bandHeight": 4096,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 6194,
+            "y": 1984,
+            "value": 40.647842
+          },
+          {
+            "x": 7788,
+            "y": 1990,
+            "value": 29.679377
+          }
+        ]
+      },
+      {
+        "name": "Red Edge",
+        "bandWidth": 8192,
+        "bandHeight": 4096,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2788,
+            "y": 3684,
+            "value": 46.592106
+          },
+          {
+            "x": 81,
+            "y": 1928,
+            "value": "NaN"
+          }
+        ]
+      },
+      {
+        "name": "NIR1",
+        "bandWidth": 8192,
+        "bandHeight": 4096,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2682,
+            "y": 807,
+            "value": 88.75171
+          },
+          {
+            "x": 2237,
+            "y": 176,
+            "value": 43.75376
+          }
+        ]
+      },
+      {
+        "name": "NIR2",
+        "bandWidth": 8192,
+        "bandHeight": 4096,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 7958,
+            "y": 2476,
+            "value": 50.930656
+          },
+          {
+            "x": 4688,
+            "y": 2935,
+            "value": 65.09319
+          }
+        ]
+      },
+      {
+        "name": "Pan",
+        "bandWidth": 32768,
+        "bandHeight": 16384,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 7601,
+            "y": 8151,
+            "value": 74.820076
+          },
+          {
+            "x": 10521,
+            "y": 11838,
+            "value": 73.42343
+          }
+        ]
+      }
+    ],
+    "metadata": [
+      {
+        "path": "Metadata/imd/productlevel",
+        "value": "LV2A"
+      },
+      {
+        "path": "Metadata/imd/bitsperpixel",
+        "value": "16"
+      },
+      {
+        "path": "Metadata/imd/outputformat",
+        "value": "GeoTIFF"
+      },
+      {
+        "path": "Metadata/imd/map_projected_product/mapzone",
+        "value": "34"
+      },
+      {
+        "path": "Metadata/imd/map_projected_product/maphemi",
+        "value": "N"
+      },
+      {
+        "path": "Metadata/imd/image/cloudcover",
+        "value": "0.000000000000000e+00"
+      },
+      {
+        "path": "Metadata/imd/map_projected_product/ulh",
+        "value": "1.956700000000000e+02"
+      },
+      {
+        "path": "Metadata/imd/map_projected_product/urh",
+        "value": "1.956700000000000e+02"
+      },
+      {
+        "path": "Metadata/imd/map_projected_product/lrh",
+        "value": "1.956700000000000e+02"
+      },
+      {
+        "path": "Metadata/imd/map_projected_product/llh",
+        "value": "1.956700000000000e+02"
+      }
+    ]
+  }
+
+}

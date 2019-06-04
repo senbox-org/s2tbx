@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: 7.0.0
+OpenIDE-Module-Implementation-Version: 7.0.0
+OpenIDE-Module-Name: SNAPHU Unwrapping
+OpenIDE-Module-Display-Category: Sentinel-1 Toolbox
+OpenIDE-Module-Java-Dependencies: Java > 1.8
+OpenIDE-Module-Type: STA
+OpenIDE-Module-Short-Description: SNAPHU Phase Unwrapping
+OpenIDE-Module: org.esa.snap.core.gpf.operators.tooladapter.snaphu.unwrapping
+OpenIDE-Module-Alias: Snaphu-unwrapping
+OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui

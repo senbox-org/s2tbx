@@ -2,7 +2,7 @@
     "testProducts": [
         {
             "id": "Deimos-Indonesia",
-            "relativePath": "_deimos\\DEIMOS-1_INDONESIA-TrueColor-22m.zip",
+            "relativePath": "_deimos/DEIMOS-1_INDONESIA-TrueColor-22m.zip",
             "description": "Deimos product in an archive"
         }
     ]

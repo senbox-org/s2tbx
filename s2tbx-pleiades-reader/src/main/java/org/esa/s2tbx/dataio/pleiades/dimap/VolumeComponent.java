@@ -29,13 +29,16 @@ import java.nio.file.Path;
  * @author Cosmin Cara
  */
 public class VolumeComponent {
-    private Path parentPath;
-    String title;
-    String content;
-    String type;
-    Path path;
-    String thumbnailPath;
-    String thumbnailFormat;
+
+    private final Path parentPath;
+
+    private String relativePath;
+
+    private String title;
+    private String content;
+    private String type;
+    private String thumbnailPath;
+    private String thumbnailFormat;
 
     public enum Type {
         VOLUME,
@@ -54,8 +57,9 @@ public class VolumeComponent {
         return type;
     }
 
-    public Path getPath() {
-        return path;
+    @Deprecated
+    public Path getPathOLD() {
+        return null;//path;
     }
 
     public String getThumbnailPath() {
@@ -70,27 +74,52 @@ public class VolumeComponent {
         return thumbnailFormat;
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setThumbnailFormat(String thumbnailFormat) {
+        this.thumbnailFormat = thumbnailFormat;
+    }
+
+    public void setThumbnailPath(String thumbnailPath) {
+        this.thumbnailPath = thumbnailPath;
+    }
+
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
+
+    public String getRelativePath() {
+        return relativePath;
+    }
+
     public GenericXmlMetadata getComponentMetadata() {
         GenericXmlMetadata metadata = null;
-        if (Constants.METADATA_FORMAT.equals(type)) {
-            Path fullPath = parentPath.resolve(getPath());
-            if (Files.exists(fullPath)) {
-                if (this.path.toString().contains("DIM_")) {
-                    try {
-                        metadata = ImageMetadata.create(fullPath);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    try {
-                        metadata = VolumeMetadata.create(fullPath);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+        if (Constants.METADATA_FORMAT.equals(this.type)) {
+            if (this.relativePath != null) {
+                Path fullPath = this.parentPath.resolve(this.relativePath);
+                if (Files.exists(fullPath)) {
+                    if (this.relativePath.contains("DIM_")) {
+                        try {
+                            metadata = ImageMetadata.create(fullPath);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        try {
+                            metadata = VolumeMetadata.create(fullPath);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
         }
         return metadata;
     }
-
 }

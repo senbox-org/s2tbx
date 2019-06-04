@@ -67,6 +67,11 @@ public class MuscateMetadata extends XmlMetadata {
         return descr;
     }
 
+    public String getProductVersion() {
+        String version = getAttributeValue(MuscateConstants.PATH_PRODUCT_VERSION, null);
+        return version;
+    }
+
     @Override
     public String getFormatName() {
         return getAttributeValue(MuscateConstants.PATH_METADATA_FORMAT, MuscateConstants.METADATA_MUSCATE);
@@ -164,7 +169,13 @@ public class MuscateMetadata extends XmlMetadata {
                 MetadataElement imageElement = imageListElement.getElementAt(i);
                 MetadataElement propertiesElement = imageElement.getElement("Image_Properties");
                 muscateImage.nature = propertiesElement.getAttribute("NATURE").getData().getElemString();
-                muscateImage.compression = propertiesElement.getAttribute("COMPRESSION").getData().getElemString();
+
+                if(propertiesElement.getAttribute("COMPRESSION") != null) { //in some versions this element does not exist
+                    muscateImage.compression = propertiesElement.getAttribute("COMPRESSION").getData().getElemString();
+                } else {
+                    muscateImage.compression = "None";
+                }
+                
                 muscateImage.encoding = propertiesElement.getAttribute("ENCODING").getData().getElemString();
                 muscateImage.endianness = propertiesElement.getAttribute("ENDIANNESS").getData().getElemString();
                 muscateImage.format = propertiesElement.getAttribute("FORMAT").getData().getElemString();
@@ -196,8 +207,10 @@ public class MuscateMetadata extends XmlMetadata {
                 MetadataElement fileListElement = imageElement.getElement("Mask_File_List");
                 int numMasks = fileListElement.getNumAttributes();
                 for (int j = 0 ; j < numMasks ; j++) {
-                    String path = fileListElement.getAttributeAt(j).getData().getElemString();
-                    muscateMask.addMuscateMaskFile(path);
+                    MuscateMaskFile muscateMaskFile = new MuscateMaskFile();
+                    muscateMaskFile.path = fileListElement.getAttributeAt(j).getData().getElemString();
+                    //TODO add also bit_number, group_id...
+                    muscateMask.addMuscateMaskFile(muscateMaskFile);
                 }
                 masks.add(muscateMask);
             }

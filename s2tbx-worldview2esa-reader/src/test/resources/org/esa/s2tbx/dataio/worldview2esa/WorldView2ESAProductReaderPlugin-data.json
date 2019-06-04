@@ -1,0 +1,9 @@
+{
+  "testProducts": [
+    {
+      "id": "WorldView2ESA_product",
+      "relativePath": "_worldView/WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP/WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.MD.XML",
+      "description": "WorldView2 ESA product in an folder"
+    }
+  ]
+}

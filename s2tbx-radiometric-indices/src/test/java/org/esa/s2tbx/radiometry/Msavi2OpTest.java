@@ -34,9 +34,9 @@ public class Msavi2OpTest extends BaseIndexOpTest<Msavi2Op> {
             put("nirFactor", 1.0f);
         }});
         setTargetValues(new float[] {
-                0.938447f, 0.798437f, 0.727998f,
-                0.684927f, 0.655711f, 0.634540f,
-                0.618472f, 0.605852f, 0.595673f } );
+          0.43844718f, 0.2984379f, 0.22799812f,
+          0.18492709f, 0.15571123f, 0.13454007f,
+          0.118472695f, 0.10585289f, 0.09567398f } );
         super.setUp();
     }
 }

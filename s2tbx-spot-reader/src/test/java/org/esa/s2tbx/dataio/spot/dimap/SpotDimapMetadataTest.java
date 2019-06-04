@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
@@ -26,6 +27,7 @@ import org.junit.Test;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -44,7 +46,7 @@ public class SpotDimapMetadataTest {
     @Before
     public void setUp() throws Exception {
         assumeTrue(TestUtil.testdataAvailable());
-        XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new SpotDimapMetadata.SpotDimapMetadataParser(SpotDimapMetadata.class));
+        XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
         metadata = XmlMetadata.create(SpotDimapMetadata.class, TestUtil.getTestFile(productsFolder + "metadata.dim"));
     }
 
@@ -236,12 +238,12 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testGetPath() throws Exception {
-        assertEquals(TestUtil.getTestFile(productsFolder + "metadata.dim").getAbsolutePath(), metadata.getPath());
+        assertEquals(TestUtil.getTestFile(productsFolder + "metadata.dim").getAbsolutePath(), metadata.getPath().toString());
     }
 
     @Test
     public void testSetPath() throws Exception {
-        metadata.setPath("testname");
-        assertEquals("testname", metadata.getPath());
+        metadata.setPath(Paths.get("testname"));
+        assertEquals("testname", metadata.getPath().toString());
     }
 }

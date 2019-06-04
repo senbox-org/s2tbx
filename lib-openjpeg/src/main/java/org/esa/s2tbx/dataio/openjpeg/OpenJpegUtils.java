@@ -17,13 +17,21 @@
 package org.esa.s2tbx.dataio.openjpeg;
 
 import org.apache.commons.lang.SystemUtils;
+import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.dataio.BucketMap;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.lib.openjpeg.CODMarkerSegment;
+import org.esa.s2tbx.lib.openjpeg.ContiguousCodestreamBox;
+import org.esa.s2tbx.lib.openjpeg.JP2FileReader;
+import org.esa.s2tbx.lib.openjpeg.SIZMarkerSegment;
+import org.esa.snap.core.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -39,12 +47,24 @@ import java.util.List;
  */
 public class OpenJpegUtils {
 
-    private static final BucketMap<Integer, Integer> dataTypeMap = new BucketMap<Integer, Integer>() {{
+    public static final BucketMap<Integer, Integer> DATA_TYPE_MAP = new BucketMap<Integer, Integer>() {{
         put(1, 8, DataBuffer.TYPE_BYTE);
         put(9, 15, DataBuffer.TYPE_USHORT);
         put(16, DataBuffer.TYPE_SHORT);
         put(17, 32, DataBuffer.TYPE_FLOAT);
     }};
+
+    public static final BucketMap<Integer, Integer> PRECISION_TYPE_MAP = new BucketMap<Integer, Integer>() {{
+        put(1, 8, ProductData.TYPE_UINT8);
+        put(9, 15, ProductData.TYPE_UINT16);
+        put(16, ProductData.TYPE_INT16);
+        put(17, 32, ProductData.TYPE_FLOAT32);
+    }};
+
+    public static boolean canReadJP2FileHeaderWithOpenJPEG() {
+        String value = System.getProperty("jp2.read.header.with.open.jpeg");
+        return Boolean.parseBoolean(value);
+    }
 
     /**
      * Get the tile layout with opj_dump
@@ -56,15 +76,12 @@ public class OpenJpegUtils {
      * @throws InterruptedException
      */
     public static TileLayout getTileLayoutWithOpenJPEG(String opjdumpPath, Path jp2FilePath) throws IOException, InterruptedException {
-
-        if(opjdumpPath == null) {
+        if (opjdumpPath == null) {
             throw new IllegalStateException("Cannot retrieve tile layout, opj_dump cannot be found");
         }
 
-        TileLayout tileLayout;
-
         String pathToImageFile = jp2FilePath.toAbsolutePath().toString();
-        if (SystemUtils.IS_OS_WINDOWS) {
+        if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             pathToImageFile = Utils.GetIterativeShortPathNameW(pathToImageFile);
         }
 
@@ -79,16 +96,34 @@ public class OpenJpegUtils {
                 sbu.append(fragment);
                 sbu.append(' ');
             }
-
             throw new IOException(String.format("Command [%s] failed with error code [%d], stdoutput [%s] and stderror [%s]", sbu.toString(), exit.getErrorCode(), exit.getTextOutput(), exit.getErrorOutput()));
+        } else {
+            TileLayout tileLayout = OpenJpegUtils.parseOpjDump(exit.getTextOutput());
+            if (tileLayout.numResolutions == 0) {
+                return null;
+            }
+            return tileLayout;
         }
-        tileLayout = OpenJpegUtils.parseOpjDump(exit.getTextOutput());
+    }
 
-        if (tileLayout.numResolutions == 0) {
-            return null;
-        }
+    public static TileLayout getTileLayoutWithInputStream(Path jp2File, int bufferSize, boolean canSetFilePosition) throws IOException {
+        JP2FileReader fileFormatReader = new JP2FileReader();
+        fileFormatReader.readFileFormat(jp2File, bufferSize, canSetFilePosition);
 
-        return tileLayout;
+        ContiguousCodestreamBox contiguousCodestreamBox = fileFormatReader.getHeaderDecoder();
+        SIZMarkerSegment sizMarkerSegment = contiguousCodestreamBox.getSiz();
+        CODMarkerSegment codMarkerSegment = contiguousCodestreamBox.getCod();
+
+        int imageWidth = sizMarkerSegment.getImageWidth();
+        int imageHeight = sizMarkerSegment.getImageHeight();
+        int tileWidth = sizMarkerSegment.getNominalTileWidth();
+        int tileHeight = sizMarkerSegment.getNominalTileHeight();
+        int xTiles = sizMarkerSegment.computeNumTilesX();
+        int yTiles = sizMarkerSegment.computeNumTilesY();
+        int resolutions = codMarkerSegment.getNumberOfLevels() + 1;
+        int precision = sizMarkerSegment.getComponentOriginBitDepthAt(0);
+
+        return new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, xTiles, yTiles, resolutions, DATA_TYPE_MAP.get(precision));
     }
 
     public static String convertStreamToString(java.io.InputStream is) {
@@ -97,30 +132,66 @@ public class OpenJpegUtils {
     }
 
     public static CommandOutput runProcess(ProcessBuilder builder) throws InterruptedException, IOException {
+        return runProcess(builder, null);
+    }
+
+    public static CommandOutput runProcess(ProcessBuilder builder, String newLineSeparator) throws InterruptedException, IOException {
         builder.environment().putAll(System.getenv());
+
         StringBuilder output = new StringBuilder();
-        boolean isStopped = false;
-        final Process process = builder.start();
-        try (BufferedReader outReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            while (!isStopped) {
-                if (!process.isAlive()) {
-                    isStopped = true;
-                } else {
-                    Thread.yield();
-                }
-                while (outReader.ready()) {
-                    String line = outReader.readLine();
-                    if (line != null && !line.isEmpty()) {
-                        output.append(line);
+        Process process = builder.start();
+        InputStream inputStream = process.getInputStream(); // get the process output
+        try {
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            try {
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                try {
+                    boolean isStopped = false;
+                    while (!isStopped) {
+                        if (process.isAlive()) {
+                            Thread.yield(); // yield the control to other threads
+                        } else {
+                            isStopped = true;
+                        }
+                        while (bufferedReader.ready()) {
+                            String line = bufferedReader.readLine();
+                            if (line != null && !line.isEmpty()) {
+                                output.append(line);
+                                if (newLineSeparator != null) {
+                                    output.append(newLineSeparator);
+                                }
+                            }
+                        }
                     }
+                } finally {
+                    closeStream(bufferedReader);
                 }
+            } finally {
+                closeStream(inputStreamReader);
             }
-            outReader.close();
+        } finally {
+            closeStream(inputStream);
         }
+
         int exitCode = process.exitValue();
-        //String output = convertStreamToString(process.getInputStream());
-        String errorOutput = convertStreamToString(process.getErrorStream());
-        return new CommandOutput(exitCode, output.toString(), errorOutput);
+
+        InputStream errorInputStream = process.getErrorStream();
+        try {
+            String errorOutput = OpenJpegUtils.convertStreamToString(errorInputStream);
+            return new CommandOutput(exitCode, output.toString(), errorOutput);
+        } finally {
+            closeStream(errorInputStream);
+        }
+    }
+
+    private static void closeStream(Closeable stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                // nothing to do
+            }
+        }
     }
 
     /**
@@ -142,8 +213,8 @@ public class OpenJpegUtils {
      * @return the TileLayout extracted from the lines
      */
     public static TileLayout parseOpjDump(List<String> content) {
-        int Width = 0;
-        int Height = 0;
+        int imageWidth = 0;
+        int imageHeight = 0;
         int tileWidth = 0;
         int tileHeight = 0;
         int xTiles = 0;
@@ -154,8 +225,8 @@ public class OpenJpegUtils {
         for (String line : content) {
             if (line.contains("x1") && line.contains("y1")) {
                 String[] segments = line.trim().split(",");
-                Width = Integer.parseInt(segments[0].split("\\=")[1]);
-                Height = Integer.parseInt(segments[1].split("\\=")[1]);
+                imageWidth = Integer.parseInt(segments[0].split("\\=")[1]);
+                imageHeight = Integer.parseInt(segments[1].split("\\=")[1]);
             }
             if (line.contains("tdx") && line.contains("tdy")) {
                 String[] segments = line.trim().split(",");
@@ -175,8 +246,7 @@ public class OpenJpegUtils {
             }
         }
 
-        return new TileLayout(Width, Height, tileWidth, tileHeight, xTiles, yTiles, resolutions, dataTypeMap.get(precision) );
-
+        return new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, xTiles, yTiles, resolutions, DATA_TYPE_MAP.get(precision));
     }
 
     public static boolean validateOpenJpegExecutables(String opjdumpPath, String opjdecompPath) {

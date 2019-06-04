@@ -21,15 +21,23 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.VirtualJP2File;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.ROI;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,18 +54,15 @@ import java.util.logging.Logger;
 public class JP2MultiLevelSource extends AbstractMultiLevelSource {
 
     private final TileLayout tileLayout;
-    private final Path sourceFile;
-    private final Path cacheFolder;
     private final int dataType;
     private final Logger logger;
     private final int bandIndex;
     private final TileImageDisposer tileManager;
+    private VirtualJP2File virtualInputFile;
 
     /**
      * Constructs an instance of a single band multi-level image source
      *
-     * @param jp2File     The original (i.e. compressed) JP2 file
-     * @param cacheFolder The cache (temporary) folder
      * @param bandIndex   The destination Product band for which the image source is created
      * @param imageWidth  The width of the scene image
      * @param imageHeight The height of the scene image
@@ -69,18 +74,17 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param dataType    The pixel data type
      * @param geoCoding   (optional) The geocoding found (if any) in the JP2 header
      */
-    public JP2MultiLevelSource(Path jp2File, Path cacheFolder, int bandIndex, int numBands, int imageWidth, int imageHeight,
-                               int tileWidth, int tileHeight, int numTilesX, int numTilesY, int levels, int dataType,
-                               GeoCoding geoCoding) {
-        super(new DefaultMultiLevelModel(levels,
-                                         Product.findImageToModelTransform(geoCoding),
-                                         imageWidth, imageHeight));
-        sourceFile = jp2File;
-        this.cacheFolder = cacheFolder;
+    public JP2MultiLevelSource(VirtualJP2File virtualInputFile, int bandIndex, int numBands,
+                               int imageWidth, int imageHeight, int tileWidth, int tileHeight,
+                               int numTilesX, int numTilesY, int levels, int dataType, GeoCoding geoCoding) {
+
+        super(new DefaultMultiLevelModel(levels, Product.findImageToModelTransform(geoCoding), imageWidth, imageHeight));
+
+        this.virtualInputFile = virtualInputFile;
         this.dataType = dataType;
-        logger = Logger.getLogger(JP2MultiLevelSource.class.getName());
-        tileLayout = new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, numTilesX, numTilesY, levels);
-        tileLayout.numBands = numBands;
+        this.logger = Logger.getLogger(JP2MultiLevelSource.class.getName());
+        this.tileLayout = new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, numTilesX, numTilesY, levels);
+        this.tileLayout.numBands = numBands;
         this.bandIndex = bandIndex;
         this.tileManager = new TileImageDisposer();
     }
@@ -92,22 +96,23 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param col   The column of the tile (0-based)
      * @param level The resolution level (0 = highest)
      */
-    protected PlanarImage createTileImage(int row, int col, int level) throws IOException {
+    private PlanarImage createTileImage(Path localImageFile, Path localCacheFolder, int row, int col, int level) throws IOException {
         TileLayout currentLayout = tileLayout;
         // the edge tiles dimensions may be less than the dimensions from JP2 header
         if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
             currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
-                                            Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
-                                            Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
-                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+                                           Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
+                                           Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
+                                           tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
             currentLayout.numBands = tileLayout.numBands;
         }
-        return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
+        return JP2TileOpImage.create(localImageFile, localCacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        final List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>(tileLayout.numXTiles * tileLayout.numYTiles));
+        Path localImageFile = null;
+        List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>(tileLayout.numXTiles * tileLayout.numYTiles));
         TileLayout layout = tileLayout;
         double factorX = 1.0 / Math.pow(2, level);
         double factorY = 1.0 / Math.pow(2, level);
@@ -115,7 +120,10 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
             for (int y = 0; y < tileLayout.numXTiles; y++) {
                 PlanarImage opImage;
                 try {
-                    opImage = createTileImage(x, y, level);
+                    if (localImageFile == null) {
+                        localImageFile = this.virtualInputFile.getLocalFile(); // compute only one time the file path
+                    }
+                    opImage = createTileImage(localImageFile, this.virtualInputFile.getLocalCacheFolder(), x, y, level);
                     if (opImage != null) {
                         tileManager.registerForDisposal(opImage);
                         opImage = TranslateDescriptor.create(opImage,
@@ -143,9 +151,19 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         imageLayout.setTileGridXOffset(0);
         imageLayout.setTileGridYOffset(0);
 
+        // It must be specified which values shall be mosaicked. The default settings don't work
+        // We want all values to be considered
+        ROI[]sourceRois = new ROI[tileImages.size()];
+        for (int i = 0; i < sourceRois.length; i++) {
+            RenderedImage image = tileImages.get(i);
+            ImageLayout roiLayout = new ImageLayout(image);
+            ROI roi = new ROI(ConstantDescriptor.create((float) image.getWidth(), (float) image.getHeight(), new Byte[]{Byte.MAX_VALUE}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, roiLayout)), Byte.MAX_VALUE);
+            sourceRois[i] = roi;
+        }
+
         RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                       MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                      null, null, null, null,
+                                                      null, sourceRois, null, null,
                                                       new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
         int fittingRectWidth = scaleValue(tileLayout.width, level);
