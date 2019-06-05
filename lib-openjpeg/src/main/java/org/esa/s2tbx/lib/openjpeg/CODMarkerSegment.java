@@ -1,12 +1,57 @@
+/*
+ * $RCSfile: FileFormatReader.java,v $
+ * $Revision: 1.2 $
+ * $Date: 2005/04/28 01:25:38 $
+ * $State: Exp $
+ *
+ * Class:                   FileFormatReader
+ *
+ * Description:             Read J2K file stream
+ *
+ * COPYRIGHT:
+ *
+ * This software module was originally developed by Raphaël Grosbois and
+ * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
+ * Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+ * Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+ * Centre France S.A) in the course of development of the JPEG2000
+ * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
+ * software module is an implementation of a part of the JPEG 2000
+ * Standard. Swiss Federal Institute of Technology-EPFL, Ericsson Radio
+ * Systems AB and Canon Research Centre France S.A (collectively JJ2000
+ * Partners) agree not to assert against ISO/IEC and users of the JPEG
+ * 2000 Standard (Users) any of their rights under the copyright, not
+ * including other intellectual property rights, for this software module
+ * with respect to the usage by ISO/IEC and Users of this software module
+ * or modifications thereof for use in hardware or software products
+ * claiming conformance to the JPEG 2000 Standard. Those intending to use
+ * this software module in hardware or software products are advised that
+ * their use may infringe existing patents. The original developers of
+ * this software module, JJ2000 Partners and ISO/IEC assume no liability
+ * for use of this software module or modifications thereof. No license
+ * or right to this software module is granted for non JPEG 2000 Standard
+ * conforming products. JJ2000 Partners have full right to use this
+ * software module for his/her own purpose, assign or donate this
+ * software module to any third party and to inhibit third parties from
+ * using this software module for non JPEG 2000 Standard conforming
+ * products. This copyright notice must be included in all copies or
+ * derivative works of this software module.
+ *
+ * Copyright (c) 1999/2000 JJ2000 Partners.
+ *
+ */
 package org.esa.s2tbx.lib.openjpeg;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 
+/**
+ * Created by jcoravu on 30/4/2019.
+ */
 public class CODMarkerSegment extends AbstractMarkerSegment {
 
 	private int lcod;
-	private int scod;
+	private int scod; // Coding style
 	private int sgcod_po; // Progression order
 	private int sgcod_nl; // Number of layers
 	private int sgcod_mct; // Multiple component transformation
@@ -14,7 +59,7 @@ public class CODMarkerSegment extends AbstractMarkerSegment {
 	private int spcod_cw; // Code-blocks width
 	private int spcod_ch; // Code-blocks height
 	private int spcod_cs; // Code-blocks style
-	private int[] spcod_t = new int[1]; // Transformation
+	private int waveletTransformId;
 	private int[] spcod_ps; // Precinct size
 	/** Is the precinct partition used */
 	private boolean precinctPartitionIsUsed;
@@ -86,8 +131,19 @@ public class CODMarkerSegment extends AbstractMarkerSegment {
 		// Style of the code-block coding passes
 		this.spcod_cs = jp2FileStream.readUnsignedByte();
 
-		// read the filter id
-		jp2FileStream.readUnsignedByte();
+		// read the wavelet transform id
+		this.waveletTransformId = jp2FileStream.readUnsignedByte();
+		if (this.waveletTransformId >= (1 << 7)) {
+			throw new InvalidContiguousCodestreamException("Custom filters not supported.");
+		}
+		switch (this.waveletTransformId) {
+			case FilterTypes.W9X7_IRREVERSIBLE:
+				break;
+			case FilterTypes.W5X3_REVERSIBLE:
+				break;
+			default:
+				throw new InvalidContiguousCodestreamException("Specified wavelet filter is not JPEG 2000 part I compliant.");
+		}
 
 		this.spcod_ps = new int[this.spcod_ndl + 1];
 		if (this.precinctPartitionIsUsed) {
@@ -106,22 +162,25 @@ public class CODMarkerSegment extends AbstractMarkerSegment {
 	public int getMultipleComponenTransform() {
 		return this.sgcod_mct;
 	}
-	
+
 	@Override
 	public String toString() {
-		String str = "\n --- COD (" + lcod + " bytes) ---\n";
+		String str = "\n --- COD (" + this.lcod + " bytes) ---\n";
 		str += " Coding style   : ";
-		if (scod == 0) {
+		if (this.scod == 0) {
 			str += "Default";
 		} else {
-			if ((scod & SCOX_PRECINCT_PARTITION) != 0)
+			if ((this.scod & SCOX_PRECINCT_PARTITION) != 0) {
 				str += "Precints ";
-			if ((scod & SCOX_USE_SOP) != 0)
+			}
+			if ((this.scod & SCOX_USE_SOP) != 0) {
 				str += "SOP ";
-			if ((scod & SCOX_USE_EPH) != 0)
+			}
+			if ((this.scod & SCOX_USE_EPH) != 0) {
 				str += "EPH ";
-			int cb0x = ((scod & SCOX_HOR_CB_PART) != 0) ? 1 : 0;
-			int cb0y = ((scod & SCOX_VER_CB_PART) != 0) ? 1 : 0;
+			}
+			int cb0x = ((this.scod & SCOX_HOR_CB_PART) != 0) ? 1 : 0;
+			int cb0y = ((this.scod & SCOX_VER_CB_PART) != 0) ? 1 : 0;
 			if (cb0x != 0 || cb0y != 0) {
 				str += "Code-blocks offset";
 				str += "\n Cblk partition : " + cb0x + "," + cb0y;
@@ -149,32 +208,53 @@ public class CODMarkerSegment extends AbstractMarkerSegment {
 		str += " Number of levels : " + getNumberOfLevels() + "\n";
 		str += " Progress type : "+ getProgressiveOrder() + "\n";
 		str += " Num. of layers : " + getNumberOfLayers() + "\n";
-		str += " Cblk dimension : " + (1 << (spcod_cw + 2)) + "x" + (1 << (spcod_ch + 2)) + "\n";
-		str += " Filter         : " + spcod_t[0] + "\n";
+		str += " Cblk dimension : " + getCodeBlockWidth() + "x" + getCodeBlockHeight() + "\n";
+
+		str += " Filter         : ";
+		switch (this.waveletTransformId) {
+			case FilterTypes.W9X7_IRREVERSIBLE:
+				str += " 9-7 irreversible\n";
+				break;
+			case FilterTypes.W5X3_REVERSIBLE:
+				str += " 5-3 reversible\n";
+				break;
+		}
+
 		str += " Multi comp transform : " + getMultipleComponenTransform() + "\n";
 		if (spcod_ps != null) {
 			str += " Precincts      : ";
-			for (int i = 0; i < getBlockCount(); i++) {
-				str += (1 << computeBlockWidthExponentOffset(i)) + "x" + (1 << computeBlockHeightExponentOffset(i)) + " ";
+			for (int i = 0; i < getCodeBlockCount(); i++) {
+				str += (1 << getCodeBlockWidthExponentOffset(i)) + "x" + (1 << getCodeBlockHeightExponentOffset(i)) + " ";
 			}
 		}
 		str += "\n";
 		return str;
 	}
 
+	public int getQmfbid() {
+		switch (this.waveletTransformId) {
+			case FilterTypes.W9X7_IRREVERSIBLE:
+				return 0;
+			case FilterTypes.W5X3_REVERSIBLE:
+				return 1;
+			default:
+				throw new IllegalArgumentException("Specified wavelet filter is not JPEG 2000 part I compliant.");
+		}
+	}
+
 	public int getProgressiveOrder() {
 		return this.sgcod_po;
 	}
 
-	public int getBlockCount() {
+	public int getCodeBlockCount() {
 		return this.spcod_ps.length;
 	}
 
-	public int computeBlockWidthExponentOffset(int index) {
+	public int getCodeBlockWidthExponentOffset(int index) {
 		return (spcod_ps[index] & 0x000F);
 	}
 
-	public int computeBlockHeightExponentOffset(int index) {
+	public int getCodeBlockHeightExponentOffset(int index) {
 		return ((spcod_ps[index] & 0x00F0) >> 4);
 	}
 
@@ -184,5 +264,21 @@ public class CODMarkerSegment extends AbstractMarkerSegment {
 
 	public int getNumberOfLevels() {
 		return this.spcod_ndl;
+	}
+
+	public int getCodeBlockWidth() {
+		return (1 << (this.spcod_cw + 2));
+	}
+
+	public int getCodeBlockHeight() {
+		return (1 << (this.spcod_ch + 2));
+	}
+
+	public int getCodingStyle() {
+		return this.scod;
+	}
+
+	public int getCodeBlockStyle() {
+		return this.spcod_cs;
 	}
 }

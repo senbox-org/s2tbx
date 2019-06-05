@@ -1,14 +1,12 @@
 /*
- * $RCSfile: FileFormatBoxes.java,v $
- * $Revision: 1.1 $
- * $Date: 2005/02/11 05:02:10 $
+ * $RCSfile: FileFormatReader.java,v $
+ * $Revision: 1.2 $
+ * $Date: 2005/04/28 01:25:38 $
  * $State: Exp $
  *
- * Class:                   FileFormatMarkers
+ * Class:                   FileFormatReader
  *
- * Description:             Contains definitions of boxes used in jp2 files
- *
- *
+ * Description:             Read J2K file stream
  *
  * COPYRIGHT:
  *
@@ -45,32 +43,15 @@
 package org.esa.s2tbx.lib.openjpeg;
 
 /**
- * Created by jcoravu on 30/4/2019.
+ * Created by jcoravu on 10/5/2019.
  */
-public interface FileFormatBoxes {
+public class FilterTypes {
+    /** W7x9 irreversible filter: 0x00 */
+    public final static int W9X7_IRREVERSIBLE = 0;
 
-    /** JP2 Box Types */
-	public static final int JP2_SIGNATURE_BOX = 0x6a502020;
+    /** W5x3 reversible filter: 0x01 */
+    public final static int W5X3_REVERSIBLE = 1;
 
-	public static final int JP2_SIGNATURE_BOX_CONTENT = 0x0D0A870A; // <CR><LF><0x87><LF> (0x0D0A 870A)
-	
-    public static final int FILE_TYPE_BOX       = 0x66747970;
-
-    public static final int JP2_HEADER_BOX   = 0x6a703268;
-
-    public static final int CONTIGUOUS_CODESTREAM_BOX = 0x6a703263;
-    
-    public static final int INTELLECTUAL_PROPERTY_BOX = 0x64703269;
-    
-    public static final int XML_BOX                   = 0x786d6c20;
-
-    public static final int UUID_BOX                  = 0x75756964;
-
-    public static final int UUID_INFO_BOX             = 0x75696e66;
-
-    /** JPX Box Types */
-    public static final int ASSOCIATION_BOX             = 0x61736f63;
-
-    /** File Type Fields */
-    public static final int FT_BR = 0x6a703220;
+    /** User-defined filter: -1 */
+    public final static int CUSTOM = -1;
 }

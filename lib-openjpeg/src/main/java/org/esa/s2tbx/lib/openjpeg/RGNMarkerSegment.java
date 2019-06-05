@@ -1,14 +1,12 @@
 /*
- * $RCSfile: FileFormatBoxes.java,v $
- * $Revision: 1.1 $
- * $Date: 2005/02/11 05:02:10 $
+ * $RCSfile: FileFormatReader.java,v $
+ * $Revision: 1.2 $
+ * $Date: 2005/04/28 01:25:38 $
  * $State: Exp $
  *
- * Class:                   FileFormatMarkers
+ * Class:                   FileFormatReader
  *
- * Description:             Contains definitions of boxes used in jp2 files
- *
- *
+ * Description:             Read J2K file stream
  *
  * COPYRIGHT:
  *
@@ -44,33 +42,63 @@
  */
 package org.esa.s2tbx.lib.openjpeg;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+
 /**
- * Created by jcoravu on 30/4/2019.
+ * Created by jcoravu on 10/5/2019.
  */
-public interface FileFormatBoxes {
+public class RGNMarkerSegment extends AbstractMarkerSegment {
 
-    /** JP2 Box Types */
-	public static final int JP2_SIGNATURE_BOX = 0x6a502020;
+    private int lrgn;
+    private int crgn;
+    private int srgn;
+    private int sprgn;
 
-	public static final int JP2_SIGNATURE_BOX_CONTENT = 0x0D0A870A; // <CR><LF><0x87><LF> (0x0D0A 870A)
-	
-    public static final int FILE_TYPE_BOX       = 0x66747970;
+    public RGNMarkerSegment() {
+    }
 
-    public static final int JP2_HEADER_BOX   = 0x6a703268;
+    @Override
+    public void readData(DataInputStream jp2FileStream) throws IOException {
+    }
 
-    public static final int CONTIGUOUS_CODESTREAM_BOX = 0x6a703263;
-    
-    public static final int INTELLECTUAL_PROPERTY_BOX = 0x64703269;
-    
-    public static final int XML_BOX                   = 0x786d6c20;
+    public void readData(DataInputStream jp2FileStream, int numComps) throws IOException {
+        // Lrgn (marker length)
+        this.lrgn = jp2FileStream.readUnsignedShort();
 
-    public static final int UUID_BOX                  = 0x75756964;
+        // Read component
+        this.crgn = (numComps < 257) ? jp2FileStream.readUnsignedByte() : jp2FileStream.readUnsignedShort();
+        if (this.crgn >= numComps) {
+            throw new InvalidContiguousCodestreamException("Invalid component " + "index in RGN marker" + this.crgn);
+        }
 
-    public static final int UUID_INFO_BOX             = 0x75696e66;
+        // Read type of RGN.(Srgn)
+        this.srgn = jp2FileStream.readUnsignedByte();
 
-    /** JPX Box Types */
-    public static final int ASSOCIATION_BOX             = 0x61736f63;
+        // Check that we can handle it.
+        if (this.srgn != SRGN_IMPLICIT) {
+            throw new InvalidContiguousCodestreamException("Unknown or unsupported " + "Srgn parameter in ROI " + "marker");
+        }
 
-    /** File Type Fields */
-    public static final int FT_BR = 0x6a703220;
+        // SPrgn
+        this.sprgn = jp2FileStream.readUnsignedByte();
+    }
+
+    @Override
+    public String toString() {
+        String str = "\n --- RGN (" + this.lrgn + " bytes) ---\n";
+        str += " Component : " + this.crgn + "\n";
+        if (this.srgn == 0) {
+            str += " ROI style : Implicit\n";
+        } else {
+            str += " ROI style : Unsupported\n";
+        }
+        str += " ROI shift : " + this.sprgn + "\n";
+        str += "\n";
+        return str;
+    }
+
+    public int getROIShift() {
+        return this.sprgn; // the region of interest
+    }
 }

@@ -1,3 +1,45 @@
+/*
+ * $RCSfile: FileFormatReader.java,v $
+ * $Revision: 1.2 $
+ * $Date: 2005/04/28 01:25:38 $
+ * $State: Exp $
+ *
+ * Class:                   FileFormatReader
+ *
+ * Description:             Read J2K file stream
+ *
+ * COPYRIGHT:
+ *
+ * This software module was originally developed by Raphaël Grosbois and
+ * Diego Santa Cruz (Swiss Federal Institute of Technology-EPFL); Joel
+ * Askelöf (Ericsson Radio Systems AB); and Bertrand Berthelot, David
+ * Bouchard, Félix Henry, Gerard Mozelle and Patrice Onno (Canon Research
+ * Centre France S.A) in the course of development of the JPEG2000
+ * standard as specified by ISO/IEC 15444 (JPEG 2000 Standard). This
+ * software module is an implementation of a part of the JPEG 2000
+ * Standard. Swiss Federal Institute of Technology-EPFL, Ericsson Radio
+ * Systems AB and Canon Research Centre France S.A (collectively JJ2000
+ * Partners) agree not to assert against ISO/IEC and users of the JPEG
+ * 2000 Standard (Users) any of their rights under the copyright, not
+ * including other intellectual property rights, for this software module
+ * with respect to the usage by ISO/IEC and Users of this software module
+ * or modifications thereof for use in hardware or software products
+ * claiming conformance to the JPEG 2000 Standard. Those intending to use
+ * this software module in hardware or software products are advised that
+ * their use may infringe existing patents. The original developers of
+ * this software module, JJ2000 Partners and ISO/IEC assume no liability
+ * for use of this software module or modifications thereof. No license
+ * or right to this software module is granted for non JPEG 2000 Standard
+ * conforming products. JJ2000 Partners have full right to use this
+ * software module for his/her own purpose, assign or donate this
+ * software module to any third party and to inhibit third parties from
+ * using this software module for non JPEG 2000 Standard conforming
+ * products. This copyright notice must be included in all copies or
+ * derivative works of this software module.
+ *
+ * Copyright (c) 1999/2000 JJ2000 Partners.
+ *
+ */
 package org.esa.s2tbx.lib.openjpeg;
 
 import java.io.DataInputStream;
@@ -11,38 +53,32 @@ public class QCDMarkerSegment extends AbstractMarkerSegment {
     private int lqcd;
     private int sqcd;
     private int[][] spqcd;
-    private int qType;
-    private int gb;
 
     public QCDMarkerSegment() {
-        this.qType = -1;
-        this.gb = -1;
     }
 
     public int getQuantizationType() {
-        if (qType == -1) {
-            qType = sqcd & ~(SQCX_GB_MSK << SQCX_GB_SHIFT);
-        }
-        return qType;
+        return this.sqcd & ~(SQCX_GB_MASK << SQCX_GB_SHIFT);
     }
 
     public int getNumGuardBits() {
-        if (gb == -1) {
-            gb = (sqcd >> SQCX_GB_SHIFT) & SQCX_GB_MSK;
-        }
-        return gb;
+        return (this.sqcd >> SQCX_GB_SHIFT) & SQCX_GB_MASK;
     }
 
     public int computeNoQuantizationExponent(int rIndex, int sIndex) {
-        return (spqcd[rIndex][sIndex] >> SQCX_EXP_SHIFT) & SQCX_EXP_MASK;
+        return (this.spqcd[rIndex][sIndex] >> SQCX_EXP_SHIFT) & SQCX_EXP_MASK;
     }
 
     public int computeExponent(int rIndex, int sIndex) {
-        return (spqcd[rIndex][sIndex] >> 11) & 0x1f;
+        return (this.spqcd[rIndex][sIndex] >> 11) & 0x1f;
     }
 
-    public double computeMantissa(int rIndex, int sIndex, int exponent) {
-        return (-1f - ((float) (spqcd[rIndex][sIndex] & 0x07ff)) / (1 << 11)) / (-1 << exponent);
+    private double computeMantissa(int rIndex, int sIndex, int exponent) {
+        return (-1f - ((float) computeMantissa(rIndex, sIndex)) / (1 << 11)) / (-1 << exponent);
+    }
+
+    public int computeMantissa(int rIndex, int sIndex) {
+        return (this.spqcd[rIndex][sIndex] & 0x07ff);
     }
 
     public int getResolutionLevels() {
@@ -55,12 +91,16 @@ public class QCDMarkerSegment extends AbstractMarkerSegment {
 
     @Override
     public String toString() {
-        String str = "\n --- QCDMarkerSegment (" + lqcd + " bytes) ---\n";
-        str += " Quantization. type    : ";
+        String str = "\n --- QCDMarkerSegment (" + this.lqcd + " bytes) ---\n";
+        str += " Quantization type    : ";
         int qt = getQuantizationType();
-        if (qt == SQCX_NO_QUANTIZATION) str += "No quantization \n";
-        else if (qt == SQCX_SCALAR_DERIVED) str += "Scalar derived\n";
-        else if (qt == SQCX_SCALAR_EXPOUNDED) str += "Scalar expounded\n";
+        if (qt == SQCX_NO_QUANTIZATION) {
+            str += "No quantization \n";
+        } else if (qt == SQCX_SCALAR_DERIVED) {
+            str += "Scalar derived\n";
+        } else if (qt == SQCX_SCALAR_EXPOUNDED) {
+            str += "Scalar expounded\n";
+        }
         str += " Guard bits     : " + getNumGuardBits() + "\n";
 
         if (qt == SQCX_NO_QUANTIZATION) {
@@ -111,10 +151,10 @@ public class QCDMarkerSegment extends AbstractMarkerSegment {
         // Sqcd (quantization style)
         this.sqcd = jp2FileStream.readUnsignedByte();
 
-        int qType = this.getQuantizationType();
+        int quantizationType = getQuantizationType();
 
         // If the main header is being read set default value of dequantization spec
-        switch (qType) {
+        switch (quantizationType) {
             case SQCX_NO_QUANTIZATION:
                 break;
             case SQCX_SCALAR_DERIVED:
@@ -125,7 +165,7 @@ public class QCDMarkerSegment extends AbstractMarkerSegment {
                 throw new InvalidContiguousCodestreamException("Unknown or " + "unsupported " + "quantization style " + "in Sqcd field, QCD " + "marker main header");
         }
 
-        if (qType == SQCX_NO_QUANTIZATION) {
+        if (quantizationType == SQCX_NO_QUANTIZATION) {
             int maxrl = numberOfLevels;//((Integer) decSpec.dls.getDefault()).intValue();
             int minb, maxb, hpd;
             int tmp;
@@ -160,7 +200,7 @@ public class QCDMarkerSegment extends AbstractMarkerSegment {
                 }
             } // end for rl
         } else {
-            int maxrl = (qType == SQCX_SCALAR_DERIVED) ? 0 : numberOfLevels/*((Integer) decSpec.dls.getDefault()).intValue()*/;
+            int maxrl = (quantizationType == SQCX_SCALAR_DERIVED) ? 0 : numberOfLevels;
             int minb, maxb, hpd;
             int tmp;
 
