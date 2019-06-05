@@ -960,7 +960,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         targetBand.setDescription("Detector footprint");
         targetBand.setSourceImage(srcBand.getSourceImage());
 
-        Color color = ColorIterator.next();
+        ColorIterator.reset();
 
         // add masks
         for (int i = 0; i < orderedBandNames.length; i++) {
@@ -968,7 +968,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                     "Detector footprint",
                     width, height,
                     String.format("bit_set(%s,%d)", bandName, i),
-                    color,
+                    ColorIterator.next(),
                     0.5);
             ProductUtils.copyGeoCoding(srcBand, mask);
             product.addMask(mask);
@@ -1005,15 +1005,15 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         targetBand.setDescription("Defective Pixel");
         targetBand.setSourceImage(srcBand.getSourceImage());
 
-        Color color = ColorIterator.next();
+        ColorIterator.reset();
 
         //addMasks
         for (int i = 0; i < orderedBandNames.length; i++) {
             Mask mask = Mask.BandMathsType.create(String.format("defective_%s", orderedBandNames[i]),
-                    "Detector footprint",
+                    "Defective pixel",
                     width, height,
                     String.format("bit_set(%s,%d)", bandName, i),
-                    color,
+                    ColorIterator.next(),
                     0.5);
             ProductUtils.copyGeoCoding(srcBand, mask);
             product.addMask(mask);

@@ -9,6 +9,21 @@
       "id": "MUSCATE-31TCJ",
       "relativePath": "S2/MUSCATE/SENTINEL2B_20171127-105827-648_L2A_T31TCJ_D_V1-4/SENTINEL2B_20171127-105827-648_L2A_T31TCJ_D_V1-4_MTD_ALL.xml",
       "description": "Muscate product in an archive"
+    },
+    {
+      "id": "MUSCATE-v18",
+      "relativePath": "S2/MUSCATE/SENTINEL2A_20180822-110418-291_L2A_T31TCJ_D_V1-8/SENTINEL2A_20180822-110418-291_L2A_T31TCJ_D_V1-8_MTD_ALL.xml",
+      "description": "Muscate product v1.8"
+    },
+    {
+      "id": "MUSCATE-v20",
+      "relativePath": "S2/MUSCATE/SENTINEL2A_20190324-104901-455_L2A_T31TCJ_C_V2-0/SENTINEL2A_20190324-104901-455_L2A_T31TCJ_C_V2-0_MTD_ALL.xml",
+      "description": "Muscate product v2.0"
+    },
+    {
+      "id": "MUSCATE-v21",
+      "relativePath": "S2/MUSCATE/SENTINEL2A_20190513-104906-552_L2A_T31TCJ_D_V2-1/SENTINEL2A_20190513-104906-552_L2A_T31TCJ_C_V2-1/SENTINEL2A_20190513-104906-552_L2A_T31TCJ_C_V2-1_MTD_ALL.xml",
+      "description": "Muscate product v2.1"
     }
   ]
 }

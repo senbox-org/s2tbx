@@ -174,8 +174,13 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                         if(Arrays.asList(tempDir.list()).contains(masksFolderName)){
                             masksFolder = this.input.getFile(masksFolderName);
                         }
-                        else if (Arrays.asList(tempDir.list()).contains(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName)){
-                            masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
+                        else if(Arrays.asList(tempDir.list()).contains(parentFolderName)) {
+                            // seek the MASK folder inside the parent folder name
+                            File parentFolder = this.input.getFile(parentFolderName);
+                            if (Arrays.asList(parentFolder.list()).contains(masksFolderName)){
+                                masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
+                            }
+
                         }
                     }
                 }
