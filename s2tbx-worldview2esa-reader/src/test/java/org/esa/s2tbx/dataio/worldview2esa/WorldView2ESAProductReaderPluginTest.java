@@ -28,7 +28,7 @@ public class WorldView2ESAProductReaderPluginTest {
     }
 
     @Test
-    public void deimosReaderIsLoaded() {
+    public void worldViewReaderIsLoaded() {
         final Iterator iterator = ProductIOPlugInManager.getInstance().getReaderPlugIns(WorldView2ESAConstants.FORMAT_NAMES[0]);
         final ProductReaderPlugIn plugIn = (ProductReaderPlugIn) iterator.next();
         assertEquals(WorldView2ESAProductReaderPlugin.class, plugIn.getClass());

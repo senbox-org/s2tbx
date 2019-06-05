@@ -18,13 +18,16 @@
 package org.esa.s2tbx.dataio.jp2;
 
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Locale;
 
 /**
@@ -33,24 +36,40 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class JP2ProductReaderPlugin implements ProductReaderPlugIn {
+
+    public JP2ProductReaderPlugin() {
+    }
+
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
+        Path path = BaseProductReaderPlugIn.convertInputToPath(input);
         DecodeQualification result = DecodeQualification.UNABLE;
-        if (input != null) {
-            File fileInput = null;
-            if (input instanceof String) {
-                fileInput = new File((String) input);
-            } else if (input instanceof File) {
-                fileInput = (File) input;
-            }
-            if (fileInput != null) {
-                final String ext = FileUtils.getExtension(fileInput);
-                if (".jp2".equalsIgnoreCase(ext)) {
-                    result = DecodeQualification.SUITABLE;
-                }
+        String fileName = path.getFileName().toString();
+        int pointIndex = fileName.lastIndexOf(".");
+        if (pointIndex > 0) {
+            String extension = fileName.substring(pointIndex);
+            if (".jp2".equalsIgnoreCase(extension)) {
+                result = DecodeQualification.SUITABLE;
             }
         }
         return result;
+
+//        DecodeQualification result = DecodeQualification.UNABLE;
+//        if (input != null) {
+//            File fileInput = null;
+//            if (input instanceof String) {
+//                fileInput = new File((String) input);
+//            } else if (input instanceof File) {
+//                fileInput = (File) input;
+//            }
+//            if (fileInput != null) {
+//                final String ext = FileUtils.getExtension(fileInput);
+//                if (".jp2".equalsIgnoreCase(ext)) {
+//                    result = DecodeQualification.SUITABLE;
+//                }
+//            }
+//        }
+//        return result;
     }
 
     @Override

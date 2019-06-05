@@ -9,6 +9,7 @@ import org.esa.s2tbx.dataio.ikonos.internal.MosaicMultiLevelSource;
 import org.esa.s2tbx.dataio.ikonos.metadata.BandMetadata;
 import org.esa.s2tbx.dataio.ikonos.metadata.BandMetadataUtil;
 import org.esa.s2tbx.dataio.ikonos.metadata.IkonosMetadata;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -20,11 +21,14 @@ import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.transform.AffineTransform2D;
 import org.esa.snap.core.util.jai.JAIUtils;
+import org.esa.snap.vfs.NioPaths;
 
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,48 +86,63 @@ public class IkonosProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        final IkonosProductReaderPlugin readerPlugin = (IkonosProductReaderPlugin) getReaderPlugIn();
-        final File inputFile = getInputFile();
-        this.productDirectory = readerPlugin.getInput(getInput());
+        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+        VirtualDirEx productDirectoryTemp = VirtualDirEx.build(inputFile, false, true);
         this.tiffProduct = new ArrayList<>();
-        final String productFilePath = this.productDirectory.getBasePath();
-        String fileName;
-        //product file name differs from archive file name
-        if (this.productDirectory.isCompressed()) {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf(IkonosConstants.PRODUCT_FILE_SUFFIX));
-        } else {
-            fileName = productFilePath.substring(productFilePath.lastIndexOf(File.separator) + 1, productFilePath.lastIndexOf("."));
-        }
+        try {
+            File file = productDirectoryTemp.getBaseFile();
 
-        this.metadata = IkonosMetadata.create(this.productDirectory.getFile(fileName + IkonosConstants.METADATA_FILE_SUFFIX).toPath());
-
-        if (metadata != null) {
-
-            this.metadata.unZipImageFiles(this.productDirectory.getFile(fileName + IkonosConstants.ARCHIVE_FILE_EXTENSION).toPath().toString());
-
-            final String dir = metadata.getImageDirectoryPath();
-            final File[] imageDirectoryFileList = new File(dir).listFiles();
-            Matcher matcher = Pattern.compile(IkonosConstants.PATH_ZIP_FILE_NAME_PATTERN).matcher(imageDirectoryFileList[0].getName());
-            String imageDirectoryName = null;
-            while (matcher.find()) {
-                imageDirectoryName = matcher.group();
+            String fileName;
+            //product file name differs from archive file name
+            if (productDirectoryTemp.isCompressed()) {
+                fileName = file.getName().substring(0, file.getName().lastIndexOf(IkonosConstants.PRODUCT_FILE_SUFFIX));
+            } else {
+                fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
             }
 
-            this.metadata.getMetadataComponent().setImageDirectoryName(imageDirectoryName + ".ZIP");
+            this.metadata = IkonosMetadata.create(productDirectoryTemp.getFile(fileName + IkonosConstants.METADATA_FILE_SUFFIX).toPath());
 
-            this.metadata.createBandMetadata();
+            if (metadata != null) {
+                //unzip the necessary files in a temporary directory
+                productDirectory = VirtualDirEx.build(productDirectoryTemp.getFile(fileName + IkonosConstants.ARCHIVE_FILE_EXTENSION).toPath());
+                for (String item : this.productDirectory.listAllFiles()) {
+                    if (item.endsWith(IkonosConstants.IMAGE_METADATA_EXTENSION) ||
+                            item.endsWith(IkonosConstants.IMAGE_EXTENSION) ||
+                            item.endsWith(IkonosConstants.IMAGE_COMMON_METADATA_EXTENSION)) {
+                        productDirectory.getFile(item);
+                        if (metadata.getImageDirectoryPath() == null) {
+                            metadata.setImageDirectoryPath(productDirectory.getTempDir().toString());
+                        }
+                    }
+                }
+                for (String item : this.productDirectory.listAllFiles()) {
+                    if (item.endsWith(IkonosConstants.IMAGE_ARCHIVE_EXTENSION)) {
+                        this.metadata.unGZipImageFiles(this.productDirectory.getFile(item).toPath());
+                    }
+                }
+                final String dir = metadata.getImageDirectoryPath();
+                final File[] imageDirectoryFileList = new File(dir).listFiles();
+                Matcher matcher = Pattern.compile(IkonosConstants.PATH_ZIP_FILE_NAME_PATTERN).matcher(imageDirectoryFileList[0].getName());
+                String imageDirectoryName = null;
+                while (matcher.find()) {
+                    imageDirectoryName = matcher.group();
+                }
 
-            final List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
-            final BandMetadataUtil bUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
-            final int width = bUtil.getMaxNumColumns();
-            final int height = bUtil.getMaxNumLines();
-            this.product = new Product(this.metadata.getProductName(), IkonosConstants.PRODUCT_GENERIC_NAME, width, height);
-            this.product.setStartTime(this.metadata.getProductStartTime());
-            this.product.setEndTime(this.metadata.getProductEndTime());
-            this.product.setDescription(this.metadata.getProductDescription());
-            this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
-            this.product.setFileLocation(inputFile);
-            this.product.setProductReader(this);
+                this.metadata.getMetadataComponent().setImageDirectoryName(imageDirectoryName + ".ZIP");
+
+                this.metadata.createBandMetadata();
+
+                final List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
+                final BandMetadataUtil bUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
+                final int width = bUtil.getMaxNumColumns();
+                final int height = bUtil.getMaxNumLines();
+                this.product = new Product(this.metadata.getProductName(), IkonosConstants.PRODUCT_GENERIC_NAME, width, height);
+                this.product.setStartTime(this.metadata.getProductStartTime());
+                this.product.setEndTime(this.metadata.getProductEndTime());
+                this.product.setDescription(this.metadata.getProductDescription());
+                this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
+                this.product.setFileLocation(inputFile.toFile());
+                this.product.setProductReader(this);
 
             final String dirPath = this.metadata.getImageDirectoryPath();
             final String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
@@ -171,41 +190,44 @@ public class IkonosProductReader extends AbstractProductReader {
                     }
                 }
 
-                final Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
-                targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
-                targetBand.setSpectralWavelength(band.getSpectralWavelength());
-                targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
-                targetBand.setSolarFlux(band.getSolarFlux());
-                targetBand.setUnit(IkonosConstants.BAND_MEASURE_UNIT);
-                targetBand.setNoDataValue(band.getNoDataValue());
-                targetBand.setNoDataValueUsed(true);
-                targetBand.setDescription(band.getDescription());
-                targetBand.setScalingFactor(bandGain);
+                    final Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
+                    targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
+                    targetBand.setSpectralWavelength(band.getSpectralWavelength());
+                    targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
+                    targetBand.setSolarFlux(band.getSolarFlux());
+                    targetBand.setUnit(IkonosConstants.BAND_MEASURE_UNIT);
+                    targetBand.setNoDataValue(band.getNoDataValue());
+                    targetBand.setNoDataValueUsed(true);
+                    targetBand.setDescription(band.getDescription());
+                    targetBand.setScalingFactor(bandGain);
 
-                if (band.getGeoCoding() != null) {
-                    targetBand.setGeoCoding(band.getGeoCoding());
-                } else {
-                    if (width != band.getRasterWidth()) {
-                        final AffineTransform2D transform2D =
-                                new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
-                                                      (float) height / band.getRasterHeight(), 0.0, 0.0);
-                        targetBand.setGeoCoding(addTiePointGridGeo(this.metadata, targetBand));
-                        targetBand.setImageToModelTransform(transform2D);
+                    if (band.getGeoCoding() != null) {
+                        targetBand.setGeoCoding(band.getGeoCoding());
+                    } else {
+                        if (width != band.getRasterWidth()) {
+                            final AffineTransform2D transform2D =
+                                    new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
+                                                          (float) height / band.getRasterHeight(), 0.0, 0.0);
+                            targetBand.setGeoCoding(addTiePointGridGeo(this.metadata, targetBand));
+                            targetBand.setImageToModelTransform(transform2D);
+                        }
                     }
+                    final MosaicMultiLevelSource bandSource =
+                            new MosaicMultiLevelSource(band,
+                                                       band.getRasterWidth(), band.getRasterHeight(),
+                                                       tileSize.width, tileSize.height,
+                                                       levels, band.getGeoCoding() != null ? targetBand.getGeoCoding() != null ?
+                                    Product.findImageToModelTransform(targetBand.getGeoCoding()) :
+                                    Product.findImageToModelTransform(product.getSceneGeoCoding()) :
+                                                               targetBand.getImageToModelTransform());
+                    targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+                    this.product.addBand(targetBand);
                 }
-                final MosaicMultiLevelSource bandSource =
-                        new MosaicMultiLevelSource(band,
-                                                   band.getRasterWidth(), band.getRasterHeight(),
-                                                   tileSize.width, tileSize.height,
-                                                   levels, band.getGeoCoding() != null ? targetBand.getGeoCoding() != null ?
-                                Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                                Product.findImageToModelTransform(product.getSceneGeoCoding()) :
-                                                           targetBand.getImageToModelTransform());
-                targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-                this.product.addBand(targetBand);
             }
+            return this.product;
+        } finally {
+            productDirectoryTemp.close();
         }
-        return this.product;
     }
 
     @Override
@@ -288,10 +310,10 @@ public class IkonosProductReader extends AbstractProductReader {
      * @return inputFile
      * @throws FileNotFoundException
      */
-    private File getInputFile() throws FileNotFoundException {
-        final File inputFile = new File(getInput().toString());
-        if (!inputFile.exists()) {
-            throw new FileNotFoundException(inputFile.getPath());
+    private Path getInputFile() throws FileNotFoundException {
+        final Path inputFile = NioPaths.get(getInput().toString());
+        if (!Files.exists(inputFile)) {
+            throw new FileNotFoundException(inputFile.toString());
         }
 
         return inputFile;

@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -14,12 +14,9 @@ import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,18 +89,18 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         VirtualPath folder = xmlPath.resolveSibling("IMG_DATA");
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
-        if(folder.exists() && folder.isDirectory()) {
+        if (folder.existsAndHasChildren()) {
             VirtualPath[] images;
             try {
                 images = folder.listPaths();
             } catch (IOException e) {
                 images = null;
             }
-            if(images!=null && images.length>0) {
-                for(VirtualPath image : images) {
+            if (images != null && images.length > 0) {
+                for (VirtualPath image : images) {
                     String imageName = image.getFileName().toString();
                     Matcher matcher = pattern.matcher(imageName);
-                    if(matcher.matches()) {
+                    if (matcher.matches()) {
                         characteristics.setDatatakeSensingStartTime(matcher.group(2));
                         break;
                     }
@@ -118,7 +115,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         double toaQuantification = L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION;
         characteristics.setQuantificationValue(toaQuantification);
 
-        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (getFormat(),toaQuantification);
+        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList(getFormat(), toaQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 

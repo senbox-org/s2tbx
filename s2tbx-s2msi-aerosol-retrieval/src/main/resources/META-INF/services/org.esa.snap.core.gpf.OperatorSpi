@@ -1,8 +1,0 @@
-org.esa.s2tbx.s2msi.aerosol.CreateElevationBandOp$Spi
-org.esa.s2tbx.s2msi.aerosol.S2AerosolGapFillingOp$Spi
-org.esa.s2tbx.s2msi.aerosol.S2AerosolMsiPreparationOp$Spi
-org.esa.s2tbx.s2msi.aerosol.S2AerosolOp$Spi
-org.esa.s2tbx.s2msi.aerosol.S2AerosolRetrievalMasterOp$Spi
-org.esa.s2tbx.s2msi.aerosol.S2AerosolUpscaleOp$Spi
-org.esa.s2tbx.s2msi.aerosol.S2AerosolTypeOp$Spi
-org.esa.s2tbx.s2msi.wv.S2WaterVapourRetrievalOp$Spi

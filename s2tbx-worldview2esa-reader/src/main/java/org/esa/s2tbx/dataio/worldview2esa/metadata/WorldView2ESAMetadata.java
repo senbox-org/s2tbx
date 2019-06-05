@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.worldview2esa.metadata;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.VirtualDir;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
@@ -138,6 +139,10 @@ public class WorldView2ESAMetadata extends XmlMetadata {
         return this.imageDirectoryPath;
     }
 
+    public void setImageDirectoryPath(String imageDirectoryPath) {
+        this.imageDirectoryPath = imageDirectoryPath;
+    }
+
     /**
      * Unzip all elements in the zip file containing the tiff images in a temporary directory.
      *
@@ -198,11 +203,25 @@ public class WorldView2ESAMetadata extends XmlMetadata {
         try (InputStream inputStream = Files.newInputStream(path)) {
             WorldView2ESAMetadataParser parser = new WorldView2ESAMetadataParser(WorldView2ESAMetadata.class);
             result = parser.parse(inputStream);
-            result.setPath(path.toString());
+            result.setPath(path);
             result.setFileName(path.getFileName().toString());
         } catch (ParserConfigurationException | SAXException e) {
             log.log(Level.SEVERE, e.getMessage(), e);
         }
+        return result;
+    }
+
+    public static WorldView2ESAMetadata create(final FilePathInputStream filePathInputStream) throws IOException {
+        WorldView2ESAMetadata result = null;
+        try {
+            WorldView2ESAMetadataParser parser = new WorldView2ESAMetadataParser(WorldView2ESAMetadata.class);
+            result = parser.parse(filePathInputStream);
+        } catch (ParserConfigurationException | SAXException e) {
+            throw new IllegalStateException(e);
+        }
+        Path path = filePathInputStream.getPath();
+        result.setPath(path);
+        result.setFileName(path.getFileName().toString());
         return result;
     }
 }

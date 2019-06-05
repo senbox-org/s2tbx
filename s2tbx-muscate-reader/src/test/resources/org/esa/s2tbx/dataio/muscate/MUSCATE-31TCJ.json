@@ -555,8 +555,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_aot_interpolation_R1",
-        "description": "Interpolated AOT pixels mask",
+        "name": "Aux_IA_R1",
+        "description": "Interpolated pixels mask",
         "bandWidth": 10980,
         "bandHeight": 10980,
         "noDataValue": "0.0",
@@ -577,8 +577,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_aot_interpolation_R2",
-        "description": "Interpolated AOT pixels mask",
+        "name": "Aux_IA_R2",
+        "description": "Interpolated pixels mask",
         "bandWidth": 5490,
         "bandHeight": 5490,
         "noDataValue": "0.0",
@@ -1791,373 +1791,373 @@
       {
         "name": "defective_B2",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,255",
-        "description": "Detector footprint"
+        "color": "255,0,0",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B3",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,255",
-        "description": "Detector footprint"
+        "color": "178,0,0",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B4",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,255",
-        "description": "Detector footprint"
+        "color": "0,0,255",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B8",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,255",
-        "description": "Detector footprint"
+        "color": "0,0,178",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B5",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,178",
-        "description": "Detector footprint"
+        "color": "255,0,0",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B6",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,178",
-        "description": "Detector footprint"
+        "color": "178,0,0",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B7",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,178",
-        "description": "Detector footprint"
+        "color": "0,0,255",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,178",
-        "description": "Detector footprint"
+        "color": "0,0,178",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B11",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,178",
-        "description": "Detector footprint"
+        "color": "0,255,0",
+        "description": "Defective pixel"
       },
       {
         "name": "defective_B12",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,178",
-        "description": "Detector footprint"
+        "color": "0,178,0",
+        "description": "Defective pixel"
       },
       {
         "name": "detector_footprint-B02-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,175,175",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B03-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,175,175",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B04-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,175,175",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B08-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,175,175",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B02-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,122,122",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B03-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,122,122",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B04-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,122,122",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B08-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,122,122",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B02-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,255,255",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B03-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,255,255",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B04-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,255,255",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B08-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,255,255",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B02-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,178,178",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B03-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,178,178",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B04-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,178,178",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B08-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,178,178",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B02-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,200,0",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B03-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,200,0",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B04-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,200,0",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B08-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,200,0",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B02-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,140,0",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B03-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,140,0",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B04-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,140,0",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B08-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,140,0",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B02-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B03-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,124",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B04-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,124",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B08-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,124",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B05-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B06-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,124,0",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B07-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,124,0",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B8A-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,124,0",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B11-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,124,0",
+        "color": "0,255,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B12-04",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,124,0",
+        "color": "0,178,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B05-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,124,0",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B06-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,124,0",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B07-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,124,0",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B8A-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,124,0",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B11-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,124,0",
+        "color": "0,255,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B12-05",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,124,0",
+        "color": "0,178,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B05-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,0,124",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B06-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,0,124",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B07-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,0,124",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B8A-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,0,124",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B11-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,0,124",
+        "color": "0,255,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B12-06",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,0,124",
+        "color": "0,178,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B05-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,85,85",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B06-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,85,85",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B07-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,85,85",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B8A-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,85,85",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B11-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,85,85",
+        "color": "0,255,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B12-07",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "124,85,85",
+        "color": "0,178,0",
         "description": "Detector footprint"
       },
       {
@@ -2169,37 +2169,37 @@
       {
         "name": "detector_footprint-B06-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,0",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B07-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,0",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B8A-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,0",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B11-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,0",
+        "color": "0,255,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B12-08",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "255,0,0",
+        "color": "0,178,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B05-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,0",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
@@ -2211,37 +2211,37 @@
       {
         "name": "detector_footprint-B07-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,0",
+        "color": "0,0,255",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B8A-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,0",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B11-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,0",
+        "color": "0,255,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B12-09",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "178,0,0",
+        "color": "0,178,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B05-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,255",
+        "color": "255,0,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B06-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,255",
+        "color": "178,0,0",
         "description": "Detector footprint"
       },
       {
@@ -2253,19 +2253,19 @@
       {
         "name": "detector_footprint-B8A-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,255",
+        "color": "0,0,178",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B11-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,255",
+        "color": "0,255,0",
         "description": "Detector footprint"
       },
       {
         "name": "detector_footprint-B12-10",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-        "color": "0,0,255",
+        "color": "0,178,0",
         "description": "Detector footprint"
       },
       {

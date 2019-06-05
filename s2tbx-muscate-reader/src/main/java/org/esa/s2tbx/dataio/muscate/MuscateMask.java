@@ -12,13 +12,13 @@ public class MuscateMask {
     String format;
     String encoding;
     String endianness;
-    private ArrayList<String> maskFileList = new ArrayList<>(17);
+    private ArrayList<MuscateMaskFile> maskFileList = new ArrayList<>(17);
 
-    public void addMuscateMaskFile(String path) {
-        maskFileList.add(path);
+    public void addMuscateMaskFile(MuscateMaskFile muscateMaskFile) {
+        maskFileList.add(muscateMaskFile);
     }
 
-    public ArrayList<String> getMaskFiles() {
+    public ArrayList<MuscateMaskFile> getMaskFiles() {
         return maskFileList;
     }
 }

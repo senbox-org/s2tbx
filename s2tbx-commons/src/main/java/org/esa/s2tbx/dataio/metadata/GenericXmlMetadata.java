@@ -20,7 +20,9 @@ package org.esa.s2tbx.dataio.metadata;
 import com.bc.ceres.core.Assert;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +49,7 @@ public abstract class GenericXmlMetadata {
     protected int width;
     protected int height;
     protected int numBands;
-    protected String path;
+    protected Path path;
     protected Logger logger;
 
     protected Map<String, List<MetadataAttribute>> attributeMap;
@@ -64,24 +66,27 @@ public abstract class GenericXmlMetadata {
     public static <T extends GenericXmlMetadata> T create(Class<T> clazz, Path inputFile) {
         Assert.notNull(inputFile);
         T result = null;
-        InputStream stream = null;
         try {
-            if (Files.exists(inputFile)) {
-                stream = Files.newInputStream(inputFile, StandardOpenOption.READ);
-                //noinspection unchecked
-                result = (T) XmlMetadataParserFactory.getParser(clazz).parse(stream);
-                result.setPath(inputFile.toAbsolutePath().toString());
-                String metadataProfile = result.getMetadataProfile();
-                if (metadataProfile != null)
-                    result.setName(metadataProfile);
-            }
+            result = loadMetadata(clazz, inputFile);
         } catch (Exception e) {
             Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
-        } finally {
-            if (stream != null) try {
-                stream.close();
-            } catch (IOException e) {
-                // swallowed exception
+        }
+        return result;
+    }
+
+    public static <T extends GenericXmlMetadata> T loadMetadata(Class<T> clazz, Path inputFile)
+                                                                throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+
+        Assert.notNull(inputFile);
+        T result = null;
+        if (Files.exists(inputFile)) {
+            try (InputStream inputStream = Files.newInputStream(inputFile, StandardOpenOption.READ)) {
+                result = (T) XmlMetadataParserFactory.getParser(clazz).parse(inputStream);
+                result.setPath(inputFile);
+                String metadataProfile = result.getMetadataProfile();
+                if (metadataProfile != null) {
+                    result.setName(metadataProfile);
+                }
             }
         }
         return result;
@@ -203,8 +208,8 @@ public abstract class GenericXmlMetadata {
      *
      * @return The path of the metadata file.
      */
-    public String getPath() {
-        return path;
+    public Path getPath() {
+        return this.path;
     }
 
     /**
@@ -212,8 +217,8 @@ public abstract class GenericXmlMetadata {
      *
      * @param value The path of the file.
      */
-    public void setPath(String value) {
-        path = value;
+    public void setPath(Path value) {
+        this.path = value;
     }
 
     /**

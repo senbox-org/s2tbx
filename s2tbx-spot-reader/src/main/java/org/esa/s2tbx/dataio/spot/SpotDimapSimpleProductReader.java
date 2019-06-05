@@ -86,11 +86,11 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
 
         SpotDimapMetadata dimapMetadata = wrappingMetadata.getComponentMetadata(0);
         if (dimapMetadata.getRasterWidth() > 0 && dimapMetadata.getRasterHeight() > 0) {
-            product = createProduct(dimapMetadata.getRasterWidth(), dimapMetadata.getRasterHeight(), dimapMetadata);
+            createProduct(dimapMetadata.getRasterWidth(), dimapMetadata.getRasterHeight(), dimapMetadata);
         }
         for (int fileIndex = 0; fileIndex < wrappingMetadata.getNumComponents(); fileIndex++) {
-            addBands(product, wrappingMetadata.getComponentMetadata(fileIndex), fileIndex);
-            addMetadataMasks(product, wrappingMetadata.getComponentMetadata(fileIndex));
+            addBands(wrappingMetadata.getComponentMetadata(fileIndex), fileIndex);
+            addMetadataMasks(wrappingMetadata.getComponentMetadata(fileIndex));
         }
         product.setModified(false);
 
@@ -98,7 +98,7 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
     }
 
     @Override
-    protected void addBands(Product product, SpotDimapMetadata componentMetadata, int componentIndex) {
+    protected void addBands(SpotDimapMetadata componentMetadata, int componentIndex) {
         String[] bandNames = componentMetadata.getBandNames();
         String[] bandUnits = componentMetadata.getBandUnits();
         int width, height, currentW, currentH;
@@ -113,14 +113,14 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
                     if (fileNames == null || fileNames.length == 0) {
                         throw new InvalidMetadataException("No raster file found in metadata");
                     }
-                    String rasterFileName = componentMetadata.getPath().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), fileNames[0].toLowerCase());
+                    String rasterFileName = componentMetadata.getPath().toString().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), fileNames[0].toLowerCase());
                     File rasterFile = productDirectory.getFile(rasterFileName);
                     GeoTiffProductReader tiffReader = new GeoTiffReaderEx(getReaderPlugIn());
                     logger.info("Read product nodes");
                     Product tiffProduct = tiffReader.readProductNodes(rasterFile, null);
                     if (tiffProduct != null) {
-                        if (product == null) {
-                            product = createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), wrappingMetadata.getComponentMetadata(0));
+                        if (this.product == null) {
+                            createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), wrappingMetadata.getComponentMetadata(0));
                         }
                         MetadataElement tiffMetadata = tiffProduct.getMetadataRoot();
                         if (tiffMetadata != null) {
@@ -177,7 +177,7 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
     }
 
     @Override
-    protected void addMetadataMasks(Product product, SpotDimapMetadata componentMetadata) {
+    protected void addMetadataMasks(SpotDimapMetadata componentMetadata) {
         logger.info("Create masks");
         int noDataValue,saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {

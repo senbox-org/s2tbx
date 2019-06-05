@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.muscate;
 
+import java.awt.*;
 import java.io.File;
 
 /**
@@ -30,6 +31,7 @@ public class MuscateConstants {
     public static final String PATH_METADATA_PROFILE = "/Muscate_Metadata_Document/Metadata_Identification/METADATA_PROFILE";
     public static final String PATH_ACQUISITION_DATE = "/Muscate_Metadata_Document/Product_Characteristics/ACQUISITION_DATE";
     public static final String PATH_DESCRIPTION = "/Muscate_Metadata_Document/Dataset_Identification/DESCRIPTION";
+    public static final String PATH_PRODUCT_VERSION = "/Muscate_Metadata_Document/Product_Characteristics/PRODUCT_VERSION";
     public static final String PATH_NROWS = "/Muscate_Metadata_Document/Geoposition_Informations/Geopositioning/Group_Geopositioning_List/Group_Geopositioning/NROWS";
     public static final String PATH_NCOLS = "/Muscate_Metadata_Document/Geoposition_Informations/Geopositioning/Group_Geopositioning_List/Group_Geopositioning/NCOLS";
     public static final String PATH_IMAGE_FILE_LIST = "/Muscate_Metadata_Document/Product_Organisation/Muscate_Product/Image_List/Image/Image_File_List";
@@ -87,7 +89,47 @@ public class MuscateConstants {
             ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D]_V[0-9|-]*[A-Z|_]*\\.(xml|XML|zip|ZIP)"
     };
 
-    public static final String XML_PATTERN = ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D].*\\.xml";
+    public static final String XML_PATTERN = ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D].*MTD_ALL\\.xml";
     public static final String QUICKLOOK_PATTERN = ".*[/\\\\]?[A-Z|0-9|-]+_[0-9]{8}-[0-9]{6}-[0-9]{3}_[A-Z|0-9|-]+_[A-Z|0-9|-]*_[C|H|D].*\\.jpg";
     public static final String REFLECTANCE_PATTERN = "([A-Z|0-9|-]+)_([0-9]{8}-[0-9]{6}-[0-9]{3})_([A-Z|0-9|-]+)_([A-Z|0-9|-]+)_([C|H|D])_([A-Z|0-9|-]+)_([A-Z|0-9|-]+)_(B[A|0-9]+)\\.tif";
+
+    public enum GEOPHYSICAL_BIT {
+        Water(0, "MG2_Water_Mask_", "Water mask", Color.red),
+        Cloud(1,"MG2_Cloud_Mask_All_Cloud_","Result of a 'logical OR' for all the cloud masks",Color.red.darker()),
+        Snow(2,"MG2_Snow_Mask_","Snow mask",Color.blue),
+        Cloud_Shadow(3,"MG2_Shadow_Mask_Of_Cloud_","Shadow masks of cloud",Color.blue.darker()),
+        Topography_Shadow(4,"MG2_Topographical_Shadows_Mask_","Topographical shadows mask",Color.green),
+        Hidden_Surface(5,"MG2_Hidden_Areas_Mask_","Hidden areas mask",Color.green.darker()),
+        Sun_Too_Low(6,"MG2_Sun_Too_Low_Mask_","Sun too low mask",Color.yellow),
+        Tangent_Sun(7,"MG2_Tangent_Sun_Mask_","Tangent sun mask",Color.yellow.darker());
+
+        private int bit;
+        private String prefixName = null;
+        private String description = null;
+        private Color color = null;
+
+        GEOPHYSICAL_BIT(int bit, String prefix, String description, Color color) {
+            this.bit = bit;
+            prefixName = new String(prefix);
+            this.description = new String(description);
+            this.color = color;
+        }
+
+        public int getBit() {
+            return bit;
+        }
+
+        public String getPrefixName() {
+            return prefixName;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public Color getColor() {
+            return color;
+        }
+    }
+
 }

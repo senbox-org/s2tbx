@@ -1,10 +1,8 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Created by obarrile on 14/06/2016.
@@ -26,7 +24,7 @@ public class L2aUtils {
 
         if (paths != null) {
             for (VirtualPath imgData : paths) {
-                if (imgData.isDirectory()) {
+                if (imgData.existsAndHasChildren()) {
                     if (imgData.getFileName().toString().equals("R" + specificFolder)) {
                         return true;
                     }
@@ -51,7 +49,7 @@ public class L2aUtils {
 
         if (paths != null) {
             for (VirtualPath granule : paths) {
-                if (granule.isDirectory()) {
+                if (granule.existsAndHasChildren()) {
 
                     VirtualPath internalGranuleFolder = granule.resolve("IMG_DATA");
                     VirtualPath[] files2 ;
@@ -62,7 +60,7 @@ public class L2aUtils {
                     }
                     if (files2 != null) {
                         for (VirtualPath imgData : files2) {
-                            if (imgData.isDirectory()) {
+                            if (imgData.existsAndHasChildren()) {
                                 if (imgData.getFileName().toString().equals("R" + specificFolder)) {
                                     return true;
                                 }

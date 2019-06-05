@@ -555,8 +555,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_aot_interpolation_R1",
-        "description": "Interpolated AOT pixels mask",
+        "name": "Aux_IA_R1",
+        "description": "Interpolated pixels mask",
         "bandWidth": 10980,
         "bandHeight": 10980,
         "noDataValue": "0.0",
@@ -577,8 +577,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_aot_interpolation_R2",
-        "description": "Interpolated AOT pixels mask",
+        "name": "Aux_IA_R2",
+        "description": "Interpolated pixels mask",
         "bandWidth": 5490,
         "bandHeight": 5490,
         "noDataValue": "0.0",
@@ -643,8 +643,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_Edge_R1",
-        "description": "Edge mask",
+        "name": "Aux_Mask_MG2_R1",
+        "description": "Geophysical mask of level 2, made of 1 band coded over 8 useful bits",
         "bandWidth": 10980,
         "bandHeight": 10980,
         "noDataValue": "0.0",
@@ -665,8 +665,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_Edge_R2",
-        "description": "Edge mask",
+        "name": "Aux_Mask_MG2_R2",
+        "description": "Geophysical mask of level 2, made of 1 band coded over 8 useful bits",
         "bandWidth": 5490,
         "bandHeight": 5490,
         "noDataValue": "0.0",
@@ -677,7 +677,7 @@
           {
             "x": 1000,
             "y": 3801,
-            "value": 0.0
+            "value": 64.0
           },
           {
             "x": 3252,
@@ -687,8 +687,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_Saturation_R1",
-        "description": "saturation mask coded over 8 bits, 1 bit per spectral band (number of useful bits = number of spectral bands)",
+        "name": "Aux_Mask_Edge_R1",
+        "description": "Edge mask",
         "bandWidth": 10980,
         "bandHeight": 10980,
         "noDataValue": "0.0",
@@ -709,8 +709,8 @@
         ]
       },
       {
-        "name": "Aux_Mask_Saturation_R2",
-        "description": "saturation mask coded over 8 bits, 1 bit per spectral band (number of useful bits = number of spectral bands)",
+        "name": "Aux_Mask_Edge_R2",
+        "description": "Edge mask",
         "bandWidth": 5490,
         "bandHeight": 5490,
         "noDataValue": "0.0",
@@ -731,6 +731,50 @@
         ]
       },
       {
+        "name": "Aux_Mask_Saturation_R1",
+        "description": "saturation mask coded over 8 bits, 1 bit per spectral band (number of useful bits = number of spectral bands)",
+        "bandWidth": 10980,
+        "bandHeight": 10980,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 6008,
+            "y": 1282,
+            "value": 0.0
+          },
+          {
+            "x": 2138,
+            "y": 6160,
+            "value": 0.0
+          }
+        ]
+      },
+      {
+        "name": "Aux_Mask_Saturation_R2",
+        "description": "saturation mask coded over 8 bits, 1 bit per spectral band (number of useful bits = number of spectral bands)",
+        "bandWidth": 5490,
+        "bandHeight": 5490,
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 2514,
+            "y": 707,
+            "value": 0.0
+          },
+          {
+            "x": 4551,
+            "y": 3144,
+            "value": 0.0
+          }
+        ]
+      },
+      {
         "name": "sun_zenith",
         "description": "Sun zenith angles",
         "bandWidth": 23,
@@ -742,14 +786,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 12,
-            "y": 2,
-            "value": 63.4219
+            "x": 2,
+            "y": 15,
+            "value": 63.0346
           },
           {
-            "x": 4,
-            "y": 12,
-            "value": 63.1289
+            "x": 16,
+            "y": 10,
+            "value": 63.0156
           }
         ]
       },
@@ -765,14 +809,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 10,
-            "y": 2,
-            "value": 159.572
+            "x": 3,
+            "y": 1,
+            "value": 159.122
           },
           {
             "x": 19,
-            "y": 13,
-            "value": 160.086
+            "y": 6,
+            "value": 160.133
           }
         ]
       },
@@ -788,65 +832,19 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2,
-            "y": 15,
-            "value": "NaN"
+            "x": 13,
+            "y": 22,
+            "value": 7.20286
           },
           {
-            "x": 16,
-            "y": 10,
-            "value": 7.07214
+            "x": 17,
+            "y": 0,
+            "value": 7.53584
           }
         ]
       },
       {
         "name": "view_azimuth_B2",
-        "description": "Viewing azimuth angles",
-        "bandWidth": 23,
-        "bandHeight": 23,
-        "geophysicalUnit": "°",
-        "noDataValue": "NaN",
-        "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
-        "spectralBandwidth": "0.0",
-        "expectedPixels": [
-          {
-            "x": 3,
-            "y": 1,
-            "value": "NaN"
-          },
-          {
-            "x": 19,
-            "y": 6,
-            "value": 109.578
-          }
-        ]
-      },
-      {
-        "name": "view_zenith_B3",
-        "description": "Viewing zenith angles",
-        "bandWidth": 23,
-        "bandHeight": 23,
-        "geophysicalUnit": "°",
-        "noDataValue": "NaN",
-        "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
-        "spectralBandwidth": "0.0",
-        "expectedPixels": [
-          {
-            "x": 13,
-            "y": 22,
-            "value": 7.23027
-          },
-          {
-            "x": 17,
-            "y": 0,
-            "value": 7.5617
-          }
-        ]
-      },
-      {
-        "name": "view_azimuth_B3",
         "description": "Viewing azimuth angles",
         "bandWidth": 23,
         "bandHeight": 23,
@@ -864,7 +862,53 @@
           {
             "x": 7,
             "y": 4,
-            "value": 107.261
+            "value": 105.786
+          }
+        ]
+      },
+      {
+        "name": "view_zenith_B3",
+        "description": "Viewing zenith angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 6,
+            "y": 20,
+            "value": 10.0959
+          },
+          {
+            "x": 22,
+            "y": 1,
+            "value": 5.52664
+          }
+        ]
+      },
+      {
+        "name": "view_azimuth_B3",
+        "description": "Viewing azimuth angles",
+        "bandWidth": 23,
+        "bandHeight": 23,
+        "geophysicalUnit": "°",
+        "noDataValue": "NaN",
+        "noDataValueUsed": "true",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+          {
+            "x": 18,
+            "y": 11,
+            "value": 112.193
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "value": "NaN"
           }
         ]
       },
@@ -881,13 +925,13 @@
         "expectedPixels": [
           {
             "x": 6,
-            "y": 20,
-            "value": 10.1181
+            "y": 13,
+            "value": 10.7145
           },
           {
-            "x": 22,
-            "y": 1,
-            "value": 5.56898
+            "x": 21,
+            "y": 3,
+            "value": 5.79236
           }
         ]
       },
@@ -903,14 +947,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 18,
-            "y": 11,
-            "value": 114.532
+            "x": 2,
+            "y": 3,
+            "value": "NaN"
           },
           {
-            "x": 1,
-            "y": 8,
-            "value": "NaN"
+            "x": 20,
+            "y": 2,
+            "value": 114.59
           }
         ]
       },
@@ -926,14 +970,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 6,
-            "y": 13,
-            "value": 10.7283
+            "x": 8,
+            "y": 20,
+            "value": 9.38627
           },
           {
-            "x": 21,
-            "y": 3,
-            "value": 5.81921
+            "x": 13,
+            "y": 13,
+            "value": 8.05872
           }
         ]
       },
@@ -949,14 +993,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 2,
-            "y": 3,
-            "value": "NaN"
+            "x": 7,
+            "y": 7,
+            "value": 109.559
           },
           {
-            "x": 20,
-            "y": 2,
-            "value": 115.863
+            "x": 8,
+            "y": 19,
+            "value": 95.803
           }
         ]
       },
@@ -972,14 +1016,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 8,
-            "y": 20,
-            "value": 9.40709
+            "x": 7,
+            "y": 15,
+            "value": 10.1909
           },
           {
-            "x": 13,
-            "y": 13,
-            "value": 8.08205
+            "x": 14,
+            "y": 15,
+            "value": 7.52779
           }
         ]
       },
@@ -995,14 +1039,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 7,
-            "y": 7,
-            "value": 110.301
+            "x": 12,
+            "y": 2,
+            "value": 94.975
           },
           {
-            "x": 8,
-            "y": 19,
-            "value": 94.9371
+            "x": 10,
+            "y": 18,
+            "value": 94.5156
           }
         ]
       },
@@ -1018,14 +1062,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 7,
-            "y": 15,
-            "value": 10.2096
+            "x": 18,
+            "y": 20,
+            "value": 5.59381
           },
           {
-            "x": 14,
-            "y": 15,
-            "value": 7.55484
+            "x": 0,
+            "y": 16,
+            "value": "NaN"
           }
         ]
       },
@@ -1041,14 +1085,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 12,
-            "y": 2,
-            "value": 94.112
+            "x": 20,
+            "y": 13,
+            "value": 88.6631
           },
           {
-            "x": 10,
-            "y": 18,
-            "value": 93.5977
+            "x": 14,
+            "y": 20,
+            "value": 116.44
           }
         ]
       },
@@ -1064,14 +1108,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 18,
-            "y": 20,
-            "value": 5.43754
+            "x": 22,
+            "y": 7,
+            "value": 4.99462
           },
           {
-            "x": 0,
-            "y": 16,
-            "value": "NaN"
+            "x": 8,
+            "y": 0,
+            "value": 11.0164
           }
         ]
       },
@@ -1087,14 +1131,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 20,
+            "x": 19,
             "y": 13,
-            "value": 97.439
+            "value": 97.7835
           },
           {
-            "x": 14,
-            "y": 20,
-            "value": 109.822
+            "x": 13,
+            "y": 9,
+            "value": 98.991
           }
         ]
       },
@@ -1110,14 +1154,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 22,
-            "y": 7,
-            "value": 5.20506
+            "x": 9,
+            "y": 22,
+            "value": 8.90008
           },
           {
-            "x": 8,
-            "y": 0,
-            "value": 11.1068
+            "x": 5,
+            "y": 16,
+            "value": 10.906
           }
         ]
       },
@@ -1133,14 +1177,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 19,
-            "y": 13,
-            "value": 88.2128
+            "x": 21,
+            "y": 6,
+            "value": 87.8136
           },
           {
-            "x": 13,
-            "y": 9,
-            "value": 92.3644
+            "x": 7,
+            "y": 19,
+            "value": 93.4976
           }
         ]
       },
@@ -1156,14 +1200,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 9,
-            "y": 22,
-            "value": 8.84568
+            "x": 7,
+            "y": 12,
+            "value": 10.4441
           },
           {
-            "x": 5,
-            "y": 16,
-            "value": 10.8683
+            "x": 8,
+            "y": 18,
+            "value": 9.5734
           }
         ]
       },
@@ -1179,14 +1223,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 21,
-            "y": 6,
-            "value": 90.8935
+            "x": 12,
+            "y": 5,
+            "value": 94.9714
           },
           {
-            "x": 7,
-            "y": 19,
-            "value": 95.3014
+            "x": 2,
+            "y": 16,
+            "value": "NaN"
           }
         ]
       },
@@ -1202,14 +1246,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 7,
-            "y": 12,
-            "value": 10.4893
+            "x": 16,
+            "y": 18,
+            "value": 6.5879
           },
           {
-            "x": 8,
-            "y": 18,
-            "value": 9.62966
+            "x": 19,
+            "y": 1,
+            "value": 6.87199
           }
         ]
       },
@@ -1225,14 +1269,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 12,
+            "x": 19,
             "y": 5,
-            "value": 92.8553
+            "value": 119.509
           },
           {
-            "x": 2,
-            "y": 16,
-            "value": "NaN"
+            "x": 15,
+            "y": 21,
+            "value": 118.957
           }
         ]
       },
@@ -1248,14 +1292,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 16,
-            "y": 18,
-            "value": 6.487075
+            "x": 6,
+            "y": 19,
+            "value": 10.22048
           },
           {
-            "x": 19,
-            "y": 1,
-            "value": 6.7759523
+            "x": 8,
+            "y": 8,
+            "value": 10.38619
           }
         ]
       },
@@ -1271,14 +1315,14 @@
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
-            "x": 19,
-            "y": 5,
-            "value": 115.21999
+            "x": 22,
+            "y": 15,
+            "value": 89.80114
           },
           {
-            "x": 15,
-            "y": 21,
-            "value": 114.77049
+            "x": 16,
+            "y": 9,
+            "value": 113.6957
           }
         ]
       }
@@ -1295,6 +1339,342 @@
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "0,0,255",
         "description": "Interpolated AOT pixels mask"
+      },
+      {
+        "name": "cloud_mask_all_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
       },
       {
         "name": "cloud_mask_all_R1",
@@ -1393,6 +1773,1110 @@
         "description": "Cloud mask identified with the cirrus spectral band"
       },
       {
+        "name": "cloud_mask_all_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "cloud_mask_all_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Result of a 'logical OR' for all the cloud and shadow maks"
+      },
+      {
+        "name": "cloud_mask_all_cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "cloud_mask_refl_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Cloud mask identified by a reflectance threshold"
+      },
+      {
+        "name": "cloud_mask_refl_var_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Cloud mask identified by a threshold on reflectance variance"
+      },
+      {
+        "name": "cloud_mask_extension_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Cloud mask identified by the extension of cloud masks"
+      },
+      {
+        "name": "cloud_mask_shadow_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Shadow mask of clouds inside the image"
+      },
+      {
+        "name": "cloud_mask_sahdvar_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Shadow mask of clouds outside the image"
+      },
+      {
+        "name": "cloud_mask_cirrus_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Cloud mask identified with the cirrus spectral band"
+      },
+      {
+        "name": "MG2_Water_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R1",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
+        "name": "MG2_Water_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,0,0",
+        "description": "Water mask"
+      },
+      {
+        "name": "MG2_Cloud_Mask_All_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,0,0",
+        "description": "Result of a 'logical OR' for all the cloud masks"
+      },
+      {
+        "name": "MG2_Snow_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,255",
+        "description": "Snow mask"
+      },
+      {
+        "name": "MG2_Shadow_Mask_Of_Cloud_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,0,178",
+        "description": "Shadow masks of cloud"
+      },
+      {
+        "name": "MG2_Topographical_Shadows_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,255,0",
+        "description": "Topographical shadows mask"
+      },
+      {
+        "name": "MG2_Hidden_Areas_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "0,178,0",
+        "description": "Hidden areas mask"
+      },
+      {
+        "name": "MG2_Sun_Too_Low_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "255,255,0",
+        "description": "Sun too low mask"
+      },
+      {
+        "name": "MG2_Tangent_Sun_Mask_R2",
+        "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+        "color": "178,178,0",
+        "description": "Tangent sun mask"
+      },
+      {
         "name": "edge_mask_R1",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "0,255,0",
@@ -1467,44 +2951,44 @@
     ],
     "metadata": [
       {
-        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Global_Index_List/QUALITY_INDEX[4]",
-        "value": "3"
+        "path": "Metadata/Dataset_Identification/DESCRIPTION",
+        "value": "Correspond à la description du produit nommé SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0 "
       },
       {
-        "path": "Metadata/Geoposition_Informations/Coordinate_Reference_System/Horizontal_Coordinate_System/HORIZONTAL_CS_TYPE",
-        "value": "PROJECTED"
+        "path": "Metadata/Radiometric_Informations/Spectral_Band_Informations_List/Spectral_Band_Informations[10]/Calibration_Coefficients_Lists/Native_Coefficients_List/COEFFICIENT",
+        "value": "8.56639325069141"
       },
       {
-        "path": "Metadata/Geometric_Informations/Angles_Grids_List/Viewing_Incidence_Angles_Grids_List/Band_Viewing_Incidence_Angles_Grids_List[9]/Viewing_Incidence_Angles_Grids[11]/Azimuth/Values_List/VALUES[12]",
-        "value": "NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN"
+        "path": "Metadata/Geoposition_Informations/Raster_CS/PIXEL_ORIGIN",
+        "value": "0"
       },
       {
-        "path": "Metadata/Geometric_Informations/Angles_Grids_List/Viewing_Incidence_Angles_Grids_List/Band_Viewing_Incidence_Angles_Grids_List/Viewing_Incidence_Angles_Grids[9]/Azimuth/Values_List/VALUES",
-        "value": "NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN"
+        "path": "Metadata/Radiometric_Informations/Spectral_Band_Informations_List/Spectral_Band_Informations/Calibration_Coefficients_Lists/Native_Coefficients_List/COEFFICIENT",
+        "value": "4.07100425833412"
       },
       {
-        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Source_Product/PRODUCTION_DATE",
-        "value": "2016-05-10T11:16:58.098898Z"
+        "path": "Metadata/Dataset_Identification/DESCRIPTION",
+        "value": "Correspond à la description du produit nommé SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0 "
       },
       {
-        "path": "Metadata/Geoposition_Informations/Geopositioning/Global_Geopositioning/Point[2]/LAT",
-        "value": "45.12267188"
+        "path": "Metadata/Metadata_Identification/METADATA_FORMAT",
+        "value": "METADATA_MUSCATE"
       },
       {
         "path": "Metadata/Radiometric_Informations/Special_Values_List/SPECIAL_VALUE[2]",
         "value": "0"
       },
       {
-        "path": "Metadata/Production_Informations/Processing_Jobs_List/Job[3]/Parameter_List/Parameter/NATURE",
-        "value": "PARAM_CORRATMO"
+        "path": "Metadata/Dataset_Identification/AUTHORITY",
+        "value": "THEIA"
       },
       {
-        "path": "Metadata/Radiometric_Informations/Spectral_Band_Informations_List/Spectral_Band_Informations[6]/Calibration_Coefficients_Lists/Native_Coefficients_List/COEFFICIENT",
-        "value": "4.88652814148193"
+        "path": "Metadata/Production_Informations/Processing_Jobs_List/Job[2]/Products_List/Outputs_List/PRODUCT/ACQUISITION_DATE",
+        "value": "2016-02-05T10:35:56.319Z"
       },
       {
-        "path": "Metadata/Quality_Informations/Current_Product/Product_Quality_List/Product_Quality/Global_Index_List/QUALITY_INDEX",
-        "value": "16"
+        "path": "Metadata/Geometric_Informations/Angles_Grids_List/Viewing_Incidence_Angles_Grids_List/Band_Viewing_Incidence_Angles_Grids_List[11]/Viewing_Incidence_Angles_Grids[9]/Azimuth/Values_List/VALUES[13]",
+        "value": "NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN"
       }
     ]
   }

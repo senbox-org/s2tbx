@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
-import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -17,8 +17,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,7 +29,6 @@ import java.util.List;
 
 public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cProductMetadata {
 
-    HashMap<String,String> namingItems;
     private static class L1cProductMetadataPSD13Parser extends XmlMetadataParser<L1cProductMetadataPSD13> {
 
         public L1cProductMetadataPSD13Parser(Class metadataFileClass) {
@@ -48,21 +45,17 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
 
     public static L1cProductMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
+
         L1cProductMetadataPSD13 result = null;
-        InputStream stream = null;
-        try {
-            if (path.exists()) {
-                stream = path.getInputStream();
+        if (path.exists()) {
+            try (InputStream inputStream = path.getInputStream()) {
                 L1cProductMetadataPSD13Parser parser = new L1cProductMetadataPSD13Parser(L1cProductMetadataPSD13.class);
-                result = parser.parse(stream);
+                result = parser.parse(inputStream);
                 result.setName("Level-1C_User_Product");
             }
-        } finally {
-            IOUtils.closeQuietly(stream);
         }
         return result;
     }
-
 
     public L1cProductMetadataPSD13(String name) {
         super(name);
