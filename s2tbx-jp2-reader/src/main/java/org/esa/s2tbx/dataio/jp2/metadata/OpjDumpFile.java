@@ -27,6 +27,7 @@ import org.esa.s2tbx.lib.openjpeg.ContiguousCodestreamBox;
 import org.esa.s2tbx.lib.openjpeg.IMarkers;
 import org.esa.s2tbx.lib.openjpeg.JP2FileReader;
 import org.esa.s2tbx.lib.openjpeg.QCDMarkerSegment;
+import org.esa.s2tbx.lib.openjpeg.RGNMarkerSegment;
 import org.esa.s2tbx.lib.openjpeg.SIZMarkerSegment;
 import org.esa.snap.core.datamodel.MetadataElement;
 
@@ -74,6 +75,12 @@ public class OpjDumpFile {
         SIZMarkerSegment sizMarkerSegment = contiguousCodestreamBox.getSiz();
         CODMarkerSegment codMarkerSegment = contiguousCodestreamBox.getCod();
         QCDMarkerSegment qcdMarkerSegment = contiguousCodestreamBox.getQcd();
+        RGNMarkerSegment rgnMarkerSegment = contiguousCodestreamBox.getRgn();
+
+        int roiShift = (rgnMarkerSegment == null) ? 0 : rgnMarkerSegment.getROIShift();
+        String codingStyleInHexa = "0x" + Integer.toHexString(codMarkerSegment.getCodingStyle());
+        String progressiveOrderInHexa = "0x" + Integer.toHexString(codMarkerSegment.getProgressiveOrder());
+        int qmfbid = codMarkerSegment.getQmfbid();
 
         this.imageInfo = new ImageInfo();
         this.imageInfo.setX0(sizMarkerSegment.getImageLeftX());
@@ -99,25 +106,52 @@ public class OpjDumpFile {
         this.codeStreamInfo.setNumTilesY(sizMarkerSegment.computeNumTilesY());
         this.codeStreamInfo.setNumLayers(codMarkerSegment.getNumberOfLayers());
         this.codeStreamInfo.setMct(codMarkerSegment.getMultipleComponenTransform());
+        this.codeStreamInfo.setCsty(codingStyleInHexa);
+        this.codeStreamInfo.setPrg(progressiveOrderInHexa);
 
         for (int i = 0; i < sizMarkerSegment.getNumComps(); i++) {
             CodeStreamInfo.TileComponentInfo tcInfo = new CodeStreamInfo.TileComponentInfo();
             tcInfo.setNumResolutions(codMarkerSegment.getNumberOfLevels() + 1);
-            for (int k = 0; k < codMarkerSegment.getBlockCount(); k++) {
-                tcInfo.addPreccInt(codMarkerSegment.computeBlockWidthExponentOffset(k), codMarkerSegment.computeBlockHeightExponentOffset(k));
+            tcInfo.setCodeBlockSty(codMarkerSegment.getCodeBlockStyle());
+            tcInfo.setCodeBlockWidth(codMarkerSegment.getCodeBlockWidth());
+            tcInfo.setCodeBlockHeight(codMarkerSegment.getCodeBlockHeight());
+            tcInfo.setQntsty(Integer.toString(qcdMarkerSegment.getQuantizationType()));
+            tcInfo.setNumGBits(qcdMarkerSegment.getNumGuardBits());
+            tcInfo.setRoiShift(roiShift);
+            tcInfo.setCsty(codingStyleInHexa);
+            tcInfo.setQmfbid(qmfbid);
+
+            for (int k = 0; k < codMarkerSegment.getCodeBlockCount(); k++) {
+                tcInfo.addPreccInt(codMarkerSegment.getCodeBlockWidthExponentOffset(k), codMarkerSegment.getCodeBlockHeightExponentOffset(k));
             }
             if (qcdMarkerSegment.getQuantizationType() == IMarkers.SQCX_NO_QUANTIZATION) {
                 for (int r = 0; r < qcdMarkerSegment.getResolutionLevels(); r++) {
                     for (int s = 0; s < qcdMarkerSegment.getSubbandsAtResolutionLevel(r); s++) {
-                        tcInfo.addStepSize(0, qcdMarkerSegment.computeNoQuantizationExponent(r, s));
+                        boolean compute = false;
+                        if (r == 0 && s == 0) {
+                            compute = true;
+                        } else if ( r != 0 && s > 0) {
+                            compute = true;
+                        }
+                        if (compute) {
+                            tcInfo.addStepSize(0, qcdMarkerSegment.computeNoQuantizationExponent(r, s));
+                        }
                     }
                 }
             } else {
                 for (int r = 0; r < qcdMarkerSegment.getResolutionLevels(); r++) {
                     for (int s = 0; s < qcdMarkerSegment.getSubbandsAtResolutionLevel(r); s++) {
-                        int exponent = qcdMarkerSegment.computeExponent(r, s);
-                        int mantissa = (int) qcdMarkerSegment.computeMantissa(r, s, exponent);
-                        tcInfo.addStepSize(mantissa, exponent);
+                        boolean compute = false;
+                        if (r == 0 && s == 0) {
+                            compute = true;
+                        } else if ( r != 0 && s > 0) {
+                            compute = true;
+                        }
+                        if (compute) {
+                            int exponent = qcdMarkerSegment.computeExponent(r, s);
+                            int mantissa = qcdMarkerSegment.computeMantissa(r, s);
+                            tcInfo.addStepSize(mantissa, exponent);
+                        }
                     }
                 }
             }
@@ -366,6 +400,4 @@ public class OpjDumpFile {
         }
         this.codeStreamInfo.addComponentTileInfo(tcInfo);
     }
-
-
 }
