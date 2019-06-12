@@ -167,7 +167,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             if (inputVirtualPath.exists()) {
                 this.product = buildMosaicProduct(inputVirtualPath);
 
-                this.product.setFileLocation(inputVirtualPath.getVirtualDir().getBaseFile());
+                this.product.setFileLocation(inputVirtualPath.getFilePath().getPath().toFile());
 
                 Path qlFile = getQuickLookFile(inputVirtualPath);
                 if (qlFile != null) {
