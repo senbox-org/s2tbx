@@ -1,7 +1,7 @@
 <operator>
-  <name>Sen2Cor v2.5.5</name>
+  <name>Sen2Cor255</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
-  <alias>Sen2Cor v2.5.5</alias>
+  <alias>Sen2Cor255</alias>
   <label>SEN2COR</label>
   <version>255</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
@@ -12,7 +12,7 @@
   <menuLocation>Menu/Optical/Thematic Land Processing/Sen2Cor Processor</menuLocation>
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
-  <mainToolFileLocation>$SEN2COR_BIN\$SEN2COR_EXE</mainToolFileLocation>
+  <mainToolFileLocation>$SEN2COR_BIN/$SEN2COR_EXE</mainToolFileLocation>
   <workingDir>$SEN2COR_HOME</workingDir>
   <template type="file">
     <file>Sen2Cor-template.vm</file>
@@ -25,11 +25,15 @@
       <value>$USER_HOME/documents/sen2cor</value>
       <isShared>false</isShared>
     </variable>
-    <variable>
+    <osvariable>
       <key>SEN2COR_BIN</key>
       <value></value>
-      <isShared>true</isShared>
-    </variable>
+      <isShared>false</isShared>
+      <windows>$HOME/.snap/auxdata/Sen2Cor-02.05.05-win64</windows>
+      <linux>$HOME/.snap/auxdata/Sen2Cor-02.05.05-Linux64</linux>
+      <macosx>$HOME/.snap/auxdata/Sen2Cor-02.05.05-Darwin64</macosx>
+      <isTransient>true</isTransient>
+    </osvariable>
     <osvariable>
       <key>SEN2COR_EXE</key>
       <value></value>
@@ -44,8 +48,8 @@
       <value></value>
       <isShared>false</isShared>
       <windows></windows>
-      <linux>~</linux>
-      <macosx>~</macosx>
+      <linux>$HOME</linux>
+      <macosx>$HOME</macosx>
       <isTransient>false</isTransient>
     </osvariable>
     <osvariable>
@@ -958,7 +962,7 @@
         <parameter>
           <name>targetLocation</name>
           <dataType>java.io.File</dataType>
-          <defaultValue>~\.snap\auxdata</defaultValue>
+          <defaultValue>$HOME/.snap/auxdata</defaultValue>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -993,7 +997,7 @@
         <parameter>
           <name>targetLocation</name>
           <dataType>java.io.File</dataType>
-          <defaultValue>$USERPROFILE\.snap\auxdata</defaultValue>
+          <defaultValue>$USERPROFILE/.snap/auxdata</defaultValue>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
