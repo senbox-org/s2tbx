@@ -139,12 +139,14 @@ class RadiometricIndicesPanel {
                     BandParameter annotation = field.getAnnotation(BandParameter.class);
                     float min = annotation.minWavelength();
                     float max = annotation.maxWavelength();
-                    if (min != 0.0f && max != 0.0f) {
-                        String bandName = BaseIndexOp.findBand(min, max, this.currentProduct);
-                        try {
-                            property.setValue(bandName);
-                        } catch (ValidationException e) {
-                            e.printStackTrace();
+                    if (property.getValue() == null  || (property.getValue() != null && !this.currentProduct.containsBand(property.getValue()))) {
+                        if (min != 0.0f && max != 0.0f) {
+                            String bandName = BaseIndexOp.findBand(min, max, this.currentProduct);
+                            try {
+                                property.setValue(bandName);
+                            } catch (ValidationException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
