@@ -20,11 +20,15 @@
   <progressPattern>Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
   <errorPattern>[\s\S]+(?:UserWarning|Error): (.+)</errorPattern>
   <variables>
-    <variable>
+    <osvariable>
       <key>SEN2COR28_BIN</key>
       <value></value>
-      <isShared>true</isShared>
-    </variable>
+      <isShared>false</isShared>
+      <windows>$HOME/.snap/auxdata/Sen2Cor-02.08.00-win64</windows>
+      <linux>$HOME/.snap/auxdata/Sen2Cor-02.08.00-Linux64</linux>
+      <macosx>$HOME/.snap/auxdata/Sen2Cor-02.08.00-Darwin64</macosx>
+      <isTransient>true</isTransient>
+    </osvariable>
     <osvariable>
       <key>SEN2COR_EXE</key>
       <value></value>
@@ -39,8 +43,8 @@
       <value></value>
       <isShared>false</isShared>
       <windows></windows>
-      <linux>~</linux>
-      <macosx>~</macosx>
+      <linux>$HOME</linux>
+      <macosx>$HOME</macosx>
       <isTransient>false</isTransient>
     </osvariable>
     <osvariable>
@@ -752,7 +756,7 @@
         <parameter>
           <name>targetLocation</name>
           <dataType>java.io.File</dataType>
-          <defaultValue>~\.snap\auxdata</defaultValue>
+          <defaultValue>$USERPROFILE/.snap/auxdata</defaultValue>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -787,7 +791,7 @@
         <parameter>
           <name>targetLocation</name>
           <dataType>java.io.File</dataType>
-          <defaultValue>$USERPROFILE\.snap\auxdata</defaultValue>
+          <defaultValue>$USERPROFILE/.snap/auxdata</defaultValue>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
