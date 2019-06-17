@@ -1,3 +1,4 @@
+#set($targetName = $sourceProduct.FileLocation.AbsolutePath.toString())
 #if($sourceProduct.FileLocation.Directory)
     #set($fileList = $sourceProduct.FileLocation.ParentFile.listFiles())
     #foreach($file in $fileList)
