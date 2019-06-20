@@ -42,21 +42,27 @@
  */
 package org.esa.s2tbx.lib.openjpeg;
 
-import java.io.EOFException;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by jcoravu on 30/4/2019.
  */
 public class JP2FileReader implements FileFormatBoxes {
 
-	private static final Set<Integer> BLOCK_TERMINATORS = new HashSet<Integer>();
+	private static final Logger logger = Logger.getLogger(JP2FileReader.class.getName());
+
+	private static final Set<Integer> BLOCK_TERMINATORS = new HashSet<>();
 	static {
 		BLOCK_TERMINATORS.add(0);
 		BLOCK_TERMINATORS.add(7);
@@ -69,14 +75,37 @@ public class JP2FileReader implements FileFormatBoxes {
 	}
 
 	public ContiguousCodestreamBox getHeaderDecoder() {
-		return contiguousCodestreamBox;
+		return this.contiguousCodestreamBox;
 	}
 
 	public List<String> getXmlMetadata() {
-		return xmlMetadata;
+		return this.xmlMetadata;
 	}
 
 	public void readFileFormat(Path file, int bufferSize, boolean canSetFilePosition) throws IOException {
+		long startTime = System.currentTimeMillis();
+		if (logger.isLoggable(Level.INFO)) {
+			long sizeInBytes = Files.size(file);
+			logger.log(Level.INFO, "Start reading JP2 file header '"+ file+"', size: "+ sizeInBytes+" bytes.");
+		}
+
+		long positionAfterFileTypeBox = readHeader(file, bufferSize, canSetFilePosition);
+		if (this.contiguousCodestreamBox == null) {
+			// Not a valid JP2 file or codestream
+			throw new IOException("Invalid JP2 file: Contiguous codestream box is missing.");
+		} else {
+			if (this.xmlMetadata == null) {
+				readXMLBox(file, bufferSize, positionAfterFileTypeBox);
+			}
+		}
+
+		if (logger.isLoggable(Level.INFO)) {
+			double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
+			logger.log(Level.INFO, "Finish reading JP2 file header '"+ file+"', elapsed time: "+ elapsedTimeInSeconds+" seconds.");
+		}
+	}
+
+	private long readHeader(Path file, int bufferSize, boolean canSetFilePosition) throws IOException {
 		BufferedRandomAccessFile jp2FileStream = new BufferedRandomAccessFile(file, bufferSize, canSetFilePosition);
 
 		readJP2SignatureBox(jp2FileStream);
@@ -141,38 +170,68 @@ public class JP2FileReader implements FileFormatBoxes {
 				jp2FileStream.seek(boxPosition + boxLength);
 			}
 		}
+		return positionAfterFileTypeBox;
+	}
 
-		if (this.contiguousCodestreamBox == null) {
-			// Not a valid JP2 file or codestream
-			throw new IOException("Invalid JP2 file: Contiguous codestream box is missing.");
-		} else {
-			if (this.xmlMetadata == null) {
-				// parse again the file to extract the xml box
-				jp2FileStream.seek(positionAfterFileTypeBox);
+	private void readXMLBox(Path file, int maximumBufferSize, long positionAfterFileTypeBox) throws IOException {
+		InputStream inputStream = Files.newInputStream(file);
+		try {
+			BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+			try {
+				int bufferSize = maximumBufferSize;
+				if (bufferSize > positionAfterFileTypeBox) {
+					bufferSize = (int)positionAfterFileTypeBox;
+				}
 
-				int firstByte = (FileFormatBoxes.XML_BOX & 0xFF000000) >> 24; // MSB
-				int secondByte = (FileFormatBoxes.XML_BOX & 0x00FF0000) >> 16;
-				int thirdByte = (FileFormatBoxes.XML_BOX & 0x0000FF00) >> 8;
-				int forthByte = (FileFormatBoxes.XML_BOX & 0x000000FF); // LSB
-				int[] xmlBoxCodeInReverseOrder = { forthByte, thirdByte, secondByte, firstByte };
-				ByteSequenceMatcher xmlTagMatcher = new ByteSequenceMatcher(xmlBoxCodeInReverseOrder);
-
-				while (jp2FileStream.getPosition() < fileSizeInBytes) {
-					int current = jp2FileStream.readByte();
-					if (xmlTagMatcher.matches(current)) {
-						StringBuilder builder = new StringBuilder();
-						int currentByte;
-						while (jp2FileStream.getPosition() < fileSizeInBytes && !BLOCK_TERMINATORS.contains(currentByte = jp2FileStream.readByte())) {
-							builder.append(Character.toString((char) currentByte));
-						}
-						if (this.xmlMetadata == null) {
-							this.xmlMetadata = new ArrayList<String>();
-						}
-						this.xmlMetadata.add(builder.toString());
-						break; // read only the first xml box
+				byte[] buffer = new byte[bufferSize];
+				int bytesToRead = buffer.length;
+				int bytesRead;
+				long totalTransferredBytes = 0;
+				while ((totalTransferredBytes < positionAfterFileTypeBox) && (bytesRead = bufferedInputStream.read(buffer, 0, bytesToRead)) > 0) {
+					totalTransferredBytes += bytesRead;
+					long remainingBytesToRead = positionAfterFileTypeBox - totalTransferredBytes;
+					if (remainingBytesToRead < bytesToRead) {
+						bytesToRead = (int)remainingBytesToRead;
 					}
 				}
+
+				if (totalTransferredBytes == positionAfterFileTypeBox) {
+					int firstByte = (FileFormatBoxes.XML_BOX & 0xFF000000) >> 24; // MSB
+					int secondByte = (FileFormatBoxes.XML_BOX & 0x00FF0000) >> 16;
+					int thirdByte = (FileFormatBoxes.XML_BOX & 0x0000FF00) >> 8;
+					int forthByte = (FileFormatBoxes.XML_BOX & 0x000000FF); // LSB
+					int[] xmlBoxCodeInReverseOrder = { forthByte, thirdByte, secondByte, firstByte };
+					ByteSequenceMatcher xmlTagMatcher = new ByteSequenceMatcher(xmlBoxCodeInReverseOrder);
+
+					long fileSizeInBytes = Files.size(file);
+					while (totalTransferredBytes < fileSizeInBytes) {
+						int current = bufferedInputStream.read(); // read one byte
+						if (current == -1) {
+							break; // end of file
+						} else {
+							totalTransferredBytes++;
+							if (xmlTagMatcher.matches(current)) {
+								StringBuilder builder = new StringBuilder();
+								int currentXMLByte;
+								while (totalTransferredBytes < fileSizeInBytes && !BLOCK_TERMINATORS.contains(currentXMLByte = bufferedInputStream.read())) {
+									builder.append(Character.toString((char) currentXMLByte));
+								}
+								if (this.xmlMetadata == null) {
+									this.xmlMetadata = new ArrayList<String>();
+								}
+								this.xmlMetadata.add(builder.toString());
+								break; // read only the first xml box
+							}
+						}
+					}
+				} else {
+					throw new IllegalStateException("The number of transferred bytes "+totalTransferredBytes+" is different than the file position "+ positionAfterFileTypeBox+".");
+				}
+			} finally {
+				bufferedInputStream.close();
 			}
+		} finally {
+			inputStream.close();
 		}
 	}
 
@@ -187,7 +246,7 @@ public class JP2FileReader implements FileFormatBoxes {
 		throw new IOException("nvalid JP2 file: file is neither valid JP2 file nor valid JPEG 2000 codestream");
 	}
 
-	private void readFileTypeBox(IRandomAccessFile jp2FileStream) throws IOException, EOFException {
+	private void readFileTypeBox(IRandomAccessFile jp2FileStream) throws IOException {
 		// read box length (LBox)
 		int length = jp2FileStream.readInt();
 		if (length == 0) {
@@ -280,8 +339,8 @@ public class JP2FileReader implements FileFormatBoxes {
 		private int[] sequence;
 
 		ByteSequenceMatcher(int[] sequenceToMatch) {
-			sequence = sequenceToMatch;
-			queue = new int[sequenceToMatch.length];
+			this.sequence = sequenceToMatch;
+			this.queue = new int[sequenceToMatch.length];
 		}
 
 		public boolean matches(int unsignedByte) {
@@ -290,14 +349,14 @@ public class JP2FileReader implements FileFormatBoxes {
 		}
 
 		private void insert(int unsignedByte) {
-			System.arraycopy(queue, 0, queue, 1, sequence.length - 1);
-			queue[0] = unsignedByte;
+			System.arraycopy(this.queue, 0, this.queue, 1, this.sequence.length - 1);
+			this.queue[0] = unsignedByte;
 		}
 
 		private boolean isMatch() {
 			boolean result = true;
-			for (int i = 0; i < sequence.length; i++) {
-				result = (queue[i] == sequence[i]);
+			for (int i = 0; i < this.sequence.length; i++) {
+				result = (this.queue[i] == this.sequence[i]);
 				if (!result)
 					break;
 			}
