@@ -18,9 +18,9 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
@@ -29,6 +29,7 @@ import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -81,7 +82,8 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
         File file = (File) input;
         Path inputPath = file.toPath();
-        if (!inputPath.isAbsolute()) {
+        boolean isLocalFileSystem = inputPath.getFileSystem().provider() == FileSystems.getDefault().provider();
+        if (!isLocalFileSystem && !inputPath.isAbsolute()) {
             return DecodeQualification.UNABLE;
         }
         if (!isValidExtension(file)) {
