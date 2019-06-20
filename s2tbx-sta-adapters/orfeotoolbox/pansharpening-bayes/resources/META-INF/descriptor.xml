@@ -12,7 +12,7 @@
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/bin/$OTB_BINPANSHARPENING_BAYES_EXEC</mainToolFileLocation>
-  <workingDir>/tmp</workingDir>
+  <workingDir>$java.io.tmpdir</workingDir>
   <templateType>VELOCITY</templateType>
   <template type="file">
     <file>pansharpening-bayes-template.vm</file>
@@ -38,6 +38,38 @@
       <isTransient>false</isTransient>
       <isShared>false</isShared>
     </osvariable>
+    <osvariable>
+      <key>USERPROFILE</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows></windows>
+      <linux>$HOME</linux>
+      <macosx>$HOME</macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <osvariable>
+      <key>HOME</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows>$USERPROFILE</windows>
+      <linux></linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <osvariable>
+      <key>USER_HOME</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows>$USERPROFILE</windows>
+      <linux>$HOME</linux>
+      <macosx>$HOME</macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <variable>
+      <key>java.io.tmpdir</key>
+      <value></value>
+      <isShared>false</isShared>
+    </variable>
   </variables>
   <parameters>
     <parameter>
@@ -103,7 +135,7 @@
         <parameter>
           <name>targetLocation</name>
           <dataType>java.io.File</dataType>
-          <defaultValue>~\.snap\auxdata</defaultValue>
+          <defaultValue>$USERPROFILE/.snap/auxdata</defaultValue>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -138,7 +170,7 @@
         <parameter>
           <name>targetLocation</name>
           <dataType>java.io.File</dataType>
-          <defaultValue>$USERPROFILE\.snap\auxdata</defaultValue>
+          <defaultValue>$USERPROFILE/.snap/auxdata</defaultValue>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -154,7 +186,7 @@
     </templateparameter>
     <targetLocation>$USER_HOME/.snap/auxdata</targetLocation>
     <entryPoint>OTB-6.6.1-Darwin64.run</entryPoint>
-    <updateVariable></updateVariable>
+    <updateVariable>OTB_BIN_DIR</updateVariable>
   </macosxBundle>
   <sourceProductDescriptors>
     <org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
