@@ -2,13 +2,11 @@
 --resolution
 $resolution
 #end
-
 #if($sourceProduct.FileLocation.Name.endsWith(".xml"))
 $sourceProduct.FileLocation.ParentFile
 #else
 $sourceProduct.FileLocation
 #end
-
 #if($sceneOnly)
 --sc_only
 #end
