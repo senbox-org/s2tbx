@@ -20,11 +20,15 @@
   <progressPattern>Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
   <errorPattern>[\s\S]+(?:UserWarning|Error): (.+)</errorPattern>
   <variables>
-    <variable>
+    <osvariable>
       <key>SEN2COR_HOME</key>
-      <value>$USER_HOME/documents/sen2cor</value>
-      <isShared>false</isShared>
-    </variable>
+      <value></value>
+      <windows>$USER_HOME/documents/sen2cor</windows>
+      <linux>$USER_HOME/documents/sen2cor</linux>
+      <macosx>$USER_HOME/documents/sen2cor</macosx>
+      <isShared>true</isShared>
+      <isTransient>false</isTransient>
+    </osvariable>
     <osvariable>
       <key>SEN2COR_BIN</key>
       <value></value>
