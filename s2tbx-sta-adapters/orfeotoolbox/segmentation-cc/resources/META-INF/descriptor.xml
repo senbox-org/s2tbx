@@ -21,12 +21,12 @@
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <isShared>true</isShared>
-      <windows></windows>
-      <linux>/usr/bin</linux>
-      <macosx></macosx>
-      <isTransient>false</isTransient>
+      <value/>
+      <windows>$HOME/.snap/auxdata/OTB-6.6.1-win64</windows>
+      <linux>$HOME/.snap/auxdata/OTB-6.6.1-Linux64</linux>
+      <macosx>$HOME/.snap/auxdata/OTB-6.6.1-Darwin64</macosx>
+      <isTransient>true</isTransient>
+      <isShared>false</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINSEGMENTATION_CC_EXEC</key>
@@ -239,7 +239,7 @@
       <template type="simple">
         <contents>--nox11
           --target
-          $targetLocation/OTB-6.6.1-Linux64.run</contents>
+          $targetLocation/OTB-6.6.1-Linux64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>

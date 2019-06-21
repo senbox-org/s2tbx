@@ -23,11 +23,11 @@
     <osvariable>
       <key>OTB_BIN_DIR</key>
       <value/>
-      <windows/>
-      <linux>/usr/bin</linux>
-      <macosx/>
-      <isTransient>false</isTransient>
-      <isShared>true</isShared>
+      <windows>$HOME/.snap/auxdata/OTB-6.6.1-win64</windows>
+      <linux>$HOME/.snap/auxdata/OTB-6.6.1-Linux64</linux>
+      <macosx>$HOME/.snap/auxdata/OTB-6.6.1-Darwin64</macosx>
+      <isTransient>true</isTransient>
+      <isShared>false</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINSEGMENTATION_MEANSHIFT_EXEC</key>
@@ -266,7 +266,7 @@
       <template type="simple">
         <contents>--nox11
           --target
-          $targetLocation/OTB-6.6.1-Linux64.run</contents>
+          $targetLocation/OTB-6.6.1-Linux64</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
