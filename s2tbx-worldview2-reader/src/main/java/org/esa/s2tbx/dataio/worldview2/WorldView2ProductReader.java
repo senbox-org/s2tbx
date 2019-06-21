@@ -92,14 +92,16 @@ class WorldView2ProductReader extends AbstractProductReader {
         if (metadata != null) {
             final List<String> selectedProductFiles = new ArrayList<>();
             for (String file : metadata.getAttributeValues(WorldView2Constants.PATH_FILE_LIST)) {
-                if (file.contains(productSelected) && file.contains(WorldView2Constants.IMAGE_EXTENSION)) {
-                    if (!selectedProductFiles.contains(file)) {
-                        selectedProductFiles.add(productDirectory.getFile(file).toString());
+                if (file.contains(productSelected)) {
+                    if (file.contains(WorldView2Constants.IMAGE_EXTENSION)) {
+                        if (!selectedProductFiles.contains(file)) {
+                            selectedProductFiles.add(productDirectory.getFile(file).toString());
+                        }
                     }
-                }
-                if (file.contains(productSelected) && file.contains(WorldView2Constants.METADATA_EXTENSION)) {
-                    if (!selectedProductFiles.contains(file)) {
-                        selectedProductFiles.add(file);
+                    if (file.contains(WorldView2Constants.METADATA_EXTENSION)) {
+                        if (!selectedProductFiles.contains(file)) {
+                            selectedProductFiles.add(file);
+                        }
                     }
                 }
             }
