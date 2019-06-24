@@ -50,6 +50,7 @@ pipeline {
                     }
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
+                sh "/opt/scripts/setUpUnitTestLibraries.sh"
                 sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install ${sonarOption} -Dsnap.reader.tests.data.dir=/data/ssd/testData/${toolName} -U -DskipTests=false"
             }
             post {
