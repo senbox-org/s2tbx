@@ -84,10 +84,6 @@ public class JP2FileReader implements FileFormatBoxes {
 
 	public void readFileFormat(Path file, int bufferSize, boolean canSetFilePosition) throws IOException {
 		long startTime = System.currentTimeMillis();
-		if (logger.isLoggable(Level.INFO)) {
-			long sizeInBytes = Files.size(file);
-			logger.log(Level.INFO, "Start reading JP2 file header '"+ file+"', size: "+ sizeInBytes+" bytes.");
-		}
 
 		long positionAfterFileTypeBox = readHeader(file, bufferSize, canSetFilePosition);
 		if (this.contiguousCodestreamBox == null) {
@@ -99,9 +95,10 @@ public class JP2FileReader implements FileFormatBoxes {
 			}
 		}
 
-		if (logger.isLoggable(Level.INFO)) {
+		if (logger.isLoggable(Level.FINE)) {
 			double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
-			logger.log(Level.INFO, "Finish reading JP2 file header '"+ file+"', elapsed time: "+ elapsedTimeInSeconds+" seconds.");
+			long sizeInBytes = Files.size(file);
+			logger.log(Level.FINE, "Finish reading JP2 file header '"+ file+"', size: "+ sizeInBytes+" bytes, elapsed time: "+ elapsedTimeInSeconds+" seconds.");
 		}
 	}
 
