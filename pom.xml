@@ -29,7 +29,7 @@
         <!--
         First s2tbx-kit to be able to detect missing dependencies
         -->
-        <module>s2tbx-kit</module>
+        <module>s2tbx-ki</module>
         <module>s2tbx-preferences-ui</module>
         <module>s2tbx-cache</module>
         <module>s2tbx-cache-ui</module>
