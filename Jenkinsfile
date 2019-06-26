@@ -176,7 +176,7 @@ Check console output at ${env.BUILD_URL}
 ${env.JOB_NAME} [${env.BUILD_NUMBER}]""",
                     attachLog: true,
                     compressLog: true,
-                    recipientProviders: [[$class: 'CulpritsRecipientProvider'], [$class:'DevelopersRecipientProvider']]
+                    recipientProviders: [[$class: 'CulpritsRecipientProvider']]
                 )
             )
         }
