@@ -44,10 +44,10 @@ pipeline {
                     snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                     sonarOption = ""
-                    if ("${branchVersion}" == "master") {
-                        // Only use sonar on master branch
-                        sonarOption = "sonar:sonar"
-                    }
+                    //if ("${branchVersion}" == "master") {
+                    //    // Only use sonar on master branch
+                    //    sonarOption = "sonar:sonar"
+                    //}
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                 sh "/opt/scripts/setUpUnitTestLibraries.sh"
