@@ -166,7 +166,6 @@ pipeline {
             }
         }
     }
-    /* disable email send on failure
     post {
         failure {
             step (
@@ -181,5 +180,5 @@ ${env.JOB_NAME} [${env.BUILD_NUMBER}]""",
                 )
             )
         }
-    }*/
+    }
 }
