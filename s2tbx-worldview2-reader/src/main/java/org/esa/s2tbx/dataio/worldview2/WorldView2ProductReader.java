@@ -81,7 +81,7 @@ class WorldView2ProductReader extends AbstractProductReader {
             dialog.setContent(createDialogContent(products));
             final int show = dialog.show();
             if (show == ModalDialog.ID_CANCEL) {
-                return null;
+                productSelected = null;
             }
         } else {
             this.productSelected = products[0];
