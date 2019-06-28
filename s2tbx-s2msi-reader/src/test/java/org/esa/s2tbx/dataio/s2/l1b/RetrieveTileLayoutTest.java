@@ -40,9 +40,9 @@ public class RetrieveTileLayoutTest {
 
     private Path sentinel2TestProductsPath;
 
-    private static final String SENTINEL2_DIR = "Sentinel2";
+    private static final String SENTINEL2_DIR = "S2";
 
-    private static final String L1B_PRODUCT_NAME = "L1B/S2A_OPER_PRD_MSIL1B_PDMC_20150704T101016_R062_V20150627T103414_20150627T103417.SAFE/S2A_OPER_MTD_SAFL1B_PDMC_20150704T101016_R062_V20150627T103414_20150627T103417.xml";
+    private static final String L1B_PRODUCT_NAME = "L1B/Maricopa/S2A_OPER_PRD_MSIL1B_PDMC_20160404T102635_R084_V20160403T182456_20160403T182504.SAFE/S2A_OPER_MTD_SAFL1B_PDMC_20160404T102635_R084_V20160403T182456_20160403T182504.xml";
 
     @Before
     public void setup() {
@@ -71,7 +71,7 @@ public class RetrieveTileLayoutTest {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
         Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_10M);
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent())), S2SpatialResolution.R10M);
-        TileLayout realTileLayout = new TileLayout(2552, 18432, 2592, 2304, 1, 8, 5);
+        TileLayout realTileLayout = new TileLayout(2552, 2304, 2592, 2304, 1, 1, 4,1);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));
     }
 
@@ -80,7 +80,7 @@ public class RetrieveTileLayoutTest {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
         Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_20M);
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent())), S2SpatialResolution.R20M);
-        TileLayout realTileLayout = new TileLayout(1276, 9216, 1296, 1152, 1, 8, 5);
+        TileLayout realTileLayout = new TileLayout(1276, 1152, 1296, 1152, 1, 1, 4,1);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));
     }
 
@@ -89,7 +89,7 @@ public class RetrieveTileLayoutTest {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
         Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_60M);
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent())), S2SpatialResolution.R60M);
-        TileLayout realTileLayout =  new TileLayout(1276, 3072, 1296, 384, 1, 8, 5);
+        TileLayout realTileLayout =  new TileLayout(1276, 384, 1296, 384, 1, 1, 4, 1);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));
     }
 

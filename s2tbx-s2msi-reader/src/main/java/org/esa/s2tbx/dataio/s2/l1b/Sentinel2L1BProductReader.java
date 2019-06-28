@@ -171,7 +171,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     @Override
     protected Product buildMosaicProduct(VirtualPath metadataPath) throws IOException {
-
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
             throw new IOException("Invalid OpenJpeg executables");
         }
@@ -221,7 +220,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         L1bMetadata metadataHeader;
 
         try {
+            long startTime = System.currentTimeMillis();
+
             metadataHeader = parseHeader(productMetadataPath, granuleDirName, getConfig(), !foundProductMetadata, namingConvention);
+
+            if (logger.isLoggable(Level.FINE)) {
+                double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
+                logger.log(Level.FINE, "Finish parsing the header using the metadata file '" + productMetadataPath.getFullPathString()+"', elapsed time: " + elapsedTimeInSeconds + " seconds.");
+            }
         } catch (ParserConfigurationException | SAXException e) {
             SystemUtils.LOG.severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + productMetadataPath.getFileName().toString());
@@ -361,12 +367,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             //TODO remove extension
             product = new Product(productMetadataPath.getFileName().toString(), "S2_MSI_" + productCharacteristics.getProcessingLevel());
         }
-
-//        if (!productMetadataPath.getVirtualDir().isCompressed()) {
-//            product.setFileLocation(productMetadataPath.getParent().getFile().toFile());
-//        } else {
-//            product.setFileLocation(productMetadataPath.getVirtualDir().getBaseFile());
-//        }
 
         for (MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
             product.getMetadataRoot().addElement(metadataElement);
@@ -622,7 +622,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             int level = 0;
             TileLayout tileLayout = tileBandInfo.getImageLayout();
             ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, S2Config.SAMPLE_DATA_BUFFER_TYPE, level);
-            return new DefaultMultiLevelImage(bandScene, imageLayout);
+            return new DefaultMultiLevelImage(bandScene/*, imageLayout*/ );
         }
     }
 

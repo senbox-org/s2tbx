@@ -14,6 +14,7 @@ import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -201,7 +202,7 @@ public class GenericRegionMergingOpTest {
         checkTargetBandForBaatzSchapeSmallSegmenter(targetProduct);
     }
 
-    @Test
+    @Ignore
     public void testBaatzSchapeLargeTileSegmenter() throws IOException, IllegalAccessException {
         String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
         String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;

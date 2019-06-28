@@ -9,7 +9,7 @@
         iconBase = "org/esa/s2tbx/dataio/s2/preferences/s2tbx-icon-32.png",
         keywords = "#LBL_S2TBXOptionsCategory_Keywords",
         keywordsCategory = "S2TBX",
-        position = 900
+        position = 1100
 )
 @NbBundle.Messages(value = {
     "LBL_S2TBXOptionsCategory_Name=S2TBX",

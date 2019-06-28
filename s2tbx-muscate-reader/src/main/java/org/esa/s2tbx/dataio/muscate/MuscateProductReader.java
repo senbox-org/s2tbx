@@ -769,16 +769,19 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         String bandName = "Aux_Mask_Cloud_" + geoposition.id;
 
-        Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
-        product.addBand(targetBand);
-        ProductUtils.copyGeoCoding(srcBand, targetBand);
-        targetBand.setNoDataValueUsed(false);
-        targetBand.setScalingFactor(1);
-        targetBand.setScalingOffset(0);
-        targetBand.setSampleCoding(srcBand.getSampleCoding());
-        targetBand.setImageInfo(srcBand.getImageInfo());
-        targetBand.setDescription("Cloud mask computed by MACCS software, made of 1 band coded over 8 useful bits");
-        targetBand.setSourceImage(srcBand.getSourceImage());
+        //add band to product if it hasn't been added yet
+        if(!product.containsBand(bandName)) {
+            Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
+            product.addBand(targetBand);
+            ProductUtils.copyGeoCoding(srcBand, targetBand);
+            targetBand.setNoDataValueUsed(false);
+            targetBand.setScalingFactor(1);
+            targetBand.setScalingOffset(0);
+            targetBand.setSampleCoding(srcBand.getSampleCoding());
+            targetBand.setImageInfo(srcBand.getImageInfo());
+            targetBand.setDescription("Cloud mask computed by MACCS software, made of 1 band coded over 8 useful bits");
+            targetBand.setSourceImage(srcBand.getSourceImage());
+        }
 
         ColorIterator.reset();
 
@@ -857,18 +860,13 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void addGeophysicsMask(Product product, String pathString) {
-        for(MuscateConstants.GEOPHYSICAL_BIT geophysical_bit : MuscateConstants.GEOPHYSICAL_BIT.values()) {
-            addGeophysicsMask(product, pathString, geophysical_bit);
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
+        for (MuscateConstants.GEOPHYSICAL_BIT geophysical_bit : MuscateConstants.GEOPHYSICAL_BIT.values()) {
+            addGeophysicsMask(product, pathString, geophysical_bit, srcBand);
         }
     }
 
-    private void addGeophysicsMask(Product product, String pathString, MuscateConstants.GEOPHYSICAL_BIT geophysical_bit) {
-        Band srcBand = readGeoTiffProductBand(pathString, 0);
-        if (srcBand == null) {
-            logger.warning(String.format("Image %s not added", pathString));
-            return;
-        }
-
+    private void addGeophysicsMask(Product product, String pathString, MuscateConstants.GEOPHYSICAL_BIT geophysical_bit, Band srcBand) {
         int height = srcBand.getRasterHeight();
         int width = srcBand.getRasterWidth();
 
@@ -882,7 +880,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         String bandName = "Aux_Mask_MG2_" + geoposition.id;
 
         //add band to product if it hasn't been added yet
-        if(!product.containsBand(bandName)) {
+        if (!product.containsBand(bandName)) {
             Band targetBand = new Band(bandName, srcBand.getDataType(), srcBand.getRasterWidth(), srcBand.getRasterHeight());
             product.addBand(targetBand);
             ProductUtils.copyGeoCoding(srcBand, targetBand);
@@ -895,17 +893,24 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             targetBand.setSourceImage(srcBand.getSourceImage());
         }
 
-
-
         //addMasks
         Mask mask = Mask.BandMathsType.create(geophysical_bit.getPrefixName() + geoposition.id,
                                               geophysical_bit.getDescription(),
                                               width, height,
-                                              String.format("bit_set(%s,%d)", bandName,geophysical_bit.getBit()),
+                                              String.format("bit_set(%s,%d)", bandName, geophysical_bit.getBit()),
                                               geophysical_bit.getColor(),
                                               0.5);
         ProductUtils.copyGeoCoding(srcBand, mask);
         product.addMask(mask);
+    }
+
+    private void addGeophysicsMask(Product product, String pathString, MuscateConstants.GEOPHYSICAL_BIT geophysical_bit) {
+        Band srcBand = readGeoTiffProductBand(pathString, 0);
+        if (srcBand == null) {
+            logger.warning(String.format("Image %s not added", pathString));
+            return;
+        }
+        addGeophysicsMask(product, pathString, geophysical_bit, srcBand);
     }
 
     private int getDetectorFromFilename(String pathString) {
@@ -957,7 +962,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         targetBand.setDescription("Detector footprint");
         targetBand.setSourceImage(srcBand.getSourceImage());
 
-        Color color = ColorIterator.next();
+        ColorIterator.reset();
 
         // add masks
         for (int i = 0; i < orderedBandNames.length; i++) {
@@ -965,7 +970,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                     "Detector footprint",
                     width, height,
                     String.format("bit_set(%s,%d)", bandName, i),
-                    color,
+                    ColorIterator.next(),
                     0.5);
             ProductUtils.copyGeoCoding(srcBand, mask);
             product.addMask(mask);
@@ -1002,15 +1007,15 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         targetBand.setDescription("Defective Pixel");
         targetBand.setSourceImage(srcBand.getSourceImage());
 
-        Color color = ColorIterator.next();
+        ColorIterator.reset();
 
         //addMasks
         for (int i = 0; i < orderedBandNames.length; i++) {
             Mask mask = Mask.BandMathsType.create(String.format("defective_%s", orderedBandNames[i]),
-                    "Detector footprint",
+                    "Defective pixel",
                     width, height,
                     String.format("bit_set(%s,%d)", bandName, i),
-                    color,
+                    ColorIterator.next(),
                     0.5);
             ProductUtils.copyGeoCoding(srcBand, mask);
             product.addMask(mask);

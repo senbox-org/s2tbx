@@ -2,7 +2,6 @@ package org.esa.s2tbx.dataio.worldview2;
 
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
@@ -26,6 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -72,17 +72,16 @@ class WorldView2ProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         final Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
         this.productDirectory = VirtualDirEx.build(inputPath);
-        final String filePath = productDirectory.findFirst(WorldView2Constants.METADATA_FILE_SUFFIX);
-        try (FilePathInputStream inputStream = this.productDirectory.getInputStream(filePath)) {
-            this.metadata = WorldView2Metadata.create(inputStream);
-        }
+        final String inputFile = productDirectory.findFirst(WorldView2Constants.METADATA_FILE_SUFFIX);
+        final File filePath = productDirectory.getFile(inputFile);
+        this.metadata = WorldView2Metadata.create(filePath.toPath());
         final String[] products = getProductsFromMetadata(this.metadata);
         if (products.length > 1) {
             ModalDialog dialog = new ModalDialog(null, "Product Selector", ModalDialog.ID_OK_CANCEL, "");
             dialog.setContent(createDialogContent(products));
             final int show = dialog.show();
             if (show == ModalDialog.ID_CANCEL) {
-                return null;
+                productSelected = null;
             }
         } else {
             this.productSelected = products[0];
@@ -93,23 +92,25 @@ class WorldView2ProductReader extends AbstractProductReader {
         if (metadata != null) {
             final List<String> selectedProductFiles = new ArrayList<>();
             for (String file : metadata.getAttributeValues(WorldView2Constants.PATH_FILE_LIST)) {
-                if (file.contains(productSelected) && (file.contains(WorldView2Constants.METADATA_EXTENSION) ||
-                        file.contains(WorldView2Constants.IMAGE_EXTENSION))) {
-                    if (!selectedProductFiles.contains(file)) {
-                        selectedProductFiles.add(file);
+                if (file.contains(productSelected)) {
+                    if (file.contains(WorldView2Constants.IMAGE_EXTENSION)) {
+                        if (!selectedProductFiles.contains(file)) {
+                            selectedProductFiles.add(productDirectory.getFile(file).toString());
+                        }
+                    }
+                    if (file.contains(WorldView2Constants.METADATA_EXTENSION)) {
+                        if (!selectedProductFiles.contains(file)) {
+                            selectedProductFiles.add(file);
+                        }
                     }
                 }
             }
             final List<TileMetadata> tileMetadataList = new ArrayList<>();
             for (String fileMetadata : selectedProductFiles) {
                 if (fileMetadata.endsWith(WorldView2Constants.METADATA_EXTENSION)) {
-                    try (FilePathInputStream inputStream = this.productDirectory.getInputStream(filePath)) {
-                        this.metadata = WorldView2Metadata.create(inputStream);
-                    }
+                    this.metadata = WorldView2Metadata.create(filePath.toPath());
                     TileMetadata tileMetadata;
-                    try (FilePathInputStream inputStream = this.productDirectory.getInputStream(productDirectory.getFile(fileMetadata).toString())) {
-                        tileMetadata = TileMetadata.create(inputStream);
-                    }
+                    tileMetadata = TileMetadata.create(productDirectory.getFile(fileMetadata).toPath());
                     tileMetadataList.add(tileMetadata);
                 }
             }
@@ -183,7 +184,7 @@ class WorldView2ProductReader extends AbstractProductReader {
 
     private Band createTargetBand(final int levels, final String[] bandNames, final int index, final HashMap<Product, String> tiles, final TileComponent tileComp) {
         final Band targetBand = new Band(bandNames[index], this.bandDataType,
-                                   tileComp.getNumColumns(), tileComp.getNumRows());
+                                         tileComp.getNumColumns(), tileComp.getNumRows());
         final Band band = setInputSpecificationBand(tiles, index);
         final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
         setBandProperties(targetBand, band);

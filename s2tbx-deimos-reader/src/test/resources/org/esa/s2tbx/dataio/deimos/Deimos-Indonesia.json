@@ -81,95 +81,95 @@
         ],
         "metadata": [
             {
-                "path": "DMCII/Metadata_Id/METADATA_FORMAT",
+                "path": "Metadata/Metadata_Id/METADATA_FORMAT",
                 "value": "DIMAP"
             },
             {
-                "path": "DMCII/Metadata_Id/METADATA_PROFILE",
+                "path": "Metadata/Metadata_Id/METADATA_PROFILE",
                 "value": "DMCII"
             },
             {
-                 "path": "DMCII/Dataset_Id/DATASET_NAME",
+                 "path": "Metadata/Dataset_Id/DATASET_NAME",
                  "value": "DE01_SL6_22S_2T_20110121T024927_20110121T024935_DMI_0_2838_RGB"
             },
             {
-                 "path": "DMCII/Production/DATASET_PRODUCTION_DATE",
+                 "path": "Metadata/Production/DATASET_PRODUCTION_DATE",
                  "value": "2012-10-05"
             },
             {
-                 "path": "DMCII/Production/PRODUCT_TYPE",
+                 "path": "Metadata/Production/PRODUCT_TYPE",
                  "value": "L2T"
             },
             {
-                 "path": "DMCII/Coordinate_Reference_System/Horizontal_CS/HORIZONTAL_CS_CODE",
+                 "path": "Metadata/Coordinate_Reference_System/Horizontal_CS/HORIZONTAL_CS_CODE",
                  "value": "EPSG:32650"
             },
             {
-                 "path": "DMCII/Coordinate_Reference_System/Horizontal_CS/Projection/PROJECTION_CODE",
+                 "path": "Metadata/Coordinate_Reference_System/Horizontal_CS/Projection/PROJECTION_CODE",
                  "value": "EPSG:16050"
             },
             {
-                 "path": "DMCII/Coordinate_Reference_System/Horizontal_CS/Projection/Projection_CT_Method/PROJECTION_CT_CODE",
+                 "path": "Metadata/Coordinate_Reference_System/Horizontal_CS/Projection/Projection_CT_Method/PROJECTION_CT_CODE",
                  "value": "EPSG:9807"
             },
             {
-                 "path": "DMCII/Raster_Dimensions/NCOLS",
+                 "path": "Metadata/Raster_Dimensions/NCOLS",
                  "value": "2000"
             },
             {
-                 "path": "DMCII/Raster_Dimensions/NROWS",
+                 "path": "Metadata/Raster_Dimensions/NROWS",
                  "value": "2000"
             },
             {
-                 "path": "DMCII/Raster_Dimensions/NBANDS",
+                 "path": "Metadata/Raster_Dimensions/NBANDS",
                  "value": "3"
             },
             {
-                 "path": "DMCII/Quality_Assessment/QUALITY_TABLES",
+                 "path": "Metadata/Quality_Assessment/QUALITY_TABLES",
                  "value": "SPACEMETRIC"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_DESC",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_DESC",
                  "value": "Number of control points"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_CODE",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_CODE",
                  "value": "SPACEMETRIC:NGCP"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_VALUE",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_VALUE",
                  "value": "21"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_DESC",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_DESC",
                  "value": "Root Mean Square residual error X component"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_CODE",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_CODE",
                  "value": "SPACEMETRIC:RMSX"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_VALUE",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_VALUE",
                  "value": "6.2"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_DESC",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_DESC",
                  "value": "Root Mean Square residual error Y component"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_CODE",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_CODE",
                  "value": "SPACEMETRIC:RMSY"
             },
             {
-                 "path": "DMCII/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_VALUE",
+                 "path": "Metadata/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_VALUE",
                  "value": "6.69"
             },
             {
-                 "path": "DMCII/Image_Display/Special_Value/SPECIAL_VALUE_INDEX",
+                 "path": "Metadata/Image_Display/Special_Value/SPECIAL_VALUE_INDEX",
                  "value": "0"
             },
             {
-                 "path": "DMCII/Image_Display/Special_Value/SPECIAL_VALUE_TEXT",
+                 "path": "Metadata/Image_Display/Special_Value/SPECIAL_VALUE_TEXT",
                  "value": "nodata"
             },
             {

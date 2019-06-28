@@ -142,9 +142,13 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        logger.fine("readProductNodeImpl, input: " + getInput().toString());
-
         Object inputObject = getInput();
+
+        long startTime = System.currentTimeMillis();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Start reading Sentinel 2 product, input: " + inputObject.toString());
+        }
+
         VirtualPath virtualPath;
         if (inputObject instanceof File) {
             File inputFile = (File) inputObject;
@@ -165,9 +169,20 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         } else if (this.namingConvention.hasValidStructure()) {
             VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
             if (inputVirtualPath.exists()) {
+                long buildProductStartTime = System.currentTimeMillis();
+
                 this.product = buildMosaicProduct(inputVirtualPath);
 
-                this.product.setFileLocation(inputVirtualPath.getVirtualDir().getBaseFile());
+                if (logger.isLoggable(Level.FINE)) {
+                    double buildProductElapsedTimeInSeconds = (System.currentTimeMillis() - buildProductStartTime) / 1000.d;
+                    logger.log(Level.FINE, "Finish building Sentinel 2 product, input: " + inputObject.toString() + "', elapsed time: " + buildProductElapsedTimeInSeconds + " seconds.");
+                }
+
+                if (inputVirtualPath.getVirtualDir().isArchive()) {
+                    this.product.setFileLocation(inputVirtualPath.getVirtualDir().getBaseFile());
+                } else {
+                    this.product.setFileLocation(inputVirtualPath.getFilePath().getPath().toFile());
+                }
 
                 Path qlFile = getQuickLookFile(inputVirtualPath);
                 if (qlFile != null) {
@@ -175,6 +190,12 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 }
 
                 this.product.setModified(false);
+
+                if (logger.isLoggable(Level.FINE)) {
+                    double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
+                    logger.log(Level.FINE, "Finish reading Sentinel 2 product, input: " + inputObject.toString() + "', elapsed time: " + elapsedTimeInSeconds + " seconds.");
+                }
+
                 return this.product;
             } else {
                 throw new FileNotFoundException(inputVirtualPath.getFullPathString());
@@ -207,6 +228,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @return false when every tileLayout is null
      */
     protected boolean updateTileLayout(VirtualPath metadataFilePath, boolean isGranule) {
+        long startTime = System.currentTimeMillis();
+
         boolean valid = false;
         for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
             TileLayout tileLayout;
@@ -220,6 +243,12 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 valid = true;
             }
         }
+
+        if (logger.isLoggable(Level.FINE)) {
+            double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
+            logger.log(Level.FINE, "Finish updating the tile layout using the metadata file '" + metadataFilePath.getFullPathString()+"', elapsed time: " + elapsedTimeInSeconds + " seconds.");
+        }
+
         return valid;
     }
 
@@ -321,6 +350,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @throws IOException if an I/O error occurs
      */
     protected List<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution resolution) throws IOException {
+        long startTime = System.currentTimeMillis();
+
         List<VirtualPath> imageDirectories = new ArrayList<>();
         String[] bandNames = getBandNames(resolution);
         if (bandNames != null && bandNames.length > 0) {
@@ -335,6 +366,12 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 }
             }
         }
+
+        if (logger.isLoggable(Level.FINE)) {
+            double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
+            logger.log(Level.FINE, "Finish finding the image directories using the images folder '" +pathToImages.getFullPathString()+"', size: "+imageDirectories.size()+"', elapsed time: " + elapsedTimeInSeconds + " seconds.");
+        }
+
         return imageDirectories;
     }
 

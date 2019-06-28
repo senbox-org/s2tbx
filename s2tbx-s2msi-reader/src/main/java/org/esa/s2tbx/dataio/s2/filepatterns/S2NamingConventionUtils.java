@@ -7,7 +7,9 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
@@ -318,7 +320,22 @@ public class S2NamingConventionUtils {
                 relativePath = path.resolve(folderName).getFileName();
             } else {
                 // the path represents a directory
-                relativePath = path.getFileName();
+                if(Files.isDirectory(path)) {
+                    relativePath = Paths.get(".");
+                } else {
+                    relativePath = path.getFileName();
+                }
+
+                //if defaultFileSytem, try to use relativePaths longer in order to be able to get the parents for looking for product metadata
+                if(!copyFilesFromDirectoryOnLocalDisk) {
+                    if(path.getParent() != null && path.getParent().getParent() != null && path.getParent().getParent().getParent() != null) {
+                        virtualDirEx = VirtualDirEx.build(path.getParent().getParent().getParent(), copyFilesFromDirectoryOnLocalDisk, true);
+                        relativePath = Paths.get(path.getParent().getParent().getFileName().toString(),path.getParent().getFileName().toString(),path.getFileName().toString());
+                    } else if (path.getParent() != null && path.getParent().getParent() != null ) {
+                        virtualDirEx = VirtualDirEx.build(path.getParent().getParent(), copyFilesFromDirectoryOnLocalDisk, true);
+                        relativePath = Paths.get(path.getParent().getFileName().toString(),path.getFileName().toString());
+                    }
+                }
             }
             return new VirtualPath(relativePath.toString(), virtualDirEx);
         }

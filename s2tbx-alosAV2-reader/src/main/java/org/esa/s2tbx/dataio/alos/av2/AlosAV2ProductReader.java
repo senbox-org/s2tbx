@@ -8,15 +8,12 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This product reader is intended for reading ALOS AVNIR-2 files
@@ -25,6 +22,7 @@ import java.util.logging.Logger;
  * @author Denisa Stefanescu
  */
 public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
+    VirtualDirEx productDirectoryTemp;
 
     protected AlosAV2ProductReader(final ProductReaderPlugIn readerPlugIn, final Path colorPaletteFilePath) {
         super(readerPlugIn, colorPaletteFilePath);
@@ -32,24 +30,27 @@ public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
 
     @Override
     protected VirtualDirEx buildProductDirectory(Path inputPath) throws IOException {
-        VirtualDirEx productDirectory = super.buildProductDirectory(inputPath);
+        VirtualDirEx productDirectory = null;
+        productDirectoryTemp = super.buildProductDirectory(inputPath);
 
         boolean copyFilesFromDirectoryOnLocalDisk = false;
         boolean copyFilesFromArchiveOnLocalDisk = true;
         String inputFileName = inputPath.getFileName().toString();
 
-        if (productDirectory.isCompressed()) {
-            File file = productDirectory.getFile(inputFileName.substring(0, inputFileName.indexOf(".")) + ".ZIP");
+        if (productDirectoryTemp.isCompressed()) {
+            File file = productDirectoryTemp.getFile(inputFileName.substring(0, inputFileName.indexOf(".")) + ".ZIP");
             productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
         } else if (inputFileName.endsWith(AlosAV2Constants.METADATA_FILE_SUFFIX)) {
             String fileNameWithoutExtension = inputFileName.substring(0, inputFileName.indexOf(AlosAV2Constants.METADATA_FILE_SUFFIX));
-            if (productDirectory.exists(fileNameWithoutExtension)) {
-                File file = productDirectory.getFile(fileNameWithoutExtension);
+            if (productDirectoryTemp.exists(fileNameWithoutExtension)) {
+                File file = productDirectoryTemp.getFile(fileNameWithoutExtension);
                 productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
             } else {
-                File file = productDirectory.getFile(fileNameWithoutExtension + ".ZIP");
+                File file = productDirectoryTemp.getFile(fileNameWithoutExtension + ".ZIP");
                 productDirectory = VirtualDirEx.build(file.toPath(), copyFilesFromDirectoryOnLocalDisk, copyFilesFromArchiveOnLocalDisk);
             }
+        }else{
+            productDirectory = VirtualDirEx.build(productDirectoryTemp.getFile(inputFileName).toPath());
         }
         return productDirectory;
     }
@@ -157,5 +158,13 @@ public class AlosAV2ProductReader extends GeoTiffBasedReader<AlosAV2Metadata> {
         final TiePointGrid tiePointGrid = createTiePointGrid(gridName, gridDim, gridDim, 0, 0, subSamplingX, subSamplingY, tiePoints);
         this.product.addTiePointGrid(tiePointGrid);
         return tiePointGrid;
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        if(productDirectoryTemp!=null){
+            productDirectoryTemp.close();
+        }
     }
 }

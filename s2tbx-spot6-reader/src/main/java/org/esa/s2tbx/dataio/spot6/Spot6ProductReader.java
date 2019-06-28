@@ -106,9 +106,9 @@ public class Spot6ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        //productDirectory = readerPlugin.getInput(getInput());
         Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.productDirectory = VirtualDirEx.build(inputPath, false, true);
+        this.productDirectory = VirtualDirEx.build(inputPath);
+        //productDirectory = readerPlugin.getInput(getInput());
 
         metadata = VolumeMetadata.create(productDirectory.getFile(Spot6Constants.ROOT_METADATA).toPath());
         Product product = null;

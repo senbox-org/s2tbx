@@ -110,9 +110,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 fileName = fileName.substring(0, fileName.lastIndexOf("."));
             }
 
-             try (FilePathInputStream inputStream = productDirectoryTemp.getInputStream(productDirectoryTemp.getFile(fileName + WorldView2ESAConstants.METADATA_FILE_SUFFIX).toString())) {
-                this.metadata = WorldView2ESAMetadata.create(inputStream);
-            }
+            this.metadata = WorldView2ESAMetadata.create(productDirectoryTemp.getFile(fileName + WorldView2ESAConstants.METADATA_FILE_SUFFIX).toPath());
             if (metadata != null) {
                 final List<String> selectedProductFiles = new ArrayList<>();
                 File[] imageDirectoryFileList = null;
@@ -187,10 +185,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 final List<TileMetadata> tileMetadataList = new ArrayList<>();
                 for (String fileMetadata : selectedProductFiles) {
                     if (fileMetadata.endsWith(WorldView2ESAConstants.METADATA_EXTENSION)) {
-                        TileMetadata tileMetadata;
-                        try (FilePathInputStream inputStream = this.productDirectory.getInputStream(productDirectory.getFile(fileMetadata).toString())) {
-                            tileMetadata = TileMetadata.create(inputStream);
-                        }
+                        TileMetadata tileMetadata = TileMetadata.create(productDirectory.getFile(fileMetadata).toPath());
                         tileMetadataList.add(tileMetadata);
                     }
                 }
@@ -247,7 +242,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                         final Product[][] tiles = new Product[tileCols][tileRows];
                         for (String rasterString : tileInfo.keySet()) {
                             final int[] coords = tileInfo.get(rasterString);
-                            if (imageDirectoryFileList != null) {
+                            if (!selectedProductFiles.isEmpty()) {
                                 for (String file : selectedProductFiles) {
                                     if (file.contains(rasterString)) {
                                         rasterString = file;

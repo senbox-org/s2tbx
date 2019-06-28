@@ -222,100 +222,126 @@ public abstract class VirtualDirEx extends VirtualDir {
      * @return  An array of file names
      */
     public String[] listAll(Pattern...patterns) {
-        String path = getBasePath();
-        if (TarVirtualDir.isTar(path) || TarVirtualDir.isTgz(path)) {
+        File baseFile = getBaseFile();
+        if (TarVirtualDir.isTar(baseFile.getPath()) || TarVirtualDir.isTgz(baseFile.getPath())) {
             return listAll();
         } else {
-            List<String> fileNames = new ArrayList<>();
-            if (isArchive()) {
-                try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(getBaseFile().toPath())) {
-                    Iterator<Path> it = fileSystem.getRootDirectories().iterator();
-                    while (it.hasNext()) {
-                        Path root = it.next();
-                        Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
-                            @Override
-                            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                                String zipEntryPath = file.toString();
-                                if (zipEntryPath.startsWith("/")) {
-                                    zipEntryPath = zipEntryPath.substring(1);
-                                }
-                                if (isTar(zipEntryPath)) {
-                                    File temporaryFile = getFile(zipEntryPath);
-                                    try {
-                                        TarVirtualDir innerTar = new TarVirtualDir(temporaryFile.toPath()) {
-                                            @Override
-                                            public void close() {
-                                                // do nothing
-                                            }
-                                        };
-                                        innerTar.ensureUnpacked(getTempDir());
-                                        String[] innerFiles = innerTar.listAll();
-                                        fileNames.addAll(Arrays.asList(innerFiles));
-                                    } finally {
-                                        temporaryFile.delete();
-                                    }
-                                } else {
-                                    fileNames.add(zipEntryPath);
-                                }
-                                return FileVisitResult.CONTINUE;
-                            }
-                        });
-                    }
-                } catch (IOException e) {
-                    // cannot open zip, list will be empty
-                    logger.log(Level.SEVERE, e.getMessage(), e);
-                } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                    throw new IllegalStateException(e);
+            List<String> filesAndFolders;
+            try {
+                if (isArchive()) {
+                    filesAndFolders = listFilesFromZipArchive(baseFile, patterns);
+                } else {
+                    filesAndFolders = listFilesFromFolder(baseFile, patterns);
                 }
-            } else {
-                fileNames.addAll(listFiles(getBaseFile(), patterns));
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, e.getMessage(), e); // cannot open zip file/folder, list will be empty
+                filesAndFolders = new ArrayList<>();
             }
-            return fileNames.toArray(new String[fileNames.size()]);
+            return filesAndFolders.toArray(new String[filesAndFolders.size()]);
         }
     }
 
-    private List<String> listFiles(File parent, Pattern...filters) {
-        List<String> files = new ArrayList<>();
-        Path parentPath = parent.toPath();
-        try {
-            FileVisitor<? super Path> visitor = new FileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    if (parentPath.equals(dir) || (filters.length == 0)) {
-                        return FileVisitResult.CONTINUE;
-                    } else {
-                        String relativePath = parentPath.relativize(dir).toString();
-                        if (Arrays.stream(filters).anyMatch(p -> p.matcher(relativePath).matches())) {
-                            files.add(relativePath);
+    private List<String> listFilesFromZipArchive(File baseFile, Pattern...patterns) throws IOException {
+        List<String> filesAndFolders = new ArrayList<>();
+        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(baseFile.toPath())) {
+            Iterator<Path> it = fileSystem.getRootDirectories().iterator();
+            while (it.hasNext()) {
+                Path root = it.next();
+                FileVisitor<Path> visitor = new ListFilesAndFolderVisitor() {
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                        if (root.equals(dir)) {
                             return FileVisitResult.CONTINUE;
+                        } else {
+                            String zipEntryPath = remoteFirstSeparatorIfExists(root.relativize(dir).toString());
+                            if (matchFilters(zipEntryPath, patterns)) {
+                                filesAndFolders.add(zipEntryPath);
+                                return FileVisitResult.CONTINUE;
+                            }
+                            return FileVisitResult.SKIP_SUBTREE;
                         }
-                        return FileVisitResult.SKIP_SUBTREE;
                     }
-                }
 
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    String relativePath = parentPath.relativize(file).toString();
-                    if (filters.length == 0 || Arrays.stream(filters).anyMatch(p -> p.matcher(relativePath).matches())) {
-                        files.add(relativePath);
+                    private String remoteFirstSeparatorIfExists(String zipEntryPath) {
+                        if (zipEntryPath.startsWith("/")) {
+                            return zipEntryPath.substring(1);
+                        }
+                        return zipEntryPath;
                     }
-                    return FileVisitResult.CONTINUE;
-                }
 
-                @Override
-                public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    return FileVisitResult.CONTINUE;
-                }
-            };
-            Files.walkFileTree(parentPath, EnumSet.noneOf(FileVisitOption.class), this.depth, visitor);
-        } catch (IOException e) {
-            logger.warning(e.getMessage());
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        String zipEntryPath = remoteFirstSeparatorIfExists(file.toString());
+                        if (isTar(zipEntryPath)) {
+                            File temporaryFile = getFile(zipEntryPath);
+                            try {
+                                TarVirtualDir innerTar = new TarVirtualDir(temporaryFile.toPath()) {
+                                    @Override
+                                    public void close() {
+                                        // do nothing
+                                    }
+                                };
+                                innerTar.ensureUnpacked(getTempDir());
+                                String[] innerFiles = innerTar.listAll();
+                                for (int i = 0; i < innerFiles.length; i++) {
+                                    if (matchFilters(innerFiles[i], patterns)) {
+                                        filesAndFolders.add(innerFiles[i]);
+                                    }
+                                }
+                            } finally {
+                                temporaryFile.delete();
+                            }
+                        } else {
+                            if (matchFilters(zipEntryPath, patterns)) {
+                                filesAndFolders.add(zipEntryPath);
+                            }
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                };
+                Files.walkFileTree(root, visitor);
+            }
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new IllegalStateException(e);
         }
-        return files;
+        return filesAndFolders;
+    }
+
+    private List<String> listFilesFromFolder(File parent, Pattern...filters) throws IOException {
+        List<String> filesAndFolders = new ArrayList<>();
+        Path parentPath = parent.toPath();
+        FileVisitor<Path> visitor = new ListFilesAndFolderVisitor() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                if (parentPath.equals(dir)) {
+                    return FileVisitResult.CONTINUE;
+                } else {
+                    String relativePath = parentPath.relativize(dir).toString();
+                    if (matchFilters(relativePath, filters)) {
+                        filesAndFolders.add(relativePath);
+                        return FileVisitResult.CONTINUE;
+                    }
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                String relativePath = parentPath.relativize(file).toString();
+                if (matchFilters(relativePath, filters)) {
+                    filesAndFolders.add(relativePath);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        };
+        Files.walkFileTree(parentPath, visitor);
+        return filesAndFolders;
+    }
+
+    public static boolean matchFilters(String fileNameToCheck, Pattern...filters) {
+        if (filters.length == 0 || Arrays.stream(filters).anyMatch(p -> p.matcher(fileNameToCheck).matches())) {
+            return true;
+        }
+        return false;
     }
 }

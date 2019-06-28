@@ -1,7 +1,7 @@
 <operator>
-  <name>Sen2Cor</name>
+  <name>Sen2Cor v2.5.5</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
-  <alias>Sen2Cor</alias>
+  <alias>Sen2Cor v2.5.5</alias>
   <label>SEN2COR</label>
   <version>255</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
@@ -9,7 +9,7 @@
   <copyright></copyright>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>
-  <menuLocation>Menu/Optical/Thematic Land Processing</menuLocation>
+  <menuLocation>Menu/Optical/Thematic Land Processing/Sen2Cor Processor</menuLocation>
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$SEN2COR_BIN\$SEN2COR_EXE</mainToolFileLocation>

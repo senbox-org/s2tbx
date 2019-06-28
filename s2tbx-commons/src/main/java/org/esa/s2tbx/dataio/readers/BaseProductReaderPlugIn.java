@@ -128,28 +128,36 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
         DecodeQualification returnValue = DecodeQualification.UNABLE;
+        Pattern[] patternList = this.enforcer.getMinimalFilePatternList();
+        String[] filteredFiles = null;
         if (virtualDir.isCompressed()) {
-            String[] files = CACHED_FILES.get(input);
-            if (files == null) {
-                files = virtualDir.listAll();
-                if (files == null) {
+            // the selected file is an archive
+            String[] availableFiles = CACHED_FILES.get(input);
+            if (availableFiles == null) {
+                // list all the files without filters and apply the filters later
+                availableFiles = virtualDir.listAll();
+                if (availableFiles == null) {
                     throw new NullPointerException("The files array is null.");
                 }
-                CACHED_FILES.put(input, files);
+                CACHED_FILES.put(input, availableFiles);
             }
-            if (this.enforcer.isConsistent(files)) {
-                returnValue = DecodeQualification.INTENDED;
-            }
-        } else if (Files.isRegularFile(inputPath)) {
-            Pattern[] patternList = this.enforcer.getMinimalFilePatternList();
-            boolean matches = Arrays.stream(patternList).anyMatch(p -> p.matcher(inputPath.getFileName().toString()).matches());
-            if (matches) {
-                virtualDir.setFolderDepth(this.folderDepth);
-                String[] files = virtualDir.listAll(patternList);
-                if (files.length >= patternList.length && this.enforcer.isConsistent(files)) {
-                    returnValue = DecodeQualification.INTENDED;
+            // apply the reader plugin filters
+            List<String> filteredFileNames = new ArrayList<String>();
+            for (int i=0; i<availableFiles.length; i++) {
+                if (VirtualDirEx.matchFilters(availableFiles[i], patternList)) {
+                    filteredFileNames.add(availableFiles[i]);
                 }
             }
+            filteredFiles = new String[filteredFileNames.size()];
+            filteredFileNames.toArray(filteredFiles);
+        } else if (Files.isRegularFile(inputPath)) {
+            boolean matches = Arrays.stream(patternList).anyMatch(p -> p.matcher(inputPath.getFileName().toString()).matches());
+            if (matches) {
+                filteredFiles = virtualDir.listAll(patternList);
+            }
+        }
+        if (filteredFiles != null && filteredFiles.length >= patternList.length && this.enforcer.isConsistent(filteredFiles)) {
+            returnValue = DecodeQualification.INTENDED;
         }
         return returnValue;
     }
