@@ -7,7 +7,7 @@
         <groupId>org.esa.s2tbx</groupId>
         <version>6.0.5-SNAPSHOT</version>
     </parent>
-    <version>6.0.0</version>
+    <version>6.0.1</version>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sen2cor255</artifactId>
