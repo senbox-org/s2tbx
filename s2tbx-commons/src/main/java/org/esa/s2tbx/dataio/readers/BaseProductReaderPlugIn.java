@@ -124,7 +124,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         VirtualDirEx virtualDir;
         try {
             virtualDir = VirtualDirEx.build(inputPath, false, true);
-        } catch (IOException e) {
+        } catch (Throwable e) { //getDecodeQualification should not throw any exception, so use Throwable instead of IOException
             return DecodeQualification.UNABLE;
         }
         DecodeQualification returnValue = DecodeQualification.UNABLE;
@@ -137,7 +137,8 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
                 // list all the files without filters and apply the filters later
                 availableFiles = virtualDir.listAll();
                 if (availableFiles == null) {
-                    throw new NullPointerException("The files array is null.");
+                    //throw new NullPointerException("The files array is null."); //getDecodeQualification should not throw any exception
+                    return DecodeQualification.UNABLE;
                 }
                 CACHED_FILES.put(input, availableFiles);
             }
