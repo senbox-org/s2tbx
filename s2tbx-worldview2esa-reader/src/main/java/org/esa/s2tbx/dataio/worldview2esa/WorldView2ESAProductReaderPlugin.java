@@ -57,6 +57,6 @@ public class WorldView2ESAProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     protected void registerRGBProfile() {
-        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("WorldView", WorldView2ESAConstants.WORLDVIEW2_RGB_PROFILE));
+        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("WorldView-2 ESA", WorldView2ESAConstants.WORLDVIEW2_RGB_PROFILE));
     }
 }

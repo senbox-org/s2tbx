@@ -12,7 +12,7 @@ public class AlosAV2Constants {
     public static final String VALUE_NOT_AVAILABLE = "N/A";
     public static final String DIMAP = "DIMAP";
     public static final String ALOSAV2 = "ALOS";
-    public static final String[] DEFAULT_BAND_NAMES = { "Band_1(blue)", "Band_2(green)", "Band_3(red)", "Band_4(near_infrared)"};
+    public static final String[] DEFAULT_BAND_NAMES = { "blue", "green", "red", "near_infrared"};
     public static final String DEFAULT_UNIT = "W.M-2.SR-1.uM-1";
     public static final String STRING_ZERO = "0";
     public static final String NODATA = "no data";
@@ -28,7 +28,7 @@ public class AlosAV2Constants {
     public static final String[] MINIMAL_PRODUCT_PATTERNS = new String[]{
             "(AL\\d{1,2}_[A-Z]{4}_AV2_OBS_1(B|C)_\\d{8}T\\d{6}_\\d{8}T\\d{6}_0\\d{5}_\\d{4}_\\d{4}_\\d{4}(\\.[A-Z]{3}\\.ZIP|\\.MD\\.XML)|AL\\d{1,2}_AV2_OBS_1(B|C)_\\d{8}T\\d{6}_\\d{8}T\\d{6}_\\w{3}_\\d{6}_\\w{4}\\.DIMA)"
     };
-    public static final String[] ALOSAV2_RGB_PROFILE = new String[]{"3", "2", "1"};
+    public static final String[] ALOSAV2_RGB_PROFILE = new String[]{"red", "green", "blue"};
 
     public static final String METADATA_FILE_SUFFIX = ".MD.XML";
     public static final String IMAGE_METADATA_EXTENSION = ".DIMA";

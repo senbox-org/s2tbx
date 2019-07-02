@@ -111,19 +111,20 @@ public class AlosAV2Metadata extends XmlMetadata {
         String[] names = new String[nBands];
         for (int i = 0; i < nBands; i++) {
             names[i] = getAttributeValue(AlosAV2Constants.PATH_BAND_DESCRIPTION, i, AlosAV2Constants.DEFAULT_BAND_NAMES[i]);
-            if (names[i].contains(" ") || names[i].contains(",") || names[i].contains("(")) {
+            if (names[i].contains(",") || names[i].contains("(")) {
                 String betweenBrackets = null;
                 if (names[i].contains("(")) {
-                    betweenBrackets = names[i].substring(names[i].indexOf("("), names[i].indexOf(")"));
+                    betweenBrackets = names[i].substring(names[i].indexOf("(")+1, names[i].indexOf(")")+1);
                     if (betweenBrackets.contains(",")) {
-                        betweenBrackets = betweenBrackets.substring(0, betweenBrackets.indexOf(","))+")";
+                        betweenBrackets = betweenBrackets.substring(0, betweenBrackets.indexOf(","));
                     }
                 }
                 if (betweenBrackets != null) {
-                    names[i] = names[i].substring(0, names[i].indexOf(" (")) + betweenBrackets;
+                    names[i] = betweenBrackets;
                 }
-                    names[i] = names[i].replace(" ", "_");
-
+            }
+            if(names[i].contains(" ")){
+                names[i] = names[i].replace(" ","_");
             }
         }
         return names;

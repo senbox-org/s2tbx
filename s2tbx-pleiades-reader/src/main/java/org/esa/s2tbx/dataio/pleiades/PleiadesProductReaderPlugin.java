@@ -78,7 +78,7 @@ public class PleiadesProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     protected void registerRGBProfile() {
-        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Pleaides", Constants.RGB_PROFILE));
+        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Pleiades", Constants.RGB_PROFILE));
     }
 
     @Override

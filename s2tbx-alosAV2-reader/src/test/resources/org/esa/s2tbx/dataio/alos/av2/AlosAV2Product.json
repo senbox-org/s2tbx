@@ -22,7 +22,7 @@
     },
     "bands": [
       {
-        "name": "Band_1(blue)",
+        "name": "blue",
         "noDataValue": "0.05750",
         "noDataValueUsed": "false",
         "spectralWavelength": "0.0",
@@ -41,7 +41,7 @@
         ]
       },
       {
-        "name": "Band_2(green)",
+        "name": "green",
         "noDataValue": "0.05750",
         "noDataValueUsed": "false",
         "spectralWavelength": "0.0",
@@ -60,7 +60,7 @@
         ]
       },
       {
-        "name": "Band_3(red)",
+        "name": "red",
         "noDataValue": "0.05750",
         "noDataValueUsed": "false",
         "spectralWavelength": "0.0",
@@ -79,7 +79,7 @@
         ]
       },
       {
-        "name": "Band_4(near_infrared)",
+        "name": "near_infrared",
         "noDataValue": "0.05750",
         "noDataValueUsed": "false",
         "spectralWavelength": "0.0",
