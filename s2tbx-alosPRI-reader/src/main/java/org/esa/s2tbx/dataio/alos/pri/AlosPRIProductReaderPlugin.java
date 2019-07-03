@@ -59,9 +59,7 @@ public class AlosPRIProductReaderPlugin extends BaseProductReaderPlugIn {
     }
 
     @Override
-    protected void registerRGBProfile() {
-        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Alos PRISM", new String[]{"Band_1(pan)", "Band_1(pan)", "Band_1(pan)"}));
-    }
+    protected void registerRGBProfile() {}
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
