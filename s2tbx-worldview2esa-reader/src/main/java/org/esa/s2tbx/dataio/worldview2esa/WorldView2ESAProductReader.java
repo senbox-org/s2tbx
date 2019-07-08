@@ -34,8 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
@@ -45,20 +43,19 @@ import java.util.regex.Pattern;
  */
 
 public class WorldView2ESAProductReader extends AbstractProductReader {
+
     private static final Logger logger = Logger.getLogger(WorldView2ESAProductReader.class.getName());
 
     private static final String EXCLUSION_STRING = ".SI.XML";
     private static final String WIDTH = "width";
     private static final String HEIGHT = "height";
+
     private VirtualDirEx productDirectory;
     private Product product;
-    private WorldView2ESAMetadata metadata;
     private int numMultiSpectralBands;
     private Map<Product, String> tilesMultiSpectral;
     private Map<Product, String> tilesPanchromatic;
     private Set<WeakReference<Product>> tileRefs;
-    private int minRows = 0;
-    private int minCols = 0;
 
     /**
      * Constructs a new abstract product reader.
@@ -68,208 +65,167 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
      */
     protected WorldView2ESAProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        this.tilesMultiSpectral = new HashMap<>();
-        tilesPanchromatic = new HashMap<>();
-        this.tileRefs = new HashSet<>();
-    }
 
-    /**
-     * Force deletion of directory
-     *
-     * @param path path to file/directory
-     * @return return true if successful
-     */
-    private static boolean deleteDirectory(final File path) {
-        if (path.exists()) {
-            final File[] files = path.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        deleteDirectory(file);
-                    } else {
-                        if (!file.delete()) {
-                            logger.log(Level.WARNING, "The file " + file + " could not be deleted");
-                        }
-                    }
-                }
-            }
-        }
-        return (path.delete());
+        this.tilesMultiSpectral = new HashMap<>();
+        this.tilesPanchromatic = new HashMap<>();
+        this.tileRefs = new HashSet<>();
     }
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        final Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        final VirtualDirEx productDirectoryTemp = VirtualDirEx.build(inputPath);
+        Object inputObject = getInput();
+
+        long startTime = System.currentTimeMillis();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Start reading WorldView2ESA product, input: " + inputObject.toString());
+        }
+
+        final Path inputPath = BaseProductReaderPlugIn.convertInputToPath(inputObject);
+        final VirtualDirEx productDirectoryTemp = VirtualDirEx.build(inputPath, false, true);
         try {
             String fileName = productDirectoryTemp.getBaseFile().getName();
-
             if (productDirectoryTemp.isCompressed()) {
                 fileName = fileName.substring(0, fileName.lastIndexOf(WorldView2ESAConstants.PRODUCT_FILE_SUFFIX));
             } else {
                 fileName = fileName.substring(0, fileName.lastIndexOf("."));
             }
 
-            this.metadata = WorldView2ESAMetadata.create(productDirectoryTemp.getFile(fileName + WorldView2ESAConstants.METADATA_FILE_SUFFIX).toPath());
-            if (metadata != null) {
-                final List<String> selectedProductFiles = new ArrayList<>();
-                File[] imageDirectoryFileList = null;
-                String[] directoryFileList = null;
-                if (productDirectoryTemp.isArchive() || !productDirectoryTemp.exists(fileName)) {
-                    //unzip the necessary files in a temporary directory
-                    productDirectory = VirtualDirEx.build(productDirectoryTemp.getFile(fileName + WorldView2ESAConstants.ARCHIVE_FILE_EXTENSION).toPath());
-                    for (String item : productDirectory.listAllFiles()) {
-                        if (item.endsWith(WorldView2ESAConstants.IMAGE_EXTENSION) ||
-                                item.endsWith(WorldView2ESAConstants.METADATA_EXTENSION)) {
-                            productDirectory.getFile(item);
-                            if (metadata.getImageDirectoryPath() == null) {
-                                metadata.setImageDirectoryPath(productDirectory.getTempDir().toString());
-                            }
-                        }
-                    }
-                    String dir = metadata.getImageDirectoryPath();
-                    imageDirectoryFileList = new File(dir).listFiles();
-                } else {
-                    productDirectory = productDirectoryTemp;
-                    productDirectory.setFolderDepth(4);
-                    directoryFileList = productDirectory.listAllFiles();
-                    if (metadata.getImageDirectoryPath() == null) {
-                        metadata.setImageDirectoryPath(productDirectory.getBasePath());
-                    }
-                }
+            WorldView2ESAMetadata metadata;
+            String fileNameWithExtension = fileName + WorldView2ESAConstants.METADATA_FILE_SUFFIX;
+            try (FilePathInputStream filePathInputStream = productDirectoryTemp.getInputStream(fileNameWithExtension)) {
+                metadata = WorldView2ESAMetadata.create(filePathInputStream);
+            }
+            if (productDirectoryTemp.isArchive() || !productDirectoryTemp.exists(fileName)) {
+                // unzip the necessary files in a temporary directory
+                Path path = productDirectoryTemp.getFile(fileName + WorldView2ESAConstants.ARCHIVE_FILE_EXTENSION).toPath();
+                this.productDirectory = VirtualDirEx.build(path, false, true);
+            } else {
+                this.productDirectory = productDirectoryTemp;
+            }
 
-                //the input is a ZIP file or contains a ZIP file
-                if (imageDirectoryFileList != null) {
-                    for (File file : imageDirectoryFileList) {
-                        final Matcher matcher = Pattern.compile(WorldView2ESAConstants.PATH_ZIP_FILE_NAME_PATTERN).matcher(file.getName());
-                        while (matcher.find()) {
-                            if (file.isDirectory()) {
-                                for (File subfile : file.listFiles()) {
-                                    if ((subfile.getName().contains(WorldView2ESAConstants.METADATA_EXTENSION)
-                                            || subfile.getName().contains(WorldView2ESAConstants.IMAGE_EXTENSION))
-                                            && !subfile.getName().contains(WorldView2ESAConstants.METADATA_FILE_SUFFIX)
-                                            && !subfile.getName().contains(EXCLUSION_STRING)) {
-                                        String subfilePath = file.getName() + File.separator + subfile.getName();
-                                        if (!selectedProductFiles.contains(subfilePath)) {
-                                            selectedProductFiles.add(subfilePath);
-                                        }
-                                    }
-                                }
-                            } else {
-                                if ((file.getName().contains(WorldView2ESAConstants.METADATA_EXTENSION)
-                                        || file.getName().contains(WorldView2ESAConstants.IMAGE_EXTENSION))
-                                        && !file.getName().contains(WorldView2ESAConstants.METADATA_FILE_SUFFIX)
-                                        && !file.getName().contains(EXCLUSION_STRING)) {
-                                    if (!selectedProductFiles.contains(file.getName())) {
-                                        selectedProductFiles.add(file.getName());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                // if the input does not contain ZIP files
-                if (directoryFileList != null) {
-                    for (String file : directoryFileList) {
-                        if ((file.contains(WorldView2ESAConstants.METADATA_EXTENSION)
-                                || file.contains(WorldView2ESAConstants.IMAGE_EXTENSION))
-                                && !file.contains(WorldView2ESAConstants.METADATA_FILE_SUFFIX)
-                                && !file.contains(EXCLUSION_STRING)) {
-                            if (!selectedProductFiles.contains(file)) {
-                                selectedProductFiles.add(file);
-                            }
-                        }
-                    }
-                }
+            String[] directoryFileList = this.productDirectory.listAllFiles();
 
-                final List<TileMetadata> tileMetadataList = new ArrayList<>();
-                for (String fileMetadata : selectedProductFiles) {
-                    if (fileMetadata.endsWith(WorldView2ESAConstants.METADATA_EXTENSION)) {
-                        TileMetadata tileMetadata = TileMetadata.create(productDirectory.getFile(fileMetadata).toPath());
-                        tileMetadataList.add(tileMetadata);
-                    }
-                }
-                if (!tileMetadataList.isEmpty()) {
-                    int width = 0;
-                    int height = 0;
-                    double stepSize = 0.0;
-                    double originX = 0.0;
-                    double originY = 0.0;
-                    String crsCode = null;
-                    for (TileMetadata tileMetadata : tileMetadataList) {
-                        final TileComponent tileComponent = tileMetadata.getTileComponent();
-                        if (tileComponent.getBandID().equals("P")) {
-                            width = tileComponent.getNumColumns();
-                            height = tileComponent.getNumRows();
-                            stepSize = tileComponent.getStepSize();
-                            originX = tileComponent.getOriginX();
-                            originY = tileComponent.getOriginY();
-                            crsCode = tileComponent.computeCRSCode();
-                        }
-                    }
-                    this.product = new Product(this.metadata.getProductName(), WorldView2ESAConstants.PRODUCT_TYPE, width, height);
-                    this.product.setStartTime(this.metadata.getProductStartTime());
-                    this.product.setEndTime(this.metadata.getProductEndTime());
-                    this.product.setDescription(this.metadata.getProductDescription());
-                    this.product.setProductReader(this);
-                    this.product.setFileLocation(this.metadata.getPath().toFile());
-                    try {
-                        assert crsCode != null;
-                        final GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
-                                                                     width, height,
-                                                                     originX, originY,
-                                                                     stepSize, stepSize);
-                        product.setSceneGeoCoding(geoCoding);
-                    } catch (Exception e) {
-                        logger.warning(e.getMessage());
-                    }
-                    generateProductLists(selectedProductFiles, tileMetadataList);
-                    for (TileMetadata tileMetadata : tileMetadataList) {
-                        this.product.getMetadataRoot().addElement(tileMetadata.getRootElement());
-                        final int pixelDataType = tileMetadata.getPixelDataType();
-                        String[] bandNames;
-                        if (numMultiSpectralBands < 4) {
-                            bandNames = WorldView2ESAConstants.NATURAL_COLORS;
-                        }
-                        if (numMultiSpectralBands == 4) {
-                            bandNames = WorldView2ESAConstants.BAND_NAMES_MULTISPECTRAL_4_BANDS;
-                        } else {
-                            bandNames = WorldView2ESAConstants.BAND_NAMES_MULTISPECTRAL_8_BANDS;
-                        }
-                        final Map<String, int[]> tileInfo = tileMetadata.getRasterTileInfo();
-                        final int tileRows = tileMetadata.getTileRowsCount();
-                        final int tileCols = tileMetadata.getTileColsCount();
-                        final Product[][] tiles = new Product[tileCols][tileRows];
-                        for (String rasterString : tileInfo.keySet()) {
-                            final int[] coords = tileInfo.get(rasterString);
-                            if (!selectedProductFiles.isEmpty()) {
-                                for (String file : selectedProductFiles) {
-                                    if (file.contains(rasterString)) {
-                                        rasterString = file;
-                                    }
-                                }
-                            }
-                            File rasterFile = productDirectory.getFile(rasterString);
-                            if (!rasterFile.exists()) {
-                                rasterFile = new File(productDirectory.getBasePath() + rasterFile.getPath().substring(rasterFile.getPath().indexOf(File.separator)));
-                            }
-                            tiles[coords[1]][coords[0]] = ProductIO.readProduct(rasterFile);
-                            tileRefs.add(new WeakReference<Product>(tiles[coords[1]][coords[0]]));
-                        }
-                        final int levels = getProductLevels();
-                        if (tileMetadata.getTileComponent().getBandID().equals("MS1") ||
-                                tileMetadata.getTileComponent().getBandID().equals("Multi")) {
-                            for (int index = 0; index < this.numMultiSpectralBands; index++) {
-                                final Band targetBand = createTargetBand(tileMetadata, levels, bandNames, index, tiles, pixelDataType, this.tilesMultiSpectral);
-                                this.product.addBand(targetBand);
-                            }
-                        } else {
-                            final Band targetBand = createTargetBand(tileMetadata, levels, new String[]{bandNames[bandNames.length - 1]}, 0, tiles, pixelDataType, this.tilesPanchromatic);
-                            this.product.addBand(targetBand);
-                        }
+            // the input is a ZIP file or contains a ZIP file
+            final List<String> selectedProductFiles = new ArrayList<>();
+
+            // if the input does not contain ZIP files
+            for (String file : directoryFileList) {
+                if ((file.endsWith(WorldView2ESAConstants.METADATA_EXTENSION) || file.endsWith(WorldView2ESAConstants.IMAGE_EXTENSION))
+                        && !file.endsWith(WorldView2ESAConstants.METADATA_FILE_SUFFIX)
+                        && !file.endsWith(EXCLUSION_STRING)) {
+                    if (!selectedProductFiles.contains(file)) {
+                        selectedProductFiles.add(file);
                     }
                 }
             }
+
+            final List<TileMetadata> tileMetadataList = new ArrayList<>();
+            for (String fileMetadata : selectedProductFiles) {
+                if (fileMetadata.endsWith(WorldView2ESAConstants.METADATA_EXTENSION)) {
+                    try (FilePathInputStream filePathInputStream = this.productDirectory.getInputStream(fileMetadata)) {
+                        TileMetadata tileMetadata = TileMetadata.create(filePathInputStream);
+                        tileMetadataList.add(tileMetadata);
+                    }
+                }
+            }
+            if (!tileMetadataList.isEmpty()) {
+                int width = 0;
+                int height = 0;
+                double stepSize = 0.0;
+                double originX = 0.0;
+                double originY = 0.0;
+                String crsCode = null;
+                for (TileMetadata tileMetadata : tileMetadataList) {
+                    final TileComponent tileComponent = tileMetadata.getTileComponent();
+                    if (tileComponent.getBandID().equals("P")) {
+                        width = tileComponent.getNumColumns();
+                        height = tileComponent.getNumRows();
+                        stepSize = tileComponent.getStepSize();
+                        originX = tileComponent.getOriginX();
+                        originY = tileComponent.getOriginY();
+                        crsCode = tileComponent.computeCRSCode();
+                    }
+                }
+                this.product = new Product(metadata.getProductName(), WorldView2ESAConstants.PRODUCT_TYPE, width, height);
+                this.product.setStartTime(metadata.getProductStartTime());
+                this.product.setEndTime(metadata.getProductEndTime());
+                this.product.setDescription(metadata.getProductDescription());
+                this.product.setProductReader(this);
+                this.product.setFileLocation(inputPath.toFile());
+                try {
+                    assert crsCode != null;
+                    final GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
+                                                                 width, height,
+                                                                 originX, originY,
+                                                                 stepSize, stepSize);
+                    product.setSceneGeoCoding(geoCoding);
+                } catch (Exception e) {
+                    logger.warning(e.getMessage());
+                }
+
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Generate product lists: selected products files size: "+selectedProductFiles.size() + ", metadata list size: "+ tileMetadataList.size());
+                }
+
+                generateProductLists(selectedProductFiles, tileMetadataList);
+
+                for (TileMetadata tileMetadata : tileMetadataList) {
+
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Read products for tile metadata '" + tileMetadata.getPath()+"'.");
+                    }
+
+                    this.product.getMetadataRoot().addElement(tileMetadata.getRootElement());
+                    final int pixelDataType = tileMetadata.getPixelDataType();
+                    String[] bandNames;
+                    if (numMultiSpectralBands < 4) {
+                        bandNames = WorldView2ESAConstants.NATURAL_COLORS;
+                    }
+                    if (numMultiSpectralBands == 4) {
+                        bandNames = WorldView2ESAConstants.BAND_NAMES_MULTISPECTRAL_4_BANDS;
+                    } else {
+                        bandNames = WorldView2ESAConstants.BAND_NAMES_MULTISPECTRAL_8_BANDS;
+                    }
+                    final Map<String, int[]> tileInfo = tileMetadata.getRasterTileInfo();
+                    final int tileRows = tileMetadata.getTileRowsCount();
+                    final int tileCols = tileMetadata.getTileColsCount();
+                    final Product[][] tiles = new Product[tileCols][tileRows];
+
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Read products tile count " + tileInfo.keySet().size()+".");
+                    }
+
+                    for (String rasterString : tileInfo.keySet()) {
+                        final int[] coords = tileInfo.get(rasterString);
+                        if (!selectedProductFiles.isEmpty()) {
+                            for (String file : selectedProductFiles) {
+                                if (file.contains(rasterString)) {
+                                    rasterString = file;
+                                }
+                            }
+                        }
+                        Product localProduct = readProduct(rasterString);
+                        tiles[coords[1]][coords[0]] = localProduct;
+                        this.tileRefs.add(new WeakReference<Product>(localProduct));
+                    }
+                    final int levels = getProductLevels();
+                    if (tileMetadata.getTileComponent().getBandID().equals("MS1") || tileMetadata.getTileComponent().getBandID().equals("Multi")) {
+                        for (int index = 0; index < this.numMultiSpectralBands; index++) {
+                            final Band targetBand = createTargetBand(tileMetadata, levels, bandNames, index, tiles, pixelDataType, this.tilesMultiSpectral);
+                            this.product.addBand(targetBand);
+                        }
+                    } else {
+                        final Band targetBand = createTargetBand(tileMetadata, levels, new String[]{bandNames[bandNames.length - 1]}, 0, tiles, pixelDataType, this.tilesPanchromatic);
+                        this.product.addBand(targetBand);
+                    }
+                }
+            }
+
+            if (logger.isLoggable(Level.FINE)) {
+                double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
+                logger.log(Level.FINE, "Finish reading WorldView2ESA product, input: " + inputObject.toString() + "', elapsed time: " + elapsedTimeInSeconds + " seconds.");
+            }
+
             return this.product;
         } finally {
             productDirectoryTemp.close();
@@ -303,9 +259,6 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             this.productDirectory.close();
             this.productDirectory = null;
         }
-        if (this.metadata != null) {
-            this.metadata = null;
-        }
         if (this.tilesPanchromatic != null) {
             this.tilesPanchromatic.clear();
             this.tilesPanchromatic = null;
@@ -313,12 +266,6 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         if (this.tilesMultiSpectral != null) {
             this.tilesMultiSpectral.clear();
             this.tilesMultiSpectral = null;
-        }
-        if (this.metadata != null) {
-            File imageDir = new File(this.metadata.getImageDirectoryPath());
-            if (imageDir.exists()) {
-                deleteDirectory(imageDir);
-            }
         }
         super.close();
     }
@@ -391,7 +338,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                     }
                 }
                 if (x != tileCols - 1 || (x == tileCols - 1 && (tileCols > tileRows || tileRows > tileCols)) || tileCols == tileRows) {
-                        tileBandHeight = tileBandHeight + tiles[x][y].getBandAt(bandIndex).getRasterHeight();
+                    tileBandHeight = tileBandHeight + tiles[x][y].getBandAt(bandIndex).getRasterHeight();
                 }
             }
             if (tileRows < tileCols && x != tileCols - 1 && x <tileRows) {
@@ -496,7 +443,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                     }
                 }
                 if (filePath != null) {
-                    final Product p = ProductIO.readProduct(productDirectory.getFile(filePath));
+                    Product p = readProduct(filePath);
                     if (tileComponent.getBandID().equals("P")) {
                         this.tilesPanchromatic.put(p, tileComponent.getTileNames()[filesIndex]);
                     } else {
@@ -506,25 +453,19 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                         }
                     }
                     tileComponent.setDeliveredTiles(tileComponent.getTileNames()[filesIndex]);
-                    setMinRows(tileComponent.getNumRows());
-                    setMinCols(tileComponent.getNumColumns());
                 } else {
                     logger.warning(tileComponent.getTileNames()[filesIndex] + " is missing");
-
                 }
             }
         }
     }
 
-    public void setMinRows(final int numRows) {
-        if (minRows == 0 || minRows > numRows) {
-            minRows = numRows;
+    private Product readProduct(String filePath) throws IOException {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Read product from relative file path '" + filePath + "'.");
         }
-    }
 
-    public void setMinCols(final int numCols) {
-        if (minCols == 0 || minCols > numCols) {
-            minCols = numCols;
-        }
+        File file = this.productDirectory.getFile(filePath);
+        return ProductIO.readProduct(file);
     }
 }
