@@ -49,6 +49,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import java.awt.geom.Point2D;
+import java.awt.image.DataBuffer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -227,17 +228,25 @@ public class JP2ProductReader extends AbstractProductReader {
 
         int numBands = componentTilesInfo.size();
         for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
-            int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
-            Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1), OpenJpegUtils.PRECISION_TYPE_MAP.get(precision), imageWidth, imageHeight);
-            int dataType = OpenJpegUtils.DATA_TYPE_MAP.get(precision);
+            // changes from https://github.com/senbox-org/s2tbx/pull/48
+            /*int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
+            Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1), OpenJpegUtils.PRECISION_TYPE_MAP.get(precision), imageWidth, imageHeight);*/
+            ImageInfo.ImageInfoComponent bandImageInfo = imageInfo.getComponents().get(bandIdx);
+            int snapDataType = getSnapDataTypeFromImageInfo(bandImageInfo);
+            int awtDataType = getAwtDataTypeFromImageInfo(bandImageInfo);
+            Band virtualBand = new Band("band_" + (bandIdx + 1),
+              snapDataType,
+              imageWidth,
+              imageHeight);
+
             JP2MultiLevelSource source = new JP2MultiLevelSource(this.virtualJp2File, bandIdx, numBands, imageWidth, imageHeight,
                     csInfo.getTileWidth(), csInfo.getTileHeight(),
                     csInfo.getNumTilesX(), csInfo.getNumTilesY(),
-                    csInfo.getNumResolutions(), dataType,
+                    csInfo.getNumResolutions(), awtDataType,
                     this.product.getSceneGeoCoding());
 
             int level = 0;
-            ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(csInfo.getTileWidth(), csInfo.getTileHeight(), dataType, level);
+            ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(csInfo.getTileWidth(), csInfo.getTileHeight(), awtDataType, level);
             virtualBand.setSourceImage(new DefaultMultiLevelImage(source, imageLayout));
 
             if (bandScales != null && bandOffsets != null) {
@@ -250,5 +259,23 @@ public class JP2ProductReader extends AbstractProductReader {
 
     private void registerMetadataParser() {
         XmlMetadataParserFactory.registerParser(Jp2XmlMetadata.class, new XmlMetadataParser<>(Jp2XmlMetadata.class));
+    }
+
+    private int getSnapDataTypeFromImageInfo(ImageInfo.ImageInfoComponent imageInfo) {
+        int precision = imageInfo.getPrecision();
+        boolean signed = imageInfo.isSigned();
+        if(!signed && precision == 16) {
+            return ProductData.TYPE_UINT16;
+        }
+        return OpenJpegUtils.PRECISION_TYPE_MAP.get(precision);
+    }
+
+    private int getAwtDataTypeFromImageInfo(ImageInfo.ImageInfoComponent imageInfo) {
+        int precision = imageInfo.getPrecision();
+        boolean signed = imageInfo.isSigned();
+        if(!signed && precision == 16) {
+            return DataBuffer.TYPE_USHORT;
+        }
+        return OpenJpegUtils.DATA_TYPE_MAP.get(precision);
     }
 }
