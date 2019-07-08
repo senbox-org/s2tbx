@@ -20,7 +20,7 @@ public class IkonosConstants {
             "IK2_OPER_OSA_GEO_\\d{1}\\w{1}_\\d{8}T\\d{6}_\\w{1}\\d{2}-\\d{3}_\\w{1}\\d{3}-\\d{3}_\\d{4}.MD.XML"
     };
     public static final String PATH_ZIP_FILE_NAME_PATTERN = "\\d{14}_po_\\d{7}_\\d{7}";
-    public static final String[] IKONOS_RGB_PROFILE = new String[]{"3", "2", "1"};
+    public static final String[] IKONOS_RGB_PROFILE = new String[]{"Red", "Green", "Blue"};
     public static final String[] BAND_NAMES = new String[]{"1", "2", "3", "4", "Pan"};
     public static final String[] FILE_NAMES = new String[]{"blu", "grn", "red", "nir", "pan"};
     public static final Double[] BAND_GAIN = new Double[]{0.00137, 0.00137, 0.00105, 0.00119};
