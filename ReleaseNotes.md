@@ -57,16 +57,33 @@ This module enables the Sentinel Toolbox to read ALOS PRISM data products.
     * WorldView-2 Reader tests are not passed.
     * Spectral Angle Mapper help images are not displayed in Linux.
     * [SIITBX-299] - Negative values getting lost when reading jp2 files (direct mode)
+    * [SIITBX-303] - Datatype uint16 is wrongly read as int16 from jp2 files
     * [SIITBX-305] - Help link does not work from menu.
+    * [SIITBX-340] - Check REIP processor formula
+    * [SIITBX-341] - Check WDVI processor
+    * [SIITBX-345] - GeFolki Co-registration Operator not working in gpt
+    * [SIITBX-347] - RapidEye reader not working in gpt
+    * [SIITBX-350] - MCARI processor formula incorrect in help
+    * [SIITBX-351] - TSAVI processor incorrect formula
+    * [SIITBX-352] - MSAVI2 processor incorrect formula
+    * [SIITBX-353] - NDPI (Normalized Difference Pond Index) processor incorrect formula
+    * [SIITBX-366] - Muscate reader takes too long time to open product from both locally and VFS
+    * [SIITBX-367] - Decode qualification not correctly evaluated by Sentinel-2 reader with relative path
+    * [SIITBX-372] - Ikonos and AVNIR-2 RGBProfiles are allows shown
 
 #### New Feature
     * [SIITBX-141] - Add PLEIADES reader
-    * [STEP-8]  - IKONOS Product Reader
-    * [STEP-29] - ALOS AVNIR-2 / PRISM Reader
+    * [STEP-7]     - WorldView Product Reader (ESA archive format)
+    * [STEP-8]     - IKONOS Product Reader
+    * [STEP-29]    - ALOS AVNIR-2 / PRISM Reader
 
 #### Improvement
     * [SIITBX-304] - Use object tag for external link.
     * [SIITBX-306] - Entry in ToC of Help should be renamed.
+    * [SIITBX-354] - Update S2TBX readers for VFS
+    * [SIITBX-359] - Spectral Angle Mapper usage from GPT
+    * [SIITBX-368] - Sentinel-2 L1B reader takes too long time to open zipped product due to JP2 reader bottleneck
+    * [SIITBX-371] - Allow WorldView2 reader to read zipped products
 
 
 
