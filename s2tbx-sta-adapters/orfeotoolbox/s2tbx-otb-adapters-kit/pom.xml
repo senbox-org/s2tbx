@@ -7,7 +7,7 @@
         <groupId>org.esa.s2tbx</groupId>
         <version>7.0.0-rc6</version>
     </parent>
-
+    <version>7.0.0</version>
     <artifactId>s2tbx-otb-adapters-kit</artifactId>
     <packaging>nbm</packaging>
 
