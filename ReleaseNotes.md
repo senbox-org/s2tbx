@@ -63,6 +63,7 @@ This module enables the Sentinel Toolbox to read ALOS PRISM data products.
     * [SIITBX-341] - Check WDVI processor
     * [SIITBX-345] - GeFolki Co-registration Operator not working in gpt
     * [SIITBX-347] - RapidEye reader not working in gpt
+    * [SIITBX-348] - Spot reader not working in gpt
     * [SIITBX-350] - MCARI processor formula incorrect in help
     * [SIITBX-351] - TSAVI processor incorrect formula
     * [SIITBX-352] - MSAVI2 processor incorrect formula
