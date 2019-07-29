@@ -360,6 +360,8 @@ public class S2Resampler implements Resampler {
 
         bandZenith.setSourceImage(S2ResamplerUtils.adjustImageToModelTransform(finalImageZenith, referenceMultiLevelModel));
         bandAzimuth.setSourceImage(S2ResamplerUtils.adjustImageToModelTransform(finalImageAzimuth, referenceMultiLevelModel));
+        bandZenith.setNoDataValue(0.0f);
+        bandAzimuth.setNoDataValue(0.0f);
         return true;
     }
 
@@ -368,10 +370,16 @@ public class S2Resampler implements Resampler {
         BandMathsOp.BandDescriptor bandDescriptorZenith = new BandMathsOp.BandDescriptor();
         bandDescriptorZenith.name = "view_zenith_mean";
         bandDescriptorZenith.expression = "";
+        String meanExpressionZenith = "";
+        String conditionExpressionZenith = "";
         for(S2BandConstants bandConstant : listOfBands) {
-            bandDescriptorZenith.expression = bandDescriptorZenith.expression + String.format("view_zenith_%s +",bandConstant.getPhysicalName());
+            meanExpressionZenith = meanExpressionZenith + String.format("view_zenith_%s +",bandConstant.getPhysicalName());
+            conditionExpressionZenith = conditionExpressionZenith + String.format("view_zenith_%s<=0 || ",bandConstant.getPhysicalName());
         }
-        bandDescriptorZenith.expression = String.format("(%s)/%d", (bandDescriptorZenith.expression).substring(0,(bandDescriptorZenith.expression).lastIndexOf('+')-1), listOfBands.size());
+        conditionExpressionZenith = String.format("(%s)", (conditionExpressionZenith).substring(0,(conditionExpressionZenith).lastIndexOf('|')-1));
+        meanExpressionZenith = String.format("(%s)/%d", (meanExpressionZenith).substring(0,(meanExpressionZenith).lastIndexOf('+')-1), listOfBands.size());
+        bandDescriptorZenith.expression = "if ("+conditionExpressionZenith+") then NaN else ("+meanExpressionZenith+")";
+
         bandDescriptorZenith.type = ProductData.TYPESTRING_FLOAT32;
         BandMathsOp bandMathsOpZenith = new BandMathsOp();
         bandMathsOpZenith.setParameterDefaultValues();
@@ -382,10 +390,16 @@ public class S2Resampler implements Resampler {
         BandMathsOp.BandDescriptor bandDescriptorAzimuth = new BandMathsOp.BandDescriptor();
         bandDescriptorAzimuth.name = "view_azimuth_mean";
         bandDescriptorAzimuth.expression = "";
+        String meanExpressionAzimuth = "";
+        String conditionExpressionAzimuth = "";
         for(S2BandConstants bandConstant : listOfBands) {
-            bandDescriptorAzimuth.expression = bandDescriptorAzimuth.expression + String.format("view_azimuth_%s +",bandConstant.getPhysicalName());
+            meanExpressionAzimuth = meanExpressionAzimuth + String.format("view_azimuth_%s +",bandConstant.getPhysicalName());
+            conditionExpressionAzimuth = conditionExpressionAzimuth + String.format("view_azimuth_%s<=0 || ",bandConstant.getPhysicalName());
         }
-        bandDescriptorAzimuth.expression = String.format("(%s)/%d", (bandDescriptorAzimuth.expression).substring(0,(bandDescriptorAzimuth.expression).lastIndexOf('+')-1), listOfBands.size());
+        conditionExpressionAzimuth = String.format("(%s)", (conditionExpressionAzimuth).substring(0,(conditionExpressionAzimuth).lastIndexOf('|')-1));
+        meanExpressionAzimuth = String.format("(%s)/%d", (meanExpressionAzimuth).substring(0,(meanExpressionAzimuth).lastIndexOf('+')-1), listOfBands.size());
+        bandDescriptorAzimuth.expression = "if ("+conditionExpressionAzimuth+") then NaN else ("+meanExpressionAzimuth+")";
+
         bandDescriptorAzimuth.type = ProductData.TYPESTRING_FLOAT32;
         BandMathsOp bandMathsOpAzimuth = new BandMathsOp();
         bandMathsOpAzimuth.setParameterDefaultValues();
