@@ -28,6 +28,7 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.AddCollectionDescriptor;
 import javax.media.jai.operator.MultiplyConstDescriptor;
 import javax.media.jai.operator.MultiplyDescriptor;
+import javax.media.jai.operator.ThresholdDescriptor;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -347,12 +348,13 @@ public class S2Resampler implements Resampler {
         } else {
             finalAnglesZenith = inputsZenith.firstElement();
         }
+        finalAnglesZenith = ThresholdDescriptor.create(finalAnglesZenith,new double[]{0},new double[]{0},new double[]{Float.NaN},null);
         if (inputsAzimuth.size() > 1) {
             finalAnglesAzimuth = AddCollectionDescriptor.create(inputsAzimuth, hints);
         } else {
             finalAnglesAzimuth = inputsAzimuth.firstElement();
         }
-
+        finalAnglesAzimuth = ThresholdDescriptor.create(finalAnglesAzimuth,new double[]{0},new double[]{0},new double[]{Float.NaN},null);
         MultiLevelImage finalImageZenith = new DefaultMultiLevelImage(
                 new DefaultMultiLevelSource(finalAnglesZenith, referenceMultiLevelModel, Interpolation.getInstance(Interpolation.INTERP_NEAREST)));
         MultiLevelImage finalImageAzimuth = new DefaultMultiLevelImage(
@@ -360,8 +362,6 @@ public class S2Resampler implements Resampler {
 
         bandZenith.setSourceImage(S2ResamplerUtils.adjustImageToModelTransform(finalImageZenith, referenceMultiLevelModel));
         bandAzimuth.setSourceImage(S2ResamplerUtils.adjustImageToModelTransform(finalImageAzimuth, referenceMultiLevelModel));
-        bandZenith.setNoDataValue(0.0f);
-        bandAzimuth.setNoDataValue(0.0f);
         return true;
     }
 
