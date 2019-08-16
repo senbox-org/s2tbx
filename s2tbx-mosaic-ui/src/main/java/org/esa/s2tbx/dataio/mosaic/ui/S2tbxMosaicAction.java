@@ -27,7 +27,7 @@ import org.openide.util.NbBundle;
 import java.awt.event.ActionEvent;
 
 /**
- * Mosaicing action for Sentinel2 products.
+ * Mosaicking action for Sentinel2 products.
  *
  * @author Razvan Dumitrascu
  * @since 5.0.6
