@@ -10,6 +10,7 @@ import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
 import org.esa.s2tbx.dataio.s2.l3.Sentinel2L3ProductReader;
 import org.esa.snap.core.dataio.ProductReader;
+import org.esa.snap.core.dataio.ProductReaderExposedParams;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
@@ -19,6 +20,8 @@ import org.esa.snap.core.datamodel.ProductData;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by obarrile on 08/06/2016.
@@ -53,6 +56,27 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
             return null;
         }
         return this.reader.getSubsetDef();
+    }
+
+    @Override
+    public ProductReaderExposedParams getExposedParams() {
+        List<String> bandNames = new ArrayList<>();
+        bandNames.add("B1");
+        bandNames.add("B2");
+        bandNames.add("B3");
+        bandNames.add("B4");
+        bandNames.add("B5");
+        bandNames.add("B6");
+        bandNames.add("B7");
+        bandNames.add("B8");
+        bandNames.add("B8A");
+        bandNames.add("B9");
+        bandNames.add("B10");
+        bandNames.add("B11");
+        bandNames.add("B12");
+
+        return new ProductReaderExposedParams(bandNames, true);
+
     }
 
     @Override
