@@ -60,6 +60,6 @@ public class AlosAV2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     protected void registerRGBProfile() {
-        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Alos AVNIR-2", AlosAV2Constants.ALOSAV2_RGB_PROFILE));
+        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("Alos AVNIR-2", AlosAV2Constants.ALOSAV2_RGB_PROFILE, new String[] {"ALOS", "*AV2*", "Alos*"}));
     }
 }

@@ -44,12 +44,13 @@ pipeline {
                     snapMajorVersion = sh(returnStdout: true, script: "echo ${toolVersion} | cut -d '.' -f 1").trim()
                     deployDirName = "${toolName}/${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
                     sonarOption = ""
-                    if ("${branchVersion}" == "master") {
-                        // Only use sonar on master branch
-                        sonarOption = "sonar:sonar"
-                    }
+                    //if ("${branchVersion}" == "master") {
+                    //    // Only use sonar on master branch
+                    //    sonarOption = "sonar:sonar"
+                    //}
                 }
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
+                sh "/opt/scripts/setUpUnitTestLibraries.sh"
                 sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install ${sonarOption} -Dsnap.reader.tests.data.dir=/data/ssd/testData/${toolName} -U -DskipTests=false"
             }
             post {
@@ -110,26 +111,24 @@ pipeline {
             }
         }
         stage('Create docker image') {
-            agent {
-                docker {
-                    label 'snap-test'
-                    image 'snap-build-server.tilaa.cloud/scripts:1.0'
-                    // We add the docker group from host (i.e. 999)
-                    args ' --group-add 999 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/bin/docker -v /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7 -v docker_local-update-center:/local-update-center -v /opt/maven/.docker:/home/snap/.docker -v docker_snap-installer:/snap-installer'
-                }
-            }
+            agent { label 'snap-test' }
             when {
                 expression {
                     return "${params.launchTests}" == "true";
                 }
             }
             steps {
-                echo "Create docker image of ${env.JOB_NAME} from ${env.GIT_BRANCH} using commit ${env.GIT_COMMIT}"
-                script {
-                    dockerName = "${toolName}:${branchVersion}-${toolVersion}-${env.GIT_COMMIT}"
-                }
-                // Launch deploy script
-                sh "/opt/scripts/deploy.sh ${snapMajorVersion} ${deployDirName} ${branchVersion} ${dockerName} ${toolName}"
+                echo "Launch snap-installer"
+                build job: "create-snap-docker-image", parameters: [
+                    [$class: 'StringParameterValue', name: 'toolName', value: "${toolName}"],
+                    [$class: 'StringParameterValue', name: 'snapMajorVersion', value: "${snapMajorVersion}"],
+                    [$class: 'StringParameterValue', name: 'deployDirName', value: "${deployDirName}"],
+                    [$class: 'StringParameterValue', name: 'branchVersion', value: "${branchVersion}"],
+                    [$class: 'BooleanParameterValue', name: 'maintenanceBranch', value: "false"]
+                ],
+                quietPeriod: 0,
+                propagate: true,
+                wait: true
             }
         }
         stage ('Starting Tests') {
@@ -167,7 +166,6 @@ pipeline {
             }
         }
     }
-    /* disable email send on failure
     post {
         failure {
             step (
@@ -178,9 +176,9 @@ Check console output at ${env.BUILD_URL}
 ${env.JOB_NAME} [${env.BUILD_NUMBER}]""",
                     attachLog: true,
                     compressLog: true,
-                    recipientProviders: [[$class: 'CulpritsRecipientProvider'], [$class:'DevelopersRecipientProvider']]
+                    recipientProviders: [[$class: 'CulpritsRecipientProvider']]
                 )
             )
         }
-    }*/
+    }
 }

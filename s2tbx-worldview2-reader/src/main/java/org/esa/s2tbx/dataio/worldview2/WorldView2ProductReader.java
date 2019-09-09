@@ -26,6 +26,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -47,8 +49,8 @@ class WorldView2ProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(WorldView2ProductReader.class.getName());
 
     private static final String EXCLUSION_STRING = "README";
+
     private VirtualDirEx productDirectory;
-    private WorldView2Metadata metadata;
     private Product product;
     private String productSelected;
     private HashMap<Product, String> tilesMultiSpectral;
@@ -64,126 +66,146 @@ class WorldView2ProductReader extends AbstractProductReader {
      */
     WorldView2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
+
         this.tilesMultiSpectral = new HashMap<>();
-        tilesPanchromatic = new HashMap<>();
+        this.tilesPanchromatic = new HashMap<>();
     }
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        final Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.productDirectory = VirtualDirEx.build(inputPath);
-        final String filePath = productDirectory.findFirst(WorldView2Constants.METADATA_FILE_SUFFIX);
-        try (FilePathInputStream inputStream = this.productDirectory.getInputStream(filePath)) {
-            this.metadata = WorldView2Metadata.create(inputStream);
+        Object inputObject = getInput();
+
+        long startTime = System.currentTimeMillis();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Start reading WorldView2 product, input: " + inputObject.toString());
         }
-        final String[] products = getProductsFromMetadata(this.metadata);
+
+        final Path inputPath = BaseProductReaderPlugIn.convertInputToPath(inputObject);
+        this.productDirectory = VirtualDirEx.build(inputPath, false, true);
+
+        String metadataInputFile = this.productDirectory.findFirst(WorldView2Constants.METADATA_FILE_SUFFIX);
+        WorldView2Metadata metadata;
+        try (FilePathInputStream filePathInputStream = this.productDirectory.getInputStream(metadataInputFile)) {
+            metadata = WorldView2Metadata.create(filePathInputStream);
+        }
+
+        final String[] products = getProductsFromMetadata(metadata);
         if (products.length > 1) {
             ModalDialog dialog = new ModalDialog(null, "Product Selector", ModalDialog.ID_OK_CANCEL, "");
             dialog.setContent(createDialogContent(products));
             final int show = dialog.show();
             if (show == ModalDialog.ID_CANCEL) {
-                return null;
+                productSelected = null;
             }
         } else {
             this.productSelected = products[0];
         }
-        if (productSelected == null) {
+        if (this.productSelected == null) {
             throw new IOException("No product has been selected");
         }
-        if (metadata != null) {
-            final List<String> selectedProductFiles = new ArrayList<>();
-            for (String file : metadata.getAttributeValues(WorldView2Constants.PATH_FILE_LIST)) {
-                if (file.contains(productSelected) && (file.contains(WorldView2Constants.METADATA_EXTENSION) ||
-                        file.contains(WorldView2Constants.IMAGE_EXTENSION))) {
+
+        final List<String> selectedProductFiles = new ArrayList<>();
+        for (String file : metadata.getAttributeValues(WorldView2Constants.PATH_FILE_LIST)) {
+            if (file.contains(this.productSelected)) {
+                if (file.endsWith(WorldView2Constants.IMAGE_EXTENSION) || file.endsWith(WorldView2Constants.METADATA_EXTENSION)) {
                     if (!selectedProductFiles.contains(file)) {
                         selectedProductFiles.add(file);
                     }
                 }
             }
-            final List<TileMetadata> tileMetadataList = new ArrayList<>();
-            for (String fileMetadata : selectedProductFiles) {
-                if (fileMetadata.endsWith(WorldView2Constants.METADATA_EXTENSION)) {
-                    try (FilePathInputStream inputStream = this.productDirectory.getInputStream(filePath)) {
-                        this.metadata = WorldView2Metadata.create(inputStream);
-                    }
-                    TileMetadata tileMetadata;
-                    try (FilePathInputStream inputStream = this.productDirectory.getInputStream(productDirectory.getFile(fileMetadata).toString())) {
-                        tileMetadata = TileMetadata.create(inputStream);
-                    }
+        }
+        final List<TileMetadata> tileMetadataList = new ArrayList<>();
+        for (String fileMetadata : selectedProductFiles) {
+            if (fileMetadata.endsWith(WorldView2Constants.METADATA_EXTENSION)) {
+                try (FilePathInputStream filePathInputStream = this.productDirectory.getInputStream(fileMetadata)) {
+                    TileMetadata tileMetadata = TileMetadata.create(filePathInputStream);
                     tileMetadataList.add(tileMetadata);
                 }
             }
-            if (!tileMetadataList.isEmpty()) {
-                int width = 0;
-                int height = 0;
-                double stepSize = 0.0;
-                double originX = 0.0;
-                double originY = 0.0;
-                String crsCode = null;
-                for (TileMetadata tileMetadata : tileMetadataList) {
-                    TileComponent tileComponent = tileMetadata.getTileComponent();
-                    if (tileComponent.getBandID().equals("P")) {
-                        width = tileComponent.getNumColumns();
-                        height = tileComponent.getNumRows();
-                        stepSize = tileComponent.getStepSize();
-                        originX = tileComponent.getOriginX();
-                        originY = tileComponent.getOriginY();
-                        crsCode = tileComponent.computeCRSCode();
-                    }
+        }
+        if (!tileMetadataList.isEmpty()) {
+            int width = 0;
+            int height = 0;
+            double stepSize = 0.0;
+            double originX = 0.0;
+            double originY = 0.0;
+            String crsCode = null;
+            for (TileMetadata tileMetadata : tileMetadataList) {
+                TileComponent tileComponent = tileMetadata.getTileComponent();
+                if (tileComponent.getBandID().equals("P")) {
+                    width = tileComponent.getNumColumns();
+                    height = tileComponent.getNumRows();
+                    stepSize = tileComponent.getStepSize();
+                    originX = tileComponent.getOriginX();
+                    originY = tileComponent.getOriginY();
+                    crsCode = tileComponent.computeCRSCode();
+                }
 
+            }
+            this.product = new Product(productSelected, WorldView2Constants.PRODUCT_TYPE, width, height);
+            this.product.setStartTime(metadata.getProductStartTime());
+            this.product.setEndTime(metadata.getProductEndTime());
+            this.product.setDescription(metadata.getProductDescription());
+            this.product.setProductReader(this);
+            this.product.setFileLocation(inputPath.toFile());
+            for (TileMetadata tileMetadata : tileMetadataList) {
+                this.product.getMetadataRoot().addElement(tileMetadata.getRootElement());
+            }
+            try {
+                assert crsCode != null;
+                GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
+                                                       width, height,
+                                                       originX, originY,
+                                                       stepSize, stepSize);
+                product.setSceneGeoCoding(geoCoding);
+            } catch (Exception e) {
+                logger.warning(e.getMessage());
+            }
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Generate product lists: selected products files size: "+selectedProductFiles.size() + ", metadata list size: "+ tileMetadataList.size());
+            }
+
+            generateProductLists(selectedProductFiles, tileMetadataList);
+
+            final int levels = getProductLevels();
+            for (TileMetadata tileMetadata : tileMetadataList) {
+
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Read products for tile metadata '" + tileMetadata.getPath()+"'.");
                 }
-                this.product = new Product(productSelected, WorldView2Constants.PRODUCT_TYPE, width, height);
-                this.product.setStartTime(this.metadata.getProductStartTime());
-                this.product.setEndTime(this.metadata.getProductEndTime());
-                this.product.setDescription(this.metadata.getProductDescription());
-                this.product.setProductReader(this);
-                this.product.setFileLocation(this.metadata.getPath().toFile());
-                for (TileMetadata tileMetadata : tileMetadataList) {
-                    this.product.getMetadataRoot().addElement(tileMetadata.getRootElement());
+
+                String[] bandNames;
+                if (this.numMultiSpectralBands == 4) {
+                    bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_4_BANDS;
+                } else {
+                    bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_8_BANDS;
                 }
-                try {
-                    assert crsCode != null;
-                    GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
-                                                           width, height,
-                                                           originX, originY,
-                                                           stepSize, stepSize);
-                    product.setSceneGeoCoding(geoCoding);
-                } catch (Exception e) {
-                    logger.warning(e.getMessage());
-                }
-                generateProductLists(selectedProductFiles, tileMetadataList);
-                final int levels = getProductLevels();
-                for (TileMetadata tileMetadata : tileMetadataList) {
-                    String[] bandNames;
-                    if (numMultiSpectralBands < 4) {
-                        bandNames = WorldView2Constants.NATURAL_COLORS;
-                    }
-                    if (numMultiSpectralBands == 4) {
-                        bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_4_BANDS;
-                    } else {
-                        bandNames = WorldView2Constants.BAND_NAMES_MULTISPECTRAL_8_BANDS;
-                    }
-                    if (tileMetadata.getTileComponent().getBandID().equals("MS1") ||
-                            tileMetadata.getTileComponent().getBandID().equals("Multi")) {
-                        TileComponent tileComp = tileMetadata.getTileComponent();
-                        for (int index = 0; index < this.numMultiSpectralBands; index++) {
-                            Band targetBand = createTargetBand(levels, bandNames, index, this.tilesMultiSpectral, tileComp);
-                            this.product.addBand(targetBand);
-                        }
-                    } else {
-                        TileComponent tileComp = tileMetadata.getTileComponent();
-                        Band targetBand = createTargetBand(levels, new String[]{bandNames[bandNames.length - 1]}, 0, this.tilesPanchromatic, tileComp);
+                if (tileMetadata.getTileComponent().getBandID().equals("MS1") || tileMetadata.getTileComponent().getBandID().equals("Multi")) {
+                    TileComponent tileComp = tileMetadata.getTileComponent();
+                    for (int index = 0; index < this.numMultiSpectralBands; index++) {
+                        Band targetBand = createTargetBand(levels, bandNames, index, this.tilesMultiSpectral, tileComp);
                         this.product.addBand(targetBand);
                     }
+                } else {
+                    TileComponent tileComp = tileMetadata.getTileComponent();
+                    Band targetBand = createTargetBand(levels, new String[]{bandNames[bandNames.length - 1]}, 0, this.tilesPanchromatic, tileComp);
+                    this.product.addBand(targetBand);
                 }
             }
         }
+
+        if (logger.isLoggable(Level.FINE)) {
+            double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
+            logger.log(Level.FINE, "Finish reading WorldView2 product, input: " + inputObject.toString() + "', elapsed time: " + elapsedTimeInSeconds + " seconds.");
+        }
+
         return this.product;
     }
 
     private Band createTargetBand(final int levels, final String[] bandNames, final int index, final HashMap<Product, String> tiles, final TileComponent tileComp) {
         final Band targetBand = new Band(bandNames[index], this.bandDataType,
-                                   tileComp.getNumColumns(), tileComp.getNumRows());
+                                         tileComp.getNumColumns(), tileComp.getNumRows());
         final Band band = setInputSpecificationBand(tiles, index);
         final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
         setBandProperties(targetBand, band);
@@ -232,7 +254,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         return levels;
     }
 
-    private int getLevel(final HashMap<Product, String> tiles, final int levels) {
+    private int getLevel(final Map<Product, String> tiles, final int levels) {
         int level = levels;
         for (Map.Entry<Product, String> entry : tiles.entrySet()) {
             Product p = entry.getKey();
@@ -290,8 +312,8 @@ class WorldView2ProductReader extends AbstractProductReader {
                     }
                 }
                 if (filePath != null) {
-                    final Path path = metadata.getPath().getParent().resolve(filePath);
-                    final Product p = ProductIO.readProduct(path.toFile());
+                    Product p = readProduct(filePath);
+
                     this.bandDataType = p.getBandAt(0).getDataType();
                     if (tileComponent.getBandID().equals("P")) {
                         this.tilesPanchromatic.put(p, tileComponent.getTileNames()[filesIndex]);
@@ -303,7 +325,6 @@ class WorldView2ProductReader extends AbstractProductReader {
                     }
                 } else {
                     logger.warning(tileComponent.getTileNames()[filesIndex] + " is missing");
-
                 }
             }
         }
@@ -313,13 +334,9 @@ class WorldView2ProductReader extends AbstractProductReader {
         Set<String> products = new HashSet<>();
         final String[] fileNames = metadata.getAttributeValues(WorldView2Constants.PATH_FILE_LIST);
         for (String file : fileNames) {
-            if (file.contains(WorldView2Constants.METADATA_EXTENSION) &&
-                    !file.contains(EXCLUSION_STRING)) {
+            if (file.endsWith(WorldView2Constants.METADATA_EXTENSION) && !file.contains(EXCLUSION_STRING)) {
                 String filename = file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf(WorldView2Constants.METADATA_EXTENSION));
                 String value = filename.substring(0, filename.indexOf("-"));
-                if (metadata.getImageDirectoryPath() == null) {
-                    metadata.setImageDirectoryPath(productDirectory.getBasePath());
-                }
                 products.add(value);
             }
         }
@@ -379,9 +396,6 @@ class WorldView2ProductReader extends AbstractProductReader {
             this.productDirectory.close();
             this.productDirectory = null;
         }
-        if (this.metadata != null) {
-            this.metadata = null;
-        }
         if (this.tilesPanchromatic != null) {
             this.tilesPanchromatic.clear();
             this.tilesPanchromatic = null;
@@ -390,7 +404,16 @@ class WorldView2ProductReader extends AbstractProductReader {
             this.tilesMultiSpectral.clear();
             this.tilesMultiSpectral = null;
         }
+
         super.close();
+    }
+
+    private Product readProduct(String filePath) throws IOException {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Read product from relative file path '" + filePath + "'.");
+        }
+        File file = this.productDirectory.getFile(filePath);
+        return ProductIO.readProduct(file);
     }
 
     private void setProductSelected(final String productSelected) {

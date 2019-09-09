@@ -1,0 +1,26 @@
+#set($targetName=$sourceProduct.FileLocation.AbsolutePath.replace("L1C", "L2A").replace("OPER", "USER"))
+#if($sourceProduct.FileLocation.Directory)
+    #set($fileList = $sourceProduct.FileLocation.listFiles())
+    #foreach($file in $fileList)
+        #if($file.Name.startsWith("MTD_MSIL1C.xml") || ($file.Name.startsWith("S2A") && $file.Name.endsWith(".xml") && !$file.Name.endsWith("report.xml")))
+            #set($parentNameAux=$sourceProduct.FileLocation.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+            #set($fileNameAux=$file.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+            #set($targetName=$sourceProduct.FileLocation.ParentFile.toPath().resolve($parentNameAux).resolve($fileNameAux).toString())
+        #end
+    #end
+#else
+    #set($parentNameAux=$sourceProduct.FileLocation.ParentFile.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+    #set($fileNameAux=$sourceProduct.FileLocation.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+    #set($targetName=$sourceProduct.FileLocation.ParentFile.toPath().resolveSibling($parentNameAux).resolve($fileNameAux).toString())
+#end
+#set($fileClass=$sourceProductFile.Class.forName("java.io.File"))
+#set($stringClass = $sourceProductFile.Class.forName("java.lang.String"))
+#set($paramList = [$targetName])
+#set($paramArray = $paramList.toArray())
+#set($ctors = $fileClass.Constructors)
+
+#foreach ($ctor in $ctors)
+    #if ($ctor.toString() == "public java.io.File(java.lang.String)")
+        #set($targetProductFile = $ctor.newInstance($paramArray))
+    #end
+#end

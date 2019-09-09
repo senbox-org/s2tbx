@@ -41,6 +41,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -58,7 +59,7 @@ import java.util.Map;
 import java.util.OptionalDouble;
 
 /**
- * A mosaic operator that performs mosaicing operations on multisize products
+ * A mosaic operator that performs mosaicking operations on multisize products
  *
  * @author Razvan Dumitrascu
  * @since 5.0.6

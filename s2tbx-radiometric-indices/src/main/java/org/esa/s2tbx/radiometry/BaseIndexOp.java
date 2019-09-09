@@ -141,20 +141,41 @@ public abstract class BaseIndexOp extends Operator {
             this.sourceProduct = resample(this.sourceProduct, sceneWidth, sceneHeight);
             targetGeocoding = this.sourceProduct.getSceneGeoCoding();
         } else {
-            // Resample not asked for: must check bands resolution in case of multisize product
+            // Issue only when used from Graph Builder: Resample not asked for: must check bands resolution in case of multisize product
             if (this.sourceProduct.isMultiSize()) {
                 Band band0 = this.sourceProduct.getBand(this.sourceBandNames[0]);
                 Dimension dim0 = band0.getRasterSize();
+                boolean forceResampling = false;
                 for (String bandName : this.sourceBandNames) {
                     if (!this.sourceProduct.getBand(bandName).getRasterSize().equals(dim0)){
-                        throw new OperatorException("Source bands with different resolutions. Define a resampling method before using the operator.");
+                        //throw new OperatorException("Source bands with different resolutions. Define a resampling method before using the operator.");
+                        //instead of launching an error, set resampling to lowest
+                        forceResampling = true;
+                        break;
                     }
                 }
-                // All the bands have the same resolution.
-                // For the target product use the common resolution as it can be different from the sourceProduct.
-                sceneWidth = band0.getRasterWidth();
-                sceneHeight = band0.getRasterHeight();
-                targetGeocoding = band0.getGeoCoding();
+
+                if(forceResampling) {
+                    for (String bandName : this.sourceBandNames) {
+                        this.resampleType = RESAMPLE_LOWEST;
+                        // TODO How to trigger UI update in order for this to be also visible to the user ?
+
+                        Band band = this.sourceProduct.getBand(bandName);
+                        int bandRasterWidth = band.getRasterWidth();
+                        if (sceneWidth == 0 || sceneWidth >= bandRasterWidth) {
+                            sceneWidth = bandRasterWidth;
+                            sceneHeight = band.getRasterHeight();
+                        }
+                    }
+                    this.sourceProduct = resample(this.sourceProduct, sceneWidth, sceneHeight);
+                    targetGeocoding = this.sourceProduct.getSceneGeoCoding();
+                } else {
+                    // All the bands have the same resolution.
+                    // For the target product use the common resolution as it can be different from the sourceProduct.
+                    sceneWidth = band0.getRasterWidth();
+                    sceneHeight = band0.getRasterHeight();
+                    targetGeocoding = band0.getGeoCoding();
+                }
             } else {
                 sceneWidth = sourceProduct.getSceneRasterWidth();
                 sceneHeight = sourceProduct.getSceneRasterHeight();

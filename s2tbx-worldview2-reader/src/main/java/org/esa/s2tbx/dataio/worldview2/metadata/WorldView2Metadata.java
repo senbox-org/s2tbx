@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.worldview2.metadata;
 
-import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -11,8 +10,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -22,8 +19,6 @@ import java.nio.file.Path;
  * @see XmlMetadata
  */
 public class WorldView2Metadata extends XmlMetadata {
-
-    private String imageDirectoryPath;
 
     private static class WorldView2MetadataParser extends XmlMetadataParser<WorldView2Metadata> {
 
@@ -126,30 +121,8 @@ public class WorldView2Metadata extends XmlMetadata {
         return null;
     }
 
-    /**
-     * Creates the metadata element and the component associated to it
-     *
-     * @param path path to xml metadata file
-     * @return WorldView2Metadata object
-     * @throws IOException
-     */
-    public static WorldView2Metadata create(final Path path) throws IOException {
-        Assert.notNull(path);
-        WorldView2Metadata result = null;
-
-        try (InputStream inputStream = Files.newInputStream(path)) {
-            WorldView2MetadataParser parser = new WorldView2MetadataParser(WorldView2Metadata.class);
-            result = parser.parse(inputStream);
-            result.setPath(path);
-            result.setFileName(path.getFileName().toString());
-        } catch (ParserConfigurationException | SAXException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    public static WorldView2Metadata create(final FilePathInputStream filePathInputStream) throws IOException {
-        WorldView2Metadata result = null;
+    public static WorldView2Metadata create(FilePathInputStream filePathInputStream) throws IOException {
+        WorldView2Metadata result;
         try {
             WorldView2MetadataParser parser = new WorldView2MetadataParser(WorldView2Metadata.class);
             result = parser.parse(filePathInputStream);
@@ -157,15 +130,8 @@ public class WorldView2Metadata extends XmlMetadata {
             throw new IllegalStateException(e);
         }
         Path path = filePathInputStream.getPath();
-            result.setPath(path);
-            result.setFileName(path.getFileName().toString());
+        result.setPath(path);
+        result.setFileName(path.getFileName().toString());
         return result;
-    }
-    public String getImageDirectoryPath() {
-        return this.imageDirectoryPath;
-    }
-
-    public void setImageDirectoryPath(String imageDirectoryPath) {
-        this.imageDirectoryPath = imageDirectoryPath;
     }
 }
