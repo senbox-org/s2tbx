@@ -7,10 +7,12 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
 import org.esa.s2tbx.dataio.worldview2.internal.MosaicMultiLevelSource;
+import org.esa.s2tbx.dataio.worldview2.internal.WorldView2MetadataInspector;
 import org.esa.s2tbx.dataio.worldview2.metadata.TileComponent;
 import org.esa.s2tbx.dataio.worldview2.metadata.TileMetadata;
 import org.esa.s2tbx.dataio.worldview2.metadata.WorldView2Metadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -30,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,6 +72,11 @@ class WorldView2ProductReader extends AbstractProductReader {
 
         this.tilesMultiSpectral = new HashMap<>();
         this.tilesPanchromatic = new HashMap<>();
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector(){
+        return new WorldView2MetadataInspector();
     }
 
     @Override
@@ -148,8 +156,10 @@ class WorldView2ProductReader extends AbstractProductReader {
             this.product.setDescription(metadata.getProductDescription());
             this.product.setProductReader(this);
             this.product.setFileLocation(inputPath.toFile());
-            for (TileMetadata tileMetadata : tileMetadataList) {
-                this.product.getMetadataRoot().addElement(tileMetadata.getRootElement());
+            if ((getSubsetDef() != null && !getSubsetDef().isIgnoreMetadata()) || getSubsetDef() == null) {
+                for (TileMetadata tileMetadata : tileMetadataList) {
+                    this.product.getMetadataRoot().addElement(tileMetadata.getRootElement());
+                }
             }
             try {
                 assert crsCode != null;
@@ -163,7 +173,7 @@ class WorldView2ProductReader extends AbstractProductReader {
             }
 
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Generate product lists: selected products files size: "+selectedProductFiles.size() + ", metadata list size: "+ tileMetadataList.size());
+                logger.log(Level.FINE, "Generate product lists: selected products files size: " + selectedProductFiles.size() + ", metadata list size: " + tileMetadataList.size());
             }
 
             generateProductLists(selectedProductFiles, tileMetadataList);
@@ -172,7 +182,7 @@ class WorldView2ProductReader extends AbstractProductReader {
             for (TileMetadata tileMetadata : tileMetadataList) {
 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "Read products for tile metadata '" + tileMetadata.getPath()+"'.");
+                    logger.log(Level.FINE, "Read products for tile metadata '" + tileMetadata.getPath() + "'.");
                 }
 
                 String[] bandNames;
@@ -184,10 +194,13 @@ class WorldView2ProductReader extends AbstractProductReader {
                 if (tileMetadata.getTileComponent().getBandID().equals("MS1") || tileMetadata.getTileComponent().getBandID().equals("Multi")) {
                     TileComponent tileComp = tileMetadata.getTileComponent();
                     for (int index = 0; index < this.numMultiSpectralBands; index++) {
-                        Band targetBand = createTargetBand(levels, bandNames, index, this.tilesMultiSpectral, tileComp);
-                        this.product.addBand(targetBand);
+                        if((getSubsetDef() != null && (Arrays.asList(getSubsetDef().getNodeNames()).contains("allBands") || Arrays.asList(getSubsetDef().getNodeNames()).contains(bandNames[index]))) || getSubsetDef() == null) {
+                            Band targetBand = createTargetBand(levels, bandNames, index, this.tilesMultiSpectral, tileComp);
+                            this.product.addBand(targetBand);
+                        }
                     }
-                } else {
+
+                } else if((getSubsetDef() != null && (Arrays.asList(getSubsetDef().getNodeNames()).contains("allBands") || Arrays.asList(getSubsetDef().getNodeNames()).contains(bandNames[bandNames.length - 1]))) || getSubsetDef() == null){
                     TileComponent tileComp = tileMetadata.getTileComponent();
                     Band targetBand = createTargetBand(levels, new String[]{bandNames[bandNames.length - 1]}, 0, this.tilesPanchromatic, tileComp);
                     this.product.addBand(targetBand);
