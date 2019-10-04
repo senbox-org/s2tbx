@@ -70,7 +70,7 @@ public class Kompsat2ProductReader extends AbstractProductReader {
             String fileName;
             //product file name differs from archive file name
             if (productDirectoryTemp.isCompressed()) {
-                fileName = file.getName().substring(0, file.getName().lastIndexOf(Kompsat2Constants.Product_FILE_SUFFIX));
+                fileName = file.getName().substring(0, file.getName().lastIndexOf(Kompsat2Constants.PRODUCT_FILE_SUFFIX));
             } else {
                 fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
             }
@@ -134,7 +134,7 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                     }
                     Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
                     targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
-                    targetBand.setSpectralWavelength(band.getSpectralWavelength());
+                    targetBand.setSpectralWavelength(Kompsat2Constants.BandWaveLengthConstants.getWavelengthCentral(targetBand.getName()));
                     targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
                     targetBand.setSolarFlux(band.getSolarFlux());
                     targetBand.setUnit(Kompsat2Constants.KOMPSAT2_UNIT);
@@ -266,14 +266,5 @@ public class Kompsat2ProductReader extends AbstractProductReader {
             }
         }
         return (path.delete());
-    }
-
-    private Path getInputFile() throws FileNotFoundException {
-        final Path inputFile = NioPaths.get(getInput().toString());
-        if (!Files.exists(inputFile)) {
-            throw new FileNotFoundException(inputFile.toString());
-        }
-
-        return inputFile;
     }
 }
