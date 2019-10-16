@@ -36,12 +36,19 @@ import java.util.Set;
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
 public class ReflectanceToRadianceOp extends Operator {
+    /**
+     * For Sentinel-2 and SPOT products the value is extracted from metadata
+     */
     @Parameter(label = "Solar irradiance (if neither Sentinel-2 nor SPOT)", description = "The solar irradiance.")
     private float solarIrradiance;
 
     @Parameter(label = "U (if not Sentinel-2)", description = "U")
     private float u;
 
+    /**
+     * For Sentinel-2 the incidence angle is replaced with the values from the sun_zenith band.
+     * For SPOT the value is extracted from metadata
+     */
     @Parameter(label = "Incidence angle (if neither Sentinel-2 nor SPOT)", description = "The incidence angle in degrees.")
     private float incidenceAngle;
 
@@ -209,6 +216,8 @@ public class ReflectanceToRadianceOp extends Operator {
 
             Band targetBand = new Band(this.sourceBandNames[i], ProductData.TYPE_FLOAT32, sourceBandWidth, sourceBandHeight);
             ProductUtils.copyRasterDataNodeProperties(sourceBand, targetBand);
+            // SIITBX-297 : The unit is copied from the source to the target. But it should be set accordingly to the conversion to radiance values.
+            targetBand.setUnit("Watts/m^2/micrometer/steradian");
             targetBand.setGeoCoding(sourceBand.getGeoCoding());
             this.targetProduct.addBand(targetBand);
 
