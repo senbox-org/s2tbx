@@ -81,16 +81,19 @@ public class OpenJPEGActivator implements Activator {
 
     private static void setExecutablePermissions(Path executablePathName) {
         if (IS_OS_UNIX) {
-            Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
-                    PosixFilePermission.OWNER_READ,
-                    PosixFilePermission.OWNER_WRITE,
-                    PosixFilePermission.OWNER_EXECUTE,
-                    PosixFilePermission.GROUP_READ,
-                    PosixFilePermission.GROUP_EXECUTE,
-                    PosixFilePermission.OTHERS_READ,
-                    PosixFilePermission.OTHERS_EXECUTE));
             try {
-                Files.setPosixFilePermissions(executablePathName, permissions);
+                Set<PosixFilePermission> expectedPermissions = new HashSet<>(Arrays.asList(
+                                    PosixFilePermission.OWNER_READ,
+                                    PosixFilePermission.OWNER_WRITE,
+                                    PosixFilePermission.OWNER_EXECUTE,
+                                    PosixFilePermission.GROUP_READ,
+                                    PosixFilePermission.GROUP_EXECUTE,
+                                    PosixFilePermission.OTHERS_READ,
+                                    PosixFilePermission.OTHERS_EXECUTE));
+                Set<PosixFilePermission> actualPermissions = Files.getPosixFilePermissions(executablePathName);
+                if (! actualPermissions.equals(expectedPermissions)) {
+                    Files.setPosixFilePermissions(executablePathName, expectedPermissions);
+                }
             } catch (IOException e) {
                 // can't set the permissions for this file, eg. the file was installed as root
                 // send a warning message, user will have to do that by hand.
