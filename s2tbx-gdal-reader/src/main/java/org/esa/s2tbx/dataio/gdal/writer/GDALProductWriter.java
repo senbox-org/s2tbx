@@ -72,7 +72,7 @@ public class GDALProductWriter extends AbstractProductWriter {
         for (int i=1; i<bandCount; i++) {
             sourceBand = sourceProduct.getBandAt(i);
             if (this.gdalDataType != GDALUtils.getGDALDataType(sourceBand.getDataType())) {
-                throw new IllegalArgumentException("Different data type " + sourceBand.getDataType() + " for band index " + i + ".");
+                throw new IllegalArgumentException("GDAL Geotiff writer cannot write a product containing bands with different data types (the data type of band index " + i + " is " + sourceBand.getDataType() + ", different from band index 0).");
             }
         }
 

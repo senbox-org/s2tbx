@@ -76,10 +76,16 @@ public class ReflectanceTargetProductDialog extends DefaultSingleTargetProductDi
             BindingContext bindingContext = getBindingContext();
             PropertySet propertySet = bindingContext.getPropertySet();
             propertySet.setDefaultValues();
+
+            // Solar irradiance: for Sentinel-2 and SPOT products it can be extracted from metadata (done in initialize() method of the operator)
             String propertyName = "solarIrradiance";
             if (bindingContext.getBinding(propertyName) != null) {
                 bindingContext.setComponentsEnabled(propertyName, !(isSentinel2 || isSpot));
             }
+
+            // Incident angle:
+            // For Sentinel-2 the incidence angle is replaced with the values from the sun_zenith band. (done in initialize() method of the operator)
+            // For SPOT the value is extracted from metadata, IF PRESENT (therefore for SPOT the field should be let editable
             propertyName = "incidenceAngle";
             if (bindingContext.getBinding(propertyName) != null) {
                 bindingContext.setComponentsEnabled(propertyName, !isSentinel2);
