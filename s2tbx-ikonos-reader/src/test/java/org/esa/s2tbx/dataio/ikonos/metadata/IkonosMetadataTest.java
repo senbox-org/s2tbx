@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.ikonos.metadata;
 
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
@@ -9,6 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -99,7 +103,11 @@ public class IkonosMetadataTest {
 
     @Test
     public void testIkonosMetadataComponent() throws Exception {
-        metadata = IkonosMetadata.create(TestUtil.getTestFile(productsFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP\\IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML").toPath());
+        Path path = TestUtil.getTestFile(productsFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP\\IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML").toPath();
+        try (InputStream inputStream = Files.newInputStream(path)) {
+            FilePathInputStream filePathInputStream = new FilePathInputStream(path, inputStream, null);
+            metadata = IkonosMetadata.create(filePathInputStream);
+        }
         assertNotNull(metadata.getMetadataComponent());
         float[][] tiePointGridPoints = {{38.1166697339f, 38.1123862139f, 37.9972505388f, 37.9929852559f}, {23.9048421125f, 24.0730688435f, 23.9001216511f, 24.0680760263f}};
         for (int index = 0; index < 4; index++) {
