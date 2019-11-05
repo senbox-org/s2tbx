@@ -21,6 +21,7 @@ import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.VirtualJP2File;
 import org.esa.s2tbx.dataio.openjp2.OpenJP2Decoder;
@@ -72,14 +73,14 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
     private final TileLayout tileLayout;
 
-    private final VirtualJP2File virtualInputFile;
+    private final JP2ImageFile jp2ImageFile;
     private final Path cacheDir;
     private final int tileIndex;
     private final int bandIndex;
     private final int dataType;
     private final Logger logger;
 
-    private JP2TileOpImage(VirtualJP2File virtualInputFile, int bandIdx, Path cacheDir, int row, int col,
+    private JP2TileOpImage(JP2ImageFile jp2ImageFile, int bandIdx, Path cacheDir, int row, int col,
                            TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level)
                            throws IOException {
 
@@ -87,13 +88,13 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                 getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
                 null, ResolutionLevel.create(imageModel, level));
 
-        Assert.notNull(virtualInputFile, "virtualInputFile");
+        Assert.notNull(jp2ImageFile, "jp2ImageFile");
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "tileLayout");
         Assert.notNull(imageModel, "imageModel");
 
         this.logger = SystemUtils.LOG;
-        this.virtualInputFile = virtualInputFile;
+        this.jp2ImageFile = jp2ImageFile;
         this.cacheDir = cacheDir;
         this.tileLayout = tileLayout;
         this.tileIndex = col + row * tileLayout.numXTiles;
@@ -112,7 +113,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     /**
      * Factory method for creating a TileOpImage instance.
      *
-     * @param virtualInputFile     The JP2 file
+     * @param jp2ImageFile     The JP2 file
      * @param cacheDir      The directory where decompressed tiles will be extracted
      * @param bandIdx       The index of the band for which the operator is created
      * @param row           The row of the tile in the scene layout
@@ -122,18 +123,18 @@ public class JP2TileOpImage extends SingleBandedOpImage {
      * @param dataType      The data type of the tile raster
      * @param level         The resolution at which the tile is created
      */
-    public static PlanarImage create(VirtualJP2File virtualInputFile, Path cacheDir, int bandIdx, int row, int col, TileLayout tileLayout,
+    public static PlanarImage create(JP2ImageFile jp2ImageFile, Path cacheDir, int bandIdx, int row, int col, TileLayout tileLayout,
                                      MultiLevelModel imageModel, int dataType, int level)
                                      throws IOException {
 
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
-        if (virtualInputFile == null) {
+        if (jp2ImageFile == null) {
             ImageLayout imageLayout = buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, dataType, level);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null), (float) imageLayout.getHeight(null), new Short[]{0}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         } else {
-            return new JP2TileOpImage(virtualInputFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
+            return new JP2TileOpImage(jp2ImageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
         }
     }
 
@@ -204,8 +205,8 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
     private Path getLocalImageFile() throws IOException {
-        synchronized (this.virtualInputFile) {
-            return this.virtualInputFile.getLocalFile();
+        synchronized (this.jp2ImageFile) {
+            return this.jp2ImageFile.getLocalFile();
         }
     }
 

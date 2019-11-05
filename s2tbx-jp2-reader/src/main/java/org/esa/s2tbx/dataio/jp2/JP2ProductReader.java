@@ -223,6 +223,8 @@ public class JP2ProductReader extends AbstractProductReader {
     private void addBands(ImageInfo imageInfo, CodeStreamInfo csInfo, double[] bandScales, double[] bandOffsets) {
         List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
 
+        JP2ImageFile jp2ImageFile = new JP2ImageFile(this.virtualJp2File);
+        Path localCacheFolder = this.virtualJp2File.getLocalCacheFolder();
         int imageWidth = this.product.getSceneRasterWidth();
         int imageHeight = this.product.getSceneRasterHeight();
 
@@ -239,7 +241,7 @@ public class JP2ProductReader extends AbstractProductReader {
               imageWidth,
               imageHeight);
 
-            JP2MultiLevelSource source = new JP2MultiLevelSource(this.virtualJp2File, bandIdx, numBands, imageWidth, imageHeight,
+            JP2MultiLevelSource source = new JP2MultiLevelSource(localCacheFolder, jp2ImageFile, bandIdx, numBands, imageWidth, imageHeight,
                     csInfo.getTileWidth(), csInfo.getTileHeight(),
                     csInfo.getNumTilesX(), csInfo.getNumTilesY(),
                     csInfo.getNumResolutions(), awtDataType,
