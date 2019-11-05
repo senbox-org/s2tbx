@@ -245,9 +245,7 @@ public class JP2ProductReader extends AbstractProductReader {
                     csInfo.getNumResolutions(), awtDataType,
                     this.product.getSceneGeoCoding());
 
-            int level = 0;
-            ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(csInfo.getTileWidth(), csInfo.getTileHeight(), awtDataType, level);
-            virtualBand.setSourceImage(new DefaultMultiLevelImage(source, imageLayout));
+            virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
 
             if (bandScales != null && bandOffsets != null) {
                 virtualBand.setScalingFactor(bandScales[bandIdx]);

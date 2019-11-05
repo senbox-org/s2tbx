@@ -58,7 +58,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     private final Logger logger;
     private final int bandIndex;
     private final TileImageDisposer tileManager;
-    private VirtualJP2File virtualInputFile;
+    private final VirtualJP2File virtualInputFile;
 
     /**
      * Constructs an instance of a single band multi-level image source
@@ -96,7 +96,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param col   The column of the tile (0-based)
      * @param level The resolution level (0 = highest)
      */
-    private PlanarImage createTileImage(Path localImageFile, Path localCacheFolder, int row, int col, int level) throws IOException {
+    private PlanarImage createTileImage(VirtualJP2File virtualInputFile, Path localCacheFolder, int row, int col, int level) throws IOException {
         TileLayout currentLayout = tileLayout;
         // the edge tiles dimensions may be less than the dimensions from JP2 header
         if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
@@ -106,12 +106,11 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
             currentLayout.numBands = tileLayout.numBands;
         }
-        return JP2TileOpImage.create(localImageFile, localCacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
+        return JP2TileOpImage.create(virtualInputFile, localCacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        Path localImageFile = null;
         List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>(tileLayout.numXTiles * tileLayout.numYTiles));
         TileLayout layout = tileLayout;
         double factorX = 1.0 / Math.pow(2, level);
@@ -120,10 +119,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
             for (int y = 0; y < tileLayout.numXTiles; y++) {
                 PlanarImage opImage;
                 try {
-                    if (localImageFile == null) {
-                        localImageFile = this.virtualInputFile.getLocalFile(); // compute only one time the file path
-                    }
-                    opImage = createTileImage(localImageFile, this.virtualInputFile.getLocalCacheFolder(), x, y, level);
+                    opImage = createTileImage(this.virtualInputFile, this.virtualInputFile.getLocalCacheFolder(), x, y, level);
                     if (opImage != null) {
                         tileManager.registerForDisposal(opImage);
                         opImage = TranslateDescriptor.create(opImage,

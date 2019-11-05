@@ -20,6 +20,7 @@ import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 public class VirtualJP2File extends AbstractFile {
 
     private final Path localCacheFolder;
+    private Path localFile;
 
     public VirtualJP2File(Path file, Class clazz) throws IOException {
         super(file);
@@ -30,6 +31,14 @@ public class VirtualJP2File extends AbstractFile {
     @Override
     protected Path getLocalTempFolder() throws IOException {
         return this.localCacheFolder;
+    }
+
+    @Override
+    public Path getLocalFile() throws IOException {
+        if (this.localFile == null) {
+            this.localFile = super.getLocalFile();
+        }
+        return this.localFile;
     }
 
     public Path getLocalCacheFolder() {
