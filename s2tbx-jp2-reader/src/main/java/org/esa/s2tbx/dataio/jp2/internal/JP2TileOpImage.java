@@ -25,6 +25,7 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjp2.OpenJP2Decoder;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.readers.PathUtils;
+import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
@@ -39,6 +40,7 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
@@ -139,7 +141,14 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         int targetHeight = tileHeight;
         Dimension targetTileDim = getTileDimAtResolutionLevel(tileWidth, tileHeight, level);
         SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(dataType, targetWidth, targetHeight);
-        return new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
+
+        ColorModel colorModel = PlanarImage.createColorModel(sampleModel);
+        if (colorModel == null) {
+            ColorSpace cs = ColorSpace.getInstance(1003);
+            int[] nBits = new int[]{DataBuffer.getDataTypeSize(dataType)};
+            colorModel = new ComponentColorModel(cs, nBits, false, true, 1, dataType);
+        }
+        return new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, colorModel);
     }
 
     @Override
