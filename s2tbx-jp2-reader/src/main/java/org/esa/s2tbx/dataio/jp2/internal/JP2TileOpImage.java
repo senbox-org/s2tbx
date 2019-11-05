@@ -22,6 +22,7 @@ import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.VirtualJP2File;
 import org.esa.s2tbx.dataio.openjp2.OpenJP2Decoder;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.readers.PathUtils;
@@ -71,14 +72,14 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
     private final TileLayout tileLayout;
 
-    private final Path imageFile;
+    private final VirtualJP2File virtualInputFile;
     private final Path cacheDir;
     private final int tileIndex;
     private final int bandIndex;
     private final int dataType;
     private final Logger logger;
 
-    private JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
+    private JP2TileOpImage(VirtualJP2File virtualInputFile, int bandIdx, Path cacheDir, int row, int col,
                            TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level)
                            throws IOException {
 
@@ -86,13 +87,13 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                 getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
                 null, ResolutionLevel.create(imageModel, level));
 
-        Assert.notNull(imageFile, "imageFile");
+        Assert.notNull(virtualInputFile, "virtualInputFile");
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "tileLayout");
         Assert.notNull(imageModel, "imageModel");
 
         this.logger = SystemUtils.LOG;
-        this.imageFile = imageFile;
+        this.virtualInputFile = virtualInputFile;
         this.cacheDir = cacheDir;
         this.tileLayout = tileLayout;
         this.tileIndex = col + row * tileLayout.numXTiles;
@@ -111,7 +112,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     /**
      * Factory method for creating a TileOpImage instance.
      *
-     * @param imageFile     The JP2 file
+     * @param virtualInputFile     The JP2 file
      * @param cacheDir      The directory where decompressed tiles will be extracted
      * @param bandIdx       The index of the band for which the operator is created
      * @param row           The row of the tile in the scene layout
@@ -121,18 +122,18 @@ public class JP2TileOpImage extends SingleBandedOpImage {
      * @param dataType      The data type of the tile raster
      * @param level         The resolution at which the tile is created
      */
-    public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx, int row, int col, TileLayout tileLayout,
+    public static PlanarImage create(VirtualJP2File virtualInputFile, Path cacheDir, int bandIdx, int row, int col, TileLayout tileLayout,
                                      MultiLevelModel imageModel, int dataType, int level)
                                      throws IOException {
 
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
-        if (imageFile == null) {
+        if (virtualInputFile == null) {
             ImageLayout imageLayout = buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, dataType, level);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null), (float) imageLayout.getHeight(null), new Short[]{0}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         } else {
-            return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
+            return new JP2TileOpImage(virtualInputFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
         }
     }
 
@@ -202,8 +203,14 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         }
     }
 
+    private Path getLocalImageFile() throws IOException {
+        synchronized (this.virtualInputFile) {
+            return this.virtualInputFile.getLocalFile();
+        }
+    }
+
     private void computeRectDirect(WritableRaster dest, Rectangle destRect) {
-        try (OpenJP2Decoder decoder = new OpenJP2Decoder(this.cacheDir, this.imageFile, this.bandIndex, this.dataType, getLevel(), 20, tileIndex)) {
+        try (OpenJP2Decoder decoder = new OpenJP2Decoder(this.cacheDir, getLocalImageFile(), this.bandIndex, this.dataType, getLevel(), 20, tileIndex)) {
             Raster readTileImage = null;
             final DataBuffer dataBuffer = dest.getDataBuffer();
             int tileWidth = this.getTileWidth();
@@ -257,6 +264,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
     private Path decompressTile(int tileIndex, int level) throws IOException {
+        Path imageFile = getLocalImageFile();
         Path tileFile = PathUtils.get(cacheDir, PathUtils.getFileNameWithoutExtension(imageFile).toLowerCase() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
         if ((!Files.exists(tileFile)) || (diffLastModifiedTimes(tileFile.toFile(), imageFile.toFile()) < 0L)) {
             final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getOpjDecompress());
