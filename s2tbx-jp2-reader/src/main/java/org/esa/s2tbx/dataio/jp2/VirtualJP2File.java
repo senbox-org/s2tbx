@@ -17,10 +17,9 @@ import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 /**
  * Created by jcoravu on 8/5/2019.
  */
-public class VirtualJP2File extends AbstractFile {
+public class VirtualJP2File extends AbstractFile implements JP2LocalFile {
 
     private final Path localCacheFolder;
-    private Path localFile;
 
     public VirtualJP2File(Path file, Class clazz) throws IOException {
         super(file);
@@ -35,10 +34,7 @@ public class VirtualJP2File extends AbstractFile {
 
     @Override
     public Path getLocalFile() throws IOException {
-        if (this.localFile == null) {
-            this.localFile = super.getLocalFile();
-        }
-        return this.localFile;
+        return super.getLocalFile();
     }
 
     public Path getLocalCacheFolder() {
