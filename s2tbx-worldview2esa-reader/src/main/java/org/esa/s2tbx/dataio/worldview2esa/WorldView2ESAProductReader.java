@@ -138,8 +138,8 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 for (TileMetadata tileMetadata : tileMetadataList) {
                     final TileComponent tileComponent = tileMetadata.getTileComponent();
                     if (tileComponent.getBandID().equals("P")) {
-                        width = tileComponent.getNumColumns();
-                        height = tileComponent.getNumRows();
+                        width = tileMetadata.getRasterWidth();
+                        height = tileMetadata.getRasterHeight();
                         stepSize = tileComponent.getStepSize();
                         originX = tileComponent.getOriginX();
                         originY = tileComponent.getOriginY();
@@ -266,6 +266,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         if (this.tilesMultiSpectral != null) {
             this.tilesMultiSpectral.clear();
             this.tilesMultiSpectral = null;
+        }
+        for (WeakReference<Product> ref : tileRefs) {
+            ref.clear();
         }
         super.close();
     }
@@ -422,7 +425,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
 
     private void setBandProperties(final Band targetBand, final Band band) {
         targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
-        targetBand.setSpectralWavelength(band.getSpectralWavelength());
+        targetBand.setSpectralWavelength(WorldView2ESAConstants.BAND_WAVELENGTH.get(targetBand.getName()));
         targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
         targetBand.setSolarFlux(band.getSolarFlux());
         targetBand.setUnit(band.getUnit());

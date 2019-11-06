@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.s2;
 
 import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.jp2.JP2LocalFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
  * If the VirtualDir is null, the relativePath is an absolute relativePath.
  */
 
-public class VirtualPath {
+public class VirtualPath implements JP2LocalFile {
 
     private final Path relativePath; // relative relativePath starting from dir
     private final VirtualDirEx dir;
@@ -104,6 +105,7 @@ public class VirtualPath {
         return this.dir.getFilePath(this.relativePath.toString());
     }
 
+    @Override
     public Path getLocalFile() throws IOException {
         if (isCurrentDirectory()) {
             throw new IllegalStateException("Unable to get the file for path '"+this.relativePath.toString()+"'.");

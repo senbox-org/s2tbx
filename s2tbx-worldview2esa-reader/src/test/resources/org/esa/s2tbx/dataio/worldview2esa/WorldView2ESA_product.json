@@ -2,8 +2,8 @@
   "id": "WorldView2ESA_product",
   "decodeQualification": "INTENDED",
   "expectedContent": {
-    "sceneWidth": 16384,
-    "sceneHeight": 16384,
+    "sceneWidth": 47563,
+    "sceneHeight": 92201,
     "startTime": "25-MAY-2011 09:53:46.000000",
     "endTime": "25-MAY-2011 09:53:51.000000",
     "geoCoding": {
@@ -30,7 +30,7 @@
         "bandHeight": 4096,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "427",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
@@ -51,7 +51,7 @@
         "bandHeight": 4096,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "478.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
@@ -72,7 +72,7 @@
         "bandHeight": 4096,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "546.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
@@ -93,7 +93,7 @@
         "bandHeight": 4096,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "608.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
@@ -114,7 +114,7 @@
         "bandHeight": 4096,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "659.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
@@ -135,7 +135,7 @@
         "bandHeight": 4096,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "724.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
@@ -156,7 +156,7 @@
         "bandHeight": 4096,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "831.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
@@ -177,7 +177,7 @@
         "bandHeight": 4096,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "908.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {
@@ -198,7 +198,7 @@
         "bandHeight": 16384,
         "noDataValue": "0.0",
         "noDataValueUsed": "true",
-        "spectralWavelength": "0.0",
+        "spectralWavelength": "625.0",
         "spectralBandwidth": "0.0",
         "expectedPixels": [
           {

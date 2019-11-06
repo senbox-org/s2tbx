@@ -1,9 +1,13 @@
 package org.esa.s2tbx.dataio.worldview2esa.common;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Holder class for constants.
+ *
+ * The band center wavelength is from https://earth.esa.int/web/eoportal/satellite-missions/v-w-x-y-z/worldview-2
  *
  * @author Denisa Stefanescu
  */
@@ -36,6 +40,18 @@ public class WorldView2ESAConstants {
             new String[]{"Blue", "Green", "Red", "NIR1", "Pan"};
     public static final String[] BAND_NAMES_MULTISPECTRAL_8_BANDS =
             new String[]{"Coastal", "Blue", "Green", "Yellow", "Red", "Red Edge", "NIR1", "NIR2", "Pan"};
+
+    public static final Map<String, Integer> BAND_WAVELENGTH = new HashMap<String, Integer>() {{
+        put("Coastal", 427);
+        put("Blue", 478);
+        put("Green", 546);
+        put("Yellow", 608);
+        put("Red", 659);
+        put("Red Edge", 724);
+        put("NIR1", 831);
+        put("NIR2", 908);
+        put("Pan", 625);
+    }};
 
     public static final String[] BAND_MS1_ABSCALFACTOR_PATTERNS = new String[]{"/isd/imd/band_b/@abscalfactor",
             "/isd/imd/band_g/@abscalfactor",

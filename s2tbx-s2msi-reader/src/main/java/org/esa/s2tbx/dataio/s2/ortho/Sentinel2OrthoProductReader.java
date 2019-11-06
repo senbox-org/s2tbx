@@ -27,6 +27,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
@@ -1351,7 +1352,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             for (String tileId : this.sceneDescription.getOrderedTileIds()) {
                 // Get the a PlanarImage of the tile at native resolution, with a [0,0] origin
                 VirtualPath imageVirtualPath = this.bandInfo.getTileIdToPathMap().get(tileId);
-                Path imageFilePath = null;
+                JP2ImageFile jp2ImageFile = new JP2ImageFile(imageVirtualPath);
 
                 // Get the band native resolution
                 S2SpatialResolution bandNativeResolution = this.bandInfo.getBandInformation().getResolution();
@@ -1387,10 +1388,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                         Math.min(l1cTileLayout.height - y * l1cTileLayout.tileHeight, l1cTileLayout.tileHeight),
                                         l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
                             }
-                            if (imageVirtualPath != null && imageFilePath == null) {
-                                imageFilePath = imageVirtualPath.getLocalFile(); // compute only one time the file path
-                            }
-                            opImage = JP2TileOpImage.create(imageFilePath, cacheDir, 0, y, x, currentLayout, getModel(), TYPE_USHORT, level);
+                            opImage = JP2TileOpImage.create(jp2ImageFile, cacheDir, 0, y, x, currentLayout, getModel(), TYPE_USHORT, level);
                             if (opImage != null) {
                                 opImage = TranslateDescriptor.create(opImage,
                                         (float) (internalJp2TileRectangle.x),
