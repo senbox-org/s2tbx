@@ -56,6 +56,7 @@ import static org.esa.s2tbx.dataio.Utils.diffLastModifiedTimes;
  * A JAI operator for handling JP2 tiles.
  *
  * @author Cosmin Cara
+ * modified 20191108 to read a specific area from the input product Denisa Stefanescu
  */
 public class JP2TileOpImage extends SingleBandedOpImage {
     // We need this sort of cache to hold the tile rectangles because
@@ -75,9 +76,10 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     private final int bandIndex;
     private final int dataType;
     private final Logger logger;
+    private final Point tileOffset;
 
     private JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
-                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level)
+                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level, Point tileOffset)
                            throws IOException {
 
         super(dataType, null, tileLayout.tileWidth, tileLayout.tileHeight,
@@ -96,6 +98,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         this.tileIndex = col + row * tileLayout.numXTiles;
         this.bandIndex = bandIdx;
         this.dataType = dataType;
+        this.tileOffset = tileOffset;
 
         //if (useOpenJp2Jna == null) {
             /* Uncomment to use the direct openJp2 decompression */
@@ -104,6 +107,13 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                     openJp2 != null && tileLayout.numBands == 1;
             /*useOpenJp2Jna = false;*/
         //}
+    }
+
+    private JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
+                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level)
+            throws IOException {
+
+        this(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel,dataType, level, new Point(0,0));
     }
 
     /**
@@ -119,6 +129,22 @@ public class JP2TileOpImage extends SingleBandedOpImage {
      * @param dataType      The data type of the tile raster
      * @param level         The resolution at which the tile is created
      */
+    public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx, int row, int col, TileLayout tileLayout,
+                                     MultiLevelModel imageModel, int dataType, int level, Point tileOffset)
+                                     throws IOException {
+
+        Assert.notNull(cacheDir, "cacheDir");
+        Assert.notNull(tileLayout, "imageLayout");
+        Assert.notNull(imageModel, "imageModel");
+        Point offset = new Point(scaleValue(tileOffset.x,level),scaleValue(tileOffset.y,level));
+        if (imageFile == null) {
+            ImageLayout imageLayout = buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, dataType, level);
+            return ConstantDescriptor.create((float) imageLayout.getWidth(null), (float) imageLayout.getHeight(null), new Short[]{0}, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+        } else {
+            return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level , offset);
+        }
+    }
+
     public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx, int row, int col, TileLayout tileLayout,
                                      MultiLevelModel imageModel, int dataType, int level)
                                      throws IOException {
@@ -162,8 +188,8 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                     int tileHeight = this.getTileHeight();
                     final int fileTileX = destRect.x / tileLayout.tileWidth;
                     final int fileTileY = destRect.y / tileLayout.tileHeight;
-                    int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
-                    int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
+                    int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth + this.tileOffset.x;
+                    int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight + this.tileOffset.y;
                     Rectangle fileTileRect = tileDims.get(tile);
                     if (fileTileRect == null) {
                         fileTileRect = new Rectangle(0, 0, imageReader.getImageWidth(), imageReader.getImageHeight());
@@ -171,9 +197,18 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                     }
                     if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
                             && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
-                            && tileWidth * tileHeight == dataBuffer.getSize()) {
+                            && tileWidth * tileHeight == dataBuffer.getSize()
+                            && imageReader.getImageWidth() == tileLayout.width
+                            && imageReader.getImageHeight() == tileLayout.height) {
                         readTileImage = imageReader.read();
                     } else {
+                        //check is needed because a pixel is lose when the scaleValue is approx. upper bound
+                        if (fileTileOriginX + tileWidth > tileWidth) {
+                            fileTileOriginX--;
+                        }
+                        if (fileTileOriginY + tileHeight > tileHeight) {
+                            fileTileOriginY--;
+                        }
                         final Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
                         final Rectangle intersection = fileTileRect.intersection(tileRect);
                         if (!intersection.isEmpty()) {
@@ -181,8 +216,8 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                         }
                     }
                     if (readTileImage != null) {
-                        Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, new int[] { bandIndex });
-                        dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
+                        Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(),readTileImage.getHeight(), 0, 0, new int[] { bandIndex });
+                        dest.setDataElements(dest.getMinX(),dest.getMinY(),readBandRaster);
                     }
                 } catch (IOException e) {
                     logger.severe(e.getMessage());
@@ -201,16 +236,25 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             int tileHeight = this.getTileHeight();
             final int fileTileX = destRect.x / tileLayout.tileWidth;
             final int fileTileY = destRect.y / tileLayout.tileHeight;
-            int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
-            int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
+            int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth + this.tileOffset.x;
+            int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight + this.tileOffset.y;
             Dimension dimensions = decoder.getImageDimensions();
             Rectangle fileTileRect = new Rectangle(0, 0, dimensions.width, dimensions.height);
 
             if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
                     && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
-                    && tileWidth * tileHeight == dataBuffer.getSize()) {
+                    && tileWidth * tileHeight == dataBuffer.getSize()
+                    && dimensions.width == tileLayout.width
+                    && dimensions.height == tileLayout.height) {
                 readTileImage = decoder.read(null);
             } else {
+                //check is needed because a pixel is lose when the scaleValue is approx. upper bound
+                if (fileTileOriginX + tileWidth > tileWidth) {
+                    fileTileOriginX--;
+                }
+                if (fileTileOriginY + tileHeight > tileHeight) {
+                    fileTileOriginY--;
+                }
                 final Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
                 final Rectangle intersection = fileTileRect.intersection(tileRect);
                 if (!intersection.isEmpty()) {
@@ -227,7 +271,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         }
     }
 
-    private static int scaleValue(int source, int level) {
+    public static int scaleValue(int source, int level) {
         int size = source >> level;
         int sizeTest = size << level;
         if (sizeTest < source) {

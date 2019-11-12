@@ -36,8 +36,7 @@ import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -50,6 +49,7 @@ import java.util.logging.Logger;
  * A single banded multi-level image source for JP2 files.
  *
  * @author Cosmin Cara
+ * modified 20191108 to read a specific area from the input product Denisa Stefanescu
  */
 public class JP2MultiLevelSource extends AbstractMultiLevelSource {
 
@@ -58,7 +58,12 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     private final Logger logger;
     private final int bandIndex;
     private final TileImageDisposer tileManager;
+    private final Rectangle subsetRegion;
     private VirtualJP2File virtualInputFile;
+    private final int tileStartX;
+    private final int tileStartY;
+    private int numTilesX;
+    private int numTilesY;
 
     /**
      * Constructs an instance of a single band multi-level image source
@@ -74,9 +79,10 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param dataType    The pixel data type
      * @param geoCoding   (optional) The geocoding found (if any) in the JP2 header
      */
+
     public JP2MultiLevelSource(VirtualJP2File virtualInputFile, int bandIndex, int numBands,
                                int imageWidth, int imageHeight, int tileWidth, int tileHeight,
-                               int numTilesX, int numTilesY, int levels, int dataType, GeoCoding geoCoding) {
+                               int numTilesX, int numTilesY, int levels, int dataType, GeoCoding geoCoding, Rectangle subsetRegion) {
 
         super(new DefaultMultiLevelModel(levels, Product.findImageToModelTransform(geoCoding), imageWidth, imageHeight));
 
@@ -87,6 +93,27 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         this.tileLayout.numBands = numBands;
         this.bandIndex = bandIndex;
         this.tileManager = new TileImageDisposer();
+        this.subsetRegion = subsetRegion;
+        if (subsetRegion != null) {
+            //image width and height are already the one from the subset region (were retrieved when the product vas instantiated)
+            this.numTilesX = (imageWidth + subsetRegion.x) / tileWidth;
+            if ((imageWidth + subsetRegion.x) % tileWidth != 0) {
+                this.numTilesX++;
+            }
+            this.numTilesY = (imageHeight + subsetRegion.y) / tileHeight;
+            if ((imageHeight + subsetRegion.y) % tileHeight != 0) {
+                this.numTilesY++;
+            }
+            //we need to compute the tiles on row and column from where the selected subset starts
+            this.tileStartY = subsetRegion.y / tileLayout.tileHeight;
+            this.tileStartX = subsetRegion.x / tileLayout.tileWidth;
+        } else {
+            this.numTilesX = numTilesX;
+            this.numTilesY = numTilesY;
+            this.tileStartX = 0;
+            this.tileStartY = 0;
+        }
+
     }
 
     /**
@@ -96,17 +123,58 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param col   The column of the tile (0-based)
      * @param level The resolution level (0 = highest)
      */
-    private PlanarImage createTileImage(Path localImageFile, Path localCacheFolder, int row, int col, int level) throws IOException {
+    private PlanarImage createTileImage(Path localImageFile, Path localCacheFolder, int row, int col, int level, Point tileOffset) throws IOException {
         TileLayout currentLayout = tileLayout;
         // the edge tiles dimensions may be less than the dimensions from JP2 header
-        if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
-            currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
-                                           Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
-                                           Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
+        if (subsetRegion != null) {
+            //when a subset region is set by the user, the width and height for the middle tiles are the same as the tile width and height
+            int tileSubsetWidth = tileLayout.tileWidth;
+            int tileSubsetHeight = tileLayout.tileHeight;
+            if (row == tileStartY && row == this.numTilesY - 1) {
+                //when the subset have only one row tile, the height will be the same as the one selected by the user
+                tileSubsetHeight = subsetRegion.height;
+            } else if (row == tileStartY) {
+                //when the subset have more row tiles and the current tile is the first row
+                //if the default tile height is greater than the subset start point on row, the height is the difference between default tile height and subset start point on row
+                //otherwise the height is the difference between row number (+1 because the count starts from 0) multiplied by tile default height and subset start point on row
+                //the height will be the minimum value between the above conditions and the height selected by the user
+                tileSubsetHeight = Math.min(tileSubsetHeight > subsetRegion.y ? tileSubsetHeight - subsetRegion.y : (row + 1) * tileSubsetHeight - subsetRegion.y, subsetRegion.height);
+            } else if (row == this.numTilesY - 1) {
+                //when the subset have more row tiles and the current tile is the last row
+                //the height will be the the difference between:
+                // the sum of the height selected by the user and the subset start point on row and the multiplication between row number
+                // and the default tile height
+                tileSubsetHeight = subsetRegion.height + subsetRegion.y - row * tileLayout.tileHeight;
+            }
+            if (col == tileStartX && col == this.numTilesX - 1) {
+                //when the subset have only one column tile, the width will be the same as the one selected by the user
+                tileSubsetWidth = subsetRegion.width;
+            } else if (col == tileStartX) {
+                //when the subset have more column tiles and the current tile is the first column
+                //if the default tile width is greater than the subset start point on column, the width is the difference between default tile width and subset start point on column
+                //otherwise the width is the difference between column number (+1 because the count starts from 0) multiplied by tile default width and subset start point on column
+                //the width will be the minimum value between the above conditions and the width selected by the user
+                tileSubsetWidth = Math.min(tileSubsetWidth > subsetRegion.x ? tileSubsetWidth - subsetRegion.x : (col + 1) * tileSubsetWidth - subsetRegion.x, subsetRegion.width);
+            } else if (col == this.numTilesX - 1) {
+                //when the subset have more column tiles and the current tile is the last column
+                //the width will be the the difference between:
+                // the sum of the width selected by the user and the subset start point on column and the multiplication between column number
+                // and the default tile width
+                tileSubsetWidth = subsetRegion.width + subsetRegion.x - col * tileLayout.tileWidth;
+            }
+            currentLayout = new TileLayout(tileLayout.width, tileLayout.height, tileSubsetWidth, tileSubsetHeight,
                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
             currentLayout.numBands = tileLayout.numBands;
+        } else {
+            if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
+                currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
+                                               Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
+                                               Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
+                                               tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+                currentLayout.numBands = tileLayout.numBands;
+            }
         }
-        return JP2TileOpImage.create(localImageFile, localCacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
+        return JP2TileOpImage.create(localImageFile, localCacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level, tileOffset);
     }
 
     @Override
@@ -116,19 +184,63 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         TileLayout layout = tileLayout;
         double factorX = 1.0 / Math.pow(2, level);
         double factorY = 1.0 / Math.pow(2, level);
-        for (int x = 0; x < tileLayout.numYTiles; x++) {
-            for (int y = 0; y < tileLayout.numXTiles; y++) {
+        int offsetX = layout.tileWidth;
+        int offsetY = layout.tileHeight;
+        int distX = 0;
+        int distY = 0;
+        //when a subset region is set by the user, we need to compute an offset from the initial product
+        if (subsetRegion != null) {
+            offsetX = tileStartX > 0 ? (tileStartX + 1) * tileLayout.tileWidth - subsetRegion.x - 1 : tileLayout.tileWidth - subsetRegion.x;
+            offsetY = tileStartY > 0 ? (tileStartY + 1) * tileLayout.tileHeight - subsetRegion.y : tileLayout.tileHeight - subsetRegion.y;
+            distX = tileStartX > 0 ? tileLayout.tileWidth - offsetX : subsetRegion.x;
+            distY = tileStartY > 0 ? tileLayout.tileHeight - offsetY : subsetRegion.y;
+        }
+        Point tileOffset = new Point(0, 0);
+        //variables needed to compute the tile offset and xTrans/yTrans variables (used when a sunset is set by the user)
+        int tileColCount = 0;
+        int tileRowCount = 0;
+        for (int x = tileStartY; x < this.numTilesY; x++) {
+            for (int y = tileStartX; y < this.numTilesX; y++) {
+                int xTrans = y * tileLayout.tileWidth;
+                int yTrans = x * tileLayout.tileHeight;
+                //when a subset region is set by the user, the tile offset and xTrans/yTrans variables need to be computed
+                if (subsetRegion != null) {
+                    if (tileColCount == 0) { //first column of the selected subset
+                        yTrans = tileColCount * offsetY;
+                    } else {
+                        yTrans = tileColCount * offsetY + (tileColCount - 1) * distY;
+                    }
+                    if (tileRowCount == 0) { //first row of the selected subset
+                        xTrans = tileRowCount * offsetX;
+                    } else {
+                        xTrans = tileRowCount * offsetX + (tileRowCount - 1) * distX;
+                    }
+                    if (x == 0) { //the first tile of the subset, also the first tile of the initial the product (columns)
+                        tileOffset.y = subsetRegion.y;
+                    } else if (x == tileStartY) { //the first tile of the subset, not the first tile of the initial product (columns)
+                        tileOffset.y = subsetRegion.y - tileStartY * tileLayout.tileHeight;
+                    } else {
+                        tileOffset.y = 0;
+                    }
+                    if (y == 0) { //the first tile of the subset, also the first tile of the initial the product (rows)
+                        tileOffset.x = subsetRegion.x;
+                    } else if (tileStartX == y) { //the first tile of the subset, not the first tile of the initial product (rows)
+                        tileOffset.x = subsetRegion.x - tileStartX * tileLayout.tileWidth;
+                    } else {
+                        tileOffset.x = 0;
+                    }
+                }
                 PlanarImage opImage;
                 try {
                     if (localImageFile == null) {
                         localImageFile = this.virtualInputFile.getLocalFile(); // compute only one time the file path
                     }
-                    opImage = createTileImage(localImageFile, this.virtualInputFile.getLocalCacheFolder(), x, y, level);
+                    opImage = createTileImage(localImageFile, this.virtualInputFile.getLocalCacheFolder(), x, y, level, tileOffset);
                     if (opImage != null) {
                         tileManager.registerForDisposal(opImage);
                         opImage = TranslateDescriptor.create(opImage,
-                                                             (float) (y * layout.tileWidth * factorX),
-                                                             (float) (x * layout.tileHeight * factorY),
+                                                             (float) (xTrans * factorX),
+                                                             (float) (yTrans * factorY),
                                                              Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                                              null);
                     }
@@ -136,7 +248,10 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
                     opImage = ConstantDescriptor.create((float) layout.tileWidth, (float) layout.tileHeight, new Number[]{0}, null);
                 }
                 tileImages.add(opImage);
+                tileRowCount++; //increment the row
             }
+            tileColCount++; //increment the column and reset the row
+            tileRowCount = 0;
         }
         if (tileImages.isEmpty()) {
             logger.warning("No tile images for mosaic");
@@ -153,7 +268,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
 
         // It must be specified which values shall be mosaicked. The default settings don't work
         // We want all values to be considered
-        ROI[]sourceRois = new ROI[tileImages.size()];
+        ROI[] sourceRois = new ROI[tileImages.size()];
         for (int i = 0; i < sourceRois.length; i++) {
             RenderedImage image = tileImages.get(i);
             ImageLayout roiLayout = new ImageLayout(image);
@@ -166,8 +281,8 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
                                                       null, sourceRois, null, null,
                                                       new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
-        int fittingRectWidth = scaleValue(tileLayout.width, level);
-        int fittingRectHeight = scaleValue(tileLayout.height, level);
+        int fittingRectWidth = JP2TileOpImage.scaleValue(tileLayout.width, level);
+        int fittingRectHeight = JP2TileOpImage.scaleValue(tileLayout.height, level);
 
         Rectangle fitRect = new Rectangle(0, 0, fittingRectWidth, fittingRectHeight);
         final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
@@ -188,14 +303,5 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         super.reset();
         tileManager.disposeAll();
         System.gc();
-    }
-
-    private int scaleValue(int source, int level) {
-        int size = source >> level;
-        int sizeTest = size << level;
-        if (sizeTest < source) {
-            size++;
-        }
-        return size;
     }
 }

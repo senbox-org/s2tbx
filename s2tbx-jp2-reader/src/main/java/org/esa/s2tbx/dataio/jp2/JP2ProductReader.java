@@ -22,9 +22,9 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
-import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
 import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
+import org.esa.s2tbx.dataio.jp2.metadata.JP2MetadataInspector;
 import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
 import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -34,6 +34,7 @@ import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
@@ -46,12 +47,13 @@ import org.esa.snap.core.datamodel.TiePointGrid;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.image.DataBuffer;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,6 +64,7 @@ import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecut
  * Generic reader for JP2 files.
  *
  * @author Cosmin Cara
+ * modified 20191108 to support parameters for reader Denisa Stefanescu
  */
 public class JP2ProductReader extends AbstractProductReader {
 
@@ -74,6 +77,11 @@ public class JP2ProductReader extends AbstractProductReader {
         super(readerPlugIn);
 
         registerMetadataParser();
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new JP2MetadataInspector();
     }
 
     @Override
@@ -132,6 +140,12 @@ public class JP2ProductReader extends AbstractProductReader {
 
             int imageWidth = imageInfo.getWidth();
             int imageHeight = imageInfo.getHeight();
+
+            if (getSubsetDef() != null && getSubsetDef().getRegion() != null) {
+                imageWidth = getSubsetDef().getRegion().width;
+                imageHeight = getSubsetDef().getRegion().height;
+            }
+
             this.product = new Product(this.virtualJp2File.getFileName(), JP2ProductReaderConstants.TYPE, imageWidth, imageHeight);
 
             MetadataElement metadataRoot = this.product.getMetadataRoot();
@@ -168,14 +182,19 @@ public class JP2ProductReader extends AbstractProductReader {
     private void addGeoCoding(Jp2XmlMetadata metadata) {
         int imageWidth = this.product.getSceneRasterWidth();
         int imageHeight = this.product.getSceneRasterHeight();
-
+        double offsetX = 0;
+        double offsetY = 0;
+        if (getSubsetDef() != null && getSubsetDef().getRegion() != null) {
+            offsetX = getSubsetDef().getRegion().x * metadata.getStepX();
+            offsetY = getSubsetDef().getRegion().y * metadata.getStepY();
+        }
         String crsGeoCoding = metadata.getCrsGeocoding();
         Point2D origin = metadata.getOrigin();
         GeoCoding geoCoding = null;
         if (crsGeoCoding != null && origin != null) {
             try {
                 CoordinateReferenceSystem mapCRS = CRS.decode(crsGeoCoding.replace("::", ":"));
-                geoCoding = new CrsGeoCoding(mapCRS, imageWidth, imageHeight, origin.getX(), origin.getY(), metadata.getStepX(), -metadata.getStepY());
+                geoCoding = new CrsGeoCoding(mapCRS, imageWidth, imageHeight, origin.getX() + offsetX, origin.getY() + offsetY, metadata.getStepX(), -metadata.getStepY());
             } catch (Exception gEx) {
                 // ignore
             }
@@ -205,8 +224,8 @@ public class JP2ProductReader extends AbstractProductReader {
                     }
                 }
                 if(latPoints != null ) {
-                    TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, imageWidth, imageHeight, latPoints);
-                    TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, imageWidth, imageHeight, lonPoints);
+                    TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, offsetX, offsetY, imageWidth, imageHeight, latPoints);
+                    TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, offsetX, offsetY, imageWidth, imageHeight, lonPoints);
                     geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
                     this.product.addTiePointGrid(latGrid);
                     this.product.addTiePointGrid(lonGrid);
@@ -222,38 +241,50 @@ public class JP2ProductReader extends AbstractProductReader {
 
     private void addBands(ImageInfo imageInfo, CodeStreamInfo csInfo, double[] bandScales, double[] bandOffsets) {
         List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
+        Rectangle subsetRegion = null;
 
         int imageWidth = this.product.getSceneRasterWidth();
         int imageHeight = this.product.getSceneRasterHeight();
-
         int numBands = componentTilesInfo.size();
+        if (getSubsetDef() != null && getSubsetDef().getRegion() != null) {
+            subsetRegion = getSubsetDef().getRegion();
+        }
         for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
-            // changes from https://github.com/senbox-org/s2tbx/pull/48
-            /*int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
-            Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1), OpenJpegUtils.PRECISION_TYPE_MAP.get(precision), imageWidth, imageHeight);*/
-            ImageInfo.ImageInfoComponent bandImageInfo = imageInfo.getComponents().get(bandIdx);
-            int snapDataType = getSnapDataTypeFromImageInfo(bandImageInfo);
-            int awtDataType = getAwtDataTypeFromImageInfo(bandImageInfo);
-            Band virtualBand = new Band("band_" + (bandIdx + 1),
-              snapDataType,
-              imageWidth,
-              imageHeight);
-
-            JP2MultiLevelSource source = new JP2MultiLevelSource(this.virtualJp2File, bandIdx, numBands, imageWidth, imageHeight,
-                    csInfo.getTileWidth(), csInfo.getTileHeight(),
-                    csInfo.getNumTilesX(), csInfo.getNumTilesY(),
-                    csInfo.getNumResolutions(), awtDataType,
-                    this.product.getSceneGeoCoding());
-
-            int level = 0;
-            ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(csInfo.getTileWidth(), csInfo.getTileHeight(), awtDataType, level);
-            virtualBand.setSourceImage(new DefaultMultiLevelImage(source, imageLayout));
-
-            if (bandScales != null && bandOffsets != null) {
-                virtualBand.setScalingFactor(bandScales[bandIdx]);
-                virtualBand.setScalingOffset(bandOffsets[bandIdx]);
+            //used to identify the bands selected by the user in Advanced Open dialog
+            //default is true, because the product can be opened without advanced option (in this case all the bands should be opened)
+            boolean bandIsSelected = true;
+            String bandName = "band_" + (bandIdx + 1);
+            if (getSubsetDef() != null && !Arrays.asList(getSubsetDef().getNodeNames()).contains("allBands")) {
+                if (!Arrays.asList(getSubsetDef().getNodeNames()).contains(bandName)) {
+                    bandIsSelected = false;
+                }
             }
-            this.product.addBand(virtualBand);
+            if (bandIsSelected) {
+                // changes from https://github.com/senbox-org/s2tbx/pull/48
+                /*int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
+                Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1), OpenJpegUtils.PRECISION_TYPE_MAP.get(precision), imageWidth, imageHeight);*/
+                ImageInfo.ImageInfoComponent bandImageInfo = imageInfo.getComponents().get(bandIdx);
+                int snapDataType = getSnapDataTypeFromImageInfo(bandImageInfo);
+                int awtDataType = getAwtDataTypeFromImageInfo(bandImageInfo);
+                Band virtualBand = new Band("band_" + (bandIdx + 1),
+                                            snapDataType,
+                                            imageWidth,
+                                            imageHeight);
+
+                JP2MultiLevelSource source = new JP2MultiLevelSource(this.virtualJp2File, bandIdx, numBands, imageWidth, imageHeight,
+                                                                     csInfo.getTileWidth(), csInfo.getTileHeight(),
+                                                                     csInfo.getNumTilesX(), csInfo.getNumTilesY(),
+                                                                     csInfo.getNumResolutions(), awtDataType,
+                                                                     this.product.getSceneGeoCoding(), subsetRegion);
+
+                virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
+
+                if (bandScales != null && bandOffsets != null) {
+                    virtualBand.setScalingFactor(bandScales[bandIdx]);
+                    virtualBand.setScalingOffset(bandOffsets[bandIdx]);
+                }
+                this.product.addBand(virtualBand);
+            }
         }
     }
 
