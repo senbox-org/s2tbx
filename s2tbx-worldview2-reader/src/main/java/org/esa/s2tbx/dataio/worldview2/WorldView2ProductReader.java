@@ -304,7 +304,7 @@ class WorldView2ProductReader extends AbstractProductReader {
 
     private void setBandProperties(final Band targetBand, final Band band) {
         targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
-        targetBand.setSpectralWavelength(band.getSpectralWavelength());
+        targetBand.setSpectralWavelength(WorldView2Constants.BAND_WAVELENGTH.get(targetBand.getName()));
         targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
         targetBand.setSolarFlux(band.getSolarFlux());
         targetBand.setUnit(band.getUnit());

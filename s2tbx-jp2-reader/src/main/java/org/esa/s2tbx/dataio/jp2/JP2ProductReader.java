@@ -243,6 +243,8 @@ public class JP2ProductReader extends AbstractProductReader {
         List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
         Rectangle subsetRegion = null;
 
+        JP2ImageFile jp2ImageFile = new JP2ImageFile(this.virtualJp2File);
+        Path localCacheFolder = this.virtualJp2File.getLocalCacheFolder();
         int imageWidth = this.product.getSceneRasterWidth();
         int imageHeight = this.product.getSceneRasterHeight();
         int numBands = componentTilesInfo.size();
@@ -271,13 +273,13 @@ public class JP2ProductReader extends AbstractProductReader {
                                             imageWidth,
                                             imageHeight);
 
-                JP2MultiLevelSource source = new JP2MultiLevelSource(this.virtualJp2File, bandIdx, numBands, imageWidth, imageHeight,
-                                                                     csInfo.getTileWidth(), csInfo.getTileHeight(),
-                                                                     csInfo.getNumTilesX(), csInfo.getNumTilesY(),
-                                                                     csInfo.getNumResolutions(), awtDataType,
-                                                                     this.product.getSceneGeoCoding(), subsetRegion);
+            JP2MultiLevelSource source = new JP2MultiLevelSource(localCacheFolder, jp2ImageFile, bandIdx, numBands, imageWidth, imageHeight,
+                    csInfo.getTileWidth(), csInfo.getTileHeight(),
+                    csInfo.getNumTilesX(), csInfo.getNumTilesY(),
+                    csInfo.getNumResolutions(), awtDataType,
+                    this.product.getSceneGeoCoding(), subsetRegion);
 
-                virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
+            virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
 
                 if (bandScales != null && bandOffsets != null) {
                     virtualBand.setScalingFactor(bandScales[bandIdx]);

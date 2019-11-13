@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.jp2.internal;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
+import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.VirtualJP2File;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -59,7 +60,8 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     private final int bandIndex;
     private final TileImageDisposer tileManager;
     private final Rectangle subsetRegion;
-    private VirtualJP2File virtualInputFile;
+    private final JP2ImageFile jp2ImageFile;
+    private final Path localCacheFolder;
     private final int tileStartX;
     private final int tileStartY;
     private int numTilesX;
@@ -79,14 +81,14 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param dataType    The pixel data type
      * @param geoCoding   (optional) The geocoding found (if any) in the JP2 header
      */
-
-    public JP2MultiLevelSource(VirtualJP2File virtualInputFile, int bandIndex, int numBands,
+    public JP2MultiLevelSource(Path localCacheFolder, JP2ImageFile jp2ImageFile, int bandIndex, int numBands,
                                int imageWidth, int imageHeight, int tileWidth, int tileHeight,
                                int numTilesX, int numTilesY, int levels, int dataType, GeoCoding geoCoding, Rectangle subsetRegion) {
 
         super(new DefaultMultiLevelModel(levels, Product.findImageToModelTransform(geoCoding), imageWidth, imageHeight));
 
-        this.virtualInputFile = virtualInputFile;
+        this.jp2ImageFile = jp2ImageFile;
+        this.localCacheFolder = localCacheFolder;
         this.dataType = dataType;
         this.logger = Logger.getLogger(JP2MultiLevelSource.class.getName());
         this.tileLayout = new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, numTilesX, numTilesY, levels);
@@ -123,7 +125,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param col   The column of the tile (0-based)
      * @param level The resolution level (0 = highest)
      */
-    private PlanarImage createTileImage(Path localImageFile, Path localCacheFolder, int row, int col, int level, Point tileOffset) throws IOException {
+    private PlanarImage createTileImage(JP2ImageFile jp2ImageFile, Path localCacheFolder, int row, int col, int level, Point tileOffset) throws IOException {
         TileLayout currentLayout = tileLayout;
         // the edge tiles dimensions may be less than the dimensions from JP2 header
         if (subsetRegion != null) {
@@ -174,12 +176,11 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
                 currentLayout.numBands = tileLayout.numBands;
             }
         }
-        return JP2TileOpImage.create(localImageFile, localCacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level, tileOffset);
+        return JP2TileOpImage.create(jp2ImageFile, localCacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level, tileOffset);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        Path localImageFile = null;
         List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>(tileLayout.numXTiles * tileLayout.numYTiles));
         TileLayout layout = tileLayout;
         double factorX = 1.0 / Math.pow(2, level);
@@ -232,10 +233,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
                 }
                 PlanarImage opImage;
                 try {
-                    if (localImageFile == null) {
-                        localImageFile = this.virtualInputFile.getLocalFile(); // compute only one time the file path
-                    }
-                    opImage = createTileImage(localImageFile, this.virtualInputFile.getLocalCacheFolder(), x, y, level, tileOffset);
+                    opImage = createTileImage(jp2ImageFile, this.localCacheFolder, x, y, level, tileOffset);
                     if (opImage != null) {
                         tileManager.registerForDisposal(opImage);
                         opImage = TranslateDescriptor.create(opImage,

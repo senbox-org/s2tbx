@@ -34,6 +34,7 @@ import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.ProductUtils;
 
 import java.awt.*;
 import java.lang.reflect.Field;
@@ -119,7 +120,7 @@ public abstract class BaseIndexOp extends Operator {
             throw new OperatorException("Source bands not set");
         }
         int sceneWidth = 0, sceneHeight = 0;
-        GeoCoding targetGeocoding = null;
+        //GeoCoding targetGeocoding = null;
 
         boolean resampleNeeded = !RESAMPLE_NONE.equals(this.resampleType);
         if (resampleNeeded) {
@@ -139,7 +140,7 @@ public abstract class BaseIndexOp extends Operator {
                 }
             }
             this.sourceProduct = resample(this.sourceProduct, sceneWidth, sceneHeight);
-            targetGeocoding = this.sourceProduct.getSceneGeoCoding();
+            //targetGeocoding = this.sourceProduct.getSceneGeoCoding();
         } else {
             // Issue only when used from Graph Builder: Resample not asked for: must check bands resolution in case of multisize product
             if (this.sourceProduct.isMultiSize()) {
@@ -168,18 +169,18 @@ public abstract class BaseIndexOp extends Operator {
                         }
                     }
                     this.sourceProduct = resample(this.sourceProduct, sceneWidth, sceneHeight);
-                    targetGeocoding = this.sourceProduct.getSceneGeoCoding();
+                    //targetGeocoding = this.sourceProduct.getSceneGeoCoding();
                 } else {
                     // All the bands have the same resolution.
                     // For the target product use the common resolution as it can be different from the sourceProduct.
                     sceneWidth = band0.getRasterWidth();
                     sceneHeight = band0.getRasterHeight();
-                    targetGeocoding = band0.getGeoCoding();
+                    //targetGeocoding = band0.getGeoCoding();
                 }
             } else {
                 sceneWidth = sourceProduct.getSceneRasterWidth();
                 sceneHeight = sourceProduct.getSceneRasterHeight();
-                targetGeocoding = sourceProduct.getSceneGeoCoding();
+                //targetGeocoding = sourceProduct.getSceneGeoCoding();
             }
         }
 
@@ -188,12 +189,15 @@ public abstract class BaseIndexOp extends Operator {
         String name = getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
-        if (targetGeocoding instanceof TiePointGeoCoding) {
+
+        // SIITBX-290: Radiometric Index Operators do not handle GeoCoding correctly, ProductUtils should be used
+        /*if (targetGeocoding instanceof TiePointGeoCoding) {
             for (TiePointGrid tiePointGrid : sourceProduct.getTiePointGrids()) {
                 targetProduct.addTiePointGrid(tiePointGrid);
             }
         }
-        targetProduct.setSceneGeoCoding(targetGeocoding);
+        targetProduct.setSceneGeoCoding(targetGeocoding);*/
+        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
 
         Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sceneWidth, sceneHeight);
         targetProduct.addBand(outputBand);

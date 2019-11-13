@@ -139,6 +139,14 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL)</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+	
     <dependencyManagement>
         <dependencies>
 
@@ -383,7 +391,7 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>[3.2.5,3.6.0]</version>
+                                    <version>[3.2.5,)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
                                     <version>1.8</version>
