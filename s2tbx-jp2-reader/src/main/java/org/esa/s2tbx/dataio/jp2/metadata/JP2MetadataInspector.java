@@ -13,6 +13,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 
@@ -23,6 +24,7 @@ import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecut
  */
 
 public class JP2MetadataInspector implements MetadataInspector {
+    protected Logger logger = Logger.getLogger(getClass().getName());
 
     public Metadata getMetadata(Path productPath) throws IOException {
         Metadata metadata = new Metadata();
@@ -52,12 +54,17 @@ public class JP2MetadataInspector implements MetadataInspector {
             metadata.setProductWidth(String.valueOf(imageWidth));
             metadata.setProductHeight(String.valueOf(imageHeight));
             metadata.setGeoCoding(addGeoCoding(metadataHeader, imageWidth, imageHeight));
-            final GeoPos geoPos1 = metadata.getGeoCoding().getGeoPos(new PixelPos(0, 0), null);
-            final GeoPos geoPos2 = metadata.getGeoCoding().getGeoPos(new PixelPos(imageWidth, imageHeight), null);
-            metadata.setLatitudeNorth(String.valueOf(geoPos1.getLat()));
-            metadata.setLatitudeSouth(String.valueOf(geoPos2.getLat()));
-            metadata.setLongitudeEast(String.valueOf(geoPos2.getLon()));
-            metadata.setLongitudeWest(String.valueOf(geoPos1.getLon()));
+            if(metadata.getGeoCoding() != null) {
+                final GeoPos geoPos1 = metadata.getGeoCoding().getGeoPos(new PixelPos(0, 0), null);
+                final GeoPos geoPos2 = metadata.getGeoCoding().getGeoPos(new PixelPos(imageWidth, imageHeight), null);
+                metadata.setLatitudeNorth(String.valueOf(geoPos1.getLat()));
+                metadata.setLatitudeSouth(String.valueOf(geoPos2.getLat()));
+                metadata.setLongitudeEast(String.valueOf(geoPos2.getLon()));
+                metadata.setLongitudeWest(String.valueOf(geoPos1.getLon()));
+                metadata.setHasGeoCoding(true);
+            }else{
+                metadata.setHasGeoCoding(false);
+            }
         } catch (IOException|InterruptedException e) {
             throw new IOException("Error while reading file '" + productPath.toString() + "'.", e);
         }
@@ -75,7 +82,7 @@ public class JP2MetadataInspector implements MetadataInspector {
                 CoordinateReferenceSystem mapCRS = CRS.decode(crsGeoCoding.replace("::", ":"));
                 geoCoding = new CrsGeoCoding(mapCRS, width, height, origin.getX(), origin.getY(), metadata.getStepX(), -metadata.getStepY());
             } catch (Exception gEx) {
-                // ignore
+                logger.warning(gEx.getMessage());
             }
         }
         return geoCoding;

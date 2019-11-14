@@ -149,11 +149,15 @@ public class JP2ProductReader extends AbstractProductReader {
             this.product = new Product(this.virtualJp2File.getFileName(), JP2ProductReaderConstants.TYPE, imageWidth, imageHeight);
 
             MetadataElement metadataRoot = this.product.getMetadataRoot();
-            metadataRoot.addElement(imageInfo.toMetadataElement());
-            metadataRoot.addElement(csInfo.toMetadataElement());
+            if ((getSubsetDef() != null && !getSubsetDef().isIgnoreMetadata()) || getSubsetDef() == null) {
+                metadataRoot.addElement(imageInfo.toMetadataElement());
+                metadataRoot.addElement(csInfo.toMetadataElement());
+            }
             if (metadata != null) {
                 metadata.setFileName(jp2File.toString());
-                metadataRoot.addElement(metadata.getRootElement());
+                if ((getSubsetDef() != null && !getSubsetDef().isIgnoreMetadata()) || getSubsetDef() == null) {
+                    metadataRoot.addElement(metadata.getRootElement());
+                }
                 addGeoCoding(metadata);
             }
 
