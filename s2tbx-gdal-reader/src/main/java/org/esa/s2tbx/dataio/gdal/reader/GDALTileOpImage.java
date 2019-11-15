@@ -2,25 +2,22 @@ package org.esa.s2tbx.dataio.gdal.reader;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
+import org.esa.s2tbx.dataio.gdal.drivers.Band;
+import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
+import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
+import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
+import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.s2tbx.dataio.readers.TileLayout;
 import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
-import org.gdal.gdal.Band;
-import org.gdal.gdal.Dataset;
-import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconst;
-import org.gdal.gdalconst.gdalconstConstants;
 
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Transparency;
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -78,6 +75,70 @@ class GDALTileOpImage extends SingleBandedOpImage {
         this.tileLayout = tileLayout;
         this.bandIndex = bandIndex;
         this.dataBufferType = dataBufferType;
+    }
+
+    /**
+     * Factory method for creating a TileOpImage instance.
+     *
+     * @param imageFile      The file path
+     * @param bandIndex      The index of the band for which the operator is created
+     * @param row            The row of the tile in the scene layout
+     * @param col            The column of the tile in the scene layout
+     * @param tileLayout     The scene layout
+     * @param imageModel     The multi-level image model
+     * @param dataBufferType The data type of the tile raster
+     * @param level          The resolution at which the tile is created
+     * @return The TileOpImage instance
+     */
+    static PlanarImage create(Path imageFile, int bandIndex, int row, int col, TileLayout tileLayout, MultiLevelModel imageModel, int dataBufferType, int level) {
+        Assert.notNull(tileLayout, "imageLayout");
+        Assert.notNull(imageModel, "imageModel");
+
+        TileLayout currentLayout = tileLayout;
+        // the edge tiles dimensions may be less than the dimensions from header
+        if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
+            int tileWidth = Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth);
+            int tileHeight = Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight);
+            currentLayout = new TileLayout(tileLayout.width, tileLayout.height, tileWidth, tileHeight, tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+            currentLayout.numBands = tileLayout.numBands;
+        }
+
+        if (imageFile != null) {
+            int sourceX = col * scaleValue(tileLayout.tileWidth, level);
+            int sourceY = row * scaleValue(tileLayout.tileHeight, level);
+            return new GDALTileOpImage(imageFile, bandIndex, sourceX, sourceY, currentLayout, imageModel, dataBufferType, level);
+        }
+
+        int targetWidth = currentLayout.tileWidth;
+        int targetHeight = currentLayout.tileHeight;
+        Dimension targetTileDim = getTileDimensionAtResolutionLevel(targetWidth, targetHeight, level);
+        SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(dataBufferType, targetWidth, targetHeight);
+        ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
+
+        float width = (float) imageLayout.getWidth(null);
+        float height = (float) imageLayout.getHeight(null);
+        Number[] bandValues = new Short[]{0};
+        return ConstantDescriptor.create(width, height, bandValues, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+    }
+
+    static int scaleValue(int source, int level) {
+        int size = source >> level;
+        int sizeTest = size << level;
+        if (sizeTest < source) {
+            size++;
+        }
+        return size;
+    }
+
+    private static Dimension getTileDimensionAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
+        int width = scaleValue(fullTileWidth, level);
+        int height = scaleValue(fullTileHeight, level);
+        return getTileDimension(width, height);
+    }
+
+    private static Dimension getTileDimension(int width, int height) {
+        Dimension defaultTileSize = JAI.getDefaultTileSize();
+        return new Dimension(Math.min(width, defaultTileSize.width), Math.min(height, defaultTileSize.height));
     }
 
     @Override
@@ -142,7 +203,7 @@ class GDALTileOpImage extends SingleBandedOpImage {
                 }
 
                 long endTime = System.currentTimeMillis();
-                String msg = String.format("ReadBlock_Direct (took %s)", (new SimpleDateFormat("mm:ss:SSS")).format(new Date(endTime - startTime)));
+                String msg = String.format("readBlockDirect (took %s)", (new SimpleDateFormat("mm:ss:SSS")).format(new Date(endTime - startTime)));
                 SystemUtils.LOG.info(msg);
 
             } catch (Exception ex) {
@@ -161,78 +222,13 @@ class GDALTileOpImage extends SingleBandedOpImage {
         }
     }
 
-    /**
-     * Factory method for creating a TileOpImage instance.
-     *
-     * @param imageFile         The file path
-     * @param bandIndex         The index of the band for which the operator is created
-     * @param row               The row of the tile in the scene layout
-     * @param col               The column of the tile in the scene layout
-     * @param tileLayout        The scene layout
-     * @param imageModel        The multi-level image model
-     * @param dataBufferType    The data type of the tile raster
-     * @param level             The resolution at which the tile is created
-     *
-     * @return                  The TileOpImage instance
-     */
-    static PlanarImage create(Path imageFile, int bandIndex, int row, int col, TileLayout tileLayout, MultiLevelModel imageModel, int dataBufferType, int level) {
-        Assert.notNull(tileLayout, "imageLayout");
-        Assert.notNull(imageModel, "imageModel");
-
-        TileLayout currentLayout = tileLayout;
-        // the edge tiles dimensions may be less than the dimensions from header
-        if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
-            int tileWidth = Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth);
-            int tileHeight = Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight);
-            currentLayout = new TileLayout(tileLayout.width, tileLayout.height, tileWidth, tileHeight, tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
-            currentLayout.numBands = tileLayout.numBands;
-        }
-
-        if (imageFile != null) {
-            int sourceX = col * scaleValue(tileLayout.tileWidth, level);
-            int sourceY = row * scaleValue(tileLayout.tileHeight, level);
-            return new GDALTileOpImage(imageFile, bandIndex, sourceX, sourceY, currentLayout, imageModel, dataBufferType, level);
-        }
-
-        int targetWidth = currentLayout.tileWidth;
-        int targetHeight = currentLayout.tileHeight;
-        Dimension targetTileDim = getTileDimensionAtResolutionLevel(targetWidth, targetHeight, level);
-        SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(dataBufferType, targetWidth, targetHeight);
-        ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
-
-        float width = (float) imageLayout.getWidth(null);
-        float height = (float) imageLayout.getHeight(null);
-        Number[] bandValues = new Short[]{0};
-        return ConstantDescriptor.create(width, height, bandValues, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-    }
-
-    static int scaleValue(int source, int level) {
-        int size = source >> level;
-        int sizeTest = size << level;
-        if (sizeTest < source) {
-            size++;
-        }
-        return size;
-    }
-
-    private static Dimension getTileDimensionAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
-        int width = scaleValue(fullTileWidth, level);
-        int height = scaleValue(fullTileHeight, level);
-        return getTileDimension(width, height);
-    }
-
-    private static Dimension getTileDimension(int width, int height) {
-        Dimension defaultTileSize = JAI.getDefaultTileSize();
-        return new Dimension(Math.min(width, defaultTileSize.width), Math.min(height, defaultTileSize.height));
-    }
-
     private static class ImageReader {
-        private Dataset gdalDataset;
-        private final org.gdal.gdal.Band band;
+        private final Band band;
         private final int dataBufferType;
         private final int level;
         private final int offsetX;
         private final int offsetY;
+        private Dataset gdalDataset;
 
         private ImageReader(Path inputFile, int bandIndex, int offsetX, int offsetY, int dataBufferType, int level) {
             this.dataBufferType = dataBufferType;
@@ -240,11 +236,14 @@ class GDALTileOpImage extends SingleBandedOpImage {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
 
-            this.gdalDataset = gdal.Open(inputFile.toString(), gdalconst.GA_ReadOnly);
+            this.gdalDataset = GDAL.open(inputFile.toString(), GDALConst.GA_ReadOnly());
             // bands are not 0-base indexed, so we must add 1
-            Band rasterBand = gdalDataset.GetRasterBand(bandIndex + 1);
-            if (level > 0 && rasterBand.GetOverviewCount() > 0) {
-                this.band = rasterBand.GetOverview(this.level - 1);
+            if (gdalDataset == null) {
+                throw new IllegalStateException("No data set received from GDAL.");
+            }
+            Band rasterBand = gdalDataset.getRasterBand(bandIndex + 1);
+            if (level > 0 && rasterBand.getOverviewCount() > 0) {
+                this.band = rasterBand.getOverview(this.level - 1);
             } else {
                 this.band = rasterBand;
             }
@@ -258,20 +257,20 @@ class GDALTileOpImage extends SingleBandedOpImage {
             return this.band.getYSize();
         }
 
-        int getOffsetX(){
+        int getOffsetX() {
             return offsetX;
         }
 
-        int getOffsetY(){
+        int getOffsetY() {
             return offsetY;
         }
 
-        int getBandBlockWidth(){
-            return this.band.GetBlockXSize();
+        int getBandBlockWidth() {
+            return this.band.getBlockXSize();
         }
 
-        int getBandBlockHeight(){
-            return this.band.GetBlockYSize();
+        int getBandBlockHeight() {
+            return this.band.getBlockYSize();
         }
 
         void close() {
@@ -283,13 +282,13 @@ class GDALTileOpImage extends SingleBandedOpImage {
             int imageHeight = getBandBlockHeight();
             int pixels = imageWidth * imageHeight;
             int gdalBufferDataType = this.band.getDataType();
-            int bufferSize = pixels * gdal.GetDataTypeSize(gdalBufferDataType);
+            int bufferSize = pixels * GDAL.getDataTypeSize(gdalBufferDataType);
             ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
             data.order(ByteOrder.nativeOrder());
 
-            int returnVal=this.band.ReadBlock_Direct(iXBlock, iYBlock, data);
+            int returnVal = this.band.readBlockDirect(iXBlock, iYBlock, data);
 
-            if (returnVal == gdalconstConstants.CE_None) {
+            if (returnVal == GDALConstConstants.CE_None()) {
                 DataBuffer imageDataBuffer;
                 if (this.dataBufferType == DataBuffer.TYPE_BYTE) {
                     byte[] bytes = new byte[pixels];
@@ -318,12 +317,12 @@ class GDALTileOpImage extends SingleBandedOpImage {
                 } else {
                     throw new IllegalArgumentException("Unknown data buffer type " + this.dataBufferType + ".");
                 }
-                int[] index = new int[] { 0 };
+                int[] index = new int[]{0};
                 SampleModel sampleModel = new ComponentSampleModel(imageDataBuffer.getDataType(), imageWidth, imageHeight, 1, imageWidth, index);
                 WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, imageDataBuffer, null);
                 BufferedImage image;
-                if (this.band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) {
-                    ColorModel cm = this.band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(gdalBufferDataType));
+                if (this.band.getRasterColorInterpretation().equals(GDALConstConstants.GCI_PaletteIndex())) {
+                    ColorModel cm = this.band.getRasterColorTable().getIndexColorModel(GDAL.getDataTypeSize(gdalBufferDataType));
                     image = new BufferedImage(cm, writableRaster, false, null);
                 } else if (imageDataBuffer instanceof DataBufferByte || imageDataBuffer instanceof DataBufferUShort) {
                     int imageType = (imageDataBuffer instanceof DataBufferByte) ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_USHORT_GRAY;

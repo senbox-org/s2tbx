@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.activator;
 
-import org.gdal.gdal.gdal;
+import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 
 /**
  * Simple class containing information about a GDAL driver.
@@ -14,10 +14,10 @@ public class GDALDriverInfo {
     private final String creationDataTypes;
 
     /**
-     * @param extensionName         The driver extension name
-     * @param driverName            The driver name
-     * @param driverDisplayName     The driver display name
-     * @param creationDataTypes     The data types used to create a band (ex: Byte Int16 UInt16 Int32 UInt32 Float32 Float64)
+     * @param extensionName     The driver extension name
+     * @param driverName        The driver name
+     * @param driverDisplayName The driver display name
+     * @param creationDataTypes The data types used to create a band (ex: Byte Int16 UInt16 Int32 UInt32 Float32 Float64)
      */
     public GDALDriverInfo(String extensionName, String driverName, String driverDisplayName, String creationDataTypes) {
         this.extensionName = extensionName;
@@ -45,13 +45,12 @@ public class GDALDriverInfo {
     /**
      * Check if the available creation data types of the driver contains the GDAL data type.
      *
-     * @param gdalDataType  The GDAl data type to check
-     *
-     * @return              true if the driver can export the product containing the specified data type; false otherwise
+     * @param gdalDataType The GDAl data type to check
+     * @return true if the driver can export the product containing the specified data type; false otherwise
      */
     public boolean canExportProduct(int gdalDataType) {
         boolean allowedDataType = true;
-        String gdalDataTypeName = gdal.GetDataTypeName(gdalDataType);
+        String gdalDataTypeName = GDAL.getDataTypeName(gdalDataType);
         if (this.creationDataTypes != null) {
             allowedDataType = this.creationDataTypes.contains(gdalDataTypeName);
         }

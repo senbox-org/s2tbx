@@ -1,10 +1,11 @@
 package org.esa.s2tbx.dataio.gdal.writer;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.dataio.gdal.GDALUtils;
-import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.dataio.gdal.GDALLoader;
+import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
+import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.AbstractDriverProductReaderPlugIn;
 import org.esa.s2tbx.dataio.gdal.writer.plugins.AbstractDriverProductWriterPlugIn;
@@ -16,10 +17,9 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.TestUtil;
-import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconstConstants;
 import org.geotools.referencing.CRS;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -85,7 +85,8 @@ public abstract class AbstractTestDriverProductWriter {
         assumeTrue(TestUtil.testdataAvailable());
 
         if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            GDALDistributionInstaller.install();
+            Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
+            Assume.assumeNotNull(gdalDistributionRootFolderPath);
         }
     }
 
@@ -120,7 +121,7 @@ public abstract class AbstractTestDriverProductWriter {
                 StringTokenizer str = new StringTokenizer(this.driverCreationTypes, " ");
                 while (str.hasMoreTokens()) {
                     String gdalDataTypeName = str.nextToken();
-                    int gdalDataType = gdal.GetDataTypeByName(gdalDataTypeName);
+                    int gdalDataType = GDAL.getDataTypeByName(gdalDataTypeName);
                     boolean result = driverInfo.canExportProduct(gdalDataType);
                     assertTrue(result);
                 }
@@ -132,7 +133,7 @@ public abstract class AbstractTestDriverProductWriter {
 
             int gdalDataType = getBandDataTypeToSave(driverInfo);
             boolean canIgnore = driverNamesToIgnoreGeoCoding.contains(driverInfo.getDriverName());
-            int bandDataType = GDALUtils.getBandDataType(gdalDataType);
+            int bandDataType = GDALLoader.getInstance().getBandDataType(gdalDataType);
             File file = new File(this.testsFolderPath.toFile(), this.driverName + driverInfo.getExtensionName());
             try {
                 file.delete();
@@ -148,7 +149,7 @@ public abstract class AbstractTestDriverProductWriter {
     }
 
     private static int getBandDataTypeToSave(GDALDriverInfo driverInfo) {
-        int gdalDataType = gdalconstConstants.GDT_Byte;
+        int gdalDataType = GDALConstConstants.GDT_Byte();
         String creationDataTypes = driverInfo.getCreationDataTypes();
         if (driverInfo.getCreationDataTypes() != null) {
             // get the first data type
@@ -157,7 +158,7 @@ public abstract class AbstractTestDriverProductWriter {
                 index = creationDataTypes.length();
             }
             String gdalDataTypeName = creationDataTypes.substring(0, index).trim();
-            gdalDataType = gdal.GetDataTypeByName(gdalDataTypeName);
+            gdalDataType = GDAL.getDataTypeByName(gdalDataTypeName);
         }
         return gdalDataType;
     }

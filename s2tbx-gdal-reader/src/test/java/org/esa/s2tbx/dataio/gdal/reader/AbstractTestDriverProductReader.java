@@ -1,8 +1,9 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
+import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
 import org.esa.snap.utils.TestUtil;
+import org.junit.Assume;
 import org.junit.Before;
 
 import java.nio.file.Files;
@@ -30,7 +31,8 @@ public abstract class AbstractTestDriverProductReader {
         assumeTrue(TestUtil.testdataAvailable());
 
         if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            GDALDistributionInstaller.install();
+            Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
+            Assume.assumeNotNull(gdalDistributionRootFolderPath);
         }
         if (GDALInstallInfo.INSTANCE.isPresent()) {
             checkTestDirectoryExists();

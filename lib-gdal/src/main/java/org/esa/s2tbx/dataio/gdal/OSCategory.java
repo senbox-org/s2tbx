@@ -8,35 +8,21 @@ import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
  * @author Cosmin Cara
  */
 public enum OSCategory {
-    WIN_32("gdal-2.1.3-win32", "release-1500-gdal-2-1-3-mapserver-7-0-4.zip", "environment-variables-win32", "Windows"),
-    WIN_64("gdal-2.1.3-win64", "release-1500-x64-gdal-2-1-3-mapserver-7-0-4.zip", "environment-variables-win64", "Windows"),
-    LINUX_64("gdal-2.2.0-linux", "gdal-2.2.0-linux-bin.zip", "environment-variables", "Linux"),
-    MAC_OS_X(null, null, null, "Macintosh"),
-    UNSUPPORTED(null, null, null, "");
+    WIN_32("Windows", "x86"),
+    WIN_64("Windows", "x64"),
+    LINUX_64("Linux", "x64"),
+    MAC_OS_X("Macintosh", "x64"),
+    UNSUPPORTED("", "");
 
-    String directory;
-    String zipFileName;
+    private static final String ENV_NAME = "environment-variables";
+
     String operatingSystemName;
-    String environmentVariablesFileName;
+    String architecture;
 
-    OSCategory(String directory, String zipFileName, String environmentVariablesFileName, String operatingSystemName) {
-        this.directory = directory;
-        this.zipFileName = zipFileName;
-        this.environmentVariablesFileName = environmentVariablesFileName;
+    OSCategory(String operatingSystemName, String architecture) {
         this.operatingSystemName = operatingSystemName;
+        this.architecture = architecture;
     }
-
-    public String getEnvironmentVariablesFileName() {
-        return environmentVariablesFileName;
-    }
-
-    public String getOperatingSystemName() {
-        return operatingSystemName;
-    }
-
-    public String getDirectory() { return this.directory; }
-
-    public String getZipFileName() { return this.zipFileName; }
 
     public static OSCategory getOSCategory() {
         OSCategory category;
@@ -56,5 +42,17 @@ public enum OSCategory {
             category = OSCategory.UNSUPPORTED;
         }
         return category;
+    }
+
+    public String getEnvironmentVariablesFileName() {
+        return ENV_NAME;
+    }
+
+    public String getOperatingSystemName() {
+        return operatingSystemName;
+    }
+
+    public String getArchitecture() {
+        return this.architecture;
     }
 }
