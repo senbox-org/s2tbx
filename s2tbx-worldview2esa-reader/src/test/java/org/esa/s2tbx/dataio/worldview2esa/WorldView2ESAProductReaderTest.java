@@ -56,8 +56,8 @@ public class WorldView2ESAProductReaderTest {
             assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals(WorldView2ESAConstants.PRODUCT_TYPE, finalProduct.getProductType());
             assertEquals(0, finalProduct.getMaskGroup().getNodeCount());
-            assertEquals(16384, finalProduct.getSceneRasterWidth());
-            assertEquals(16384, finalProduct.getSceneRasterHeight());
+            assertEquals(47563, finalProduct.getSceneRasterWidth());
+            assertEquals(92201, finalProduct.getSceneRasterHeight());
             assertEquals("25-MAY-2011 09:53:46.000000", finalProduct.getStartTime().toString());
             assertEquals("25-MAY-2011 09:53:51.000000", finalProduct.getEndTime().toString());
             assertEquals("metadata", finalProduct.getMetadataRoot().getName());
