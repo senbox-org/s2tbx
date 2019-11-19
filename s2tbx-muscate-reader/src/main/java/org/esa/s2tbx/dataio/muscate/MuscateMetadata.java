@@ -10,11 +10,11 @@ import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.SystemUtils;
-import org.geotools.graph.util.geom.Coordinate2D;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -232,16 +232,16 @@ public class MuscateMetadata extends XmlMetadata {
         return getAttributeValue(MuscateConstants.PATH_DESCRIPTION, MuscateConstants.VALUE_NOT_AVAILABLE);
     }
 
-    public Coordinate2D getUpperLeft() {
+    public Point2D.Double getUpperLeft() {
         double x = Double.parseDouble(getAttributeSiblingValue(MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_NAME,"upperLeft",
                                                                MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_X,MuscateConstants.STRING_ZERO));
         double y = Double.parseDouble(getAttributeSiblingValue(MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_NAME,"upperLeft",
                                                                MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_Y,MuscateConstants.STRING_ZERO));
-        return new Coordinate2D(x, y);
+        return new Point2D.Double(x, y);
     }
 
     public CrsGeoCoding getCrsGeoCoding () {
-        Coordinate2D coordUpperLeft = getUpperLeft();
+        Point2D.Double coordUpperLeft = getUpperLeft();
         CrsGeoCoding crsGeoCoding = null;
         String EPSG = getEPSG();
         try {

@@ -60,9 +60,9 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>nbm-maven-plugin</artifactId>
-                <version>4.1</version>
+                <groupId>${nbm.plugin.group.id}</groupId>
+                <artifactId>${nbm.plugin.artifact.id}</artifactId>
+                <version>${nbm.plugin.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <licenseName>GPL 3</licenseName>

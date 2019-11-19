@@ -17,7 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.gml;
 
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * Created by Oscar on 23/05/2015.

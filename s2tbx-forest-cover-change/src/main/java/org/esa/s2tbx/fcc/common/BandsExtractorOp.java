@@ -1,12 +1,8 @@
 package org.esa.s2tbx.fcc.common;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -16,18 +12,6 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.ProductHelper;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
-import org.geotools.referencing.operation.transform.AffineTransform2D;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.operation.TransformException;
-
-import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 
 /**
  * @author Razvan Dumitrascu

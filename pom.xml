@@ -82,7 +82,7 @@
     <properties>
         <snap.version>8.0.0-SNAPSHOT</snap.version>
         <s2tbx.version>8.0.0-SNAPSHOT</s2tbx.version>
-        <geotools.version>17.1</geotools.version>
+        <geotools.version>20.0</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE82</netbeans.version>
@@ -90,6 +90,9 @@
         <brandingToken>s2tbx</brandingToken>
         <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
         <buildDate>${maven.build.timestamp}</buildDate>
+        <nbm.plugin.group.id>org.apache.netbeans.utilities</nbm.plugin.group.id>
+        <nbm.plugin.artifact.id>nbm-maven-plugin</nbm.plugin.artifact.id>
+        <nbm.plugin.version>4.3</nbm.plugin.version>
     </properties>
 
     <repositories>
@@ -472,9 +475,9 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>nbm-maven-plugin</artifactId>
-                    <version>4.1</version>
+                    <groupId>${nbm.plugin.group.id}</groupId>
+                    <artifactId>${nbm.plugin.artifact.id}</artifactId>
+                    <version>${nbm.plugin.version}</version>
                     <extensions>true</extensions>
                     <dependencies>
                         <dependency>

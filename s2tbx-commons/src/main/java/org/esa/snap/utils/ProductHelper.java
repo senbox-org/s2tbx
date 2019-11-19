@@ -1,6 +1,6 @@
 package org.esa.snap.utils;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;

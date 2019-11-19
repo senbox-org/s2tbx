@@ -29,8 +29,9 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>nbm-maven-plugin</artifactId>
+                <groupId>${nbm.plugin.group.id}</groupId>
+                <artifactId>${nbm.plugin.artifact.id}</artifactId>
+                <version>${nbm.plugin.version}</version>
                 <dependencies>
                     <dependency>
                         <groupId>javax.help</groupId>

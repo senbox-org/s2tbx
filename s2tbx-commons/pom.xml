@@ -70,6 +70,12 @@
         <dependency>
             <groupId>org.jvnet.ogc</groupId>
             <artifactId>ogc-tools-gml-jts</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vividsolutions</groupId>
+                    <artifactId>jts</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -103,8 +109,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>nbm-maven-plugin</artifactId>
+                <groupId>${nbm.plugin.group.id}</groupId>
+                <artifactId>${nbm.plugin.artifact.id}</artifactId>
+                <version>${nbm.plugin.version}</version>
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.commons.*</publicPackage>

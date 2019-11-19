@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 import com.bc.ceres.core.Assert;
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;

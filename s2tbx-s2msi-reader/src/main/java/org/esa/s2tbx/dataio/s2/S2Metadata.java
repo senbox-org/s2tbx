@@ -18,7 +18,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
