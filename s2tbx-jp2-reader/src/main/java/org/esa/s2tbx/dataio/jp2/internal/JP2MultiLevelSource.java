@@ -22,7 +22,6 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.jp2.VirtualJP2File;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 
@@ -50,7 +49,7 @@ import java.util.logging.Logger;
  * A single banded multi-level image source for JP2 files.
  *
  * @author Cosmin Cara
- * modified 20191108 to read a specific area from the input product Denisa Stefanescu
+ * modified 20191108 to read a specific area from the input product by Denisa Stefanescu
  */
 public class JP2MultiLevelSource extends AbstractMultiLevelSource {
 
@@ -293,6 +292,13 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
 
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
         }
+        //sometimes the when the values are scaled a pixel is loosed or added
+        if (mosaicOp.getWidth() < fitRect.width || mosaicOp.getHeight() < fitRect.height) {
+            int rightPad = fitRect.width - mosaicOp.getWidth();
+            int bottomPad = fitRect.height - mosaicOp.getHeight();
+            mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
+        }
+
         return mosaicOp;
     }
 

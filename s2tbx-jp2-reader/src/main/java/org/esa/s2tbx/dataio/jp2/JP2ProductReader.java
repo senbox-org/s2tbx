@@ -64,7 +64,7 @@ import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecut
  * Generic reader for JP2 files.
  *
  * @author Cosmin Cara
- * modified 20191108 to support parameters for reader Denisa Stefanescu
+ * modified 20191108 to support parameters for reader by Denisa Stefanescu
  */
 public class JP2ProductReader extends AbstractProductReader {
 
@@ -260,7 +260,7 @@ public class JP2ProductReader extends AbstractProductReader {
             //default is true, because the product can be opened without advanced option (in this case all the bands should be opened)
             boolean bandIsSelected = true;
             String bandName = "band_" + (bandIdx + 1);
-            if (getSubsetDef() != null && !Arrays.asList(getSubsetDef().getNodeNames()).contains("allBands")) {
+            if (getSubsetDef() != null && getSubsetDef().getNodeNames()!= null && !Arrays.asList(getSubsetDef().getNodeNames()).contains("allBands")) {
                 if (!Arrays.asList(getSubsetDef().getNodeNames()).contains(bandName)) {
                     bandIsSelected = false;
                 }
