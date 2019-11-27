@@ -127,7 +127,7 @@ public class Spot6ProductReader extends AbstractProductReader {
         metadata = VolumeMetadata.create(productDirectory.getFile(Spot6Constants.ROOT_METADATA).toPath());
         Product product = null;
         if (metadata != null) {
-            Rectangle subsetRegion = null;
+            Rectangle productSubsetRegion = null;
             List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
             if (imageMetadataList.size() == 0) {
                 throw new IOException("No raster found");
@@ -138,11 +138,11 @@ public class Spot6ProductReader extends AbstractProductReader {
             ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
             if(getSubsetDef() !=null && getSubsetDef().getRegion() != null){
-                subsetRegion = getSubsetDef().getRegion();
-                width = subsetRegion.width;
-                height = subsetRegion.height;
-                this.offsetX = subsetRegion.x;
-                this.offsetY = subsetRegion.y;
+                productSubsetRegion = getSubsetDef().getRegion();
+                width = productSubsetRegion.width;
+                height = productSubsetRegion.height;
+                this.offsetX = productSubsetRegion.x;
+                this.offsetY = productSubsetRegion.y;
             }
             product = new Product(metadata.getInternalReference(),
                                   metadata.getProductType(),
@@ -185,34 +185,100 @@ public class Spot6ProductReader extends AbstractProductReader {
                 int noDataValue = imageMetadata.getNoDataValue();
                 int bandWidth = imageMetadata.getRasterWidth();
                 int bandHeight = imageMetadata.getRasterHeight();
-                ProductSubsetDef subsetDef = null;
-                if(subsetRegion != null){
-                    subsetDef = new ProductSubsetDef();
-                    if(isMultiSize && (bandWidth < maxResImageMetadata.getRasterWidth() || bandHeight < maxResImageMetadata.getRasterHeight())){
-                        bandWidth = (int) (subsetRegion.width * origin.stepX / imageMetadata.getInsertPoint().stepX);
-                        bandHeight = (int) (subsetRegion.height * origin.stepY / imageMetadata.getInsertPoint().stepY);
-                        int startX = (int)(subsetRegion.x / imageMetadata.getInsertPoint().stepX * origin.stepX);
-                        int startY = (int) (subsetRegion.y / imageMetadata.getInsertPoint().stepY * origin.stepY);
-                        subsetDef.setRegion(new Rectangle(startX,startY,bandWidth,bandHeight));
-                        this.offsetX = startX;
-                        this.offsetY = startY;
-                    }else {
-                        bandWidth = subsetRegion.width;
-                        bandHeight = subsetRegion.height;
-                        subsetDef.setRegion(subsetRegion);
-                    }
-                }
-                float factorX = (float) width / bandWidth;
-                float factorY = (float) height / bandHeight;
+
+                ProductSubsetDef bandSubsetDef = null;
+                Rectangle bandSubsetRegion = null;
 
                 Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
                 double[][] scalingAndOffsets = imageMetadata.getScalingAndOffsets();
                 Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
-                Product[][] tiles = new Product[tileRows][tileCols];
+                int subsetTileCols = tileCols;
+                int subsetTileRows = tileRows;
+                int subsetTileEndRow = tileRows;
+                int subsetTileEndCol = tileCols;
+                int subsetTileStartCol = 0;
+                int subsetTileStartRow = 0;
+                if (productSubsetRegion != null) {
+                    if(isMultiSize && (bandWidth < maxResImageMetadata.getRasterWidth() || bandHeight < maxResImageMetadata.getRasterHeight())){
+                        bandWidth = (int) (productSubsetRegion.width * origin.stepX / imageMetadata.getInsertPoint().stepX);
+                        bandHeight = (int) (productSubsetRegion.height * origin.stepY / imageMetadata.getInsertPoint().stepY);
+                        int startX = (int)(productSubsetRegion.x / imageMetadata.getInsertPoint().stepX * origin.stepX);
+                        int startY = (int) (productSubsetRegion.y / imageMetadata.getInsertPoint().stepY * origin.stepY);
+                        bandSubsetRegion = new Rectangle(startX,startY,bandWidth,bandHeight);
+                        this.offsetX = startX;
+                        this.offsetY = startY;
+                    }else {
+                        bandWidth = productSubsetRegion.width;
+                        bandHeight = productSubsetRegion.height;
+                        bandSubsetRegion = productSubsetRegion;
+                    }
+                    if(tileCols > 1 || tileRows > 1) {
+                        //we need to compute the tiles on row and column from where the selected subset starts
+                        subsetTileStartRow = bandSubsetRegion.y / tileHeight;
+                        subsetTileStartCol = bandSubsetRegion.x / tileWidth;
+
+                        //image width and height are already the one from the subset region (were retrieved when the product vas instantiated)
+                        subsetTileEndCol = (bandWidth  + bandSubsetRegion.x) /tileWidth;
+                        if ((bandWidth  + bandSubsetRegion.x)  % tileWidth != 0) {
+                            subsetTileEndCol++;
+                        }
+                        subsetTileEndRow = (bandHeight + bandSubsetRegion.y) / tileHeight;
+                        if ((bandHeight + bandSubsetRegion.y) % tileHeight != 0) {
+                            subsetTileEndRow++;
+                        }
+
+                        subsetTileCols = subsetTileEndCol - subsetTileStartCol;
+                        subsetTileRows = subsetTileEndRow - subsetTileStartRow;
+                    }
+                }
+                float factorX = (float) width / bandWidth;
+                float factorY = (float) height / bandHeight;
+                Product[][] tiles = new Product[subsetTileRows][subsetTileCols];
                 for (String rasterFile : tileInfo.keySet()) {
+                    boolean readTile = true;
                     int[] coords = tileInfo.get(rasterFile);
-                    tiles[coords[0]][coords[1]] = ProductIO.readProduct(imageMetadata.getPath().resolve(rasterFile).toFile(),subsetDef);
-                    tileRefs.add(new WeakReference<Product>(tiles[coords[0]][coords[1]]));
+                    if(getSubsetDef() != null && (subsetTileStartCol > coords[1] || subsetTileEndCol -1 < coords[1] ||
+                            subsetTileStartRow > coords[0] || subsetTileEndRow - 1 < coords[0])){
+                        readTile = false;
+                    }
+                    if (readTile) {
+                        if(productSubsetRegion != null) {
+                            bandSubsetDef = new ProductSubsetDef();
+                            if (tileCols == 1 && tileRows == 1) {
+                                bandSubsetDef.setRegion(bandSubsetRegion);
+                            } else {
+                                int tileOffsetX = 0;
+                                int tileOffsetY = 0;
+                                int coordHeight = bandSubsetRegion.height;
+                                int coordWidth = bandSubsetRegion.width;
+
+                                if (coords[0] == subsetTileStartRow) {
+                                    tileOffsetY = bandSubsetRegion.y - coords[0] * tileHeight;
+                                    if(coords[0] != subsetTileEndRow - 1) {
+                                        coordHeight = tileHeight - tileOffsetY;
+                                    }
+                                }
+                                if (coords[0] > subsetTileStartRow && coords[0] == subsetTileEndRow - 1) {
+                                    coordHeight = bandSubsetRegion.height - ((subsetTileStartRow + 1) * tileHeight - bandSubsetRegion.y);
+                                }
+
+                                if (coords[1] == subsetTileStartCol) {
+                                    tileOffsetX = bandSubsetRegion.x - coords[1] * tileWidth;
+                                    if(coords[1] != subsetTileEndCol - 1) {
+                                        coordWidth = tileWidth - tileOffsetX;
+                                    }
+                                }
+
+                                if (coords[1] > subsetTileStartCol && coords[1] == subsetTileEndCol - 1) {
+                                    coordWidth = bandSubsetRegion.width - (bandSubsetRegion.x - (subsetTileStartCol + 1) * tileWidth);
+                                }
+
+                                bandSubsetDef.setRegion(new Rectangle(tileOffsetX, tileOffsetY, coordWidth, coordHeight));
+                            }
+                        }
+                        tiles[coords[0]-subsetTileStartRow][coords[1]-subsetTileStartCol] = ProductIO.readProduct(imageMetadata.getPath().resolve(rasterFile).toFile(), bandSubsetDef);
+                        tileRefs.add(new WeakReference<Product>(tiles[coords[0]-subsetTileStartRow][coords[1]-subsetTileStartCol]));
+                    }
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
                 if (levels > product.getNumResolutionsMax()) {
@@ -239,9 +305,9 @@ public class Spot6ProductReader extends AbstractProductReader {
                         targetBand.setScalingFactor(scalingAndOffsets[i][0] / bandInfos[i].getGain());
                         targetBand.setScalingOffset(scalingAndOffsets[i][1] * bandInfos[i].getBias());
                         initBandGeoCoding(imageMetadata, targetBand, width, height);
-                        Band[][] srcBands = new Band[tileRows][tileCols];
-                        for (int x = 0; x < tileRows; x++) {
-                            for (int y = 0; y < tileCols; y++) {
+                        Band[][] srcBands = new Band[subsetTileRows][subsetTileCols];
+                        for (int x = 0; x < subsetTileRows; x++) {
+                            for (int y = 0; y < subsetTileCols; y++) {
                                 srcBands[x][y] = tiles[x][y].getBandAt(bandInfos[i].getIndex());
                             }
                         }
@@ -249,13 +315,13 @@ public class Spot6ProductReader extends AbstractProductReader {
                         MosaicMultiLevelSource bandSource =
                                 new MosaicMultiLevelSource(srcBands,
                                                            bandWidth, bandHeight,
-                                                           tileWidth, tileHeight, tileCols, tileRows,
+                                                           tileWidth, tileHeight, subsetTileCols, subsetTileRows,
                                                            levels, typeMap.get(pixelDataType),
                                                            imageMetadata.isGeocoded() ?
                                                                    targetBand.getGeoCoding() != null ?
                                                                            Product.findImageToModelTransform(targetBand.getGeoCoding()) :
                                                                            Product.findImageToModelTransform(product.getSceneGeoCoding()) :
-                                                                   targetBand.getImageToModelTransform());
+                                                                   targetBand.getImageToModelTransform(), bandSubsetRegion, new Point(subsetTileStartRow,subsetTileStartCol));
                         targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
                         if (statistics[i] != null) {
                             //targetBand.setStx(statistics[i]);
@@ -321,10 +387,12 @@ public class Spot6ProductReader extends AbstractProductReader {
 
     private GeoCoding addTiePointGridGeo(ImageMetadata metadata, int width, int height) {
         float[][] cornerLonsLats =  metadata.getCornerLonsLats();
-        int sceneWidth = width;
-        int sceneHeight = height;
-        TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, sceneWidth , sceneHeight, cornerLonsLats[1]);
-        TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
+        TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, width , height, cornerLonsLats[1]);
+        TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, width, height, cornerLonsLats[0]);
+        if(getSubsetDef() != null && getSubsetDef().getRegion()!=null) {
+            lonGrid = TiePointGrid.createSubset(lonGrid,getSubsetDef());
+            latGrid = TiePointGrid.createSubset(latGrid,getSubsetDef());
+        }
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 

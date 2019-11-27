@@ -58,12 +58,14 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
     private final int numXTiles;
     private final int numYTiles;
     private final int dataType;
+    private final Rectangle bandSubsetRegion;
+    private final Point tileStart;
     private ImageLayout imageLayout;
     private final Logger logger;
 
     public MosaicMultiLevelSource(Band[][] sourceBands, int imageWidth, int imageHeight,
                                   int tileWidth, int tileHeight, int numTilesX, int numTilesY, int levels, int dataType,
-                                  AffineTransform transform) {
+                                  AffineTransform transform , Rectangle bandSubsetRegion, Point tileStart) {
         super(new DefaultMultiLevelModel(levels,
                                          //Product.findImageToModelTransform(geoCoding),
                                          transform,
@@ -76,6 +78,8 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         this.numYTiles = numTilesY;
         this.sourceBands = sourceBands;
         this.dataType = dataType;
+        this.bandSubsetRegion = bandSubsetRegion;
+        this.tileStart = tileStart;
         logger = Logger.getLogger(MosaicMultiLevelSource.class.getName());
     }
 
@@ -102,11 +106,13 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
                     opImage = createTileImage(x, y, level);
                     int xTrans = y * tileWidth;
                     int yTrans = x * tileHeight;
-                    if(x != 0 && tileHeight > opImage.getTileHeight()){
-                        yTrans = x * tileImages.get(x-1).getHeight();
-                    }
-                    if(y != 0 && tileWidth > opImage.getTileWidth()){
-                        xTrans = y * tileImages.get(y-1).getWidth();
+                    if(bandSubsetRegion != null){
+                        if(x > 0){
+                            yTrans = (tileStart.x + 1) * tileHeight - bandSubsetRegion.y;
+                        }
+                        if(y > 0){
+                            xTrans = (tileStart.y + 1) * tileWidth - bandSubsetRegion.x;
+                        }
                     }
                     if (opImage != null) {
                         opImage = TranslateDescriptor.create(opImage,
@@ -157,7 +163,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         }
 
         //sometimes the when the values are scaled a pixel is loosed or added
-        if (mosaicOp.getWidth() < fitRect.width || mosaicOp.getHeight() < fitRect.height ||mosaicOp.getWidth() > fitRect.width || mosaicOp.getHeight() > fitRect.height) {
+        if (mosaicOp.getWidth() != fitRect.width || mosaicOp.getHeight() != fitRect.height) {
             int rightPad = fitRect.width - mosaicOp.getWidth();
             int bottomPad = fitRect.height - mosaicOp.getHeight();
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);

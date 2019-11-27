@@ -1,10 +1,10 @@
-package org.esa.s2tbx.dataio.spot6.internal;
+package org.esa.s2tbx.dataio.pleiades.internal;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
+import org.esa.s2tbx.dataio.pleiades.dimap.ImageMetadata;
+import org.esa.s2tbx.dataio.pleiades.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.readers.GMLReader;
-import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
-import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
-import org.esa.s2tbx.dataio.spot6.dimap.VolumeMetadata;
 import org.esa.snap.core.dataio.XmlMetadataInspector;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -19,10 +19,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Metadata inspector for Spot6 products
+ * Metadata inspector for Pleiades products
+ *
  * @author Denisa Stefanescu
  */
-public class Spot6MetadataInspector extends XmlMetadataInspector {
+public class PleiadesMetadataInspector extends XmlMetadataInspector {
 
     @Override
     public Metadata getMetadata(Path productPath) throws IOException {
@@ -86,6 +87,6 @@ public class Spot6MetadataInspector extends XmlMetadataInspector {
 
     public VolumeMetadata getProductMetadata(Path productPath) throws IOException{
         VirtualDirEx productDirectory = VirtualDirEx.build(productPath);
-        return VolumeMetadata.create(productDirectory.getFile(Spot6Constants.ROOT_METADATA).toPath());
+        return VolumeMetadata.create(productDirectory.getFile(Constants.ROOT_METADATA).toPath());
     }
 }
