@@ -128,24 +128,4 @@ public abstract class AbstractVirtualPath extends VirtualDir {
             return this.existingChildPath;
         }
     }
-
-    protected static class ListAllFilesVisitor extends SimpleFileVisitor<Path> {
-
-        private final TreeSet<String> nameSet;
-
-        public ListAllFilesVisitor() {
-            this.nameSet = new TreeSet<>();
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            this.nameSet.add(file.toString());
-            return FileVisitResult.CONTINUE;
-        }
-
-        TreeSet<String> getNameSet() {
-            return this.nameSet;
-        }
-    }
-
 }

@@ -1,6 +1,7 @@
 package org.esa.s2tbx.commons;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.snap.engine_utilities.util.AllFilesVisitor;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -139,10 +140,10 @@ public class VirtualDirPath extends AbstractVirtualPath {
 
     @Override
     public String[] listAllFiles() throws IOException {
-        ListAllFilesVisitor filesVisitor = new ListAllFilesVisitor();
+        AllFilesVisitor filesVisitor = new AllFilesVisitor();
         Files.walkFileTree(this.dirPath, filesVisitor);
-        TreeSet<String> nameSet = filesVisitor.getNameSet();
-        return nameSet.toArray(new String [nameSet.size()]);
+        TreeSet<String> filePaths = filesVisitor.getFilePaths();
+        return filePaths.toArray(new String [filePaths.size()]);
     }
 
     @Override

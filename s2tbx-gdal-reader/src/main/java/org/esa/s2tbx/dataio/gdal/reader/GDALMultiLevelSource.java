@@ -3,10 +3,10 @@ package org.esa.s2tbx.dataio.gdal.reader;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import org.esa.s2tbx.dataio.TileImageDisposer;
 import org.esa.s2tbx.dataio.readers.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.image.TileImageDisposer;
 
 import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;

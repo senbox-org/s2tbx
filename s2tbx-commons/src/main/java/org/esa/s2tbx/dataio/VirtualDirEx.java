@@ -23,8 +23,8 @@ import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.commons.VirtualDirPath;
 import org.esa.s2tbx.commons.VirtualZipPath;
-import org.esa.s2tbx.commons.ZipFileSystemBuilder;
 import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.engine_utilities.util.ZipFileSystemBuilder;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,6 +1,8 @@
 package org.esa.s2tbx.commons;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.snap.engine_utilities.util.AllFilesVisitor;
+import org.esa.snap.engine_utilities.util.ZipFileSystemBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -238,14 +240,14 @@ public class VirtualZipPath extends AbstractVirtualPath {
     @Override
     public String[] listAllFiles() throws IOException {
         try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath)) {
-            ListAllFilesVisitor filesVisitor = new ListAllFilesVisitor();
+            AllFilesVisitor filesVisitor = new AllFilesVisitor();
             Iterator<Path> it = fileSystem.getRootDirectories().iterator();
             while (it.hasNext()) {
                 Path zipArchiveRoot = it.next();
                 Files.walkFileTree(zipArchiveRoot, filesVisitor);
             } // end 'while (it.hasNext())'
-            TreeSet<String> nameSet = filesVisitor.getNameSet();
-            return nameSet.toArray(new String [nameSet.size()]);
+            TreeSet<String> filePaths = filesVisitor.getFilePaths();
+            return filePaths.toArray(new String [filePaths.size()]);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);
         }
