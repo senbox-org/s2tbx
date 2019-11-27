@@ -5,8 +5,6 @@ import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.GeoPos;
-import org.esa.snap.core.datamodel.PixelPos;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -51,20 +49,9 @@ public class JP2MetadataInspector implements MetadataInspector {
                 metadata.getBandList().add("band_" + (bandIdx + 1));
             }
 
-            metadata.setProductWidth(String.valueOf(imageWidth));
-            metadata.setProductHeight(String.valueOf(imageHeight));
+            metadata.setProductWidth(imageWidth);
+            metadata.setProductHeight(imageHeight);
             metadata.setGeoCoding(addGeoCoding(metadataHeader, imageWidth, imageHeight));
-            if(metadata.getGeoCoding() != null) {
-                final GeoPos geoPos1 = metadata.getGeoCoding().getGeoPos(new PixelPos(0, 0), null);
-                final GeoPos geoPos2 = metadata.getGeoCoding().getGeoPos(new PixelPos(imageWidth, imageHeight), null);
-                metadata.setLatitudeNorth(String.valueOf(geoPos1.getLat()));
-                metadata.setLatitudeSouth(String.valueOf(geoPos2.getLat()));
-                metadata.setLongitudeEast(String.valueOf(geoPos2.getLon()));
-                metadata.setLongitudeWest(String.valueOf(geoPos1.getLon()));
-                metadata.setHasGeoCoding(true);
-            }else{
-                metadata.setHasGeoCoding(false);
-            }
         } catch (IOException|InterruptedException e) {
             throw new IOException("Error while reading file '" + productPath.toString() + "'.", e);
         }

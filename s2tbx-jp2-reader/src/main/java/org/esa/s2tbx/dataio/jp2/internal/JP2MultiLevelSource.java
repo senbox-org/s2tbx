@@ -294,7 +294,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
         }
         //sometimes the when the values are scaled a pixel is loosed or added
-        if (mosaicOp.getWidth() < fitRect.width || mosaicOp.getHeight() < fitRect.height) {
+        if (mosaicOp.getWidth() != fitRect.width || mosaicOp.getHeight() != fitRect.height) {
             int rightPad = fitRect.width - mosaicOp.getWidth();
             int bottomPad = fitRect.height - mosaicOp.getHeight();
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
