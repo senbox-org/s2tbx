@@ -2,18 +2,18 @@ package org.esa.s2tbx.commons;
 
 import com.bc.ceres.core.VirtualDir;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.snap.engine_utilities.util.NotRegularFileException;
 import org.esa.snap.utils.FileHelper;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by jcoravu on 9/4/2019.
@@ -92,17 +92,30 @@ public abstract class AbstractVirtualPath extends VirtualDir {
         }
     }
 
-    public static String replaceFileSeparator(String path, String fileSystemSeparator) {
-        return path.replace("\\", fileSystemSeparator).replace("/", fileSystemSeparator);
+    protected static FilePathInputStream getBufferedInputStream(Path child, Closeable closeable) throws IOException {
+        if (Files.isRegularFile(child)) {
+            // the child is a file
+            InputStream inputStream = Files.newInputStream(child);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
+            InputStream inputStreamToReturn;
+            if (child.toString().endsWith(".gz")) {
+                inputStreamToReturn = new GZIPInputStream(bufferedInputStream);
+            } else {
+                inputStreamToReturn = bufferedInputStream;
+            }
+            return new FilePathInputStream(child, inputStreamToReturn, closeable);
+        } else {
+            throw new NotRegularFileException(child.toString());
+        }
     }
 
-    protected static class FindChildFileVisitor extends SimpleFileVisitor<Path> {
+    protected static class FindChildItemVisitor extends SimpleFileVisitor<Path> {
 
         private final Path childPathToFind;
 
         private Path existingChildPath;
 
-        public FindChildFileVisitor(Path childPathToFind) {
+        public FindChildItemVisitor(Path childPathToFind) {
             this.childPathToFind = childPathToFind;
         }
 

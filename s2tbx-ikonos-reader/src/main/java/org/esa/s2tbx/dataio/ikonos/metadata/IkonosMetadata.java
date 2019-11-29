@@ -1,9 +1,7 @@
 package org.esa.s2tbx.dataio.ikonos.metadata;
 
-import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.ikonos.internal.GeoTiffImageReader;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -11,8 +9,6 @@ import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 import org.xml.sax.SAXException;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -24,11 +20,8 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 public class IkonosMetadata extends XmlMetadata {
@@ -73,9 +66,12 @@ public class IkonosMetadata extends XmlMetadata {
         if (crsCode != null) {
             component.setCrsCode(crsCode);
         }
-        String originPos = result.getAttributeValue(IkonosConstants.PATH_ORIGIN, null);
-        if (originPos != null) {
-            component.setOriginPos(originPos);
+        String originPosition = result.getAttributeValue(IkonosConstants.PATH_ORIGIN, null);
+        if (originPosition != null) {
+            String[] splitLine = originPosition.split("\\s");
+            double originPositionX = Double.parseDouble(splitLine[0]);
+            double originPositionY = Double.parseDouble(splitLine[1]);
+            component.setOriginPosition(originPositionX, originPositionY);
         }
         result.component = component;
         return result;

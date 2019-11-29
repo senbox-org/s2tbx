@@ -1,24 +1,18 @@
 package org.esa.s2tbx.commons;
 
-import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.snap.engine_utilities.util.AllFilesVisitor;
+import org.esa.snap.engine_utilities.util.FileSystemUtils;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by jcoravu on 3/4/2019.
@@ -58,7 +52,7 @@ public class VirtualDirPath extends AbstractVirtualPath {
         Path child = this.dirPath.resolve(childRelativePath);
         if (Files.exists(child)) {
             // the child exists
-            return getInputStream(child);
+            return getBufferedInputStream(child, null);
         } else {
             throw new FileNotFoundException(child.toString());
         }
@@ -69,7 +63,7 @@ public class VirtualDirPath extends AbstractVirtualPath {
         Path fileToReturn = findFileIgnoreCase(this.dirPath, childRelativePath);
         if (fileToReturn != null) {
             // the child exists
-            return getInputStream(fileToReturn);
+            return getBufferedInputStream(fileToReturn, null);
         }
         return null;
     }
@@ -158,7 +152,7 @@ public class VirtualDirPath extends AbstractVirtualPath {
 
     private static Path buildChildPath(Path parentDirPath, String childRelativePath) {
         String fileSystemSeparator = parentDirPath.getFileSystem().getSeparator();
-        String relativePath = replaceFileSeparator(childRelativePath, fileSystemSeparator);
+        String relativePath = FileSystemUtils.replaceFileSeparator(childRelativePath, fileSystemSeparator);
         if (relativePath.startsWith(fileSystemSeparator)) {
             relativePath = relativePath.substring(fileSystemSeparator.length());
         }
@@ -167,28 +161,11 @@ public class VirtualDirPath extends AbstractVirtualPath {
 
     public static Path findFileIgnoreCase(Path parentDirPath, String childRelativePath) throws IOException {
         Path childPathToFind = buildChildPath(parentDirPath, childRelativePath);
-        FindChildFileVisitor findChildFileVisitor = new FindChildFileVisitor(childPathToFind);
+        FindChildItemVisitor findChildFileVisitor = new FindChildItemVisitor(childPathToFind);
         Files.walkFileTree(parentDirPath, findChildFileVisitor);
         if (findChildFileVisitor.getExistingChildPath() != null) {
             return findChildFileVisitor.getExistingChildPath();
         }
         return null;
-    }
-
-    private static FilePathInputStream getInputStream(Path child) throws IOException {
-        if (Files.isRegularFile(child)) {
-            // the child is a file
-            InputStream inputStream = Files.newInputStream(child);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
-            InputStream inputStreamToReturn;
-            if (child.toString().endsWith(".gz")) {
-                inputStreamToReturn = new GZIPInputStream(bufferedInputStream);
-            } else {
-                inputStreamToReturn = bufferedInputStream;
-            }
-            return new FilePathInputStream(child, inputStreamToReturn, null);
-        } else {
-            throw new NotRegularFileException(child.toString());
-        }
     }
 }

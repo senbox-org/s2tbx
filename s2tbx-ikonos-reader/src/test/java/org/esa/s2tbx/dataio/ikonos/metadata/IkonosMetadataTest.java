@@ -115,6 +115,7 @@ public class IkonosMetadataTest {
             assertEquals(tiePointGridPoints[1][index], metadata.getMetadataComponent().getTiePointGridPoints()[1][index], 0.e-6);
         }
         assertEquals("EPSG:32634", metadata.getMetadataComponent().getCrsCode());
-        assertEquals("38.0548528801 23.9865276316", metadata.getMetadataComponent().getOriginPos());
+        assertEquals(38.0548528801, metadata.getMetadataComponent().getOriginPositionX());
+        assertEquals(23.9865276316, metadata.getMetadataComponent().getOriginPositionY());
     }
 }

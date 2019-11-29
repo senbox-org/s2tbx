@@ -14,7 +14,8 @@ public class IkonosComponent {
     private Path parentPath;
     private float[][] tiePointGridPoints;
     private String crsCode;
-    private String originPos;
+    private double originPositionX;
+    private double originPositionY;
 
     public IkonosComponent(Path parentPath) {
         this.setParentPath(parentPath);
@@ -68,12 +69,16 @@ public class IkonosComponent {
         this.parentPath = parentPath;
     }
 
-    public String getOriginPos() {
-        return originPos;
+    public double getOriginPositionX() {
+        return originPositionX;
     }
 
-    public void setOriginPos(String originPos) {
-        this.originPos = originPos;
+    public double getOriginPositionY() {
+        return originPositionY;
     }
 
+    public void setOriginPosition(double originPositionX, double originPositionY) {
+        this.originPositionX = originPositionX;
+        this.originPositionY = originPositionY;
+    }
 }

@@ -17,7 +17,7 @@
 
 package org.esa.snap.utils;
 
-import org.esa.s2tbx.commons.NotRegularFileException;
+import org.esa.snap.engine_utilities.util.NotRegularFileException;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

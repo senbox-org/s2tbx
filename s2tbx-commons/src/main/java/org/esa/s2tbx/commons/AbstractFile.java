@@ -1,6 +1,7 @@
 package org.esa.s2tbx.commons;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.snap.engine_utilities.util.NotRegularFileException;
 import org.esa.snap.utils.FileHelper;
 
 import java.io.FileNotFoundException;

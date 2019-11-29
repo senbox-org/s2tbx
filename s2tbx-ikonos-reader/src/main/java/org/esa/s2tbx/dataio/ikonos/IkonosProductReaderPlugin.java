@@ -20,6 +20,7 @@ public class IkonosProductReaderPlugin extends BaseProductReaderPlugIn {
 
     public IkonosProductReaderPlugin() {
         super("org/esa/s2tbx/dataio/ikonos/" + IkonosProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+        //TODO Jean remove
         this.folderDepth = 1;
     }
 
