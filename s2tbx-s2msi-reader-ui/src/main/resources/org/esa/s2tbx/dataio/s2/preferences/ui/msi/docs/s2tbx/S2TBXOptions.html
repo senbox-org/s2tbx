@@ -1,0 +1,62 @@
+<!--
+  ~ Copyright (C) 2015 CS SI
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>Sentinel Toolbox Help - S2TBX options</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            S2TBX options
+        </td>
+
+        <td class="header" align="right"><a
+                href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img
+                src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<p>
+    It is possible to configure the Sentinel-2 Cache and to select if to load or not the different S2 masks.
+</p>
+
+<h4>Sentinel-2 Cache</h4>
+
+<img src="../images/s2cache.jpg" border=0/>
+
+<p><br>The S2 images are originally in JP2 format. These images are decompresed (by tiles) to new GeoTiff images internally in SNAP.
+     These GeoTiff images are stored in [userFolder]/.snap/var/cache/s2tbx in order to be available in the future when working with the same images.
+     The user can select in the S2TBX options interface when to delete the cache and also there is a button to clean up the cache.
+</p>
+
+
+<h4>Sentinel-2 Reader Masks</h4>
+
+<img src="../images/s2masks.jpg" border=0/>
+
+<p><br>
+The Sentinel-2 products contain different kind of masks in GML format. By default, all the masks are loaded
+     but the user can select to ignore some of them in order to be able to open the products faster.
+</p>
+
+
+</body>
+</html>
