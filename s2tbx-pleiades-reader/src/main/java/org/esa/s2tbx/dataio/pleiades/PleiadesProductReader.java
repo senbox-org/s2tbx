@@ -260,28 +260,32 @@ public class PleiadesProductReader extends AbstractProductReader {
                             } else {
                                 int tileOffsetX = 0;
                                 int tileOffsetY = 0;
-                                int coordHeight = bandSubsetRegion.height;
-                                int coordWidth = bandSubsetRegion.width;
+                                int coordHeight = tileHeight;
+                                int coordWidth = tileWidth;
 
                                 if (coords[0] == subsetTileStartRow) {
                                     tileOffsetY = bandSubsetRegion.y - coords[0] * tileHeight;
                                     if(coords[0] != subsetTileEndRow - 1) {
                                         coordHeight = tileHeight - tileOffsetY;
+                                    }else{
+                                        coordHeight = bandSubsetRegion.height;
                                     }
                                 }
                                 if (coords[0] > subsetTileStartRow && coords[0] == subsetTileEndRow - 1) {
-                                    coordHeight = bandSubsetRegion.height - ((subsetTileStartRow + 1) * tileHeight - bandSubsetRegion.y);
+                                    coordHeight = bandSubsetRegion.height - (coords [0] * tileHeight - bandSubsetRegion.y);
                                 }
 
                                 if (coords[1] == subsetTileStartCol) {
                                     tileOffsetX = bandSubsetRegion.x - coords[1] * tileWidth;
                                     if(coords[1] != subsetTileEndCol - 1) {
                                         coordWidth = tileWidth - tileOffsetX;
+                                    }else{
+                                        coordWidth = bandSubsetRegion.width;
                                     }
                                 }
 
                                 if (coords[1] > subsetTileStartCol && coords[1] == subsetTileEndCol - 1) {
-                                    coordWidth = bandSubsetRegion.width - (bandSubsetRegion.x - (subsetTileStartCol + 1) * tileWidth);
+                                    coordWidth = bandSubsetRegion.width - (coords[1] * tileWidth - bandSubsetRegion.x);
                                 }
 
                                 bandSubsetDef.setRegion(new Rectangle(tileOffsetX, tileOffsetY, coordWidth, coordHeight));
