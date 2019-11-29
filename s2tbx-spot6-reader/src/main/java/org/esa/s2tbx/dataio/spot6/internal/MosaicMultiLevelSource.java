@@ -108,10 +108,10 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
                     int yTrans = x * tileHeight;
                     if(bandSubsetRegion != null){
                         if(x > 0){
-                            yTrans = (tileStart.x + 1) * tileHeight - bandSubsetRegion.y;
+                            yTrans = (tileStart.x + x) * tileHeight - bandSubsetRegion.y;
                         }
                         if(y > 0){
-                            xTrans = (tileStart.y + 1) * tileWidth - bandSubsetRegion.x;
+                            xTrans = (tileStart.y + y) * tileWidth - bandSubsetRegion.x;
                         }
                     }
                     if (opImage != null) {
