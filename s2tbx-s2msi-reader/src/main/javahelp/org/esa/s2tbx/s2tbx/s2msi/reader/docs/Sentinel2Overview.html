@@ -53,8 +53,8 @@
     <tr>
         <td scope="col">Band Number</td>
         <td scope="col">Spatial Resolution (m)</td>
-        <td scope="col">Central Wavelength (nm)</td>
-        <td scope="col">Bandwidth (nm)</td>
+        <td scope="col">Central Wavelength (nm) (S2A | S2B)</td>
+        <td scope="col">Bandwidth (nm) (S2A | S2B)</td>
         <td scope="col">Reference Radiance (W m-2 sr-1 um-1)</td>
         <td scope="col">SNR @ Lref</td>
     </tr>
@@ -62,8 +62,8 @@
     <tr>
         <td>1</td>
         <td>60</td>
-        <td>443</td>
-        <td>20</td>
+        <td>442.7 | 442.2</td>
+        <td>21 | 21</td>
         <td>129</td>
         <td>129</td>
     </tr>
@@ -71,8 +71,8 @@
     <tr>
         <td>2</td>
         <td>10</td>
-        <td>490</td>
-        <td>65</td>
+        <td>492.4 | 492.1</td>
+        <td>66 | 66</td>
         <td>128</td>
         <td>154</td>
     </tr>
@@ -80,8 +80,8 @@
     <tr>
         <td>3</td>
         <td>10</td>
-        <td>560</td>
-        <td>35</td>
+        <td>559.8 | 559.0</td>
+        <td>36 | 36</td>
         <td>128</td>
         <td>168</td>
     </tr>
@@ -89,8 +89,8 @@
     <tr>
         <td>4</td>
         <td>10</td>
-        <td>665</td>
-        <td>30</td>
+        <td>664.6 | 664.9</td>
+        <td>31 | 31</td>
         <td>108</td>
         <td>142</td>
     </tr>
@@ -98,8 +98,8 @@
     <tr>
         <td>5</td>
         <td>20</td>
-        <td>705</td>
-        <td>15</td>
+        <td>704.1 | 703.8</td>
+        <td>15 | 16</td>
         <td>74.5</td>
         <td>117</td>
     </tr>
@@ -107,8 +107,8 @@
     <tr>
         <td>6</td>
         <td>20</td>
-        <td>740</td>
-        <td>15</td>
+        <td>740.5 | 739.1</td>
+        <td>15 | 15</td>
         <td>68</td>
         <td>89</td>
     </tr>
@@ -116,8 +116,8 @@
     <tr>
         <td>7</td>
         <td>20</td>
-        <td>783</td>
-        <td>20</td>
+        <td>782.8 | 779.7</td>
+        <td>20 | 20</td>
         <td>67</td>
         <td>105</td>
     </tr>
@@ -125,17 +125,17 @@
     <tr>
         <td>8</td>
         <td>10</td>
-        <td>842</td>
-        <td>115</td>
+        <td>832.8 | 832.9</td>
+        <td>106 | 106</td>
         <td>103</td>
-        <td>172</td>
+        <td>174</td>
     </tr>
 
     <tr>
         <td>8A</td>
         <td>20</td>
-        <td>865</td>
-        <td>20</td>
+        <td>864.7 | 864.0</td>
+        <td>21 | 22</td>
         <td>52.5</td>
         <td>72</td>
     </tr>
@@ -143,16 +143,16 @@
     <tr>
         <td>9</td>
         <td>60</td>
-        <td>945</td>
-        <td>20</td>
+        <td>945.1 | 943.2</td>
+        <td>20 | 21</td>
         <td>9</td>
         <td>114</td>
     </tr>
     <tr>
         <td>10</td>
         <td>60</td>
-        <td>1375</td>
-        <td>30</td>
+        <td>1373.5 | 1376.9</td>
+        <td>31 | 30</td>
         <td>6</td>
         <td>50</td>
     </tr>
@@ -160,8 +160,8 @@
     <tr>
         <td>11</td>
         <td>20</td>
-        <td>1610</td>
-        <td>90</td>
+        <td>1613.7 | 1610.4</td>
+        <td>91 | 94</td>
         <td>4</td>
         <td>100</td>
     </tr>
@@ -169,8 +169,8 @@
     <tr>
         <td>12</td>
         <td>20</td>
-        <td>2190</td>
-        <td>180</td>
+        <td>2202.4 | 2185.7</td>
+        <td>175 | 185</td>
         <td>1.5</td>
         <td>100</td>
     </tr>
@@ -240,9 +240,9 @@
 <h6>Angles:</h6>
 <p>In the Sentinel-2 products in cartographic geometry,
     the angles are provided at 5000 meters resolution by detector.
-    The detector footprints overlap in the limit of each detector,
-    and in the current format (PSD-13/14), it is not possible to determine exactly from
-    which detector each pixel of the overlap area comes from. The angles values in SNAP products
+    The detector footprints overlap in the limit of each detector. In old formats
+    (PSD-13/14), it was not possible to determine exactly from
+    which detector each pixel of the overlap area comes from. The angles values in these SNAP products
     correspond to the highest detector number.</p>
 <IMG SRC="./images/Detector_overlap.jpg">
 <p></p>
@@ -256,12 +256,12 @@
     <param name="text" value="<html><u>See Sentinel-2 MultiSpectral Instrument</u></html>">
 </object></p>
 <p>The detector footprints for every band are included in the product as masks. As commented previously,
-these footprints overlap in some areas.</p>
+these footprints could overlap in some areas (in old products).</p>
 <IMG SRC="./images/DetectorMasks.jpg">
 
 
 <h6>Tile ID:</h6>
-<p>The different tiles/granules composing the full product also overlap.</p>
+<p>The different tiles/granules composing the full product also overlap in the old multi-tile products.</p>
 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="https://sentinel.esa.int/web/sentinel/missions/sentinel-2/news/-/asset_publisher/Ac0d/content/sentinel-2-level-1c-product-tiling-grid-released">
     <param name="text" value="<html><u>See Sentinel-2 product tiling grid</u></html>">
