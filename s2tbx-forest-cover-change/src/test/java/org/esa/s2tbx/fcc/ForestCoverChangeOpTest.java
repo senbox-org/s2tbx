@@ -9,7 +9,9 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
+import org.esa.snap.test.LongTestRunner;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.util.HashMap;
@@ -22,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Razvan Dumitrascu
  * @since 5.0.6
  */
-
+@RunWith(LongTestRunner.class)
 public class ForestCoverChangeOpTest extends AbstractOpTest {
 
     public ForestCoverChangeOpTest() {
