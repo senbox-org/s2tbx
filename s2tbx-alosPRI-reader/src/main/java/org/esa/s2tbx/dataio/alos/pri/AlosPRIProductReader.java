@@ -24,6 +24,7 @@ import org.xml.sax.SAXException;
 import javax.imageio.spi.ImageInputStreamSpi;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -69,9 +70,9 @@ public class AlosPRIProductReader extends AbstractProductReader {
 
             AlosPRIMetadata alosPriMetadata = readMetadata(this.productDirectory, metadataFileName, zipArchivePath);
 
-            int defaultProductWidth = alosPriMetadata.getRasterWidth();
-            int defaultProductHeight = alosPriMetadata.getRasterHeight();
-            Rectangle productBounds = ImageUtils.computeImageBounds(defaultProductWidth, defaultProductHeight, getSubsetDef());
+            Dimension defaultProductSize = new Dimension(alosPriMetadata.getRasterWidth(), alosPriMetadata.getRasterHeight());
+
+            Rectangle productBounds = ImageUtils.computeImageBounds(defaultProductSize.width, defaultProductSize.height, getSubsetDef());
 
             Product product = new Product(alosPriMetadata.getProductName(), AlosPRIConstants.PRODUCT_GENERIC_NAME, productBounds.width, productBounds.height, this);
             product.setStartTime(alosPriMetadata.getProductStartTime());
@@ -82,10 +83,10 @@ public class AlosPRIProductReader extends AbstractProductReader {
             if (alosPriMetadata.hasInsertPoint()) {
                 CoordinateReferenceSystem mapCRS = CRS.decode(alosPriMetadata.getCrsCode());
                 ImageMetadata.InsertionPoint origin = alosPriMetadata.getProductOrigin();
-                GeoCoding geoCoding = new CrsGeoCoding(mapCRS, defaultProductWidth, defaultProductHeight, origin.x, origin.y, origin.stepX, origin.stepY);
+                GeoCoding geoCoding = new CrsGeoCoding(mapCRS, defaultProductSize.width, defaultProductSize.height, origin.x, origin.y, origin.stepX, origin.stepY);
                 product.setSceneGeoCoding(geoCoding);
             } else {
-                TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(alosPriMetadata, defaultProductWidth, defaultProductHeight, getSubsetDef());
+                TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(alosPriMetadata, defaultProductSize.width, defaultProductSize.height, getSubsetDef());
                 product.addTiePointGrid(productGeoCoding.getLatGrid());
                 product.addTiePointGrid(productGeoCoding.getLonGrid());
                 product.setSceneGeoCoding(productGeoCoding);
@@ -94,21 +95,30 @@ public class AlosPRIProductReader extends AbstractProductReader {
             this.bandImageReaders = new ArrayList<>(alosPriMetadata.getImageMetadataList().size());
             ProductNodeGroup<Mask> maskGroup = product.getMaskGroup();
             for (ImageMetadata imageMetadata : alosPriMetadata.getImageMetadataList()) {
+                if (imageMetadata.getRasterWidth() > defaultProductSize.width) {
+                    throw new IllegalStateException("The band width " + imageMetadata.getRasterWidth() + " from the metadata file is greater than the product width " + defaultProductSize.width + ".");
+                }
+                if (imageMetadata.getRasterHeight() > defaultProductSize.height) {
+                    throw new IllegalStateException("The band height " + imageMetadata.getRasterHeight() + " from the metadata file is greater than the product height " + defaultProductSize.height + ".");
+                }
+
                 product.getMetadataRoot().addElement(imageMetadata.getRootElement());
 
                 GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, imageMetadata.getImageRelativeFilePath());
                 this.bandImageReaders.add(geoTiffImageReader);
 
-                if (geoTiffImageReader.getImageWidth() != imageMetadata.getRasterWidth()) {
-                    throw new IllegalStateException("The band width " + imageMetadata.getRasterWidth() + " from the metadata file is not equal with the image width " + geoTiffImageReader.getImageWidth() + ".");
+                Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
+
+                if (defaultBandSize.width != imageMetadata.getRasterWidth()) {
+                    throw new IllegalStateException("The band width " + imageMetadata.getRasterWidth() + " from the metadata file is not equal with the image width " + defaultBandSize.width + ".");
                 }
-                if (geoTiffImageReader.getImageHeight() != imageMetadata.getRasterHeight()) {
-                    throw new IllegalStateException("The band height " + imageMetadata.getRasterHeight() + " from the metadata file is not equal with the image height " + geoTiffImageReader.getImageHeight() + ".");
+                if (defaultBandSize.height != imageMetadata.getRasterHeight()) {
+                    throw new IllegalStateException("The band height " + imageMetadata.getRasterHeight() + " from the metadata file is not equal with the image height " + defaultBandSize.height + ".");
                 }
 
-                Rectangle bandBounds = computeBandBounds(productBounds, defaultProductWidth, defaultProductHeight, geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
+                Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, alosPriMetadata.getStepSizeX(), alosPriMetadata.getStepSizeY(), imageMetadata.getPixelSizeX(), imageMetadata.getPixelSizeY());
 
-                AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductWidth, defaultProductHeight);
+                AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductSize);
                 Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, zipArchivePath, bandBounds);
 
                 Band geoTiffBand = geoTiffProduct.getBandAt(0);
@@ -135,9 +145,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
             success = true;
 
             return product;
-        } catch (RuntimeException exception) {
-            throw exception;
-        } catch (IOException exception) {
+        } catch (RuntimeException | IOException exception) {
             throw exception;
         } catch (Exception exception) {
             throw new IOException(exception);
@@ -198,18 +206,6 @@ public class AlosPRIProductReader extends AbstractProductReader {
         System.gc();
     }
 
-    private static Rectangle computeBandBounds(Rectangle productBounds, int defaultProductWidth, int defaultProductHeight, int defaultBandWidth, int defaultBandHeight) {
-        float productOffsetXPercent = productBounds.x / (float)defaultProductWidth;
-        float productOffsetYPercent = productBounds.y / (float)defaultProductHeight;
-        float productWidthPercent = productBounds.width / (float)defaultProductWidth;
-        float productHeightPercent = productBounds.height / (float)defaultProductHeight;
-        int bandOffsetX = (int)(productOffsetXPercent * defaultBandWidth);
-        int bandOffsetY = (int)(productOffsetYPercent * defaultBandHeight);
-        int bandWidth = (int)(productWidthPercent * defaultBandWidth);
-        int bandHeight = (int)(productHeightPercent * defaultBandHeight);
-        return new Rectangle(bandOffsetX, bandOffsetY, bandWidth, bandHeight);
-    }
-
     private static Mask buildSaturatedMask(int productWith, int productHeight, int saturatedValue) {
         return Mask.BandMathsType.create(AlosPRIConstants.SATURATED, AlosPRIConstants.SATURATED, productWith, productHeight, String.valueOf(saturatedValue), Color.ORANGE, 0.5);
     }
@@ -241,13 +237,16 @@ public class AlosPRIProductReader extends AbstractProductReader {
 
     public static String buildMetadataFileName(VirtualDirEx productDirectory) {
         String baseItemName = productDirectory.getBaseFile().getName();
-        String metadataFileName;
+        int index;
         if (productDirectory.isArchive()) {
-            metadataFileName = baseItemName.substring(0, baseItemName.lastIndexOf(AlosPRIConstants.PRODUCT_FILE_SUFFIX));
+            index = baseItemName.lastIndexOf(AlosPRIConstants.PRODUCT_FILE_SUFFIX);
         } else {
-            metadataFileName = baseItemName.substring(0, baseItemName.lastIndexOf("."));
+            index = baseItemName.lastIndexOf(".");
         }
-        return metadataFileName + AlosPRIConstants.METADATA_FILE_SUFFIX;
+        if (index > 0) {
+            return baseItemName.substring(0, index) + AlosPRIConstants.METADATA_FILE_SUFFIX;
+        }
+        throw new IllegalStateException("Invalid values: index " + index + ", baseItemName="+baseItemName+".");
     }
 
     public static Path buildZipArchivePath(VirtualDirEx productDirectory, String metadataFileName) throws IOException {

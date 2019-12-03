@@ -46,7 +46,7 @@ public class IkonosMetadataInspector implements MetadataInspector {
             }
 
             return metadata;
-        } catch (RuntimeException|IOException exception) {
+        } catch (RuntimeException | IOException exception) {
             throw exception;
         } catch (Exception exception) {
             throw new IOException(exception);
