@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.ikonos;
 
 import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
@@ -12,25 +11,18 @@ import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
-import org.esa.snap.core.image.ImageManager;
-import org.esa.snap.core.transform.AffineTransform2D;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
-import org.esa.snap.dataio.geotiff.GeoTiffMultiLevelSource;
-import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 
 import javax.imageio.spi.ImageInputStreamSpi;
 import javax.media.jai.JAI;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Basic reader for Ikonos products.
@@ -75,9 +67,7 @@ public class IkonosProductReader extends AbstractProductReader {
             success = true;
 
             return product;
-        } catch (RuntimeException exception) {
-            throw exception;
-        } catch (IOException exception) {
+        } catch (RuntimeException|IOException exception) {
             throw exception;
         } catch (Exception exception) {
             throw new IOException(exception);
@@ -146,13 +136,10 @@ public class IkonosProductReader extends AbstractProductReader {
                 bandBounds = new Rectangle(0, 0, defaultBandSize.width, defaultBandSize.height);
             } else if (defaultBandSize.width < defaultProductWidth || defaultBandSize.height < defaultProductHeight) {
                 bandBounds = new Rectangle();
-                double bandPixelStepX = bandMetadata.getPixelSizeX() * bandMetadata.getBitsPerPixel();
-                double bandPixelStepY = bandMetadata.getPixelSizeY() * bandMetadata.getBitsPerPixel();
-                IkonosComponent ikonosComponent = metadata.getMetadataComponent();
-                bandBounds.x = computeBandValue(productBounds.x, ikonosComponent.getOriginPositionX(), bandPixelStepX);
-                bandBounds.y = computeBandValue(productBounds.y, ikonosComponent.getOriginPositionY(), bandPixelStepY);
-                bandBounds.width = computeBandValue(productBounds.width, ikonosComponent.getOriginPositionX(), bandPixelStepX);
-                bandBounds.height = computeBandValue(productBounds.height, ikonosComponent.getOriginPositionY(), bandPixelStepY);
+                bandBounds.x = computeBandValue(productBounds.x, metadataUtil.getProductStepX(), bandMetadata.getPixelSizeX());
+                bandBounds.y = computeBandValue(productBounds.y, metadataUtil.getProductStepY(), bandMetadata.getPixelSizeY());
+                bandBounds.width = computeBandValue(productBounds.width, metadataUtil.getProductStepX(), bandMetadata.getPixelSizeX());
+                bandBounds.height = computeBandValue(productBounds.height, metadataUtil.getProductStepY(), bandMetadata.getPixelSizeY());
                 if (bandBounds.width > productBounds.width) {
                     throw new IllegalStateException("The band width " + bandBounds.width + " is greater than the product width " + productBounds.width + ".");
                 }
@@ -186,6 +173,8 @@ public class IkonosProductReader extends AbstractProductReader {
             }
             geoTiffBand.setName(bandName);
             geoTiffBand.setScalingFactor(bandGain.doubleValue());
+            geoTiffBand.setNoDataValueUsed(geoTiffBand.isNoDataValueUsed());
+            geoTiffBand.setUnit(IkonosConstants.BAND_MEASURE_UNIT);
 
             product.addBand(geoTiffBand);
 
