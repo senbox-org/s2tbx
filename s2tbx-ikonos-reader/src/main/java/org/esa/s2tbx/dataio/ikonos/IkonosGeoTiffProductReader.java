@@ -28,10 +28,12 @@ class IkonosGeoTiffProductReader extends GeoTiffProductReader {
     }
 
     @Override
-    protected GeoCoding buildBandGeoCoding(int bandWidth, int bandHeight) {
-        if (this.productSize.width != bandWidth || this.productSize.height != bandHeight) {
-            return IkonosProductReader.buildTiePointGridGeoCoding(this.metadata, this.defaultBandSize.width, this.defaultBandSize.height, this.subsetDef);
+    protected GeoCoding buildBandGeoCoding(GeoCoding productGeoCoding, int bandWidth, int bandHeight) {
+        if (productGeoCoding == null) {
+            if (this.productSize.width != bandWidth || this.productSize.height != bandHeight) {
+                return IkonosProductReader.buildTiePointGridGeoCoding(this.metadata, this.defaultBandSize.width, this.defaultBandSize.height, this.subsetDef);
+            }
         }
-        return null;
+        return productGeoCoding;
     }
 }

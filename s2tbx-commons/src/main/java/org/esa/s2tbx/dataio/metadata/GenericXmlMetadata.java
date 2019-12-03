@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.metadata;
 
 import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
@@ -88,6 +89,18 @@ public abstract class GenericXmlMetadata {
                     result.setName(metadataProfile);
                 }
             }
+        }
+        return result;
+    }
+
+    public static <T extends GenericXmlMetadata> T loadMetadata(Class<T> clazz, FilePathInputStream filePathInputStream)
+                                                        throws InstantiationException, IOException, SAXException, ParserConfigurationException {
+
+        T result = (T) XmlMetadataParserFactory.getParser(clazz).parse(filePathInputStream);
+        result.setPath(filePathInputStream.getPath());
+        String metadataProfile = result.getMetadataProfile();
+        if (metadataProfile != null) {
+            result.setName(metadataProfile);
         }
         return result;
     }

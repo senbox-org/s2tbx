@@ -12,6 +12,8 @@ import org.esa.snap.utils.DateHelper;
  */
 public class ImageMetadata extends XmlMetadata {
 
+    private String imageRelativeFilePath;
+
     public static class ImageMetadataParser extends XmlMetadataParser<ImageMetadata> {
 
         public ImageMetadataParser(Class metadataFileClass) {
@@ -31,6 +33,14 @@ public class ImageMetadata extends XmlMetadata {
 
     public ImageMetadata(String name) {
         super(name);
+    }
+
+    public void setImageRelativeFilePath(String imageRelativeFilePath) {
+        this.imageRelativeFilePath = imageRelativeFilePath;
+    }
+
+    public String getImageRelativeFilePath() {
+        return imageRelativeFilePath;
     }
 
     @Override

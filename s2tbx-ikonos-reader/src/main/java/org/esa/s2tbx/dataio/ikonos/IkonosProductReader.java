@@ -206,6 +206,7 @@ public class IkonosProductReader extends AbstractProductReader {
                         // ignore
                     }
                 }
+                this.bandImageReaders.clear();
                 this.bandImageReaders = null;
             }
         } finally {
@@ -270,13 +271,13 @@ public class IkonosProductReader extends AbstractProductReader {
     }
 
     public static String buildMetadataFileName(VirtualDirEx productDirectory) {
-        File baseFile = productDirectory.getBaseFile();
+        String baseFileName = productDirectory.getBaseFile().getName();
         // product file name differs from archive file name
         String fileName;
         if (productDirectory.isArchive()) {
-            fileName = baseFile.getName().substring(0, baseFile.getName().lastIndexOf(IkonosConstants.PRODUCT_FILE_SUFFIX));
+            fileName = baseFileName.substring(0, baseFileName.lastIndexOf(IkonosConstants.PRODUCT_FILE_SUFFIX));
         } else {
-            fileName = baseFile.getName().substring(0, baseFile.getName().lastIndexOf("."));
+            fileName = baseFileName.substring(0, baseFileName.lastIndexOf("."));
         }
         return fileName + IkonosConstants.METADATA_FILE_SUFFIX;
     }

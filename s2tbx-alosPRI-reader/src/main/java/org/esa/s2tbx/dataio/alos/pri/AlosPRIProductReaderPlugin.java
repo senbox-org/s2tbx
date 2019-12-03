@@ -4,8 +4,6 @@ import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
-import org.esa.snap.core.datamodel.RGBImageProfile;
-import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
 import java.util.Locale;
 
