@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.alos.pri;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIMetadata;
 import org.esa.s2tbx.dataio.alos.pri.internal.ImageMetadata;
 import org.esa.snap.core.dataio.MetadataInspector;
@@ -21,8 +22,8 @@ public class AlosPRIMetadataInspector implements MetadataInspector {
     public Metadata getMetadata(Path productPath) throws IOException {
         try (VirtualDirEx productDirectory = VirtualDirEx.build(productPath, false, true)) {
             String metadataFileName = AlosPRIProductReader.buildMetadataFileName(productDirectory);
-            Path zipArchivePath = AlosPRIProductReader.buildZipArchivePath(productDirectory, metadataFileName);
-            AlosPRIMetadata alosPriMetadata = AlosPRIProductReader.readMetadata(productDirectory, metadataFileName, zipArchivePath);
+            Path imagesMetadataParentPath = AlosPRIProductReader.buildImagesMetadataParentPath(productDirectory, metadataFileName);
+            AlosPRIMetadata alosPriMetadata = AlosPRIProductReader.readMetadata(productDirectory, metadataFileName, imagesMetadataParentPath);
 
             Metadata metadata = new Metadata();
             metadata.setProductWidth(alosPriMetadata.getRasterWidth());
@@ -35,6 +36,10 @@ public class AlosPRIMetadataInspector implements MetadataInspector {
                 ImageMetadata imageMetadata = alosPriMetadata.getImageMetadataList().get(bandIndex);
                 metadata.getBandList().add(imageMetadata.getBandName());
             }
+
+            metadata.getMaskList().add(AlosPRIConstants.NODATA);
+            metadata.getMaskList().add(AlosPRIConstants.SATURATED);
+            metadata.setHasMasks(true);
 
             return metadata;
         } catch (RuntimeException | IOException exception) {

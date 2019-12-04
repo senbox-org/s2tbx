@@ -28,7 +28,7 @@ public class AlosAV2ProductReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         AlosAV2ProductReaderPlugin plugin = new AlosAV2ProductReaderPlugin();
-        reader = new AlosAV2ProductReader(plugin, plugin.getColorPaletteFilePath());
+        reader = new AlosAV2ProductReader(plugin);
     }
 
     @Test

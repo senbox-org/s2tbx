@@ -100,7 +100,7 @@ public class IkonosProductReader extends AbstractProductReader {
 
         Dimension defaultProductSize = new Dimension(metadataUtil.getMaxNumColumns(), metadataUtil.getMaxNumLines());
 
-        Rectangle productBounds = ImageUtils.computeImageBounds(defaultProductSize.width, defaultProductSize.height, getSubsetDef());
+        Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, getSubsetDef());
 
         Product product = new Product(metadata.getProductName(), IkonosConstants.PRODUCT_GENERIC_NAME, productBounds.width, productBounds.height, this);
         product.setStartTime(metadata.getProductStartTime());
@@ -241,7 +241,7 @@ public class IkonosProductReader extends AbstractProductReader {
         int extensionIndex = metadataFileName.lastIndexOf(IkonosConstants.METADATA_FILE_SUFFIX);
         String fileNameWithoutExtension = metadataFileName.substring(0, extensionIndex);
         String zipArchiveFileName;
-        if (productDirectory.exists(fileNameWithoutExtension)) {
+        if (!productDirectory.isArchive() && productDirectory.exists(fileNameWithoutExtension)) {
             zipArchiveFileName = fileNameWithoutExtension;
         } else {
             zipArchiveFileName = fileNameWithoutExtension + IkonosConstants.ARCHIVE_FILE_EXTENSION;
