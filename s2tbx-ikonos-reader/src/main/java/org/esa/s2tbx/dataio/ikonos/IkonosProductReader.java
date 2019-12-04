@@ -122,6 +122,17 @@ public class IkonosProductReader extends AbstractProductReader {
                     bandIsSelected = false;
                 }
             }
+            if(!bandIsSelected && getBandName(bandMetadata.getImageFileName()).equals(IkonosConstants.BAND_NAMES[4])){
+                GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
+                this.bandImageReaders.add(geoTiffImageReader);
+                Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
+                Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, metadataUtil.getProductStepX(), metadataUtil.getProductStepY(), bandMetadata.getPixelSizeX(), bandMetadata.getPixelSizeY());
+                IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, new Dimension(productBounds.width, productBounds.height), defaultBandSize, getSubsetDef());
+                Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, zipArchivePath, bandBounds);
+                if (geoTiffProduct.getBandAt(0).getGeoCoding() != null && product.getSceneGeoCoding() == null) {
+                    product.setSceneGeoCoding(geoTiffProduct.getBandAt(0).getGeoCoding());
+                }
+            }
             if(bandIsSelected) {
                 if (bandMetadata.getNumColumns() > defaultProductSize.width) {
                     throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is greater than the product width " + defaultProductSize.width + ".");
