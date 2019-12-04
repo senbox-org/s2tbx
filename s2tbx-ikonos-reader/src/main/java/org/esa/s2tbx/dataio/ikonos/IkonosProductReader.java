@@ -106,65 +106,87 @@ public class IkonosProductReader extends AbstractProductReader {
         product.setStartTime(metadata.getProductStartTime());
         product.setEndTime(metadata.getProductEndTime());
         product.setDescription(metadata.getProductDescription());
-        product.getMetadataRoot().addElement(metadata.getRootElement());
+        if((getSubsetDef() != null  && !getSubsetDef().isIgnoreMetadata()) || getSubsetDef() == null) {
+            product.getMetadataRoot().addElement(metadata.getRootElement());
+        }
         product.setPreferredTileSize(JAI.getDefaultTileSize());
 
         this.bandImageReaders = new ArrayList<>(bandMetadataList.size());
 
         for (int bandIndex = 0; bandIndex < bandMetadataList.size(); bandIndex++) {
+
             BandMetadata bandMetadata = bandMetadataList.get(bandIndex);
-
-            if (bandMetadata.getNumColumns() > defaultProductSize.width) {
-                throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is greater than the product width " + defaultProductSize.width + ".");
-            }
-            if (bandMetadata.getNumLines() > defaultProductSize.height) {
-                throw new IllegalStateException("The band height " + bandMetadata.getNumLines() + " from the metadata file is greater than the product height " + defaultProductSize.height + ".");
-            }
-
-            GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
-            this.bandImageReaders.add(geoTiffImageReader);
-
-            Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
-
-            if (defaultBandSize.width != bandMetadata.getNumColumns()) {
-                throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is not equal with the image width " + defaultBandSize.width + ".");
-            }
-            if (defaultBandSize.height != bandMetadata.getNumLines()) {
-                throw new IllegalStateException("The band height " + bandMetadata.getNumLines() + " from the metadata file is not equal with the image height " + defaultBandSize.height + ".");
-            }
-
-            Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, metadataUtil.getProductStepX(), metadataUtil.getProductStepY(), bandMetadata.getPixelSizeX(), bandMetadata.getPixelSizeY());
-
-            // read the Geo Tiff product
-            Dimension productSize = new Dimension(productBounds.width, productBounds.height);
-            IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, productSize, defaultBandSize, getSubsetDef());
-            Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, zipArchivePath, bandBounds);
-
-            if (geoTiffProduct.getSceneGeoCoding() == null && product.getSceneGeoCoding() == null) {
-                TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductSize.width, defaultProductSize.height, getSubsetDef());
-                product.addTiePointGrid(productGeoCoding.getLatGrid());
-                product.addTiePointGrid(productGeoCoding.getLonGrid());
-                product.setSceneGeoCoding(productGeoCoding);
-            }
-
-            Band geoTiffBand = geoTiffProduct.getBandAt(0);
-            String bandName = getBandName(bandMetadata.getImageFileName());
-            Double bandGain = getBandGain(bandMetadata.getImageFileName());
-            if (bandName.equals(IkonosConstants.BAND_NAMES[4])) {
-                bandGain = Arrays.asList(IkonosConstants.BAND_GAIN).stream().mapToDouble(p -> p).sum() / (IkonosConstants.BAND_NAMES.length - 1);
-                if (geoTiffBand.getGeoCoding() != null && product.getSceneGeoCoding() == null) {
-                    product.setSceneGeoCoding(geoTiffBand.getGeoCoding());
+            boolean bandIsSelected = true;
+            if (getSubsetDef() != null && !Arrays.asList(getSubsetDef().getNodeNames()).contains("allBands")) {
+                if (!Arrays.asList(getSubsetDef().getNodeNames()).contains(getBandName(bandMetadata.getImageFileName()))) {
+                    bandIsSelected = false;
                 }
             }
-            geoTiffBand.setName(bandName);
-            geoTiffBand.setScalingFactor(bandGain.doubleValue());
-            geoTiffBand.setNoDataValueUsed(geoTiffBand.isNoDataValueUsed());
-            geoTiffBand.setUnit(IkonosConstants.BAND_MEASURE_UNIT);
+            if(!bandIsSelected && getBandName(bandMetadata.getImageFileName()).equals(IkonosConstants.BAND_NAMES[4])){
+                GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
+                this.bandImageReaders.add(geoTiffImageReader);
+                Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
+                Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, metadataUtil.getProductStepX(), metadataUtil.getProductStepY(), bandMetadata.getPixelSizeX(), bandMetadata.getPixelSizeY());
+                IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, new Dimension(productBounds.width, productBounds.height), defaultBandSize, getSubsetDef());
+                Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, zipArchivePath, bandBounds);
+                if (geoTiffProduct.getBandAt(0).getGeoCoding() != null && product.getSceneGeoCoding() == null) {
+                    product.setSceneGeoCoding(geoTiffProduct.getBandAt(0).getGeoCoding());
+                }
+            }
+            if(bandIsSelected) {
+                if (bandMetadata.getNumColumns() > defaultProductSize.width) {
+                    throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is greater than the product width " + defaultProductSize.width + ".");
+                }
+                if (bandMetadata.getNumLines() > defaultProductSize.height) {
+                    throw new IllegalStateException("The band height " + bandMetadata.getNumLines() + " from the metadata file is greater than the product height " + defaultProductSize.height + ".");
+                }
 
-            product.addBand(geoTiffBand);
+                GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
+                this.bandImageReaders.add(geoTiffImageReader);
 
-            // remove the bands from the geo tif product
-            geoTiffProduct.getBandGroup().removeAll();
+                Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
+
+                if (defaultBandSize.width != bandMetadata.getNumColumns()) {
+                    throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is not equal with the image width " + defaultBandSize.width + ".");
+                }
+                if (defaultBandSize.height != bandMetadata.getNumLines()) {
+                    throw new IllegalStateException("The band height " + bandMetadata.getNumLines() + " from the metadata file is not equal with the image height " + defaultBandSize.height + ".");
+                }
+
+                Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, metadataUtil.getProductStepX(), metadataUtil.getProductStepY(), bandMetadata.getPixelSizeX(), bandMetadata.getPixelSizeY());
+
+                // read the Geo Tiff product
+                Dimension productSize = new Dimension(productBounds.width, productBounds.height);
+                IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, productSize, defaultBandSize, getSubsetDef());
+                Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, zipArchivePath, bandBounds);
+
+                if (geoTiffProduct.getSceneGeoCoding() == null && product.getSceneGeoCoding() == null) {
+                    TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductSize.width, defaultProductSize.height, getSubsetDef());
+                    product.addTiePointGrid(productGeoCoding.getLatGrid());
+                    product.addTiePointGrid(productGeoCoding.getLonGrid());
+                    product.setSceneGeoCoding(productGeoCoding);
+                }
+
+                Band geoTiffBand = geoTiffProduct.getBandAt(0);
+                String bandName = getBandName(bandMetadata.getImageFileName());
+                Double bandGain = getBandGain(bandMetadata.getImageFileName());
+                if (bandName.equals(IkonosConstants.BAND_NAMES[4])) {
+                    bandGain = Arrays.asList(IkonosConstants.BAND_GAIN).stream().mapToDouble(p -> p).sum() / (IkonosConstants.BAND_NAMES.length - 1);
+                    if (geoTiffBand.getGeoCoding() != null && product.getSceneGeoCoding() == null) {
+                        product.setSceneGeoCoding(geoTiffBand.getGeoCoding());
+                    }
+                }
+                geoTiffBand.setName(bandName);
+                geoTiffBand.setScalingFactor(bandGain.doubleValue());
+                geoTiffBand.setNoDataValueUsed(geoTiffBand.isNoDataValueUsed());
+                geoTiffBand.setUnit(IkonosConstants.BAND_MEASURE_UNIT);
+
+                product.addBand(geoTiffBand);
+
+
+                // remove the bands from the geo tif product
+                geoTiffProduct.getBandGroup().removeAll();
+            }
         }
 
         return product;
