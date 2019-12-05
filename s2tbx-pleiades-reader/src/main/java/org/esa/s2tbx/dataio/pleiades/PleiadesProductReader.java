@@ -40,7 +40,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -68,9 +67,6 @@ public class PleiadesProductReader extends AbstractProductReader {
         put(ProductData.TYPE_INT32, DataBuffer.TYPE_INT);
         put(ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT);
     }};
-
-    private static final String ALL_MASKS = "allMasks";
-    private static final String ALL_BANDS = "allBands";
 
     private VirtualDirEx productDirectory;
     private VolumeMetadata metadata;
@@ -304,13 +300,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                 int colorWidth = Math.round(width / factorX);
                 int colorHeight = Math.round(height / factorY);
                 for (int i = 0; i < numBands; i++) {
-                    boolean bandIsSelected = true;
-                    if (getSubsetDef() != null && !Arrays.asList(getSubsetDef().getNodeNames()).contains(ALL_BANDS)) {
-                        if (!Arrays.asList(getSubsetDef().getNodeNames()).contains(bandInfos[i].getId())) {
-                            bandIsSelected = false;
-                        }
-                    }
-                    if (bandIsSelected) {
+                    if (getSubsetDef() == null || getSubsetDef().isNodeAccepted(bandInfos[i].getId())) {
                         Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, colorWidth, colorHeight, colorPaletteFilePath);
                         targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
                         targetBand.setSpectralWavelength(bandInfos[i].getCentralWavelength());
@@ -348,10 +338,9 @@ public class PleiadesProductReader extends AbstractProductReader {
                         product.addBand(targetBand);
                     }
                 }
-                if(getSubsetDef() != null && getSubsetDef().getNodeNames()!= null || getSubsetDef() == null) {
-                    addMasks(product, imageMetadata);
-                    addGMLMasks(product, imageMetadata);
-                }
+                addMasks(product, imageMetadata);
+                addGMLMasks(product, imageMetadata);
+
             }
             product.setModified(false);
         }
@@ -404,7 +393,7 @@ public class PleiadesProductReader extends AbstractProductReader {
         }
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
-	
+
     private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight) {
         int bandWidth = band.getRasterWidth();
         int bandHeight = band.getRasterHeight();
@@ -434,9 +423,7 @@ public class PleiadesProductReader extends AbstractProductReader {
     private void addMasks(Product target, ImageMetadata metadata) {
         ProductNodeGroup<Mask> maskGroup = target.getMaskGroup();
         if (!maskGroup.contains(Constants.NODATA)&& (getSubsetDef() == null ||
-                (getSubsetDef() != null && getSubsetDef().getNodeNames() != null &&
-                        (Arrays.asList(getSubsetDef().getNodeNames()).contains(Constants.NODATA) ||
-                                Arrays.asList(getSubsetDef().getNodeNames()).contains(ALL_MASKS))))) {
+                (getSubsetDef() != null && getSubsetDef().isNodeAccepted(Constants.NODATA)))) {
             int noDataValue = metadata.getNoDataValue();
             maskGroup.add(Mask.BandMathsType.create(Constants.NODATA, Constants.NODATA,
                                                     target.getSceneRasterWidth(), target.getSceneRasterHeight(),
@@ -444,8 +431,7 @@ public class PleiadesProductReader extends AbstractProductReader {
         }
         if (!maskGroup.contains(Constants.SATURATED) && (getSubsetDef() == null ||
                 (getSubsetDef() != null && getSubsetDef().getNodeNames() != null &&
-                        (Arrays.asList(getSubsetDef().getNodeNames()).contains(Constants.SATURATED) ||
-                                Arrays.asList(getSubsetDef().getNodeNames()).contains(ALL_MASKS))))) {
+                        getSubsetDef().isNodeAccepted(Constants.SATURATED)))) {
             int saturatedValue = metadata.getSaturatedValue();
             maskGroup.add(Mask.BandMathsType.create(Constants.SATURATED, Constants.SATURATED,
                                                     target.getSceneRasterWidth(), target.getSceneRasterHeight(),
@@ -467,9 +453,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                     String resolution = "_" + new DecimalFormat("#.#").format(metadata.getPixelSize()) + "m";
                     maskName += resolution.endsWith(".") ? resolution.substring(0, resolution.length() - 1) : resolution;
                 }
-                if(getSubsetDef() == null || (getSubsetDef() != null && getSubsetDef().getNodeNames() != null &&
-                        (Arrays.asList(getSubsetDef().getNodeNames()).contains(maskName) ||
-                                Arrays.asList(getSubsetDef().getNodeNames()).contains(ALL_MASKS)))) {
+                if(getSubsetDef() == null || (getSubsetDef() != null && getSubsetDef().isNodeAccepted(maskName))) {
                     if (refBand != null) {
                         target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
                     } else {

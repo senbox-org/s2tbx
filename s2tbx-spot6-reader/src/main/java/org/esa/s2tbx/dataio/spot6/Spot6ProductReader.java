@@ -55,14 +55,9 @@ public class Spot6ProductReader extends AbstractProductReader {
         put(ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT);
     }};
 
-    private static final String ALL_MASKS = "allMasks";
-    private static final String ALL_BANDS = "allBands";
-
     private VirtualDirEx productDirectory;
     private VolumeMetadata metadata;
     private Set<WeakReference<Product>> tileRefs;
-    private double offsetX = 0;
-    private double offsetY = 0;
     private boolean isMultiSize = false;
 
     protected Spot6ProductReader(Spot6ProductReaderPlugin readerPlugIn) {
@@ -135,14 +130,16 @@ public class Spot6ProductReader extends AbstractProductReader {
             this.isMultiSize = this.metadata.getImageMetadataList().size() > 1;
             int width = metadata.getSceneWidth();
             int height = metadata.getSceneHeight();
+            int offsetX = 0;
+            int offsetY = 0;
             ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
-            if(getSubsetDef() !=null && getSubsetDef().getRegion() != null){
+            if(getSubsetDef() != null && getSubsetDef().getRegion() != null){
                 productSubsetRegion = getSubsetDef().getRegion();
                 width = productSubsetRegion.width;
                 height = productSubsetRegion.height;
-                this.offsetX = productSubsetRegion.x;
-                this.offsetY = productSubsetRegion.y;
+                offsetX = productSubsetRegion.x;
+                offsetY = productSubsetRegion.y;
             }
             product = new Product(metadata.getInternalReference(),
                                   metadata.getProductType(),
@@ -205,8 +202,6 @@ public class Spot6ProductReader extends AbstractProductReader {
                         int startX = (int)(productSubsetRegion.x / imageMetadata.getInsertPoint().stepX * origin.stepX);
                         int startY = (int) (productSubsetRegion.y / imageMetadata.getInsertPoint().stepY * origin.stepY);
                         bandSubsetRegion = new Rectangle(startX,startY,bandWidth,bandHeight);
-                        this.offsetX = startX;
-                        this.offsetY = startY;
                     }else {
                         bandWidth = productSubsetRegion.width;
                         bandHeight = productSubsetRegion.height;
@@ -288,13 +283,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 }
                 final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
-                    boolean bandIsSelected = true;
-                    if (getSubsetDef() != null && !Arrays.asList(getSubsetDef().getNodeNames()).contains(ALL_BANDS)) {
-                        if (!Arrays.asList(getSubsetDef().getNodeNames()).contains(bandInfos[i].getId())) {
-                            bandIsSelected = false;
-                        }
-                    }
-                    if (bandIsSelected) {
+                    if (getSubsetDef() == null || getSubsetDef().isNodeAccepted(bandInfos[i].getId())) {
                         Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, Math.round(width / factorX),
                                                                Math.round(height / factorY), colorPaletteFilePath);
                         targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
@@ -306,7 +295,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                         targetBand.setNoDataValueUsed(true);
                         targetBand.setScalingFactor(scalingAndOffsets[i][0] / bandInfos[i].getGain());
                         targetBand.setScalingOffset(scalingAndOffsets[i][1] * bandInfos[i].getBias());
-                        initBandGeoCoding(imageMetadata, targetBand, width, height);
+                        initBandGeoCoding(imageMetadata, targetBand, width, height, bandSubsetRegion);
                         Band[][] srcBands = new Band[subsetTileRows][subsetTileCols];
                         for (int x = 0; x < subsetTileRows; x++) {
                             for (int y = 0; y < subsetTileCols; y++) {
@@ -338,10 +327,10 @@ public class Spot6ProductReader extends AbstractProductReader {
                         product.addBand(targetBand);
                     }
                 }
-                if(getSubsetDef() != null && getSubsetDef().getNodeNames()!= null || getSubsetDef() == null) {
-                    addMasks(product, imageMetadata);
-                    addGMLMasks(product, imageMetadata);
-                }
+
+                addMasks(product, imageMetadata);
+                addGMLMasks(product, imageMetadata);
+
             }
             product.setModified(false);
         }
@@ -398,7 +387,7 @@ public class Spot6ProductReader extends AbstractProductReader {
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight) {
+    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight, Rectangle bandSubsetRegion) {
         int bandWidth = band.getRasterWidth();
         int bandHeight = band.getRasterHeight();
         GeoCoding geoCoding = null;
@@ -408,9 +397,9 @@ public class Spot6ProductReader extends AbstractProductReader {
             CoordinateReferenceSystem crs = CRS.decode(crsCode);
             if (imageMetadata.hasInsertPoint()) {
                     geoCoding = new CrsGeoCoding(crs,
-                            bandWidth, bandHeight,
-                            insertPoint.x + (offsetX * insertPoint.stepX), insertPoint.y - (offsetY * insertPoint.stepY),
-                            insertPoint.stepX, insertPoint.stepY, 0.0, 0.0);
+                                                 bandWidth, bandHeight,
+                                                 insertPoint.x + (bandSubsetRegion.x * insertPoint.stepX), insertPoint.y - (bandSubsetRegion.y * insertPoint.stepY),
+                                                 insertPoint.stepX, insertPoint.stepY, 0.0, 0.0);
             } else {
                 if (sceneWidth != bandWidth) {
                     AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);
@@ -429,18 +418,14 @@ public class Spot6ProductReader extends AbstractProductReader {
     private void addMasks(Product target, ImageMetadata metadata) {
         ProductNodeGroup<Mask> maskGroup = target.getMaskGroup();
         if (!maskGroup.contains(Spot6Constants.NODATA) && (getSubsetDef() == null ||
-                (getSubsetDef() != null && getSubsetDef().getNodeNames() != null &&
-                        (Arrays.asList(getSubsetDef().getNodeNames()).contains(Spot6Constants.NODATA) ||
-                        Arrays.asList(getSubsetDef().getNodeNames()).contains(ALL_MASKS))))) {
+                (getSubsetDef() != null && getSubsetDef().isNodeAccepted(Spot6Constants.NODATA)))) {
             int noDataValue = metadata.getNoDataValue();
             maskGroup.add(Mask.BandMathsType.create(Spot6Constants.NODATA, Spot6Constants.NODATA,
                                                     target.getSceneRasterWidth(), target.getSceneRasterHeight(),
                                                     String.valueOf(noDataValue), Color.BLACK, 0.5));
         }
         if (!maskGroup.contains(Spot6Constants.SATURATED) && (getSubsetDef() == null ||
-                (getSubsetDef() != null && getSubsetDef().getNodeNames() != null &&
-                        (Arrays.asList(getSubsetDef().getNodeNames()).contains(Spot6Constants.SATURATED) ||
-                        Arrays.asList(getSubsetDef().getNodeNames()).contains(ALL_MASKS))))) {
+                (getSubsetDef() != null && getSubsetDef().isNodeAccepted(Spot6Constants.SATURATED)))) {
             int saturatedValue = metadata.getSaturatedValue();
             maskGroup.add(Mask.BandMathsType.create(Spot6Constants.SATURATED, Spot6Constants.SATURATED,
                                                     target.getSceneRasterWidth(), target.getSceneRasterHeight(),
@@ -462,9 +447,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     String resolution = "_" + new DecimalFormat("#.#").format(metadata.getPixelSize()) + "m";
                     maskName += resolution.endsWith(".") ? resolution.substring(0, resolution.length() - 1) : resolution;
                 }
-                if(getSubsetDef() == null || (getSubsetDef() != null && getSubsetDef().getNodeNames() != null &&
-                        (Arrays.asList(getSubsetDef().getNodeNames()).contains(maskName) ||
-                        Arrays.asList(getSubsetDef().getNodeNames()).contains(ALL_MASKS)))) {
+                if(getSubsetDef() == null || (getSubsetDef() != null && getSubsetDef().isNodeAccepted(maskName))) {
                     if (refBand != null) {
                         target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
                     } else {

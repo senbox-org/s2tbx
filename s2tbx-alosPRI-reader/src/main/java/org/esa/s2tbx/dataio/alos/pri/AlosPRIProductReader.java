@@ -96,7 +96,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
             this.bandImageReaders = new ArrayList<>(alosPriMetadata.getImageMetadataList().size());
             ProductNodeGroup<Mask> maskGroup = product.getMaskGroup();
             for (ImageMetadata imageMetadata : alosPriMetadata.getImageMetadataList()) {
-                if (subsetDef == null || subsetDef.containsBandNameIgnoreCase(imageMetadata.getBandName())) {
+                if (subsetDef == null || subsetDef.isNodeAccepted(imageMetadata.getBandName())) {
                     if (imageMetadata.getRasterWidth() > defaultProductSize.width) {
                         throw new IllegalStateException("The band width " + imageMetadata.getRasterWidth() + " from the metadata file is greater than the product width " + defaultProductSize.width + ".");
                     }
@@ -138,12 +138,12 @@ public class AlosPRIProductReader extends AbstractProductReader {
                     geoTiffProduct.getBandGroup().removeAll();
                 }
 
-                if (subsetDef == null || subsetDef.containsMaskNameIgnoreCase(AlosPRIConstants.NODATA)) {
+                if (subsetDef == null || subsetDef.isNodeAccepted(AlosPRIConstants.NODATA)) {
                     if (!maskGroup.contains(AlosPRIConstants.NODATA)) {
                         maskGroup.add(buildNoDataMask(product.getSceneRasterWidth(), product.getSceneRasterHeight(), imageMetadata.getNoDataValue()));
                     }
                 }
-                if (subsetDef == null || subsetDef.containsMaskNameIgnoreCase(AlosPRIConstants.SATURATED)) {
+                if (subsetDef == null || subsetDef.isNodeAccepted(AlosPRIConstants.SATURATED)) {
                     if (!maskGroup.contains(AlosPRIConstants.SATURATED)) {
                         maskGroup.add(buildSaturatedMask(product.getSceneRasterWidth(), product.getSceneRasterHeight(), imageMetadata.getSaturatedValue()));
                     }

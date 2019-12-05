@@ -18,7 +18,6 @@ import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import javax.imageio.spi.ImageInputStreamSpi;
 import javax.media.jai.JAI;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -117,7 +116,7 @@ public class IkonosProductReader extends AbstractProductReader {
         for (int bandIndex = 0; bandIndex < bandMetadataList.size(); bandIndex++) {
             BandMetadata bandMetadata = bandMetadataList.get(bandIndex);
             String bandName = getBandName(bandMetadata.getImageFileName());
-            boolean bandIsSelected = (subsetDef == null || subsetDef.containsBandNameIgnoreCase(bandName));
+            boolean bandIsSelected = (subsetDef == null || subsetDef.isNodeAccepted(bandName));
             if (!bandIsSelected && bandName.equals(IkonosConstants.BAND_NAMES[4])) {
                 try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName())) {
                     Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());

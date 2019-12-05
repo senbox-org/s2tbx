@@ -142,7 +142,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
 
             // add bands
             for (int i=0; i<geoTiffProduct.getNumBands(); i++) {
-                if (subsetDef == null || subsetDef.containsBandNameIgnoreCase(bandNames[i])) {
+                if (subsetDef == null || subsetDef.isNodeAccepted(bandNames[i])) {
                     String bandUnit = alosAV2Metadata.getBandUnits().get(bandNames[i]);
                     float scalingOffset = alosAV2Metadata.getBias(bandNames[i]);
                     float scalingFactor = alosAV2Metadata.getGain(bandNames[i]);
@@ -162,14 +162,14 @@ public class AlosAV2ProductReader extends AbstractProductReader {
 
             // add masks
             ProductNodeGroup<Mask> maskGroup = product.getMaskGroup();
-            if (subsetDef == null || subsetDef.containsMaskNameIgnoreCase(AlosAV2Constants.NODATA)) {
+            if (subsetDef == null || subsetDef.isNodeAccepted(AlosAV2Constants.NODATA)) {
                 int noDataValue = alosAV2Metadata.getNoDataValue();
                 if (noDataValue >= 0) {
                     maskGroup.add(Mask.BandMathsType.create(AlosAV2Constants.NODATA, AlosAV2Constants.NODATA, product.getSceneRasterWidth(), product.getSceneRasterHeight(),
                             String.valueOf(noDataValue), alosAV2Metadata.getNoDataColor(), 0.5));
                 }
             }
-            if (subsetDef == null || subsetDef.containsMaskNameIgnoreCase(AlosAV2Constants.SATURATED)) {
+            if (subsetDef == null || subsetDef.isNodeAccepted(AlosAV2Constants.SATURATED)) {
                 int saturatedValue = alosAV2Metadata.getSaturatedPixelValue();
                 if (saturatedValue >= 0) {
                     maskGroup.add(Mask.BandMathsType.create(AlosAV2Constants.SATURATED, AlosAV2Constants.SATURATED, product.getSceneRasterWidth(), product.getSceneRasterHeight(),

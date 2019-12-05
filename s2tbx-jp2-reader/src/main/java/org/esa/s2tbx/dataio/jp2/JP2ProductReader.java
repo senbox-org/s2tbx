@@ -53,7 +53,6 @@ import java.awt.geom.Point2D;
 import java.awt.image.DataBuffer;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -258,14 +257,8 @@ public class JP2ProductReader extends AbstractProductReader {
         for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
             //used to identify the bands selected by the user in Advanced Open dialog
             //default is true, because the product can be opened without advanced option (in this case all the bands should be opened)
-            boolean bandIsSelected = true;
             String bandName = "band_" + (bandIdx + 1);
-            if (getSubsetDef() != null && getSubsetDef().getNodeNames()!= null && !Arrays.asList(getSubsetDef().getNodeNames()).contains("allBands")) {
-                if (!Arrays.asList(getSubsetDef().getNodeNames()).contains(bandName)) {
-                    bandIsSelected = false;
-                }
-            }
-            if (bandIsSelected) {
+            if (getSubsetDef() == null || getSubsetDef().isNodeAccepted(bandName)) {
                 // changes from https://github.com/senbox-org/s2tbx/pull/48
                 /*int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
                 Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1), OpenJpegUtils.PRECISION_TYPE_MAP.get(precision), imageWidth, imageHeight);*/
