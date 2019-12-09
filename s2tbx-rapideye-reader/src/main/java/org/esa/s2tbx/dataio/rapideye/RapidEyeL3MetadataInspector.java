@@ -1,8 +1,8 @@
-package org.esa.s2tbx.dataio.deimos;
+package org.esa.s2tbx.dataio.rapideye;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.deimos.dimap.DeimosConstants;
-import org.esa.s2tbx.dataio.deimos.dimap.DeimosMetadata;
+import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
+import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 
@@ -14,38 +14,30 @@ import java.util.List;
 /**
  * Created by jcoravu on 9/12/2019.
  */
-public class DeimosMetadataInspector implements MetadataInspector {
+public class RapidEyeL3MetadataInspector implements MetadataInspector {
 
-    public DeimosMetadataInspector() {
+    public RapidEyeL3MetadataInspector() {
     }
 
     @Override
     public Metadata getMetadata(Path productPath) throws IOException {
         try (VirtualDirEx productDirectory = VirtualDirEx.build(productPath, false, true)) {
-            List<DeimosMetadata> metadataList = DeimosProductReader.readMetadata(productDirectory);
+            List<RapidEyeMetadata> metadataList = RapidEyeL3Reader.readMetadata(productDirectory);
 
-            Dimension defaultProductSize = DeimosProductReader.computeMaximumProductSize(metadataList);
+            Dimension defaultProductSize = RapidEyeL3Reader.computeMaximumProductSize(metadataList);
 
             Metadata metadata = new Metadata();
             metadata.setProductWidth(defaultProductSize.width);
             metadata.setProductHeight(defaultProductSize.height);
 
-            TiePointGeoCoding productGeoCoding = DeimosProductReader.buildProductTiePointGridGeoCoding(metadataList.get(0), metadataList);
-            metadata.setGeoCoding(productGeoCoding);
-
             for (int i = 0; i < metadataList.size(); i++) {
-                DeimosMetadata currentMetadata = metadataList.get(i);
-                String[] bandNames = currentMetadata.getBandNames();
-                String bandPrefix = DeimosProductReader.computeBandPrefix(metadataList.size(), i);
+                String[] bandNames = RapidEyeConstants.BAND_NAMES;
+                String bandPrefix = RapidEyeL3Reader.computeBandPrefix(metadataList.size(), i);
                 for (int k = 0; k < bandNames.length; k++) {
                     String bandName = bandPrefix + bandNames[k];
                     metadata.getBandList().add(bandName);
                 }
             }
-
-            metadata.getMaskList().add(DeimosConstants.NODATA_VALUE);
-            metadata.getMaskList().add(DeimosConstants.SATURATED_VALUE);
-            metadata.setHasMasks(true);
 
             return metadata;
         } catch (RuntimeException | IOException exception) {

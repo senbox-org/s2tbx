@@ -17,82 +17,80 @@
 
 package org.esa.s2tbx.dataio.rapideye;
 
+import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
-import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
-import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.util.TreeNode;
+import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
+import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.xml.sax.SAXException;
 
-import java.io.File;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Reader for RapidEye L3 (GeoTIFF) products.
  *
  * @author  Cosmin Cara
  */
-public class RapidEyeL3Reader extends GeoTiffBasedReader<RapidEyeMetadata> {
+public class RapidEyeL3Reader extends MultipleMetadataGeoTiffBasedReader<RapidEyeMetadata> {
 
-    protected RapidEyeL3Reader(RapidEyeL3ReaderPlugin readerPlugIn, Path colorPaletteFilePath) {
-        super(readerPlugIn, colorPaletteFilePath);
+    static {
+        XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<>(RapidEyeMetadata.class));
+    }
+
+    public RapidEyeL3Reader(RapidEyeL3ReaderPlugin readerPlugIn, Path colorPaletteFilePath) {
+        super(readerPlugIn);
     }
 
     @Override
-    protected String getMetadataExtension() {
-        return RapidEyeConstants.METADATA_FILE_SUFFIX.substring(RapidEyeConstants.METADATA_FILE_SUFFIX.indexOf("."));
+    public MetadataInspector getMetadataInspector() {
+        return new RapidEyeL3MetadataInspector();
     }
 
     @Override
-    protected String getMetadataProfile() {
-        return RapidEyeConstants.PROFILE_L3;
+    protected RapidEyeMetadata findFirstMetadataItem(List<RapidEyeMetadata> metadataList) {
+        return findFirstMetadataItem(metadataList, RapidEyeConstants.PROFILE_L3);
     }
 
     @Override
-    protected String getProductGenericName() {
-        return RapidEyeConstants.PRODUCT_GENERIC_NAME;
+    protected TiePointGeoCoding buildTiePointGridGeoCoding(RapidEyeMetadata firstMetadata, List<RapidEyeMetadata> metadataList) {
+        return null; // no geo coding for RapidEye product
     }
 
     @Override
-    protected String getMetadataFileSuffix() {
-        return RapidEyeConstants.METADATA_FILE_SUFFIX;
+    protected String getGenericProductName() {
+        return "RapidEye";
     }
 
     @Override
-    protected String[] getBandNames() {
+    protected String[] getBandNames(RapidEyeMetadata metadata) {
         return RapidEyeConstants.BAND_NAMES;
     }
 
     @Override
-    public TreeNode<File> getProductComponents() {
-        TreeNode<File> result = super.getProductComponents();
+    protected List<Mask> buildMasks(int productWith, int productHeight, RapidEyeMetadata firstMetadata, ProductSubsetDef subsetDef) {
+        return null; // no masks for RapidEye product
+    }
 
-        if (!this.productDirectory.isArchive()) {
-            RapidEyeMetadata firstMetadata = metadata.get(0);
-            String metaFileName = firstMetadata.getFileName();
-            try{
-                addProductComponentIfNotPresent(metaFileName, productDirectory.getFile(metaFileName), result);
-            } catch (IOException e) {
-                logger.warning(String.format("Error encountered while searching file %s", metaFileName));
-            }
-            String[] rasterFiles = firstMetadata.getRasterFileNames();
-            for(String fileName : rasterFiles){
-                try{
-                    addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
-                } catch (IOException e) {
-                    logger.warning(String.format("Error encountered while searching file %s", fileName));
-                }
-            }
-            String maskFileName = firstMetadata.getMaskFileName();
-            if (maskFileName != null) {
-                try{
-                    addProductComponentIfNotPresent(maskFileName, productDirectory.getFile(maskFileName), result);
-                } catch (IOException e) {
-                    logger.warning(String.format("Error encountered while searching file %s", maskFileName));
-                }
-            }
-        }
-        return result;
+    @Override
+    protected String getProductType() {
+        return RapidEyeConstants.L3_FORMAT_NAMES[0];
+    }
+
+    @Override
+    protected List<RapidEyeMetadata> readMetadataList(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+        return readMetadata(productDirectory);
+    }
+
+    public static List<RapidEyeMetadata> readMetadata(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+        String[] metadataFiles = productDirectory.findAll(RapidEyeConstants.METADATA_FILE_SUFFIX);
+        return readMetadata(productDirectory, metadataFiles, RapidEyeMetadata.class);
     }
 }
