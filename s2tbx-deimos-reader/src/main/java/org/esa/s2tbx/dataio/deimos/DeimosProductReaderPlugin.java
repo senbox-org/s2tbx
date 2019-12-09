@@ -23,12 +23,7 @@ import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
-import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.utils.FileHelper;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.Locale;
 
 /**

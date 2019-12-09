@@ -139,14 +139,7 @@ public class IkonosProductReader extends AbstractProductReader {
                 GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
                 this.bandImageReaders.add(geoTiffImageReader);
 
-                Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
-
-                if (defaultBandSize.width != bandMetadata.getNumColumns()) {
-                    throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is not equal with the image width " + defaultBandSize.width + ".");
-                }
-                if (defaultBandSize.height != bandMetadata.getNumLines()) {
-                    throw new IllegalStateException("The band height " + bandMetadata.getNumLines() + " from the metadata file is not equal with the image height " + defaultBandSize.height + ".");
-                }
+                Dimension defaultBandSize = geoTiffImageReader.validateSize(bandMetadata.getNumColumns(), bandMetadata.getNumLines());
 
                 Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, metadataUtil.getProductStepX(), metadataUtil.getProductStepY(), bandMetadata.getPixelSizeX(), bandMetadata.getPixelSizeY());
 

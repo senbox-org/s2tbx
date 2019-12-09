@@ -110,15 +110,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                     GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, imageMetadata.getImageRelativeFilePath());
                     this.bandImageReaders.add(geoTiffImageReader);
 
-                    Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
-
-                    if (defaultBandSize.width != imageMetadata.getRasterWidth()) {
-                        throw new IllegalStateException("The band width " + imageMetadata.getRasterWidth() + " from the metadata file is not equal with the image width " + defaultBandSize.width + ".");
-                    }
-                    if (defaultBandSize.height != imageMetadata.getRasterHeight()) {
-                        throw new IllegalStateException("The band height " + imageMetadata.getRasterHeight() + " from the metadata file is not equal with the image height " + defaultBandSize.height + ".");
-                    }
-
+                    Dimension defaultBandSize = geoTiffImageReader.validateSize(imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight());
                     Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, alosPriMetadata.getStepSizeX(), alosPriMetadata.getStepSizeY(), imageMetadata.getPixelSizeX(), imageMetadata.getPixelSizeY());
 
                     AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductSize);

@@ -325,6 +325,7 @@ public class AlosPRIMetadata extends XmlMetadata {
     }
 
     //TODO Jean remove
+    @Deprecated
     public void addComponentMetadata(File metadata) {
         ImageMetadata imageMetadata = create(ImageMetadata.class, metadata.toPath());
         imageMetadata.setFileName(metadata.getName());

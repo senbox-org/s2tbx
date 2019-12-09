@@ -28,9 +28,7 @@ public class AlosAV2MetadataInspector implements MetadataInspector {
             String imageMetadataRelativeFilePath;
             try (VirtualDirEx imageMetadataProductDirectory = VirtualDirEx.build(imageMetadataParentPath, false, false)) {
                 imageMetadataRelativeFilePath = AlosAV2ProductReader.findImageMetadataRelativeFilePath(imageMetadataProductDirectory);
-                try (FilePathInputStream filePathInputStream = imageMetadataProductDirectory.getInputStream(imageMetadataRelativeFilePath)) {
-                    alosAV2Metadata = (AlosAV2Metadata) XmlMetadataParserFactory.getParser(AlosAV2Metadata.class).parse(filePathInputStream);
-                }
+                alosAV2Metadata = AlosAV2ProductReader.readMetadata(imageMetadataProductDirectory, imageMetadataRelativeFilePath);
             }
 
             Metadata metadata = new Metadata();

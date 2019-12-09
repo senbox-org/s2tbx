@@ -18,9 +18,11 @@ import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
+import org.xml.sax.SAXException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
 import javax.media.jai.JAI;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -50,7 +52,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
                                           Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
-            throws IOException {
+                                          throws IOException {
 
         throw new UnsupportedOperationException("Method not implemented");
     }
@@ -80,9 +82,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
             String imageMetadataRelativeFilePath;
             try (VirtualDirEx imageMetadataProductDirectory = VirtualDirEx.build(imageMetadataParentPath, false, false)) {
                 imageMetadataRelativeFilePath = findImageMetadataRelativeFilePath(imageMetadataProductDirectory);
-                try (FilePathInputStream filePathInputStream = imageMetadataProductDirectory.getInputStream(imageMetadataRelativeFilePath)) {
-                    alosAV2Metadata = (AlosAV2Metadata) XmlMetadataParserFactory.getParser(AlosAV2Metadata.class).parse(filePathInputStream);
-                }
+                alosAV2Metadata = readMetadata(imageMetadataProductDirectory, imageMetadataRelativeFilePath);
             }
 
             Dimension defaultProductSize = new Dimension(alosAV2Metadata.getRasterWidth(), alosAV2Metadata.getRasterHeight());
@@ -106,14 +106,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
             String tiffImageRelativeFilePath = imageMetadataRelativeFilePath.substring(0, extensionIndex) + AlosAV2Constants.IMAGE_FILE_EXTENSION;
 
             this.geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imageMetadataParentPath, tiffImageRelativeFilePath);
-            Dimension defaultBandSize = new Dimension(this.geoTiffImageReader.getImageWidth(), this.geoTiffImageReader.getImageHeight());
-
-            if (defaultBandSize.width != alosAV2Metadata.getRasterWidth()) {
-                throw new IllegalStateException("The band width " + alosAV2Metadata.getRasterWidth() + " from the metadata file is not equal with the image width " + defaultBandSize.width + ".");
-            }
-            if (defaultBandSize.height != alosAV2Metadata.getRasterHeight()) {
-                throw new IllegalStateException("The band height " + alosAV2Metadata.getRasterHeight() + " from the metadata file is not equal with the image height " + defaultBandSize.height + ".");
-            }
+            Dimension defaultBandSize = geoTiffImageReader.validateSize(alosAV2Metadata.getRasterWidth(), alosAV2Metadata.getRasterHeight());
 
             Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
             GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
@@ -229,7 +222,6 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                     }
                     int latitudeGridSize = (int) Math.sqrt(latitudes.length);
                     TiePointGrid latGrid = buildTiePointGrid("latitude", latitudeGridSize, latitudeGridSize, 0, 0, stepX, stepY, latitudes, TiePointGrid.DISCONT_NONE);
-
                     int longitudeGridSize = (int) Math.sqrt(longitudes.length);
                     TiePointGrid lonGrid = buildTiePointGrid("longitude", longitudeGridSize, longitudeGridSize, 0, 0, stepX, stepY, longitudes, TiePointGrid.DISCONT_AT_180);
                     return new TiePointGeoCoding(latGrid, lonGrid);
@@ -281,5 +273,13 @@ public class AlosAV2ProductReader extends AbstractProductReader {
             }
         }
         return imageMetadataRelativeFilePath;
+    }
+
+    public static AlosAV2Metadata readMetadata(VirtualDirEx imageMetadataProductDirectory, String imageMetadataRelativeFilePath)
+                                               throws InstantiationException, IOException, ParserConfigurationException, SAXException {
+
+        try (FilePathInputStream filePathInputStream = imageMetadataProductDirectory.getInputStream(imageMetadataRelativeFilePath)) {
+            return (AlosAV2Metadata) XmlMetadataParserFactory.getParser(AlosAV2Metadata.class).parse(filePathInputStream);
+        }
     }
 }
