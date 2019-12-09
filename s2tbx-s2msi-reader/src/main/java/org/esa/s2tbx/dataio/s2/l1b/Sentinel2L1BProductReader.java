@@ -30,6 +30,7 @@ import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.s2.AbstractMultiLevelImageFactory;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -151,7 +152,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     @Override
     public boolean isMultiResolution() {
-        return interpretation == ProductInterpretation.RESOLUTION_MULTI;
+        //return interpretation == ProductInterpretation.RESOLUTION_MULTI;
+        //in order to support different number of granules per detector, we consider always multiresolution
+        return true;
     }
 
     @Override
@@ -253,6 +256,19 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             tilesById.put(aTile.getId(), aTile);
         }
 
+        //sceneDescriptionPerDetectorAndResolution
+        Map<String, L1bSceneDescription> sceneDescriptionMap = new HashMap<>();
+        //getDetectors
+        ArrayList<String> detectors = new ArrayList<>();
+        for(Tile tile : tileList) {
+            if (!detectors.contains(tile.getDetectorId())) detectors.add(tile.getDetectorId());
+        }
+        for(String detector : detectors) {
+            sceneDescriptionMap.put("D" + detector +"_10",L1bSceneDescription.create(metadataHeader, S2SpatialResolution.R10M,detector));
+            sceneDescriptionMap.put("D" + detector +"_20",L1bSceneDescription.create(metadataHeader, S2SpatialResolution.R20M,detector));
+            sceneDescriptionMap.put("D" + detector +"_60",L1bSceneDescription.create(metadataHeader, S2SpatialResolution.R60M,detector));
+        }
+
         // Order bands by physicalBand
         Map<String, S2BandInformation> sin = new HashMap<>();
         for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
@@ -343,7 +359,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             addDetectorBands(product, bandInfoByKey,
-                    new L1bSceneMultiLevelImageFactory(sceneDescription, Product.findImageToModelTransform(product.getSceneGeoCoding())));
+                    new L1bSceneMultiLevelImageFactory(sceneDescriptionMap, Product.findImageToModelTransform(product.getSceneGeoCoding())),sceneDescriptionMap);
 
             //add TileIndex if there are more than 1 tile
             if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoByKey.isEmpty()) {
@@ -359,8 +375,29 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     resolutions.add(S2SpatialResolution.R60M);
                 }
 
-                addTileIndexes(product, resolutions, tileList, sceneDescription, sceneDimensions);
+                for(String detector : detectors) {
+                    //filter TileList
+                    ArrayList<Tile> auxTileList = new ArrayList<>();
+                    for (Tile tile : tileList) {
+                        if (tile.getDetectorId().equals(detector)) {
+                            auxTileList.add(tile);
+                        }
+                    }
 
+                    L1bSceneDescription auxSceneDescription = null;
+                    if(getProductResolution() == S2SpatialResolution.R60M) {
+                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_60");
+                    } else if (getProductResolution() == S2SpatialResolution.R20M){
+                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_20");
+                    } else {
+                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_10");
+                    }
+                    Map<S2SpatialResolution, Dimension> auxSceneDimensions = new HashMap<>();
+                    auxSceneDimensions.put(S2SpatialResolution.R10M, sceneDescriptionMap.get("D" + detector + "_10").getSceneRectangle().getSize());
+                    auxSceneDimensions.put(S2SpatialResolution.R20M, sceneDescriptionMap.get("D" + detector + "_20").getSceneRectangle().getSize());
+                    auxSceneDimensions.put(S2SpatialResolution.R60M, sceneDescriptionMap.get("D" + detector + "_60").getSceneRectangle().getSize());
+                    addTileIndexes(product, resolutions, tileList, auxSceneDescription, auxSceneDimensions);
+                }
             }
 
         } else {
@@ -413,7 +450,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, AbstractMultiLevelImageFactory mlif) throws IOException {
+    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, AbstractMultiLevelImageFactory mlif,Map<String, L1bSceneDescription> sceneDescriptionMap ) throws IOException {
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(getProductResolution().resolution).numResolutions);
 
@@ -428,14 +465,24 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         for (String bandIndex : bandIndexes) {
             L1BBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
-            if (isMultiResolution() || tileBandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
+            if (getInterpretation() == ProductInterpretation.RESOLUTION_MULTI || tileBandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
                 TileLayout thisBandTileLayout = tileBandInfo.getImageLayout();
                 TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
 
                 float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
                 float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
 
-                Dimension dimension = new Dimension(Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
+                String id = "";
+                if(getProductResolution() == S2SpatialResolution.R60M) {
+                    id = bandIndex.substring(0, 3) + "_60";
+                } else if (getProductResolution() == S2SpatialResolution.R20M) {
+                    id = bandIndex.substring(0, 3) + "_20";
+                } else {
+                    id = bandIndex.substring(0, 3) + "_10";
+                }
+                L1bSceneDescription sceneDescription = sceneDescriptionMap.get(id);
+                Dimension dimension = new Dimension(Math.round(sceneDescription.getSceneRectangle().width / factorX), Math.round(sceneDescription.getSceneRectangle().height / factorY));
+
 
                 Band band = addBand(product, tileBandInfo, dimension);
                 band.setDescription(tileBandInfo.getBandInformation().getDescription());
@@ -564,15 +611,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
 
 
-        if (isMultiResolution() || bandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
+        if (getInterpretation() == ProductInterpretation.RESOLUTION_MULTI || bandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
             TileLayout thisBandTileLayout = bandInfo.getImageLayout();
             TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
 
             float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
             float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
 
-            Dimension dimension = new Dimension(Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
-
+            Dimension dimension = new Dimension(Math.round(sceneDescription.getSceneRectangle().width / factorX), Math.round(sceneDescription.getSceneRectangle().height / factorY));
             //Band band = addBand(product, bandInfo, dimension);
             Band band = new Band(
                     bandInfo.getBandInformation().getPhysicalBand(),
@@ -603,20 +649,28 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     private class L1bSceneMultiLevelImageFactory extends AbstractMultiLevelImageFactory<L1BBandInfo> {
 
-        private final L1bSceneDescription sceneDescription;
+        private final Map<String, L1bSceneDescription> sceneDescriptionMap;
 
-        public L1bSceneMultiLevelImageFactory(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
+        public L1bSceneMultiLevelImageFactory(Map<String, L1bSceneDescription> sceneDescriptionMap, AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
 
             SystemUtils.LOG.fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
 
-            this.sceneDescription = sceneDescription;
+            this.sceneDescriptionMap = sceneDescriptionMap;
         }
 
         @Override
         // @Loggable
         public MultiLevelImage createSourceImage(L1BBandInfo tileBandInfo) {
-            BandL1bSceneMultiLevelSource bandScene = new BandL1bSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
+            String detector = tileBandInfo.detectorId;
+            BandL1bSceneMultiLevelSource bandScene = null;
+            if(getInterpretation() == ProductInterpretation.RESOLUTION_60M) {
+                bandScene = new BandL1bSceneMultiLevelSource(sceneDescriptionMap.get(detector+"_60"), tileBandInfo, imageToModelTransform);
+            } else if(getInterpretation() == ProductInterpretation.RESOLUTION_20M) {
+                bandScene = new BandL1bSceneMultiLevelSource(sceneDescriptionMap.get(detector+"_20"), tileBandInfo, imageToModelTransform);
+            } else {
+                bandScene = new BandL1bSceneMultiLevelSource(sceneDescriptionMap.get(detector+"_10"), tileBandInfo, imageToModelTransform);
+            }
             SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), "BandScene: " + bandScene);
 
             int level = 0;
