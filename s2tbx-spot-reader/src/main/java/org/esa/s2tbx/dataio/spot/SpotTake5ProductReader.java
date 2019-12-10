@@ -27,21 +27,22 @@ import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotTake5Metadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.FlagCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.MetadataAttribute;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.dataio.ImageRegistryUtils;
+import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 
+import javax.imageio.spi.ImageInputStreamSpi;
 import java.awt.*;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -60,36 +61,60 @@ import java.util.logging.Logger;
  * modified 20190515 for VFS compatibility by Oana H.
  */
 public class SpotTake5ProductReader extends AbstractProductReader {
-    private static final Logger logger = Logger.getLogger(SpotTake5ProductReader.class.getName());
 
-    private SpotTake5Metadata imageMetadata;
-    private VirtualDirEx input;
-    private final Map<Band, GeoTiffProductReader> readerMap;
-    private final Map<Band, Band> bandMap;
-    private final Path colorPaletteFilePath;
+    private static final Logger logger = Logger.getLogger(SpotTake5ProductReader.class.getName());
 
     static {
         XmlMetadataParserFactory.registerParser(SpotTake5Metadata.class, new XmlMetadataParser<SpotTake5Metadata>(SpotTake5Metadata.class));
     }
 
-    protected SpotTake5ProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+    private VirtualDirEx productDirectory;
+    private ImageInputStreamSpi imageInputStreamSpi;
+    private List<GeoTiffImageReader> bandImageReaders;
+
+    public SpotTake5ProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
 
-        this.colorPaletteFilePath = colorPaletteFilePath;
-        this.readerMap = new HashMap<Band, GeoTiffProductReader>();
-        this.bandMap = new HashMap<Band, Band>();
+        this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
+    }
+
+    @Override
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight,
+                                          ProductData destBuffer, ProgressMonitor pm) throws IOException {
+
+        throw new UnsupportedOperationException("Method not implemented");
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+
+        closeResources();
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new SpotTake5MetadataInspector();
     }
 
     @Override
     public TreeNode<File> getProductComponents() {
         TreeNode<File> result = super.getProductComponents();
-        if (input.isCompressed()) {
+        if (this.productDirectory.isCompressed()) {
             return result;
         } else {
+            Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+            SpotTake5Metadata imageMetadata;
+            try {
+                imageMetadata = readImageMetadata(productPath, this.productDirectory);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
             for (String inputFile : imageMetadata.getTiffFiles().values()) {
                 try {
                     TreeNode<File> productFile = new TreeNode<File>(inputFile);
-                    productFile.setContent(input.getFile(inputFile));
+                    productFile.setContent(this.productDirectory.getFile(inputFile));
                     result.addChild(productFile);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -98,7 +123,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             for (String inputFile : imageMetadata.getMaskFiles().values()) {
                 try {
                     TreeNode<File> productFile = new TreeNode<File>(inputFile);
-                    productFile.setContent(input.getFile(inputFile));
+                    productFile.setContent(this.productDirectory.getFile(inputFile));
                     result.addChild(productFile);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -110,34 +135,187 @@ public class SpotTake5ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        //input = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
-        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.input = VirtualDirEx.build(inputPath, false, true);
+        boolean success = false;
+        try {
+            Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+            this.productDirectory = VirtualDirEx.build(productPath, false, true);
 
+            SpotTake5Metadata imageMetadata = readImageMetadata(productPath, this.productDirectory);
+
+            Dimension defaultProductSize = new Dimension(imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight());
+            ProductSubsetDef subsetDef = getSubsetDef();
+            Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+
+            Product product = new Product(imageMetadata.getProductName(), SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0], productBounds.width, productBounds.height, this);
+            product.setFileLocation(productPath.toFile());
+            if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                product.getMetadataRoot().addElement(imageMetadata.getRootElement());
+            }
+            ProductData.UTC startTime = imageMetadata.getDatePdv();
+            product.setStartTime(startTime);
+            product.setEndTime(startTime);
+            product.setDescription(SpotConstants.SPOT4_TAKE5_FORMAT + " level:" + imageMetadata.getMetadataProfile() + " zone:" + imageMetadata.getGeographicZone());
+            product.setAutoGrouping(buildBandsGroupPattern());
+
+            // all the bands of the tiff files are added to the product
+            Map<String, String> tiffFiles = imageMetadata.getTiffFiles();
+            List<String> sortedKeys = new ArrayList<>(tiffFiles.keySet());
+            Collections.sort(sortedKeys);
+            String[] bandNames = imageMetadata.getBandNames();
+            this.bandImageReaders = new ArrayList<>(sortedKeys.size());
+            for (int i = sortedKeys.size() - 1; i >= 0; i--) {
+                String key = sortedKeys.get(i);
+                String tiffFile = imageMetadata.getMetaSubFolder() + tiffFiles.get(key);
+                String bandNamePrefix = key + "_";
+                Product geoTiffProduct = readGeoTiffProduct(tiffFile, productBounds, defaultProductSize);
+                if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                    if (geoTiffProduct.getMetadataRoot() != null) {
+                        XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
+                    }
+                }
+                geoTiffProduct.transferGeoCodingTo(product, null);
+                for (int bandIndex = 0; bandIndex < geoTiffProduct.getNumBands(); bandIndex++) {
+                    String bandName = (bandIndex < bandNames.length) ? bandNames[bandIndex] : (SpotConstants.DEFAULT_BAND_NAME_PREFIX + bandIndex);
+                    if (product.getBand(bandName) != null) {
+                        bandName = bandNamePrefix + bandName; // the product contains already the band
+                    }
+                    if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
+                        Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
+                        geoTiffBand.setName(bandName);
+                        product.addBand(geoTiffBand);
+                    }
+                }
+                geoTiffProduct.getBandGroup().removeAll(); // remove the bands from the geo tif product
+            }
+
+            // for each mask found in the metadata, the first band of the mask is added to the product, in order to create the masks
+            Map<String, Band> maskBands = new HashMap<String, Band>();
+            for (Map.Entry<String, String> entry : imageMetadata.getMaskFiles().entrySet()) {
+                String bandName = entry.getKey();
+                if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
+                    String tiffFile = imageMetadata.getMetaSubFolder() + entry.getValue();
+                    Product geoTiffProduct = readGeoTiffProduct(tiffFile, productBounds, defaultProductSize);
+                    Band geoTiffBand = geoTiffProduct.getBandAt(0);
+                    geoTiffBand.setName(bandName);
+                    product.addBand(geoTiffBand);
+                    maskBands.put(entry.getKey(), geoTiffBand);
+                    geoTiffProduct.getBandGroup().removeAll(); // remove the bands from the geo tif product
+                }
+            }
+
+            // saturated flags & masks
+            if (maskBands.keySet().contains(SpotConstants.SPOT4_TAKE5_TAG_SATURATION)) {
+                FlagCoding saturatedFlagCoding = createSaturatedFlagCoding();
+                product.getFlagCodingGroup().add(saturatedFlagCoding);
+                maskBands.get(SpotConstants.SPOT4_TAKE5_TAG_SATURATION).setSampleCoding(saturatedFlagCoding);
+                List<Mask> saturatedMasks = createMasksFromFlagCodding(product.getSceneRasterWidth(), product.getSceneRasterHeight(), saturatedFlagCoding);
+                for (Mask mask : saturatedMasks) {
+                    if (subsetDef == null || subsetDef.isNodeAccepted(mask.getName())) {
+                        product.getMaskGroup().add(mask);
+                    }
+                }
+            }
+
+            // clouds flags & masks
+            if (maskBands.keySet().contains(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS)) {
+                FlagCoding cloudsFlagCoding = createCloudsFlagCoding();
+                product.getFlagCodingGroup().add(cloudsFlagCoding);
+                maskBands.get(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS).setSampleCoding(cloudsFlagCoding);
+                List<Mask> cloudMasks = createMasksFromFlagCodding(product.getSceneRasterWidth(), product.getSceneRasterHeight(), cloudsFlagCoding);
+                for (Mask mask : cloudMasks) {
+                    if (subsetDef == null || subsetDef.isNodeAccepted(mask.getName())) {
+                        product.getMaskGroup().add(mask);
+                    }
+                }
+            }
+
+            // diverse flags & masks
+            if (maskBands.keySet().contains(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE)) {
+                FlagCoding diverseFlagCoding = createDiverseFlagCoding();
+                product.getFlagCodingGroup().add(diverseFlagCoding);
+                maskBands.get(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE).setSampleCoding(diverseFlagCoding);
+                List<Mask> diverseMasks = createMasksFromFlagCodding(product.getSceneRasterWidth(), product.getSceneRasterHeight(), diverseFlagCoding);
+                for (Mask mask : diverseMasks) {
+                    if (subsetDef == null || subsetDef.isNodeAccepted(mask.getName())) {
+                        product.getMaskGroup().add(mask);
+                    }
+                }
+            }
+
+            success = true;
+
+            return product;
+        } catch (RuntimeException | IOException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IOException(exception);
+        } finally {
+            if (!success) {
+                closeResources();
+            }
+        }
+    }
+
+    private void closeResources() {
+        try {
+            if (this.bandImageReaders != null) {
+                for (GeoTiffImageReader geoTiffImageReader : this.bandImageReaders) {
+                    try {
+                        geoTiffImageReader.close();
+                    } catch (Exception ignore) {
+                        // ignore
+                    }
+                }
+                this.bandImageReaders.clear();
+                this.bandImageReaders = null;
+            }
+        } finally {
+            try {
+                if (this.imageInputStreamSpi != null) {
+                    ImageRegistryUtils.deregisterImageInputStreamSpi(this.imageInputStreamSpi);
+                    this.imageInputStreamSpi = null;
+                }
+            } finally {
+                if (this.productDirectory != null) {
+                    this.productDirectory.close();
+                    this.productDirectory = null;
+                }
+            }
+        }
+        System.gc();
+    }
+
+    private Product readGeoTiffProduct(String tiffFile, Rectangle productBounds, Dimension defaultProductSize) throws Exception {
+        File rasterFile = this.productDirectory.getFile(tiffFile);
+        GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
+        this.bandImageReaders.add(geoTiffImageReader);
+        int defaultBandWidth = geoTiffImageReader.getImageWidth();
+        int defaultBandHeight = geoTiffImageReader.getImageHeight();
+        Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+        GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
+        return geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
+    }
+
+    public static SpotTake5Metadata readImageMetadata(Path productPath, VirtualDirEx productDirectory) throws IOException {
         File imageMetadataFile = null;
-        String metaSubFolder = "";
         boolean isPacked = false;
-
-        //if (VirtualDirEx.isPackedFile(new File(input.getBasePath()))) {
-        if (VirtualDirEx.isPackedFile(inputPath)) { // if (VirtualDirEx.isPackedFile(this.input.getBaseFile().toPath())) {
+        String metaSubFolder = "";
+        if (VirtualDirEx.isPackedFile(productPath)) {
             isPacked = true;
             //if the input is an archive, check the metadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
-            String path = input.getBasePath();
-            //String metaFile = path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));
-            String metaFile = path.substring(path.lastIndexOf(inputPath.getFileSystem().getSeparator()) + 1, path.lastIndexOf("."));
+            String path = productDirectory.getBasePath();
+            String metaFile = path.substring(path.lastIndexOf(productPath.getFileSystem().getSeparator()) + 1, path.lastIndexOf("."));
             try {
-                imageMetadataFile = input.getFile(metaFile + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
-            } catch (Exception ex) {
+                imageMetadataFile = productDirectory.getFile(metaFile + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
+            } catch (FileNotFoundException ex) {
                 //if the metadata is not found as described above, the subfolders as checked, and for each subfolder, an xml file with the same name as the subfolder is searched
-                //((TarVirtualDir) input).ensureUnpacked();
-                for (String entrySubFolder : input.getTempDir().list()) {
-                    if (new File(input.getTempDir(), entrySubFolder).isDirectory()) {
+                for (String entrySubFolder : productDirectory.getTempDir().list()) {
+                    if (new File(productDirectory.getTempDir(), entrySubFolder).isDirectory()) {
                         try {
-                            //imageMetadataFile = input.getFile(entrySubFolder + File.separator + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
-                            imageMetadataFile = input.getFile(entrySubFolder + inputPath.getFileSystem().getSeparator() + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
+                            imageMetadataFile = productDirectory.getFile(entrySubFolder + productPath.getFileSystem().getSeparator() + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
                             //if the metadata is found under a subfolder of the archive, this subfolder must be used in order to compute the path for the rest of the files found in the metadata file
                             //metaSubFolder = entrySubFolder + File.separator;
-                            metaSubFolder = entrySubFolder + inputPath.getFileSystem().getSeparator();
+                            metaSubFolder = entrySubFolder + productPath.getFileSystem().getSeparator();
                             break;
                         } catch (Exception ex2) {
                             logger.warning(ex2.getMessage());
@@ -146,299 +324,104 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 }
             }
         } else {
-            //imageMetadataFile = new File(getInput().toString());
-            imageMetadataFile = this.input.getFile(getInput().toString());
-
+            imageMetadataFile = productDirectory.getFile(productPath.toString());
             if (!imageMetadataFile.isFile()) {
-                //imageMetadataFile = new File(input.getBasePath(), input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
-                imageMetadataFile = this.input.getFile(input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
+                imageMetadataFile = productDirectory.getFile(productDirectory.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
             }
         }
-        if (imageMetadataFile != null) {
-            imageMetadata = XmlMetadata.create(SpotTake5Metadata.class, imageMetadataFile);
+
+        SpotTake5Metadata imageMetadata = XmlMetadata.create(SpotTake5Metadata.class, imageMetadataFile);
+        imageMetadata.setMetaSubFolder(metaSubFolder);
+
+        String productLevel = imageMetadata.getMetadataProfile();
+        // for N2, the masks may not be present in metadata, but in a folder named MASK
+        String masksFolderName = imageMetadata.getMasksFolder();
+        if (productLevel.startsWith("N2") && masksFolderName != null) {
+            //File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
+            //File masksFolder = this.input.getFile(Paths.get(imageMetadataFile.getParent()).getFileName().toString() + inputPath.getFileSystem().getSeparator() + masksFolderName);
+            String parentFolderName = imageMetadataFile.toPath().getParent().getFileName().toString();
+            File masksFolder = null;
+            if (isPacked) {
+                // no way to verify the existence inside tgz, the method always returns true, so check at temp dir level where the tgz is unpacked
+                File tempDir = productDirectory.getTempDir();
+                if (tempDir != null && tempDir.list() != null) {
+                    if (Arrays.asList(tempDir.list()).contains(masksFolderName)) {
+                        masksFolder = productDirectory.getFile(masksFolderName);
+                    } else if (Arrays.asList(tempDir.list()).contains(parentFolderName)) {
+                        // seek the MASK folder inside the parent folder name
+                        File parentFolder = productDirectory.getFile(parentFolderName);
+                        if (Arrays.asList(parentFolder.list()).contains(masksFolderName)) {
+                            masksFolder = productDirectory.getFile(Paths.get(parentFolderName) + productPath.getFileSystem().getSeparator() + masksFolderName);
+                        }
+
+                    }
+                }
+            } else if (productDirectory.exists(masksFolderName) || productDirectory.exists(Paths.get(parentFolderName) + productPath.getFileSystem().getSeparator() + masksFolderName)) {
+                if (productDirectory.exists(masksFolderName)) {
+                    masksFolder = productDirectory.getFile(masksFolderName);
+                } else {
+                    masksFolder = productDirectory.getFile(Paths.get(parentFolderName) + productPath.getFileSystem().getSeparator() + masksFolderName);
+                }
+            }
+
+            if (masksFolder != null) {
+                String[] files = masksFolder.list();
+                Map<String, String> maskFiles = imageMetadata.getMaskFiles();
+                if (files != null) {
+                    for (String file : files) {
+                        String path = masksFolderName + productDirectory.getFileSystemSeparator() + file;
+                        if (file.contains("SAT")) {
+                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
+                        } else if (file.contains("NUA")) {
+                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
+                        } else if (file.contains("DIV")) {
+                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
+                        }
+                    }
+                }
+            }
+
+            Map<String, String> rasterFiles = imageMetadata.getTiffFiles();
+            if (!rasterFiles.containsKey(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) ||
+                    rasterFiles.get(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) == null ||
+                    rasterFiles.get(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT).isEmpty()) {
+                String[] rasterNames = imageMetadataFile.getParentFile().list((dir, name) -> name.contains("AOT"));
+                if (rasterNames != null && rasterNames.length > 0) {
+                    rasterFiles.put(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT, rasterNames[0]);
+                }
+            }
         }
-        Product product = null;
-        if (imageMetadata != null) {
-            String productLevel = imageMetadata.getMetadataProfile();
-            // for N2, the masks may not be present in metadata, but in a folder named MASK
-            String masksFolderName = imageMetadata.getMasksFolder();
-            if (productLevel.startsWith("N2") && masksFolderName != null) {
-                //File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
-                //File masksFolder = this.input.getFile(Paths.get(imageMetadataFile.getParent()).getFileName().toString() + inputPath.getFileSystem().getSeparator() + masksFolderName);
-                String parentFolderName = imageMetadataFile.toPath().getParent().getFileName().toString();
-                File masksFolder = null;
-                if (isPacked){
-                    // no way to verify the existence inside tgz, the method always returns true, so check at temp dir level where the tgz is unpacked
-                    File tempDir = this.input.getTempDir();
-                    if (tempDir != null && tempDir.list() != null){
-                        if(Arrays.asList(tempDir.list()).contains(masksFolderName)){
-                            masksFolder = this.input.getFile(masksFolderName);
-                        }
-                        else if(Arrays.asList(tempDir.list()).contains(parentFolderName)) {
-                            // seek the MASK folder inside the parent folder name
-                            File parentFolder = this.input.getFile(parentFolderName);
-                            if (Arrays.asList(parentFolder.list()).contains(masksFolderName)){
-                                masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
-                            }
+        return imageMetadata;
+    }
 
-                        }
-                    }
-                }
-                else {
-                    if (this.input.exists(masksFolderName) || this.input.exists(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName)) {
-                        if (this.input.exists(masksFolderName)){
-                            masksFolder = this.input.getFile(masksFolderName);
-                        }
-                        else {
-                            masksFolder = this.input.getFile(Paths.get(parentFolderName) + inputPath.getFileSystem().getSeparator() + masksFolderName);
-                        }
-                    }
-                }
-
-                if (masksFolder != null){
-                    String[] files = masksFolder.list();
-                    Map<String, String> maskFiles = imageMetadata.getMaskFiles();
-                    if (files != null) {
-                        for (String file : files) {
-                            //String path = masksFolderName + File.separator + file;
-                            String path = masksFolderName + this.input.getFileSystemSeparator() + file;
-                            if (file.contains("SAT")) {
-                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
-                            } else if (file.contains("NUA")) {
-                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
-                            } else if (file.contains("DIV")) {
-                                maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
-                            }
-                        }
-                    }
-                }
-
-                Map<String, String> rasterFiles = imageMetadata.getTiffFiles();
-                if (!rasterFiles.containsKey(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) ||
-                        rasterFiles.get(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) == null ||
-                        rasterFiles.get(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT).isEmpty()) {
-                    String[] rasterNames = imageMetadataFile.getParentFile().list((dir, name) -> name.contains("AOT"));
-                    if (rasterNames != null && rasterNames.length > 0) {
-                        rasterFiles.put(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT, rasterNames[0]);
-                    }
-                }
-            }
-            product = new Product(imageMetadata.getProductName(),
-                                  SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0],
-                                  imageMetadata.getRasterWidth(),
-                                  imageMetadata.getRasterHeight());
-            product.setProductReader(this);
-            //product.setFileLocation(imageMetadataFile);
-            //product.setFileLocation(new File(input.getBasePath()));
-            product.setFileLocation(inputPath.toFile());
-            product.getMetadataRoot().addElement(imageMetadata.getRootElement());
-            ProductData.UTC startTime = imageMetadata.getDatePdv();
-            product.setStartTime(startTime);
-            product.setEndTime(startTime);
-            product.setDescription(SpotConstants.SPOT4_TAKE5_FORMAT + " level:" + productLevel + " zone:" + imageMetadata.getGeographicZone());
-
-            //all the bands of the tiff files are added to the product
-            Map<String, String> tiffFiles = imageMetadata.getTiffFiles();
-            List<String> sortedKeys = new ArrayList<>(tiffFiles.keySet());
-            Collections.sort(sortedKeys);
-            for (int i = sortedKeys.size() - 1; i >= 0; i--) {
-                String key = sortedKeys.get(i);
-                addBands(product, metaSubFolder + tiffFiles.get(key), key);
-            }
-
-            //for each mask found in the metadata, the first band of the mask is added to the product, in order to create the masks
-            Map<String, Band> maskBands = new HashMap<String, Band>();
-            for (Map.Entry<String, String> entry : imageMetadata.getMaskFiles().entrySet()) {
-                Band maskBand = addMaskBand(product, metaSubFolder + entry.getValue(), entry.getKey());
-                maskBands.put(entry.getKey(), maskBand);
-            }
-
-            //saturated flags&masks:
-            if (imageMetadata.getMaskFiles().keySet().contains(SpotConstants.SPOT4_TAKE5_TAG_SATURATION)) {
-                FlagCoding saturatedFlagCoding = createSaturatedFlagCoding(product);
-                maskBands.get(SpotConstants.SPOT4_TAKE5_TAG_SATURATION).setSampleCoding(saturatedFlagCoding);
-
-                List<Mask> saturatedMasks = createMasksFromFlagCodding(product, saturatedFlagCoding);
-                for (Mask mask : saturatedMasks) {
-                    product.getMaskGroup().add(mask);
-                }
-            }
-
-            //clouds flags&masks:
-            if (imageMetadata.getMaskFiles().keySet().contains(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS)) {
-                FlagCoding cloudsFlagCoding = createCloudsFlagCoding(product);
-                maskBands.get(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS).setSampleCoding(cloudsFlagCoding);
-
-                List<Mask> cloudsMasks = createMasksFromFlagCodding(product, cloudsFlagCoding);
-                for (Mask mask : cloudsMasks) {
-                    product.getMaskGroup().add(mask);
-                }
-            }
-
-            //diverse flags&masks:
-            if (imageMetadata.getMaskFiles().keySet().contains(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE)) {
-                FlagCoding divFlagCoding = createDiverseFlagCoding(product);
-                maskBands.get(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE).setSampleCoding(divFlagCoding);
-
-                List<Mask> divMasks = createMasksFromFlagCodding(product, divFlagCoding);
-                for (Mask mask : divMasks) {
-                    product.getMaskGroup().add(mask);
-                }
-            }
-
-            product.setAutoGrouping(SpotConstants.SPOT4_TAKE5_TAG_GEOTIFF + SpotConstants.BAND_GROUP_SEPARATOR +
-                                            SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT + SpotConstants.BAND_GROUP_SEPARATOR +
-                                            SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_CORR_ENV + SpotConstants.BAND_GROUP_SEPARATOR +
-                                            SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_CORR_PENTE + SpotConstants.BAND_GROUP_SEPARATOR +
-                                            SpotConstants.SPOT4_TAKE5_TAG_ORTHO_VAP_EAU + SpotConstants.BAND_GROUP_SEPARATOR +
-                                            SpotConstants.SPOT4_TAKE5_GROUP_MASKS);
-            product.setModified(false);
-        }
-        return product;
+    private static String buildBandsGroupPattern() {
+        return SpotConstants.SPOT4_TAKE5_TAG_GEOTIFF + SpotConstants.BAND_GROUP_SEPARATOR +
+                SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT + SpotConstants.BAND_GROUP_SEPARATOR +
+                SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_CORR_ENV + SpotConstants.BAND_GROUP_SEPARATOR +
+                SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_CORR_PENTE + SpotConstants.BAND_GROUP_SEPARATOR +
+                SpotConstants.SPOT4_TAKE5_TAG_ORTHO_VAP_EAU + SpotConstants.BAND_GROUP_SEPARATOR +
+                SpotConstants.SPOT4_TAKE5_GROUP_MASKS;
     }
 
     /**
      * Creates and adds masks to the product, by using the given flag coding. Each added mask uses the width and the height of the product.
      *
-     * @param product    the product on which the masks are added
      * @param flagCoding for each flag of this flagCoding parameter, a new mask is added, with the same name as the flag
      * @return the list of all the masks added to the product
      */
-    List<Mask> createMasksFromFlagCodding(Product product, FlagCoding flagCoding) {
+    private static List<Mask> createMasksFromFlagCodding(int productWidth, int productHeight, FlagCoding flagCoding) {
         String flagCodingName = flagCoding.getName();
-        ArrayList<Mask> masks = new ArrayList<Mask>();
-        final int width = product.getSceneRasterWidth();
-        final int height = product.getSceneRasterHeight();
-
+        List<Mask> masks = new ArrayList<Mask>();
         for (String flagName : flagCoding.getFlagNames()) {
             MetadataAttribute flag = flagCoding.getFlag(flagName);
             masks.add(Mask.BandMathsType.create(flagName,
-                                                flag.getDescription(),
-                                                width, height,
-                                                flagCodingName + "." + flagName,
-                                                ColorIterator.next(),
-                                                0.5));
+                    flag.getDescription(),
+                    productWidth, productHeight,
+                    flagCodingName + "." + flagName,
+                    ColorIterator.next(),
+                    0.5));
         }
         return masks;
-    }
-
-    @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY,
-                                          int sourceWidth, int sourceHeight,
-                                          int sourceStepX, int sourceStepY,
-                                          Band destBand,
-                                          int destOffsetX, int destOffsetY,
-                                          int destWidth, int destHeight,
-                                          ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        GeoTiffProductReader reader = readerMap.get(destBand);
-        Band tiffBand = bandMap.get(destBand);
-        reader.readBandRasterData(tiffBand, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer, pm);
-    }
-
-    /**
-     * This method adds the bands of the given tiff image to the product.
-     * Also, the GeoCoding of the bands is transferred to the product.
-     *
-     * @param product        the product to which the bands are added
-     * @param tiffFile       the file from which to take the bands
-     * @param bandNamePrefix the name to start all the bands names
-     */
-    private void addBands(Product product, String tiffFile, String bandNamePrefix) {
-        logger.info("Read product component: " + tiffFile);
-        String[] bandNames = imageMetadata.getBandNames();
-        try {
-            File rasterFile = input.getFile(tiffFile);
-            GeoTiffProductReader tiffReader = new GeoTiffProductReader(getReaderPlugIn());
-            Product tiffProduct = tiffReader.readProductNodes(rasterFile, null);
-            if (tiffProduct != null) {
-                MetadataElement tiffMetadata = tiffProduct.getMetadataRoot();
-                if (tiffMetadata != null) {
-                    XmlMetadata.CopyChildElements(tiffMetadata, product.getMetadataRoot());
-                }
-                tiffProduct.transferGeoCodingTo(product, null);
-
-                int numBands = tiffProduct.getNumBands();
-                String bandPrefix = bandNamePrefix + "_";
-                for (int idx = 0; idx < numBands; idx++) {
-                    Band srcBand = tiffProduct.getBandAt(idx);
-                    String bandName = (idx < bandNames.length ? bandNames[idx] : SpotConstants.DEFAULT_BAND_NAME_PREFIX + idx);
-                    if (product.getBand(bandName) != null) {
-                        bandName = bandPrefix + bandName;
-                    }
-                    ColorPaletteBand targetBand = new ColorPaletteBand(bandName, srcBand.getDataType(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
-                    product.addBand(targetBand);
-                    readerMap.put(targetBand, tiffReader);
-                    bandMap.put(targetBand, srcBand);
-                    //targetBand.setRasterData(srcBand.getRasterData());
-                    //targetBand.setSourceImage(srcBand.getSourceImage());
-                    targetBand.setValidPixelExpression(srcBand.getValidPixelExpression());
-                    targetBand.setNoDataValue(srcBand.getNoDataValue());
-                    targetBand.setNoDataValueUsed(true);
-                    targetBand.setUnit(getNotNullValueOrDefault(srcBand.getUnit()));
-                    targetBand.setGeophysicalNoDataValue(srcBand.getGeophysicalNoDataValue());
-                    targetBand.setSpectralWavelength(srcBand.getSpectralWavelength());
-                    targetBand.setSpectralBandwidth(srcBand.getSpectralBandwidth());
-                    targetBand.setScalingFactor(srcBand.getScalingFactor());
-                    targetBand.setScalingOffset(srcBand.getScalingOffset());
-                    targetBand.setSolarFlux(srcBand.getSolarFlux());
-                    targetBand.setSampleCoding(srcBand.getSampleCoding());
-                    targetBand.setImageInfo(srcBand.getImageInfo());
-                    targetBand.setSpectralBandIndex(srcBand.getSpectralBandIndex());
-                    targetBand.setDescription(bandName);
-                }
-            }
-        } catch (IOException ioEx) {
-            logger.severe("Error while reading component: " + ioEx.getMessage());
-        }
-    }
-
-    private String getNotNullValueOrDefault(String value) {
-        return (value == null ? SpotConstants.VALUE_NOT_AVAILABLE : value);
-    }
-
-    /**
-     * This method adds the first band of the tiff image as a new band to the product. This band can be used to create some masks.
-     * The GeoCoding of the band is not transferred to the product.
-     *
-     * @param product  the product to which the bands are added
-     * @param tiffFile the file from which to take the bands
-     * @param bandName the name of the band to be added
-     * @return the newly added band
-     */
-    private Band addMaskBand(Product product, String tiffFile, String bandName) {
-        logger.info("Read band for mask: " + tiffFile);
-        try {
-            File rasterFile = input.getFile(tiffFile);
-            GeoTiffProductReader tiffReader = new GeoTiffProductReader(getReaderPlugIn());
-            Product tiffProduct = tiffReader.readProductNodes(rasterFile, null);
-            if (tiffProduct != null) {
-                int numBands = tiffProduct.getNumBands();
-                if (numBands > 0) {
-                    Band srcBand = tiffProduct.getBandAt(0);
-                    Band targetBand = product.addBand(bandName, srcBand.getDataType());
-                    readerMap.put(targetBand, tiffReader);
-                    bandMap.put(targetBand, srcBand);
-                    //targetBand.setRasterData(srcBand.getRasterData());
-                    //targetBand.setSourceImage(srcBand.getSourceImage());
-                    targetBand.setNoDataValue(srcBand.getNoDataValue());
-                    targetBand.setNoDataValueUsed(false);
-                    targetBand.setSpectralWavelength(srcBand.getSpectralWavelength());
-                    targetBand.setSpectralBandwidth(srcBand.getSpectralBandwidth());
-                    targetBand.setScalingFactor(srcBand.getScalingFactor());
-                    targetBand.setScalingOffset(srcBand.getScalingOffset());
-                    targetBand.setSolarFlux(srcBand.getSolarFlux());
-                    targetBand.setUnit(srcBand.getUnit());
-                    targetBand.setSampleCoding(srcBand.getSampleCoding());
-                    targetBand.setImageInfo(srcBand.getImageInfo());
-                    targetBand.setSpectralBandIndex(srcBand.getSpectralBandIndex());
-                    targetBand.setDescription(bandName);
-                    return targetBand;
-                }
-            }
-        } catch (IOException ioEx) {
-            logger.severe("Error while reading band for mask: " + ioEx.getMessage());
-        }
-        return null;
     }
 
     /**
@@ -448,17 +431,15 @@ public class SpotTake5ProductReader extends AbstractProductReader {
      * <ul><li>XS3 band is saturated</li></ul>
      * <ul><li>SWIR band is saturated</li></ul>
      *
-     * @param outputProduct the products on which the flagCoding containing the flags is added
      * @return the flagCoding created with the saturated flags, and added to the product
      */
-    FlagCoding createSaturatedFlagCoding(Product outputProduct) {
+    public static FlagCoding createSaturatedFlagCoding() {
         String bandName = SpotConstants.SPOT4_TAKE5_TAG_SATURATION;
         FlagCoding flagCoding = new FlagCoding(bandName);
         flagCoding.addFlag("XS1_saturated", 1, "XS1 band is saturated");
         flagCoding.addFlag("XS2_saturated", 2, "XS2 band is saturated");
         flagCoding.addFlag("XS3_saturated", 4, "XS3 band is saturated");
         flagCoding.addFlag("SWIR_saturated", 8, "SWIR band is saturated");
-        outputProduct.getFlagCodingGroup().add(flagCoding);
         return flagCoding;
     }
 
@@ -473,10 +454,9 @@ public class SpotTake5ProductReader extends AbstractProductReader {
      * <ul><li>cloud shadows matched with a cloud</li></ul>
      * <ul><li>cloud shadows in the zone where clouds could be outside the image (less reliable)</li></ul>
      *
-     * @param outputProduct the products on which the flagCoding containing the flags is added
      * @return the flagCoding created with the clouds flags, and added to the product
      */
-    FlagCoding createCloudsFlagCoding(Product outputProduct) {
+    public static FlagCoding createCloudsFlagCoding() {
         String bandName = SpotConstants.SPOT4_TAKE5_TAG_CLOUDS;
         FlagCoding flagCoding = new FlagCoding(bandName);
         flagCoding.addFlag("clouds_or_shadows", 1, "all clouds (except thin ones) or shadows");
@@ -487,7 +467,6 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         flagCoding.addFlag("clouds_1.38band", 32, "high clouds detected with 1.38 µm band (LANDSAT 8 only)");
         flagCoding.addFlag("shadows_matched_clouds", 64, "cloud shadows matched with a cloud");
         flagCoding.addFlag("shadows_for_clouds_outside", 128, "cloud shadows in the zone where clouds could be outside the image (less reliable)");
-        outputProduct.getFlagCodingGroup().add(flagCoding);
         return flagCoding;
     }
 
@@ -499,10 +478,9 @@ public class SpotTake5ProductReader extends AbstractProductReader {
      * <ul><li>Sun too low for terrain correction (limitation of correction factor that tends to the infinity, correction is false)</li></ul>
      * <ul><li>Sun too low for terrain correction (correction might be inaccurate)</li></ul>
      *
-     * @param outputProduct the products on which the flagCoding containing the flags is added
      * @return the flagCoding created with the saturated flags, and added to the
      */
-    FlagCoding createDiverseFlagCoding(Product outputProduct) {
+    public static FlagCoding createDiverseFlagCoding() {
         String bandName = SpotConstants.SPOT4_TAKE5_TAG_DIVERSE;
         FlagCoding flagCoding = new FlagCoding(bandName);
         flagCoding.addFlag("no_div_data", 1, "no diverse data");
@@ -510,7 +488,6 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         flagCoding.addFlag("snow", 4, "snow");
         flagCoding.addFlag("false_correction", 8, "Sun too low for terrain correction (limitation of correction factor that tends to the infinity, correction is false)");
         flagCoding.addFlag("inaccurate_correction", 16, "Sun too low for terrain correction (correction might be inaccurate)");
-        outputProduct.getFlagCodingGroup().add(flagCoding);
         return flagCoding;
     }
 

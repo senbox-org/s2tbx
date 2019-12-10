@@ -122,7 +122,7 @@ public class IkonosProductReader extends AbstractProductReader {
                     Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
                     Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, metadataUtil.getProductStepX(), metadataUtil.getProductStepY(), bandMetadata.getPixelSizeX(), bandMetadata.getPixelSizeY());
                     IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, new Dimension(productBounds.width, productBounds.height), defaultBandSize, getSubsetDef());
-                    Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, zipArchivePath, bandBounds);
+                    Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
                     if (geoTiffProduct.getBandAt(0).getGeoCoding() != null && product.getSceneGeoCoding() == null) {
                         product.setSceneGeoCoding(geoTiffProduct.getBandAt(0).getGeoCoding());
                     }
@@ -146,7 +146,7 @@ public class IkonosProductReader extends AbstractProductReader {
                 // read the Geo Tiff product
                 Dimension productSize = new Dimension(productBounds.width, productBounds.height);
                 IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, productSize, defaultBandSize, getSubsetDef());
-                Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, zipArchivePath, bandBounds);
+                Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
 
                 if (geoTiffProduct.getSceneGeoCoding() == null && product.getSceneGeoCoding() == null) {
                     TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductSize.width, defaultProductSize.height, getSubsetDef());

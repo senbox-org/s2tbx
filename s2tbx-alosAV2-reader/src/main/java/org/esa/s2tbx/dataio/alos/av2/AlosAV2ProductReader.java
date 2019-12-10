@@ -110,7 +110,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
 
             Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
             GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
-            Product geoTiffProduct = geoTiffProductReader.readProduct(this.geoTiffImageReader, imageMetadataParentPath, bandBounds);
+            Product geoTiffProduct = geoTiffProductReader.readProduct(this.geoTiffImageReader, null, bandBounds);
 
             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                 product.getMetadataRoot().addElement(alosAV2Metadata.getRootElement());

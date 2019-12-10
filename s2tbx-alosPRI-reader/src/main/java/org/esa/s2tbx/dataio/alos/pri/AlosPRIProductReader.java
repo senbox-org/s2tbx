@@ -114,7 +114,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                     Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, alosPriMetadata.getStepSizeX(), alosPriMetadata.getStepSizeY(), imageMetadata.getPixelSizeX(), imageMetadata.getPixelSizeY());
 
                     AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductSize);
-                    Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, imagesMetadataParentPath, bandBounds);
+                    Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
 
                     Band geoTiffBand = geoTiffProduct.getBandAt(0);
                     geoTiffBand.setName(imageMetadata.getBandName());

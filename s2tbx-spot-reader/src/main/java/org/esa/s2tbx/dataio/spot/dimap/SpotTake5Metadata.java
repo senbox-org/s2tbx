@@ -35,8 +35,9 @@ import java.util.Map;
 public class SpotTake5Metadata extends XmlMetadata {
 
     private String metadataFileName;
-    private Map<String, String> tiffFiles = null;
-    private Map<String, String> maskFiles = null;
+    private Map<String, String> tiffFiles;
+    private Map<String, String> maskFiles;
+    private String metaSubFolder;
 
     /**
      * Parameter for the SPOT4 TAKE5 products
@@ -46,6 +47,15 @@ public class SpotTake5Metadata extends XmlMetadata {
     public SpotTake5Metadata(String name) {
         super(name);
         this.tiffFiles = null;
+        this.metaSubFolder = "";
+    }
+
+    public String getMetaSubFolder() {
+        return metaSubFolder;
+    }
+
+    public void setMetaSubFolder(String metaSubFolder) {
+        this.metaSubFolder = metaSubFolder;
     }
 
     @Override
