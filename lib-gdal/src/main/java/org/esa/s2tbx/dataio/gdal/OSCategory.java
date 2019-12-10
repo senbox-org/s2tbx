@@ -11,7 +11,7 @@ public enum OSCategory {
     WIN_32("Windows", "x86"),
     WIN_64("Windows", "x64"),
     LINUX_64("Linux", "x64"),
-    MAC_OS_X("Macintosh", "x64"),
+    MAC_OS_X("MacOSX", "x64"),
     UNSUPPORTED("", "");
 
     private static final String ENV_NAME = "environment-variables";

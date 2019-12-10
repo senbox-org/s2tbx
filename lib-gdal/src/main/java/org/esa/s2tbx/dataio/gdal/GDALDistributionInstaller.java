@@ -52,8 +52,9 @@ class GDALDistributionInstaller {
             }
 
             processInstalledWindowsDistribution(gdalDistributionRootFolderPath);
-        } else if (org.apache.commons.lang.SystemUtils.IS_OS_LINUX) {
+        } else if (org.apache.commons.lang.SystemUtils.IS_OS_LINUX || org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX) {
             String currentFolderPath = EnvironmentVariables.getCurrentDirectory();
+            GDALInstaller.fixUpPermissions(gdalDistributionRootFolderPath);
             try {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, "Process the GDAL library on Linux. The current folder is '" + currentFolderPath + "'.");
@@ -112,11 +113,12 @@ class GDALDistributionInstaller {
     }
 
     private static void processInstalledLinuxDistribution(Path gdalDistributionRootFolderPath) {
-        Path libFolderPath = gdalDistributionRootFolderPath.resolve("lib/jni");
+        Path libFolderPath = gdalDistributionRootFolderPath.resolve("lib");
+
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Register native lib paths on Linux for folder '" + libFolderPath.toString() + "'.");
         }
-        NativeLibraryUtils.registerNativePaths(libFolderPath);
+        NativeLibraryUtils.registerNativePaths(libFolderPath.resolve("jni"));
 
         Path gdalDataFolderPath = gdalDistributionRootFolderPath.resolve("share/gdal");
         StringBuilder gdalDataValue = new StringBuilder();
@@ -136,6 +138,15 @@ class GDALDistributionInstaller {
             logger.log(Level.FINE, "Set the GDAL_DATA environment variable on Linux with '" + gdalPluginsValue.toString() + "'.");
         }
         EnvironmentVariables.setEnvironmentVariable(gdalPluginsValue.toString());
+        Path projDataFolderPath = gdalDistributionRootFolderPath.resolve("share/proj");
+        StringBuilder projDataValue = new StringBuilder();
+        projDataValue.append("PROJ_LIB")
+                .append("=")
+                .append(projDataFolderPath.toString());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Set the PROJ_LIB environment variable on MacOSX with '" + projDataValue.toString() + "'.");
+        }
+        EnvironmentVariables.setEnvironmentVariable(projDataValue.toString());
     }
 
     private static void processInstalledWindowsDistribution(Path gdalDistributionRootFolderPath) throws IOException {

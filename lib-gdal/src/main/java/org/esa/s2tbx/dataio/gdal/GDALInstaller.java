@@ -54,7 +54,7 @@ class GDALInstaller {
         //nothing to initialize
     }
 
-    private static void fixUpPermissions(Path destPath) throws IOException {
+    static void fixUpPermissions(Path destPath) throws IOException {
         try (Stream<Path> files = Files.list(destPath)) {
             files.forEach(path -> {
                 if (Files.isDirectory(path)) {
