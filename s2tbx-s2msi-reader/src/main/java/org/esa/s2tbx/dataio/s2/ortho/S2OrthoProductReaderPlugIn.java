@@ -24,6 +24,7 @@ import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
+import org.esa.snap.core.dataio.ProductReaderExposedParams;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
@@ -31,6 +32,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +51,26 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     private static S2ProductCRSCache CRS_CHACHE = new S2ProductCRSCache();
 
     private S2Config.Sentinel2ProductLevel level;
+    @Override
+    public ProductReaderExposedParams getExposedParams() {
+        List<String> bandNames = new ArrayList<>();
+        bandNames.add("B1");
+        bandNames.add("B2");
+        bandNames.add("B3");
+        bandNames.add("B4");
+        bandNames.add("B5");
+        bandNames.add("B6");
+        bandNames.add("B7");
+        bandNames.add("B8");
+        bandNames.add("B8A");
+        bandNames.add("B9");
+        bandNames.add("B10");
+        bandNames.add("B11");
+        bandNames.add("B12");
+
+        return new ProductReaderExposedParams(bandNames, true);
+
+    }
 
     public S2OrthoProductReaderPlugIn() {
         this.level = S2Config.Sentinel2ProductLevel.UNKNOWN;

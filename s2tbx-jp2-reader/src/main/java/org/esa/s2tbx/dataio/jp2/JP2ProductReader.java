@@ -24,7 +24,6 @@ import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
 import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
-import org.esa.s2tbx.dataio.jp2.metadata.JP2MetadataInspector;
 import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
 import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -34,7 +33,6 @@ import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
@@ -76,11 +74,6 @@ public class JP2ProductReader extends AbstractProductReader {
         super(readerPlugIn);
 
         registerMetadataParser();
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector() {
-        return new JP2MetadataInspector();
     }
 
     @Override

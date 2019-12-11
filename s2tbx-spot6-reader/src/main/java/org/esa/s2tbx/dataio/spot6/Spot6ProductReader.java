@@ -12,9 +12,7 @@ import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
 import org.esa.s2tbx.dataio.spot6.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.spot6.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.spot6.internal.MosaicMultiLevelSource;
-import org.esa.s2tbx.dataio.spot6.internal.Spot6MetadataInspector;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
@@ -64,11 +62,6 @@ public class Spot6ProductReader extends AbstractProductReader {
         super(readerPlugIn);
 
         this.tileRefs = new HashSet<>();
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector() {
-        return new Spot6MetadataInspector();
     }
 
     @Override

@@ -1,5 +1,8 @@
 package org.esa.s2tbx.dataio.jp2.metadata;
 
+import org.esa.s2tbx.dataio.jp2.JP2ProductReader;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.snap.core.dataio.MetadataInspector;
@@ -26,6 +29,7 @@ public class JP2MetadataInspector implements MetadataInspector {
 
     public Metadata getMetadata(Path productPath) throws IOException {
         Metadata metadata = new Metadata();
+        XmlMetadataParserFactory.registerParser(Jp2XmlMetadata.class, new XmlMetadataParser<>(Jp2XmlMetadata.class));
         try {
             OpjDumpFile opjDumpFile = new OpjDumpFile();
             if (OpenJpegUtils.canReadJP2FileHeaderWithOpenJPEG()) {

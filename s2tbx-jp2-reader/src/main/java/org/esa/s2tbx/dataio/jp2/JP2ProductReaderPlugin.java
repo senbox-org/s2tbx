@@ -18,15 +18,14 @@
 package org.esa.s2tbx.dataio.jp2;
 
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
+import org.esa.s2tbx.dataio.jp2.metadata.JP2MetadataInspector;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.util.StringUtils;
-import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Locale;
 
@@ -38,6 +37,11 @@ import java.util.Locale;
 public class JP2ProductReaderPlugin implements ProductReaderPlugIn {
 
     public JP2ProductReaderPlugin() {
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new JP2MetadataInspector();
     }
 
     @Override

@@ -23,7 +23,6 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
@@ -47,11 +46,6 @@ public class RapidEyeL3Reader extends MultipleMetadataGeoTiffBasedReader<RapidEy
 
     public RapidEyeL3Reader(RapidEyeL3ReaderPlugin readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector() {
-        return new RapidEyeL3MetadataInspector();
     }
 
     @Override

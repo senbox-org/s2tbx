@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.alos.pri;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 
 import java.util.Locale;
@@ -19,6 +20,11 @@ public class AlosPRIProductReaderPlugin extends BaseProductReaderPlugIn {
 
     public AlosPRIProductReaderPlugin() {
         super("org/esa/s2tbx/dataio/alos/pri/" + AlosPRIProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new AlosPRIMetadataInspector();
     }
 
     @Override

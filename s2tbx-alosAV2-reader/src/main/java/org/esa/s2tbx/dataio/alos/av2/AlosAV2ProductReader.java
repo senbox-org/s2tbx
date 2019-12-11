@@ -10,7 +10,6 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
@@ -55,11 +54,6 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                                           throws IOException {
 
         throw new UnsupportedOperationException("Method not implemented");
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector() {
-        return new AlosAV2MetadataInspector();
     }
 
     @Override

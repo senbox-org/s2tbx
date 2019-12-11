@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.alos.av2;
 
 import org.esa.s2tbx.dataio.alos.av2.internal.AlosAV2Constants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -21,6 +22,11 @@ public class AlosAV2ProductReaderPlugin extends BaseProductReaderPlugIn {
     public AlosAV2ProductReaderPlugin(){
         super("org/esa/s2tbx/dataio/alos/av2/"+AlosAV2ProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
         this.folderDepth = 1;
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new AlosAV2MetadataInspector();
     }
 
     @Override

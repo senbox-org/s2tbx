@@ -104,27 +104,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return cacheDir;
     }
 
-    @Override
-    public ProductReaderExposedParams getExposedParams() {
-        List<String> bandNames = new ArrayList<>();
-        bandNames.add("B1");
-        bandNames.add("B2");
-        bandNames.add("B3");
-        bandNames.add("B4");
-        bandNames.add("B5");
-        bandNames.add("B6");
-        bandNames.add("B7");
-        bandNames.add("B8");
-        bandNames.add("B8A");
-        bandNames.add("B9");
-        bandNames.add("B10");
-        bandNames.add("B11");
-        bandNames.add("B12");
-
-        return new ProductReaderExposedParams(bandNames, true);
-
-    }
-
     protected abstract Product buildMosaicProduct(VirtualPath inputVirtualPath) throws IOException;
 
     protected abstract String getReaderCacheDir();

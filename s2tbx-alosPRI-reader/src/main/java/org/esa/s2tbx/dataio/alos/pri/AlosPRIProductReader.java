@@ -10,7 +10,6 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
@@ -50,11 +49,6 @@ public class AlosPRIProductReader extends AbstractProductReader {
         super(readerPlugIn);
 
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector() {
-        return new AlosPRIMetadataInspector();
     }
 
     @Override

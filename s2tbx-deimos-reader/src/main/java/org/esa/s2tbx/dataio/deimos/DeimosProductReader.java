@@ -23,7 +23,6 @@ import org.esa.s2tbx.dataio.deimos.dimap.DeimosMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Mask;
@@ -51,11 +50,6 @@ public class DeimosProductReader extends MultipleMetadataGeoTiffBasedReader<Deim
 
     public DeimosProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector() {
-        return new DeimosMetadataInspector();
     }
 
     @Override

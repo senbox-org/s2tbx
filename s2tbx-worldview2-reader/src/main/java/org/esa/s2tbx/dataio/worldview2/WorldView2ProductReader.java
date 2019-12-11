@@ -7,12 +7,10 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
 import org.esa.s2tbx.dataio.worldview2.internal.MosaicMultiLevelSource;
-import org.esa.s2tbx.dataio.worldview2.internal.WorldView2MetadataInspector;
 import org.esa.s2tbx.dataio.worldview2.metadata.TileComponent;
 import org.esa.s2tbx.dataio.worldview2.metadata.TileMetadata;
 import org.esa.s2tbx.dataio.worldview2.metadata.WorldView2Metadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -72,11 +70,6 @@ class WorldView2ProductReader extends AbstractProductReader {
 
         this.tilesMultiSpectral = new HashMap<>();
         this.tilesPanchromatic = new HashMap<>();
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector(){
-        return new WorldView2MetadataInspector();
     }
 
     @Override

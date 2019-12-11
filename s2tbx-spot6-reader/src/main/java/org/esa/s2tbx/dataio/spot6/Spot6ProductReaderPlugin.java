@@ -18,11 +18,12 @@ package org.esa.s2tbx.dataio.spot6;
 
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
+import org.esa.s2tbx.dataio.spot6.internal.Spot6MetadataInspector;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
-import java.io.File;
 import java.util.Locale;
 
 /**
@@ -37,6 +38,11 @@ public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
         super("org/esa/s2tbx/dataio/spot6/" + Spot6ProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
 
         this.folderDepth = 4;
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new Spot6MetadataInspector();
     }
 
     @Override

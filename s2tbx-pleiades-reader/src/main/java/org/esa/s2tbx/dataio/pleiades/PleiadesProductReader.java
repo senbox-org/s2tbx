@@ -10,12 +10,10 @@ import org.esa.s2tbx.dataio.pleiades.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.pleiades.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.pleiades.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.pleiades.internal.MosaicMultiLevelSource;
-import org.esa.s2tbx.dataio.pleiades.internal.PleiadesMetadataInspector;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
@@ -79,11 +77,6 @@ public class PleiadesProductReader extends AbstractProductReader {
         super(readerPlugIn);
 
         this.tileRefs = new HashSet<>();
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector() {
-        return new PleiadesMetadataInspector();
     }
 
     @Override

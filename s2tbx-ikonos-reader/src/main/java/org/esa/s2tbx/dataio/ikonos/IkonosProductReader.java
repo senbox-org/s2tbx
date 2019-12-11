@@ -7,7 +7,6 @@ import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
 import org.esa.s2tbx.dataio.ikonos.metadata.*;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
@@ -38,11 +37,6 @@ public class IkonosProductReader extends AbstractProductReader {
         super(readerPlugIn);
 
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
-    }
-
-    @Override
-    public MetadataInspector getMetadataInspector() {
-        return new IkonosMetadataInspector();
     }
 
     @Override
