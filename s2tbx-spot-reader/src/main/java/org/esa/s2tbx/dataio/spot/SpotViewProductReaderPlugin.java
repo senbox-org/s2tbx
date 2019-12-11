@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.spot;
 
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -41,6 +42,11 @@ public class SpotViewProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     public Class[] getInputTypes() {
         return SpotConstants.SPOTVIEW_READER_INPUT_TYPES;
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new SpotViewMetadataInspector();
     }
 
     @Override
