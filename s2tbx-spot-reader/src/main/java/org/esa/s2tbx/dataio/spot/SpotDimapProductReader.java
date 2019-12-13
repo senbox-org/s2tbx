@@ -18,29 +18,33 @@
 package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.snap.dataio.FileImageInputStreamSpi;
+import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
-import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
-import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
-import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
-import org.esa.s2tbx.dataio.spot.dimap.VolumeComponent;
-import org.esa.s2tbx.dataio.spot.dimap.VolumeMetadata;
+import org.esa.s2tbx.dataio.spot.dimap.*;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.image.MosaicMatrix;
+import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.core.util.jai.JAIUtils;
+import org.esa.snap.dataio.ImageRegistryUtils;
+import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.geotools.metadata.InvalidMetadataException;
 
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
+import java.awt.*;
+import java.awt.image.SampleModel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
@@ -51,74 +55,308 @@ import java.util.logging.Logger;
  * modified 20190515 for VFS compatibility by Oana H.
  */
 public class SpotDimapProductReader extends AbstractProductReader {
-    private static final Logger logger = Logger.getLogger(SpotDimapProductReader.class.getName());
 
-    private ImageInputStreamSpi channelImageInputStreamSpi;
-    private VirtualDirEx productDirectory;
-    private SpotSceneMetadata metadata;
-    private SpotProductReader internalReader;
+    private static final Logger logger = Logger.getLogger(SpotDimapProductReader.class.getName());
 
     static {
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
     }
 
-    protected SpotDimapProductReader(SpotDimapProductReaderPlugin readerPlugIn) {
+    private ImageInputStreamSpi imageInputStreamSpi;
+    private VirtualDirEx productDirectory;
+    private java.util.List<GeoTiffImageReader> bandImageReaders;
+
+    public SpotDimapProductReader(SpotDimapProductReaderPlugin readerPlugIn) {
         super(readerPlugIn);
 
-        registerSpi();
+        this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
     @Override
-    protected Product readProductNodesImpl() throws IOException {
-        //productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
-        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.productDirectory = VirtualDirEx.build(inputPath);
-
-        metadata = SpotSceneMetadata.create(productDirectory, this.logger);
-        VolumeMetadata volumeMetadata = metadata.getVolumeMetadata();
-        SpotDimapProductReaderPlugin readerPlugIn = (SpotDimapProductReaderPlugin)getReaderPlugIn();
-        Path colorPaletteFilePath = readerPlugIn.getColorPaletteFilePath();
-        if (volumeMetadata != null) {
-            if (SpotConstants.PROFILE_MULTI_VOLUME.equals(volumeMetadata.getProfileName())) {
-                internalReader = new SpotDimapVolumeProductReader(readerPlugIn, colorPaletteFilePath);
-                logger.info("Multi-volume product detected.");
-            } else {
-                if (!SpotConstants.PROFILE_VOLUME.equals(volumeMetadata.getProfileName())) {
-                    logger.warning("Metadata profile unknown, will use SPOTScene reader.");
-                } else {
-                    logger.info("Single volume product detected.");
-                }
-                internalReader = new SpotDimapSimpleProductReader(readerPlugIn, colorPaletteFilePath);
-            }
-        } else {
-            logger.warning("No volume metadata found. Will assume single volume product.");
-            internalReader = new SpotDimapSimpleProductReader(readerPlugIn, colorPaletteFilePath);
-        }
-        internalReader.setMetadata(metadata);
-        internalReader.setProductDirectory(productDirectory);
-        return internalReader.readProductNodes(getInput(), null);
-    }
-
-    @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY,
-                                          int sourceWidth, int sourceHeight,
-                                          int sourceStepX, int sourceStepY,
-                                          Band destBand,
-                                          int destOffsetX, int destOffsetY,
-                                          int destWidth, int destHeight,
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight,
                                           ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        internalReader.readBandRasterData(destBand, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer, pm);
+        // do nothing
     }
 
     @Override
     public void close() throws IOException {
-        if (internalReader != null) {
-            internalReader.close();
-        }
         super.close();
-        if (channelImageInputStreamSpi != null) {
-            IIORegistry.getDefaultInstance().deregisterServiceProvider(channelImageInputStreamSpi);
+
+        closeResources();
+    }
+
+    @Override
+    protected Product readProductNodesImpl() throws IOException {
+        boolean success = false;
+        try {
+            Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+            this.productDirectory = VirtualDirEx.build(productPath, false, true);
+            this.bandImageReaders = new ArrayList<>();
+
+            SpotSceneMetadata metadata = SpotSceneMetadata.create(this.productDirectory, logger);
+            String productType = SpotConstants.DIMAP_FORMAT_NAMES[0];
+            Product product;
+            if (isSingleVolumeMetadata(metadata.getVolumeMetadata())) {
+                product = readSingleVolumeProduct(productPath, metadata, productType);
+            } else {
+                product = readMultipleVolumeProduct(productPath, metadata,productType);
+            }
+            success = true;
+
+            return product;
+        } catch (RuntimeException | IOException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IOException(exception);
+        } finally {
+            if (!success) {
+                closeResources();
+            }
         }
+    }
+
+    private Product readMultipleVolumeProduct(Path productPath, SpotSceneMetadata wrappingMetadata, String productType) throws Exception {
+        ProductSubsetDef subsetDef = getSubsetDef();
+        Dimension defaultProductSize = new Dimension(wrappingMetadata.getExpectedVolumeWidth(), wrappingMetadata.getExpectedVolumeHeight());
+        Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+
+        java.util.List<SpotDimapMetadata> componentMetadataList = wrappingMetadata.getComponentsMetadata();
+        SpotDimapMetadata firstDimapMetadata = componentMetadataList.get(0);
+
+        Product product = new Product(firstDimapMetadata.getProductName(), productType, productBounds.width, productBounds.height, this);
+        Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+        product.setPreferredTileSize(preferredTileSize);
+        if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+            product.getMetadataRoot().addElement(wrappingMetadata.getRootElement());
+        }
+        ProductData.UTC centerTime = firstDimapMetadata.getCenterTime();
+        product.setStartTime(centerTime);
+        product.setEndTime(centerTime);
+        product.setDescription(firstDimapMetadata.getProductDescription());
+        product.setFileLocation(productPath.toFile());
+
+        // add bands
+        MosaicMatrix[] spotBandMatrices = buildMultipleVolumeBandMatrices(wrappingMetadata);
+
+        for (int i=0; i<this.bandImageReaders.size(); i++) {
+            GeoCoding geoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(i));
+            if (geoCoding != null) {
+                product.setSceneGeoCoding(geoCoding);
+                break;
+            }
+        }
+
+        GeoCoding bandGeoCoding = product.getSceneGeoCoding();
+        String[] bandNames = firstDimapMetadata.getBandNames();
+        String[] bandUnits = firstDimapMetadata.getBandUnits();
+        for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
+            if (!spotBandMatrices[bandIndex].isConsistent()) {
+                throw new IllegalStateException("The matrix for band index " + bandIndex+" has empty cells.");
+            }
+            int matrixTotalWidth = spotBandMatrices[bandIndex].computeTotalWidth();
+            if (matrixTotalWidth != defaultProductSize.width) {
+                throw new IllegalStateException("Invalid values: matrix total width=" + matrixTotalWidth+", default product width="+ defaultProductSize.width);
+            }
+            int matrixTotalHeight = spotBandMatrices[bandIndex].computeTotalHeight();
+            if (matrixTotalHeight != defaultProductSize.height) {
+                throw new IllegalStateException("Invalid values: matrix total height=" + matrixTotalHeight+", default product height="+ defaultProductSize.height);
+            }
+            if (subsetDef == null || subsetDef.isNodeAccepted(bandNames[bandIndex])) {
+                Band band = new Band(bandNames[bandIndex], firstDimapMetadata.getPixelDataType(), productBounds.width, productBounds.height);
+                band.setGeoCoding(bandGeoCoding);
+                if (firstDimapMetadata.getNoDataValue() > -1) {
+                    band.setNoDataValue(firstDimapMetadata.getNoDataValue());
+                }
+                band.setNoDataValueUsed((firstDimapMetadata.getNoDataValue() > -1));
+                if (firstDimapMetadata.getWavelength(bandIndex) > 0) {
+                    band.setSpectralWavelength(firstDimapMetadata.getWavelength(bandIndex));
+                }
+                if (firstDimapMetadata.getBandwidth(bandIndex) > 0) {
+                    band.setSpectralBandwidth(firstDimapMetadata.getBandwidth(bandIndex));
+                }
+                if (bandIndex < bandUnits.length) {
+                    band.setUnit(bandUnits[bandIndex]);
+                }
+                band.setSpectralBandIndex(bandIndex + 1);
+
+                SpotMultipleVolumeMosaicMultiLevelSource multiLevelSource = new SpotMultipleVolumeMosaicMultiLevelSource(spotBandMatrices[bandIndex], productBounds, preferredTileSize, bandIndex, band.getGeoCoding());
+                band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+                product.addBand(band);
+            }
+        }
+
+        // add masks
+        ProductNodeGroup<Mask> maskGroup = product.getMaskGroup();
+        for (int fileIndex=0; fileIndex<componentMetadataList.size(); fileIndex++) {
+            SpotDimapMetadata componentMetadata = componentMetadataList.get(fileIndex);
+            int noDataValue = componentMetadata.getNoDataValue();
+            if ((subsetDef == null || subsetDef.isNodeAccepted(SpotConstants.NODATA_VALUE)) && noDataValue >= 0) {
+                if (!maskGroup.contains(SpotConstants.NODATA_VALUE)) {
+                    maskGroup.add(buildNoDataMask(product.getSceneRasterWidth(), product.getSceneRasterHeight(), noDataValue, componentMetadata.getNoDataColor()));
+                }
+            }
+            int saturatedValue = componentMetadata.getSaturatedPixelValue();
+            if ((subsetDef == null || subsetDef.isNodeAccepted(SpotConstants.SATURATED_VALUE)) && saturatedValue >= 0) {
+                if (!maskGroup.contains(SpotConstants.SATURATED_VALUE)) {
+                    maskGroup.add(buildSaturatedMask(product.getSceneRasterWidth(), product.getSceneRasterHeight(), saturatedValue, componentMetadata.getSaturatedColor()));
+                }
+            }
+        }
+
+        return product;
+    }
+
+    private MosaicMatrix[] buildMultipleVolumeBandMatrices(SpotSceneMetadata wrappingMetadata) throws Exception {
+        java.util.List<SpotDimapMetadata> componentMetadataList = wrappingMetadata.getComponentsMetadata();
+        SpotDimapMetadata firstDimapMetadata = componentMetadataList.get(0);
+        int tileRowCount = wrappingMetadata.getExpectedTileComponentRows();
+        int tileColumnCount = wrappingMetadata.getExpectedTileComponentCols();
+        String[] firstMetadataBandNames = firstDimapMetadata.getBandNames();
+        MosaicMatrix[] spotBandMatrices = new MosaicMatrix[firstMetadataBandNames.length];
+        for (int bandIndex = 0; bandIndex < firstMetadataBandNames.length; bandIndex++) {
+            spotBandMatrices[bandIndex] = new MosaicMatrix(tileRowCount, tileColumnCount);
+        }
+
+        for (int fileIndex=0; fileIndex<componentMetadataList.size(); fileIndex++) {
+            SpotDimapMetadata componentMetadata = componentMetadataList.get(fileIndex);
+            String[] metadataBandNames = componentMetadata.getBandNames();
+            if (metadataBandNames.length != firstMetadataBandNames.length) {
+                throw new IllegalStateException("Invalid band count: first band name count="+firstMetadataBandNames.length+", band name count="+metadataBandNames.length);
+            }
+            String rasterFileName = getTiffImageForMultipleVolume(componentMetadata);
+            File rasterFile = this.productDirectory.getFile(rasterFileName);
+            GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
+            this.bandImageReaders.add(geoTiffImageReader);
+
+            SampleModel sampleModel = geoTiffImageReader.getBaseImage().getSampleModel();
+            if (sampleModel.getNumBands() != firstMetadataBandNames.length) {
+                throw new IllegalStateException("Invalid band count: band count from image="+sampleModel.getNumBands()+", band count from metadata="+firstMetadataBandNames.length);
+            }
+            for (int bandIndex = 0; bandIndex<sampleModel.getNumBands(); bandIndex++) {
+                int cellWidth = geoTiffImageReader.getImageWidth();
+                int cellHeight = geoTiffImageReader.getImageHeight();
+                SpotMultipleVolumeMatrixCell matrixCell = new SpotMultipleVolumeMatrixCell(cellWidth, cellHeight, geoTiffImageReader, sampleModel.getDataType());
+                spotBandMatrices[bandIndex].addCell(matrixCell);
+            }
+        }
+        return spotBandMatrices;
+    }
+
+    private Product readSingleVolumeProduct(Path productPath, SpotSceneMetadata metadata, String productType) throws Exception {
+        if (metadata.getComponentsMetadata().size() != 1) {
+            throw new IllegalStateException("Wrong reader for multiple volume components");
+        }
+        SpotDimapMetadata dimapMetadata = metadata.getComponentMetadata(0);
+        if (!SpotConstants.DIMAP.equals(dimapMetadata.getFormatName())) {
+            throw new IllegalArgumentException(String.format("Component product %s is not in DIMAP format!", dimapMetadata.getProductName()));
+        }
+        String[] fileNames = dimapMetadata.getRasterFileNames();
+        if (fileNames == null || fileNames.length == 0) {
+            throw new IllegalStateException("No raster file found in metadata.");
+        }
+        ProductSubsetDef subsetDef = getSubsetDef();
+        Dimension defaultProductSize = new Dimension(dimapMetadata.getRasterWidth(), dimapMetadata.getRasterHeight());
+        Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+        String productName = (StringUtils.isNullOrEmpty(dimapMetadata.getProductName())) ? SpotConstants.DEFAULT_PRODUCT_NAME : dimapMetadata.getProductName();
+        Product product = new Product(productName, productType, productBounds.width, productBounds.height, this);
+        Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+        product.setPreferredTileSize(preferredTileSize);
+        ProductData.UTC centerTime = dimapMetadata.getCenterTime();
+        if (centerTime == null) {
+            product.setStartTime(dimapMetadata.getProductStartTime());
+            product.setEndTime(dimapMetadata.getProductEndTime());
+        } else {
+            product.setStartTime(centerTime);
+            product.setEndTime(centerTime);
+        }
+        product.setProductType(dimapMetadata.getMetadataProfile());
+        product.setDescription(dimapMetadata.getProductDescription());
+        product.setFileLocation(productPath.toFile());
+
+        // add bands
+        String rasterFileName = getTiffImageForSingleVolume(dimapMetadata);
+        File rasterFile = this.productDirectory.getFile(rasterFileName);
+        GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
+        this.bandImageReaders.add(geoTiffImageReader);
+
+        // validate the image size according to the product size
+        geoTiffImageReader.validateSize(defaultProductSize.width, defaultProductSize.height);
+        GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
+        Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, productBounds);
+        geoTiffProduct.transferGeoCodingTo(product, null);
+
+        if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+            product.getMetadataRoot().addElement(dimapMetadata.getRootElement());
+            if (geoTiffProduct.getMetadataRoot() != null) {
+                XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
+            }
+        }
+
+        String[] bandNames = dimapMetadata.getBandNames();
+        String[] bandUnits = dimapMetadata.getBandUnits();
+        for (int bandIndex = 0; bandIndex < geoTiffProduct.getNumBands(); bandIndex++) {
+            String bandName = (bandIndex < bandNames.length) ? bandNames[bandIndex] : (SpotConstants.DEFAULT_BAND_NAME_PREFIX + bandIndex);
+            if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
+                Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
+                geoTiffBand.setName(bandName);
+                if (dimapMetadata.getNoDataValue() > -1) {
+                    geoTiffBand.setNoDataValue(dimapMetadata.getNoDataValue());
+                }
+                geoTiffBand.setNoDataValueUsed((dimapMetadata.getNoDataValue() > -1));
+                if (dimapMetadata.getWavelength(bandIndex) > 0) {
+                    geoTiffBand.setSpectralWavelength(dimapMetadata.getWavelength(bandIndex));
+                }
+                if (dimapMetadata.getBandwidth(bandIndex) > 0) {
+                    geoTiffBand.setSpectralBandwidth(dimapMetadata.getBandwidth(bandIndex));
+                }
+                if (bandIndex < bandUnits.length) {
+                    geoTiffBand.setUnit(bandUnits[bandIndex]);
+                }
+                product.addBand(geoTiffBand);
+            }
+        }
+
+        // add masks
+        int noDataValue = dimapMetadata.getNoDataValue();
+        if ((subsetDef == null || subsetDef.isNodeAccepted(SpotConstants.NODATA_VALUE)) && noDataValue >= 0) {
+            product.getMaskGroup().add(buildNoDataMask(product.getSceneRasterWidth(), product.getSceneRasterHeight(), noDataValue, dimapMetadata.getNoDataColor()));
+        }
+        int saturatedValue = dimapMetadata.getSaturatedPixelValue();
+        if ((subsetDef == null || subsetDef.isNodeAccepted(SpotConstants.SATURATED_VALUE)) && saturatedValue >= 0) {
+            product.getMaskGroup().add(buildSaturatedMask(product.getSceneRasterWidth(), product.getSceneRasterHeight(), saturatedValue, dimapMetadata.getSaturatedColor()));
+        }
+
+        return product;
+    }
+
+    private void closeResources() {
+        try {
+            if (this.bandImageReaders != null) {
+                for (GeoTiffImageReader geoTiffImageReader : this.bandImageReaders) {
+                    try {
+                        geoTiffImageReader.close();
+                    } catch (Exception ignore) {
+                        // ignore
+                    }
+                }
+                this.bandImageReaders.clear();
+                this.bandImageReaders = null;
+            }
+        } finally {
+            try {
+                if (this.imageInputStreamSpi != null) {
+                    ImageRegistryUtils.deregisterImageInputStreamSpi(this.imageInputStreamSpi);
+                    this.imageInputStreamSpi = null;
+                }
+            } finally {
+                if (this.productDirectory != null) {
+                    this.productDirectory.close();
+                    this.productDirectory = null;
+                }
+            }
+        }
+        System.gc();
     }
 
     @Override
@@ -128,6 +366,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
         } else {
             TreeNode<File> result = super.getProductComponents();
             //if the volume metadata file is present, but it is not in the list, add it!
+            SpotSceneMetadata metadata = SpotSceneMetadata.create(this.productDirectory, logger);
             try {
                 File volumeMetadataPhysicalFile = productDirectory.getFile(SpotConstants.DIMAP_VOLUME_FILE);
                 if (metadata.getVolumeMetadata() != null) {
@@ -160,7 +399,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                     if (fileNames == null || fileNames.length == 0)
                         throw new InvalidMetadataException("No raster file found in metadata");
                     String fileId = componentMetadata.getPath().toString().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(),
-                                                                                      fileNames[0].toLowerCase());
+                            fileNames[0].toLowerCase());
                     addProductComponentIfNotPresent(fileId, productDirectory.getFile(fileId), result);
                 } catch (IOException e) {
                     logger.warning(e.getMessage());
@@ -185,26 +424,37 @@ public class SpotDimapProductReader extends AbstractProductReader {
         }
     }
 
-    private void registerSpi() {
-        // We will register a new Spi for creating NIO-based ImageInputStreams.
-        final IIORegistry defaultInstance = IIORegistry.getDefaultInstance();
-        Iterator<ImageInputStreamSpi> serviceProviders = defaultInstance.getServiceProviders(ImageInputStreamSpi.class, true);
-        ImageInputStreamSpi toUnorder = null;
-        if (defaultInstance.getServiceProviderByClass(FileImageInputStreamSpi.class) == null) {
-            // register only if not already registered
-            while (serviceProviders.hasNext()) {
-                ImageInputStreamSpi current = serviceProviders.next();
-                if (current.getInputClass() == File.class) {
-                    toUnorder = current;
-                    break;
-                }
-            }
-            channelImageInputStreamSpi = new FileImageInputStreamSpi();
-            defaultInstance.registerServiceProvider(channelImageInputStreamSpi);
-            if (toUnorder != null) {
-                // Make the custom Spi to be the first one to be used.
-                defaultInstance.setOrdering(ImageInputStreamSpi.class, channelImageInputStreamSpi, toUnorder);
-            }
+    private static Mask buildNoDataMask(int productWidth, int productHeight, int noDataValue, Color noDataColor) {
+        return Mask.BandMathsType.create(SpotConstants.NODATA_VALUE, SpotConstants.NODATA_VALUE, productWidth, productHeight, String.valueOf(noDataValue), noDataColor, 0.5);
+    }
+
+    private static Mask buildSaturatedMask(int productWidth, int productHeight, int saturatedValue, Color saturatedDataColor) {
+        return Mask.BandMathsType.create(SpotConstants.SATURATED_VALUE, SpotConstants.SATURATED_VALUE, productWidth, productHeight, String.valueOf(saturatedValue), saturatedDataColor, 0.5);
+    }
+
+    public static boolean isSingleVolumeMetadata(VolumeMetadata volumeMetadata) {
+        if (volumeMetadata == null) {
+            logger.warning("No volume metadata found. Will assume single volume product.");
+            return true;
         }
+        if (SpotConstants.PROFILE_MULTI_VOLUME.equals(volumeMetadata.getProfileName())) {
+            logger.info("Multi-volume product detected.");
+            return false;
+        }
+        if (SpotConstants.PROFILE_VOLUME.equals(volumeMetadata.getProfileName())) {
+            logger.info("Single volume product detected.");
+        } else {
+            logger.warning("Metadata profile unknown, will use SPOTScene reader.");
+        }
+        return true;
+    }
+
+    public static String getTiffImageForSingleVolume(SpotDimapMetadata dimapMetadata) {
+        String[] fileNames = dimapMetadata.getRasterFileNames();
+        return dimapMetadata.getPath().toString().toLowerCase().replace(dimapMetadata.getFileName().toLowerCase(), fileNames[0].toLowerCase());
+    }
+
+    public static String getTiffImageForMultipleVolume(SpotDimapMetadata componentMetadata) {
+        return componentMetadata.getPath().toString().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), componentMetadata.getRasterFileNames()[0].toLowerCase());
     }
 }

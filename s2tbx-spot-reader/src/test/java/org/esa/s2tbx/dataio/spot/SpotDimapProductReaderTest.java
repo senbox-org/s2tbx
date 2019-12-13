@@ -63,7 +63,7 @@ public class SpotDimapProductReaderTest {
         //System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             assertEquals(4, finalProduct.getBands().length);
             assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("SPOTSCENE_1A", finalProduct.getProductType());
@@ -90,7 +90,7 @@ public class SpotDimapProductReaderTest {
         try {
 
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             ProductData data = ProductData.createInstance(ProductData.TYPE_UINT16, 20000);
             data.setElemFloatAt(3, 5);
             reader.readBandRasterData(finalProduct.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
@@ -117,7 +117,7 @@ public class SpotDimapProductReaderTest {
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(4, components.getChildren().length);
             String[] expectedIds = new String[]{"metadata.dim", "vol_list.dim", "mediumImage.tif", "icon.jpg"};
@@ -146,7 +146,7 @@ public class SpotDimapProductReaderTest {
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(1, components.getChildren().length);
             assertEquals("30382639609301123571X0_1A_NETWORK.ZIP", components.getChildren()[0].getId());
@@ -167,7 +167,7 @@ public class SpotDimapProductReaderTest {
         //System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             assertEquals(3, finalProduct.getBands().length);
             assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("SPOTDimap", finalProduct.getProductType());
@@ -194,7 +194,7 @@ public class SpotDimapProductReaderTest {
         try {
 
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             ProductData data = ProductData.createInstance(ProductData.TYPE_UINT16, 20000);
             data.setElemFloatAt(3, 5);
             reader.readBandRasterData(finalProduct.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
@@ -221,7 +221,7 @@ public class SpotDimapProductReaderTest {
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(7, components.getChildren().length);
             String[] expectedIds = new String[]{"vol_list.dim", "SPVIEW01_0_0" + File.separator + "ICON_0_0.JPG", "SPVIEW01_0_0" + File.separator + "IMAGERY_0_0.TIF",

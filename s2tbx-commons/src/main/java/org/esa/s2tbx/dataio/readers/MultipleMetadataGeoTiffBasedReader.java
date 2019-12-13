@@ -108,6 +108,9 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                 product.setStartTime(centerTime);
                 product.setEndTime(centerTime);
             }
+            product.setProductType(firstMetadata.getMetadataProfile());
+            product.setDescription(firstMetadata.getProductDescription());
+
             TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(firstMetadata, metadataList);
             if (productGeoCoding != null) {
                 product.addTiePointGrid(productGeoCoding.getLatGrid());
