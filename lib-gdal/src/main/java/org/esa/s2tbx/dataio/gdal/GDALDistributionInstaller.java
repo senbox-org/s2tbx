@@ -188,6 +188,15 @@ class GDALDistributionInstaller {
             logger.log(Level.FINE, "Set the GDAL_DATA environment variable on Windows with '" + gdalPluginsValue.toString() + "'.");
         }
         EnvironmentVariables.setEnvironmentVariable(gdalPluginsValue.toString());
+        Path projDataFolderPath = gdalDistributionRootFolderPath.resolve("projlib");
+        StringBuilder projDataValue = new StringBuilder();
+        projDataValue.append("PROJ_LIB")
+                .append("=")
+                .append(projDataFolderPath.toString());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Set the PROJ_LIB environment variable on MacOSX with '" + projDataValue.toString() + "'.");
+        }
+        EnvironmentVariables.setEnvironmentVariable(projDataValue.toString());
     }
 
     private static boolean findFolderInPathEnvironment(Path folderPathToCheck, String pathEnvironment) throws IOException {

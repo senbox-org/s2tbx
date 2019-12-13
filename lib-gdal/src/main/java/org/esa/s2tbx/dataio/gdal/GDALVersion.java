@@ -13,16 +13,12 @@ import java.util.logging.Logger;
 public enum GDALVersion {
 
     GDAL_300_FULL("3-0-0", false),
-    GDAL_300_JNI("3-0-0", true),
-    GDAL_242_JNI("2-4-2", true),
-    GDAL_241_JNI("2-4-1", true),
-    GDAL_240_JNI("2-4-0", true),
-    GDAL_233_JNI("2-3-3", true),
-    GDAL_232_JNI("2-3-2", true),
-    GDAL_231_JNI("2-3-1", true),
-    GDAL_230_JNI("2-3-0", true),
-    GDAL_223_JNI("2-2-3", true),
-    GDAL_213_JNI("2-1-3", true);
+    GDAL_30X_JNI("3-0-X", true),
+    GDAL_24X_JNI("2-4-X", true),
+    GDAL_23X_JNI("2-3-X", true),
+    GDAL_22X_JNI("2-2-X", true),
+    GDAL_21X_JNI("2-1-X", true),
+    GDAL_20X_JNI("2-0-X", true);
 
     private static final String VERSION_NAME = "{version}";
     private static final String JNI_NAME = "{jni}";
@@ -33,16 +29,12 @@ public enum GDALVersion {
     private static final String GDAL_JNI_LIBRARY_FILE = "java/gdal.jar";
 
     private static final String GDAL_INFO_CMD = "gdalinfo --version";
-    private static final String GDAL_V300 = "3.0.0";
-    private static final String GDAL_V242 = "2.4.2";
-    private static final String GDAL_V241 = "2.4.1";
-    private static final String GDAL_V240 = "2.4.0";
-    private static final String GDAL_V233 = "2.3.3";
-    private static final String GDAL_V232 = "2.3.2";
-    private static final String GDAL_V231 = "2.3.1";
-    private static final String GDAL_V230 = "2.3.0";
-    private static final String GDAL_V223 = "2.2.3";
-    private static final String GDAL_V213 = "2.1.3";
+    private static final String GDAL_V30X = "3.0.X";
+    private static final String GDAL_V24X = "2.4.X";
+    private static final String GDAL_V23X = "2.3.X";
+    private static final String GDAL_V22X = "2.2.X";
+    private static final String GDAL_V21X = "2.1.X";
+    private static final String GDAL_V20X = "2.0.X";
 
     private static final Logger logger = Logger.getLogger(GDALInstaller.class.getName());
 
@@ -59,48 +51,38 @@ public enum GDALVersion {
         GDALVersion gdalVersion = GDAL_300_FULL;
         try (java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(GDAL_INFO_CMD).getInputStream()).useDelimiter("\\A")) {
             String result = s.hasNext() ? s.next() : "";
-            String version = result.replaceAll("[\\s\\S]*?(\\d*\\.\\d*\\.\\d*)[\\s\\S]*$", "$1");
+            String version = result.replaceAll("[\\s\\S]*?(\\d*\\.\\d*)[\\s\\S]*$", "$1.X");
             switch (version) {
-                case GDAL_V300:
-                    gdalVersion = GDAL_300_JNI;
+                case GDAL_V30X:
+                    gdalVersion = GDAL_30X_JNI;
                     break;
-                case GDAL_V242:
-                    gdalVersion = GDAL_242_JNI;
+                case GDAL_V24X:
+                    gdalVersion = GDAL_24X_JNI;
                     break;
-                case GDAL_V241:
-                    gdalVersion = GDAL_241_JNI;
+                case GDAL_V23X:
+                    gdalVersion = GDAL_23X_JNI;
                     break;
-                case GDAL_V240:
-                    gdalVersion = GDAL_240_JNI;
+                case GDAL_V22X:
+                    gdalVersion = GDAL_22X_JNI;
                     break;
-                case GDAL_V233:
-                    gdalVersion = GDAL_233_JNI;
+                case GDAL_V21X:
+                    gdalVersion = GDAL_21X_JNI;
                     break;
-                case GDAL_V232:
-                    gdalVersion = GDAL_232_JNI;
-                    break;
-                case GDAL_V231:
-                    gdalVersion = GDAL_231_JNI;
-                    break;
-                case GDAL_V230:
-                    gdalVersion = GDAL_230_JNI;
-                    break;
-                case GDAL_V223:
-                    gdalVersion = GDAL_223_JNI;
-                    break;
-                case GDAL_V213:
-                    gdalVersion = GDAL_213_JNI;
+                case GDAL_V20X:
+                    gdalVersion = GDAL_20X_JNI;
                     break;
                 default:
                     if (!version.isEmpty()) {
                         throw new ExceptionInInitializerError("Incompatible GDAL version found: " + version + ". Please uninstall!");
                     } else {
-                        logger.log(Level.INFO, "GDAL not found on system. Internal GDAL 2.4.1 from distribution will be used.");
+                        logger.log(Level.INFO, "GDAL not found on system. Internal GDAL 3.0.0 from distribution will be used.");
                     }
             }
+            logger.log(Level.INFO, "GDAL "+version+" found on system. JNI driver will be used.");
         } catch (IOException ignored) {
-            //nothing
+            logger.log(Level.INFO, "GDAL not found on system. Internal GDAL 3.0.0 from distribution will be used.");
         }
+
         gdalVersion.setOsCategory(osCategory);
         return gdalVersion;
     }

@@ -171,6 +171,20 @@ class GDALInstaller {
                 canCopyGDALDistribution = false;
             }
 
+            try (Stream<Path> pathsList = Files.list(gdalDistributionRootFolderPath)) {
+                if (pathsList.count() < 1) {
+                    canCopyGDALDistribution = true;
+                }
+            }
+
+            try {
+                if (gdalVersion.getZipFilePathFromSources() == null) {
+                    throw new IllegalStateException("");
+                }
+            } catch (Exception ignored) {
+                throw new ExceptionInInitializerError("No JNI drivers provided for installed GDAL version on this OS. Please uninstall!");
+            }
+
             if (canCopyGDALDistribution) {
                 // different module versions and delete the library saved on the local disk
                 boolean deleted = FileUtils.deleteTree(gdalNativeLibrariesFolderPath.toFile());
