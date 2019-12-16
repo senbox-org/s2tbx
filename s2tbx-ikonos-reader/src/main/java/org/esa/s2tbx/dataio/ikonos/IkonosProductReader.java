@@ -5,6 +5,7 @@ import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
 import org.esa.s2tbx.dataio.ikonos.metadata.*;
+import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -53,10 +54,11 @@ public class IkonosProductReader extends AbstractProductReader {
                 metadata = IkonosMetadata.create(filePathInputStream);
             }
 
-            Path zipArchivePath = buildZipArchivePath(this.productDirectory, metadataFileName);
+            Path imagesMetadataParentPath = buildImagesMetadataParentPath(this.productDirectory, metadataFileName);
 
-            Product product = readProduct(metadata, zipArchivePath);
+            Product product = readProduct(metadata, imagesMetadataParentPath);
             product.setFileLocation(productPath.toFile());
+
             success = true;
 
             return product;
@@ -107,15 +109,20 @@ public class IkonosProductReader extends AbstractProductReader {
 
         this.bandImageReaders = new ArrayList<>(bandMetadataList.size());
 
-        for (int bandIndex = 0; bandIndex < bandMetadataList.size(); bandIndex++) {
-            BandMetadata bandMetadata = bandMetadataList.get(bandIndex);
+        for (BandMetadata bandMetadata : bandMetadataList) {
+            if (bandMetadata.getNumColumns() > defaultProductSize.width) {
+                throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is greater than the product width " + defaultProductSize.width + ".");
+            }
+            if (bandMetadata.getNumLines() > defaultProductSize.height) {
+                throw new IllegalStateException("The band height " + bandMetadata.getNumLines() + " from the metadata file is greater than the product height " + defaultProductSize.height + ".");
+            }
             String bandName = getBandName(bandMetadata.getImageFileName());
             boolean bandIsSelected = (subsetDef == null || subsetDef.isNodeAccepted(bandName));
             if (!bandIsSelected && bandName.equals(IkonosConstants.BAND_NAMES[4])) {
                 try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName())) {
                     Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
                     Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, metadataUtil.getProductStepX(), metadataUtil.getProductStepY(), bandMetadata.getPixelSizeX(), bandMetadata.getPixelSizeY());
-                    IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, new Dimension(productBounds.width, productBounds.height), defaultBandSize, getSubsetDef());
+                    IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, product.getSceneRasterSize(), defaultBandSize, getSubsetDef());
                     Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
                     if (geoTiffProduct.getBandAt(0).getGeoCoding() != null && product.getSceneGeoCoding() == null) {
                         product.setSceneGeoCoding(geoTiffProduct.getBandAt(0).getGeoCoding());
@@ -123,13 +130,6 @@ public class IkonosProductReader extends AbstractProductReader {
                 }
             }
             if (bandIsSelected) {
-                if (bandMetadata.getNumColumns() > defaultProductSize.width) {
-                    throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is greater than the product width " + defaultProductSize.width + ".");
-                }
-                if (bandMetadata.getNumLines() > defaultProductSize.height) {
-                    throw new IllegalStateException("The band height " + bandMetadata.getNumLines() + " from the metadata file is greater than the product height " + defaultProductSize.height + ".");
-                }
-
                 GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
                 this.bandImageReaders.add(geoTiffImageReader);
 
@@ -138,8 +138,7 @@ public class IkonosProductReader extends AbstractProductReader {
                 Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, metadataUtil.getProductStepX(), metadataUtil.getProductStepY(), bandMetadata.getPixelSizeX(), bandMetadata.getPixelSizeY());
 
                 // read the Geo Tiff product
-                Dimension productSize = new Dimension(productBounds.width, productBounds.height);
-                IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, productSize, defaultBandSize, getSubsetDef());
+                IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, product.getSceneRasterSize(), defaultBandSize, getSubsetDef());
                 Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
 
                 if (geoTiffProduct.getSceneGeoCoding() == null && product.getSceneGeoCoding() == null) {
@@ -147,6 +146,12 @@ public class IkonosProductReader extends AbstractProductReader {
                     product.addTiePointGrid(productGeoCoding.getLatGrid());
                     product.addTiePointGrid(productGeoCoding.getLonGrid());
                     product.setSceneGeoCoding(productGeoCoding);
+                }
+
+                if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                    if (geoTiffProduct.getMetadataRoot() != null) {
+                        XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
+                    }
                 }
 
                 Band geoTiffBand = geoTiffProduct.getBandAt(0);
@@ -161,7 +166,6 @@ public class IkonosProductReader extends AbstractProductReader {
                 }
                 geoTiffBand.setName(bandName);
                 geoTiffBand.setScalingFactor(bandGain.doubleValue());
-                geoTiffBand.setNoDataValueUsed(geoTiffBand.isNoDataValueUsed());
                 geoTiffBand.setUnit(IkonosConstants.BAND_MEASURE_UNIT);
 
                 product.addBand(geoTiffBand);
@@ -241,7 +245,7 @@ public class IkonosProductReader extends AbstractProductReader {
         return null;
     }
 
-    public static Path buildZipArchivePath(VirtualDirEx productDirectory, String metadataFileName) throws IOException {
+    public static Path buildImagesMetadataParentPath(VirtualDirEx productDirectory, String metadataFileName) throws IOException {
         int extensionIndex = metadataFileName.lastIndexOf(IkonosConstants.METADATA_FILE_SUFFIX);
         String fileNameWithoutExtension = metadataFileName.substring(0, extensionIndex);
         String zipArchiveFileName;

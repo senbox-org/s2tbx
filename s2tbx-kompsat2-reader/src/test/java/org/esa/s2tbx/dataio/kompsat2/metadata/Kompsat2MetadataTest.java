@@ -1,5 +1,7 @@
 package org.esa.s2tbx.dataio.kompsat2.metadata;
 
+import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.kompsat2.Kompsat2ProductReader;
 import org.esa.s2tbx.dataio.kompsat2.internal.Kompsat2Constants;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -11,6 +13,7 @@ import org.junit.Test;
 
 import java.awt.*;
 import java.io.File;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -104,18 +107,20 @@ public class Kompsat2MetadataTest {
 
     @Test
     public void testKompsat2MetadataComponent() throws Exception {
-       metadata =  Kompsat2Metadata.create(TestUtil.getTestFile(productsFolder +
-         "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP" + File.separator +
-         "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML").toPath());
-        assertNotNull(metadata.getMetadataComponent());
-        float[][] tiePointGridPoints = {{-14.40976521f, -14.40929376f, -14.57977522f, -14.57929798f },{129.57652647f, 129.74505447f, 129.57696612f, 129.74562262f}};
-        for (int index = 0; index<4;index++) {
-            assertEquals(tiePointGridPoints[0][index], metadata.getMetadataComponent().getTiePointGridPoints()[0][index], 0.e-6);
-            assertEquals(tiePointGridPoints[1][index], metadata.getMetadataComponent().getTiePointGridPoints()[1][index], 0.e-6);
+        String metadataFileName = "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML";
+        Path metadataPath = TestUtil.getTestFile(productsFolder +
+                "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP" + File.separator + metadataFileName).toPath();
+        try (VirtualDirEx productDirectory = VirtualDirEx.build(metadataPath, false, false)) {
+            metadata = Kompsat2ProductReader.readProductMetadata(productDirectory, metadataFileName);
+            assertNotNull(metadata.getMetadataComponent());
+            float[][] tiePointGridPoints = {{-14.40976521f, -14.40929376f, -14.57977522f, -14.57929798f },{129.57652647f, 129.74505447f, 129.57696612f, 129.74562262f}};
+            for (int index = 0; index<4;index++) {
+                assertEquals(tiePointGridPoints[0][index], metadata.getMetadataComponent().getTiePointGridPoints()[0][index], 0.e-6);
+                assertEquals(tiePointGridPoints[1][index], metadata.getMetadataComponent().getTiePointGridPoints()[1][index], 0.e-6);
+            }
+            assertEquals("UTM:South,52 WGS 84", metadata.getMetadataComponent().getCrsCode());
+            assertEquals("MSC_110920012631_27459_10080892_1G.zip", metadata.getMetadataComponent().getImageDirectoryName() );
+            assertEquals("-14.494548069 129.661042414", metadata.getMetadataComponent().getOriginPos());
         }
-        assertEquals("UTM:South,52 WGS 84", metadata.getMetadataComponent().getCrsCode());
-        assertEquals("MSC_110920012631_27459_10080892_1G.zip", metadata.getMetadataComponent().getImageDirectoryName() );
-        assertEquals("-14.494548069 129.661042414", metadata.getMetadataComponent().getOriginPos());
     }
-
 }
