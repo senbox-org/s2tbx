@@ -22,7 +22,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "BandsDifferenceOp",
         version="1.0",
-        category = "",
+        category = "", // TODO: find correct category or hide it in the graph builder menu
         description = "",
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")

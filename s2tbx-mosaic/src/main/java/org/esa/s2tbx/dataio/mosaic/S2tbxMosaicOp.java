@@ -65,7 +65,7 @@ import java.util.OptionalDouble;
  * @since 5.0.6
  */
 @OperatorMetadata(alias = "Multi-size Mosaic",
-        category = "Raster/Geometric",
+        category = "Raster/Geometric Operations",
         version = "1.0",
         authors = "Razvan Dumitrascu",
         copyright = "(c) 2017 by CS Romania",

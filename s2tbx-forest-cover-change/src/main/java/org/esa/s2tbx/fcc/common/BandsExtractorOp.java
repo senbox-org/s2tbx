@@ -36,7 +36,7 @@ import java.awt.geom.NoninvertibleTransformException;
 @OperatorMetadata(
         alias = "BandsExtractorOp",
         version="1.0",
-        category = "",
+        category = "Optical",
         description = "Creates a new product out of the source product containing only the indexes bands given",
         authors = "Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
