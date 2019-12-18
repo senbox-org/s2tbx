@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "BiOp",
+        label = "BI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Soil Radiometric Indices",
         description = "The Brightness index represents the average of the brightness of a satellite image.",

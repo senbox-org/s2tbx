@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "McariOp",
+        label = "MCARI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "Modified Chlorophyll Absorption Ratio Index, developed to be responsive to chlorophyll variation",

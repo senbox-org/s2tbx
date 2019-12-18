@@ -40,7 +40,7 @@ import org.esa.snap.core.util.converters.BooleanExpressionConverter;
 /**
  * An operator for computing maximum chlorophyll index (MCI) for Sentinel-2 MSI data.
  */
-@OperatorMetadata(alias = "Mci.s2", authors = "Marco Peters", copyright = "Brockmann Consult GmbH",
+@OperatorMetadata(alias = "Mci.s2", label="S2 MCI Processor", authors = "Marco Peters", copyright = "Brockmann Consult GmbH",
                   category = "Optical/Thematic Water Processing",
                   version = "1.0",
                   description = "Computes maximum chlorophyll index (MCI) for Sentinel-2 MSI.")

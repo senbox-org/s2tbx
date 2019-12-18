@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "IpviOp",
+        label = "IPVI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "Infrared Percentage Vegetation Index retrieves the Isovegetation lines converge at origin",

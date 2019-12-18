@@ -75,6 +75,7 @@ import java.util.logging.Logger;
  */
 @OperatorMetadata(
         alias = "ForestCoverChangeOp",
+        label = "Forset Cover Change Operator",
         version="1.0",
         category = "Optical/Thematic Land Processing",
         description = "Creates forrest change masks out of two source products",

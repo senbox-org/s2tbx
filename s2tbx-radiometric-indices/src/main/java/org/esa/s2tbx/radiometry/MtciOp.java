@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "MtciOp",
+        label = "MTCI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "The Meris Terrestrial Chlorophyll Index,  aims at estimating the Red Edge Position (REP).\n" +
