@@ -8,7 +8,9 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import java.awt.*;
 

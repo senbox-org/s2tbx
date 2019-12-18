@@ -133,7 +133,7 @@ public class VirtualZipPath extends AbstractVirtualPath {
 
     @Override
     public FilePath getFilePath(String zipEntryPath) throws IOException {
-        boolean success = true;
+        boolean success = false;
         FileSystem fileSystem = null;
         try {
             fileSystem = ZipFileSystemBuilder.newZipFileSystem(this.zipPath);
@@ -143,10 +143,10 @@ public class VirtualZipPath extends AbstractVirtualPath {
                 Path entryPath = ZipFileSystemBuilder.buildZipEntryPath(zipArchiveRoot, zipEntryPath);
                 if (Files.exists(entryPath)) {
                     // the entry exists into the zip archive
+                    success = true;
                     return new FilePath(entryPath, fileSystem);
                 }
             }
-            success = false;
             throw new FileNotFoundException(getMissingZipEntryExceptionMessage(zipEntryPath));
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e);

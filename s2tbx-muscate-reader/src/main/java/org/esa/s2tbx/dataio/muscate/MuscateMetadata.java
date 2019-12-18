@@ -13,10 +13,12 @@ import org.esa.snap.core.util.SystemUtils;
 import org.geotools.graph.util.geom.Coordinate2D;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.esa.snap.utils.DateHelper.parseDate;
 
@@ -29,18 +31,7 @@ public class MuscateMetadata extends XmlMetadata {
     private ArrayList<MuscateMask> masks;
     private AnglesGrid[] viewingAnglesGrids;
     private AnglesGrid sunAnglesGrids;
-
-    public static class MuscateMetadataParser extends XmlMetadataParser<MuscateMetadata> {
-
-        public MuscateMetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return false;
-        }
-    }
+    private List<Geoposition> geoPositions;
 
     public MuscateMetadata(String name) {
         super(name);
@@ -58,6 +49,26 @@ public class MuscateMetadata extends XmlMetadata {
         return name;
     }
 
+    public MuscateMetadata.Geoposition getGeoposition(int width, int height) {
+        for (MuscateMetadata.Geoposition geoposition : getGeoPositions()) {
+            if (geoposition.nRows == height && geoposition.nCols == width) {
+                return geoposition;
+            }
+        }
+        return null;
+    }
+
+    public List<Geoposition> getGeoPositions() {
+        if (this.geoPositions == null) {
+            String resolutionStrings[] = getResolutionStrings();
+            this.geoPositions = new ArrayList<>(resolutionStrings.length);
+            for (String resolution : resolutionStrings) {
+                this.geoPositions.add(getGeoposition(resolution));
+            }
+        }
+        return this.geoPositions;
+    }
+
     public String getProductDescription() {
         String descr = getAttributeValue(MuscateConstants.PATH_SOURCE_DESCRIPTION, MuscateConstants.VALUE_NOT_AVAILABLE);
         if (MuscateConstants.VALUE_NOT_AVAILABLE.equals(descr)) {
@@ -68,8 +79,12 @@ public class MuscateMetadata extends XmlMetadata {
     }
 
     public String getProductVersion() {
-        String version = getAttributeValue(MuscateConstants.PATH_PRODUCT_VERSION, null);
-        return version;
+        return getAttributeValue(MuscateConstants.PATH_PRODUCT_VERSION, null);
+    }
+
+    public float getVersion() {
+        String version = getProductVersion();
+        return (version == null) ? 0.0f : Float.valueOf(version);
     }
 
     @Override
@@ -240,27 +255,11 @@ public class MuscateMetadata extends XmlMetadata {
         return new Coordinate2D(x, y);
     }
 
-    public CrsGeoCoding getCrsGeoCoding () {
+    public CrsGeoCoding buildCrsGeoCoding() throws FactoryException, TransformException {
         Coordinate2D coordUpperLeft = getUpperLeft();
-        CrsGeoCoding crsGeoCoding = null;
-        String EPSG = getEPSG();
-        try {
-            crsGeoCoding = new CrsGeoCoding(CRS.decode("EPSG:" + EPSG),
-                                            getRasterWidth(),
-                                            getRasterHeight(),
-                                            coordUpperLeft.x,
-                                            coordUpperLeft.y,
-                                            getBestResolution(),
-                                            getBestResolution(),
-                                            0.0, 0.0);
-        } catch (FactoryException e) {
-            e.printStackTrace();
-        } catch (TransformException e) {
-            e.printStackTrace();
-        }
-        return crsGeoCoding;
+        CoordinateReferenceSystem mapCRS = CRS.decode("EPSG:" + getEPSG());
+        return new CrsGeoCoding(mapCRS, getRasterWidth(), getRasterHeight(), coordUpperLeft.x, coordUpperLeft.y, getBestResolution(), getBestResolution(), 0.0, 0.0);
     }
-
 
     public double getWVCQuantificationValue() {
         String string = getAttributeValue(MuscateConstants.PATH_WVC_QUANTIFICATION,MuscateConstants.DEFAULT_WVC_QUANTIFICATION);
