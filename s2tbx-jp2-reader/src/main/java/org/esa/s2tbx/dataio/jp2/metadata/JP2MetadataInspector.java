@@ -55,7 +55,9 @@ public class JP2MetadataInspector implements MetadataInspector {
 
             metadata.setProductWidth(imageWidth);
             metadata.setProductHeight(imageHeight);
-            metadata.setGeoCoding(addGeoCoding(metadataHeader, imageWidth, imageHeight));
+            if(metadata.isHasGeoCoding()) {
+                metadata.setGeoCoding(addGeoCoding(metadataHeader, imageWidth, imageHeight));
+            }
         } catch (IOException|InterruptedException e) {
             throw new IOException("Error while reading file '" + productPath.toString() + "'.", e);
         }
