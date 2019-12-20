@@ -175,6 +175,8 @@ class GDALInstaller {
                 if (pathsList.count() < 1) {
                     canCopyGDALDistribution = true;
                 }
+            }catch(Exception ignored){
+                canCopyGDALDistribution = true;
             }
 
             try {
