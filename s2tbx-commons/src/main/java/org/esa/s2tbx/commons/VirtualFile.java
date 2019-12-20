@@ -2,6 +2,7 @@ package org.esa.s2tbx.commons;
 
 import com.bc.ceres.core.VirtualDir;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,7 +10,7 @@ import java.nio.file.Path;
 /**
  * Created by jcoravu on 14/5/2019.
  */
-public class VirtualFile extends AbstractFile {
+public class VirtualFile extends AbstractFile implements Closeable {
 
     private File localTempFolder;
 
@@ -32,6 +33,7 @@ public class VirtualFile extends AbstractFile {
         return this.localTempFolder.toPath();
     }
 
+    @Override
     public void close() {
         cleanup();
     }

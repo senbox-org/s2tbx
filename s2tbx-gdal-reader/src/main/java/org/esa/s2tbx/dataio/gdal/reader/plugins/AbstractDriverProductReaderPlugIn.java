@@ -1,8 +1,10 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
 import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.dataio.gdal.reader.GDALMetadataInspector;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
@@ -37,6 +39,11 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
         this(driverShortName, driverLongName);
 
         addExtensin(extension);
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new GDALMetadataInspector();
     }
 
     @Override
