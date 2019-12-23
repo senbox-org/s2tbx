@@ -112,18 +112,24 @@ public class NITFReaderWrapper {
         return imageHeight;
     }
 
-    public void readBandData(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight,
-                             int sourceStepX, int sourceStepY, ProductData destBuffer, ProgressMonitor pm) throws IOException {
+    public Raster readBandData(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY) throws IOException {
+        ImageReadParam readParam = this.reader.getDefaultReadParam();
+        readParam.setSourceBands(new int[]{0});
+        readParam.setSourceSubsampling(sourceStepX, sourceStepY, 0, 0);
+        readParam.setSourceRegion(new Rectangle(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight));
+        Raster raster;
+        synchronized (lock) {
+            raster = reader.readRaster(0, readParam);
+        }
+        return raster;
+    }
+
+    public void readBandData(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, ProductData destBuffer, ProgressMonitor pm)
+                             throws IOException {
+
         pm.beginTask("Reading band ...", sourceHeight);
         try {
-            ImageReadParam readParam = reader.getDefaultReadParam();
-            readParam.setSourceBands(new int[]{0});
-            readParam.setSourceSubsampling(sourceStepX, sourceStepY, 0, 0);
-            readParam.setSourceRegion(new Rectangle(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight));
-            Raster raster;
-            synchronized (lock) {
-                raster = reader.readRaster(0, readParam);
-            }
+            Raster raster = readBandData(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY);
 
             DataBuffer dataBuffer = raster.getDataBuffer();
             int bufferSize = dataBuffer.getSize();

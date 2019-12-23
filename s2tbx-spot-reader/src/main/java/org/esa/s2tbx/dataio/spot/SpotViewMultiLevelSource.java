@@ -15,18 +15,21 @@ public class SpotViewMultiLevelSource extends AbstractMosaicSubsetMultiLevelSour
     private final SpotViewImageReader spotViewImageReader;
     private final int dataBufferType;
     private final int bandIndex;
+    private final int bandCount;
 
-    public SpotViewMultiLevelSource(SpotViewImageReader spotViewImageReader, int dataBufferType, Rectangle visibleImageBounds, Dimension tileSize, int bandIndex, GeoCoding geoCoding) {
+    public SpotViewMultiLevelSource(SpotViewImageReader spotViewImageReader, int dataBufferType, Rectangle visibleImageBounds, Dimension tileSize,
+                                    int bandIndex, int bandCount, GeoCoding geoCoding) {
         super(visibleImageBounds, tileSize, geoCoding);
 
         this.spotViewImageReader = spotViewImageReader;
         this.dataBufferType = dataBufferType;
         this.bandIndex = bandIndex;
+        this.bandCount = bandCount;
     }
 
     @Override
     protected SourcelessOpImage buildTileOpImage(Rectangle visibleBounds, int level, Point tileOffset, Dimension tileSize, Void tileData) {
-        return new SpotViewTileOpImage(this.spotViewImageReader, getModel(), this.dataBufferType, this.bandIndex, visibleBounds, tileSize, tileOffset, level);
+        return new SpotViewTileOpImage(this.spotViewImageReader, getModel(), this.dataBufferType, this.bandIndex, this.bandCount, visibleBounds, tileSize, tileOffset, level);
     }
 
     @Override

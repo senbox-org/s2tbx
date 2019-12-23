@@ -14,6 +14,7 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
@@ -86,7 +87,8 @@ public class AlosAV2ProductReader extends AbstractProductReader {
             Product product = new Product(alosAV2Metadata.getProductName(), AlosAV2Constants.FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setDescription(alosAV2Metadata.getProductDescription());
             product.setFileLocation(productPath.toFile());
-            product.setPreferredTileSize(JAI.getDefaultTileSize());
+            Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+            product.setPreferredTileSize(preferredTileSize);
             ProductData.UTC centerTime = alosAV2Metadata.getCenterTime();
             if (centerTime == null) {
                 product.setStartTime(alosAV2Metadata.getProductStartTime());

@@ -17,6 +17,7 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.xml.sax.SAXException;
@@ -111,7 +112,8 @@ public class Kompsat2ProductReader extends AbstractProductReader {
         product.setStartTime(productMetadata.getProductStartTime());
         product.setEndTime(productMetadata.getProductEndTime());
         product.setDescription(productMetadata.getProductDescription());
-        product.setPreferredTileSize(JAI.getDefaultTileSize());
+        Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+        product.setPreferredTileSize(preferredTileSize);
         if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
             product.getMetadataRoot().addElement(productMetadata.getRootElement());
         }

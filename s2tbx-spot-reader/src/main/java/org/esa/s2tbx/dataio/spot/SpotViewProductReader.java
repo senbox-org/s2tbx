@@ -144,7 +144,8 @@ public class SpotViewProductReader extends AbstractProductReader {
                     band.setSpectralBandwidth(imageMetadata.getBandwidth(bandIndex));
                     band.setNoDataValueUsed(true);
                     band.setNoDataValue(imageMetadata.getNoDataValue());
-                    SpotViewMultiLevelSource multiLevelSource = new SpotViewMultiLevelSource(this.spotViewImageReader, dataBufferType, productBounds, preferredTileSize, bandIndex, bandGeoCoding);
+                    SpotViewMultiLevelSource multiLevelSource = new SpotViewMultiLevelSource(this.spotViewImageReader, dataBufferType, productBounds, preferredTileSize,
+                                                                                             bandIndex, bandNames.length, bandGeoCoding);
                     band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
                     product.addBand(band);
                 }

@@ -36,8 +36,7 @@ public abstract class AbstractFile {
         if (Files.exists(this.file)) {
             if (Files.isRegularFile(this.file)) {
                 Path localFile;
-                FileSystemProvider fileSystemProvider = this.file.getFileSystem().provider();
-                if (fileSystemProvider == FileSystems.getDefault().provider()) {
+                if (isLocalPath(this.file)) {
                     localFile = this.file;
                 } else {
                     Path localTempFolder = getLocalTempFolder();
@@ -57,5 +56,9 @@ public abstract class AbstractFile {
         } else {
             throw new FileNotFoundException(this.file.toString());
         }
+    }
+
+    public static boolean isLocalPath(Path path) {
+        return (path.getFileSystem().provider() == FileSystems.getDefault().provider());
     }
 }
