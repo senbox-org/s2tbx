@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
-import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
+import org.esa.lib.gdal.activator.GDALDistributionInstaller;
+import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 

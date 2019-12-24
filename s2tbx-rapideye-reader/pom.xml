@@ -18,6 +18,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -27,11 +28,10 @@
     </parent>
 
     <artifactId>s2tbx-rapideye-reader</artifactId>
-    <name>Sentinel-2 Toolbox RapidEye Reader</name>
     <packaging>nbm</packaging>
-    <description>
-        This module enables the Sentinel Toolbox to read RapidEye products
-    </description>
+
+    <name>Sentinel-2 Toolbox RapidEye Reader</name>
+    <description>This module enables the Sentinel Toolbox to read RapidEye products</description>
 
 
     <properties>
@@ -83,6 +83,11 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-javahelp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>lib-gdal</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>

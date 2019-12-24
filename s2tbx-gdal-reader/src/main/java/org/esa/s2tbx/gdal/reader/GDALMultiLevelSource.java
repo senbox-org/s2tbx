@@ -1,0 +1,43 @@
+package org.esa.s2tbx.gdal.reader;
+
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.image.AbstractMosaicSubsetMultiLevelSource;
+
+import javax.media.jai.SourcelessOpImage;
+import java.awt.*;
+import java.awt.image.RenderedImage;
+import java.nio.file.Path;
+
+/**
+ *  A single banded multi-level image source for products imported with the GDAL library.
+ *
+ * @author Jean Coravu
+ */
+class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource<Void> {
+
+    private final Path sourceLocalFile;
+    private final int dataBufferType;
+    private final int bandIndex;
+
+    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle visibleImageBounds, Dimension tileSize, int bandIndex, int levelCount, GeoCoding geoCoding) {
+        super(levelCount, visibleImageBounds, tileSize, geoCoding);
+
+        this.sourceLocalFile = sourceLocalFile;
+        this.dataBufferType = dataBufferType;
+        this.bandIndex = bandIndex;
+    }
+
+    @Override
+    protected SourcelessOpImage buildTileOpImage(Rectangle visibleBounds, int level, Point tileOffset, Dimension tileSize, Void tileData) {
+        return new GDALTileOpImage(this.sourceLocalFile, this.bandIndex, getModel(), this.dataBufferType, visibleBounds, tileSize, tileOffset, level);
+    }
+
+    @Override
+    protected RenderedImage createImage(int level) {
+        java.util.List<RenderedImage> tileImages = buildTileImages(level, this.visibleImageBounds, 0.0f, 0.0f, null);
+        if (tileImages.size() > 0) {
+            return buildMosaicOp(level, tileImages);
+        }
+        return null;
+    }
+}

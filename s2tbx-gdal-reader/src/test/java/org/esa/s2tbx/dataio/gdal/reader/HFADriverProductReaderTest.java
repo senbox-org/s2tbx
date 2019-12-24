@@ -1,7 +1,8 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.HFADriverProductReaderPlugIn;
+import org.esa.lib.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.gdal.reader.plugins.HFADriverProductReaderPlugIn;
+import org.esa.s2tbx.gdal.reader.GDALProductReader;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.junit.Test;
