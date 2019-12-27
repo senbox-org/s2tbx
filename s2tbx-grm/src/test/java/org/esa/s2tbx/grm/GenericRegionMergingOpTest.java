@@ -12,17 +12,13 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
-import org.esa.snap.utils.TestUtil;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -30,300 +26,312 @@ import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Jean Coravu.
- * Note: Nodes order is not guaranteed to be identical on different platforms, therefore the tests should be done by node id, not by node order
+ *
+ * Note: Nodes order is not guaranteed to be identical on different platforms,
+ * therefore the tests should be done by node area and nod perimeter.
  */
 public class GenericRegionMergingOpTest {
-    private Path segmentationTestsFolderPath;
-    private Product smallSourceProduct;
-    private Product largeSourceProduct;
 
     public GenericRegionMergingOpTest() {
     }
 
-    @Before
-    public void setUp() throws Exception {
-        assumeTrue(TestUtil.testdataAvailable());
-
-        checkTestDirectoryExists();
-
-        ImageProductReaderPlugIn readerPlugIn = new ImageProductReaderPlugIn();
-        ProductReader reader = readerPlugIn.createReaderInstance();
-
-        File smallProductFile = this.segmentationTestsFolderPath.resolve("picture-334x400.png").toFile();
-        this.smallSourceProduct = reader.readProductNodes(smallProductFile, null);
-
-        File largeProductFile = this.segmentationTestsFolderPath.resolve("picture-750x898.png").toFile();
-        this.largeSourceProduct = reader.readProductNodes(largeProductFile, null);
-    }
-
     @Test
     public void testFullLambdaScheduleTileSmallSegmenter() throws IOException, IllegalAccessException {
-        String mergingCostCriterion = GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION;
-        String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
-        int totalIterationsForSecondSegmentation = 250;
-        float threshold = 8600.0f;
+        Product sourceProduct = readSourceProduct("picture-334x400.png");
+        try {
+            String mergingCostCriterion = GenericRegionMergingOp.FULL_LANDA_SCHEDULE_MERGING_COST_CRITERION;
+            String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
+            int totalIterationsForSecondSegmentation = 250;
+            float threshold = 8600.0f;
+            Float spectralWeight = null;
+            Float shapeWeight = null;
 
-        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
-                                                          totalIterationsForSecondSegmentation, threshold, null, null);
+            GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
+                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
-        Product targetProduct = operator.getTargetProduct();
-        AbstractSegmenter segmenter = operator.getSegmenter();
+            AbstractSegmenter segmenter = operator.getSegmenter();
+            assertNotNull(segmenter);
 
-        assertNotNull(segmenter);
+            Graph graph = segmenter.getGraph();
+            assertNotNull(graph);
+            assertEquals(12, graph.getNodeCount());
 
-        Graph graph = segmenter.getGraph();
-        assertNotNull(graph);
+            List<Node> nodes = findNodesByAreaAndPerimeter(graph, 6125, 798);
+            assertEquals(1, nodes.size());
+            float[] nodeExpectedMeansValues = new float[]{43.48049f, 92.38074f, 71.088326f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 0, 0, 287, 39, 1596, 3);
 
-        assertEquals(12, graph.getNodeCount());
+            nodes = findNodesByAreaAndPerimeter(graph, 33468, 924);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{28.577358f, 77.67291f, 106.54587f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 35, 20, 265, 134, 1840, 6);
 
-        //Node node = graph.getNodeAt(0);
-        Node node = graph.getNodeById(0);
-        assertNotNull(node);
-        float[] nodeExpectedMeansValues = new float[] {43.48049f, 92.38074f, 71.088326f};
-        checkGraphNode(node, nodeExpectedMeansValues, 0, 0, 287, 39, 1596, 3);
+            nodes = findNodesByAreaAndPerimeter(graph, 7277, 600);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{7.4516973f, 204.85187f, 82.08506f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 36, 157, 260, 31, 1200, 4);
 
-        //node = graph.getNodeAt(3);
-        node = graph.getNodeById(6856);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {28.577358f, 77.67291f, 106.54587f};
-        checkGraphNode(node, nodeExpectedMeansValues, 35, 20, 265, 134, 1840, 6);
+            nodes = findNodesByAreaAndPerimeter(graph, 13672, 1232);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{53.42437f, 96.581116f, 78.46628f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 0, 256, 334, 144, 2464, 3);
 
-        //node = graph.getNodeAt(7);
-        node = graph.getNodeById(52515);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {7.4516973f, 204.85187f, 82.08506f};
-        checkGraphNode(node, nodeExpectedMeansValues, 36, 157, 260, 31, 1200, 4);
+            nodes = findNodesByAreaAndPerimeter(graph, 46173, 1060);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{29.666191f, 78.3342f, 107.13783f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 38, 194, 264, 184, 2120, 5);
 
-        //node = graph.getNodeAt(11);
-        node = graph.getNodeById(85823);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {53.42437f, 96.581116f, 78.46628f};
-        checkGraphNode(node, nodeExpectedMeansValues, 0, 256, 334, 144, 2464, 3);
+            nodes = findNodesByAreaAndPerimeter(graph, 1638, 578);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{49.614162f, 104.15507f, 80.54029f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 58, 145, 243, 29, 1156, 4);
 
-        checkTargetBandForFullLamdaScheduleSegmenter(targetProduct);
+            Product targetProduct = operator.getTargetProduct();
+            checkTargetBandForFullLamdaScheduleSegmenter(targetProduct);
+        } finally {
+            sourceProduct.dispose();
+        }
     }
 
     @Test
     public void testSpringTileSmallSegmenter() throws IOException, IllegalAccessException {
-        String mergingCostCriterion = GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION;
-        String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
-        int totalIterationsForSecondSegmentation = 1750;
-        float threshold = 8650.0f;
+        Product sourceProduct = readSourceProduct("picture-334x400.png");
+        try {
+            String mergingCostCriterion = GenericRegionMergingOp.SPRING_MERGING_COST_CRITERION;
+            String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
+            int totalIterationsForSecondSegmentation = 1750;
+            float threshold = 8650.0f;
+            Float spectralWeight = null;
+            Float shapeWeight = null;
 
-        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
-                                                          totalIterationsForSecondSegmentation, threshold, null, null);
+            GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
+                                                              totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
-        Product targetProduct = operator.getTargetProduct();
-        AbstractSegmenter segmenter = operator.getSegmenter();
+            AbstractSegmenter segmenter = operator.getSegmenter();
+            assertNotNull(segmenter);
 
-        assertNotNull(segmenter);
+            Graph graph = segmenter.getGraph();
+            assertNotNull(graph);
+            assertEquals(81, graph.getNodeCount());
 
-        Graph graph = segmenter.getGraph();
-        assertNotNull(graph);
+            List<Node> nodes = findNodesByAreaAndPerimeter(graph, 3, 8);
+            assertEquals(3, nodes.size());
 
-        assertEquals(81, graph.getNodeCount());
+            nodes = findNodesByAreaAndPerimeter(graph, 1, 4);
+            assertEquals(56, nodes.size());
 
-        //Node node = graph.getNodeAt(0);
-        Node node = graph.getNodeById(0);
-        assertNotNull(node);
-        float[] nodeExpectedMeansValues = new float[] {56.079975f, 105.31003f, 84.8043f};
-        checkGraphNode(node, nodeExpectedMeansValues, 0, 0, 334, 400, 2936, 28);
+            nodes = findNodesByAreaAndPerimeter(graph, 45477, 4302);
+            assertEquals(1, nodes.size());
+            float[] nodeExpectedMeansValues = new float[]{56.079975f, 105.31003f, 84.8043f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 0, 0, 334, 400, 2936, 28);
 
-        //node = graph.getNodeAt(10);
-        node = graph.getNodeById(46622);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {102.666664f, 147.33333f, 177.0f};
-        checkGraphNode(node, nodeExpectedMeansValues, 196, 139, 2, 2, 16, 2);
+            nodes = findNodesByAreaAndPerimeter(graph, 22, 26);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{15.727273f, 132.0f, 110.954544f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 40, 203, 4, 9, 52, 2);
 
-        //node = graph.getNodeAt(20);
-        node = graph.getNodeById(64872);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {29.915312f, 76.24685f, 105.828926f};
-        checkGraphNode(node, nodeExpectedMeansValues, 38, 194, 254, 192, 2800, 53);
+            nodes = findNodesByAreaAndPerimeter(graph, 3, 8);
+            assertEquals(3, nodes.size());
+            nodeExpectedMeansValues = new float[]{102.666664f, 147.33333f, 177.0f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 196, 139, 2, 2, 16, 2);
 
-        //node = graph.getNodeAt(30);
-        node = graph.getNodeById(66735);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {24.333334f, 101.0f, 131.66667f};
-        checkGraphNode(node, nodeExpectedMeansValues, 269, 199, 3, 1, 16, 1);
+            nodes = findNodesByAreaAndPerimeter(graph, 44011, 1622);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{29.915312f, 76.24685f, 105.828926f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 38, 194, 254, 192, 2800, 53);
 
-        checkTargetBandForSpringSegmenter(targetProduct);
+            nodes = findNodesByAreaAndPerimeter(graph, 22, 26);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{15.727273f, 132.0f, 110.954544f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 40, 203, 4, 9, 52, 2);
+
+            Product targetProduct = operator.getTargetProduct();
+            checkTargetBandForSpringSegmenter(targetProduct);
+        } finally {
+            sourceProduct.dispose();
+        }
     }
 
     @Test
     public void testBaatzSchapeSmallTileSegmenter() throws IOException, IllegalAccessException {
-        String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
-        String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
-        int totalIterationsForSecondSegmentation = 50;
-        float threshold = 750.0f;
-        float spectralWeight = 0.5f;
-        float shapeWeight = 0.3f;
+        Product sourceProduct = readSourceProduct("picture-334x400.png");
+        try {
+            String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
+            String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
+            int totalIterationsForSecondSegmentation = 50;
+            float threshold = 750.0f;
+            float spectralWeight = 0.5f;
+            float shapeWeight = 0.3f;
 
-        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion, totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+            GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
+                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
-        Product targetProduct = operator.getTargetProduct();
-        AbstractSegmenter segmenter = operator.getSegmenter();
+            AbstractSegmenter segmenter = operator.getSegmenter();
+            assertNotNull(segmenter);
 
-        assertNotNull(segmenter);
+            Graph graph = segmenter.getGraph();
+            assertNotNull(graph);
+            assertEquals(4, graph.getNodeCount());
 
-        Graph graph = segmenter.getGraph();
-        assertNotNull(graph);
+            List<Node> nodes = findNodesByAreaAndPerimeter(graph, 45146, 4184);
+            assertEquals(1, nodes.size());
+            float[] nodeExpectedMeansValues = new float[]{56.252293f, 103.91999f, 84.66389f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 0, 0, 334, 400, 2936, 3);
 
-        assertEquals(4, graph.getNodeCount());
+            nodes = findNodesByAreaAndPerimeter(graph, 33684, 950);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{28.649923f, 78.105064f, 106.62353f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 33, 20, 268, 135, 1900, 1);
 
-        // test the first node
-        //Node node = graph.getNodeAt(0);
-        Node node = graph.getNodeById(0);
-        assertNotNull(node);
-        float[] nodeExpectedMeansValues = new float[] {56.252293f, 103.91999f, 84.66389f};
-        checkGraphNode(node, nodeExpectedMeansValues, 0, 0, 334, 400, 2936, 3);
+            nodes = findNodesByAreaAndPerimeter(graph, 7979, 620);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{10.381125f, 199.06993f, 82.21632f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 36, 154, 261, 37, 1240, 1);
 
-        // test the second node
-        //node = graph.getNodeAt(1);
-        node = graph.getNodeById(6956);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {28.649923f, 78.105064f, 106.62353f};
-        checkGraphNode(node, nodeExpectedMeansValues, 33, 20, 268, 135, 1900, 1);
+            nodes = findNodesByAreaAndPerimeter(graph, 46791, 1146);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{29.810776f, 78.85059f, 107.02629f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 36, 192, 268, 189, 2292, 1);
 
-        // test the third node
-        //node = graph.getNodeAt(2);
-        node = graph.getNodeById(51723);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {10.381125f, 199.06993f, 82.21632f};
-        checkGraphNode(node, nodeExpectedMeansValues, 36, 154, 261, 37, 1240, 1);
-
-        // test the forth node
-        //node = graph.getNodeAt(3);
-        node = graph.getNodeById(64266);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {29.810776f, 78.85059f, 107.02629f};
-        checkGraphNode(node, nodeExpectedMeansValues, 36, 192, 268, 189, 2292, 1);
-
-        checkTargetBandForBaatzSchapeSmallSegmenter(targetProduct);
+            Product targetProduct = operator.getTargetProduct();
+            checkTargetBandForBaatzSchapeSmallSegmenter(targetProduct);
+        } finally {
+            sourceProduct.dispose();
+        }
     }
 
-    @Ignore
+    @Test
     public void testBaatzSchapeLargeTileSegmenter() throws IOException, IllegalAccessException {
-        String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
-        String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
-        int totalIterationsForSecondSegmentation = 60;
-        float threshold = 1000.0f;
-        float spectralWeight = 0.5f;
-        float shapeWeight = 0.3f;
+        Product sourceProduct = readSourceProduct("picture-750x898.png");
+        try {
+            String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
+            String regionMergingCriterion = GenericRegionMergingOp.LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION;
+            int totalIterationsForSecondSegmentation = 60;
+            float threshold = 1000.0f;
+            float spectralWeight = 0.5f;
+            float shapeWeight = 0.3f;
 
-        GenericRegionMergingOp operator = executeOperator(this.largeSourceProduct, mergingCostCriterion, regionMergingCriterion,
-                                                          totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+            GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
+                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
-        Product targetProduct = operator.getTargetProduct();
-        AbstractSegmenter segmenter = operator.getSegmenter();
+            AbstractSegmenter segmenter = operator.getSegmenter();
+            assertNotNull(segmenter);
 
-        assertNotNull(segmenter);
+            Graph graph = segmenter.getGraph();
+            assertNotNull(graph);
+            assertEquals(4, graph.getNodeCount());
 
-        Graph graph = segmenter.getGraph();
-        assertNotNull(graph);
+            List<Node> nodes = findNodesByAreaAndPerimeter(graph, 287418, 11254);
+            assertEquals(1, nodes.size());
+            float[] nodeExpectedMeansValues = new float[]{51.66685f, 104.76079f, 90.67668f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 0, 0, 750, 898, 6592, 3);
 
-        assertEquals(4, graph.getNodeCount());
+            nodes = findNodesByAreaAndPerimeter(graph, 34369, 1466);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{5.248829f, 209.01393f, 82.01373f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 82, 357, 579, 66, 2932, 1);
 
-        // test the first node
-        //Node node = graph.getNodeAt(0);
-        Node node = graph.getNodeById(0);
-        assertNotNull(node);
-        float[] nodeExpectedMeansValues = new float[] {51.66685f, 104.76079f, 90.67668f};
-        checkGraphNode(node, nodeExpectedMeansValues, 0, 0, 750, 898, 6592, 3);
+            nodes = findNodesByAreaAndPerimeter(graph, 196209, 3778);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{29.568516f, 74.19531f, 105.85714f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 102, 435, 558, 419, 7556, 1);
 
-        // test the second node
-        //node = graph.getNodeAt(1);
-        node = graph.getNodeById(268136);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {5.248829f, 209.01393f, 82.01373f};
-        checkGraphNode(node, nodeExpectedMeansValues, 82, 357, 579, 66, 2932, 1);
+            nodes = findNodesByAreaAndPerimeter(graph, 155504, 2714);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{27.908916f, 75.81499f, 105.56643f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 72, 45, 570, 303, 5428, 1);
 
-        // test the third node
-        //node = graph.getNodeAt(2);
-        node = graph.getNodeById(326727);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {29.568516f, 74.19531f, 105.85714f};
-        checkGraphNode(node, nodeExpectedMeansValues, 102, 435, 558, 419, 7556, 1);
-
-        // test the forth node
-        //node = graph.getNodeAt(3);
-        node = graph.getNodeById(34389);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {27.908916f, 75.81499f, 105.56643f};
-        checkGraphNode(node, nodeExpectedMeansValues, 72, 45, 570, 303, 5428, 1);
-
-        checkTargetBandForBaatzSchapeSegmenter(targetProduct);
+            Product targetProduct = operator.getTargetProduct();
+            checkTargetBandForBaatzSchapeSegmenter(targetProduct);
+        } finally {
+            sourceProduct.dispose();
+        }
     }
 
     @Test
     public void testFastBaatzSchapeLargeTileSegmenter() throws IOException, IllegalAccessException {
-        String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
-        String regionMergingCriterion = GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION; // => fast segmentation
-        int totalIterationsForSecondSegmentation = 60;
-        float threshold = 1000.0f;
-        float spectralWeight = 0.5f;
-        float shapeWeight = 0.3f;
+        Product sourceProduct = readSourceProduct("picture-750x898.png");
+        try {
+            String mergingCostCriterion = GenericRegionMergingOp.BAATZ_SCHAPE_MERGING_COST_CRITERION;
+            String regionMergingCriterion = GenericRegionMergingOp.BEST_FITTING_REGION_MERGING_CRITERION; // => fast segmentation
+            int totalIterationsForSecondSegmentation = 60;
+            float threshold = 1000.0f;
+            float spectralWeight = 0.5f;
+            float shapeWeight = 0.3f;
 
-        GenericRegionMergingOp operator = executeOperator(this.largeSourceProduct, mergingCostCriterion, regionMergingCriterion,
-                                                          totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+            GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
+                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
-        Product targetProduct = operator.getTargetProduct();
-        AbstractSegmenter segmenter = operator.getSegmenter();
+            AbstractSegmenter segmenter = operator.getSegmenter();
+            assertNotNull(segmenter);
 
-        assertNotNull(segmenter);
+            Graph graph = segmenter.getGraph();
+            assertNotNull(graph);
+            assertEquals(4, graph.getNodeCount());
 
-        Graph graph = segmenter.getGraph();
-        assertNotNull(graph);
+            List<Node> nodes = findNodesByAreaAndPerimeter(graph, 244584, 10472);
+            assertEquals(1, nodes.size());
+            float[] nodeExpectedMeansValues = new float[]{55.079082f, 104.811226f, 85.818596f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 0, 0, 750, 898, 6592, 3);
 
-        assertEquals(4, graph.getNodeCount());
+            nodes = findNodesByAreaAndPerimeter(graph, 168075, 2706);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{28.557613f, 78.30157f, 106.95757f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 74, 48, 601, 301, 5412, 1);
 
-        // test the first node
-        //Node node = graph.getNodeAt(0);
-        Node node = graph.getNodeById(0);
-        assertNotNull(node);
-        float[] nodeExpectedMeansValues = new float[] {55.079082f, 104.811226f, 85.818596f};
-        checkGraphNode(node, nodeExpectedMeansValues, 0, 0, 750, 898, 6592, 3);
+            nodes = findNodesByAreaAndPerimeter(graph, 225567, 3040);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{29.72f, 77.462265f, 107.269226f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 101, 436, 581, 426, 6080, 1);
 
-        // test the second node
-        //node = graph.getNodeAt(1);
-        node = graph.getNodeById(36172);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {28.557613f, 78.30157f, 106.95757f};
-        checkGraphNode(node, nodeExpectedMeansValues, 74, 48, 601, 301, 5412, 1);
+            nodes = findNodesByAreaAndPerimeter(graph, 35274, 1430);
+            assertEquals(1, nodes.size());
+            nodeExpectedMeansValues = new float[]{5.579265f, 209.00505f, 82.32177f};
+            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 81, 353, 586, 70, 2860, 1);
 
-        // test the third node
-        //node = graph.getNodeAt(2);
-        node = graph.getNodeById(327464);// 265402
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {29.72f, 77.462265f, 107.269226f};
-        checkGraphNode(node, nodeExpectedMeansValues, 101, 436, 581, 426, 6080, 1);
-
-        // test the forth node
-        //node = graph.getNodeAt(3);
-        node = graph.getNodeById(265402);
-        assertNotNull(node);
-        nodeExpectedMeansValues = new float[] {5.579265f, 209.00505f, 82.32177f};
-        checkGraphNode(node, nodeExpectedMeansValues, 81, 353, 586, 70, 2860, 1);
-
-        //checkTargetBandForFastBaatzSchapeSegmenter(targetProduct);
+            Product targetProduct = operator.getTargetProduct();
+            checkTargetBandForFastBaatzSchapeSegmenter(targetProduct);
+        } finally {
+            sourceProduct.dispose();
+        }
     }
 
-    private void checkTestDirectoryExists() {
-        String testDirectoryPathProperty = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
-        assertNotNull("The system property '" + TestUtil.PROPERTYNAME_DATA_DIR + "' representing the test directory is not set.", testDirectoryPathProperty);
-        Path testFolderPath = Paths.get(testDirectoryPathProperty);
-        if (!Files.exists(testFolderPath)) {
-            fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
+    private static File getTestDataFolder() {
+        String testFolderRelativePath = "src/test/data";
+        File testInputDataFolder = new File("./" + testFolderRelativePath);
+        if (!testInputDataFolder.exists()) {
+            testInputDataFolder = new File("./s2tbx-grm/"+ testFolderRelativePath);
+            if (!testInputDataFolder.exists()) {
+                fail("The test folder '"+testInputDataFolder.getAbsolutePath()+"' representing the input test data does not exist.");
+            }
         }
+        return testInputDataFolder;
+    }
 
-        this.segmentationTestsFolderPath = testFolderPath.resolve("_segmentation");
-        if (!Files.exists(segmentationTestsFolderPath)) {
-            fail("The GDAL test directory path '"+segmentationTestsFolderPath.toString()+"' is not valid.");
+    private static Product readSourceProduct(String imageRelativeFilePath) throws IOException {
+        File testInputDataFolder = getTestDataFolder();
+        File smallProductFile = new File(testInputDataFolder, imageRelativeFilePath);
+        if (!smallProductFile.exists()) {
+            fail("The test file '"+smallProductFile.getAbsolutePath()+"' representing the input product does not exist.");
         }
+        ImageProductReaderPlugIn readerPlugIn = new ImageProductReaderPlugIn();
+        ProductReader reader = readerPlugIn.createReaderInstance();
+        return reader.readProductNodes(smallProductFile, null);
+    }
+
+    private static List<Node> findNodesByAreaAndPerimeter(Graph graph, int nodeArea, int nodePerimeter) {
+        List<Node> nodes = new ArrayList<>();
+        for (int i=0; i<graph.getNodeCount(); i++) {
+            Node node = graph.getNodeAt(i);
+            if (node.getArea() == nodeArea && node.getPerimeter() == nodePerimeter) {
+                nodes.add(node);
+            }
+        }
+        return nodes;
     }
 
     private static GenericRegionMergingOp executeOperator(Product sourceProduct, String mergingCostCriterion, String regionMergingCriterion,
-                                                          int totalIterationsForSecondSegmentation, float threshold, Float spectralWeight, Float shapeWeight )
+                                                          int totalIterationsForSecondSegmentation, float threshold, Float spectralWeight, Float shapeWeight)
                                                           throws IOException {
 
         String[] sourceBandNames = new String[]{"red", "blue", "green"};
@@ -348,7 +356,7 @@ public class GenericRegionMergingOpTest {
         GenericRegionMergingOp operator = (GenericRegionMergingOp)GPF.getDefaultInstance().createOperator("GenericRegionMergingOp", parameters, sourceProducts, null);
 
         Product targetProduct = operator.getTargetProduct(); // initialize the operator
-
+        assertNotNull(targetProduct);
         assertNotNull(targetProduct.getPreferredTileSize());
 
         assertEquals(mergingCostCriterion, operator.getMergingCostCriterion());
