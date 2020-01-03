@@ -14,21 +14,23 @@ import java.awt.image.RenderedImage;
 public class RapidEyeL1MultiLevelSource extends AbstractMosaicSubsetMultiLevelSource<Void> {
 
     private final NITFReaderWrapper nitfReader;
+    private final int dataBufferType;
 
-    public RapidEyeL1MultiLevelSource(NITFReaderWrapper nitfReader, Rectangle visibleImageBounds, Dimension tileSize, GeoCoding geoCoding) {
-        super(visibleImageBounds, tileSize, geoCoding);
+    public RapidEyeL1MultiLevelSource(NITFReaderWrapper nitfReader, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, GeoCoding geoCoding) {
+        super(imageReadBounds, tileSize, geoCoding);
 
         this.nitfReader = nitfReader;
+        this.dataBufferType = dataBufferType;
     }
 
     @Override
-    protected SourcelessOpImage buildTileOpImage(Rectangle visibleBounds, int level, Point tileOffset, Dimension tileSize, Void tileData) {
-        return new RapidEyeL1TileOpImage(this.nitfReader, getModel(), 1, 1, visibleBounds, tileSize, tileOffset, level);
+    protected SourcelessOpImage buildTileOpImage(Rectangle imageCellReadBounds, int level, Point tileOffsetFromReadBounds, Dimension tileSize, Void tileData) {
+        return new RapidEyeL1TileOpImage(this.nitfReader, getModel(), dataBufferType, imageCellReadBounds, tileSize, tileOffsetFromReadBounds, level);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        java.util.List<RenderedImage> tileImages = buildTileImages(level, this.visibleImageBounds, 0.0f, 0.0f, null);
+        java.util.List<RenderedImage> tileImages = buildTileImages(level, this.imageReadBounds, 0.0f, 0.0f, null);
         if (tileImages.size() > 0) {
             return buildMosaicOp(level, tileImages);
         }

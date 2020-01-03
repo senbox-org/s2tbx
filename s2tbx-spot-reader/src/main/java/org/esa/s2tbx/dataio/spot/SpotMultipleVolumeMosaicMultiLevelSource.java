@@ -15,15 +15,15 @@ public class SpotMultipleVolumeMosaicMultiLevelSource extends AbstractMatrixMosa
 
     private final int bandIndex;
 
-    public SpotMultipleVolumeMosaicMultiLevelSource(MosaicMatrix spotBandMatrix, Rectangle visibleImageBounds, Dimension tileSize, int bandIndex, GeoCoding geoCoding) {
-        super(spotBandMatrix, visibleImageBounds, tileSize, geoCoding);
+    public SpotMultipleVolumeMosaicMultiLevelSource(MosaicMatrix spotBandMatrix, Rectangle imageMatrixReadBounds, Dimension tileSize, int bandIndex, GeoCoding geoCoding) {
+        super(spotBandMatrix, imageMatrixReadBounds, tileSize, geoCoding);
 
         this.bandIndex = bandIndex;
     }
 
     @Override
-    protected SourcelessOpImage buildTileOpImage(Rectangle visibleBounds, int level, Point tileOffset, Dimension tileSize, MosaicMatrix.MatrixCell matrixCell) {
+    protected SourcelessOpImage buildTileOpImage(Rectangle imageCellReadBounds, int level, Point tileOffset, Dimension tileSize, MosaicMatrix.MatrixCell matrixCell) {
         SpotMultipleVolumeMatrixCell volumeMatrixCell = (SpotMultipleVolumeMatrixCell)matrixCell;
-        return new GeoTiffTileOpImage(volumeMatrixCell.getGeoTiffImageReader(), getModel(), volumeMatrixCell.getDataBufferType(), this.bandIndex, visibleBounds, tileSize, tileOffset, level, false);
+        return new GeoTiffTileOpImage(volumeMatrixCell.getGeoTiffImageReader(), getModel(), volumeMatrixCell.getDataBufferType(), this.bandIndex, imageCellReadBounds, tileSize, tileOffset, level, false);
     }
 }

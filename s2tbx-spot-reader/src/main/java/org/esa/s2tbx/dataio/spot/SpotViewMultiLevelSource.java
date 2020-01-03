@@ -17,9 +17,10 @@ public class SpotViewMultiLevelSource extends AbstractMosaicSubsetMultiLevelSour
     private final int bandIndex;
     private final int bandCount;
 
-    public SpotViewMultiLevelSource(SpotViewImageReader spotViewImageReader, int dataBufferType, Rectangle visibleImageBounds, Dimension tileSize,
+    public SpotViewMultiLevelSource(SpotViewImageReader spotViewImageReader, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize,
                                     int bandIndex, int bandCount, GeoCoding geoCoding) {
-        super(visibleImageBounds, tileSize, geoCoding);
+
+        super(imageReadBounds, tileSize, geoCoding);
 
         this.spotViewImageReader = spotViewImageReader;
         this.dataBufferType = dataBufferType;
@@ -28,13 +29,13 @@ public class SpotViewMultiLevelSource extends AbstractMosaicSubsetMultiLevelSour
     }
 
     @Override
-    protected SourcelessOpImage buildTileOpImage(Rectangle visibleBounds, int level, Point tileOffset, Dimension tileSize, Void tileData) {
-        return new SpotViewTileOpImage(this.spotViewImageReader, getModel(), this.dataBufferType, this.bandIndex, this.bandCount, visibleBounds, tileSize, tileOffset, level);
+    protected SourcelessOpImage buildTileOpImage(Rectangle imageCellReadBounds, int level, Point tileOffset, Dimension tileSize, Void tileData) {
+        return new SpotViewTileOpImage(this.spotViewImageReader, getModel(), this.dataBufferType, this.bandIndex, this.bandCount, imageCellReadBounds, tileSize, tileOffset, level);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        java.util.List<RenderedImage> tileImages = buildTileImages(level, this.visibleImageBounds, 0.0f, 0.0f, null);
+        java.util.List<RenderedImage> tileImages = buildTileImages(level, this.imageReadBounds, 0.0f, 0.0f, null);
         if (tileImages.size() > 0) {
             return buildMosaicOp(level, tileImages);
         }

@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.jp2;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.esa.s2tbx.dataio.jp2.internal.CopyOfJP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
@@ -156,6 +157,8 @@ public class JP2ProductReader extends AbstractProductReader {
             double[] bandScales = null;
             double[] bandOffsets = null;
             addBands(imageInfo, csInfo, bandScales, bandOffsets);
+            //TODO Jean new method to create a subset
+            //addBandsNew(imageInfo, csInfo, bandScales, bandOffsets);
 
             this.product.setPreferredTileSize(JAI.getDefaultTileSize());
             this.product.setFileLocation(jp2File.toFile());
@@ -259,21 +262,60 @@ public class JP2ProductReader extends AbstractProductReader {
                 int snapDataType = getSnapDataTypeFromImageInfo(bandImageInfo);
                 int awtDataType = getAwtDataTypeFromImageInfo(bandImageInfo);
                 Band virtualBand = new Band("band_" + (bandIdx + 1),
-                                            snapDataType,
-                                            imageWidth,
-                                            imageHeight);
+                        snapDataType,
+                        imageWidth,
+                        imageHeight);
 
-            JP2MultiLevelSource source = new JP2MultiLevelSource(localCacheFolder, jp2ImageFile, bandIdx, numBands, imageWidth, imageHeight,
-                    csInfo.getTileWidth(), csInfo.getTileHeight(),
-                    csInfo.getNumTilesX(), csInfo.getNumTilesY(),
-                    csInfo.getNumResolutions(), awtDataType,
-                    this.product.getSceneGeoCoding(), subsetRegion);
+                JP2MultiLevelSource source = new JP2MultiLevelSource(localCacheFolder, jp2ImageFile, bandIdx, numBands, imageWidth, imageHeight,
+                        csInfo.getTileWidth(), csInfo.getTileHeight(),
+                        csInfo.getNumTilesX(), csInfo.getNumTilesY(),
+                        csInfo.getNumResolutions(), awtDataType,
+                        this.product.getSceneGeoCoding(), subsetRegion);
 
-            virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
+                virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
 
                 if (bandScales != null && bandOffsets != null) {
                     virtualBand.setScalingFactor(bandScales[bandIdx]);
                     virtualBand.setScalingOffset(bandOffsets[bandIdx]);
+                }
+                this.product.addBand(virtualBand);
+            }
+        }
+    }
+
+    private void addBandsNew(ImageInfo imageInfo, CodeStreamInfo csInfo, double[] bandScales, double[] bandOffsets) {
+        List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
+
+        Rectangle imageReadBounds = new Rectangle(0, 0, this.product.getSceneRasterWidth(), this.product.getSceneRasterHeight());
+        int numBands = componentTilesInfo.size();
+
+        if (getSubsetDef() != null && getSubsetDef().getRegion() != null) {
+            imageReadBounds = getSubsetDef().getRegion();
+        }
+        Dimension defaultImageSize = new Dimension(imageInfo.getWidth(), imageInfo.getHeight());
+        JP2ImageFile jp2ImageFile = new JP2ImageFile(this.virtualJp2File);
+        Path localCacheFolder = this.virtualJp2File.getLocalCacheFolder();
+
+        for (int bandIndex = 0; bandIndex < numBands; bandIndex++) {
+            String bandName = "band_" + (bandIndex + 1);
+            if (getSubsetDef() == null || getSubsetDef().isNodeAccepted(bandName)) {
+                ImageInfo.ImageInfoComponent bandImageInfo = imageInfo.getComponents().get(bandIndex);
+                int snapDataType = getSnapDataTypeFromImageInfo(bandImageInfo);
+                int awtDataType = getAwtDataTypeFromImageInfo(bandImageInfo);
+                Band virtualBand = new Band("band_" + (bandIndex + 1),
+                        snapDataType,
+                        this.product.getSceneRasterWidth(),
+                        this.product.getSceneRasterHeight());
+
+                Dimension decompresedTileSize = new Dimension(csInfo.getTileWidth(), csInfo.getTileHeight());
+
+                CopyOfJP2MultiLevelSource source = new CopyOfJP2MultiLevelSource(jp2ImageFile, localCacheFolder, defaultImageSize, imageReadBounds, numBands, bandIndex,
+                                                                                 decompresedTileSize, csInfo.getNumResolutions(), awtDataType, this.product.getSceneGeoCoding());
+                virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
+
+                if (bandScales != null && bandOffsets != null) {
+                    virtualBand.setScalingFactor(bandScales[bandIndex]);
+                    virtualBand.setScalingOffset(bandOffsets[bandIndex]);
                 }
                 this.product.addBand(virtualBand);
             }

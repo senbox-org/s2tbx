@@ -36,6 +36,7 @@ import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.*;
 import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.jai.JAIUtils;
@@ -158,7 +159,8 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                             if (bandGeoCoding != null) {
                                 targetBand.setGeoCoding(bandGeoCoding);
                             }
-                            RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, productBounds, preferredTileSize, targetBand.getGeoCoding());
+                            int dataBufferType = ImageManager.getDataBufferType(targetBand.getDataType());
+                            RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, dataBufferType, productBounds, preferredTileSize, targetBand.getGeoCoding());
                             targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
                         } else {
                             Product nitfProduct = gdalProductReader.readProduct(localFile.toPath(), productBounds);

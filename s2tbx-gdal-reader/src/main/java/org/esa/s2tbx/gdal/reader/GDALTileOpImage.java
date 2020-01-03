@@ -27,9 +27,9 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
     private ImageReader imageReader;
 
     public GDALTileOpImage(Path sourceLocalFile, int bandIndex, MultiLevelModel imageMultiLevelModel,
-                           int dataBufferType, Rectangle imageBounds, Dimension tileSize, Point tileOffset, int level) {
+                           int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
 
-        super(imageMultiLevelModel, dataBufferType, imageBounds, tileSize, tileOffset, level);
+        super(imageMultiLevelModel, dataBufferType, imageReadBounds, tileSize, tileOffsetFromReadBounds, level);
 
         this.imageReader = new ImageReader(sourceLocalFile, bandIndex, dataBufferType, level);
     }
@@ -45,13 +45,13 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
     }
 
     @Override
-    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destinationRectangle) {
-        Rectangle tileBoundsIntersection = computeIntersectionOnNormalBounds(destinationRectangle);
-        if (!tileBoundsIntersection.isEmpty()) {
-            int levelDestinationX = ImageUtils.computeLevelSize(tileBoundsIntersection.x, getLevel());
-            int levelDestinationY = ImageUtils.computeLevelSize(tileBoundsIntersection.y, getLevel());
-            int levelDestinationWidth = ImageUtils.computeLevelSize(tileBoundsIntersection.width, getLevel());
-            int levelDestinationHeight = ImageUtils.computeLevelSize(tileBoundsIntersection.height, getLevel());
+    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster levelDestinationRaster, Rectangle levelDestinationRectangle) {
+        Rectangle normalBoundsIntersection = computeIntersectionOnNormalBounds(levelDestinationRectangle);
+        if (!normalBoundsIntersection.isEmpty()) {
+            int levelDestinationX = ImageUtils.computeLevelSize(normalBoundsIntersection.x, getLevel());
+            int levelDestinationY = ImageUtils.computeLevelSize(normalBoundsIntersection.y, getLevel());
+            int levelDestinationWidth = ImageUtils.computeLevelSize(normalBoundsIntersection.width, getLevel());
+            int levelDestinationHeight = ImageUtils.computeLevelSize(normalBoundsIntersection.height, getLevel());
 //            int gdalLevelBandWidth = this.imageReader.getBandWidth();
 //            if (levelDestinationWidth != gdalLevelBandWidth) {
 //                throw new IllegalStateException("The level width is different: levelDestinationWidth=" + levelDestinationWidth + ", fileTileWidth=" + gdalLevelBandWidth);
@@ -66,9 +66,9 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
                 Raster imageRaster = readTileImage.getData();
                 int bandList[] = new int[]{0}; // the band index is zero
                 Raster readBandRaster = imageRaster.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
-                dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
+                levelDestinationRaster.setDataElements(levelDestinationRaster.getMinX(), levelDestinationRaster.getMinY(), readBandRaster);
             } catch (IOException ex) {
-                throw new IllegalStateException("Failed to read the data for level " + getLevel() + " and rectangle " + destinationRectangle + ".", ex);
+                throw new IllegalStateException("Failed to read the data for level " + getLevel() + " and rectangle " + levelDestinationRectangle + ".", ex);
             }
         }
     }

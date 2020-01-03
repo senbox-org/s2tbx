@@ -19,8 +19,8 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource<Void> {
     private final int dataBufferType;
     private final int bandIndex;
 
-    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle visibleImageBounds, Dimension tileSize, int bandIndex, int levelCount, GeoCoding geoCoding) {
-        super(levelCount, visibleImageBounds, tileSize, geoCoding);
+    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, int bandIndex, int levelCount, GeoCoding geoCoding) {
+        super(levelCount, imageReadBounds, tileSize, geoCoding);
 
         this.sourceLocalFile = sourceLocalFile;
         this.dataBufferType = dataBufferType;
@@ -28,13 +28,13 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource<Void> {
     }
 
     @Override
-    protected SourcelessOpImage buildTileOpImage(Rectangle visibleBounds, int level, Point tileOffset, Dimension tileSize, Void tileData) {
-        return new GDALTileOpImage(this.sourceLocalFile, this.bandIndex, getModel(), this.dataBufferType, visibleBounds, tileSize, tileOffset, level);
+    protected SourcelessOpImage buildTileOpImage(Rectangle imageCellReadBounds, int level, Point tileOffset, Dimension tileSize, Void tileData) {
+        return new GDALTileOpImage(this.sourceLocalFile, this.bandIndex, getModel(), this.dataBufferType, imageCellReadBounds, tileSize, tileOffset, level);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        java.util.List<RenderedImage> tileImages = buildTileImages(level, this.visibleImageBounds, 0.0f, 0.0f, null);
+        java.util.List<RenderedImage> tileImages = buildTileImages(level, this.imageReadBounds, 0.0f, 0.0f, null);
         if (tileImages.size() > 0) {
             return buildMosaicOp(level, tileImages);
         }

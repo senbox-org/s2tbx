@@ -18,9 +18,9 @@ public class SpotViewTileOpImage extends AbstractSubsetTileOpImage {
     private final int bandCount;
 
     public SpotViewTileOpImage(SpotViewImageReader spotViewImageReader, MultiLevelModel imageMultiLevelModel, int dataBufferType, int bandIndex,
-                               int bandCount, Rectangle imageBounds, Dimension tileSize, Point tileOffset, int level) {
+                               int bandCount, Rectangle imageBounds, Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
 
-        super(imageMultiLevelModel, dataBufferType, imageBounds, tileSize, tileOffset, level);
+        super(imageMultiLevelModel, dataBufferType, imageBounds, tileSize, tileOffsetFromReadBounds, level);
 
         this.spotViewImageReader = spotViewImageReader;
         this.bandIndex = bandIndex;

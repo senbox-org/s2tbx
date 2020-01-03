@@ -18,8 +18,10 @@ public class RapidEyeL1TileOpImage extends AbstractSubsetTileOpImage {
 
     private final NITFReaderWrapper nitfReader;
 
-    public RapidEyeL1TileOpImage(NITFReaderWrapper nitfReader, MultiLevelModel imageMultiLevelModel, int dataBufferType, int bandIndex, Rectangle imageBounds, Dimension tileSize, Point tileOffset, int level) {
-        super(imageMultiLevelModel, dataBufferType, imageBounds, tileSize, tileOffset, level);
+    public RapidEyeL1TileOpImage(NITFReaderWrapper nitfReader, MultiLevelModel imageMultiLevelModel, int dataBufferType, Rectangle imageReadBounds,
+                                 Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
+
+        super(imageMultiLevelModel, dataBufferType, imageReadBounds, tileSize, tileOffsetFromReadBounds, level);
 
         this.nitfReader = nitfReader;
     }
