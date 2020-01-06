@@ -273,17 +273,16 @@ public class IkonosProductReader extends AbstractProductReader {
     }
 
     public static List<BandMetadata> readBandMetadata(Path zipArchivePath) throws IOException {
-        VirtualDirEx zipArchiveProductDirectory = VirtualDirEx.build(zipArchivePath, false, false);
-        try {
-            String[] allFileNames = zipArchiveProductDirectory.listAllFiles();
+        try (VirtualDirEx zipArchiveProductBands = VirtualDirEx.build(zipArchivePath, false, false)) {
+            String[] allFileNames = zipArchiveProductBands.listAllFiles();
             List<BandMetadata> bandMetadataList = new ArrayList<>();
             Map<String, Double> metadataInformationList = new HashMap<>();
             for (String itemName : allFileNames) {
                 if (itemName.endsWith(IkonosConstants.IMAGE_METADATA_EXTENSION)) {
-                    BandMetadata bandMetadata = IkonosMetadata.parseIMGMetadataFile(zipArchiveProductDirectory, itemName);
+                    BandMetadata bandMetadata = IkonosMetadata.parseIMGMetadataFile(zipArchiveProductBands, itemName);
                     bandMetadataList.add(bandMetadata);
                 } else if (itemName.endsWith(IkonosConstants.IMAGE_COMMON_METADATA_EXTENSION)) {
-                    Map<String, Double> metadataInformation = IkonosMetadata.parseMetadataFile(zipArchiveProductDirectory, itemName);
+                    Map<String, Double> metadataInformation = IkonosMetadata.parseMetadataFile(zipArchiveProductBands, itemName);
                     metadataInformationList.putAll(metadataInformation);
                 }
             }
@@ -294,8 +293,6 @@ public class IkonosProductReader extends AbstractProductReader {
                 band.setSunAngleElevation(metadataInformationList.get(IkonosConstants.TAG_SUN_ANGLE_ELEVATION));
             }
             return bandMetadataList;
-        } finally {
-            zipArchiveProductDirectory.close();
         }
     }
 }

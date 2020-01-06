@@ -143,12 +143,10 @@ public class TileComponent {
     }
 
     public List<String> getDeliveredTiles() {
-        return deliveredTiles;
+        return this.deliveredTiles;
     }
 
-    public void setDeliveredTiles(String deliveredTile) {
+    public void addDeliveredTile(String deliveredTile) {
         this.deliveredTiles.add(deliveredTile);
     }
-
-
 }
