@@ -1,9 +1,6 @@
 package org.esa.s2tbx.dataio.worldview2esa.metadata;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This maps to the corresponding WorldView2 ESA archive Tile Component element.
@@ -13,7 +10,7 @@ import java.util.Map;
 public class TileComponent {
 
     private String[] tileNames;
-    private List<String> deliveredTiles = new ArrayList<>();
+    private Set<String> deliveredTiles;
     private String bandID;
     private int numRows;
     private int numColumns;
@@ -21,10 +18,15 @@ public class TileComponent {
     private double originX;
     private double originY;
     private double stepSize;
-    private Map<String, Double> scalingFactor = new HashMap<>();
+    private Map<String, Double> scalingFactor;
     private int mapZone;
     private String mapHemisphere;
     private int numOfTiles;
+
+    public TileComponent() {
+        this.deliveredTiles = new HashSet<>();
+        this.scalingFactor = new HashMap<>();
+    }
 
     public String[] getTileNames() {
         return tileNames;
@@ -142,8 +144,8 @@ public class TileComponent {
         }
     }
 
-    public List<String> getDeliveredTiles() {
-        return this.deliveredTiles;
+    public String[] getDeliveredTiles() {
+        return this.deliveredTiles.toArray(new String[this.deliveredTiles.size()]);
     }
 
     public void addDeliveredTile(String deliveredTile) {

@@ -23,7 +23,7 @@ public class WorldView2ESAProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public MetadataInspector getMetadataInspector() {
-        return new WorldViewESAMetadataInspector();
+        return new WorldView2ESAMetadataInspector();
     }
 
     @Override

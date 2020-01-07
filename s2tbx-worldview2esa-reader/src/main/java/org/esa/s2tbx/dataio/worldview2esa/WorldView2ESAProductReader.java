@@ -21,6 +21,8 @@ import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
+import org.esa.snap.dataio.geotiff.GeoTiffMatrixMultiLevelSource;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.SAXException;
@@ -36,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -51,6 +54,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
 
     static {
         XmlMetadataParserFactory.registerParser(WorldView2ESAMetadata.class, new XmlMetadataParser<>(WorldView2ESAMetadata.class));
+        XmlMetadataParserFactory.registerParser(TileMetadata.class, new XmlMetadataParser<>(TileMetadata.class));
     }
 
     private static final String EXCLUSION_STRING = ".SI.XML";
@@ -93,6 +97,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             TileMetadataList tileMetadataList = readTileMetadataList(imagesMetadataParentPath);
 
             Dimension defaultProductSize = tileMetadataList.computeDefaultProductSize();
+            if (defaultProductSize == null) {
+                throw new NullPointerException("The product default size is null.");
+            }
 
             ProductSubsetDef subsetDef = getSubsetDef();
             Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
@@ -117,41 +124,13 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                     product.getMetadataRoot().addElement(tileMetadata.getRootElement());
                 }
-                Map<String, int[]> tileInfo = tileMetadata.getRasterTileInfo();
-                int tileRowCount = tileMetadata.getTileRowsCount();
-                int tileColumnCount = tileMetadata.getTileColsCount();
-                GeoTiffImageReader[][] geoTiffImageReaders = new GeoTiffImageReader[tileColumnCount][tileRowCount];
-
-                for (String rasterString : tileInfo.keySet()) {
-                    int[] coordinates = tileInfo.get(rasterString);
-                    if (!tiffImageRelativeFiles.isEmpty()) {
-                        for (String file : tiffImageRelativeFiles) {
-                            if (file.contains(rasterString)) {
-                                rasterString = file;
-                            }
-                        }
-                    }
-                    GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, rasterString);
-                    this.bandImageReaders.add(geoTiffImageReader);
-                    geoTiffImageReaders[coordinates[0]][coordinates[1]] = geoTiffImageReader;
-                }
-
-                MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRowCount, tileColumnCount);
-                for (int rowIndex=0; rowIndex<tileRowCount; rowIndex++) {
-                    for (int columnIndex=0; columnIndex<tileColumnCount; columnIndex++) {
-                        GeoTiffImageReader geoTiffImageReader = geoTiffImageReaders[rowIndex][columnIndex];
-                        SampleModel sampleModel = geoTiffImageReader.getBaseImage().getSampleModel();
-                        WorldViewESAMatrixCell matrixCell = new WorldViewESAMatrixCell(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight(), geoTiffImageReader, sampleModel.getDataType());
-                        mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
-                    }
-                }
-
+                MosaicMatrix mosaicMatrix = buildMosaicMatrix(tileMetadata, tiffImageRelativeFiles, imagesMetadataParentPath);
                 String[] bandNames = tileMetadataList.computeBandNames(tileMetadata);
                 for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
                     String bandName = bandNames[bandIndex];
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                        Band targetBand = buildBand(defaultProductSize, productBounds, mosaicMatrix, tileMetadata, bandName, bandIndex, preferredTileSize, productGeoCoding);
-                        product.addBand(targetBand);
+                        Band band = buildBand(defaultProductSize, productBounds, mosaicMatrix, tileMetadata, bandName, bandIndex, preferredTileSize, productGeoCoding);
+                        product.addBand(band);
                     }
                 }
             }
@@ -167,6 +146,37 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 closeResources();
             }
         }
+    }
+
+    private MosaicMatrix buildMosaicMatrix(TileMetadata tileMetadata, Set<String> tiffImageRelativeFiles, Path imagesMetadataParentPath) throws Exception {
+        Map<String, int[]> tileInfo = tileMetadata.computeRasterTileInfo();
+        int tileRowCount = tileMetadata.getTileRowsCount();
+        int tileColumnCount = tileMetadata.getTileColsCount();
+        GeoTiffImageReader[][] geoTiffImageReaders = new GeoTiffImageReader[tileRowCount][tileColumnCount];
+        for (String rasterString : tileInfo.keySet()) {
+            int[] coordinates = tileInfo.get(rasterString);
+            if (!tiffImageRelativeFiles.isEmpty()) {
+                for (String file : tiffImageRelativeFiles) {
+                    if (file.contains(rasterString)) {
+                        rasterString = file;
+                        break;
+                    }
+                }
+            }
+            GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, rasterString);
+            this.bandImageReaders.add(geoTiffImageReader);
+            geoTiffImageReaders[coordinates[0]][coordinates[1]] = geoTiffImageReader;
+        }
+        MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRowCount, tileColumnCount);
+        for (int rowIndex=0; rowIndex<tileRowCount; rowIndex++) {
+            for (int columnIndex=0; columnIndex<tileColumnCount; columnIndex++) {
+                GeoTiffImageReader geoTiffImageReader = geoTiffImageReaders[rowIndex][columnIndex];
+                SampleModel sampleModel = geoTiffImageReader.getBaseImage().getSampleModel();
+                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight(), geoTiffImageReader, sampleModel.getDataType());
+                mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
+            }
+        }
+        return mosaicMatrix;
     }
 
     private void closeResources() {
@@ -206,7 +216,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         int defaultBandHeight = mosaicMatrix.computeTotalHeight();
         Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
 
-        int productDataType = tileMetadata.getPixelDataType();
+        int productDataType = tileMetadata.getProductDataType();
         Band band = new Band(bandName, productDataType, bandBounds.width, bandBounds.height);
         band.setSpectralWavelength(WorldView2ESAConstants.BAND_WAVELENGTH.get(band.getName()));
         band.setNoDataValueUsed(true);
@@ -218,7 +228,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         if (bandGeoCoding != null) {
             band.setGeoCoding(bandGeoCoding);
         }
-        WorldViewESAMosaicMultiLevelSource multiLevelSource = new WorldViewESAMosaicMultiLevelSource(mosaicMatrix, bandBounds, preferredTileSize, bandIndex, bandGeoCoding);
+        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(mosaicMatrix, bandBounds, preferredTileSize, bandIndex, bandGeoCoding);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
         band.setScalingFactor(tileMetadata.getTileComponent().getScalingFactor(band.getName()));
@@ -250,7 +260,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 CoordinateReferenceSystem mapCRS = CRS.decode(crsCode);
                 geoCoding = new CrsGeoCoding(mapCRS, productWidth, productHeight, originX, originY, stepSize, stepSize);
             } catch (Exception e) {
-                logger.warning(e.getMessage());
+                logger.log(Level.SEVERE, "Failed to read the product geo coding.", e);
             }
         }
         return geoCoding;
@@ -269,7 +279,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 double originY = tileComponent.getOriginY();
                 geoCoding = new CrsGeoCoding(crs, width, height, originX, originY, stepSize, stepSize, 0.0, 0.0);
             } catch (Exception e) {
-                logger.warning(e.getMessage());
+                logger.log(Level.SEVERE, "Failed to read the band geo coding.", e);
             }
         }
         return geoCoding;
@@ -302,14 +312,14 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         return productDirectory.getFile(zipArchiveFileName).toPath();
     }
 
-    public static TileMetadataList readTileMetadataList(Path imagesMetadataParentPath)
-                                                        throws IOException, IllegalAccessException, InvocationTargetException, InstantiationException {
-
+    public static TileMetadataList readTileMetadataList(Path imagesMetadataParentPath) throws Exception {
         TileMetadataList tileMetadataList = new TileMetadataList();
         try (VirtualDirEx productBandsDirectory = VirtualDirEx.build(imagesMetadataParentPath, false, false)) {
             String[] allFileNames = productBandsDirectory.listAllFiles();
             for (String fileRelativePath : allFileNames) {
-                if (fileRelativePath.endsWith(WorldView2ESAConstants.METADATA_EXTENSION) && !fileRelativePath.endsWith(WorldView2ESAConstants.METADATA_FILE_SUFFIX) && !fileRelativePath.endsWith(EXCLUSION_STRING)) {
+                if (fileRelativePath.endsWith(WorldView2ESAConstants.METADATA_EXTENSION) && !fileRelativePath.endsWith(WorldView2ESAConstants.METADATA_FILE_SUFFIX)
+                        && !fileRelativePath.endsWith(EXCLUSION_STRING)) {
+
                     try (FilePathInputStream filePathInputStream = productBandsDirectory.getInputStream(fileRelativePath)) {
                         TileMetadata tileMetadata = TileMetadata.create(filePathInputStream);
                         tileMetadata.setFileName(fileRelativePath);

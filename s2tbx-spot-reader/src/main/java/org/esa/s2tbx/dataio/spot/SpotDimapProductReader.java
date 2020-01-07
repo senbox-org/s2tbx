@@ -35,6 +35,8 @@ import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
+import org.esa.snap.dataio.geotiff.GeoTiffMatrixMultiLevelSource;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.geotools.metadata.InvalidMetadataException;
 
@@ -74,9 +76,10 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
-                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight,
-                                          ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        // do nothing
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
+                                          throws IOException {
+
+        throw new UnsupportedOperationException("Method not implemented");
     }
 
     @Override
@@ -180,7 +183,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 }
                 band.setSpectralBandIndex(bandIndex + 1);
 
-                SpotMultipleVolumeMosaicMultiLevelSource multiLevelSource = new SpotMultipleVolumeMosaicMultiLevelSource(spotBandMatrices[bandIndex], productBounds, preferredTileSize, bandIndex, band.getGeoCoding());
+                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds, preferredTileSize, bandIndex, band.getGeoCoding());
                 band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
                 product.addBand(band);
             }
@@ -236,7 +239,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             for (int bandIndex = 0; bandIndex<sampleModel.getNumBands(); bandIndex++) {
                 int cellWidth = geoTiffImageReader.getImageWidth();
                 int cellHeight = geoTiffImageReader.getImageHeight();
-                SpotMultipleVolumeMatrixCell matrixCell = new SpotMultipleVolumeMatrixCell(cellWidth, cellHeight, geoTiffImageReader, sampleModel.getDataType());
+                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, geoTiffImageReader, sampleModel.getDataType());
                 spotBandMatrices[bandIndex].addCell(matrixCell);
             }
         }

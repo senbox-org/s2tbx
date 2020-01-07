@@ -3,14 +3,20 @@ package org.esa.s2tbx.dataio.worldview2.metadata;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Basic reader for WorldView 2 products.
@@ -20,17 +26,9 @@ import java.nio.file.Path;
  */
 public class WorldView2Metadata extends XmlMetadata {
 
-    private static class WorldView2MetadataParser extends XmlMetadataParser<WorldView2Metadata> {
+    public static final String EXCLUSION_STRING = "README";
 
-        public WorldView2MetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return false;
-        }
-    }
+    private final Map<String, TileMetadataList> products;
 
     /**
      * Constructs an instance of metadata class and assigns a name to the root <code>MetadataElement</code>.
@@ -39,6 +37,8 @@ public class WorldView2Metadata extends XmlMetadata {
      */
     public WorldView2Metadata(String name) {
         super(name);
+
+        this.products = new HashMap<>();
     }
 
     @Override
@@ -121,17 +121,47 @@ public class WorldView2Metadata extends XmlMetadata {
         return null;
     }
 
-    public static WorldView2Metadata create(FilePathInputStream filePathInputStream) throws IOException {
-        WorldView2Metadata result;
-        try {
-            WorldView2MetadataParser parser = new WorldView2MetadataParser(WorldView2Metadata.class);
-            result = parser.parse(filePathInputStream);
-        } catch (ParserConfigurationException | SAXException e) {
-            throw new IllegalStateException(e);
+    public String getOrderNumber() {
+        String[] attributeValues = getAttributeValues(WorldView2Constants.PATH_ORDER_NUMBER);
+        if (attributeValues != null && attributeValues.length > 0) {
+            return attributeValues[0];
         }
-        Path path = filePathInputStream.getPath();
-        result.setPath(path);
-        result.setFileName(path.getFileName().toString());
-        return result;
+        return null;
+    }
+
+    public String[] findProductNames() {
+        Set<String> products = new HashSet<>();
+        final String[] fileNames = getAttributeValues(WorldView2Constants.PATH_FILE_LIST);
+        for (String file : fileNames) {
+            if (file.endsWith(WorldView2Constants.METADATA_EXTENSION) && !file.contains(EXCLUSION_STRING)) {
+                String filename = file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf(WorldView2Constants.METADATA_EXTENSION));
+                String value = filename.substring(0, filename.indexOf("-"));
+                products.add(value);
+            }
+        }
+        return products.toArray(new String[0]);
+    }
+
+    public void addProductTileMetadataList(String productName, TileMetadataList tileMetadataList) {
+        this.products.put(productName, tileMetadataList);
+    }
+
+    public Map<String, TileMetadataList> getProducts() {
+        return products;
+    }
+
+    public Dimension computeDefaultProductSize() {
+        int defaultProductWidth = 0;
+        int defaultProductHeight = 0;
+        for (TileMetadataList tileMetadataList : this.products.values()) {
+            Dimension size = tileMetadataList.computeDefaultProductSize();
+            if (defaultProductWidth < size.width) {
+                defaultProductWidth = size.width;
+            }
+            if (defaultProductHeight < size.height) {
+                defaultProductHeight = size.height;
+            }
+        }
+        return new Dimension(defaultProductWidth, defaultProductHeight);
     }
 }

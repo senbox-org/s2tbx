@@ -13,9 +13,9 @@ import java.nio.file.Path;
 /**
  * Created by jcoravu on 6/1/2020.
  */
-public class WorldViewESAMetadataInspector implements MetadataInspector {
+public class WorldView2ESAMetadataInspector implements MetadataInspector {
 
-    public WorldViewESAMetadataInspector() {
+    public WorldView2ESAMetadataInspector() {
     }
 
     @Override
@@ -26,6 +26,9 @@ public class WorldViewESAMetadataInspector implements MetadataInspector {
             TileMetadataList tileMetadataList = WorldView2ESAProductReader.readTileMetadataList(imagesMetadataParentPath);
 
             Dimension defaultProductSize = tileMetadataList.computeDefaultProductSize();
+            if (defaultProductSize == null) {
+                throw new NullPointerException("The product default size is null.");
+            }
 
             Metadata metadata = new Metadata();
             metadata.setProductWidth(defaultProductSize.width);
