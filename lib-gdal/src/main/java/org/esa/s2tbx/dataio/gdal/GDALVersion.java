@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -119,17 +118,13 @@ public enum GDALVersion {
         return osCategory.operatingSystemName + "/" + osCategory.architecture;
     }
 
-    public Path getZipFilePathFromSources() {
-        Path zipFileDirectoryFromSources = Paths.get(GDAL_NATIVE_LIBRARIES_SRC).resolve(getDirectory()).resolve(getZipName());
+    public URL getZipFileURLFromSources() {
+        String zipFileDirectoryFromSources = GDAL_NATIVE_LIBRARIES_SRC + "/" + getDirectory() + "/" + getZipName();
         try {
-            URL sourceZipFileDirectoryURL = getClass().getClassLoader().getResource(zipFileDirectoryFromSources.toString().replace(File.separator, "/"));
-            if (sourceZipFileDirectoryURL != null) {
-                return Paths.get(sourceZipFileDirectoryURL.toURI());
-            }
-        } catch (Exception e) {
-            //
+            return getClass().getClassLoader().getResource(zipFileDirectoryFromSources.replace(File.separator, "/"));
+        } catch (Exception ignored) {
+            return null;
         }
-        return null;
     }
 
     public Path getZipFilePath() {
@@ -137,18 +132,14 @@ public enum GDALVersion {
         return zipFileDirectory.resolve(getDirName()).resolve(getZipName());
     }
 
-    public Path getEnvironmentVariablesFilePathFromSources() {
+    public URL getEnvironmentVariablesFilePathFromSources() {
         String evFileNameFromSources = System.mapLibraryName(osCategory.getEnvironmentVariablesFileName());
-        Path evFileDirectoryFromSources = Paths.get(GDAL_NATIVE_LIBRARIES_SRC).resolve(getDirectory()).resolve(evFileNameFromSources);
+        String evFileDirectoryFromSources = GDAL_NATIVE_LIBRARIES_SRC + "/" + getDirectory() + "/" + evFileNameFromSources;
         try {
-            URL sourceEnvFileDirectoryURL = getClass().getClassLoader().getResource(evFileDirectoryFromSources.toString().replace(File.separator, "/"));
-            if (sourceEnvFileDirectoryURL != null) {
-                return Paths.get(sourceEnvFileDirectoryURL.toURI());
-            }
-        } catch (Exception e) {
-            //
+            return getClass().getClassLoader().getResource(evFileDirectoryFromSources.replace(File.separator, "/"));
+        } catch (Exception ignored) {
+            return null;
         }
-        return null;
     }
 
     public Path getEnvironmentVariablesFilePath() {

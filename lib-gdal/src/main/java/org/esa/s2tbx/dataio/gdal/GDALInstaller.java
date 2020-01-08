@@ -179,11 +179,7 @@ class GDALInstaller {
                 canCopyGDALDistribution = true;
             }
 
-            try {
-                if (gdalVersion.getZipFilePathFromSources() == null) {
-                    throw new IllegalStateException("");
-                }
-            } catch (Exception ignored) {
+            if (gdalVersion.getZipFileURLFromSources() == null) {
                 throw new ExceptionInInitializerError("No JNI drivers provided for installed GDAL version on this OS. Please uninstall!");
             }
 
@@ -220,16 +216,16 @@ class GDALInstaller {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, "Copy the zip archive to folder '" + zipFilePath.toString() + "'.");
                 }
-                Path zipFilePathFromSources = gdalVersion.getZipFilePathFromSources();
-                if (zipFilePathFromSources != null) {
-                    FileHelper.copyFile(zipFilePathFromSources.toUri().toURL(), zipFilePath);
+                URL zipFileURLFromSources = gdalVersion.getZipFileURLFromSources();
+                if (zipFileURLFromSources != null) {
+                    FileHelper.copyFile(zipFileURLFromSources, zipFilePath);
 
                     if (logger.isLoggable(Level.FINE)) {
                         logger.log(Level.FINE, "Decompress the zip archive to folder '" + gdalDistributionRootFolderPath.toString() + "'.");
                     }
                     FileHelper.unzip(zipFilePath, gdalDistributionRootFolderPath, true);
                 } else {
-                    throw new IllegalStateException("Unable to get GDAL zipFilePathFromSources");
+                    throw new ExceptionInInitializerError("No JNI drivers provided for installed GDAL version on this OS. Please uninstall!");
                 }
             } finally {
                 try {
@@ -245,17 +241,15 @@ class GDALInstaller {
                 logger.log(Level.FINE, "Copy the environment variables library file.");
             }
 
-            Path libraryFilePathFromSources = gdalVersion.getEnvironmentVariablesFilePathFromSources();
-            if (libraryFilePathFromSources != null) {
-
-
+            URL libraryFileURLFromSources = gdalVersion.getEnvironmentVariablesFilePathFromSources();
+            if (libraryFileURLFromSources != null) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "The environment variables library file path on the local disk is '" + libraryFilePath.toString() + "' and the library file name from sources is '" + libraryFilePathFromSources.toString() + "'.");
+                    logger.log(Level.FINE, "The environment variables library file path on the local disk is '" + libraryFilePath.toString() + "' and the library file name from sources is '" + libraryFileURLFromSources.toString() + "'.");
                 }
 
-                FileHelper.copyFile(libraryFilePathFromSources.toUri().toURL(), libraryFilePath);
+                FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
             } else {
-                throw new IllegalStateException("Unable to get environment variables libraryFilePathFromSources");
+                throw new IllegalStateException("Unable to get environment variables libraryFileURLFromSources");
             }
         }
 
