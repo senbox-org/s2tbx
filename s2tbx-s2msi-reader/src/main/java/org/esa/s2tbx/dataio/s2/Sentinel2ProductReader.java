@@ -28,7 +28,6 @@ import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.ProductReaderExposedParams;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -36,16 +35,14 @@ import org.esa.snap.core.datamodel.quicklooks.Quicklook;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -153,12 +150,12 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         VirtualPath virtualPath;
         if (inputObject instanceof File) {
             File inputFile = (File) inputObject;
-            Path inputPath = processInputPath(inputFile.toPath());
+            Path inputPath = S2ProductNamingUtils.processInputPath(inputFile.toPath());
             virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
         } else if (inputObject instanceof VirtualPath) {
             virtualPath = (VirtualPath) getInput();
         } else if (inputObject instanceof Path) {
-            Path inputPath = processInputPath((Path) inputObject);
+            Path inputPath = S2ProductNamingUtils.processInputPath((Path) inputObject);
             virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
         } else {
             throw new IllegalArgumentException("Unknown input type '" + inputObject + "'.");
@@ -435,18 +432,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         super.close();
     }
 
-    private static Path processInputPath(Path inputPath) {
-        if (inputPath.getFileSystem() == FileSystems.getDefault()) {
-            // the local file system
-            if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-                String longInput = Utils.GetLongPathNameW(inputPath.toString());
-                if (longInput.length() > 0) {
-                    return Paths.get(longInput);
-                }
-            }
-        }
-        return inputPath;
-    }
 
     public static class BandInfo {
         private final Map<String, VirtualPath> tileIdToPathMap;

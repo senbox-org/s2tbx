@@ -20,11 +20,12 @@ package org.esa.s2tbx.dataio.s2.ortho;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
+import org.esa.s2tbx.dataio.s2.Sentinel2MetadataInspector;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
-import org.esa.snap.core.dataio.ProductReaderExposedParams;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
@@ -52,24 +53,11 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     private S2Config.Sentinel2ProductLevel level;
     @Override
-    public ProductReaderExposedParams getExposedParams() {
-        List<String> bandNames = new ArrayList<>();
-        bandNames.add("B1");
-        bandNames.add("B2");
-        bandNames.add("B3");
-        bandNames.add("B4");
-        bandNames.add("B5");
-        bandNames.add("B6");
-        bandNames.add("B7");
-        bandNames.add("B8");
-        bandNames.add("B8A");
-        bandNames.add("B9");
-        bandNames.add("B10");
-        bandNames.add("B11");
-        bandNames.add("B12");
-
-        return new ProductReaderExposedParams(bandNames, true);
-
+    public MetadataInspector getMetadataInspector() {
+        Sentinel2MetadataInspector inspector= new Sentinel2MetadataInspector();
+        inspector.setProductResolution(getResolution());
+        inspector.setProductLevel(getLevel());
+        return inspector;
     }
 
     public S2OrthoProductReaderPlugIn() {

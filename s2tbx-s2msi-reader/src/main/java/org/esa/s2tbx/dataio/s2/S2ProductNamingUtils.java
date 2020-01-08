@@ -1,9 +1,12 @@
 package org.esa.s2tbx.dataio.s2;
 
+import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -313,7 +316,7 @@ public class S2ProductNamingUtils {
     }
 
 
-    private static String getEpsgCodeFromGranule(VirtualPath xmlPath) {
+    protected static String getEpsgCodeFromGranule(VirtualPath xmlPath) {
         String epsgCode = null;
 
         String tileId = getTileIdFromString(xmlPath.getFileName().toString());
@@ -360,5 +363,18 @@ public class S2ProductNamingUtils {
             return S2ProductNamingUtils.checkStructureFromGranuleXml(xmlPath);
         }
         return false;
+    }
+
+    protected static Path processInputPath(Path inputPath) {
+        if (inputPath.getFileSystem() == FileSystems.getDefault()) {
+            // the local file system
+            if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+                String longInput = Utils.GetLongPathNameW(inputPath.toString());
+                if (longInput.length() > 0) {
+                    return Paths.get(longInput);
+                }
+            }
+        }
+        return inputPath;
     }
 }
