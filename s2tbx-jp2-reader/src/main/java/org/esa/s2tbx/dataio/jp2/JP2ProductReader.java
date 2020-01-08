@@ -156,9 +156,9 @@ public class JP2ProductReader extends AbstractProductReader {
 
             double[] bandScales = null;
             double[] bandOffsets = null;
-            addBands(imageInfo, csInfo, bandScales, bandOffsets);
+            //addBands(imageInfo, csInfo, bandScales, bandOffsets);
             //TODO Jean new method to create a subset
-            //addBandsNew(imageInfo, csInfo, bandScales, bandOffsets);
+            addBandsNew(imageInfo, csInfo, bandScales, bandOffsets);
 
             this.product.setPreferredTileSize(JAI.getDefaultTileSize());
             this.product.setFileLocation(jp2File.toFile());
