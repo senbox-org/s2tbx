@@ -130,7 +130,7 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
         this.sceneOrigin = sceneOrigin;
     }
 
-    Dimension getSceneDimension(S2SpatialResolution resolution) {
+    public Dimension getSceneDimension(S2SpatialResolution resolution) {
         return sceneDimensions.get(resolution);
     }
 
