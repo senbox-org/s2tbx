@@ -26,32 +26,43 @@
     <tr class="header">
         <td class="header">&nbsp;
             OTB Installation</td>
-
         <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
     </tr>
 </table>
 
-<h3>OTB Standalone Tool Installation</h3>
+<h3>OTB Overview</h3>
 
-Before integrating it in SNAP, OTB needs to be deployed. Two options are available:
+<p>Orfeo ToolBox (OTB) is an open-source project for state-of-the-art remote sensing.
+    Built on the shoulders of the open-source geospatial community, it can process high resolution optical,
+    multispectral and radar images at the terabyte scale. A wide variety of applications are available:
+    from ortho-rectification or pansharpening, all the way to classification, SAR processing... </p>
+<p><a href="https://www.orfeo-toolbox.org/">Orfeo - Toolbox</a></p>
+
+<p><br>
+    OTB is an external tool that can be used directly in the command line,
+    but some of its application has been adapted in order to be able to execute them from SANP.
+    For using from SNAP, it is needed to install the "Sentinel-2 Toolbox OTB Adapters" plugin which establishes a "bridge" between SNAP and OTB.
+    As the plugin is a "bridge", it is needed to install OTB. The easiest way to install it is directly from SNAP.
+</p>
+
+<h3>OTB installation from SNAP</h3>
 <ul>
-    <li> Portable version </li>
-    <li> Installable version: installer to execute</li>
+    <li>Install the OTB plugin in SNAP: Tools->Plugins</li>
+    <img src="../images/otbPlugin.jpg" border=0/>
+    <li>Check the installation in the menu</li>
+    <img src="../images/otbMenu.jpg" border=0/>
+    <li>Install OTB from SNAP</li>
+    <ul>
+        <li>Tool->Manage External Tools</li>
+        <li>Select one of the OTB applications and Edit</li>
+        <img src="../images/otbTool.jpg" border=0/>
+        <li>Go to Bundled binaries and click on "Download and Install Now"</li>
+        <img src="../images/otbBundle.jpg" border=0/>
+        <li>Check that it has been installed properly</li>
+        <img src="../images/otbToolInstalled.jpg" border=0/>
+    </ul>
 </ul>
 
-
-OTB can be freely downloaded from its website: <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="https://www.orfeo-toolbox.org">
-    <param name="text" value="<html>https://www.orfeo-toolbox.org</html>">
-</object> <br>
-Download and install/unpack OTB before integrating it in SNAP.
-
-<h3>OTB Integration in SNAP</h3>
-Once OTB is unpacked or installed you have to install the plugin. <br>
-First define the OTB_BIN_DIR environment variable as the full path to the "bin" directory of your OTB installation.
-Then from SNAP, go to Tools/Plugins, under the "Available Plugins" tab the OTB appears
-(if it doesn't, check your internet connection and your proxy settings from tools/options>WWW).
-Tick the checkbox next to it, click install and follow the instructions.<br>
 
 </body>
 </html>

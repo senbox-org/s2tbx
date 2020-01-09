@@ -31,20 +31,38 @@
     </tr>
 </table>
 
-<h3>Sen2Cor Standalone Tool Installation</h3>
+<h3>Sen2Cor Overview</h3>
 
-Sen2Cor binaries can be donwnloaded from
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://step.esa.int/main/third-party-plugins-2/sen2cor/">
-    <param name="text" value="<html>http://step.esa.int/main/third-party-plugins-2/sen2cor/</html>">
-</object><br>
-The Software User Manual on this page contains instructions to install the Sen2Cor. Follow these instruction
-before integrating this processor into SNAP.
+<p>Sen2Cor is a processor for Sentinel-2 Level 2A product generation and formatting;
+    it performs the atmospheric correction of Level-1C input data.
+    Sen2Cor creates Bottom-Of-Atmosphere, optionally terrain and cirrus corrected reflectance images.
+    Additionally, it generates also Aerosol Optical Thickness, Water Vapor, Scene Classification Maps and Quality Indicators
+    for cloud and snow probabilities.
+    Its output product format is equivalent to the Level 1C User Product:
+    JPEG 2000 images, three different resolutions, 60, 20 and 10 m.</p>
 
-<h3>Sen2Cor Integration in SNAP</h3>
-Once the processor is installed you have to install the plugin.
-From SNAP, go to Tools/Plugins, under the "Available Plugins" tab the Sen2Cor appears
-(if it doesn't, check your internet connection and your proxy settings from tools/options).
-Tick the checkbox next to it, click install and follow the instructions.<br>
+<p><br>
+    Sen2Cor is an external tool that can be used directly in the command line or through SNAP.
+    For using from SNAP, it is needed to install the Sen2Cor plugin which establishes a "bridge" between SNAP and Sen2Cor.
+    As the plugin is a "bridge", it is needed to install the tool Sen2Cor. The easiest way to install Sen2Cor is to do it directly from SNAP.
+</p>
+
+<h3>Sen2Cor installation from SNAP</h3>
+<ul>
+    <li>Install the Sen2Cor plugin in SNAP: Tools->Plugins</li>
+    <img src="../images/sen2corPlugin.jpg" border=0/>
+    <li>Check the installation in the menu</li>
+    <img src="../images/sen2corMenu.jpg" border=0/>
+    <li>Install Sen2Cor from SNAP</li>
+    <ul>
+        <li>Tool->Manage External Tools</li>
+        <li>Select Sen2Cor and Edit</li>
+        <img src="../images/sen2corTool.jpg" border=0/>
+        <li>Go to Bundled binaries and click on "Download and Install Now"</li>
+        <img src="../images/sen2corBundle.jpg" border=0/>
+        <li>Check that it has been installed properly</li>
+        <img src="../images/sen2corToolInstalled.jpg" border=0/>
+    </ul>
+</ul>
 </body>
 </html>

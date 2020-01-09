@@ -49,7 +49,7 @@ public class S2ReaderMasksPanelController extends OptionsPanelController {
     }
 
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx("s2tbxoptionshelp");
     }
 
     public JComponent getComponent(Lookup masterLookup) {
