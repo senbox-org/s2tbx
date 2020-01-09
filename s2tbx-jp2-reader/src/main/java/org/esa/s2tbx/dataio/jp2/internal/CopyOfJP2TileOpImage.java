@@ -50,8 +50,8 @@ public class CopyOfJP2TileOpImage extends SingleBandedOpImage {
     private final Dimension decompresedTileSize;
     private final Point tileOffsetFromImage;
 
-    CopyOfJP2TileOpImage(JP2ImageFile jp2ImageFile, Path cacheDir, MultiLevelModel imageModel, Dimension decompresedTileSize, int bandCount, int bandIndex, int dataBufferType,
-                         Dimension tileSize, Point tileOffsetFromDecompressedImage, Point tileOffsetFromImage, int decompressTileIndex, int level) {
+    public CopyOfJP2TileOpImage(JP2ImageFile jp2ImageFile, Path cacheDir, MultiLevelModel imageModel, Dimension decompresedTileSize, int bandCount, int bandIndex, int dataBufferType,
+                                Dimension tileSize, Point tileOffsetFromDecompressedImage, Point tileOffsetFromImage, int decompressTileIndex, int level) {
 
         super(dataBufferType, null, tileSize.width, tileSize.height, ImageUtils.computeLevelTileDimension(tileSize, level),
                 null, ResolutionLevel.create(imageModel, level));
