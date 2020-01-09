@@ -56,6 +56,7 @@ public class L1bSceneDescription extends S2SceneDescription {
             this.rectangle = rectangle;
         }
 
+        @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
@@ -209,51 +210,15 @@ public class L1bSceneDescription extends S2SceneDescription {
         return tileInfos[tileIndex].rectangle;
     }
 
-    public BufferedImage createTilePicture(int width) {
-
-        Color[] colors = new Color[]{
-                Color.GREEN,
-                Color.RED,
-                Color.BLUE,
-                Color.YELLOW};
-
-        double scale = width / sceneRectangle.getWidth();
-        int height = (int) Math.round(sceneRectangle.getHeight() * scale);
-
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics = image.createGraphics();
-        graphics.scale(scale, scale);
-        graphics.translate(-sceneRectangle.getX(), -sceneRectangle.getY());
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        graphics.setPaint(Color.WHITE);
-        graphics.fill(sceneRectangle);
-        graphics.setStroke(new BasicStroke(100F));
-        graphics.setFont(new Font("Arial", Font.PLAIN, 800));
-
-        for (int i = 0; i < tileInfos.length; i++) {
-            Rectangle rect = tileInfos[i].rectangle;
-            graphics.setPaint(addAlpha(colors[i % colors.length].brighter(), 100));
-            graphics.fill(rect);
-        }
-        for (int i = 0; i < tileInfos.length; i++) {
-            Rectangle rect = tileInfos[i].rectangle;
-            graphics.setPaint(addAlpha(colors[i % colors.length].darker(), 100));
-            graphics.draw(rect);
-            graphics.setPaint(colors[i % colors.length].darker().darker());
-            graphics.drawString("Tile " + (i + 1) + ": " + tileInfos[i].id,
-                    rect.x + 1200F,
-                    rect.y + 2200F);
-        }
-        return image;
-    }
-
-    private static Color addAlpha(Color color, int alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
-    }
-
+    @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
+
+    @Override
+    public Rectangle getMatrixTileRectangle(String tileId, S2SpatialResolution resolution) {
+        int tileIndex = getTileIndex(tileId);
+        return getTileRectangle(tileIndex);
     }
 
     public java.util.List<String> getOrderedTileIds() {

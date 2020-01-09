@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -25,14 +26,12 @@ import java.util.Collection;
  */
 public abstract class S2SceneDescription {
 
-
     public S2SceneDescription() {
-
-
     }
 
-    public static
-    <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
+    public abstract Rectangle getMatrixTileRectangle(String tileId, S2SpatialResolution resolution);
+
+    public static <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
         java.util.List<T> list = new ArrayList<T>(c);
         java.util.Collections.sort(list);
         return list;

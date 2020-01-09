@@ -148,6 +148,11 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
         return tileIdsOrder;
     }
 
+    @Override
+    public Rectangle getMatrixTileRectangle(String tileId, S2SpatialResolution resolution) {
+        return getTilePositionInScene(tileId, resolution);
+    }
+
     public Rectangle getTilePositionInScene(String tileId, S2SpatialResolution resolution) {
         return tileInfoMap.get(tileId).getPositionInScene(resolution);
     }

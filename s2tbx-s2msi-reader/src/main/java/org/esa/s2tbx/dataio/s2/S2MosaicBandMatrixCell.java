@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l1b.tiles;
+package org.esa.s2tbx.dataio.s2;
 
 import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
@@ -10,13 +10,13 @@ import java.nio.file.Path;
 /**
  * Created by jcoravu on 8/1/2020.
  */
-public class L1bMosaicMatrixCell implements MosaicMatrix.MatrixCell{
+public class S2MosaicBandMatrixCell implements MosaicMatrix.MatrixCell {
 
     private final JP2ImageFile jp2ImageFile;
     private final Path cacheDir;
     private final TileLayout tileLayout;
 
-    public L1bMosaicMatrixCell(JP2ImageFile jp2ImageFile, Path cacheDir, TileLayout tileLayout) {
+    public S2MosaicBandMatrixCell(JP2ImageFile jp2ImageFile, Path cacheDir, TileLayout tileLayout) {
         this.jp2ImageFile = jp2ImageFile;
         this.cacheDir = cacheDir;
         this.tileLayout = tileLayout;
