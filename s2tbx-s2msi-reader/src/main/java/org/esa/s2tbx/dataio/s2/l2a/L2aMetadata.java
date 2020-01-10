@@ -23,6 +23,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
@@ -46,7 +47,7 @@ import java.util.regex.Pattern;
  *
  * @author Norman Fomferra
  */
-public class L2aMetadata extends S2Metadata {
+public class L2aMetadata extends S2OrthoMetadata {
 
     private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
 
@@ -92,7 +93,7 @@ public class L2aMetadata extends S2Metadata {
 
 
     private L2aMetadata(VirtualPath path, String granuleName, S2Config s2config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
-        super(s2config);
+        super(path, granuleName, !isAGranule, s2config);
         resetTileList();
 
         if(!isAGranule) {

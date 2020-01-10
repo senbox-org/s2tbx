@@ -22,6 +22,8 @@ import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.l1b.AbstractS2ProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l1b.S2L1CProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -59,6 +61,11 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
         super(readerPlugIn, epsgCode);
 
         logger = SystemUtils.LOG;
+    }
+
+    @Override
+    protected S2L1CProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
+        return new S2L1CProductMetadataReader(virtualPath, this.epsgCode);
     }
 
     @Override

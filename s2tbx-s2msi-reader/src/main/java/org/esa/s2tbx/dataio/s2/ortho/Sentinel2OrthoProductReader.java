@@ -137,9 +137,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     public static final String SUN_ZENITH_PREFIX = "sun_zenith";
     public static final String SUN_AZIMUTH_PREFIX = "sun_azimuth";
 
-    private final String epsgCode;
+    protected final String epsgCode;
 
-    private S2Metadata metadataHeader;
+    private S2OrthoMetadata metadataHeader;
 
     public Sentinel2OrthoProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
         super(readerPlugIn);
@@ -161,33 +161,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     @Override
-    protected Product readProduct(VirtualPath inputVirtualPath, boolean isGranule, INamingConvention namingConvention, S2Config config) throws Exception {
+    protected Product readProduct(boolean isGranule, S2Metadata metadataHeader) throws Exception {
+        this.metadataHeader = (S2OrthoMetadata)metadataHeader;
 
-        String granuleDirName = null;
-        VirtualPath rootMetadataPath;
+        VirtualPath rootMetadataPath = this.metadataHeader.getPath();
 
-        // we need to recover parent metadata file if we have a granule
-        boolean foundProductMetadata = true;
-        if (isGranule) {
-            try {
-                VirtualPath parentPath = inputVirtualPath.getParent();
-                Objects.requireNonNull(parentPath);
-                granuleDirName = parentPath.getFileName().toString();
-            } catch (NullPointerException npe) {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", inputVirtualPath.getFileName().toString()));
-            }
-
-            rootMetadataPath = this.namingConvention.getInputProductXml();
-
-            if (rootMetadataPath == null) {
-                foundProductMetadata = false;
-                rootMetadataPath = inputVirtualPath;
-            }
-        } else {
-            rootMetadataPath = inputVirtualPath;
-        }
-
-        this.metadataHeader = parseHeader(rootMetadataPath, granuleDirName, getConfig(), this.epsgCode, !foundProductMetadata);
 
         S2OrthoSceneLayout sceneDescription = S2OrthoSceneLayout.create(this.metadataHeader);
         logger.fine("Scene Description: " + sceneDescription);
@@ -199,10 +177,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         // because the tile layout is obtained with the tile in zone UTM 30.
         // But the sceneLayout is computed with the tiles that are in the zone UTM 31 if we select this PlugIn
         if (sceneDescription.getTileIds().size() == 0) {
-            throw new IOException(String.format("No valid tiles associated to product [%s]", inputVirtualPath.getFileName().toString()));
+            throw new IOException(String.format("No valid tiles associated to product [%s]", rootMetadataPath.getFileName().toString()));
         }
         if (sceneDescription.getSceneDimension(getProductResolution()) == null) {
-            throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", inputVirtualPath.getFileName().toString()));
+            throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", rootMetadataPath.getFileName().toString()));
         }
 
         VirtualPath productPath = getProductDir(rootMetadataPath);
@@ -282,7 +260,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
                             .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
                     String imageFileName;
-                    if (foundProductMetadata) {
+                    if (this.metadataHeader.isFoundProductMetadata()) {
                         VirtualPath vp = this.metadataHeader.resolveResource(tile.getId());
                         String fileName = vp.getFileName().toString();
                         imageFileName = String.format("GRANULE%s%s%s%s", separator, fileName, separator, imageFileTemplate);

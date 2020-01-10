@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
@@ -20,7 +21,7 @@ import java.util.logging.Logger;
 /**
  * Created by obarrile on 15/06/2016.
  */
-public class L3Metadata extends S2Metadata {
+public class L3Metadata extends S2OrthoMetadata {
 
     public static final String MOSAIC_BAND_NAME = "quality_mosaic_info";
     private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
@@ -34,7 +35,7 @@ public class L3Metadata extends S2Metadata {
     }
 
     private L3Metadata(VirtualPath path, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws  IOException, ParserConfigurationException, SAXException {
-        super(config);
+        super(path, granuleName, !isAGranule, config);
 
         resetTileList();
         int maxIndex = 0;

@@ -1,9 +1,15 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
+import org.esa.s2tbx.dataio.s2.l1c.L1cMetadata;
+import org.esa.s2tbx.dataio.s2.ortho.AbstractS2OrthoMetadataReader;
 import org.esa.snap.core.util.SystemUtils;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +17,10 @@ import java.util.List;
 /**
  * Created by jcoravu on 10/1/2020.
  */
-public class S2L1CProductMetadataReader extends AbstractS2ProductMetadataReader {
+public class S2L1CProductMetadataReader extends AbstractS2OrthoMetadataReader {
 
-    public S2L1CProductMetadataReader(VirtualPath virtualPath) throws IOException {
-        super(virtualPath);
+    public S2L1CProductMetadataReader(VirtualPath virtualPath, String epsgCode) throws IOException {
+        super(virtualPath, epsgCode);
     }
 
     @Override
@@ -39,4 +45,13 @@ public class S2L1CProductMetadataReader extends AbstractS2ProductMetadataReader 
 
         return bandNames;
     }
+
+    protected S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsgCode, boolean isGranule) throws IOException {
+        try {
+            return L1cMetadata.parseHeader(path, granuleName, config, epsgCode, isGranule, this.namingConvention);
+        } catch (ParserConfigurationException | SAXException e) {
+            throw new IOException("Failed to parse metadata in " + path.getFileName().toString(), e);
+        }
+    }
+
 }

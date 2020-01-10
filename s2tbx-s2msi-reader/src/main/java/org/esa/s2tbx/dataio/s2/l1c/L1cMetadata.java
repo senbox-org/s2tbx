@@ -23,6 +23,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
@@ -44,11 +45,12 @@ import java.util.logging.Logger;
  *
  * @author Norman Fomferra
  */
-public class L1cMetadata extends S2Metadata {
+public class L1cMetadata extends S2OrthoMetadata {
 
     private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
 
     protected Logger logger = SystemUtils.LOG;
+
 
     public static L1cMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule, INamingConvention namingConvention)
                                           throws IOException, ParserConfigurationException, SAXException {
@@ -59,7 +61,7 @@ public class L1cMetadata extends S2Metadata {
     private L1cMetadata(VirtualPath path, String granuleName, S2Config s2config, String epsg, boolean isGranule, INamingConvention namingConvention)
                         throws IOException, ParserConfigurationException, SAXException {
 
-        super(s2config);
+        super(path, granuleName, !isGranule, s2config);
 
         resetTileList();
         if (!isGranule) {
