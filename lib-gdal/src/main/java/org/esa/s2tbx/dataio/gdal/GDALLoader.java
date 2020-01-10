@@ -35,8 +35,7 @@ public final class GDALLoader {
 
     public Path initGDAL() throws IOException {
         if (!ready) {
-            OSCategory osCategory = OSCategory.getOSCategory();
-            gdalVersion = GDALVersion.getGDALVersion(osCategory);
+            gdalVersion = GDALVersion.getGDALVersion();
             gdalJNILocation = GDALDistributionInstaller.setupJNI(gdalVersion);
             gdalVersionLoader = new URLClassLoader(new URL[]{gdalVersion.getJNILibraryFilePath().toUri().toURL()}, GDALLoader.class.getClassLoader());
             ready = true;

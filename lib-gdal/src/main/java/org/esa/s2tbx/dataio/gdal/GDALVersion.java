@@ -11,13 +11,13 @@ import java.util.logging.Logger;
 
 public enum GDALVersion {
 
-    GDAL_300_FULL("3-0-0", false),
-    GDAL_30X_JNI("3-0-X", true),
-    GDAL_24X_JNI("2-4-X", true),
-    GDAL_23X_JNI("2-3-X", true),
-    GDAL_22X_JNI("2-2-X", true),
-    GDAL_21X_JNI("2-1-X", true),
-    GDAL_20X_JNI("2-0-X", true);
+    GDAL_300_FULL("3.0.0", "3-0-0", false),
+    GDAL_30X_JNI("3.0.X", "3-0-X", true),
+    GDAL_24X_JNI("2.4.x", "2-4-X", true),
+    GDAL_23X_JNI("2.3.x", "2-3-X", true),
+    GDAL_22X_JNI("2.2.x", "2-2-X", true),
+    GDAL_21X_JNI("2.1.x", "2-1-X", true),
+    GDAL_20X_JNI("2.0.x", "2-0-X", true);
 
     private static final String VERSION_NAME = "{version}";
     private static final String JNI_NAME = "{jni}";
@@ -27,7 +27,8 @@ public enum GDALVersion {
     private static final String GDAL_NATIVE_LIBRARIES_SRC = "auxdata/gdal";
     private static final String GDAL_JNI_LIBRARY_FILE = "java/gdal.jar";
 
-    private static final String GDAL_INFO_CMD = "gdalinfo --version";
+    private static final String GDALINFIO_EXECUTABLE_NAME = "gdalinfo";
+    private static final String GDAL_INFO_CMD = GDALINFIO_EXECUTABLE_NAME + " --version";
     private static final String GDAL_V30X = "3.0.X";
     private static final String GDAL_V24X = "2.4.X";
     private static final String GDAL_V23X = "2.3.X";
@@ -37,20 +38,40 @@ public enum GDALVersion {
 
     private static final Logger logger = Logger.getLogger(GDALInstaller.class.getName());
 
+    private static final GDALVersion internalVersion = retrieveInternalVersion();
+    private static final GDALVersion installedVersion = retrieveInstalledVersion();
+
+    String id;
     String name;
+    String location;
     boolean jni;
     OSCategory osCategory;
 
-    GDALVersion(String name, boolean jni) {
+    GDALVersion(String id, String name, boolean jni) {
+        this.id = id;
         this.name = name;
         this.jni = jni;
     }
 
-    public static GDALVersion getGDALVersion(OSCategory osCategory) {
-        GDALVersion gdalVersion = GDAL_300_FULL;
+    public static GDALVersion getGDALVersion() {
+        if (GDALLoaderConfig.getInstance().useInstalledGDALLibrary() && installedVersion != null) {
+            logger.log(Level.INFO, () -> "Installed GDAL " + installedVersion.getId() + " set to be used by SNAP.");
+            return installedVersion;
+        }
+        logger.log(Level.INFO, () -> "Internal GDAL " + internalVersion.getId() + " set to be used by SNAP.");
+        return internalVersion;
+    }
+
+    public static GDALVersion getInstalledVersion() {
+        return installedVersion;
+    }
+
+    private static GDALVersion retrieveInstalledVersion() {
+        GDALVersion gdalVersion = null;
         try (java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(GDAL_INFO_CMD).getInputStream()).useDelimiter("\\A")) {
             String result = s.hasNext() ? s.next() : "";
-            String version = result.replaceAll("[\\s\\S]*?(\\d*\\.\\d*)[\\s\\S]*$", "$1.X");
+            String versionId = result.replaceAll("[\\s\\S]*?(\\d*\\.\\d*\\.\\d*)[\\s\\S]*$", "$1");
+            String version = versionId.replaceAll("(\\d*\\.\\d*)[\\s\\S]*$", "$1.X");
             switch (version) {
                 case GDAL_V30X:
                     gdalVersion = GDAL_30X_JNI;
@@ -71,23 +92,51 @@ public enum GDALVersion {
                     gdalVersion = GDAL_20X_JNI;
                     break;
                 default:
-                    if (!version.isEmpty()) {
-                        throw new ExceptionInInitializerError("Incompatible GDAL version found: " + version + ". Please uninstall!");
+                    if (version.isEmpty()) {
+                        logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + internalVersion.id + " from distribution will be used.");
                     } else {
-                        logger.log(Level.INFO, "GDAL not found on system. Internal GDAL 3.0.0 from distribution will be used.");
+                        logger.log(Level.INFO, () -> "Incompatible GDAL " + versionId + " found on system. Internal GDAL " + internalVersion.id + " from distribution will be used.");
                     }
             }
-            logger.log(Level.INFO, "GDAL "+version+" found on system. JNI driver will be used.");
+            if (gdalVersion != null) {
+                gdalVersion.setId(versionId);
+                OSCategory osCategory = OSCategory.getOSCategory();
+                gdalVersion.setOsCategory(osCategory);
+                gdalVersion.setLocation(osCategory.getExecutableLocation(GDALINFIO_EXECUTABLE_NAME));
+                logger.log(Level.INFO, () -> "GDAL " + versionId + " found on system. JNI driver will be used.");
+            }
         } catch (IOException ignored) {
-            logger.log(Level.INFO, "GDAL not found on system. Internal GDAL 3.0.0 from distribution will be used.");
+            logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + internalVersion.id + " from distribution will be used.");
         }
-
-        gdalVersion.setOsCategory(osCategory);
         return gdalVersion;
     }
 
-    public boolean isJni() {
-        return jni;
+    public static GDALVersion getInternalVersion() {
+        return internalVersion;
+    }
+
+    private static GDALVersion retrieveInternalVersion() {
+        GDALVersion gdalVersion = GDAL_300_FULL;
+        gdalVersion.setOsCategory(OSCategory.getOSCategory());
+        Path internalPath = gdalVersion.getNativeLibrariesRootFolderPath().resolve(gdalVersion.getDirName());
+        gdalVersion.setLocation(internalPath.toString());
+        return gdalVersion;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    void setId(String id) {
+        this.id = id;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    private void setLocation(String location) {
+        this.location = location;
     }
 
     public OSCategory getOsCategory() {
@@ -96,6 +145,10 @@ public enum GDALVersion {
 
     private void setOsCategory(OSCategory osCategory) {
         this.osCategory = osCategory;
+    }
+
+    public boolean isJni() {
+        return jni;
     }
 
     private String getDirName() {
@@ -115,7 +168,7 @@ public enum GDALVersion {
     }
 
     private String getDirectory() {
-        return osCategory.operatingSystemName + "/" + osCategory.architecture;
+        return osCategory.getOperatingSystemName() + "/" + osCategory.getArchitecture();
     }
 
     public URL getZipFileURLFromSources() {
