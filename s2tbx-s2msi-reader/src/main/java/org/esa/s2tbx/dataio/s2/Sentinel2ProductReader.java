@@ -27,9 +27,9 @@ import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
-import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
+import org.esa.s2tbx.dataio.s2.l1b.AbstractS2ProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.tiles.TileIndexBandMatrixCell;
 import org.esa.snap.core.dataio.AbstractProductReader;
@@ -75,6 +75,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     private Path cacheDir;
     private Product product;
 
+    //TODO Jean remove the attribute
+    @Deprecated
     protected INamingConvention namingConvention;
 
     protected Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn) {
@@ -113,12 +115,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return cacheDir;
     }
 
-    //TODO Jean remove the method
-    protected Product buildMosaicProduct(VirtualPath metadataFilePath) throws IOException {
-        return null;
-    }
-
-    protected Product readProduct(VirtualPath metadataFilePath, boolean isGranule, INamingConvention namingConvention, S2Config config) throws Exception {
+    protected Product readProduct(boolean isGranule, S2Metadata metadataHeader) throws Exception {
         return null;
     }
 
@@ -157,6 +154,16 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         logger.fine("Successfully set up cache dir for product " + productName + " to " + this.cacheDir.toString());
     }
 
+    //TODO Jean remove
+    @Deprecated
+    protected Product buildMosaicProduct(VirtualPath inputVirtualPath) throws IOException {
+        return null;
+    }
+
+    protected AbstractS2ProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
+        return null;
+    }
+
     @Override
     protected Product readProductNodesImpl() throws IOException {
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
@@ -180,41 +187,39 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 throw new IllegalArgumentException("Unknown input type '" + inputObject + "'.");
             }
 
-            this.namingConvention = NamingConventionFactory.createNamingConvention(virtualPath);
-            if (this.namingConvention == null) {
-                throw new NullPointerException("The naming convention is null.");
-            } else if (this.namingConvention.hasValidStructure()) {
-                VirtualPath inputVirtualPath = this.namingConvention.getInputXml();
-                if (inputVirtualPath.exists()) {
-                    boolean isGranule = (this.namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA);
+            AbstractS2ProductMetadataReader productMetadata = buildProductMetadata(virtualPath);
 
-                    S2Config config = readTileLayouts(inputVirtualPath, isGranule);
-                    if (config == null) {
-                        throw new NullPointerException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", inputVirtualPath.getFileName().toString()));
-                    }
+            //TODO Jean remove: this.namingConvention
+            this.namingConvention = productMetadata.getNamingConvention();
 
-                    //TODO Jean remove: this.config = config;
-                    this.config = config;
+            VirtualPath inputVirtualPath = productMetadata.getNamingConvention().getInputXml();
+            if (inputVirtualPath.exists()) {
+                S2Config config = productMetadata.readTileLayouts(inputVirtualPath, productMetadata.isGranule());
+                if (config == null) {
+                    throw new NullPointerException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", inputVirtualPath.getFileName().toString()));
+                }
 
-                    this.product = readProduct(inputVirtualPath, isGranule, this.namingConvention, config);
+                //TODO Jean remove: this.config = config;
+                this.config = config;
 
-                    File productFileLocation;
-                    if (inputVirtualPath.getVirtualDir().isArchive()) {
-                        productFileLocation = inputVirtualPath.getVirtualDir().getBaseFile();
-                    } else {
-                        productFileLocation = inputVirtualPath.getFilePath().getPath().toFile();
-                    }
-                    this.product.setFileLocation(productFileLocation);
+                S2Metadata metadataHeader = productMetadata.readMetadataHeader(inputVirtualPath, config);
 
-                    Path qlFile = getQuickLookFile(inputVirtualPath);
-                    if (qlFile != null) {
-                        this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
-                    }
+                this.product = readProduct(productMetadata.isGranule(), metadataHeader);
+
+                File productFileLocation;
+                if (inputVirtualPath.getVirtualDir().isArchive()) {
+                    productFileLocation = inputVirtualPath.getVirtualDir().getBaseFile();
                 } else {
-                    throw new FileNotFoundException(inputVirtualPath.getFullPathString());
+                    productFileLocation = inputVirtualPath.getFilePath().getPath().toFile();
+                }
+                this.product.setFileLocation(productFileLocation);
+
+                Path qlFile = getQuickLookFile(inputVirtualPath);
+                if (qlFile != null) {
+                    this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
                 }
             } else {
-                throw new IllegalStateException("The naming convention structure is invalid.");
+                throw new FileNotFoundException(inputVirtualPath.getFullPathString());
             }
 
             success = true;
@@ -306,7 +311,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @param resolution              the resolution for which we wan to find the tile layout
      * @return the tile layout for the resolution, or {@code null} if none was found
      */
-    public TileLayout retrieveTileLayoutFromGranuleMetadataFile(VirtualPath granuleMetadataFilePath, S2SpatialResolution resolution) {
+    public final TileLayout retrieveTileLayoutFromGranuleMetadataFile(VirtualPath granuleMetadataFilePath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
         if (granuleMetadataFilePath.exists() && granuleMetadataFilePath.getFileName().toString().endsWith(".xml")) {
             VirtualPath granuleDirPath = granuleMetadataFilePath.getParent();
@@ -323,7 +328,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @param resolution              the resolution for which we wan to find the tile layout
      * @return the tile layout for the resolution, or {@code null} if none was found
      */
-    public TileLayout retrieveTileLayoutFromProduct(VirtualPath productMetadataFilePath, S2SpatialResolution resolution) {
+    public final TileLayout retrieveTileLayoutFromProduct(VirtualPath productMetadataFilePath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
         if (productMetadataFilePath.exists() && productMetadataFilePath.getFileName().toString().endsWith(".xml")) {
             VirtualPath granulesFolder = productMetadataFilePath.resolveSibling("GRANULE");
@@ -384,7 +389,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     /**
-     * get an iterator to image files in pathToImages containing files for the given resolution
+     * Get an iterator to image files in pathToImages containing files for the given resolution
      * <p>
      * This method is based on band names, if resolution can't be based on band names or if image files are not in
      * pathToImages (like for L2A products), this method has to be overriden
@@ -522,7 +527,27 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return band;
     }
 
-    protected static MosaicMatrix buildBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo, MosaicMatrixCellCallback mosaicMatrixCellCallback) {
+    protected static MosaicMatrix buildIndexBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
+        MosaicMatrixCellCallback mosaicMatrixCellCallback = new MosaicMatrixCellCallback() {
+            @Override
+            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo) {
+                TileLayout tileLayout = tileBandInfo.getImageLayout();
+                S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) tileBandInfo.getBandInformation();
+                S2GranuleDirFilename s2GranuleDirFilename = S2L1BGranuleDirFilename.create(tileId);
+                Integer indexSample = indexBandInformation.findIndexSample(s2GranuleDirFilename.getTileID());
+                if (indexSample == null) {
+                    throw new NullPointerException("The index sample is null.");
+                }
+                short indexValueShort = indexSample.shortValue ();
+                int cellWidth = tileLayout.width;
+                int cellHeight = tileLayout.height;
+                return new TileIndexBandMatrixCell(cellWidth, cellHeight, indexValueShort);
+            }
+        };
+        return buildBandMatrix(bandMatrixTileIds, sceneDescription, tileBandInfo, mosaicMatrixCellCallback);
+    }
+
+    private static MosaicMatrix buildBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo, MosaicMatrixCellCallback mosaicMatrixCellCallback) {
         Pair<String, Rectangle> topLeftRectanglePair = null;
         S2SpatialResolution bandNativeResolution = tileBandInfo.getBandInformation().getResolution();
         List<Pair<String, Rectangle>> remainingRectanglePairs = new ArrayList<>(bandMatrixTileIds.size()-1);

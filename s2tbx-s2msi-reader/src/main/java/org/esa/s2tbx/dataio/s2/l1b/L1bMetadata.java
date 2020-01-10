@@ -40,27 +40,44 @@ import java.util.logging.Logger;
  * @author Norman Fomferra
  */
 public class L1bMetadata extends S2Metadata {
-    protected Logger logger = SystemUtils.LOG;
 
-    public static L1bMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
-        return new L1bMetadata(path, granuleName, config, isAGranule, namingConvention);
-    }
+    private static final Logger logger = Logger.getLogger(L1bMetadata.class.getName());
 
-    private L1bMetadata(VirtualPath path, String granuleName, S2Config config, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private final boolean foundProductMetadata;
+    private final VirtualPath productMetadataPath;
+    private final String granuleFolderName;
+
+    public L1bMetadata(VirtualPath path, String granuleFolderName, S2Config config, boolean foundProductMetadata, INamingConvention namingConvention)
+                       throws IOException, ParserConfigurationException, SAXException {
+
         super(config);
+
+        this.foundProductMetadata = foundProductMetadata;
+        this.productMetadataPath = path;
+        this.granuleFolderName = granuleFolderName;
 
         resetTileList();
 
-        if(!isAGranule) {
-            initProduct(path, granuleName, namingConvention);
+        if(foundProductMetadata) {
+            initProduct(path, granuleFolderName, namingConvention);
         } else {
             initTile(path, namingConvention);
         }
     }
 
+    public String getGranuleFolderName() {
+        return granuleFolderName;
+    }
+
+    public boolean isFoundProductMetadata() {
+        return foundProductMetadata;
+    }
+
+    public VirtualPath getProductMetadataPath() {
+        return productMetadataPath;
+    }
 
     private void initProduct(VirtualPath path, String granuleName, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
-
         IL1bProductMetadata metadataProduct = L1bMetadataFactory.createL1bProductMetadata(path);
         if(metadataProduct == null) {
             throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
@@ -73,7 +90,6 @@ public class L1bMetadata extends S2Metadata {
         } else {
             tileNames = Collections.singletonList(granuleName);
         }
-
 
         //add product metadata
         getMetadataElements().add(metadataProduct.getMetadataElement());
@@ -95,8 +111,6 @@ public class L1bMetadata extends S2Metadata {
             resourceResolver.put(tileName,folder);
             granuleMetadataPathList.add(xml);
         }
-
-
 
         //Init Tiles
         for (VirtualPath granuleMetadataPath : granuleMetadataPathList) {
@@ -134,5 +148,4 @@ public class L1bMetadata extends S2Metadata {
 
         granulesMetaData.addElement(granuleMetadata.getSimplifiedMetadataElement());
     }
-
 }
