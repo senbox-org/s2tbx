@@ -81,14 +81,13 @@ public abstract class S2Metadata {
 
     private List<Tile> tileList;
 
-    private S2Config config;
+    private final S2Config config;
 
     private ProductCharacteristics productCharacteristics;
 
-    protected HashMap<String, VirtualPath> resourceResolver;
+    protected final HashMap<String, VirtualPath> resourceResolver;
 
-
-    public S2Metadata(S2Config config) {
+    protected S2Metadata(S2Config config) {
         this.config = config;
         this.metadataElements = new ArrayList<>();
         this.resourceResolver = new HashMap<>();
@@ -177,43 +176,6 @@ public abstract class S2Metadata {
 
         return updatedXmlStream;
     }
-
-   /* protected MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
-
-        MetadataElement mdElement = new MetadataElement(element.getName());
-
-        List attributes = element.getAttributes();
-        for (Object a : attributes) {
-            Attribute attribute = (Attribute) a;
-            MetadataAttribute mdAttribute = new MetadataAttribute(attribute.getName().toUpperCase(), ProductData.createInstance(attribute.getValue()), true);
-            mdElement.addAttribute(mdAttribute);
-        }
-
-        for (Object c : element.getChildren()) {
-            Element child = (Element) c;
-            String childName = child.getName();
-            String childValue = child.getValue();
-            if (!excludes.contains(childName)) {
-                if (childValue != null && !childValue.isEmpty() && childName.equals(childName.toUpperCase())) {
-                    MetadataAttribute mdAttribute = new MetadataAttribute(childName, ProductData.createInstance(childValue), true);
-                    String unit = child.getAttributeValue("unit");
-                    if (unit != null) {
-                        mdAttribute.setUnit(unit);
-                    }
-                    mdElement.addAttribute(mdAttribute);
-                } else {
-                    parseTree(child, mdElement, excludes);
-                }
-            }
-        }
-
-        if (mdParent != null) {
-            mdParent.addElement(mdElement);
-        }
-
-        return mdElement;
-    }*/
-
 
     public static class Tile {
         private String id;
