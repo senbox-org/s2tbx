@@ -227,6 +227,16 @@ public class L1bSceneDescription extends S2SceneDescription {
         return tileIdsOrder;
     }
 
+    public List<String> getMatrixTileIds(Sentinel2L1BProductReader.L1BBandInfo tileBandInfo) {
+        List<String> matrixTileIds = new ArrayList<>();
+        for (String tileId : getTileIds()) {
+            if (tileId.contains(tileBandInfo.getDetectorId())) {
+                matrixTileIds.add(tileId);
+            }
+        }
+        return matrixTileIds;
+    }
+
     public static Map<S2SpatialResolution, Dimension> computeSceneDimensions(L1bMetadata header) {
 
         Map<S2SpatialResolution, Dimension> sceneDimensions = new HashMap<>();

@@ -79,6 +79,18 @@ public class S2IndexBandInformation extends S2BandInformation {
         return colorList;
     }
 
+    public Integer findIndexSample(String name) {
+        if (name == null) {
+            throw new NullPointerException("The name is null.");
+        }
+        for (S2IndexBandIndex index : indexList) {
+            if (index.label.equals(name)) {
+                return index.sample;
+            }
+        }
+        return null;
+    }
+
     public static S2IndexBandIndex makeIndex(int sample, Color color, String label, String description) {
         return new S2IndexBandIndex(sample, color, label, description);
     }

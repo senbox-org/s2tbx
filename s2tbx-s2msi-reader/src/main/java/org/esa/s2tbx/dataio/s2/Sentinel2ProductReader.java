@@ -28,7 +28,10 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1b.tiles.TileIndexBandMatrixCell;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -478,6 +481,18 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         super.close();
     }
 
+    protected final MosaicMatrix buildBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
+        MosaicMatrixCellCallback mosaicMatrixCellCallback = new MosaicMatrixCellCallback() {
+            @Override
+            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo) {
+                VirtualPath imagePath = tileBandInfo.getTileIdToPathMap().get(tileId);
+                JP2ImageFile jp2ImageFile = new JP2ImageFile(imagePath);
+                return new S2MosaicBandMatrixCell(jp2ImageFile, getCacheDir(), tileBandInfo.getImageLayout());
+            }
+        };
+        return buildBandMatrix(bandMatrixTileIds, sceneDescription, tileBandInfo, mosaicMatrixCellCallback);
+    }
+
     protected static Band buildBand(BandInfo bandInfo, int bandWidth, int bandHeight) {
         Band band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, bandWidth, bandHeight);
 
@@ -507,7 +522,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return band;
     }
 
-    protected static MosaicMatrix buildBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo, Path cacheDir) {
+    protected static MosaicMatrix buildBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo, MosaicMatrixCellCallback mosaicMatrixCellCallback) {
         Pair<String, Rectangle> topLeftRectanglePair = null;
         S2SpatialResolution bandNativeResolution = tileBandInfo.getBandInformation().getResolution();
         List<Pair<String, Rectangle>> remainingRectanglePairs = new ArrayList<>(bandMatrixTileIds.size()-1);
@@ -566,13 +581,10 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (rowCount * columnCount != bandMatrixTileIds.size()) {
             throw new IllegalStateException("Invalid matrix size: row count = " + rowCount+", column count = " + columnCount);
         }
-        TileLayout tileLayout = tileBandInfo.getImageLayout();
         MosaicMatrix mosaicMatrix = new MosaicMatrix(rowCount, columnCount);
         for (int i=0; i<orderedMatrixCells.size(); i++) {
             Pair<String, Rectangle> pair = orderedMatrixCells.get(i);
-            VirtualPath imagePath = tileBandInfo.getTileIdToPathMap().get(pair.getKey());
-            JP2ImageFile jp2ImageFile = new JP2ImageFile(imagePath);
-            S2MosaicBandMatrixCell matrixCell = new S2MosaicBandMatrixCell(jp2ImageFile, cacheDir, tileLayout);
+            MosaicMatrix.MatrixCell matrixCell = mosaicMatrixCellCallback.buildMatrixCell(pair.getFirst(), tileBandInfo);
             mosaicMatrix.addCell(matrixCell);
         }
         return mosaicMatrix;
