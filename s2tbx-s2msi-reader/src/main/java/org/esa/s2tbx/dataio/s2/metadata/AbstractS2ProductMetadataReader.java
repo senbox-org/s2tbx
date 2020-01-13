@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l1b;
+package org.esa.s2tbx.dataio.s2.metadata;
 
 import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
@@ -35,6 +35,13 @@ public abstract class AbstractS2ProductMetadataReader {
         }
     }
 
+    /**
+     * For a given resolution, gets the list of band names.
+     * For example, for 10m L1C, {"B02", "B03", "B04", "B08"} should be returned
+     *
+     * @param resolution the resolution for which the band names should be returned
+     * @return then band names or {@code null} if not applicable.
+     */
     protected abstract String[] getBandNames(S2SpatialResolution resolution);
 
     public S2Metadata readMetadataHeader(VirtualPath metadataPath, S2Config config) throws IOException, ParserConfigurationException, SAXException {

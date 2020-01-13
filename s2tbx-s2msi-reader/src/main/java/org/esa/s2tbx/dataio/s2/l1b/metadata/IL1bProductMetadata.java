@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l1b;
+package org.esa.s2tbx.dataio.s2.l1b.metadata;
 
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;

@@ -58,38 +58,12 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected S2Metadata parseHeader(
-            VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
-
+    protected S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
         try {
             return L3Metadata.parseHeader(path, granuleName, config, epsg, getProductResolution(), isAGranule, namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse metadata in " + path.getFileName().toString());
         }
-    }
-
-    @Override
-    protected String[] getBandNames(S2SpatialResolution resolution) {
-        return null;
-    }
-
-    @Override
-    protected List<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
-        ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
-        String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
-        VirtualPath pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
-        VirtualPath[] imagePaths = pathToImagesOfResolution.listPaths();
-        if(imagePaths == null || imagePaths.length == 0) {
-            return imageDirectories;
-        }
-
-        for (VirtualPath imagePath : imagePaths) {
-            if (imagePath.getFileName().toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
-                imageDirectories.add(imagePath);
-            }
-        }
-
-        return imageDirectories;
     }
 
     @Override

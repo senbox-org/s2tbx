@@ -99,34 +99,6 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected String[] getBandNames(S2SpatialResolution resolution) {
-        return null;
-    }
-
-    @Override
-    protected List<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
-
-        ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
-        String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
-        VirtualPath pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
-        if (!pathToImagesOfResolution.exists()) {
-            return imageDirectories;
-        }
-        VirtualPath[] imagePaths = pathToImagesOfResolution.listPaths();
-        if(imagePaths == null || imagePaths.length == 0) {
-            return imageDirectories;
-        }
-
-        for (VirtualPath imagePath : imagePaths) {
-            if (imagePath.getFileName().toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
-                imageDirectories.add(imagePath);
-            }
-        }
-
-        return imageDirectories;
-    }
-
-    @Override
     protected String getImagePathString(String imageFileName, S2SpatialResolution resolution) {
         String resolutionFolder = String.format("R%dm", resolution.resolution);
         String imageWithoutExtension = imageFileName.substring(0, imageFileName.length() - 4);

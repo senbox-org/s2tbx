@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l1b;
+package org.esa.s2tbx.dataio.s2.l1b.metadata;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
@@ -12,6 +12,7 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1b.L1bPSD13Constants;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BDatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataElement;

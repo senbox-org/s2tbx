@@ -161,7 +161,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     @Override
-    protected Product readProduct(boolean isGranule, S2Metadata metadataHeader) throws Exception {
+    protected Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader) throws Exception {
         this.metadataHeader = (S2OrthoMetadata)metadataHeader;
 
         VirtualPath rootMetadataPath = this.metadataHeader.getPath();
@@ -192,9 +192,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         int sceneRasterHeight = sceneDescription.getSceneDimension(getProductResolution()).height;
         Product product;
         if(getSubsetDef() != null){
-            product = new Product(this.namingConvention.getProductName(), "S2_MSI_" + productCharacteristics.getProcessingLevel(),getSubsetDef().getRegion().width,getSubsetDef().getRegion().height);
+            product = new Product(defaultProductName, "S2_MSI_" + productCharacteristics.getProcessingLevel(),getSubsetDef().getRegion().width,getSubsetDef().getRegion().height);
         }else{
-            product = new Product(this.namingConvention.getProductName(), "S2_MSI_" + productCharacteristics.getProcessingLevel(), sceneRasterWidth, sceneRasterHeight);
+            product = new Product(defaultProductName, "S2_MSI_" + productCharacteristics.getProcessingLevel(), sceneRasterWidth, sceneRasterHeight);
         }
         if((getSubsetDef() != null && !getSubsetDef().isIgnoreMetadata()) || getSubsetDef() == null) {
             for (MetadataElement metadataElement : this.metadataHeader.getMetadataElements()) {
@@ -1253,30 +1253,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             throw new FileNotFoundException("File not found: " + productPath.getFullPathString());
         }
         return productPath.getParent();
-    }
-
-
-    @Override
-    protected String[] getBandNames(S2SpatialResolution resolution) {
-        String[] bandNames;
-
-        switch (resolution) {
-            case R10M:
-                bandNames = new String[]{"B02", "B03", "B04", "B08"};
-                break;
-            case R20M:
-                bandNames = new String[]{"B05", "B06", "B07", "B8A", "B11", "B12"};
-                break;
-            case R60M:
-                bandNames = new String[]{"B01", "B09", "B10"};
-                break;
-            default:
-                SystemUtils.LOG.warning("Invalid resolution: " + resolution);
-                bandNames = null;
-                break;
-        }
-
-        return bandNames;
     }
 
     /**

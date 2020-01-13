@@ -29,7 +29,7 @@ import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
-import org.esa.s2tbx.dataio.s2.l1b.AbstractS2ProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.metadata.AbstractS2ProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.tiles.TileIndexBandMatrixCell;
 import org.esa.snap.core.dataio.AbstractProductReader;
@@ -86,15 +86,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     /**
-     * For a given resolution, gets the list of band names.
-     * For example, for 10m L1C, {"B02", "B03", "B04", "B08"} should be returned
-     *
-     * @param resolution the resolution for which the band names should be returned
-     * @return then band names or {@code null} if not applicable.
-     */
-    protected abstract String[] getBandNames(S2SpatialResolution resolution);
-
-    /**
      * @return The configuration file specific to a product reader
      */
     //TODO Jean remove
@@ -115,7 +106,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return cacheDir;
     }
 
-    protected Product readProduct(boolean isGranule, S2Metadata metadataHeader) throws Exception {
+    protected Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader) throws Exception {
         return null;
     }
 
@@ -154,15 +145,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         logger.fine("Successfully set up cache dir for product " + productName + " to " + this.cacheDir.toString());
     }
 
-    //TODO Jean remove
-    @Deprecated
-    protected Product buildMosaicProduct(VirtualPath inputVirtualPath) throws IOException {
-        return null;
-    }
-
-    protected AbstractS2ProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
-        return null;
-    }
+    protected abstract AbstractS2ProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException;
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
@@ -203,8 +186,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 this.config = config;
 
                 S2Metadata metadataHeader = productMetadata.readMetadataHeader(inputVirtualPath, config);
-
-                this.product = readProduct(productMetadata.isGranule(), metadataHeader);
+                String defaultProductName = productMetadata.getNamingConvention().getProductName();
+                this.product = readProduct(defaultProductName, productMetadata.isGranule(), metadataHeader);
 
                 File productFileLocation;
                 if (inputVirtualPath.getVirtualDir().isArchive()) {
@@ -249,223 +232,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
         return null;
-    }
-
-    /**
-     * update the tile layout in S2Config
-     *
-     * @param metadataFilePath the path to the product metadata file
-     * @param isGranule        true if it is the metadata file of a granule
-     * @return false when every tileLayout is null
-     */
-    //TODO Jean remove the method
-    @Deprecated
-    protected final boolean updateTileLayout(VirtualPath metadataFilePath, boolean isGranule) {
-        boolean valid = false;
-        for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
-            TileLayout tileLayout;
-            if (isGranule) {
-                tileLayout = retrieveTileLayoutFromGranuleMetadataFile(metadataFilePath, layoutResolution);
-            } else {
-                tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, layoutResolution);
-            }
-            this.config.updateTileLayout(layoutResolution, tileLayout);
-            if (tileLayout != null) {
-                valid = true;
-            }
-        }
-        return valid;
-    }
-
-    /**
-     * update the tile layout in S2Config
-     *
-     * @param metadataFilePath the path to the product metadata file
-     * @param isGranule        true if it is the metadata file of a granule
-     * @return false when every tileLayout is null
-     */
-    private S2Config readTileLayouts(VirtualPath metadataFilePath, boolean isGranule) {
-        S2Config config = null;
-        for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
-            TileLayout tileLayout;
-            if (isGranule) {
-                tileLayout = retrieveTileLayoutFromGranuleMetadataFile(metadataFilePath, layoutResolution);
-            } else {
-                tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, layoutResolution);
-            }
-            if (tileLayout != null) {
-                if (config == null) {
-                    config = new S2Config();
-                }
-                config.updateTileLayout(layoutResolution, tileLayout);
-            }
-        }
-        return config;
-    }
-
-    /**
-     * From a granule path, search a jpeg file for the given resolution, extract tile layout
-     * information and update
-     *
-     * @param granuleMetadataFilePath the complete path to the granule metadata file
-     * @param resolution              the resolution for which we wan to find the tile layout
-     * @return the tile layout for the resolution, or {@code null} if none was found
-     */
-    public final TileLayout retrieveTileLayoutFromGranuleMetadataFile(VirtualPath granuleMetadataFilePath, S2SpatialResolution resolution) {
-        TileLayout tileLayoutForResolution = null;
-        if (granuleMetadataFilePath.exists() && granuleMetadataFilePath.getFileName().toString().endsWith(".xml")) {
-            VirtualPath granuleDirPath = granuleMetadataFilePath.getParent();
-            tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granuleDirPath, resolution);
-        }
-        return tileLayoutForResolution;
-    }
-
-    /**
-     * From a product path, search a jpeg file for the given resolution, extract tile layout
-     * information and update
-     *
-     * @param productMetadataFilePath the complete path to the product metadata file
-     * @param resolution              the resolution for which we wan to find the tile layout
-     * @return the tile layout for the resolution, or {@code null} if none was found
-     */
-    public final TileLayout retrieveTileLayoutFromProduct(VirtualPath productMetadataFilePath, S2SpatialResolution resolution) {
-        TileLayout tileLayoutForResolution = null;
-        if (productMetadataFilePath.exists() && productMetadataFilePath.getFileName().toString().endsWith(".xml")) {
-            VirtualPath granulesFolder = productMetadataFilePath.resolveSibling("GRANULE");
-            try {
-                VirtualPath[] granulesFolderList = granulesFolder.listPaths();
-                if (granulesFolderList != null && granulesFolderList.length > 0) {
-                    for (VirtualPath granulePath : granulesFolderList) {
-                        tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granulePath, resolution);
-                        if (tileLayoutForResolution != null) {
-                            break;
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                logger.log(Level.WARNING, "Could not retrieve tile layout for product " + productMetadataFilePath.getFullPathString() + " error returned: " + e.getMessage(), e);
-            }
-        }
-        return tileLayoutForResolution;
-    }
-
-    /**
-     * From a granule path, search a jpeg file for the given resolution, extract tile layout
-     * information and update
-     *
-     * @param granuleMetadataPath the complete path to the granule directory
-     * @param resolution          the resolution for which we wan to find the tile layout
-     * @return the tile layout for the resolution, or {@code null} if none was found
-     */
-    private TileLayout retrieveTileLayoutFromGranuleDirectory(VirtualPath granuleMetadataPath, S2SpatialResolution resolution) {
-        TileLayout tileLayoutForResolution = null;
-        VirtualPath pathToImages = granuleMetadataPath.resolve("IMG_DATA");
-        try {
-            List<VirtualPath> imageDirectories = getImageDirectories(pathToImages, resolution);
-            for (VirtualPath imageFilePath : imageDirectories) {
-                try {
-                    if (OpenJpegUtils.canReadJP2FileHeaderWithOpenJPEG()) {
-                        Path jp2FilePath = imageFilePath.getLocalFile();
-                        tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, jp2FilePath);
-                    } else {
-                        try (FilePath filePath = imageFilePath.getFilePath()) {
-                            boolean canSetFilePosition = !imageFilePath.getVirtualDir().isArchive();
-                            tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithInputStream(filePath.getPath(), 5 * 1024, canSetFilePosition);
-                        }
-                    }
-                    if (tileLayoutForResolution != null) {
-                        break;
-                    }
-                } catch (IOException | InterruptedException e) {
-                    // if we have an exception, we try with the next file (if any) // and log a warning
-                    logger.log(Level.WARNING, "Could not retrieve tile layout for file " + imageFilePath.toString() + " error returned: " + e.getMessage(), e);
-                }
-            }
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Could not retrieve tile layout for granule " + granuleMetadataPath.toString() + " error returned: " + e.getMessage(), e);
-        }
-
-        return tileLayoutForResolution;
-    }
-
-    /**
-     * Get an iterator to image files in pathToImages containing files for the given resolution
-     * <p>
-     * This method is based on band names, if resolution can't be based on band names or if image files are not in
-     * pathToImages (like for L2A products), this method has to be overriden
-     *
-     * @param pathToImages the path to the directory containing the images
-     * @param resolution   the resolution for which we want to get images
-     * @return a {@link DirectoryStream<Path>}, iterator on the list of image path
-     * @throws IOException if an I/O error occurs
-     */
-    protected List<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution resolution) throws IOException {
-        long startTime = System.currentTimeMillis();
-
-        List<VirtualPath> imageDirectories = new ArrayList<>();
-        String[] bandNames = getBandNames(resolution);
-        if (bandNames != null && bandNames.length > 0) {
-            VirtualPath[] imagePaths = pathToImages.listPaths();
-            if (imagePaths != null && imagePaths.length > 0) {
-                for (String bandName : bandNames) {
-                    for (VirtualPath imagePath : imagePaths) {
-                        if (imagePath.getFileName().toString().endsWith(bandName + ".jp2")) {
-                            imageDirectories.add(imagePath);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (logger.isLoggable(Level.FINE)) {
-            double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
-            logger.log(Level.FINE, "Finish finding the image directories using the images folder '" +pathToImages.getFullPathString()+"', size: "+imageDirectories.size()+"', elapsed time: " + elapsedTimeInSeconds + " seconds.");
-        }
-
-        return imageDirectories;
-    }
-
-    //TODO Jean remove the method
-    @Deprecated
-    protected Band addBand(Product product, BandInfo bandInfo, Dimension nativeResolutionDimensions) {
-        Dimension dimension = new Dimension();
-        if (isMultiResolution()) {
-            dimension.width = nativeResolutionDimensions.width;
-            dimension.height = nativeResolutionDimensions.height;
-        } else {
-            dimension.width = product.getSceneRasterWidth();
-            dimension.height = product.getSceneRasterHeight();
-        }
-
-        Band band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, dimension.width, dimension.height);
-
-        S2BandInformation bandInformation = bandInfo.getBandInformation();
-        band.setScalingFactor(bandInformation.getScalingFactor());
-
-        if (bandInformation instanceof S2SpectralInformation) {
-            S2SpectralInformation spectralInfo = (S2SpectralInformation) bandInformation;
-            band.setSpectralWavelength((float) spectralInfo.getWavelengthCentral());
-            band.setSpectralBandwidth((float) spectralInfo.getSpectralBandwith());
-            band.setSpectralBandIndex(spectralInfo.getBandId());
-
-            band.setNoDataValueUsed(false);
-            band.setNoDataValue(0);
-            band.setValidPixelExpression(String.format("%s.raw > %s", bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
-        } else if (bandInformation instanceof S2IndexBandInformation) {
-            S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInformation;
-            band.setSpectralWavelength(0);
-            band.setSpectralBandwidth(0);
-            band.setSpectralBandIndex(-1);
-            band.setSampleCoding(indexBandInfo.getIndexCoding());
-            band.setImageInfo(indexBandInfo.getImageInfo());
-        } else {
-            band.setSpectralWavelength(0);
-            band.setSpectralBandwidth(0);
-            band.setSpectralBandIndex(-1);
-        }
-
-        product.addBand(band);
-        return band;
     }
 
     @Override

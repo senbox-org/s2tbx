@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l1b;
+package org.esa.s2tbx.dataio.s2.l1b.metadata;
 
 import com.bc.ceres.core.Assert;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -12,6 +12,7 @@ import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.l1b.L1bPSD13Constants;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;

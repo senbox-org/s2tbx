@@ -365,7 +365,7 @@ public class S2ProductNamingUtils {
         return false;
     }
 
-    protected static Path processInputPath(Path inputPath) {
+    public static Path processInputPath(Path inputPath) {
         if (inputPath.getFileSystem() == FileSystems.getDefault()) {
             // the local file system
             if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {

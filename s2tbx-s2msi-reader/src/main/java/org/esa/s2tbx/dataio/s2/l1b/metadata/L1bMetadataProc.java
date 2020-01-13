@@ -15,7 +15,7 @@
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.s2tbx.dataio.s2.l1b;
+package org.esa.s2tbx.dataio.s2.l1b.metadata;
 
 
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
@@ -26,6 +26,7 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.L1BNamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.l1b.L1bSceneDescription;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.w3c.dom.Element;
 

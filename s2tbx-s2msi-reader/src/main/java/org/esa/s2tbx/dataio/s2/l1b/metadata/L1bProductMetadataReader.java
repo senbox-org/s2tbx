@@ -1,8 +1,9 @@
-package org.esa.s2tbx.dataio.s2.l1b;
+package org.esa.s2tbx.dataio.s2.l1b.metadata;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
+import org.esa.s2tbx.dataio.s2.metadata.AbstractS2ProductMetadataReader;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -12,9 +13,9 @@ import java.io.IOException;
 /**
  * Created by jcoravu on 10/1/2020.
  */
-public class S2L1BProductMetadataReader extends AbstractS2ProductMetadataReader {
+public class L1bProductMetadataReader extends AbstractS2ProductMetadataReader {
 
-    public S2L1BProductMetadataReader(VirtualPath virtualPath) throws IOException {
+    public L1bProductMetadataReader(VirtualPath virtualPath) throws IOException {
         super(virtualPath);
     }
 
