@@ -174,7 +174,11 @@ class GDALTileOpImage extends SingleBandedOpImage {
 
                 long startTime = System.currentTimeMillis();
 
+                int x = dest.getMinX();
+                Raster readBandRaster = null;
+
                 for (int iXBlock = xBlock; iXBlock < nXBlock; iXBlock++) {
+                    int y = dest.getMinY();
                     for (int iYBlock = yBlock; iYBlock < nYBlock; iYBlock++) {
                         RenderedImage readTileImage = imageReader.read(iXBlock, iYBlock);
                         if (readTileImage != null) {
@@ -184,21 +188,22 @@ class GDALTileOpImage extends SingleBandedOpImage {
                             int rasterHeight = Math.min(imageHeight, readTileImage.getTileHeight());
                             int rasterParentX = 0;
                             int rasterParentY = 0;
-                            int x = dest.getMinX();
-                            int y = dest.getMinY();
-                            if (readTileImage.getTileWidth() < imageWidth) {
-                                x = readTileImage.getTileWidth() * iXBlock;
-                            } else {
-                                rasterParentX += x;
+
+                            if (dest.getMinX() + rasterWidth <= imageRaster.getWidth()) {
+                                rasterParentX = dest.getMinX();
                             }
-                            if (readTileImage.getTileHeight() < imageHeight) {
-                                y = readTileImage.getTileHeight() * iYBlock;
-                            } else {
-                                rasterParentY += y;
+                            if (dest.getMinY() + rasterHeight <= imageRaster.getHeight()) {
+                                rasterParentY = dest.getMinY();
                             }
-                            Raster readBandRaster = imageRaster.createChild(rasterParentX, rasterParentY, rasterWidth, rasterHeight, 0, 0, bandList);
+                            readBandRaster = imageRaster.createChild(rasterParentX, rasterParentY, rasterWidth, rasterHeight, 0, 0, bandList);
                             dest.setDataElements(x, y, readBandRaster);
                         }
+                        if (readBandRaster != null) {
+                            y += readBandRaster.getHeight();
+                        }
+                    }
+                    if (readBandRaster != null) {
+                        x += readBandRaster.getWidth();
                     }
                 }
 
