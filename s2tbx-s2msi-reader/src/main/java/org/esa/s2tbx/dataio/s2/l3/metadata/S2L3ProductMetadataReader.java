@@ -1,11 +1,11 @@
 package org.esa.s2tbx.dataio.s2.l3.metadata;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.l3.L3Metadata;
 import org.esa.s2tbx.dataio.s2.ortho.AbstractS2OrthoMetadataReader;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,7 +50,7 @@ public class S2L3ProductMetadataReader extends AbstractS2OrthoMetadataReader {
     }
 
     @Override
-    protected S2Metadata parseHeader(
+    protected S2OrthoMetadata parseHeader(
             VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
 
         try {

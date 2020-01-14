@@ -34,14 +34,12 @@ import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpecificBandConstants;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
-import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
@@ -126,6 +124,7 @@ import static org.esa.snap.utils.DateHelper.parseDate;
  *
  * @author Norman Fomferra
  * @author Nicolas Ducoin
+ * modified 20200113 to support the advanced dialog for readers by Denisa Stefanescu
  */
 public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader implements S2AnglesGeometry {
 
@@ -237,90 +236,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setStartTime(parseDate(productCharacteristics.getProductStartTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
-        List<BandInfo> bandInfoList = new ArrayList<>();
-
         List<S2Metadata.Tile> tileList = this.metadataHeader.getTileList();
 
-        String separator = productPath.getSeparator();
-        // Verify access to granule image files, and store absolute location
-        for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
-            HashMap<String, VirtualPath> tilePathMap = new HashMap<>();
-            for (S2Metadata.Tile tile : tileList) {
-                S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
-                if (gf != null) {
-                    String imageFileTemplate = bandInformation.getImageFileTemplate()
-                            .replace("{{TILENUMBER}}", gf.getTileID())
-                            .replace("{{MISSION_ID}}", gf.missionID)
-                            .replace("{{SITECENTRE}}", gf.siteCentre)
-                            .replace("{{CREATIONDATE}}", gf.creationDate)
-                            .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                            .replace("{{DATATAKE_START}}", metadataHeader.getProductCharacteristics().getDatatakeSensingStartTime())
-                            .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
-                    String imageFileName;
-                    if (this.metadataHeader.isFoundProductMetadata()) {
-                        VirtualPath vp = this.metadataHeader.resolveResource(tile.getId());
-                        String fileName = vp.getFileName().toString();
-                        imageFileName = String.format("GRANULE%s%s%s%s", separator, fileName, separator, imageFileTemplate);
-                    } else {
-                        imageFileName = imageFileTemplate;
-                    }
-
-                    logger.finer("Adding file " + imageFileName + " to band: " + bandInformation.getPhysicalBand());
-
-                    boolean bFound = false;
-                    VirtualPath path = productPath.resolve(imageFileName);
-                    if (path.exists()) {
-                        tilePathMap.put(tile.getId(), path);
-                        bFound = true;
-                    } else {
-                        VirtualPath parentPath = path.getParent();
-                        if (parentPath != null && parentPath.exists()) { //Search a sibling containing the physicalBand name
-                            S2BandConstants bandConstant = S2BandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
-                            if (bandConstant != null) {
-                                VirtualPath[] otherPaths = parentPath.listPaths(bandConstant.getFilenameBandId());
-                                if (otherPaths != null && otherPaths.length == 1) {
-                                    tilePathMap.put(tile.getId(), otherPaths[0]);
-                                    bFound = true;
-                                } else if (otherPaths != null && otherPaths.length > 1) {
-                                    VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths, bandInformation.getResolution().resolution);
-                                    if (pathWithResolution != null) {
-                                        tilePathMap.put(tile.getId(), pathWithResolution);
-                                        bFound = true;
-                                    }
-                                }
-                            } else { //try specific bands
-                                S2SpecificBandConstants specificBandConstant = S2SpecificBandConstants.getBandFromPhysicalName(bandInformation.getPhysicalBand());
-                                if (specificBandConstant != null) {
-                                    VirtualPath[] otherPaths = parentPath.listPaths(specificBandConstant.getFilenameBandId());
-                                    if (otherPaths != null && otherPaths.length == 1) {
-                                        tilePathMap.put(tile.getId(), otherPaths[0]);
-                                        bFound = true;
-                                    } else if (otherPaths != null && otherPaths.length > 1) {
-                                        VirtualPath pathWithResolution = filterVirtualPathsByResolution(otherPaths, bandInformation.getResolution().resolution);
-                                        if (pathWithResolution != null) {
-                                            tilePathMap.put(tile.getId(), pathWithResolution);
-                                            bFound = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (!bFound) {
-                        logger.warning(String.format("Warning: missing file %s\n", path.getFullPathString()));
-                    }
-                }
-            }
-
-            if (!tilePathMap.isEmpty()) {
-                BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tilePathMap);
-                if (bandInfo != null) {
-                    bandInfoList.add(bandInfo);
-                }
-            } else {
-                logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
-            }
-        }
+        List<BandInfo> bandInfoList = this.metadataHeader.computeBandInfoByKey(tileList);
 
         if (!bandInfoList.isEmpty()) {
             addBands(product, bandInfoList, sceneDescription);
@@ -356,24 +274,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         return product;
-    }
-
-    private VirtualPath filterVirtualPathsByResolution(VirtualPath[] paths, int resolution) {
-        boolean found = false;
-        VirtualPath resultPath = null;
-        if (paths == null) {
-            return null;
-        }
-        for (VirtualPath path : paths) {
-            if (path.getFileName().toString().contains(String.format("%dm", resolution))) {
-                if (found) {
-                    return null;
-                }
-                found = true;
-                resultPath = path;
-            }
-        }
-        return resultPath;
     }
 
     private void addAnglesBands(Product product, S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap) {
@@ -468,7 +368,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if (masterOriginY < bandAnglesGrid[0].originY) masterOriginY = bandAnglesGrid[0].originY;
 
             for (S2BandAnglesGrid grid : bandAnglesGrid) {
-                if (grid.getResX() == resX && grid.getResX() == resX && grid.getWidth() == widthAnglesTile && grid.getHeight() == heightAnglesTile) {
+                if (grid.getResX() == resX && grid.getResY() == resY && grid.getWidth() == widthAnglesTile && grid.getHeight() == heightAnglesTile) {
                     anglesIDs.add(new AngleID(grid.getPrefix(), grid.getBand())); //if it is repeated, the angleID is not added because it is a HashSet
                 }
             }

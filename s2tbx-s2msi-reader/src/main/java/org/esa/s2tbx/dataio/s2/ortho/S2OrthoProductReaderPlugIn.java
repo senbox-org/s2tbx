@@ -33,8 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +42,7 @@ import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
 
 /**
  * @author Norman Fomferra
+ * modified 20200113 to support the advanced dialog for readers by Denisa Stefanescu
  */
 public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
@@ -52,12 +51,10 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     private static S2ProductCRSCache CRS_CHACHE = new S2ProductCRSCache();
 
     private S2Config.Sentinel2ProductLevel level;
+
     @Override
     public MetadataInspector getMetadataInspector() {
-        Sentinel2MetadataInspector inspector= new Sentinel2MetadataInspector();
-        inspector.setProductResolution(getResolution());
-        inspector.setProductLevel(getLevel());
-        return inspector;
+        return new Sentinel2MetadataInspector(getLevel(), getEPSG());
     }
 
     public S2OrthoProductReaderPlugIn() {
