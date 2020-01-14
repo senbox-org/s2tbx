@@ -20,18 +20,16 @@ package org.esa.s2tbx.dataio.jp2.internal;
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
-import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.jp2.VirtualJP2File;
-import org.esa.s2tbx.dataio.openjp2.OpenJP2Decoder;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.readers.PathUtils;
-import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.lib.openjpeg.dataio.OpenJP2Decoder;
+import org.esa.snap.lib.openjpeg.dataio.Utils;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
 import org.esa.snap.runtime.Config;
 
 import javax.imageio.ImageIO;
@@ -52,9 +50,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
-import static org.esa.s2tbx.dataio.Utils.diffLastModifiedTimes;
 
 /**
  * A JAI operator for handling JP2 tiles.
@@ -311,10 +306,10 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     private Path decompressTile(int tileIndex, int level) throws IOException {
         Path imageFile = getLocalImageFile();
         Path tileFile = PathUtils.get(cacheDir, PathUtils.getFileNameWithoutExtension(imageFile).toLowerCase() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
-        if ((!Files.exists(tileFile)) || (diffLastModifiedTimes(tileFile.toFile(), imageFile.toFile()) < 0L)) {
+        if ((!Files.exists(tileFile)) || (Utils.diffLastModifiedTimes(tileFile.toFile(), imageFile.toFile()) < 0L)) {
             final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getOpjDecompress());
             final Map<String, String> params = new HashMap<String, String>() {{
-                put("-i", GetIterativeShortPathNameW(imageFile.toString()));
+                put("-i", Utils.GetIterativeShortPathNameW(imageFile.toString()));
                 put("-r", String.valueOf(level));
                 put("-l", "20");
             }};

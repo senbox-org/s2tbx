@@ -21,9 +21,7 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
-import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
@@ -38,6 +36,8 @@ import org.esa.snap.core.datamodel.quicklooks.Quicklook;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.lib.openjpeg.dataio.Utils;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 
 import java.awt.*;
 import java.io.File;
@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
+import static org.esa.snap.lib.openjpeg.utils.OpenJpegUtils.validateOpenJpegExecutables;
 
 /**
  * Base class for all Sentinel-2 product readers

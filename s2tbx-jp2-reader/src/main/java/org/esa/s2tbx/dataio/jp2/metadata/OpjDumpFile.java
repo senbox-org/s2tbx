@@ -17,25 +17,14 @@
 
 package org.esa.s2tbx.dataio.jp2.metadata;
 
-import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.openjpeg.CommandOutput;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
-import org.esa.s2tbx.lib.openjpeg.BufferedRandomAccessFile;
-import org.esa.s2tbx.lib.openjpeg.CODMarkerSegment;
-import org.esa.s2tbx.lib.openjpeg.ContiguousCodestreamBox;
-import org.esa.s2tbx.lib.openjpeg.IMarkers;
-import org.esa.s2tbx.lib.openjpeg.JP2FileReader;
-import org.esa.s2tbx.lib.openjpeg.QCDMarkerSegment;
-import org.esa.s2tbx.lib.openjpeg.RGNMarkerSegment;
-import org.esa.s2tbx.lib.openjpeg.SIZMarkerSegment;
 import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.lib.openjpeg.dataio.Utils;
+import org.esa.snap.lib.openjpeg.header.*;
+import org.esa.snap.lib.openjpeg.utils.CommandOutput;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegUtils;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;

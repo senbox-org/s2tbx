@@ -21,10 +21,10 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.image.TileImageDisposer;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;

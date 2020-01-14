@@ -17,8 +17,8 @@
 
 package org.esa.s2tbx.dataio.jp2.internal;
 
-import org.esa.s2tbx.dataio.openjpeg.CommandOutput;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
+import org.esa.snap.lib.openjpeg.utils.CommandOutput;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegUtils;
 
 import java.util.ArrayList;
 import java.util.List;

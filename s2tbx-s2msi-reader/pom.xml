@@ -62,7 +62,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
+            <groupId>org.esa.snap</groupId>
             <artifactId>lib-openjpeg</artifactId>
             <version>${project.version}</version>
         </dependency>

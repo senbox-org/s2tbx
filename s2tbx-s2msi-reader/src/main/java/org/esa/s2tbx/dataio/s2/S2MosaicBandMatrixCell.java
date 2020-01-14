@@ -1,8 +1,8 @@
 package org.esa.s2tbx.dataio.s2;
 
 import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.image.MosaicMatrix;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 
 import java.awt.*;
 import java.nio.file.Path;

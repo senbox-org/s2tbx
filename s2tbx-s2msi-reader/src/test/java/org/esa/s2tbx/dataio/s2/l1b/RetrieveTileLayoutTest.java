@@ -19,9 +19,9 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bProductMetadataReader;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 import org.esa.snap.runtime.Engine;
 import org.esa.snap.utils.TestUtil;
 import org.junit.*;

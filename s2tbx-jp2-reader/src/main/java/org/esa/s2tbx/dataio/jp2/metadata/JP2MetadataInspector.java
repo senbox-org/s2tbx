@@ -1,13 +1,12 @@
 package org.esa.s2tbx.dataio.jp2.metadata;
 
-import org.esa.s2tbx.dataio.jp2.JP2ProductReader;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegUtils;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -16,7 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
+import static org.esa.snap.lib.openjpeg.utils.OpenJpegUtils.validateOpenJpegExecutables;
 
 /**
  * Metadata inspector for JP2 files.
