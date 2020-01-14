@@ -37,11 +37,9 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpecificBandConstants;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
-import org.esa.s2tbx.dataio.s2.TimeProbe;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
-import org.esa.s2tbx.dataio.s2.l1b.tiles.TileIndexMultiLevelSource;
+import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -107,7 +105,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -801,7 +798,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
 
         boolean maskFilesFound = false;
-        TimeProbe time = TimeProbe.start();
         for (S2Metadata.Tile tile : tileList) {
 
             if (tile.getMaskFilenames() == null) {

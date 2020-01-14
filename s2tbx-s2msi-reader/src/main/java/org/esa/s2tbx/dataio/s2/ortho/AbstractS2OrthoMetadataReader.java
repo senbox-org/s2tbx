@@ -2,17 +2,15 @@ package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.s2.metadata.AbstractS2ProductMetadataReader;
-import org.esa.snap.core.util.SystemUtils;
+import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.Objects;
 
-public abstract class AbstractS2OrthoMetadataReader extends AbstractS2ProductMetadataReader {
+public abstract class AbstractS2OrthoMetadataReader extends AbstractS2MetadataReader {
 
     private final String epsgCode;
 

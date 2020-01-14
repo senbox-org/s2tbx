@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l1b;
+package org.esa.s2tbx.dataio.s2.l1c.metadata;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -17,9 +17,9 @@ import java.util.List;
 /**
  * Created by jcoravu on 10/1/2020.
  */
-public class S2L1CProductMetadataReader extends AbstractS2OrthoMetadataReader {
+public class S2L1cProductMetadataReader extends AbstractS2OrthoMetadataReader {
 
-    public S2L1CProductMetadataReader(VirtualPath virtualPath, String epsgCode) throws IOException {
+    public S2L1cProductMetadataReader(VirtualPath virtualPath, String epsgCode) throws IOException {
         super(virtualPath, epsgCode);
     }
 

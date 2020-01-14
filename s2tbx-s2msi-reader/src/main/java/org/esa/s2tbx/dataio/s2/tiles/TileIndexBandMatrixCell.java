@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l1b.tiles;
+package org.esa.s2tbx.dataio.s2.tiles;
 
 import org.esa.snap.core.image.MosaicMatrix;
 

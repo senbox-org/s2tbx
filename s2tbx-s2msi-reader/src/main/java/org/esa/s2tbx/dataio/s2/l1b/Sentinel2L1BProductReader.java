@@ -26,8 +26,8 @@ import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadata;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.l1b.tiles.BandL1bSceneMultiLevelSource;
-import org.esa.s2tbx.dataio.s2.l1b.tiles.TileIndexMultiLevelSource;
-import org.esa.s2tbx.dataio.s2.metadata.AbstractS2ProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
+import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
@@ -39,7 +39,6 @@ import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.s2.S2Metadata.ProductCharacteristics;
 import static org.esa.s2tbx.dataio.s2.S2Metadata.Tile;
@@ -117,7 +116,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     @Override
-    protected AbstractS2ProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
+    protected AbstractS2MetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
         return new L1bProductMetadataReader(virtualPath);
     }
 

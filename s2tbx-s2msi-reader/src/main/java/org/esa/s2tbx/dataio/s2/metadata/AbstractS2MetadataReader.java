@@ -20,13 +20,13 @@ import java.util.logging.Logger;
 /**
  * Created by jcoravu on 10/1/2020.
  */
-public abstract class AbstractS2ProductMetadataReader {
+public abstract class AbstractS2MetadataReader {
 
-    private static final Logger logger = Logger.getLogger(AbstractS2ProductMetadataReader.class.getName());
+    private static final Logger logger = Logger.getLogger(AbstractS2MetadataReader.class.getName());
 
     protected final INamingConvention namingConvention;
 
-    protected AbstractS2ProductMetadataReader(VirtualPath virtualPath) throws IOException {
+    protected AbstractS2MetadataReader(VirtualPath virtualPath) throws IOException {
         this.namingConvention = NamingConventionFactory.createNamingConvention(virtualPath);
         if (this.namingConvention == null) {
             throw new NullPointerException("The naming convention is null.");

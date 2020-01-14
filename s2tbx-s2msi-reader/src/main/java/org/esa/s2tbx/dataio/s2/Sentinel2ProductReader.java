@@ -21,17 +21,15 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
-import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
-import org.esa.s2tbx.dataio.s2.metadata.AbstractS2ProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
-import org.esa.s2tbx.dataio.s2.l1b.tiles.TileIndexBandMatrixCell;
+import org.esa.s2tbx.dataio.s2.tiles.TileIndexBandMatrixCell;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -46,7 +44,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -54,7 +51,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
@@ -145,7 +141,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         logger.fine("Successfully set up cache dir for product " + productName + " to " + this.cacheDir.toString());
     }
 
-    protected abstract AbstractS2ProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException;
+    protected abstract AbstractS2MetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException;
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
@@ -170,7 +166,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 throw new IllegalArgumentException("Unknown input type '" + inputObject + "'.");
             }
 
-            AbstractS2ProductMetadataReader productMetadata = buildProductMetadata(virtualPath);
+            AbstractS2MetadataReader productMetadata = buildProductMetadata(virtualPath);
 
             //TODO Jean remove: this.namingConvention
             this.namingConvention = productMetadata.getNamingConvention();

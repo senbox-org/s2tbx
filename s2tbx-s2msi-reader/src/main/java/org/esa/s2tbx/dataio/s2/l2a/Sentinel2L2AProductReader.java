@@ -23,8 +23,7 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
-import org.esa.s2tbx.dataio.s2.l1b.S2L1CProductMetadataReader;
-import org.esa.s2tbx.dataio.s2.l1b.S2L2AProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l2a.metadata.S2L2aProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -33,8 +32,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <p>
@@ -61,8 +58,8 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected S2L2AProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
-        return new S2L2AProductMetadataReader(virtualPath, this.epsgCode, getProductResolution());
+    protected S2L2aProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
+        return new S2L2aProductMetadataReader(virtualPath, this.epsgCode, getProductResolution());
     }
 
     @Override
