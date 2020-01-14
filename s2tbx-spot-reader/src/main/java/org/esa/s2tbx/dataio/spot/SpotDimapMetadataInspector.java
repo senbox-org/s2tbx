@@ -36,7 +36,6 @@ public class SpotDimapMetadataInspector implements MetadataInspector {
             }
             metadata.getMaskList().add(SpotConstants.NODATA_VALUE);
             metadata.getMaskList().add(SpotConstants.SATURATED_VALUE);
-            metadata.setHasMasks(true);
             return metadata;
         } catch (RuntimeException | IOException exception) {
             throw exception;

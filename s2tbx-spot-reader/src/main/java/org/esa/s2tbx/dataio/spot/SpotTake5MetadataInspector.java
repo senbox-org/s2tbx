@@ -80,7 +80,6 @@ public class SpotTake5MetadataInspector implements MetadataInspector {
                     metadata.getMaskList().add(flagName);
                 }
             }
-            metadata.setHasMasks(true);
 
             return metadata;
         } catch (RuntimeException | IOException exception) {

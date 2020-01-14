@@ -74,7 +74,6 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
                     Arrays.stream(indexCoding.getIndexNames()).forEach(index -> metadata.getMaskList().add(indexBandInformation.getPrefix() + index.toLowerCase()));
                 }
             }
-            metadata.setHasMasks(!metadata.getMaskList().isEmpty());
             return metadata;
         } catch (RuntimeException | IOException exception) {
             throw exception;

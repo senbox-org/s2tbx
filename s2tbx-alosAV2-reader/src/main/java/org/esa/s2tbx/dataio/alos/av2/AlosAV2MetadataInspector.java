@@ -43,11 +43,9 @@ public class AlosAV2MetadataInspector implements MetadataInspector {
 
             if (alosAV2Metadata.getNoDataValue() >= 0) {
                 metadata.getMaskList().add(AlosAV2Constants.NODATA);
-                metadata.setHasMasks(true);
             }
             if (alosAV2Metadata.getSaturatedPixelValue() >= 0) {
                 metadata.getMaskList().add(AlosAV2Constants.SATURATED);
-                metadata.setHasMasks(true);
             }
 
             return metadata;

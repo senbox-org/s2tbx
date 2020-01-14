@@ -44,7 +44,6 @@ public class MuscateMetadataInspector implements MetadataInspector {
                     metadata.getMaskList().addAll(maskNames);
                 }
             }
-            metadata.setHasMasks(metadata.getMaskList().size() > 0);
 
             return metadata;
         } catch (RuntimeException | IOException exception) {

@@ -384,127 +384,130 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         List<AngleID> sortedList = new ArrayList(anglesIDs);
         Collections.sort(sortedList);
         for (AngleID angleID : sortedList) {
-
-            int[] bandOffsets = {0};
-            SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, widthAnglesTile, heightAnglesTile, 1, widthAnglesTile, bandOffsets);
-            ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
-            PlanarImage opImage;
-
-            //Mosaic of planar image
-            ArrayList<PlanarImage> tileImages = new ArrayList<>();
-
-            for (String tileId : sceneDescription.getOrderedTileIds()) {
-
-                DataBuffer buffer = new DataBufferFloat(widthAnglesTile * heightAnglesTile * 1);
-                // Wrap it in a writable raster
-                WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
-                S2BandAnglesGrid[] bandAnglesGrids = bandAnglesGridsMap.get(tileId);
-                //Search index of angleID
-                int i = -1;
-                for (int j = 0; j < bandAnglesGrids.length; j++) {
-                    AngleID angleIDAux = new AngleID(bandAnglesGrids[j].getPrefix(), bandAnglesGrids[j].getBand());
-                    if (angleID.equals(angleIDAux)) {
-                        i = j;
-                    }
-                }
-                if (i == -1) {
-                    float naNdata[] = new float[widthAnglesTile * heightAnglesTile];
-                    Arrays.fill(naNdata, Float.NaN);
-                    raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, naNdata);
-                } else {
-                    raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids[i].getData());
-                }
-
-                // And finally create an image with this raster
-                BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
-                opImage = PlanarImage.wrapRenderedImage(image);
-
-                // Translate tile
-                float transX = (bandAnglesGrids[0].originX - masterOriginX) / bandAnglesGrids[0].getResX();
-                float transY = (bandAnglesGrids[0].originY - masterOriginY) / bandAnglesGrids[0].getResY();
-
-                RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, null);
-                opImage = TranslateDescriptor.create(opImage,
-                        transX,
-                        -transY,
-                        Interpolation.getInstance(Interpolation.INTERP_BILINEAR), hints);
-
-                //Crop output image because with bilinear interpolation some pixels are 0.0
-                opImage = cropBordersIfAreZero(opImage);
-                // Feed the image list for mosaic
-                tileImages.add(opImage);
-            }
-
-            if (tileImages.isEmpty()) {
-                logger.warning("No tile images for angles mosaic");
-                return;
-            }
-
-            ImageLayout imageLayout = new ImageLayout();
-            imageLayout.setMinX(0);
-            imageLayout.setMinY(0);
-            imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileGridXOffset(0);
-            imageLayout.setTileGridYOffset(0);
-
-            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
-            hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-
-            RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                    MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                    null, null, new double[][]{{-1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
-                    hints);
-
-            //Crop Mosaic if there are lines outside the scene
-            mosaicOp = (RenderedOp) cropBordersOutsideScene(mosaicOp, resX, resY, sceneDescription);
-
-            Band band;
+            String bandName;
             if (angleID.band != null) {
-                band = new Band(angleID.prefix + "_" + angleID.band.getPhysicalName(), ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+                bandName = angleID.prefix + "_" + angleID.band.getPhysicalName();
             } else if (angleID.prefix.equals(VIEW_AZIMUTH_PREFIX) || angleID.prefix.equals(VIEW_ZENITH_PREFIX)) {
-                band = new Band(angleID.prefix + "_mean", ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+                bandName = angleID.prefix + "_mean";
             } else {
-                band = new Band(angleID.prefix, ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+                bandName = angleID.prefix;
             }
-            String description = "";
-            if (angleID.prefix.startsWith(VIEW_ZENITH_PREFIX)) {
-                description = "Viewing incidence zenith angle";
-            }
-            if (angleID.prefix.startsWith(VIEW_AZIMUTH_PREFIX)) {
-                description = "Viewing incidence azimuth angle";
-            }
-            if (angleID.prefix.startsWith(SUN_ZENITH_PREFIX)) {
-                description = "Solar zenith angle";
-            }
-            if (angleID.prefix.startsWith(SUN_AZIMUTH_PREFIX)) {
-                description = "Solar azimuth angle";
-            }
+            if (getSubsetDef() == null || getSubsetDef().isNodeAccepted(bandName)){
+                int[] bandOffsets = {0};
+                SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, widthAnglesTile, heightAnglesTile, 1, widthAnglesTile, bandOffsets);
+                ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+                ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
+                PlanarImage opImage;
 
-            band.setDescription(description);
-            band.setUnit("°");
-            band.setNoDataValue(Double.NaN);
-            band.setNoDataValueUsed(true);
+                //Mosaic of planar image
+                ArrayList<PlanarImage> tileImages = new ArrayList<>();
 
-            try {
-                band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
-                        band.getRasterWidth(),
-                        band.getRasterHeight(),
-                        sceneDescription.getSceneOrigin()[0],
-                        sceneDescription.getSceneOrigin()[1],
-                        resX,
-                        resY,
-                        0.0, 0.0));
-            } catch (Exception e) {
-                continue;
+                for (String tileId : sceneDescription.getOrderedTileIds()) {
+                    DataBuffer buffer = new DataBufferFloat(widthAnglesTile * heightAnglesTile * 1);
+                    // Wrap it in a writable raster
+                    WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
+                    S2BandAnglesGrid[] bandAnglesGrids = bandAnglesGridsMap.get(tileId);
+                    //Search index of angleID
+                    int i = -1;
+                    for (int j = 0; j < bandAnglesGrids.length; j++) {
+                        AngleID angleIDAux = new AngleID(bandAnglesGrids[j].getPrefix(), bandAnglesGrids[j].getBand());
+                        if (angleID.equals(angleIDAux)) {
+                            i = j;
+                        }
+                    }
+
+                    if (i == -1) {
+                        float naNdata[] = new float[widthAnglesTile * heightAnglesTile];
+                        Arrays.fill(naNdata, Float.NaN);
+                        raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, naNdata);
+                    } else {
+                        raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids[i].getData());
+                    }
+
+                    // And finally create an image with this raster
+                    BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
+                    opImage = PlanarImage.wrapRenderedImage(image);
+
+                    // Translate tile
+                    float transX = (bandAnglesGrids[0].originX - masterOriginX) / bandAnglesGrids[0].getResX();
+                    float transY = (bandAnglesGrids[0].originY - masterOriginY) / bandAnglesGrids[0].getResY();
+
+                    RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+                    opImage = TranslateDescriptor.create(opImage,
+                                                         transX,
+                                                         -transY,
+                                                         Interpolation.getInstance(Interpolation.INTERP_BILINEAR), hints);
+
+                    //Crop output image because with bilinear interpolation some pixels are 0.0
+                    opImage = cropBordersIfAreZero(opImage);
+                    // Feed the image list for mosaic
+                    tileImages.add(opImage);
+                }
+
+                if (tileImages.isEmpty()) {
+                    logger.warning("No tile images for angles mosaic");
+                    return;
+                }
+
+                ImageLayout imageLayout = new ImageLayout();
+                imageLayout.setMinX(0);
+                imageLayout.setMinY(0);
+                imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+                imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
+                imageLayout.setTileGridXOffset(0);
+                imageLayout.setTileGridYOffset(0);
+
+                RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
+                hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+
+                RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
+                                                              MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                              null, null, new double[][]{{-1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
+                                                              hints);
+
+                //Crop Mosaic if there are lines outside the scene
+                mosaicOp = (RenderedOp) cropBordersOutsideScene(mosaicOp, resX, resY, sceneDescription);
+
+                Band band = new Band(bandName, ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+
+                String description = "";
+                if (angleID.prefix.startsWith(VIEW_ZENITH_PREFIX)) {
+                    description = "Viewing incidence zenith angle";
+                }
+                if (angleID.prefix.startsWith(VIEW_AZIMUTH_PREFIX)) {
+                    description = "Viewing incidence azimuth angle";
+                }
+                if (angleID.prefix.startsWith(SUN_ZENITH_PREFIX)) {
+                    description = "Solar zenith angle";
+                }
+                if (angleID.prefix.startsWith(SUN_AZIMUTH_PREFIX)) {
+                    description = "Solar azimuth angle";
+                }
+
+                band.setDescription(description);
+                band.setUnit("°");
+                band.setNoDataValue(Double.NaN);
+                band.setNoDataValueUsed(true);
+
+                try {
+                    band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
+                                                       band.getRasterWidth(),
+                                                       band.getRasterHeight(),
+                                                       sceneDescription.getSceneOrigin()[0],
+                                                       sceneDescription.getSceneOrigin()[1],
+                                                       resX,
+                                                       resY,
+                                                       0.0, 0.0));
+                } catch (Exception e) {
+                    continue;
+                }
+
+                band.setImageToModelTransform(product.findImageToModelTransform(band.getGeoCoding()));
+
+                //set source image mut be done after setGeocoding and setImageToModelTransform
+                band.setSourceImage(mosaicOp);
+                product.addBand(band);
             }
-
-            band.setImageToModelTransform(product.findImageToModelTransform(band.getGeoCoding()));
-
-            //set source image mut be done after setGeocoding and setImageToModelTransform
-            band.setSourceImage(mosaicOp);
-            product.addBand(band);
         }
 
     }

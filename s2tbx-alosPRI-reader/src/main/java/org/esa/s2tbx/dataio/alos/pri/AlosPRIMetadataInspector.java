@@ -39,7 +39,6 @@ public class AlosPRIMetadataInspector implements MetadataInspector {
 
             metadata.getMaskList().add(AlosPRIConstants.NODATA);
             metadata.getMaskList().add(AlosPRIConstants.SATURATED);
-            metadata.setHasMasks(true);
 
             return metadata;
         } catch (RuntimeException | IOException exception) {

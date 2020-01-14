@@ -53,7 +53,6 @@ public class RapidEyeL1MetadataInspector implements MetadataInspector {
                 for (String flagName : flagCoding.getFlagNames()) {
                     metadata.getMaskList().add(flagName);
                 }
-                metadata.setHasMasks(metadata.getMaskList().size() > 0);
             }
 
             return metadata;

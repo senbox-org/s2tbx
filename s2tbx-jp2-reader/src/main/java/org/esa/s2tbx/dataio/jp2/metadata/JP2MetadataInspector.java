@@ -61,7 +61,6 @@ public class JP2MetadataInspector implements MetadataInspector {
         } catch (IOException|InterruptedException e) {
             throw new IOException("Error while reading file '" + productPath.toString() + "'.", e);
         }
-        metadata.setHasMasks(false);
         return metadata;
     }
 

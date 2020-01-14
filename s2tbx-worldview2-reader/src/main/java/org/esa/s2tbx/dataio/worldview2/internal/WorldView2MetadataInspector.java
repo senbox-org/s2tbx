@@ -63,7 +63,6 @@ public class WorldView2MetadataInspector extends XmlMetadataInspector {
                 }
             }
         }
-        metadata.setHasMasks(false);
         return metadata;
     }
 }

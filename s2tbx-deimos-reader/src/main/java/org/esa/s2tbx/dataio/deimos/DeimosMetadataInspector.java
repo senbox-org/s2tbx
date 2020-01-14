@@ -45,7 +45,6 @@ public class DeimosMetadataInspector implements MetadataInspector {
 
             metadata.getMaskList().add(DeimosConstants.NODATA_VALUE);
             metadata.getMaskList().add(DeimosConstants.SATURATED_VALUE);
-            metadata.setHasMasks(true);
 
             return metadata;
         } catch (RuntimeException | IOException exception) {

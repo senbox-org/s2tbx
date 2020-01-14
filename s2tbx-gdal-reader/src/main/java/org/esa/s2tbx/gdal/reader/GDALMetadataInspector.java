@@ -43,7 +43,6 @@ public class GDALMetadataInspector implements MetadataInspector {
                     metadata.getMaskList().add(maskName);
                 }
             }
-            metadata.setHasMasks(metadata.getMaskList().size() > 0);
 
             return metadata;
         } catch (RuntimeException | IOException exception) {

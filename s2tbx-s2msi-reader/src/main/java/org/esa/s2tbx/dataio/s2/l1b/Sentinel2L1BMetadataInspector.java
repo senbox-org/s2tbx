@@ -93,7 +93,6 @@ public class Sentinel2L1BMetadataInspector implements MetadataInspector {
                         }
                     }
                 }
-                metadata.setHasMasks(metadata.getMaskList().size() > 0);
 
                 return metadata;
             } else {

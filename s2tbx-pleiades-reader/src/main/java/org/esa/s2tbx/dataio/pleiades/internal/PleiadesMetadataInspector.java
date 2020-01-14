@@ -34,7 +34,6 @@ public class PleiadesMetadataInspector extends XmlMetadataInspector {
             if (imageMetadataList.isEmpty()) {
                 throw new IOException("No raster found");
             } else {
-                metadata.setHasMasks(true);
                 metadata.getMaskList().add("NODATA");
                 metadata.getMaskList().add("SATURATED");
                 for (ImageMetadata imageMetadata : imageMetadataList) {
