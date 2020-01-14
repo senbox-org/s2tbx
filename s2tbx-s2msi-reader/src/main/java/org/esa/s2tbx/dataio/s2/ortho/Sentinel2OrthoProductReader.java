@@ -38,6 +38,7 @@ import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
+import org.esa.s2tbx.dataio.s2.ortho.metadata.S2OrthoMetadata;
 import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -107,7 +108,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.awt.image.DataBuffer.TYPE_FLOAT;
-import static org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc.makeTileInformation;
+import static org.esa.s2tbx.dataio.s2.ortho.metadata.S2OrthoMetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
 
 /**

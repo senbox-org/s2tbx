@@ -23,6 +23,7 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
+import org.esa.s2tbx.dataio.s2.l2a.metadata.L2aMetadata;
 import org.esa.s2tbx.dataio.s2.l2a.metadata.S2L2aProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;

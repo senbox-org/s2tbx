@@ -22,6 +22,7 @@ import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.l1c.metadata.L1cMetadata;
 import org.esa.s2tbx.dataio.s2.l1c.metadata.S2L1cProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;

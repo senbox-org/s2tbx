@@ -20,9 +20,9 @@ package org.esa.s2tbx.dataio.s2.ortho;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
-import org.esa.s2tbx.dataio.s2.Sentinel2MetadataInspector;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
+import org.esa.s2tbx.dataio.s2.ortho.metadata.Sentinel2OrthoMetadataInspector;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
@@ -54,7 +54,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     @Override
     public MetadataInspector getMetadataInspector() {
-        return new Sentinel2MetadataInspector(getLevel(), getEPSG());
+        return new Sentinel2OrthoMetadataInspector(getLevel(), getEPSG());
     }
 
     public S2OrthoProductReaderPlugIn() {

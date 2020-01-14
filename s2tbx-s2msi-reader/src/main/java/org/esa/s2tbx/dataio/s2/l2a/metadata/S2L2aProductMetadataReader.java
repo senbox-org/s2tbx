@@ -3,9 +3,8 @@ package org.esa.s2tbx.dataio.s2.l2a.metadata;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.s2.l2a.L2aMetadata;
-import org.esa.s2tbx.dataio.s2.ortho.AbstractS2OrthoMetadataReader;
-import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
+import org.esa.s2tbx.dataio.s2.ortho.metadata.AbstractS2OrthoMetadataReader;
+import org.esa.s2tbx.dataio.s2.ortho.metadata.S2OrthoMetadata;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
