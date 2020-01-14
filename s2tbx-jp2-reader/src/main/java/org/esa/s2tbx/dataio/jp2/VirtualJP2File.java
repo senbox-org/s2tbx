@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 
-import static org.esa.s2tbx.dataio.Utils.getMD5sum;
+import static org.esa.snap.lib.openjpeg.dataio.Utils.getMD5sum;
 
 /**
  * Created by jcoravu on 8/5/2019.

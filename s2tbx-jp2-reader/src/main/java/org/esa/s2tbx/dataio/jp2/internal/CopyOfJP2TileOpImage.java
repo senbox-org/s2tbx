@@ -2,14 +2,14 @@ package org.esa.s2tbx.dataio.jp2.internal;
 
 import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
-import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
-import org.esa.s2tbx.dataio.openjp2.OpenJP2Decoder;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.lib.openjpeg.dataio.OpenJP2Decoder;
+import org.esa.snap.lib.openjpeg.dataio.Utils;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
 import org.esa.snap.runtime.Config;
 
 import javax.imageio.ImageIO;

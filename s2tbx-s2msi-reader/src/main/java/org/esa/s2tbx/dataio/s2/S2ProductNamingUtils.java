@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.s2;
 
-import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper;
+import org.esa.snap.lib.openjpeg.dataio.Utils;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;

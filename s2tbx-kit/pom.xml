@@ -160,12 +160,6 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-openjpeg</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-jp2-reader</artifactId>
             <version>${project.version}</version>
         </dependency>

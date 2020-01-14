@@ -29,8 +29,6 @@ import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
 import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
@@ -43,6 +41,8 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegUtils;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -56,7 +56,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
+import static org.esa.snap.lib.openjpeg.utils.OpenJpegUtils.validateOpenJpegExecutables;
 
 /**
  * Generic reader for JP2 files.

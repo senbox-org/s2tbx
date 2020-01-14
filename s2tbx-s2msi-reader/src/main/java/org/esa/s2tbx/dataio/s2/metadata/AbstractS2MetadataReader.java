@@ -1,8 +1,8 @@
 package org.esa.s2tbx.dataio.s2.metadata;
 
 import org.esa.s2tbx.commons.FilePath;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegUtils;
 import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;

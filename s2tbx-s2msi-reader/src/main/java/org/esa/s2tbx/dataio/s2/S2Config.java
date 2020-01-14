@@ -17,9 +17,9 @@
 
 package org.esa.s2tbx.dataio.s2;
 
-import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
 
 import java.awt.image.DataBuffer;
 
