@@ -3,9 +3,9 @@ package org.esa.s2tbx.dataio.s2;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
-import org.esa.s2tbx.dataio.s2.l1b.S2L1CProductMetadataReader;
-import org.esa.s2tbx.dataio.s2.l1b.S2L3ProductMetadataReader;
-import org.esa.s2tbx.dataio.s2.l1b.S2L2AProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l1c.metadata.S2L1cProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l2a.metadata.S2L2aProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l3.metadata.S2L3ProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.ortho.AbstractS2OrthoMetadataReader;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
@@ -34,7 +34,6 @@ public class Sentinel2MetadataInspector implements MetadataInspector {
 
     public Metadata getMetadata(Path productPath) throws IOException {
         VirtualPath virtualPath = null;
-        Metadata metadata = new Metadata();
         try {
             Path inputPath = S2ProductNamingUtils.processInputPath(productPath);
             virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
@@ -42,17 +41,19 @@ public class Sentinel2MetadataInspector implements MetadataInspector {
             AbstractS2OrthoMetadataReader productMetadataReader = null;
             S2SpatialResolution productResolution = namingConvention.getResolution();
             if (productLevel == S2Config.Sentinel2ProductLevel.L2A) {
-                productMetadataReader = new S2L2AProductMetadataReader(virtualPath, epsg, productResolution);
+                productMetadataReader = new S2L2aProductMetadataReader(virtualPath, epsg, productResolution);
             } else if (productLevel == S2Config.Sentinel2ProductLevel.L1C) {
-                productMetadataReader = new S2L1CProductMetadataReader(virtualPath, epsg);
+                productMetadataReader = new S2L1cProductMetadataReader(virtualPath, epsg);
             } else if (productLevel == S2Config.Sentinel2ProductLevel.L3) {
                 productMetadataReader = new S2L3ProductMetadataReader(virtualPath, epsg, productResolution);
             }
             VirtualPath inputVirtualPath = productMetadataReader.getNamingConvention().getInputXml();
             S2Config config = productMetadataReader.readTileLayouts(inputVirtualPath, productMetadataReader.isGranule());
-            S2OrthoMetadata metadataHeader = productMetadataReader.readMetadataHeader(inputVirtualPath, config);
+            S2OrthoMetadata metadataHeader = (S2OrthoMetadata)productMetadataReader.readMetadataHeader(inputVirtualPath, config);
             S2OrthoSceneLayout sceneDescription = S2OrthoSceneLayout.create(metadataHeader);
             List<S2Metadata.Tile> tileList = metadataHeader.getTileList();
+
+            Metadata metadata = new Metadata();
             metadata.setProductWidth(sceneDescription.getSceneDimension(productResolution).width);
             metadata.setProductHeight(sceneDescription.getSceneDimension(productResolution).height);
             metadataHeader.addStaticAngleBands(metadata);
