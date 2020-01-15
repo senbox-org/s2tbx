@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2.l1b.tiles;
 
-import org.esa.s2tbx.dataio.jp2.internal.CopyOfJP2TileOpImage;
+import org.esa.snap.jp2.reader.internal.CopyOfJP2TileOpImage;
 import org.esa.s2tbx.dataio.s2.S2MosaicBandMatrixCell;
 import org.esa.snap.core.image.AbstractMatrixMosaicSubsetMultiLevelSource;
 import org.esa.snap.core.image.DecompressedTileOpImageCallback;

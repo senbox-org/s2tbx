@@ -2,18 +2,14 @@ package org.esa.s2tbx.dataio.worldview2esa.metadata;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.commons.FilePathInputStream;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
 import org.esa.snap.core.datamodel.ProductData;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

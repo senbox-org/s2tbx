@@ -2,7 +2,7 @@ package org.esa.s2tbx.gdal.reader;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import org.esa.s2tbx.commons.AbstractFile;
+import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.esa.s2tbx.commons.VirtualFile;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;

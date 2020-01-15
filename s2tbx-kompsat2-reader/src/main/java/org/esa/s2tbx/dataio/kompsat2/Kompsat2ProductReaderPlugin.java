@@ -1,9 +1,6 @@
 package org.esa.s2tbx.dataio.kompsat2;
 
 import org.esa.s2tbx.dataio.kompsat2.internal.Kompsat2Constants;
-import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Metadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;

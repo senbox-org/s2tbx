@@ -8,9 +8,9 @@ import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadata;
 import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadataUtil;
 import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Component;
 import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Metadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -23,7 +23,6 @@ import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.xml.sax.SAXException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
-import javax.media.jai.JAI;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.BufferedReader;
@@ -320,7 +319,7 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                                                        throws IOException, SAXException, ParserConfigurationException, InstantiationException {
 
         try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(metadataRelativeFilePath)) {
-            Kompsat2Metadata metadata = XmlMetadata.loadMetadata(Kompsat2Metadata.class, filePathInputStream);
+            Kompsat2Metadata metadata = BaseProductReaderPlugIn.loadMetadata(Kompsat2Metadata.class, filePathInputStream);
             metadata.setPath(filePathInputStream.getPath());
             metadata.setFileName(filePathInputStream.getPath().getFileName().toString());
             String directoryName = metadata.getAttributeValue(Kompsat2Constants.PATH_ZIP_FILE_NAME, null);

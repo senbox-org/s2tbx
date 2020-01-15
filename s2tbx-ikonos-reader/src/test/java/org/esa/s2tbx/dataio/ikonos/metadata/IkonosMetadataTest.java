@@ -2,8 +2,10 @@ package org.esa.s2tbx.dataio.ikonos.metadata;
 
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +38,7 @@ public class IkonosMetadataTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         XmlMetadataParserFactory.registerParser(IkonosMetadata.class, new XmlMetadataParser<>(IkonosMetadata.class));
-        metadata = IkonosMetadata.create(IkonosMetadata.class, TestUtil.getTestFile(productsFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP\\IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML"));
+        metadata = GenericXmlMetadata.create(IkonosMetadata.class, TestUtil.getTestFile(productsFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP\\IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML"));
     }
 
     @After

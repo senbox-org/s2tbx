@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.alos.pri.internal;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 

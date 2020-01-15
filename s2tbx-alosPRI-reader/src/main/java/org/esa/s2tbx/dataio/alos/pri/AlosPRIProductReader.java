@@ -6,8 +6,7 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIMetadata;
 import org.esa.s2tbx.dataio.alos.pri.internal.ImageMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -219,7 +218,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
 
         AlosPRIMetadata alosPriMetadata;
         try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(metadataRelativeFilePath)) {
-            alosPriMetadata = XmlMetadata.loadMetadata(AlosPRIMetadata.class, filePathInputStream);
+            alosPriMetadata = BaseProductReaderPlugIn.loadMetadata(AlosPRIMetadata.class, filePathInputStream);
         }
         List<ImageMetadata> imageMetadataList = readImagesMetadata(imagesMetadataParentPath);
         if (imageMetadataList.isEmpty()) {
@@ -262,7 +261,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
             for (String relativeFilePath : allFileNames) {
                 if (relativeFilePath.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION)) {
                     try (FilePathInputStream filePathInputStream = zipArchiveProductDirectory.getInputStream(relativeFilePath)) {
-                        ImageMetadata imageMetadata = XmlMetadata.loadMetadata(ImageMetadata.class, filePathInputStream);
+                        ImageMetadata imageMetadata = BaseProductReaderPlugIn.loadMetadata(ImageMetadata.class, filePathInputStream);
                         int extensionIndex = relativeFilePath.lastIndexOf(AlosPRIConstants.IMAGE_METADATA_EXTENSION);
                         String gtifImageRelativeFilePath = relativeFilePath.substring(0, extensionIndex) + AlosPRIConstants.IMAGE_EXTENSION;
                         if (!zipArchiveProductDirectory.exists(gtifImageRelativeFilePath)) {

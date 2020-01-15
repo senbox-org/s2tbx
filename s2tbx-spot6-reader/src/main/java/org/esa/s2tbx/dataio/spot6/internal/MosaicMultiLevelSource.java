@@ -20,7 +20,7 @@ package org.esa.s2tbx.dataio.spot6.internal;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
+import org.esa.snap.jp2.reader.internal.JP2TileOpImage;
 import org.esa.snap.core.datamodel.Band;
 
 import javax.media.jai.BorderExtender;

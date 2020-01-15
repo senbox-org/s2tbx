@@ -1,8 +1,9 @@
 package org.esa.s2tbx.dataio.alos.pri.internal;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -35,7 +36,7 @@ public class AlosPRIMetadataTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         XmlMetadataParserFactory.registerParser(AlosPRIMetadata.class, new XmlMetadataParser<>(AlosPRIMetadata.class));
-        metadata = XmlMetadata.create(AlosPRIMetadata.class, TestUtil.getTestFile(productsFolder + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410.SIP" + File.separator + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410.MD.XML"));
+        metadata = GenericXmlMetadata.create(AlosPRIMetadata.class, TestUtil.getTestFile(productsFolder + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410.SIP" + File.separator + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410.MD.XML"));
         metadata.addComponentMetadata(TestUtil.getTestFile(productsFolder + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410.SIP" + File.separator + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410" + File.separator + "ALPSMB038921910" + File.separator + "AL01_PRI_M1B_1C_20061017T212809_20061017T212815_ESR_003892_2B3E.DIMA"));
         metadata.addComponentMetadata(TestUtil.getTestFile(productsFolder + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410.SIP" + File.separator + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410" + File.separator + "ALPSMF038921800" + File.separator + "AL01_PRI_M1F_1C_20061017T212639_20061017T212645_ESR_003892_2B3E.DIMA"));
         metadata.addComponentMetadata(TestUtil.getTestFile(productsFolder + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410.SIP" + File.separator + "AL1_NESR_PSM_OB1_1C_20061017T212724_20061017T212730_003892_0629_1855_0410" + File.separator + "ALPSMN038921855" + File.separator + "AL01_PRI_M1N_1C_20061017T212724_20061017T212730_ESR_003892_2B3E.DIMA"));

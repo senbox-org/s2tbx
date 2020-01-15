@@ -1,29 +1,20 @@
 package org.esa.s2tbx.dataio.alos.pri.internal;
 
-import com.bc.ceres.core.VirtualDir;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * Holder class for .MD.XML metadata file.
@@ -327,7 +318,7 @@ public class AlosPRIMetadata extends XmlMetadata {
     //TODO Jean remove
     @Deprecated
     public void addComponentMetadata(File metadata) {
-        ImageMetadata imageMetadata = create(ImageMetadata.class, metadata.toPath());
+        ImageMetadata imageMetadata = GenericXmlMetadata.create(ImageMetadata.class, metadata.toPath());
         imageMetadata.setFileName(metadata.getName());
         this.componentMetadata.add(imageMetadata);
     }

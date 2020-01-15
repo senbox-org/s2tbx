@@ -60,8 +60,6 @@ public abstract class VirtualDirEx extends VirtualDir implements Closeable {
 
     private static final Logger logger = Logger.getLogger(VirtualDirEx.class.getName());
 
-    public static final int BUFFER_SIZE = 1024 * 1024;
-
     private final static HashSet<String> COMPRESSED_EXTENSIONS = new HashSet<String>() {{
         add(".zip");
         add(".tgz");

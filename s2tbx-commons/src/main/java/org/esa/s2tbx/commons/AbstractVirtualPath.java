@@ -1,9 +1,9 @@
 package org.esa.s2tbx.commons;
 
 import com.bc.ceres.core.VirtualDir;
-import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.esa.snap.engine_utilities.util.NotRegularFileException;
-import org.esa.snap.utils.FileHelper;
+import org.esa.snap.engine_utilities.file.FileHelper;
 
 import java.io.*;
 import java.nio.file.FileVisitResult;
@@ -76,7 +76,7 @@ public abstract class AbstractVirtualPath extends VirtualDir {
                 if (!Files.exists(parentFolder)) {
                     Files.createDirectories(parentFolder);
                 }
-                FileHelper.copyFileUsingInputStream(entryPath, localFilePath.toString(), VirtualDirEx.BUFFER_SIZE);
+                FileHelper.copyFileUsingInputStream(entryPath, localFilePath.toString(), AbstractFile.BUFFER_SIZE);
             }
             return localFilePath;
         } else {
@@ -96,7 +96,7 @@ public abstract class AbstractVirtualPath extends VirtualDir {
         if (Files.isRegularFile(child)) {
             // the child is a file
             InputStream inputStream = Files.newInputStream(child);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, VirtualDirEx.BUFFER_SIZE);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, AbstractFile.BUFFER_SIZE);
             InputStream inputStreamToReturn;
             if (child.toString().endsWith(".gz")) {
                 inputStreamToReturn = new GZIPInputStream(bufferedInputStream);

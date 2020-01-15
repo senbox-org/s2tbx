@@ -18,9 +18,10 @@
 package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.datamodel.MetadataElement;
 
 import java.io.File;
@@ -176,7 +177,7 @@ public class SpotSceneMetadata {
         if (file == null || !file.exists()) { // no volume, then look for metadata*.dim
             File selectedMetadataFile = folder.getFile(SpotConstants.SPOTSCENE_METADATA_FILE);
             logger.info("Read metadata file " + selectedMetadataFile.getName());
-            SpotDimapMetadata metadata = XmlMetadata.create(SpotDimapMetadata.class, selectedMetadataFile);
+            SpotDimapMetadata metadata = GenericXmlMetadata.create(SpotDimapMetadata.class, selectedMetadataFile);
             if (metadata == null) {
                 logger.warning(String.format("Error while reading metadata file %s",
                         selectedMetadataFile.getName()));
@@ -201,7 +202,7 @@ public class SpotSceneMetadata {
                     File metadataFile = folder.getFile(component.getPath().toLowerCase());
                     if (metadataFile.getName().toLowerCase().endsWith(".dim")) {
                         logger.info("Read component metadata file " + metadataFile.getName());
-                        SpotDimapMetadata metadata = XmlMetadata.create(SpotDimapMetadata.class, metadataFile);
+                        SpotDimapMetadata metadata = GenericXmlMetadata.create(SpotDimapMetadata.class, metadataFile);
                         if (metadata == null) {
                             logger.warning(String.format("Error while reading metadata file %s",
                                     metadataFile.getName()));

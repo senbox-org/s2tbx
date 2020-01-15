@@ -17,7 +17,7 @@
 
 package org.esa.s2tbx.dataio.spot.dimap;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;

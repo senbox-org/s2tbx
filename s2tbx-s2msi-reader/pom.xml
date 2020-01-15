@@ -45,6 +45,15 @@
             <artifactId>snap-ui</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-engine-utilities</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-jp2-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
         </dependency>
@@ -64,11 +73,6 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>lib-openjpeg</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-jp2-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

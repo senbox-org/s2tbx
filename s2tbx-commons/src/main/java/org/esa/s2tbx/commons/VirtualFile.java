@@ -1,6 +1,7 @@
 package org.esa.s2tbx.commons;
 
 import com.bc.ceres.core.VirtualDir;
+import org.esa.snap.engine_utilities.file.AbstractFile;
 
 import java.io.Closeable;
 import java.io.File;

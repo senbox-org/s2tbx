@@ -1,20 +1,15 @@
 package org.esa.s2tbx.dataio.worldview2.metadata;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,7 +29,7 @@ public class WorldView2TileMetadataTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         XmlMetadataParserFactory.registerParser(TileMetadata.class, new XmlMetadataParser<>(TileMetadata.class));
-        metadata = TileMetadata.create(TileMetadata.class, TestUtil.getTestFile(productsFolder +
+        metadata = GenericXmlMetadata.create(TileMetadata.class, TestUtil.getTestFile(productsFolder +
                 "ZON24_I200862_FL01-P369685/ZON24_MUL/17MAY02091354-M2AS-ZON24.XML"));
     }
 

@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2;
 
-import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
+import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 

@@ -19,9 +19,10 @@ package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotTake5Metadata;
@@ -322,7 +323,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             }
         }
 
-        SpotTake5Metadata imageMetadata = XmlMetadata.create(SpotTake5Metadata.class, imageMetadataFile);
+        SpotTake5Metadata imageMetadata = GenericXmlMetadata.create(SpotTake5Metadata.class, imageMetadataFile);
         imageMetadata.setMetaSubFolder(metaSubFolder);
 
         String productLevel = imageMetadata.getMetadataProfile();

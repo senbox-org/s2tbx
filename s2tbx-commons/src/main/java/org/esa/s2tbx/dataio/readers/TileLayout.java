@@ -23,6 +23,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
 /**
  * @author Norman Fomferra
  */
+//TODO Jean remove the class
+@Deprecated
 public class TileLayout {
     /**
      * Width of L1C tile

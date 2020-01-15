@@ -21,7 +21,7 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
-import org.esa.s2tbx.dataio.jp2.JP2ImageFile;
+import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;

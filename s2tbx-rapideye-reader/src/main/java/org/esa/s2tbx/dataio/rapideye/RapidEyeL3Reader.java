@@ -18,8 +18,8 @@
 package org.esa.s2tbx.dataio.rapideye;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;

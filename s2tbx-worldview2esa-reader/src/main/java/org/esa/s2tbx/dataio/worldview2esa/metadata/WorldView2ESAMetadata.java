@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.worldview2esa.metadata;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;

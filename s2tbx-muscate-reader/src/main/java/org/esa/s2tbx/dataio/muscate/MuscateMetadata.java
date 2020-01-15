@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.muscate;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.MetadataAttribute;

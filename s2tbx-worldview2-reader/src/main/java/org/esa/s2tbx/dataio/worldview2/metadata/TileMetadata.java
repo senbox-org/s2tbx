@@ -2,8 +2,8 @@ package org.esa.s2tbx.dataio.worldview2.metadata;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.commons.FilePathInputStream;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
 import org.esa.snap.core.datamodel.ProductData;
 import org.xml.sax.SAXException;

@@ -20,7 +20,7 @@ package org.esa.s2tbx.dataio.pleiades.internal;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
+import org.esa.snap.jp2.reader.internal.JP2TileOpImage;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.util.ImageUtils;
 

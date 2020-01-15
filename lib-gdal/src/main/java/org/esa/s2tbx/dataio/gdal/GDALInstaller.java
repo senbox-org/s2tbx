@@ -19,7 +19,7 @@ package org.esa.s2tbx.dataio.gdal;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.runtime.Config;
-import org.esa.snap.utils.FileHelper;
+import org.esa.snap.engine_utilities.file.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
 
 import java.io.*;

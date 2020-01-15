@@ -17,7 +17,7 @@
 
 package org.esa.s2tbx.dataio.rapideye.metadata;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
@@ -27,7 +27,7 @@ import org.esa.snap.utils.DateHelper;
  * Specialized <code>XmlMetadata</code> for RapidEye.
  *
  * @author  Cosmin Cara
- * @see org.esa.s2tbx.dataio.metadata.XmlMetadata
+ * @see XmlMetadata
  */
 public class RapidEyeMetadata extends XmlMetadata {
 

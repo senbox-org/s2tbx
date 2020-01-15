@@ -3,15 +3,15 @@ package org.esa.s2tbx.dataio.kompsat2.metadata;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.kompsat2.Kompsat2ProductReader;
 import org.esa.s2tbx.dataio.kompsat2.internal.Kompsat2Constants;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -37,7 +37,7 @@ public class Kompsat2MetadataTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         XmlMetadataParserFactory.registerParser(Kompsat2Metadata.class, new XmlMetadataParser<>(Kompsat2Metadata.class));
-        metadata = Kompsat2Metadata.create(Kompsat2Metadata.class, TestUtil.getTestFile(productsFolder +
+        metadata = GenericXmlMetadata.create(Kompsat2Metadata.class, TestUtil.getTestFile(productsFolder +
           "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.SIP" + File.separator +
           "KO2_OPER_MSC_MUL_1G_20110920T013201_20110920T013203_027459_1008_0892_0001.MD.XML"));
     }

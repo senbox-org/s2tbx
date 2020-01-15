@@ -18,7 +18,7 @@
 package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.apache.commons.lang.StringUtils;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;

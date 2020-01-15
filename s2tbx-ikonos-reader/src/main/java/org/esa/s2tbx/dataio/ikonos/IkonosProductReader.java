@@ -5,7 +5,7 @@ import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
 import org.esa.s2tbx.dataio.ikonos.metadata.*;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
