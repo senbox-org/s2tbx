@@ -21,6 +21,7 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
+import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -64,49 +65,22 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     protected static final Logger logger = Logger.getLogger(Sentinel2ProductReader.class.getName());
 
-    //TODO Jean remove the attribute
-    @Deprecated
-    private S2Config config;
-
     private Path cacheDir;
-    private Product product;
-
-    //TODO Jean remove the attribute
-    @Deprecated
-    protected INamingConvention namingConvention;
+    private VirtualPath virtualPath;
 
     protected Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-
-        this.config = null;//new S2Config();
-    }
-
-    /**
-     * @return The configuration file specific to a product reader
-     */
-    //TODO Jean remove
-    @Deprecated
-    public S2Config getConfig() {
-        return config;
-    }
-
-    public S2SpatialResolution getProductResolution() {
-        return S2SpatialResolution.R10M;
     }
 
     public boolean isMultiResolution() {
         return true;
     }
 
-    public Path getCacheDir() {
-        return cacheDir;
-    }
-
-    protected Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader) throws Exception {
-        return null;
-    }
+    protected abstract Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention) throws Exception;
 
     protected abstract String getReaderCacheDir();
+
+    protected abstract AbstractS2MetadataReader buildMetadataReader(VirtualPath virtualPath) throws IOException;
 
     protected void initCacheDir(VirtualPath productPath) throws IOException {
         Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
@@ -141,8 +115,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         logger.fine("Successfully set up cache dir for product " + productName + " to " + this.cacheDir.toString());
     }
 
-    protected abstract AbstractS2MetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException;
-
     @Override
     protected Product readProductNodesImpl() throws IOException {
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
@@ -152,38 +124,33 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         try {
             Object inputObject = getInput();
 
-            VirtualPath virtualPath;
+            this.virtualPath = null;
             if (inputObject instanceof File) {
                 File inputFile = (File) inputObject;
                 Path inputPath = S2ProductNamingUtils.processInputPath(inputFile.toPath());
-                virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
+                this.virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
             } else if (inputObject instanceof VirtualPath) {
-                virtualPath = (VirtualPath) getInput();
+                this.virtualPath = (VirtualPath) getInput();
             } else if (inputObject instanceof Path) {
                 Path inputPath = S2ProductNamingUtils.processInputPath((Path) inputObject);
-                virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
+                this.virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
             } else {
                 throw new IllegalArgumentException("Unknown input type '" + inputObject + "'.");
             }
 
-            AbstractS2MetadataReader productMetadata = buildProductMetadata(virtualPath);
+            AbstractS2MetadataReader metadataReader = buildMetadataReader(this.virtualPath);
 
-            //TODO Jean remove: this.namingConvention
-            this.namingConvention = productMetadata.getNamingConvention();
-
-            VirtualPath inputVirtualPath = productMetadata.getNamingConvention().getInputXml();
+            Product product;
+            VirtualPath inputVirtualPath = metadataReader.getNamingConvention().getInputXml();
             if (inputVirtualPath.exists()) {
-                S2Config config = productMetadata.readTileLayouts(inputVirtualPath, productMetadata.isGranule());
+                S2Config config = metadataReader.readTileLayouts(inputVirtualPath);
                 if (config == null) {
                     throw new NullPointerException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", inputVirtualPath.getFileName().toString()));
                 }
 
-                //TODO Jean remove: this.config = config;
-                this.config = config;
-
-                S2Metadata metadataHeader = productMetadata.readMetadataHeader(inputVirtualPath, config);
-                String defaultProductName = productMetadata.getNamingConvention().getProductName();
-                this.product = readProduct(defaultProductName, productMetadata.isGranule(), metadataHeader);
+                S2Metadata metadataHeader = metadataReader.readMetadataHeader(inputVirtualPath, config);
+                String defaultProductName = metadataReader.getNamingConvention().getProductName();
+                product = readProduct(defaultProductName, metadataReader.isGranule(), metadataHeader, metadataReader.getNamingConvention());
 
                 File productFileLocation;
                 if (inputVirtualPath.getVirtualDir().isArchive()) {
@@ -191,11 +158,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 } else {
                     productFileLocation = inputVirtualPath.getFilePath().getPath().toFile();
                 }
-                this.product.setFileLocation(productFileLocation);
+                product.setFileLocation(productFileLocation);
 
                 Path qlFile = getQuickLookFile(inputVirtualPath);
                 if (qlFile != null) {
-                    this.product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
+                    product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
                 }
             } else {
                 throw new FileNotFoundException(inputVirtualPath.getFullPathString());
@@ -210,9 +177,17 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             throw new IOException(exception);
         } finally {
             if (!success) {
-                //closeResources();
+                closeResources();
             }
         }
+    }
+
+    private void closeResources() {
+        if (this.virtualPath != null) {
+            this.virtualPath.close();
+            this.virtualPath = null;
+        }
+        System.gc();
     }
 
     private Path getQuickLookFile(VirtualPath inputVirtualPath) throws IOException {
@@ -232,20 +207,9 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     @Override
     public void close() throws IOException {
-        if (product != null) {
-            for (Band band : product.getBands()) {
-                MultiLevelImage sourceImage = band.getSourceImage();
-                if (sourceImage != null) {
-                    sourceImage.reset();
-                    sourceImage.dispose();
-                }
-            }
-        }
-        if (this.namingConvention != null && this.namingConvention.getInputXml() != null) {
-            this.namingConvention.getInputXml().close();
-        }
-
         super.close();
+
+        closeResources();
     }
 
     protected final MosaicMatrix buildBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
@@ -254,7 +218,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo) {
                 VirtualPath imagePath = tileBandInfo.getTileIdToPathMap().get(tileId);
                 JP2ImageFile jp2ImageFile = new JP2ImageFile(imagePath);
-                return new S2MosaicBandMatrixCell(jp2ImageFile, getCacheDir(), tileBandInfo.getImageLayout());
+                return new S2MosaicBandMatrixCell(jp2ImageFile, Sentinel2ProductReader.this.cacheDir, tileBandInfo.getImageLayout());
             }
         };
         return buildBandMatrix(bandMatrixTileIds, sceneDescription, tileBandInfo, mosaicMatrixCellCallback);

@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.s2.l1b.metadata;
 
 import com.bc.ceres.core.Assert;
-import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
@@ -59,7 +58,12 @@ public class L1bProductMetadataPSD13 extends GenericXmlMetadata implements IL1bP
                 result.setName("Level-1B_User_Product");
             }
         } finally {
-            IOUtils.closeQuietly(stream);
+            try {
+                if(stream != null) {
+                    stream.close();
+                }
+            } catch (IOException ignore) {
+            }
         }
         return result;
     }

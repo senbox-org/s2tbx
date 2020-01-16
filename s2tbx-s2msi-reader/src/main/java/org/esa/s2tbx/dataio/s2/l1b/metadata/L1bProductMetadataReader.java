@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.s2.l1b.metadata;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
 import org.xml.sax.SAXException;
 
@@ -16,7 +17,7 @@ import java.io.IOException;
 public class L1bProductMetadataReader extends AbstractS2MetadataReader {
 
     public L1bProductMetadataReader(VirtualPath virtualPath) throws IOException {
-        super(virtualPath);
+        super(NamingConventionFactory.createL1BNamingConvention(virtualPath));
     }
 
     @Override

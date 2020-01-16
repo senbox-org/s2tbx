@@ -62,7 +62,12 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
                 result.format = "SAFE"; //at granule level SAFE and SAFE_COMPACT are equal
             }
         } finally {
-            IOUtils.closeQuietly(stream);
+            try {
+                if(stream != null) {
+                    stream.close();
+                }
+            } catch (IOException ignore) {
+            }
         }
         return result;
     }

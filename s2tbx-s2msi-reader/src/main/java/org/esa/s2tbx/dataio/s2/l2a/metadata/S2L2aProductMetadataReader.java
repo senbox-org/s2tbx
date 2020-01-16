@@ -17,19 +17,14 @@ import java.util.List;
  */
 public class S2L2aProductMetadataReader extends AbstractS2OrthoMetadataReader {
 
-    private final S2SpatialResolution spatialResolution;
-    public S2L2aProductMetadataReader(VirtualPath virtualPath, String epsgCode, S2SpatialResolution spatialResolution) throws IOException {
+    public S2L2aProductMetadataReader(VirtualPath virtualPath, String epsgCode) throws IOException {
         super(virtualPath, epsgCode);
-
-        this.spatialResolution = spatialResolution;
     }
 
     @Override
-    protected S2OrthoMetadata parseHeader(
-            VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
-
+    protected S2OrthoMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
         try {
-            return L2aMetadata.parseHeader(path, granuleName, config, epsg, spatialResolution, isAGranule, namingConvention);
+            return L2aMetadata.parseHeader(path, granuleName, config, epsg, this.namingConvention.getResolution(), isAGranule, namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse metadata in " + path.getFileName().toString());
         }
