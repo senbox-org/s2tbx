@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
-import org.esa.snap.jp2.reader.internal.CopyOfJP2TileOpImage;
+import org.esa.snap.jp2.reader.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.s2.S2MosaicBandMatrixCell;
 import org.esa.snap.core.image.AbstractMatrixMosaicSubsetMultiLevelSource;
 import org.esa.snap.core.image.DecompressedTileOpImageCallback;
@@ -22,7 +22,7 @@ public class BandMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLevelSo
 
     @Override
     public SourcelessOpImage buildTileOpImage(Dimension decompresedTileSize, Dimension tileSize, Point tileOffsetFromDecompressedImage, Point tileOffsetFromImage, int decompressTileIndex, int level, S2MosaicBandMatrixCell matrixCell) {
-        return new CopyOfJP2TileOpImage(matrixCell.getJp2ImageFile(), matrixCell.getCacheDir(), getModel(), decompresedTileSize, matrixCell.getBandCount(), matrixCell.getBandIndex(),
+        return new JP2TileOpImage(matrixCell.getJp2ImageFile(), matrixCell.getCacheDir(), getModel(), decompresedTileSize, matrixCell.getBandCount(), matrixCell.getBandIndex(),
                                         matrixCell.getDataBufferType(), tileSize, tileOffsetFromDecompressedImage, tileOffsetFromImage, decompressTileIndex, level);
     }
 

@@ -20,16 +20,10 @@ package org.esa.s2tbx.dataio.pleiades.internal;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import org.esa.snap.jp2.reader.internal.JP2TileOpImage;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.util.ImageUtils;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
@@ -150,8 +144,8 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
                                                       MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                       null, null, null, null,
                                                       new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-        int fittingRectWidth = JP2TileOpImage.scaleValue(imageWidth, level);
-        int fittingRectHeight = JP2TileOpImage.scaleValue(imageHeight, level);
+        int fittingRectWidth = ImageUtils.computeLevelSize(imageWidth, level);
+        int fittingRectHeight = ImageUtils.computeLevelSize(imageHeight, level);
 
         Rectangle fitRect = new Rectangle(0, 0, fittingRectWidth, fittingRectHeight);
         final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
