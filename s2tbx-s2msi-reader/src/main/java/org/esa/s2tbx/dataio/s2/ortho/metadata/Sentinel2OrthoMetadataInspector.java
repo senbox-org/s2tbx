@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.s2.ortho.metadata;
 
+import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -28,6 +29,11 @@ import java.util.logging.Logger;
  */
 public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
     protected Logger logger = Logger.getLogger(getClass().getName());
+
+    public static final String VIEW_ZENITH_PREFIX = "view_zenith";
+    public static final String VIEW_AZIMUTH_PREFIX = "view_azimuth";
+    public static final String SUN_ZENITH_PREFIX = "sun_zenith";
+    public static final String SUN_AZIMUTH_PREFIX = "sun_azimuth";
 
     private final S2Config.Sentinel2ProductLevel productLevel;
     private final String epsg;
@@ -61,10 +67,10 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
             Metadata metadata = new Metadata();
             metadata.setProductWidth(sceneDescription.getSceneDimension(productResolution).width);
             metadata.setProductHeight(sceneDescription.getSceneDimension(productResolution).height);
-            metadataHeader.addStaticAngleBands(metadata);
+            addStaticAngleBands(metadata);
             List<Sentinel2ProductReader.BandInfo> bandInfoList = metadataHeader.computeBandInfoByKey(tileList);
             for (S2Metadata.Tile tile : tileList) {
-                metadataHeader.addAnglesBands(tile,metadata);
+                addAnglesBands(tile,metadata);
             }
             for (Sentinel2ProductReader.BandInfo bandInfo : bandInfoList) {
                 metadata.getBandList().add(bandInfo.getBandName());
@@ -84,5 +90,17 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
                 virtualPath.close();
             }
         }
+    }
+
+    public static void addAnglesBands(S2Metadata.Tile tile, MetadataInspector.Metadata metadata){
+        Arrays.stream(tile.getViewingIncidenceAnglesGrids()).forEach(tileInfo -> metadata.getBandList().add(VIEW_AZIMUTH_PREFIX + "_" + S2BandConstants.getBand(tileInfo.getBandId())));
+        Arrays.stream(tile.getViewingIncidenceAnglesGrids()).forEach(tileInfo -> metadata.getBandList().add(VIEW_ZENITH_PREFIX + "_" + S2BandConstants.getBand(tileInfo.getBandId())));
+    }
+
+    public static void addStaticAngleBands(MetadataInspector.Metadata metadata){
+        metadata.getBandList().add(VIEW_ZENITH_PREFIX + "_mean");
+        metadata.getBandList().add(VIEW_AZIMUTH_PREFIX + "_mean");
+        metadata.getBandList().add(SUN_AZIMUTH_PREFIX);
+        metadata.getBandList().add(SUN_ZENITH_PREFIX);
     }
 }

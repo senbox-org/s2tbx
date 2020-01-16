@@ -25,11 +25,6 @@ import java.util.logging.Logger;
  */
 public abstract class S2OrthoMetadata extends S2Metadata {
 
-    public static final String VIEW_ZENITH_PREFIX = "view_zenith";
-    public static final String VIEW_AZIMUTH_PREFIX = "view_azimuth";
-    public static final String SUN_ZENITH_PREFIX = "sun_zenith";
-    public static final String SUN_AZIMUTH_PREFIX = "sun_azimuth";
-
     private VirtualPath path;
     private String granuleName;
     private boolean foundProductMetadata;
@@ -140,18 +135,6 @@ public abstract class S2OrthoMetadata extends S2Metadata {
             }
         }
         return resultPath;
-    }
-
-    public void addAnglesBands(S2Metadata.Tile tile, MetadataInspector.Metadata metadata){
-        Arrays.stream(tile.getViewingIncidenceAnglesGrids()).forEach(tileInfo -> metadata.getBandList().add(VIEW_AZIMUTH_PREFIX + "_" + S2BandConstants.getBand(tileInfo.getBandId())));
-        Arrays.stream(tile.getViewingIncidenceAnglesGrids()).forEach(tileInfo -> metadata.getBandList().add(VIEW_ZENITH_PREFIX + "_" + S2BandConstants.getBand(tileInfo.getBandId())));
-    }
-
-    public void addStaticAngleBands(MetadataInspector.Metadata metadata){
-        metadata.getBandList().add(VIEW_ZENITH_PREFIX + "_mean");
-        metadata.getBandList().add(VIEW_AZIMUTH_PREFIX + "_mean");
-        metadata.getBandList().add(SUN_AZIMUTH_PREFIX);
-        metadata.getBandList().add(SUN_ZENITH_PREFIX);
     }
 
     private String computeFileName(boolean foundProductMetadata, S2Metadata.ProductCharacteristics productCharacteristics, Tile tile, S2BandInformation bandInformation, S2OrthoGranuleDirFilename gf) {
