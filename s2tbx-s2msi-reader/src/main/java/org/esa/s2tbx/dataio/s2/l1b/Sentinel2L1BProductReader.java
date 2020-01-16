@@ -88,16 +88,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         this.interpretation = interpretation;
     }
 
-    private S2SpatialResolution getProductResolution() {
-        if (this.interpretation == ProductInterpretation.RESOLUTION_20M) {
-            return S2SpatialResolution.R20M;
-        }
-        if (this.interpretation == ProductInterpretation.RESOLUTION_60M) {
-            return S2SpatialResolution.R60M;
-        }
-        return S2SpatialResolution.R10M;
-    }
-
     @Override
     public boolean isMultiResolution() {
         return this.interpretation == ProductInterpretation.RESOLUTION_MULTI;
@@ -249,10 +239,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
                     S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo.getBandInformation();
                     IndexCoding indexCoding = indexBandInformation.getIndexCoding();
+
                     product.getIndexCodingGroup().add(indexCoding);
 
-                    List<Color> colors = indexBandInformation.getColors();
-                    Iterator<Color> colorIterator = colors.iterator();
+                    S2SpatialResolution bandResolution = bandInfo.getBandInformation().getResolution();
+                    int defaultMaskWidth = sceneDimensions.get(bandResolution).width;
+                    int defaultMaskHeight = sceneDimensions.get(bandResolution).height;
+                    Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultMaskWidth, defaultMaskHeight);
+
+                    Iterator<Color> colorIterator = indexBandInformation.getColors().iterator();
 
                     for (String indexName : indexCoding.getIndexNames()) {
                         String maskName = indexBandInformation.getPrefix() + indexName.toLowerCase();
@@ -261,18 +256,27 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                             String description = indexCoding.getIndex(indexName).getDescription();
                             if (!colorIterator.hasNext()) {
                                 // we should never be here : programming error.
-                                throw new IllegalStateException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding"));
+                                throw new IllegalStateException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding."));
                             }
                             Color color = colorIterator.next();
-                            int width = sceneDimensions.get(bandInfo.getBandInformation().getResolution()).width;
-                            int height = sceneDimensions.get(bandInfo.getBandInformation().getResolution()).height;
-                            Mask mask = Mask.BandMathsType.create(maskName, description, width, height, String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
+                            String expression = String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue);
+                            Mask mask = Mask.BandMathsType.create(maskName, description, bandBounds.width, bandBounds.height, expression, color, 0.5d);
                             product.addMask(mask);
                         }
                     }
                 }
             }
         }
+    }
+
+    private S2SpatialResolution getProductResolution() {
+        if (this.interpretation == ProductInterpretation.RESOLUTION_20M) {
+            return S2SpatialResolution.R20M;
+        }
+        if (this.interpretation == ProductInterpretation.RESOLUTION_60M) {
+            return S2SpatialResolution.R60M;
+        }
+        return S2SpatialResolution.R10M;
     }
 
     public static class L1BBandInfo extends BandInfo {
@@ -305,20 +309,20 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
 
-        S2BandInformation bandInformation = bandInfo.getBandInformation();
-        Band band = new Band(bandInformation.getPhysicalBand(), ProductData.TYPE_INT16, bandBounds.width, bandBounds.height);
-        band.setScalingFactor(bandInformation.getScalingFactor());
-        S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInformation;
+        S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInfo.getBandInformation();
+
+        Band band = new Band(indexBandInfo.getPhysicalBand(), ProductData.TYPE_INT16, bandBounds.width, bandBounds.height);
+        band.setScalingFactor(indexBandInfo.getScalingFactor());
         band.setSpectralWavelength(0);
         band.setSpectralBandwidth(0);
         band.setSpectralBandIndex(-1);
         band.setSampleCoding(indexBandInfo.getIndexCoding());
         band.setImageInfo(indexBandInfo.getImageInfo());
         band.setDescription(bandInfo.getBandInformation().getDescription());
-        band.setValidPixelExpression(String.format("%s.raw > 0",bandInfo.getBandInformation().getPhysicalBand()));
+        band.setValidPixelExpression(String.format("%s.raw > 0", indexBandInfo.getPhysicalBand()));
 
-        TileIndexMultiLevelSource copyOfTileIndexMultiLevelSource = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, imageToModelTransform);
-        band.setSourceImage(new DefaultMultiLevelImage(copyOfTileIndexMultiLevelSource));
+        TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, imageToModelTransform);
+        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
         return band;
     }
