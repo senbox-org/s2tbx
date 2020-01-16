@@ -86,7 +86,6 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
 
         // Lay out each tile in the scene
         Map<String, TileInfo> tileInfos = new HashMap<>();
-        Point lowerRightTileGridPosition = null;
         for (S2Metadata.Tile tile : metadata.getTileList()) {
             Map<S2SpatialResolution, Rectangle> tilePositionInScene = new HashMap<>();
             for (S2SpatialResolution resolution : S2SpatialResolution.values()) {

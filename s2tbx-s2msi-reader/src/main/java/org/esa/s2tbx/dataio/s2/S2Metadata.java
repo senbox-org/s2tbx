@@ -19,7 +19,6 @@ package org.esa.s2tbx.dataio.s2;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -52,11 +51,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -821,8 +816,8 @@ public abstract class S2Metadata {
         S2BandAnglesGrid azimuthAngleGrid = getMosaicS2BandAnglesGrid(azimuthAnglesGridsMap);
 
         S2BandAnglesGridByDetector[] bandAnglesGridByDetector = new S2BandAnglesGridByDetector[2];
-        bandAnglesGridByDetector[0] = new S2BandAnglesGridByDetector(Sentinel2OrthoProductReader.VIEW_ZENITH_PREFIX, S2BandConstants.getBand(bandId), detectorId, zenithAngleGrid.getWidth(), zenithAngleGrid.getHeight(), zenithAngleGrid.originX, zenithAngleGrid.originY, zenithAngleGrid.getResX(), zenithAngleGrid.getResY(), zenithAngleGrid.getData());
-        bandAnglesGridByDetector[1] = new S2BandAnglesGridByDetector(Sentinel2OrthoProductReader.VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(bandId), detectorId, azimuthAngleGrid.getWidth(), azimuthAngleGrid.getHeight(), azimuthAngleGrid.originX, azimuthAngleGrid.originY, azimuthAngleGrid.getResX(), azimuthAngleGrid.getResY(), azimuthAngleGrid.getData());
+        bandAnglesGridByDetector[0] = new S2BandAnglesGridByDetector(Sentinel2OrthoProductReader.VIEW_ZENITH_PREFIX, S2BandConstants.getBand(bandId), detectorId, zenithAngleGrid.getWidth(), zenithAngleGrid.getHeight(), zenithAngleGrid.originX, zenithAngleGrid.originY, zenithAngleGrid.getResolutionX(), zenithAngleGrid.getResolutionY(), zenithAngleGrid.getData());
+        bandAnglesGridByDetector[1] = new S2BandAnglesGridByDetector(Sentinel2OrthoProductReader.VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(bandId), detectorId, azimuthAngleGrid.getWidth(), azimuthAngleGrid.getHeight(), azimuthAngleGrid.originX, azimuthAngleGrid.originY, azimuthAngleGrid.getResolutionX(), azimuthAngleGrid.getResolutionY(), azimuthAngleGrid.getData());
 
         return bandAnglesGridByDetector;
     }
@@ -913,8 +908,8 @@ public abstract class S2Metadata {
         S2BandAnglesGrid azimuthAngleGrid = getMosaicS2BandAnglesGrid(azimuthAnglesGridsMap);
 
         S2BandAnglesGrid[] bandAnglesGrid = new S2BandAnglesGrid[2];
-        bandAnglesGrid[0] = new S2BandAnglesGrid(Sentinel2OrthoProductReader.SUN_ZENITH_PREFIX, null, zenithAngleGrid.getWidth(), zenithAngleGrid.getHeight(), zenithAngleGrid.originX, zenithAngleGrid.originY, zenithAngleGrid.getResX(), zenithAngleGrid.getResY(), zenithAngleGrid.getData());
-        bandAnglesGrid[1] = new S2BandAnglesGrid(Sentinel2OrthoProductReader.SUN_AZIMUTH_PREFIX, null, azimuthAngleGrid.getWidth(), azimuthAngleGrid.getHeight(), azimuthAngleGrid.originX, azimuthAngleGrid.originY, azimuthAngleGrid.getResX(), azimuthAngleGrid.getResY(), azimuthAngleGrid.getData());
+        bandAnglesGrid[0] = new S2BandAnglesGrid(Sentinel2OrthoProductReader.SUN_ZENITH_PREFIX, null, zenithAngleGrid.getWidth(), zenithAngleGrid.getHeight(), zenithAngleGrid.originX, zenithAngleGrid.originY, zenithAngleGrid.getResolutionX(), zenithAngleGrid.getResolutionY(), zenithAngleGrid.getData());
+        bandAnglesGrid[1] = new S2BandAnglesGrid(Sentinel2OrthoProductReader.SUN_AZIMUTH_PREFIX, null, azimuthAngleGrid.getWidth(), azimuthAngleGrid.getHeight(), azimuthAngleGrid.originX, azimuthAngleGrid.originY, azimuthAngleGrid.getResolutionX(), azimuthAngleGrid.getResolutionY(), azimuthAngleGrid.getData());
 
         return bandAnglesGrid;
     }
@@ -945,8 +940,8 @@ public abstract class S2Metadata {
             if (entry.getValue() != null) {
                 widthAnglesTile = s2BandAnglesGrid.getWidth();
                 heightAnglesTile = s2BandAnglesGrid.getHeight();
-                resX = s2BandAnglesGrid.getResX();
-                resY = s2BandAnglesGrid.getResY();
+                resX = s2BandAnglesGrid.getResolutionX();
+                resY = s2BandAnglesGrid.getResolutionY();
                 tileGeometry = tile.getTileGeometry(S2SpatialResolution.R10M);
                 if (masterOriginX > s2BandAnglesGrid.originX) masterOriginX = s2BandAnglesGrid.originX;
                 if (masterOriginY < s2BandAnglesGrid.originY) masterOriginY = s2BandAnglesGrid.originY;
@@ -991,8 +986,8 @@ public abstract class S2Metadata {
             opImage = PlanarImage.wrapRenderedImage(image);
 
             // Translate tile
-            float transX=(bandAnglesGrid.originX-masterOriginX)/bandAnglesGrid.getResX();
-            float transY=(bandAnglesGrid.originY-masterOriginY)/bandAnglesGrid.getResY();
+            float transX=(bandAnglesGrid.originX-masterOriginX)/bandAnglesGrid.getResolutionX();
+            float transY=(bandAnglesGrid.originY-masterOriginY)/bandAnglesGrid.getResolutionY();
 
             RenderingHints hints=new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
             hints.put(JAI.KEY_BORDER_EXTENDER, new BorderExtenderConstant(new double[]{Double.NaN}));

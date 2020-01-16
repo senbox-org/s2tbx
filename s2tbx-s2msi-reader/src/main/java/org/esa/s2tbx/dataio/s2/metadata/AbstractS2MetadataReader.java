@@ -26,13 +26,13 @@ public abstract class AbstractS2MetadataReader {
 
     protected final INamingConvention namingConvention;
 
-    protected AbstractS2MetadataReader(VirtualPath virtualPath) throws IOException {
-        this.namingConvention = NamingConventionFactory.createNamingConvention(virtualPath);
-        if (this.namingConvention == null) {
+    protected AbstractS2MetadataReader(INamingConvention namingConvention) throws IOException {
+        if (namingConvention == null) {
             throw new NullPointerException("The naming convention is null.");
-        } else if (!this.namingConvention.hasValidStructure()) {
+        } else if (!namingConvention.hasValidStructure()) {
             throw new IllegalStateException("The naming convention structure is invalid.");
         }
+        this.namingConvention = namingConvention;
     }
 
     /**
@@ -60,14 +60,13 @@ public abstract class AbstractS2MetadataReader {
      * Update the tile layout in S2Config
      *
      * @param metadataFilePath the path to the product metadata file
-     * @param isGranule        true if it is the metadata file of a granule
      * @return false when every tileLayout is null
      */
-    public final S2Config readTileLayouts(VirtualPath metadataFilePath, boolean isGranule) {
+    public final S2Config readTileLayouts(VirtualPath metadataFilePath) {
         S2Config config = null;
         for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
             TileLayout tileLayout;
-            if (isGranule) {
+            if (isGranule()) {
                 tileLayout = retrieveTileLayoutFromGranuleMetadataFile(metadataFilePath, layoutResolution);
             } else {
                 tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, layoutResolution);

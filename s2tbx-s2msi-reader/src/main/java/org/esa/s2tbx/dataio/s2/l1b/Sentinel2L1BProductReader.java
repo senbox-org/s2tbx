@@ -21,6 +21,8 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.vividsolutions.jts.geom.Coordinate;
 import org.esa.s2tbx.dataio.s2.*;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadata;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bProductMetadataReader;
@@ -86,8 +88,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         this.interpretation = interpretation;
     }
 
-    @Override
-    public S2SpatialResolution getProductResolution() {
+    private S2SpatialResolution getProductResolution() {
         if (this.interpretation == ProductInterpretation.RESOLUTION_20M) {
             return S2SpatialResolution.R20M;
         }
@@ -116,12 +117,12 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     @Override
-    protected AbstractS2MetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
+    protected AbstractS2MetadataReader buildMetadataReader(VirtualPath virtualPath) throws IOException {
         return new L1bProductMetadataReader(virtualPath);
     }
 
     @Override
-    protected Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader) throws Exception {
+    protected Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention) throws Exception {
         L1bMetadata l1bMetadataHeader = (L1bMetadata)metadataHeader;
 
         L1bSceneDescription sceneDescription = L1bSceneDescription.create(l1bMetadataHeader, getProductResolution());

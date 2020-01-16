@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.s2.ortho.metadata;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
 import org.xml.sax.SAXException;
 
@@ -15,7 +16,7 @@ public abstract class AbstractS2OrthoMetadataReader extends AbstractS2MetadataRe
     private final String epsgCode;
 
     protected AbstractS2OrthoMetadataReader(VirtualPath virtualPath, String epsgCode) throws IOException {
-        super(virtualPath);
+        super(NamingConventionFactory.createOrthoNamingConvention(virtualPath));
 
         this.epsgCode = epsgCode;
     }

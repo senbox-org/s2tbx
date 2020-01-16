@@ -36,7 +36,7 @@ public class Sentinel2L1BMetadataInspector implements MetadataInspector {
             L1bProductMetadataReader productMetadataReader = new L1bProductMetadataReader(virtualPath);
             VirtualPath inputVirtualPath = productMetadataReader.getNamingConvention().getInputXml();
             if (inputVirtualPath.exists()) {
-                S2Config config = productMetadataReader.readTileLayouts(inputVirtualPath, productMetadataReader.isGranule());
+                S2Config config = productMetadataReader.readTileLayouts(inputVirtualPath);
                 if (config == null) {
                     throw new NullPointerException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", inputVirtualPath.getFileName().toString()));
                 }

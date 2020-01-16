@@ -17,24 +17,15 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.l1c.metadata.L1cMetadata;
+import org.esa.s2tbx.dataio.s2.VirtualPath;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.l1c.metadata.S2L1cProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.util.SystemUtils;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 /**
  * <p>
@@ -55,41 +46,23 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
 
     static final String L1C_CACHE_DIR = "l1c-reader";
 
-    protected final Logger logger;
-
     public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
         super(readerPlugIn, epsgCode);
-
-        logger = SystemUtils.LOG;
     }
 
     @Override
-    protected S2L1cProductMetadataReader buildProductMetadata(VirtualPath virtualPath) throws IOException {
+    protected S2SpatialResolution getProductResolution(INamingConvention namingConvention) {
+        return S2SpatialResolution.R10M; // namingConvention.getResolution();
+    }
+
+    @Override
+    protected S2L1cProductMetadataReader buildMetadataReader(VirtualPath virtualPath) throws IOException {
         return new S2L1cProductMetadataReader(virtualPath, this.epsgCode);
-    }
-
-    @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        // Should never not come here, since we have an OpImage that reads data
     }
 
     @Override
     protected String getReaderCacheDir() {
         return L1C_CACHE_DIR;
-    }
-
-    @Override
-    protected S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsgCode, boolean isGranule) throws IOException {
-        try {
-            return L1cMetadata.parseHeader(path, granuleName, config, epsgCode, isGranule, this.namingConvention);
-        } catch (ParserConfigurationException | SAXException e) {
-            throw new IOException("Failed to parse metadata in " + path.getFileName().toString(), e);
-        }
-    }
-
-    @Override
-    protected String getImagePathString(String imageFileName, S2SpatialResolution resolution) {
-        return imageFileName;
     }
 
     @Override

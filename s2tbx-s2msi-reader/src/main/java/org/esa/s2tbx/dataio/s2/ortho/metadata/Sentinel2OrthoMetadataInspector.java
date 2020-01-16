@@ -52,14 +52,14 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
             AbstractS2OrthoMetadataReader productMetadataReader = null;
             S2SpatialResolution productResolution = namingConvention.getResolution();
             if (productLevel == S2Config.Sentinel2ProductLevel.L2A) {
-                productMetadataReader = new S2L2aProductMetadataReader(virtualPath, epsg, productResolution);
+                productMetadataReader = new S2L2aProductMetadataReader(virtualPath, epsg);
             } else if (productLevel == S2Config.Sentinel2ProductLevel.L1C) {
                 productMetadataReader = new S2L1cProductMetadataReader(virtualPath, epsg);
             } else if (productLevel == S2Config.Sentinel2ProductLevel.L3) {
-                productMetadataReader = new S2L3ProductMetadataReader(virtualPath, epsg, productResolution);
+                productMetadataReader = new S2L3ProductMetadataReader(virtualPath, epsg);
             }
             VirtualPath inputVirtualPath = productMetadataReader.getNamingConvention().getInputXml();
-            S2Config config = productMetadataReader.readTileLayouts(inputVirtualPath, productMetadataReader.isGranule());
+            S2Config config = productMetadataReader.readTileLayouts(inputVirtualPath);
             S2OrthoMetadata metadataHeader = (S2OrthoMetadata)productMetadataReader.readMetadataHeader(inputVirtualPath, config);
             S2OrthoSceneLayout sceneDescription = S2OrthoSceneLayout.create(metadataHeader);
             List<S2Metadata.Tile> tileList = metadataHeader.getTileList();
