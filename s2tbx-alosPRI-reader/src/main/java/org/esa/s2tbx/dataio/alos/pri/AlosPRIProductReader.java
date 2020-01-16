@@ -76,8 +76,14 @@ public class AlosPRIProductReader extends AbstractProductReader {
             }
             if (alosPriMetadata.hasInsertPoint()) {
                 CoordinateReferenceSystem mapCRS = CRS.decode(alosPriMetadata.getCrsCode());
+                int offsetX = 0;
+                int offsetY = 0;
                 ImageMetadata.InsertionPoint origin = alosPriMetadata.getProductOrigin();
-                GeoCoding geoCoding = new CrsGeoCoding(mapCRS, defaultProductSize.width, defaultProductSize.height, origin.x, origin.y, origin.stepX, origin.stepY);
+                if(subsetDef != null){
+                   offsetX = (int) (subsetDef.getRegion().x * origin.stepX);
+                   offsetY = (int) (subsetDef.getRegion().y * origin.stepY);
+                }
+                GeoCoding geoCoding = new CrsGeoCoding(mapCRS, defaultProductSize.width, defaultProductSize.height, origin.x + offsetX, origin.y - offsetY, origin.stepX, origin.stepY);
                 product.setSceneGeoCoding(geoCoding);
             } else {
                 TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(alosPriMetadata, defaultProductSize.width, defaultProductSize.height, subsetDef);
@@ -104,7 +110,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                     this.bandImageReaders.add(geoTiffImageReader);
 
                     Dimension defaultBandSize = geoTiffImageReader.validateSize(imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight());
-                    Rectangle bandBounds = ImageUtils.computeBandBounds(productBounds, defaultProductSize, defaultBandSize, alosPriMetadata.getStepSizeX(), alosPriMetadata.getStepSizeY(), imageMetadata.getPixelSizeX(), imageMetadata.getPixelSizeY());
+                    Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
 
                     AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductSize);
                     Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
