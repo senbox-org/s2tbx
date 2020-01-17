@@ -20,8 +20,6 @@ package org.esa.s2tbx.dataio.s2.ortho;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.WKTReader;
 import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGridByDetector;
@@ -30,7 +28,6 @@ import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
@@ -60,8 +57,6 @@ import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 import org.esa.snap.lib.openjpeg.utils.StackTraceUtils;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureImpl;
-import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -90,10 +85,8 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -574,7 +567,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                 List<EopPolygon> polygonsForTile;
 
-                polygonsForTile = readPolygons(maskFilename.getPath());
+                polygonsForTile = S2OrthoUtils.readPolygons(maskFilename.getPath());
 
                 for (int i = 0; i < maskInfo.getSubType().length; i++) {
                     final int pos = i;
@@ -591,15 +584,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             // TODO : why do we use this here ?
             final SimpleFeatureType type = Placemark.createGeometryFeatureType();
             // TODO : why "S2L1CMasks" ?
-            final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
-
-            for (int index = 0; index < productPolygons[i].size(); index++) {
-                Polygon polygon = productPolygons[i].get(index).getPolygon();
-
-                Object[] data1 = {polygon, String.format("%s[%s]", productPolygons[i].get(index).getId(), index)};
-                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("%s[%s]", productPolygons[i].get(index).getId(), index)), true);
-                collection.add(f1);
-            }
+            final DefaultFeatureCollection collection = S2OrthoUtils.createDefaultFeatureCollection(productPolygons, i, type);
 
             if (spectralInfo == null) {
                 // This mask is not specific to a band
@@ -635,16 +620,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         }
                     } else {
                         //Currently there are no masks with this characteristics, the code should be tested if a new mask is added
-                        Set<String> distictPolygons = new HashSet<>();
                         SimpleFeatureIterator simpleFeatureIterator = collection.features();
-                        while (simpleFeatureIterator.hasNext()) {
-                            SimpleFeature simpleFeature = simpleFeatureIterator.next();
-                            if (simpleFeature.getID().contains("-")) {
-                                distictPolygons.add(simpleFeature.getID().substring(0, simpleFeature.getID().lastIndexOf("-")));
-                            }
-                        }
+                        List<String> distictPolygonsOrdered = S2OrthoUtils.createDistictPolygonsOrdered(simpleFeatureIterator);
                         simpleFeatureIterator.close();
-                        List<String> distictPolygonsOrdered = S2SceneDescription.asSortedList(distictPolygons);
 
                         ColorIterator.reset();
                         for (String subId : distictPolygonsOrdered) {
@@ -693,32 +671,24 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                         referenceBand);
                     }
                 } else {
-                    Set<String> distictPolygons = new HashSet<>();
                     SimpleFeatureIterator simpleFeatureIterator = collection.features();
-                    while (simpleFeatureIterator.hasNext()) {
-                        SimpleFeature simpleFeature = simpleFeatureIterator.next();
-                        if (simpleFeature.getID().contains("-")) {
-                            distictPolygons.add(simpleFeature.getID().substring(0, simpleFeature.getID().lastIndexOf("-")));
-                        }
-                    }
+                    List<String> distictPolygonsOrdered = S2OrthoUtils.createDistictPolygonsOrdered(simpleFeatureIterator);
                     simpleFeatureIterator.close();
-                    List<String> distictPolygonsOrdered = S2SceneDescription.asSortedList(distictPolygons);
 
                     ColorIterator.reset();
                     for (String subId : distictPolygonsOrdered) {
-                        if(getSubsetDef() == null || (getSubsetDef() != null && getSubsetDef().isNodeAccepted(subId))) {
-                            final DefaultFeatureCollection subCollection = new DefaultFeatureCollection(subId, type);
-                            simpleFeatureIterator = collection.features();
-                            while (simpleFeatureIterator.hasNext()) {
-                                SimpleFeature simpleFeature = simpleFeatureIterator.next();
-                                if (simpleFeature.getID().startsWith(subId)) {
-                                    subCollection.add(simpleFeature);
-                                }
+                        final DefaultFeatureCollection subCollection = new DefaultFeatureCollection(subId, type);
+                        simpleFeatureIterator = collection.features();
+                        while (simpleFeatureIterator.hasNext()) {
+                            SimpleFeature simpleFeature = simpleFeatureIterator.next();
+                            if (simpleFeature.getID().startsWith(subId)) {
+                                subCollection.add(simpleFeature);
                             }
-                            simpleFeatureIterator.close();
-                            VectorDataNode vdnPolygon = new VectorDataNode(subId, subCollection);
-                            vdnPolygon.setOwner(product);
-
+                        }
+                        simpleFeatureIterator.close();
+                        VectorDataNode vdnPolygon = new VectorDataNode(subId, subCollection);
+                        vdnPolygon.setOwner(product);
+                        if(getSubsetDef() == null || (getSubsetDef() != null && getSubsetDef().isNodeAccepted(subId))) {
                             product.addMask(subId,
                                             vdnPolygon,
                                             description,
@@ -1088,80 +1058,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         int columnNumber = (int) Math.ceil(sceneWidth / resolutionX);
         int rowNumber = (int) Math.ceil(sceneHeight / resolutionY);
         return CropDescriptor.create(planarImage, planarImage.getMinX() + 0.0f, planarImage.getMinY() + 0.0f, (float) columnNumber, (float) rowNumber, null);
-    }
-
-    private List<EopPolygon> readPolygons(VirtualPath path) {
-        List<EopPolygon> polygonsForTile = new ArrayList<>();
-        String line;
-        String polygonWKT;
-        String type = "";
-        String lastId = "id";
-
-        WKTReader wkt = new WKTReader();
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(path.getInputStream()))) {
-            try {
-                while ((line = in.readLine()) != null) {
-                    if (line.contains("eop:MaskFeature gml:id=")) {
-                        lastId = line.substring(line.indexOf("=\"") + 2, line.indexOf("\">"));
-                    } else if (line.contains("</eop:maskType>")) {
-                        type = line.substring(line.indexOf(">") + 1, line.indexOf("</eop:maskType>"));
-                    } else if (line.contains("<gml:posList srsDimension")) {
-                        String polygon = line.substring(line.indexOf(">") + 1, line.indexOf("</gml:posList>"));
-                        polygonWKT = convertToWKTPolygon(polygon, readPolygonDimension(line));
-                        EopPolygon polyg = new EopPolygon(lastId, type, (Polygon) wkt.read(polygonWKT));
-                        polygonsForTile.add(polyg);
-                        lastId = "id"; //re-initialize lastId
-                    }
-                }
-            } catch (Exception e) {
-                logger.warning(String.format("Warning: missing polygon in mask %s\n", path.getFileName().toString()));
-            }
-            in.close();
-        } catch (Exception e) {
-            logger.warning(String.format("Warning: impossible to read properly %s\n", path.getFullPathString()));
-        }
-
-        return polygonsForTile;
-    }
-
-    private int readPolygonDimension(String line) {
-        String label = "srsDimension=\"";
-        int position = line.indexOf(label);
-        if (position == -1) {
-            return 0;
-        }
-        try {
-            int dimension = Integer.parseInt(line.substring(position + label.length(), position + label.length() + 1));
-            return dimension;
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    private String convertToWKTPolygon(String line, int dimension) throws IOException {
-
-        if (dimension <= 0) throw new IOException("Invalid dimension");
-
-        StringBuilder output = new StringBuilder("POLYGON((");
-
-        int pos = 0, end;
-        int count = 0;
-        while ((end = line.indexOf(' ', pos)) >= 0) {
-            output = output.append(line.substring(pos, end));
-            pos = end + 1;
-            count++;
-            if (count == dimension) {
-                output = output.append(",");
-                count = 0;
-            } else {
-                output = output.append(" ");
-            }
-        }
-        //add last coordinate
-        output = output.append(line.substring(line.lastIndexOf(' ') + 1));
-        output = output.append("))");
-        return output.toString();
     }
 
     public S2BandAnglesGridByDetector[] getViewingIncidenceAnglesGrids(int bandId, int detectorId) {

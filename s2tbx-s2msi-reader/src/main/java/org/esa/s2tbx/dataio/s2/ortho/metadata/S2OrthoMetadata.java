@@ -9,12 +9,10 @@ import org.esa.s2tbx.dataio.s2.S2SpecificBandConstants;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,4 +163,5 @@ public abstract class S2OrthoMetadata extends S2Metadata {
         }
         return new Sentinel2ProductReader.BandInfo(tilePathMap, bandInformation, getConfig().getTileLayout(spatialResolution.resolution));
     }
+
 }
