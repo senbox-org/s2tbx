@@ -5,12 +5,12 @@ import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
 import org.esa.s2tbx.dataio.spot6.dimap.VolumeMetadata;
-import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.geotools.referencing.CRS;
 
 import java.io.IOException;
