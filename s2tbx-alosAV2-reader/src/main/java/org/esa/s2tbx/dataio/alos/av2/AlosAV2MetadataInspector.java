@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.alos.av2;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.alos.av2.internal.AlosAV2Constants;
 import org.esa.s2tbx.dataio.alos.av2.internal.AlosAV2Metadata;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 
 import java.io.IOException;

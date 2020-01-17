@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.ikonos;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
 import org.esa.s2tbx.dataio.ikonos.metadata.IkonosMetadataInspector;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;

@@ -5,7 +5,7 @@ import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
 import org.esa.s2tbx.dataio.pleiades.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.pleiades.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.readers.GMLReader;
-import org.esa.snap.core.dataio.XmlMetadataInspector;
+import org.esa.snap.core.metadata.XmlMetadataInspector;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;

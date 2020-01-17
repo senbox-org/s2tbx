@@ -3,8 +3,7 @@ package org.esa.s2tbx.dataio.rapideye;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
-import org.esa.snap.core.dataio.MetadataInspector;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.metadata.MetadataInspector;
 
 import java.awt.*;
 import java.io.IOException;

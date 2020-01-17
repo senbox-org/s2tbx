@@ -2,18 +2,28 @@ package org.esa.s2tbx.dataio.worldview2.metadata;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.commons.FilePathInputStream;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.util.ImageUtils;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -328,4 +338,15 @@ public class TileMetadata extends XmlMetadata {
         }
         return tileInfo;
     }
+
+    public CrsGeoCoding buildBandGeoCoding(Rectangle subsetBounds) throws FactoryException, TransformException {
+        String crsCode = tileComponent.computeCRSCode();
+        if (crsCode != null) {
+            CoordinateReferenceSystem mapCRS = CRS.decode(crsCode);
+            return ImageUtils.buildCrsGeoCoding(tileComponent.getOriginX(), tileComponent.getOriginY(), tileComponent.getStepSize(),
+                                                tileComponent.getStepSize(), tileComponent.getNumColumns(), tileComponent.getNumRows(), mapCRS, subsetBounds);
+        }
+        return null;
+    }
+
 }

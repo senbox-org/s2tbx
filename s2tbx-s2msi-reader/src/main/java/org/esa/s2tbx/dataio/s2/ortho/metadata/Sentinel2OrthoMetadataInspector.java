@@ -20,7 +20,7 @@ import org.esa.s2tbx.dataio.s2.l3.metadata.S2L3ProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoUtils;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Placemark;
 import org.geotools.data.simple.SimpleFeatureIterator;

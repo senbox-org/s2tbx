@@ -4,7 +4,7 @@ import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.gdal.reader.GDALMetadataInspector;
 import org.esa.s2tbx.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;

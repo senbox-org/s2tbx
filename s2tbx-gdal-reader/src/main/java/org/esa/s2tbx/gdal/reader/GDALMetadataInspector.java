@@ -1,7 +1,7 @@
 package org.esa.s2tbx.gdal.reader;
 
 import org.esa.s2tbx.commons.VirtualFile;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
 
 import java.io.IOException;

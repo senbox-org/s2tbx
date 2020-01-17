@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.worldview2esa;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.worldview2esa.metadata.TileMetadata;
 import org.esa.s2tbx.dataio.worldview2esa.metadata.TileMetadataList;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
 
 import java.awt.*;
@@ -30,11 +30,9 @@ public class WorldView2ESAMetadataInspector implements MetadataInspector {
                 throw new NullPointerException("The product default size is null.");
             }
 
-            Metadata metadata = new Metadata();
-            metadata.setProductWidth(defaultProductSize.width);
-            metadata.setProductHeight(defaultProductSize.height);
+            Metadata metadata = new Metadata(defaultProductSize.width, defaultProductSize.height);
 
-            GeoCoding productGeoCoding = WorldView2ESAProductReader.buildProductGeoCoding(tileMetadataList.getTiles());
+            GeoCoding productGeoCoding = tileMetadataList.buildProductGeoCoding(null);
             metadata.setGeoCoding(productGeoCoding);
 
             java.util.List<TileMetadata> tilesMetadata = tileMetadataList.getTiles();

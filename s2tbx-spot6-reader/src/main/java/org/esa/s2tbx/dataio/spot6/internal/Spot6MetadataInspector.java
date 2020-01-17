@@ -5,7 +5,7 @@ import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
 import org.esa.s2tbx.dataio.spot6.dimap.VolumeMetadata;
-import org.esa.snap.core.dataio.XmlMetadataInspector;
+import org.esa.snap.core.metadata.XmlMetadataInspector;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;

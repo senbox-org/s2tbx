@@ -110,7 +110,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             product.setFileLocation(productPath.toFile());
             Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
             product.setPreferredTileSize(preferredTileSize);
-            GeoCoding productGeoCoding = buildProductGeoCoding(tileMetadataList.getTiles());
+            GeoCoding productGeoCoding = tileMetadataList.buildProductGeoCoding(productBounds);
             if (productGeoCoding != null) {
                 product.setSceneGeoCoding(productGeoCoding);
             }
@@ -232,37 +232,6 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
 
         band.setScalingFactor(tileMetadata.getTileComponent().getScalingFactor(band.getName()));
         return band;
-    }
-
-    public static GeoCoding buildProductGeoCoding(List<TileMetadata> tileMetadataList) {
-        int productWidth = 0;
-        int productHeight = 0;
-        double stepSize = 0.0d;
-        double originX = 0.0d;
-        double originY = 0.0d;
-        String crsCode = null;
-        for (TileMetadata tileMetadata : tileMetadataList) {
-            TileComponent tileComponent = tileMetadata.getTileComponent();
-            if (tileComponent.getBandID().equals("P")) {
-                productWidth = tileMetadata.getRasterWidth();
-                productHeight = tileMetadata.getRasterHeight();
-                stepSize = tileComponent.getStepSize();
-                originX = tileComponent.getOriginX();
-                originY = tileComponent.getOriginY();
-                crsCode = tileComponent.computeCRSCode();
-                break;
-            }
-        }
-        GeoCoding geoCoding = null;
-        if (crsCode != null) {
-            try {
-                CoordinateReferenceSystem mapCRS = CRS.decode(crsCode);
-                geoCoding = new CrsGeoCoding(mapCRS, productWidth, productHeight, originX, originY, stepSize, stepSize);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed to read the product geo coding.", e);
-            }
-        }
-        return geoCoding;
     }
 
     private static GeoCoding buildBandGeoCoding(TileComponent tileComponent) {
