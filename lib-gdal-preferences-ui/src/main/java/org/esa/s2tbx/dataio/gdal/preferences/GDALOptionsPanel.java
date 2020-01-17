@@ -37,7 +37,7 @@ class GDALOptionsPanel extends JPanel {
         GDALVersion internalVersion = GDALVersion.getInternalVersion();
         Mnemonics.setLocalizedText(useInternalGDALLibrary, "Use internal GDAL version from SNAP (" + internalVersion.getId() + ")");
         locationInternalField.setText(internalVersion.getLocation());
-        locationInternalField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
+        locationInternalField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
         JTextField locationInstalledField = new JTextField();
         locationInstalledField.setEditable(false);
@@ -49,7 +49,7 @@ class GDALOptionsPanel extends JPanel {
             location = installedVersion.getLocation();
         }
         locationInstalledField.setText(location);
-        locationInstalledField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
+        locationInstalledField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         Mnemonics.setLocalizedText(useInstalledGDALLibrary, "Use installed GDAL version from Operating System (" + versionName + ")");
 
         JLabel label = new JLabel("NOTE: Restart SNAP to take changes effect.");
