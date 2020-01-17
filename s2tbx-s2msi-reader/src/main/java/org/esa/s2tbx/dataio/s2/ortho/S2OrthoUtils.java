@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class S2OrthoUtils {
 
-    protected static Logger logger = Logger.getLogger("S2OrthoUtils");
+    protected static Logger logger = Logger.getLogger(S2OrthoUtils.class.getName());
 
     public static DefaultFeatureCollection createDefaultFeatureCollection(List<EopPolygon>[] productPolygons, int maskInfoIndex, SimpleFeatureType type){
         final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
