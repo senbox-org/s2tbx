@@ -101,7 +101,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 product.getMetadataRoot().addElement(metadata.getRootElement());
             }
             product.setFileLocation(productPath.toFile());
-            product.setSceneGeoCoding(metadata.buildCrsGeoCoding());
+            product.setSceneGeoCoding(metadata.buildCrsGeoCoding(productBounds));
             product.setNumResolutionsMax(metadata.getGeoPositions().size());
             product.setAutoGrouping(buildGroupPattern());
             product.setStartTime(parseDate(metadata.getAcquisitionDate(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
@@ -123,7 +123,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 }
             }
 
-            List<Band> angleBands = readAngleBands(metadata);
+            List<Band> angleBands = readAngleBands(productBounds, defaultProductSize, metadata);
             for (Band band : angleBands) {
                 product.addBand(band);
             }
@@ -169,8 +169,8 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         for (MuscateMetadata.AnglesGrid viewingAngles : viewingAnglesList) {
             if (viewingAngles.getBandId().equals(bandConstants.getPhysicalName()) && Integer.parseInt(viewingAngles.getDetectorId()) == detectorId) {
                 S2BandAnglesGridByDetector[] bandAnglesGridByDetector = new S2BandAnglesGridByDetector[2];
-                bandAnglesGridByDetector[0] = new S2BandAnglesGridByDetector("view_zenith", bandConstants, detectorId, viewingAngles.getWidth(), viewingAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, viewingAngles.getResX(), viewingAngles.getResY(), viewingAngles.getZenith());
-                bandAnglesGridByDetector[1] = new S2BandAnglesGridByDetector("view_azimuth", bandConstants, detectorId, viewingAngles.getWidth(), viewingAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, viewingAngles.getResX(), viewingAngles.getResY(), viewingAngles.getAzimuth());
+                bandAnglesGridByDetector[0] = new S2BandAnglesGridByDetector("view_zenith", bandConstants, detectorId, viewingAngles.getWidth(), viewingAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, viewingAngles.getResolutionX(), viewingAngles.getResolutionY(), viewingAngles.getZenith());
+                bandAnglesGridByDetector[1] = new S2BandAnglesGridByDetector("view_azimuth", bandConstants, detectorId, viewingAngles.getWidth(), viewingAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, viewingAngles.getResolutionX(), viewingAngles.getResolutionY(), viewingAngles.getAzimuth());
                 return bandAnglesGridByDetector;
             }
         }
@@ -186,8 +186,8 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         MuscateMetadata.AnglesGrid sunAngles = metadata.getSunAnglesGrid();
 
         S2BandAnglesGrid[] bandAnglesGrid = new S2BandAnglesGrid[2];
-        bandAnglesGrid[0] = new S2BandAnglesGrid("sun_zenith", null, sunAngles.getWidth(), sunAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, sunAngles.getResX(), sunAngles.getResY(), sunAngles.getZenith());
-        bandAnglesGrid[1] = new S2BandAnglesGrid("sun_azimuth", null, sunAngles.getWidth(), sunAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, sunAngles.getResX(), sunAngles.getResY(), sunAngles.getAzimuth());
+        bandAnglesGrid[0] = new S2BandAnglesGrid("sun_zenith", null, sunAngles.getWidth(), sunAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, sunAngles.getResolutionX(), sunAngles.getResolutionY(), sunAngles.getZenith());
+        bandAnglesGrid[1] = new S2BandAnglesGrid("sun_azimuth", null, sunAngles.getWidth(), sunAngles.getHeight(), (float) metadata.getUpperLeft().x, (float) metadata.getUpperLeft().y, sunAngles.getResolutionX(), sunAngles.getResolutionY(), sunAngles.getAzimuth());
         return bandAnglesGrid;
     }
 
@@ -888,32 +888,32 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         return String.format("defective_%s", orderedBandName);
     }
 
-    private static List<Band> readAngleBands(MuscateMetadata metadata) {
+    private static List<Band> readAngleBands(Rectangle productBounds, Dimension defaultProductSize, MuscateMetadata metadata) {
         List<Band> angleBands = new ArrayList<>();
 
         MuscateMetadata.AnglesGrid sunAnglesGrid = metadata.getSunAnglesGrid();
 
         // add Zenith
-        Band band = readAngleBand("sun_zenith", "Sun zenith angles", sunAnglesGrid.getWidth(), sunAnglesGrid.getHeight(),
-                sunAnglesGrid.getZenith(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY(), metadata);
+        Band band = readAngleBand(productBounds, defaultProductSize, "sun_zenith", "Sun zenith angles", sunAnglesGrid.getSize(),
+                sunAnglesGrid.getZenith(), sunAnglesGrid.getResolution(), metadata);
         angleBands.add(band);
 
         // add Azimuth
-        band = readAngleBand("sun_azimuth", "Sun azimuth angles", sunAnglesGrid.getWidth(), sunAnglesGrid.getHeight(),
-                sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResX(), sunAnglesGrid.getResY(), metadata);
+        band = readAngleBand(productBounds, defaultProductSize, "sun_azimuth", "Sun azimuth angles", sunAnglesGrid.getSize(),
+                sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResolution(), metadata);
         angleBands.add(band);
 
         // viewing angles
         for (String bandId : metadata.getBandNames()) {
             MuscateMetadata.AnglesGrid anglesGrid = metadata.getViewingAnglesGrid(bandId);
             // add Zenith
-            band = readAngleBand("view_zenith_" + anglesGrid.getBandId(), "Viewing zenith angles", anglesGrid.getWidth(),
-                    anglesGrid.getHeight(), anglesGrid.getZenith(), anglesGrid.getResX(), anglesGrid.getResY(), metadata);
+            band = readAngleBand(productBounds, defaultProductSize, "view_zenith_" + anglesGrid.getBandId(), "Viewing zenith angles", anglesGrid.getSize(),
+                    anglesGrid.getZenith(), anglesGrid.getResolution(), metadata);
             angleBands.add(band);
 
             // add Azimuth
-            band = readAngleBand("view_azimuth_" + anglesGrid.getBandId(), "Viewing azimuth angles", anglesGrid.getWidth(),
-                    anglesGrid.getHeight(), anglesGrid.getAzimuth(), anglesGrid.getResX(), anglesGrid.getResY(), metadata);
+            band = readAngleBand(productBounds, defaultProductSize, "view_azimuth_" + anglesGrid.getBandId(), "Viewing azimuth angles", anglesGrid.getSize(),
+                    anglesGrid.getAzimuth(), anglesGrid.getResolution(), metadata);
             angleBands.add(band);
         }
 
@@ -921,36 +921,44 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         MuscateMetadata.AnglesGrid meanViewingAnglesGrid = metadata.getMeanViewingAnglesGrid();
         if (meanViewingAnglesGrid != null) {
             // add Zenith
-            band = readAngleBand("view_zenith_mean", "Mean viewing zenith angles", meanViewingAnglesGrid.getWidth(), meanViewingAnglesGrid.getHeight(),
-                    meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY(), metadata);
+            band = readAngleBand(productBounds, defaultProductSize, "view_zenith_mean", "Mean viewing zenith angles", meanViewingAnglesGrid.getSize(),
+                    meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResolution(), metadata);
             angleBands.add(band);
 
             // add Azimuth
-            band = readAngleBand("view_azimuth_mean", "Mean viewing azimuth angles", meanViewingAnglesGrid.getWidth(), meanViewingAnglesGrid.getHeight(),
-                    meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResX(), meanViewingAnglesGrid.getResY(), metadata);
+            band = readAngleBand(productBounds, defaultProductSize, "view_azimuth_mean", "Mean viewing azimuth angles", meanViewingAnglesGrid.getSize(),
+                    meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResolution(), metadata);
             angleBands.add(band);
         }
 
         return angleBands;
     }
 
-    private static Band readAngleBand(String angleBandName, String description, int width, int height, float[] data, float resX, float resY, MuscateMetadata metadata) {
+    private static Band readAngleBand(Rectangle productBounds, Dimension defaultProductSize, String angleBandName, String description,
+                                      Dimension defaultSize, float[] data, Point.Float resolution, MuscateMetadata metadata) {
+
+        Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultSize.width, defaultSize.height);
+
         int[] bandOffsets = {0};
-        SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, width, height, 1, width, bandOffsets);
+        SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, bandBounds.width, bandBounds.height, 1, bandBounds.width, bandOffsets);
+        DataBuffer buffer = new DataBufferFloat(sampleModel.getWidth() * sampleModel.getHeight());
+        WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
+        for (int x = bandBounds.x; x<(bandBounds.x + bandBounds.width); x++) {
+            int rowOffset = x * defaultSize.width;
+            for (int y = bandBounds.y; y<(bandBounds.y + bandBounds.height); y++) {
+                int index = rowOffset + y;
+                raster.setSample(x - bandBounds.x, y - bandBounds.y, 0, data[index]);
+            }
+        }
+
         ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
         ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
-        DataBuffer buffer = new DataBufferFloat(width * height);
-        // wrap it in a writable raster
-        WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
-
-        // search index of angleID
-        raster.setPixels(0, 0, width, height, data);
 
         // and finally create an image with this raster
         BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
-        PlanarImage opImage = PlanarImage.wrapRenderedImage(image);
+        PlanarImage sourceBandImage = PlanarImage.wrapRenderedImage(image);
 
-        Band band = new Band(angleBandName, ProductData.TYPE_FLOAT32, width, height);
+        Band band = new Band(angleBandName, ProductData.TYPE_FLOAT32, sourceBandImage.getWidth(), sourceBandImage.getHeight());
         band.setDescription(description);
         band.setUnit("°");
         band.setNoDataValue(Double.NaN);
@@ -959,14 +967,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         try {
             CoordinateReferenceSystem mapCRS = CRS.decode("EPSG:" + metadata.getEPSG());
             MuscateMetadata.Geoposition firstGeoPosition = metadata.getGeoPositions().get(0);
-            CrsGeoCoding crsGeoCoding = new CrsGeoCoding(mapCRS, band.getRasterWidth(), band.getRasterHeight(), firstGeoPosition.ulx, firstGeoPosition.uly, resX, resY, 0.0, 0.0);
+            CrsGeoCoding crsGeoCoding = new CrsGeoCoding(mapCRS, band.getRasterWidth(), band.getRasterHeight(), firstGeoPosition.ulx, firstGeoPosition.uly, resolution.x, resolution.y, 0.0, 0.0);
             band.setGeoCoding(crsGeoCoding);
         } catch (Exception e) {
             logger.warning(String.format("Unable to set geocoding to the band %s", angleBandName));
         }
         band.setImageToModelTransform(Product.findImageToModelTransform(band.getGeoCoding()));
         // set source image must be done after setGeocoding and setImageToModelTransform
-        band.setSourceImage(opImage);
+        band.setSourceImage(sourceBandImage);
         return band;
     }
 
