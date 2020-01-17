@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.spot;
 
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
+import org.esa.snap.core.dataio.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -38,6 +39,11 @@ public class Spot5Take5ProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     public ProductReader createReaderInstance() {
         return new SpotTake5ProductReader(this, getColorPaletteFilePath());
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new SpotTake5MetadataInspector();
     }
 
     @Override
