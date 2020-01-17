@@ -23,11 +23,9 @@ public class GDALMetadataInspector implements MetadataInspector {
             virtualFile = new VirtualFile(productPath);
             gdalDataset = GDALProductReader.openGDALDataset(virtualFile.getLocalFile());
 
-            Metadata metadata = new Metadata();
-            metadata.setProductWidth(gdalDataset.getRasterXSize());
-            metadata.setProductHeight(gdalDataset.getRasterYSize());
+            Metadata metadata = new Metadata(gdalDataset.getRasterXSize(), gdalDataset.getRasterYSize());
 
-            GeoCoding productGeoCoding = GDALProductReader.buildGeoCoding(gdalDataset);
+            GeoCoding productGeoCoding = GDALProductReader.buildGeoCoding(gdalDataset, null);
             metadata.setGeoCoding(productGeoCoding);
 
             int bandCount = gdalDataset.getRasterCount();

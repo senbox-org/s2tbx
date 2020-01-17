@@ -6,12 +6,12 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIMetadata;
 import org.esa.s2tbx.dataio.alos.pri.internal.ImageMetadata;
-import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
@@ -76,15 +76,9 @@ public class AlosPRIProductReader extends AbstractProductReader {
             }
             if (alosPriMetadata.hasInsertPoint()) {
                 CoordinateReferenceSystem mapCRS = CRS.decode(alosPriMetadata.getCrsCode());
-                int offsetX = 0;
-                int offsetY = 0;
                 ImageMetadata.InsertionPoint origin = alosPriMetadata.getProductOrigin();
-                if(subsetDef != null){
-                   offsetX = (int) (subsetDef.getRegion().x * origin.stepX);
-                   offsetY = (int) (subsetDef.getRegion().y * origin.stepY);
-                }
-                GeoCoding geoCoding = new CrsGeoCoding(mapCRS, defaultProductSize.width, defaultProductSize.height, origin.x + offsetX, origin.y - offsetY, origin.stepX, origin.stepY);
-                product.setSceneGeoCoding(geoCoding);
+                CrsGeoCoding productGeoCoding = ImageUtils.buildCrsGeoCoding(origin.x, origin.y, origin.stepX, origin.stepY, defaultProductSize.width, defaultProductSize.height, mapCRS, productBounds);
+                product.setSceneGeoCoding(productGeoCoding);
             } else {
                 TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(alosPriMetadata, defaultProductSize.width, defaultProductSize.height, subsetDef);
                 product.addTiePointGrid(productGeoCoding.getLatGrid());
