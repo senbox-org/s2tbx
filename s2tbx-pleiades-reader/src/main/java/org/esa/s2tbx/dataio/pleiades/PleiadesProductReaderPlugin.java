@@ -20,7 +20,7 @@ import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
 import org.esa.s2tbx.dataio.pleiades.internal.PleiadesMetadataInspector;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;

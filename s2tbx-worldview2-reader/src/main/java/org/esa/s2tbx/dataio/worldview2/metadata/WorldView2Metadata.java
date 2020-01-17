@@ -1,15 +1,19 @@
 package org.esa.s2tbx.dataio.worldview2.metadata;
 
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.utils.DateHelper;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Basic reader for WorldView 2 products.
@@ -157,4 +161,55 @@ public class WorldView2Metadata extends XmlMetadata {
         }
         return new Dimension(defaultProductWidth, defaultProductHeight);
     }
+
+    public CrsGeoCoding buildProductGeoCoding(Rectangle subsetBounds) throws FactoryException, TransformException {
+        int defaultProductWidth = 0;
+        int defaultProductHeight = 0;
+        Double stepSize = null;
+        String crsCode = null;
+        double originX = Double.MAX_VALUE;//0.0d;
+        double originY = -Double.MAX_VALUE;//0.0d;
+
+        for (TileMetadataList tileMetadataList : this.products.values()) {
+            java.util.List<TileMetadata> tiles = tileMetadataList.getTiles();
+            for (TileMetadata tileMetadata : tiles) {
+                TileComponent tileComponent = tileMetadata.getTileComponent();
+                if (tileComponent.getBandID().equals(TileMetadataList.PANCHROMATIC_BAND_ID)) {
+                    if (originX > tileComponent.getOriginX()) {
+                        originX = tileComponent.getOriginX();
+                    }
+                    if (originY < tileComponent.getOriginY()) {
+                        originY = tileComponent.getOriginY();
+                    }
+
+                    if (stepSize == null) {
+                        stepSize = tileComponent.getStepSize();
+                    } else if (stepSize.doubleValue() != tileComponent.getStepSize()) {
+                        throw new IllegalStateException("Different value for step size: previous value="+stepSize.doubleValue()+", new value="+tileComponent.getStepSize()+", number of subproducts="+this.products.size()+".");
+                    }
+
+                    String currentCRSCode = tileComponent.computeCRSCode();
+                    if (crsCode == null) {
+                        crsCode = currentCRSCode;
+                    } else if (!crsCode.equalsIgnoreCase(currentCRSCode)) {
+                        throw new IllegalStateException("Different value for coordinate reference system: previous value="+crsCode+", new value="+currentCRSCode+", number of subproducts="+this.products.size()+".");
+                    }
+
+                    if (defaultProductWidth < tileComponent.getNumColumns()) {
+                        defaultProductWidth = tileComponent.getNumColumns();
+                    }
+                    if (defaultProductHeight < tileComponent.getNumRows()) {
+                        defaultProductHeight = tileComponent.getNumRows();
+                    }
+
+                }
+            }
+        }
+        if (crsCode != null && stepSize != null) {
+            CoordinateReferenceSystem mapCRS = CRS.decode(crsCode);
+            return ImageUtils.buildCrsGeoCoding(originX, originY, stepSize.doubleValue(), stepSize.doubleValue(), defaultProductWidth, defaultProductHeight, mapCRS, subsetBounds);
+        }
+        return null;
+    }
+
 }

@@ -4,7 +4,7 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIMetadata;
 import org.esa.s2tbx.dataio.alos.pri.internal.ImageMetadata;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 
 import java.io.IOException;

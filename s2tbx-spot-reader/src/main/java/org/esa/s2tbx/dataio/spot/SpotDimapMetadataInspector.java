@@ -4,7 +4,7 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;

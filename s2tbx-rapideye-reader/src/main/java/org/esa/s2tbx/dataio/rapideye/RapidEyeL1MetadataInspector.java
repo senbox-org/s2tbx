@@ -1,19 +1,13 @@
 package org.esa.s2tbx.dataio.rapideye;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.FlagCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by jcoravu on 9/12/2019.

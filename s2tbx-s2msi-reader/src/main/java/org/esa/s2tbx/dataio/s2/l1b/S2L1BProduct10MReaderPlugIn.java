@@ -17,7 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.util.SystemUtils;
 

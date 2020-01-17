@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
+ * Metadata inspector for Pleiades products
+ *
  * @author Denisa Stefanescu
  */
 

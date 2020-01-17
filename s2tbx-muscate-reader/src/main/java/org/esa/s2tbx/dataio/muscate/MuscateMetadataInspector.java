@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.muscate;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 
 import java.io.IOException;

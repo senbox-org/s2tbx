@@ -4,7 +4,7 @@ import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadata;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bProductMetadataReader;
-import org.esa.snap.core.dataio.MetadataInspector;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.IndexCoding;
 
 import java.io.FileNotFoundException;
