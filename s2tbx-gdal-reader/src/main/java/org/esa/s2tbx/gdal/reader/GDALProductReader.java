@@ -17,7 +17,9 @@ import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.JAI;
 import java.awt.*;
@@ -92,7 +94,7 @@ public class GDALProductReader extends AbstractProductReader {
         // do nothing
     }
 
-    public Product readProduct(Path localFile, Rectangle inputProductBounds) {
+    public Product readProduct(Path localFile, Rectangle inputProductBounds) throws FactoryException, TransformException {
         if (localFile == null) {
             throw new NullPointerException("The local file is null.");
         }
@@ -111,10 +113,10 @@ public class GDALProductReader extends AbstractProductReader {
                 productBounds = ImageUtils.computeProductBounds(defaultProductWidth, defaultProductHeight, subsetDef);
             }
             if ((productBounds.x + productBounds.width) > defaultProductWidth) {
-                throw new IllegalStateException("The coordinates are out of bounds: productBounds.x="+productBounds.x+", productBounds.width="+productBounds.width+", default product width=" + defaultProductWidth);
+                throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.x="+productBounds.x+", productBounds.width="+productBounds.width+", default product width=" + defaultProductWidth);
             }
             if ((productBounds.y + productBounds.height) > defaultProductHeight) {
-                throw new IllegalStateException("The coordinates are out of bounds: productBounds.y="+productBounds.y+", productBounds.height="+productBounds.height+", default product height=" + defaultProductHeight);
+                throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.y="+productBounds.y+", productBounds.height="+productBounds.height+", default product height=" + defaultProductHeight);
             }
 
             Product product = new Product(localFile.getFileName().toString(), "GDAL", productBounds.width, productBounds.height, this);
@@ -125,7 +127,7 @@ public class GDALProductReader extends AbstractProductReader {
                 product.getMetadataRoot().addElement(metadataElement);
             }
 
-            GeoCoding geoCoding = buildGeoCoding(gdalDataset);
+            GeoCoding geoCoding = buildGeoCoding(gdalDataset, productBounds);
             if (geoCoding != null) {
                 product.setSceneGeoCoding(geoCoding);
             }
@@ -295,7 +297,7 @@ public class GDALProductReader extends AbstractProductReader {
         return bandName;
     }
 
-    public static GeoCoding buildGeoCoding(Dataset gdalDataset) {
+    public static CrsGeoCoding buildGeoCoding(Dataset gdalDataset, Rectangle subsetBounds) throws FactoryException, TransformException {
         String wellKnownText = gdalDataset.GetProjectionRef();
         if (!StringUtils.isNullOrEmpty(wellKnownText)) {
             int imageWidth = gdalDataset.getRasterXSize();
@@ -304,14 +306,10 @@ public class GDALProductReader extends AbstractProductReader {
             gdalDataset.GetGeoTransform(adfGeoTransform);
             double originX = adfGeoTransform[0];
             double originY = adfGeoTransform[3];
-            double pixelSizeX = adfGeoTransform[1];
-            double pixelSizeY = (adfGeoTransform[5] > 0) ? adfGeoTransform[5] : -adfGeoTransform[5];
-            try {
-                CoordinateReferenceSystem crs = CRS.parseWKT(wellKnownText);
-                return new CrsGeoCoding(crs, imageWidth, imageHeight, originX, originY, pixelSizeX, pixelSizeY);
-            } catch (Exception ex) {
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
-            }
+            double resolutionX = adfGeoTransform[1];
+            double resolutionY = (adfGeoTransform[5] > 0) ? adfGeoTransform[5] : -adfGeoTransform[5];
+            CoordinateReferenceSystem mapCRS = CRS.parseWKT(wellKnownText);
+            return ImageUtils.buildCrsGeoCoding(originX, originY, resolutionX, resolutionY, imageWidth, imageHeight, mapCRS, subsetBounds, 0.5d, 0.5d);
         }
         return null;
     }
