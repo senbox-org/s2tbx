@@ -95,11 +95,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-gpf-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
             <version>6.3</version>

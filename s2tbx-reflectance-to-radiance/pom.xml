@@ -56,18 +56,6 @@
             <artifactId>org-netbeans-modules-javahelp</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-gpf-ui</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-ui</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-rcp</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-s2msi-reader</artifactId>
             <version>${project.version}</version>
