@@ -17,7 +17,6 @@ import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
@@ -26,6 +25,7 @@ import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
@@ -69,8 +69,6 @@ public class PleiadesProductReader extends AbstractProductReader {
     private VirtualDirEx productDirectory;
     private VolumeMetadata metadata;
     private Set<WeakReference<Product>> tileRefs;
-    private double offsetX = 0;
-    private double offsetY = 0;
     private boolean isMultiSize = false;
 
     protected PleiadesProductReader(PleiadesProductReaderPlugin readerPlugIn) {
@@ -140,12 +138,11 @@ public class PleiadesProductReader extends AbstractProductReader {
             this.isMultiSize = this.metadata.getImageMetadataList().size() > 1;
             int width = this.metadata.getSceneWidth();
             int height = this.metadata.getSceneHeight();
-            if(getSubsetDef() !=null && getSubsetDef().getRegion() != null){
+            Dimension defaultProductBounds = new Dimension(width, height);
+            if(getSubsetDef() != null && getSubsetDef().getRegion() != null){
                 productSubsetRegion = getSubsetDef().getRegion();
                 width = productSubsetRegion.width;
                 height = productSubsetRegion.height;
-                this.offsetX = productSubsetRegion.x;
-                this.offsetY = productSubsetRegion.y;
             }
             product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), width, height);
             product.setFileLocation(this.metadata.getPath().toFile());
@@ -157,10 +154,10 @@ public class PleiadesProductReader extends AbstractProductReader {
             if (maxResImageMetadata.hasInsertPoint()) {
                 String crsCode = maxResImageMetadata.getCRSCode();
                 try {
-                    GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode), width, height,
-                                                           origin.x + (offsetX * origin.stepX),
-                                                           origin.y - (offsetY * origin.stepY),
-                                                           origin.stepX, origin.stepY);
+                    GeoCoding geoCoding = ImageUtils.buildCrsGeoCoding(origin.x, origin.y,
+                                                                       origin.stepX, origin.stepY,
+                                                                       defaultProductBounds,
+                                                                       CRS.decode(crsCode), productSubsetRegion);
                     product.setSceneGeoCoding(geoCoding);
                 } catch (Exception e) {
                     logger.warning(e.getMessage());
@@ -202,8 +199,6 @@ public class PleiadesProductReader extends AbstractProductReader {
                         int startX = (int)(productSubsetRegion.x / imageMetadata.getInsertPoint().stepX * origin.stepX);
                         int startY = (int) (productSubsetRegion.y / imageMetadata.getInsertPoint().stepY * origin.stepY);
                         bandSubsetRegion = new Rectangle(startX,startY,bandWidth,bandHeight);
-                        this.offsetX = startX;
-                        this.offsetY = startY;
                     }else {
                         bandWidth = productSubsetRegion.width;
                         bandHeight = productSubsetRegion.height;
@@ -308,7 +303,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                             targetBand.setScalingFactor(1 / bandInfos[i].getGain() * 0.1);
                         }
                         targetBand.setScalingOffset(bandInfos[i].getBias());
-                        initBandGeoCoding(imageMetadata, targetBand, width, height);
+                        initBandGeoCoding(imageMetadata, targetBand, width, height, productSubsetRegion);
                         Band[][] srcBands = new Band[subsetTileCols][subsetTileRows];
                         for (int x = 0; x < subsetTileCols; x++) {
                             for (int y = 0; y < subsetTileRows; y++) {
@@ -387,7 +382,7 @@ public class PleiadesProductReader extends AbstractProductReader {
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight) {
+    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight, Rectangle productSubsetDef) {
         int bandWidth = band.getRasterWidth();
         int bandHeight = band.getRasterHeight();
         GeoCoding geoCoding = null;
@@ -396,10 +391,10 @@ public class PleiadesProductReader extends AbstractProductReader {
         try {
             CoordinateReferenceSystem crs = CRS.decode(crsCode);
             if (imageMetadata.hasInsertPoint()) {
-                    geoCoding = new CrsGeoCoding(crs,
-                            bandWidth, bandHeight,
-                            insertPoint.x + (offsetX * insertPoint.stepX), insertPoint.y - (offsetY * insertPoint.stepY),
-                            insertPoint.stepX, insertPoint.stepY, 0.0, 0.0);
+                geoCoding = ImageUtils.buildCrsGeoCoding(insertPoint.x, insertPoint.y,
+                                                         insertPoint.stepX, insertPoint.stepY,
+                                                         bandWidth, bandHeight,
+                                                         crs, productSubsetDef);
             } else {
                 if (sceneWidth != bandWidth) {
                     AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);

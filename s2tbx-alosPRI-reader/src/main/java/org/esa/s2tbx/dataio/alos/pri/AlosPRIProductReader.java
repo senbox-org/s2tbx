@@ -106,7 +106,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                     Dimension defaultBandSize = geoTiffImageReader.validateSize(imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight());
                     Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
 
-                    AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductSize);
+                    AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductSize, bandBounds);
                     Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
 
                     Band geoTiffBand = geoTiffProduct.getBandAt(0);
@@ -207,12 +207,6 @@ public class AlosPRIProductReader extends AbstractProductReader {
         return Mask.BandMathsType.create(AlosPRIConstants.NODATA, AlosPRIConstants.NODATA, productWith, productHeight, String.valueOf(noDataValue), Color.BLACK, 0.5);
     }
 
-    public static TiePointGeoCoding buildTiePointGridGeoCoding(AlosPRIMetadata metadata, int defaultRasterWidth, int defaultRasterHeight, ProductSubsetDef subsetDef) {
-        float offsetX = (metadata.getMaxInsertPointX() - metadata.getMinInsertPointX()) / metadata.getStepSizeX();
-        float offsetY = (metadata.getMaxInsertPointY() - metadata.getMinInsertPointY()) / metadata.getStepSizeY();
-        return buildTiePointGridGeoCoding(metadata, defaultRasterWidth, defaultRasterHeight, offsetX, offsetY, subsetDef);
-    }
-
     public static AlosPRIMetadata readMetadata(VirtualDirEx productDirectory, String metadataRelativeFilePath, Path imagesMetadataParentPath)
             throws IOException, SAXException, ParserConfigurationException, InstantiationException {
 
@@ -276,10 +270,10 @@ public class AlosPRIProductReader extends AbstractProductReader {
         }
     }
 
-    public static TiePointGeoCoding buildTiePointGridGeoCoding(AlosPRIMetadata metadata, int defaultRasterWidth, int defaultRasterHeight, float offsetX, float offsetY, ProductSubsetDef subsetDef) {
+    public static TiePointGeoCoding buildTiePointGridGeoCoding(AlosPRIMetadata metadata, int defaultRasterWidth, int defaultRasterHeight, ProductSubsetDef subsetDef) {
         float[][] cornerLonsLats = metadata.getMaxCorners();
-        TiePointGrid latGrid = buildTiePointGrid(AlosPRIConstants.LAT_DS_NAME, 2, 2, offsetX, offsetY, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[1], TiePointGrid.DISCONT_NONE);
-        TiePointGrid lonGrid = buildTiePointGrid(AlosPRIConstants.LON_DS_NAME, 2, 2, offsetX, offsetY, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[0], TiePointGrid.DISCONT_AT_180);
+        TiePointGrid latGrid = buildTiePointGrid(AlosPRIConstants.LAT_DS_NAME, 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[1], TiePointGrid.DISCONT_NONE);
+        TiePointGrid lonGrid = buildTiePointGrid(AlosPRIConstants.LON_DS_NAME, 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[0], TiePointGrid.DISCONT_AT_180);
         if (subsetDef != null && subsetDef.getRegion() != null) {
             lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
             latGrid = TiePointGrid.createSubset(latGrid, subsetDef);

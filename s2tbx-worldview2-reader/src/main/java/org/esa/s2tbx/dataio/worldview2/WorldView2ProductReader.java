@@ -24,9 +24,7 @@ import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixMultiLevelSource;
-import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
@@ -39,8 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Basic reader for WorldView 2 products.
@@ -49,8 +45,6 @@ import java.util.logging.Logger;
  */
 
 class WorldView2ProductReader extends AbstractProductReader {
-
-    private static final Logger logger = Logger.getLogger(WorldView2ProductReader.class.getName());
 
     static {
         XmlMetadataParserFactory.registerParser(WorldView2Metadata.class, new XmlMetadataParser<>(WorldView2Metadata.class));
@@ -262,25 +256,6 @@ class WorldView2ProductReader extends AbstractProductReader {
         GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(mosaicMatrix, bandBounds, preferredTileSize, bandIndex, bandGeoCoding);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
         return band;
-    }
-
-    private static GeoCoding buildBandGeoCoding(TileComponent tileComponent) {
-        GeoCoding geoCoding = null;
-        String crsCode = tileComponent.computeCRSCode();
-        if (crsCode != null) {
-            try {
-                CoordinateReferenceSystem crs = CRS.decode(crsCode);
-                int width = tileComponent.getNumColumns();
-                int height = tileComponent.getNumRows();
-                double stepSize = tileComponent.getStepSize();
-                double originX = tileComponent.getOriginX();
-                double originY = tileComponent.getOriginY();
-                geoCoding = new CrsGeoCoding(crs, width, height, originX, originY, stepSize, stepSize, 0.0, 0.0);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed to read the band geo coding.", e);
-            }
-        }
-        return geoCoding;
     }
 
     public static WorldView2Metadata readMetadata(VirtualDirEx productDirectory) throws Exception {

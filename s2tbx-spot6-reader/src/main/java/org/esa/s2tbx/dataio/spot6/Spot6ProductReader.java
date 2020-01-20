@@ -16,6 +16,7 @@ import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
@@ -117,22 +118,19 @@ public class Spot6ProductReader extends AbstractProductReader {
         if (metadata != null) {
             Rectangle productSubsetRegion = null;
             List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
-            if (imageMetadataList.size() == 0) {
+            if (imageMetadataList.isEmpty()) {
                 throw new IOException("No raster found");
             }
             this.isMultiSize = this.metadata.getImageMetadataList().size() > 1;
             int width = metadata.getSceneWidth();
             int height = metadata.getSceneHeight();
-            int offsetX = 0;
-            int offsetY = 0;
+            Dimension defaultProductBounds = new Dimension(width, height);
             ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
             if(getSubsetDef() != null && getSubsetDef().getRegion() != null){
                 productSubsetRegion = getSubsetDef().getRegion();
                 width = productSubsetRegion.width;
                 height = productSubsetRegion.height;
-                offsetX = productSubsetRegion.x;
-                offsetY = productSubsetRegion.y;
             }
             product = new Product(metadata.getInternalReference(),
                                   metadata.getProductType(),
@@ -144,11 +142,10 @@ public class Spot6ProductReader extends AbstractProductReader {
             if (maxResImageMetadata.hasInsertPoint()) {
                 String crsCode = maxResImageMetadata.getCRSCode();
                 try {
-                    GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
-                                                            width, height,
-                                                            origin.x + (offsetX * origin.stepX),
-                                                           origin.y - (offsetY * origin.stepY),
-                                                            origin.stepX, origin.stepY);
+                    GeoCoding geoCoding = ImageUtils.buildCrsGeoCoding(origin.x, origin.y,
+                                                                       origin.stepX, origin.stepY,
+                                                                       defaultProductBounds,
+                                                                       CRS.decode(crsCode), productSubsetRegion);
                     product.setSceneGeoCoding(geoCoding);
                 } catch (Exception e) {
                     logger.warning(e.getMessage());
@@ -389,10 +386,10 @@ public class Spot6ProductReader extends AbstractProductReader {
         try {
             CoordinateReferenceSystem crs = CRS.decode(crsCode);
             if (imageMetadata.hasInsertPoint()) {
-                    geoCoding = new CrsGeoCoding(crs,
-                                                 bandWidth, bandHeight,
-                                                 insertPoint.x + (bandSubsetRegion.x * insertPoint.stepX), insertPoint.y - (bandSubsetRegion.y * insertPoint.stepY),
-                                                 insertPoint.stepX, insertPoint.stepY, 0.0, 0.0);
+                    geoCoding = ImageUtils.buildCrsGeoCoding(insertPoint.x, insertPoint.y,
+                                                                        insertPoint.stepX, insertPoint.stepY,
+                                                                        bandWidth, bandHeight,
+                                                                        crs, bandSubsetRegion);
             } else {
                 if (sceneWidth != bandWidth) {
                     AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);
