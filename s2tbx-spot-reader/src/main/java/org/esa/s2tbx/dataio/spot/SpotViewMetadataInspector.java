@@ -27,7 +27,7 @@ public class SpotViewMetadataInspector implements MetadataInspector {
             metadata.setProductWidth(productMetadata.getRasterWidth());
             metadata.setProductHeight(productMetadata.getRasterHeight());
 
-            GeoCoding geoCoding = SpotViewProductReader.buildTiePointGridGeoCoding(productMetadata, imageMetadata);
+            GeoCoding geoCoding = SpotViewProductReader.buildTiePointGridGeoCoding(productMetadata, imageMetadata, null);
             if (geoCoding == null) {
                 geoCoding = SpotViewProductReader.buildCrsGeoCoding(productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), productMetadata, imageMetadata);
             }

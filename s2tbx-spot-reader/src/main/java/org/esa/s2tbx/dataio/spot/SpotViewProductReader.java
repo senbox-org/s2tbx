@@ -114,7 +114,7 @@ public class SpotViewProductReader extends AbstractProductReader {
             Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
             product.setPreferredTileSize(preferredTileSize);
 
-            TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(productMetadata, imageMetadata);
+            TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(productMetadata, imageMetadata, subsetDef);
             if (productGeoCoding == null) {
                 CrsGeoCoding crsGeoCoding = buildCrsGeoCoding(product.getSceneRasterWidth(), product.getSceneRasterHeight(), productMetadata, imageMetadata);
                 if (crsGeoCoding != null) {
@@ -229,7 +229,7 @@ public class SpotViewProductReader extends AbstractProductReader {
         }
     }
 
-    public static TiePointGeoCoding buildTiePointGridGeoCoding(SpotViewMetadata productMetadata, SpotDimapMetadata imageMetadata) {
+    public static TiePointGeoCoding buildTiePointGridGeoCoding(SpotViewMetadata productMetadata, SpotDimapMetadata imageMetadata, ProductSubsetDef subsetDef) {
         TiePoint[] tiePoints = imageMetadata.getTiePoints();
         if (tiePoints != null && tiePoints.length == 4) {
             float[] latPoints = new float[tiePoints.length];
@@ -240,6 +240,10 @@ public class SpotViewProductReader extends AbstractProductReader {
             }
             TiePointGrid latGrid = buildTiePointGrid("latitude", 2, 2, 0, 0, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), latPoints, TiePointGrid.DISCONT_NONE);
             TiePointGrid lonGrid = buildTiePointGrid("longitude", 2, 2, 0, 0, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), lonPoints, TiePointGrid.DISCONT_AT_180);
+            if (subsetDef != null && subsetDef.getRegion() != null) {
+                lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
+                latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
+            }
             return new TiePointGeoCoding(latGrid, lonGrid);
         }
         return null;

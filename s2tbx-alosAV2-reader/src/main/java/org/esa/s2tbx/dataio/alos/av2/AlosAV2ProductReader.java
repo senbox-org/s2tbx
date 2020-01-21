@@ -114,7 +114,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                 }
             }
 
-            geoTiffProduct.transferGeoCodingTo(product, getSubsetDef());
+            geoTiffProduct.transferGeoCodingTo(product, null);
 
             TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(alosAV2Metadata);
             if (productGeoCoding != null) {
