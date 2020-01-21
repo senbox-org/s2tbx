@@ -174,6 +174,9 @@ public enum GDALVersion {
     public URL getZipFileURLFromSources() {
         String zipFileDirectoryFromSources = GDAL_NATIVE_LIBRARIES_SRC + "/" + getDirectory() + "/" + getZipName();
         try {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "version zip archive URL from sources: '" + zipFileDirectoryFromSources + "'.");
+            }
             return getClass().getClassLoader().getResource(zipFileDirectoryFromSources.replace(File.separator, "/"));
         } catch (Exception ignored) {
             return null;

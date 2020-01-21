@@ -225,7 +225,7 @@ class GDALInstaller {
                     }
                     FileHelper.unzip(zipFilePath, gdalDistributionRootFolderPath, true);
                 } else {
-                    throw new ExceptionInInitializerError("No JNI drivers provided for installed GDAL version on this OS. Please uninstall!");
+                    throw new ExceptionInInitializerError("No GDAL distribution drivers provided for this OS.");
                 }
             } finally {
                 try {

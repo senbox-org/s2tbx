@@ -194,7 +194,7 @@ class GDALDistributionInstaller {
                 .append("=")
                 .append(projDataFolderPath.toString());
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Set the PROJ_LIB environment variable on MacOSX with '" + projDataValue.toString() + "'.");
+            logger.log(Level.FINE, "Set the PROJ_LIB environment variable on Windows with '" + projDataValue.toString() + "'.");
         }
         EnvironmentVariables.setEnvironmentVariable(projDataValue.toString());
     }
