@@ -18,13 +18,19 @@
 package org.esa.s2tbx.dataio.spot6;
 
 import com.bc.ceres.core.NullProgressMonitor;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
@@ -72,6 +78,80 @@ public class Spot6ProductReaderTest {
             assertEquals("SPOT_20140129050233095_816009101_2", finalProduct.getName());
             Date endDate = Calendar.getInstance().getTime();
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
+        } catch (IOException e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        }
+    }
+
+    @Test
+    public void testReadProductSubset() {
+        Date startDate = Calendar.getInstance().getTime();
+        File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short" + File.separator + "SPOT_LIST.XML");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "100");
+        try {
+            Rectangle subsetRegion = new Rectangle(540, 90, 1366, 631);
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setNodeNames(new String[] { "B1", "B3", "NODATA"} );
+            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubSampling(1, 1);
+
+            Product finalProduct = reader.readProductNodes(file, subsetDef);
+
+            assertNotNull(finalProduct.getSceneGeoCoding());
+            GeoPos productOrigin = ProductUtils.getCenterGeoPos(finalProduct);
+            assertEquals(39.8534f, productOrigin.lat,4);
+            assertEquals(-83.7753f, productOrigin.lon,4);
+
+            assertEquals(2, finalProduct.getBands().length);
+            assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
+            assertEquals("SPOT 6/7 Product", finalProduct.getProductType());
+            assertEquals(1, finalProduct.getMaskGroup().getNodeCount());
+            assertEquals(1366, finalProduct.getSceneRasterWidth());
+            assertEquals(631, finalProduct.getSceneRasterHeight());
+            //name should be changed
+            assertEquals("SPOT_20140129050233095_816009101_2", finalProduct.getName());
+            Date endDate = Calendar.getInstance().getTime();
+            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
+
+            Mask mask = finalProduct.getMaskGroup().get("NODATA");
+            assertEquals(1366, mask.getRasterWidth());
+            assertEquals(631, mask.getRasterHeight());
+
+            Band band_B1 = finalProduct.getBand("B1");
+            assertEquals(1366, band_B1.getRasterWidth());
+            assertEquals(631, band_B1.getRasterHeight());
+
+            float pixelValue = band_B1.getSampleFloat(105, 143);
+            assertEquals(38.8288f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(208, 246);
+            assertEquals(85.3185f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(467, 221);
+            assertEquals(154.5807f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(714, 389);
+            assertEquals(30.2235f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(824, 344);
+            assertEquals(39.1436f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(1035, 336);
+            assertEquals(55.9345f, pixelValue, 4);
+
+            Band band_B3 = finalProduct.getBand("B3");
+            assertEquals(1366, band_B3.getRasterWidth());
+            assertEquals(631, band_B3.getRasterHeight());
+
+            pixelValue = band_B3.getSampleFloat(105, 143);
+            assertEquals(36.5549f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(208, 246);
+            assertEquals(81.8917f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(467, 221);
+            assertEquals(121.2311f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(714, 389);
+            assertEquals(46.2649f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(824, 344);
+            assertEquals(84.9617f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(1035, 336);
+            assertEquals(66.3986f, pixelValue, 4);
         } catch (IOException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
