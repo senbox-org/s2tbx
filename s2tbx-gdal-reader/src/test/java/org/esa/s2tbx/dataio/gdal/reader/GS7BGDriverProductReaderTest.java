@@ -85,7 +85,7 @@ public class GS7BGDriverProductReaderTest extends AbstractTestDriverProductReade
             assertEquals(300, finalProduct.getSceneRasterHeight());
 
             Mask mask = finalProduct.getMaskGroup().get("nodata_band_1");
-            assertEquals(31, mask.getDataType());
+            assertEquals(20, mask.getDataType());
             assertEquals(150000, mask.getNumDataElems());
 
             Band band = finalProduct.getBandAt(0);

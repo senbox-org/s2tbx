@@ -76,12 +76,8 @@ public class RMFDriverProductReaderTest extends AbstractTestDriverProductReader 
             RMFDriverProductReaderPlugIn readerPlugin = new RMFDriverProductReaderPlugIn();
             GDALProductReader reader = (GDALProductReader)readerPlugin.createReaderInstance();
             Product finalProduct = reader.readProductNodes(file, subsetDef);
-            assertNull(finalProduct.getSceneGeoCoding());
 
-            assertNotNull(finalProduct.getSceneGeoCoding());
-            GeoPos productOrigin = ProductUtils.getCenterGeoPos(finalProduct);
-            assertEquals(44.81f, productOrigin.lat,2);
-            assertEquals(6.34f, productOrigin.lon,2);
+            assertNull(finalProduct.getSceneGeoCoding());
 
             assertEquals(1,finalProduct.getMaskGroup().getNodeNames().length);
             assertEquals(2, finalProduct.getBands().length);
