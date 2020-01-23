@@ -130,7 +130,7 @@ public class Band {
      * @param val the JNI GDAL Band class GetOffset(Double[] val) method 'val' argument
      */
     public void getOffset(Double[] val) {
-        GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetOffset", null, this.jniBandInstance, new Class[]{double[].class}, new Object[]{val});
+        GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetOffset", null, this.jniBandInstance, new Class[]{Double[].class}, new Object[]{val});
     }
 
     /**
@@ -139,7 +139,7 @@ public class Band {
      * @param val the JNI GDAL Band class GetScale(Double[] val) method 'val' argument
      */
     public void getScale(Double[] val) {
-        GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetScale", null, this.jniBandInstance, new Class[]{double[].class}, new Object[]{val});
+        GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetScale", null, this.jniBandInstance, new Class[]{Double[].class}, new Object[]{val});
     }
 
     /**
@@ -157,7 +157,7 @@ public class Band {
      * @param val the JNI GDAL Band class GetNoDataValue(Double[] val) method 'val' argument
      */
     public void getNoDataValue(Double[] val) {
-        GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetNoDataValue", null, this.jniBandInstance, new Class[]{double[].class}, new Object[]{val});
+        GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetNoDataValue", null, this.jniBandInstance, new Class[]{Double[].class}, new Object[]{val});
     }
 
     /**
