@@ -13,6 +13,7 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.geotools.referencing.CRS;
@@ -71,6 +72,8 @@ public class AlosPRIProductReader extends AbstractProductReader {
             product.setEndTime(alosPriMetadata.getProductEndTime());
             product.setDescription(alosPriMetadata.getProductDescription());
             product.setFileLocation(productPath.toFile());
+            Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+            product.setPreferredTileSize(preferredTileSize);
             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                 product.getMetadataRoot().addElement(alosPriMetadata.getRootElement());
             }
