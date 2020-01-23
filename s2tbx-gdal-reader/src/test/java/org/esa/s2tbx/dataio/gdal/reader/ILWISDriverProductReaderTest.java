@@ -3,14 +3,17 @@ package org.esa.s2tbx.dataio.gdal.reader;
 import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.gdal.reader.plugins.ILWISDriverProductReaderPlugIn;
 import org.esa.s2tbx.gdal.reader.GDALProductReader;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -53,6 +56,51 @@ public class ILWISDriverProductReaderTest extends AbstractTestDriverProductReade
 
             bandValue = band.getSampleFloat(458, 500);
             assertEquals(101.0f, bandValue, 0);
+        }
+    }
+
+    @Test
+    public void testILWISReadProductSubset() throws IOException {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
+            File file = this.gdalTestsFolderPath.resolve("ILWIS-driver.mpr").toFile();
+
+            Rectangle subsetRegion = new Rectangle(200, 100, 500, 400);
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setNodeNames(new String[] { "band_1"} );
+            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubSampling(1, 1);
+
+            ILWISDriverProductReaderPlugIn readerPlugin = new ILWISDriverProductReaderPlugIn();
+            GDALProductReader reader = (GDALProductReader)readerPlugin.createReaderInstance();
+            Product finalProduct = reader.readProductNodes(file, subsetDef);
+
+            assertNull(finalProduct.getSceneGeoCoding());
+
+            assertNotNull(finalProduct.getMaskGroup());
+            assertEquals(0,finalProduct.getMaskGroup().getNodeNames().length);
+            assertEquals(1, finalProduct.getBands().length);
+            assertEquals("GDAL", finalProduct.getProductType());
+            assertEquals(500, finalProduct.getSceneRasterWidth());
+            assertEquals(400, finalProduct.getSceneRasterHeight());
+
+            Band band = finalProduct.getBandAt(0);
+            assertEquals(12, band.getDataType());
+            assertEquals(200000, band.getNumDataElems());
+
+            float bandValue = band.getSampleFloat(105, 85);
+            assertEquals(86.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(173, 285);
+            assertEquals(26.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(304, 258);
+            assertEquals(28.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(309, 192);
+            assertEquals(123.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(493, 142);
+            assertEquals(163.0f, bandValue, 0);
         }
     }
 }
