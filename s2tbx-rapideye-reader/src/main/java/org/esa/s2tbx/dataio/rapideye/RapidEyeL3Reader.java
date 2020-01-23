@@ -18,14 +18,15 @@
 package org.esa.s2tbx.dataio.rapideye;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.snap.core.metadata.XmlMetadataParser;
-import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
+import org.esa.s2tbx.dataio.readers.MetadataList;
 import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -49,12 +50,19 @@ public class RapidEyeL3Reader extends MultipleMetadataGeoTiffBasedReader<RapidEy
     }
 
     @Override
-    protected RapidEyeMetadata findFirstMetadataItem(List<RapidEyeMetadata> metadataList) {
-        return findFirstMetadataItem(metadataList, RapidEyeConstants.PROFILE_L3);
+    protected RapidEyeMetadata findFirstMetadataItem(MetadataList<RapidEyeMetadata> metadataList) {
+        for (int i=0; i<metadataList.getCount(); i++) {
+            RapidEyeMetadata rapidEyeMetadata = metadataList.getMetadataAt(i);
+            String metadataProfile = rapidEyeMetadata.getMetadataProfile();
+            if (metadataProfile != null && metadataProfile.startsWith(RapidEyeConstants.PROFILE_L3)) {
+                return rapidEyeMetadata;
+            }
+        }
+        return null;
     }
 
     @Override
-    protected TiePointGeoCoding buildTiePointGridGeoCoding(RapidEyeMetadata firstMetadata, List<RapidEyeMetadata> metadataList) {
+    protected TiePointGeoCoding buildTiePointGridGeoCoding(RapidEyeMetadata firstMetadata, MetadataList<RapidEyeMetadata> metadataList, ProductSubsetDef productSubsetDef) {
         return null; // no geo coding for RapidEye product
     }
 
@@ -79,12 +87,11 @@ public class RapidEyeL3Reader extends MultipleMetadataGeoTiffBasedReader<RapidEy
     }
 
     @Override
-    protected List<RapidEyeMetadata> readMetadataList(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+    protected MetadataList<RapidEyeMetadata> readMetadataList(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
         return readMetadata(productDirectory);
     }
 
-    public static List<RapidEyeMetadata> readMetadata(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
-        String[] metadataFiles = productDirectory.findAll(RapidEyeConstants.METADATA_FILE_SUFFIX);
-        return readMetadata(productDirectory, metadataFiles, RapidEyeMetadata.class);
+    public static MetadataList<RapidEyeMetadata> readMetadata(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+        return readMetadata(productDirectory, RapidEyeConstants.METADATA_FILE_SUFFIX, RapidEyeMetadata.class);
     }
 }

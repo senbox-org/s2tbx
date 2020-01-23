@@ -17,20 +17,20 @@
 
 package org.esa.s2tbx.dataio.deimos;
 
-import com.bc.ceres.core.NullProgressMonitor;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.utils.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -38,98 +38,121 @@ import static org.junit.Assume.assumeTrue;
  */
 public class DeimosProductReaderTest {
 
-    private DeimosProductReader reader;
-    private String productsFolder = "_deimos" + File.separator;
+    private static final String PRODUCTS_FOLDER = "_deimos" + File.separator;
 
-    @Before
-    public void setup() {
+    @Test
+    public void testReadProduct() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
+
+        DeimosProductReader reader = buildProductReader();
+
+        Product product = reader.readProductNodes(productFile, null);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals(3000, product.getSceneRasterWidth());
+        assertEquals(3000, product.getSceneRasterHeight());
+        assertEquals("DEIMOS", product.getProductType());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(1, product.getMaskGroup().getNodeCount());
+
+        assertEquals(2, product.getTiePointGrids().length);
+
+        assertEquals(4, product.getBands().length);
+
+        Band band = product.getBandAt(0);
+        assertNotNull(band);
+        assertEquals(20, band.getDataType());
+        assertEquals(9000000, band.getNumDataElems());
+        assertEquals("NIR", band.getName());
+        assertEquals(3000, band.getRasterWidth());
+        assertEquals(3000, band.getRasterHeight());
+
+        assertEquals(102, band.getSampleInt(0, 0));
+        assertEquals(96, band.getSampleInt(123, 123));
+        assertEquals(85, band.getSampleInt(23, 2000));
+        assertEquals(90, band.getSampleInt(1453, 2871));
+        assertEquals(94, band.getSampleInt(153, 800));
+        assertEquals(87, band.getSampleInt(542, 2101));
+        assertEquals(86, band.getSampleInt(654, 1670));
+        assertEquals(94, band.getSampleInt(766, 983));
+        assertEquals(88, band.getSampleInt(1986, 2354));
+        assertEquals(79, band.getSampleInt(10, 1000));
+        assertEquals(180, band.getSampleInt(500, 500));
+        assertEquals(0, band.getSampleInt(3000, 3000));
+    }
+
+    @Test
+    public void testReadProductSubset() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
+
+        DeimosProductReader reader = buildProductReader();
+
+        ProductSubsetDef subsetDef = new ProductSubsetDef();
+        subsetDef.setNodeNames(new String[] { "NIR", "Red", "Green" } );
+        subsetDef.setRegion(new Rectangle(1234, 543, 1678, 2134));
+        subsetDef.setSubSampling(1, 1);
+
+        Product product = reader.readProductNodes(productFile, subsetDef);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals(1678, product.getSceneRasterWidth());
+        assertEquals(2134, product.getSceneRasterHeight());
+        assertEquals("DEIMOS", product.getProductType());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(0, product.getMaskGroup().getNodeCount());
+
+        assertEquals(2, product.getTiePointGrids().length);
+
+        assertEquals(3, product.getBands().length);
+
+        Band band = product.getBandAt(2);
+        assertNotNull(band);
+        assertEquals(20, band.getDataType());
+        assertEquals(3580852, band.getNumDataElems());
+        assertEquals("Green", band.getName());
+        assertEquals(1678, band.getRasterWidth());
+        assertEquals(2134, band.getRasterHeight());
+
+        assertEquals(70, band.getSampleInt(0, 0));
+        assertEquals(123, band.getSampleInt(123, 123));
+        assertEquals(59, band.getSampleInt(23, 2000));
+        assertEquals(78, band.getSampleInt(1453, 1971));
+        assertEquals(89, band.getSampleInt(153, 800));
+        assertEquals(64, band.getSampleInt(542, 1701));
+        assertEquals(136, band.getSampleInt(654, 1670));
+        assertEquals(76, band.getSampleInt(766, 983));
+        assertEquals(112, band.getSampleInt(1656, 1354));
+        assertEquals(96, band.getSampleInt(10, 1230));
+        assertEquals(76, band.getSampleInt(500, 500));
+        assertEquals(0, band.getSampleInt(1678, 2134));
+    }
+
+    private static DeimosProductReader buildProductReader() {
         DeimosProductReaderPlugin plugin = new DeimosProductReaderPlugin();
-        reader = new DeimosProductReader(plugin, plugin.getColorPaletteFilePath());
-    }
-
-    @Test
-    public void testGetReaderPlugin() {
-        assertEquals(DeimosProductReaderPlugin.class, reader.getReaderPlugIn().getClass());
-    }
-
-    @Test
-    public void testReadProductNodes() {
-        Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productsFolder + "small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(3, finalProduct.getBands().length);
-            assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
-            assertEquals("DEIMOS", finalProduct.getProductType());
-            assertEquals(1, finalProduct.getMaskGroup().getNodeCount());
-            assertEquals(2, finalProduct.getTiePointGrids().length);
-            assertEquals(3000, finalProduct.getSceneRasterWidth());
-            assertEquals(3000, finalProduct.getSceneRasterHeight());
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testReadBandRasterData() {
-        Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productsFolder + "small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
-        try {
-
-            Product finalProduct = reader.readProductNodes(file, null);
-            ProductData data = ProductData.createInstance(ProductData.TYPE_UINT16, 20000);
-            reader.readBandRasterData(finalProduct.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
-            data.setElemFloatAt(3, 5);
-            assertNotEquals(0, data.getElemFloatAt(0));
-            assertNotEquals(-1000, data.getElemFloatAt(0));
-            assertNotEquals(0, data.getElemFloatAt(1999));
-            assertNotEquals(-1000, data.getElemFloatAt(1999));
-            assertNotEquals(5, data.getElemFloatAt(3));
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnFileInput() {
-        File file = TestUtil.getTestFile(productsFolder + "small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(2, components.getChildren().length);
-            assertEquals("DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim", components.getChildren()[0].getId());
-            assertEquals("DE01_SL2_22P_1T_20110521T092316_20110526T092427_DMI_0_2ead.tif", components.getChildren()[1].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnArchiveInput() {
-        File file = TestUtil.getTestFile(productsFolder + "small_deimos.zip");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(1, components.getChildren().length);
-            assertEquals("small_deimos.zip", components.getChildren()[0].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
+        return new DeimosProductReader(plugin, plugin.getColorPaletteFilePath());
     }
 }

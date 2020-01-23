@@ -17,20 +17,20 @@
 
 package org.esa.s2tbx.dataio.rapideye;
 
-import com.bc.ceres.core.NullProgressMonitor;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.utils.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -38,100 +38,121 @@ import static org.junit.Assume.assumeTrue;
  */
 public class RapidEyeL3ReaderTest {
 
-    private RapidEyeL3Reader reader;
-    private String productsFolder = "_rapideye" + File.separator;
+    private static final String PRODUCTS_FOLDER = "_rapideye" + File.separator;
 
-    @Before
-    public void setup() {
+    @Test
+    public void testReadProductNodes() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
+
+        RapidEyeL3Reader reader = buildProductReader();
+
+        Product product = reader.readProductNodes(productFile, null);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals(10985, product.getSceneRasterWidth());
+        assertEquals(11232, product.getSceneRasterHeight());
+        assertEquals("L3M", product.getProductType());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("World Geodetic System 1984", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(0, product.getMaskGroup().getNodeCount());
+
+        assertEquals(0, product.getTiePointGrids().length);
+
+        assertEquals(3, product.getBands().length);
+
+        Band band = product.getBandAt(0);
+        assertNotNull(band);
+        assertEquals(20, band.getDataType());
+        assertEquals(123383520, band.getNumDataElems());
+        assertEquals("blue", band.getName());
+        assertEquals(10985, band.getRasterWidth());
+        assertEquals(11232, band.getRasterHeight());
+
+        assertEquals(0, band.getSampleInt(0, 0));
+        assertEquals(0, band.getSampleInt(123, 123));
+        assertEquals(89, band.getSampleInt(23, 2000));
+        assertEquals(82, band.getSampleInt(1453, 2871));
+        assertEquals(76, band.getSampleInt(153, 800));
+        assertEquals(93, band.getSampleInt(1542, 2101));
+        assertEquals(89, band.getSampleInt(1654, 1670));
+        assertEquals(77, band.getSampleInt(766, 983));
+        assertEquals(85, band.getSampleInt(1986, 2354));
+        assertEquals(77, band.getSampleInt(10, 1000));
+        assertEquals(79, band.getSampleInt(500, 500));
+        assertEquals(0, band.getSampleInt(10985, 11232));
+    }
+
+    @Test
+    public void testReadProductSubset() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
+
+        RapidEyeL3Reader reader = buildProductReader();
+
+        ProductSubsetDef subsetDef = new ProductSubsetDef();
+        subsetDef.setNodeNames(new String[] { "green", "blue" } );
+        subsetDef.setRegion(new Rectangle(1234, 543, 6789, 5134));
+        subsetDef.setSubSampling(1, 1);
+
+        Product product = reader.readProductNodes(productFile, subsetDef);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals(6789, product.getSceneRasterWidth());
+        assertEquals(5134, product.getSceneRasterHeight());
+        assertEquals("L3M", product.getProductType());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("World Geodetic System 1984", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(0, product.getMaskGroup().getNodeCount());
+
+        assertEquals(0, product.getTiePointGrids().length);
+
+        assertEquals(2, product.getBands().length);
+
+        Band band = product.getBandAt(1);
+        assertNotNull(band);
+        assertEquals(20, band.getDataType());
+        assertEquals(34854726, band.getNumDataElems());
+        assertEquals("green", band.getName());
+        assertEquals(6789, band.getRasterWidth());
+        assertEquals(5134, band.getRasterHeight());
+
+        assertEquals(77, band.getSampleInt(0, 0));
+        assertEquals(74, band.getSampleInt(123, 123));
+        assertEquals(86, band.getSampleInt(23, 2000));
+        assertEquals(81, band.getSampleInt(1453, 2871));
+        assertEquals(77, band.getSampleInt(153, 800));
+        assertEquals(83, band.getSampleInt(1542, 2101));
+        assertEquals(86, band.getSampleInt(1654, 1670));
+        assertEquals(80, band.getSampleInt(766, 983));
+        assertEquals(85, band.getSampleInt(1986, 2354));
+        assertEquals(83, band.getSampleInt(10, 1000));
+        assertEquals(76, band.getSampleInt(500, 500));
+        assertEquals(0, band.getSampleInt(6789, 5134));
+    }
+
+    private static RapidEyeL3Reader buildProductReader() {
         RapidEyeL3ReaderPlugin plugin = new RapidEyeL3ReaderPlugin();
-        reader = new RapidEyeL3Reader(plugin, plugin.getColorPaletteFilePath());
-    }
-
-    @Test
-    public void testGetReaderPlugin() {
-        assertEquals(RapidEyeL3ReaderPlugin.class, reader.getReaderPlugIn().getClass());
-    }
-
-    @Test
-    public void testReadProductNodes() {
-        Date startDate = Calendar.getInstance().getTime();
-        //Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(3, finalProduct.getBands().length);
-            assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
-            assertEquals("L3M", finalProduct.getProductType());
-            assertEquals(0, finalProduct.getMaskGroup().getNodeCount());
-            assertEquals(10985, finalProduct.getSceneRasterWidth());
-            assertEquals(11232, finalProduct.getSceneRasterHeight());
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testReadBandRasterData() {
-        Date startDate = Calendar.getInstance().getTime();
-        //Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile(productsFolder + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
-        //File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "200");
-        try {
-
-            Product finalProduct = reader.readProductNodes(file, null);
-            ProductData data = ProductData.createInstance(ProductData.TYPE_UINT16, 20000);
-            data.setElemFloatAt(3, 5);
-            reader.readBandRasterData(finalProduct.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
-            assertNotEquals(0, data.getElemFloatAt(0));
-            assertNotEquals(-1000, data.getElemFloatAt(0));
-            assertNotEquals(0, data.getElemFloatAt(1999));
-            assertNotEquals(-1000, data.getElemFloatAt(1999));
-            assertNotEquals(5, data.getElemFloatAt(3));
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnFileInput() {
-        //Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(2, components.getChildren().length);
-            assertEquals("13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml", components.getChildren()[0].getId());
-            assertEquals("13N041E-R1C2_2012_RE1_3a-3M_1234567890.tif", components.getChildren()[1].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnArchiveInput() {
-        //Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "Demo26_3A.zip");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(1, components.getChildren().length);
-            assertEquals("Demo26_3A.zip", components.getChildren()[0].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
+        return new RapidEyeL3Reader(plugin, plugin.getColorPaletteFilePath());
     }
 }
