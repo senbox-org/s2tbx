@@ -331,15 +331,16 @@ class GDALInstaller {
 
             if (!StringUtils.isNullOrEmpty(savedVersion) && compareVersions(savedVersion, moduleVersion) >= 0 && Files.exists(gdalDistributionRootFolderPath) && Files.size(gdalDistributionRootFolderPath) > 1) {
                 canCopyGDALDistribution = false;
+            }else{
+                // different module versions and delete the library saved on the local disk
+                boolean deleted = FileUtils.deleteTree(gdalNativeLibrariesFolderPath.toFile());
+                if (!deleted) {
+                    throw new IllegalArgumentException("Failed to delete the GDAL distribution folder '" + gdalNativeLibrariesFolderPath.toString() + "'.");
+                }
             }
         }
 
         if (canCopyGDALDistribution) {
-            // different module versions and delete the library saved on the local disk
-            boolean deleted = FileUtils.deleteTree(gdalNativeLibrariesFolderPath.toFile());
-            if (!deleted) {
-                throw new IllegalArgumentException("Failed to delete the GDAL distribution folder '" + gdalNativeLibrariesFolderPath.toString() + "'.");
-            }
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "create the folder '" + gdalNativeLibrariesFolderPath.toString() + "' to copy the GDAL distribution.");
             }
