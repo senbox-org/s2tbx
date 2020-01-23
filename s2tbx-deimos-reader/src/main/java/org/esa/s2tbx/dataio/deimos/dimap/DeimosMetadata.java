@@ -35,18 +35,6 @@ public class DeimosMetadata extends XmlMetadata {
     private float[] bandGains;
     private float[] bandBiases;
 
-    private static class DeimosMetadataParser extends XmlMetadataParser<DeimosMetadata> {
-
-        public DeimosMetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return false;
-        }
-    }
-
     public DeimosMetadata(String name) {
         super(name);
     }
@@ -224,28 +212,6 @@ public class DeimosMetadata extends XmlMetadata {
         return centerTime;
     }
 
-    public InsertionPoint getInsertPoint() {
-        InsertionPoint point;
-        try {
-            point = new InsertionPoint();
-            point.x = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_ULXMAP, DeimosConstants.STRING_ZERO));
-            point.y = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_ULYMAP, DeimosConstants.STRING_ZERO));
-            point.stepX = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_XDIM, DeimosConstants.STRING_ZERO));
-            point.stepY = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_YDIM, DeimosConstants.STRING_ZERO));
-        } catch (NumberFormatException e) {
-            warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_GEOPOSITION_INSERT);
-            point = null;
-        }
-        return point;
-    }
-
-    public float getGain(int bandIndex) {
-        if (bandGains == null) {
-            extractGainsAndBiases();
-        }
-        return bandGains[bandIndex];
-    }
-
     private void extractGainsAndBiases() {
         if (bandGains == null || bandBiases == null) {
             int nBands = getNumBands();
@@ -303,30 +269,5 @@ public class DeimosMetadata extends XmlMetadata {
         public float y;
         public float stepX;
         public float stepY;
-    }
-
-    public int getPixelDataType() {
-        int retVal, value = 8;
-        try {
-            value = Integer.parseInt(getAttributeValue(DeimosConstants.PATH_NBITS, "8"));
-        } catch (NumberFormatException e) {
-            warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_NBITS);
-        }
-        switch (value) {
-            case 8:
-                retVal = ProductData.TYPE_UINT8;
-                break;
-            case 16:
-                retVal = ProductData.TYPE_INT16;
-                break;
-            case 32:
-                retVal = ProductData.TYPE_FLOAT32;
-                break;
-            default:
-                retVal = ProductData.TYPE_UINT8;
-                break;
-
-        }
-        return retVal;
     }
 }

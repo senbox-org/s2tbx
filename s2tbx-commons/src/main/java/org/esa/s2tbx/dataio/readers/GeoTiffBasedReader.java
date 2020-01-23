@@ -61,6 +61,8 @@ import java.util.logging.Logger;
  * Base class for all GeoTIFF-based readers for S2TBX.
  * This class has been created from the need of gathering all common code of several similar readers into a single place.
  */
+//TODO Jean remove the class
+@Deprecated
 public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends AbstractProductReader {
 
     protected static final Logger logger = Logger.getLogger(GeoTiffBasedReader.class.getName());

@@ -20,6 +20,8 @@ package org.esa.s2tbx.dataio.deimos;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.deimos.dimap.DeimosConstants;
 import org.esa.s2tbx.dataio.deimos.dimap.DeimosMetadata;
+import org.esa.s2tbx.dataio.readers.MetadataList;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
@@ -53,13 +55,13 @@ public class DeimosProductReader extends MultipleMetadataGeoTiffBasedReader<Deim
     }
 
     @Override
-    protected DeimosMetadata findFirstMetadataItem(List<DeimosMetadata> metadataList) {
-        return metadataList.get(0);
+    protected DeimosMetadata findFirstMetadataItem(MetadataList<DeimosMetadata> metadataList) {
+        return (metadataList.getCount() > 0) ? metadataList.getMetadataAt(0) : null;
     }
 
     @Override
-    protected TiePointGeoCoding buildTiePointGridGeoCoding(DeimosMetadata firstMetadata, List<DeimosMetadata> metadataList) {
-        return buildProductTiePointGridGeoCoding(firstMetadata, metadataList);
+    protected TiePointGeoCoding buildTiePointGridGeoCoding(DeimosMetadata firstMetadata, MetadataList<DeimosMetadata> metadataList, ProductSubsetDef productSubsetDef) {
+        return buildProductTiePointGridGeoCoding(firstMetadata, metadataList, productSubsetDef);
     }
 
     @Override
@@ -98,32 +100,25 @@ public class DeimosProductReader extends MultipleMetadataGeoTiffBasedReader<Deim
     }
 
     @Override
-    protected List<DeimosMetadata> readMetadataList(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+    protected MetadataList<DeimosMetadata> readMetadataList(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
         return readMetadata(productDirectory);
     }
 
-    public static List<DeimosMetadata> readMetadata(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
-        String[] metadataFiles = productDirectory.findAll(DeimosConstants.METADATA_EXTENSION);
-        //TODO Jean test on Linux if 'metadatafiles' contains items
-        //If the input is archive, the list should contain the full item path(needed for some Deimos products opened on linux)
-        //if (productDirectory.isCompressed() && metadataFiles[0].contains("/")) {
-        //productDirectory.listAllFilesWithPath();
-        //}
-        return readMetadata(productDirectory, metadataFiles, DeimosMetadata.class);
-    }
-
-    public static TiePointGeoCoding buildProductTiePointGridGeoCoding(DeimosMetadata firstMetadata, List<DeimosMetadata> metadataList) {
-        for (int i = 0; i < metadataList.size(); i++) {
-            DeimosMetadata currentMetadata = metadataList.get(i);
+    public static TiePointGeoCoding buildProductTiePointGridGeoCoding(DeimosMetadata firstMetadata, MetadataList<DeimosMetadata> metadataList, ProductSubsetDef productSubsetDef) {
+        for (int i = 0; i < metadataList.getCount(); i++) {
+            DeimosMetadata currentMetadata = metadataList.getMetadataAt(i);
             if (DeimosConstants.PROCESSING_1R.equals(currentMetadata.getProcessingLevel())) {
-                //TODO Jean should use firstMetadata to compute the geo coding
-                return buildProductTiePointGridGeoCoding(firstMetadata);
+                return buildProductTiePointGridGeoCoding(firstMetadata, productSubsetDef);
             }
         }
         return null;
     }
 
-    private static TiePointGeoCoding buildProductTiePointGridGeoCoding(DeimosMetadata deimosMetadata) {
+    public static MetadataList<DeimosMetadata> readMetadata(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+        return readMetadata(productDirectory, DeimosConstants.METADATA_EXTENSION, DeimosMetadata.class);
+    }
+
+    private static TiePointGeoCoding buildProductTiePointGridGeoCoding(DeimosMetadata deimosMetadata, ProductSubsetDef productSubsetDef) {
         DeimosMetadata.InsertionPoint[] geoPositionPoints = deimosMetadata.getGeopositionPoints();
         if (geoPositionPoints != null) {
             int numPoints = geoPositionPoints.length;
@@ -140,6 +135,10 @@ public class DeimosProductReader extends MultipleMetadataGeoTiffBasedReader<Deim
                 TiePointGrid latGrid = buildTiePointGrid("latitude", latitudeGridSize, latitudeGridSize, 0, 0, stepX, stepY, latitudes, TiePointGrid.DISCONT_NONE);
                 int longitudeGridSize = (int) Math.sqrt(longitudes.length);
                 TiePointGrid lonGrid = buildTiePointGrid("longitude", longitudeGridSize, longitudeGridSize, 0, 0, stepX, stepY, longitudes, TiePointGrid.DISCONT_AT_180);
+                if (productSubsetDef != null) {
+                    latGrid = TiePointGrid.createSubset(latGrid, productSubsetDef);
+                    lonGrid = TiePointGrid.createSubset(lonGrid, productSubsetDef);
+                }
                 return new TiePointGeoCoding(latGrid, lonGrid);
             }
         }

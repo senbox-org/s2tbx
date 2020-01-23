@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.readers;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.apache.commons.lang.StringUtils;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.snap.core.metadata.XmlMetadata;
@@ -10,7 +11,6 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.ImageUtils;
-import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
@@ -21,9 +21,9 @@ import javax.imageio.spi.ImageInputStreamSpi;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -44,11 +44,9 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
-    protected abstract MetadataType findFirstMetadataItem(List<MetadataType> metadataList);
+    protected abstract MetadataType findFirstMetadataItem(MetadataList<MetadataType> metadataList);
 
-    protected abstract TiePointGeoCoding buildTiePointGridGeoCoding(MetadataType firstMetadata, List<MetadataType> metadataList);
-
-    protected abstract List<MetadataType> readMetadataList(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException;
+    protected abstract TiePointGeoCoding buildTiePointGridGeoCoding(MetadataType firstMetadata, MetadataList<MetadataType> metadataList, ProductSubsetDef productSubsetDef);
 
     protected abstract String getProductType();
 
@@ -57,6 +55,8 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
     protected abstract String[] getBandNames(MetadataType metadata);
 
     protected abstract List<Mask> buildMasks(int productWith, int productHeight, MetadataType firstMetadata, ProductSubsetDef subsetDef);
+
+    protected abstract MetadataList<MetadataType> readMetadataList(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException;
 
     @Override
     public void close() throws IOException {
@@ -80,24 +80,61 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
             Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
             this.productDirectory = VirtualDirEx.build(productPath, false, true);
 
-            List<MetadataType> metadataList = readMetadataList(this.productDirectory);
-
-            Dimension defaultProductSize = computeMaximumProductSize(metadataList);
-            ProductSubsetDef subsetDef = getSubsetDef();
-            Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
-
+            MetadataList<MetadataType> metadataList = readMetadataList(this.productDirectory);
+            if (metadataList == null) {
+                throw new NullPointerException("The metadata list is null.");
+            }
+            if (metadataList.getCount() == 0) {
+                throw new IllegalStateException("The metadata list is empty.");
+            }
             MetadataType firstMetadata = findFirstMetadataItem(metadataList);
             if (firstMetadata == null) {
                 throw new IllegalStateException("The selected product is not readable by this reader. Please use the appropriate filter");
             }
 
-            String productName = (StringUtils.isNullOrEmpty(firstMetadata.getProductName())) ?  getGenericProductName() : firstMetadata.getProductName();
+            this.bandImageReaders = new ArrayList<>(metadataList.getCount());
+            int defaultProductWidth = 0;
+            int defaultProductHeight = 0;
+            for (int i=0; i<metadataList.getCount(); i++) {
+                boolean inputStreamSuccess = false;
+                GeoTiffImageReader geoTiffImageReader;
+                FilePathInputStream filePathInputStream = this.productDirectory.getInputStream(metadataList.getMetadataImageRelativePath(i));
+                try {
+                    geoTiffImageReader = new GeoTiffImageReader(filePathInputStream, null);
+                    this.bandImageReaders.add(geoTiffImageReader);
+                    inputStreamSuccess = true;
+                } finally {
+                    if (!inputStreamSuccess) {
+                        filePathInputStream.close();
+                    }
+                }
+                defaultProductWidth = Math.max(defaultProductWidth, geoTiffImageReader.getImageWidth());
+                defaultProductHeight = Math.max(defaultProductHeight, geoTiffImageReader.getImageHeight());
+            }
+            if (defaultProductWidth <= 0) {
+                throw new IllegalStateException("The product width " + defaultProductWidth + " is invalid.");
+            }
+            if (defaultProductHeight <= 0) {
+                throw new IllegalStateException("The product height " + defaultProductHeight + " is invalid.");
+            }
+
+            String metadataProductName = firstMetadata.getProductName();
+            String productName;
+            if (StringUtils.isBlank(metadataProductName) || "N/A".equalsIgnoreCase(metadataProductName)) {
+                productName = getGenericProductName();
+            } else {
+                productName = metadataProductName;
+            }
+
+            ProductSubsetDef subsetDef = getSubsetDef();
+            Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductWidth, defaultProductHeight, subsetDef);
+
             Product product = new Product(productName, getProductType(), productBounds.width, productBounds.height, this);
             product.setFileLocation(productPath.toFile());
             Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
             product.setPreferredTileSize(preferredTileSize);
-            String groupPattern = computeGroupPattern(metadataList.size());
-            if (!StringUtils.isNullOrEmpty(groupPattern)) {
+            String groupPattern = computeGroupPattern(metadataList.getCount());
+            if (!StringUtils.isBlank(groupPattern)) {
                 product.setAutoGrouping(groupPattern);
             }
             ProductData.UTC centerTime = firstMetadata.getCenterTime();
@@ -111,29 +148,25 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
             product.setProductType(firstMetadata.getMetadataProfile());
             product.setDescription(firstMetadata.getProductDescription());
 
-            TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(firstMetadata, metadataList);
+            TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(firstMetadata, metadataList, subsetDef);
             if (productGeoCoding != null) {
                 product.addTiePointGrid(productGeoCoding.getLatGrid());
                 product.addTiePointGrid(productGeoCoding.getLonGrid());
                 product.setSceneGeoCoding(productGeoCoding);
             }
 
-            List<String> rasterFileNames = getRasterFileNames(metadataList, this.productDirectory);
-            if (rasterFileNames.size() < metadataList.size()) {
-                throw new ArrayIndexOutOfBoundsException("Invalid size: rasterMetadataList=" + metadataList.size() + ", rasterFileNames=" + rasterFileNames.size());
-            }
-            Path metadataParentPath = this.productDirectory.getBaseFile().toPath();
-            this.bandImageReaders = new ArrayList<>(metadataList.size());
-            for (int i = 0; i < metadataList.size(); i++) {
-                MetadataType currentMetadata = metadataList.get(i);
-                GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(metadataParentPath, rasterFileNames.get(i));
-                this.bandImageReaders.add(geoTiffImageReader);
-
-                Dimension defaultBandSize = geoTiffImageReader.validateSize(currentMetadata.getRasterWidth(), currentMetadata.getRasterHeight());
-                Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
+            for (int i = 0; i < this.bandImageReaders.size(); i++) {
+                GeoTiffImageReader geoTiffImageReader = this.bandImageReaders.get(i);
+                int bandCount = geoTiffImageReader.getSampleModel().getNumBands();
+                MetadataType currentMetadata = metadataList.getMetadataAt(i);
+                int defaultBandWidth = geoTiffImageReader.getImageWidth();
+                int defaultBandHeight = geoTiffImageReader.getImageHeight();
+                Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight);
                 GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
                 Product getTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
-
+                if (bandCount != getTiffProduct.getNumBands()) {
+                    throw new IllegalStateException("Different band count: geo tiff image band count=" + bandCount+", geo tif product band count="+getTiffProduct.getNumBands()+".");
+                }
                 if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                     product.getMetadataRoot().addElement(currentMetadata.getRootElement());
                     if (getTiffProduct.getMetadataRoot() != null) {
@@ -141,24 +174,19 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                     }
                 }
                 if (i == 0) {
+                    // the first image
                     if (productGeoCoding == null) {
                         getTiffProduct.transferGeoCodingTo(product, null);
-                    }
-                    if (getTiffProduct.getPreferredTileSize() != null) {
-                        product.setPreferredTileSize(getTiffProduct.getPreferredTileSize());
                     }
                 }
 
                 // add bands
                 String[] bandNames = getBandNames(currentMetadata);
-                if (bandNames.length != getTiffProduct.getNumBands()) {
-                    throw new IllegalStateException("Invalid size: metadata band count="+bandNames.length+", geo tiff product band count=" + getTiffProduct.getNumBands()+".");
-                }
-                String bandPrefix = computeBandPrefix(metadataList.size(), i);
-                for (int k = 0; k < getTiffProduct.getNumBands(); k++) {
-                    String bandName = bandPrefix + bandNames[k];
+                String bandPrefix = computeBandPrefix(metadataList.getCount(), i);
+                for (int bandIndex= 0; bandIndex < getTiffProduct.getNumBands(); bandIndex++) {
+                    String bandName = bandPrefix + ((bandIndex < bandNames.length) ? bandNames[bandIndex] : ("band_" + bandIndex));
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                        Band geoTiffBand = getTiffProduct.getBandAt(k);
+                        Band geoTiffBand = getTiffProduct.getBandAt(bandIndex);
                         geoTiffBand.setName(bandName);
                         product.addBand(geoTiffBand);
                     }
@@ -237,78 +265,86 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
         return (metadataCount > 1) ? ("scene_" + String.valueOf(bandIndex) + "_") : "";
     }
 
-    private static <MetadataType extends XmlMetadata> List<String> getRasterFileNames(List<MetadataType> metadataList, VirtualDirEx productDirectory) {
-        List<String> rasterFileNames = new ArrayList<>();
-        if (metadataList != null) {
-            for (MetadataType metadataComponent : metadataList) {
-                String[] partialList = metadataComponent.getRasterFileNames();
-                if (partialList != null) {
-                    rasterFileNames.addAll(Arrays.asList(partialList));
+    public static <MetadataType extends XmlMetadata> RastersMetadata computeMaximumDefaultProductSize(MetadataList<MetadataType> metadataList, VirtualDirEx productDirectory)
+                                                                     throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+
+        int defaultProductWidth = 0;
+        int defaultProductHeight = 0;
+        RastersMetadata rastersMetadata = new RastersMetadata();
+        for (int i = 0; i < metadataList.getCount(); i++) {
+            try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(metadataList.getMetadataImageRelativePath(i))) {
+                try (GeoTiffImageReader geoTiffImageReader = new GeoTiffImageReader(filePathInputStream, null)) {
+                    defaultProductWidth = Math.max(defaultProductWidth, geoTiffImageReader.getImageWidth());
+                    defaultProductHeight = Math.max(defaultProductHeight, geoTiffImageReader.getImageHeight());
+                    int bandCount = geoTiffImageReader.getSampleModel().getNumBands();
+                    rastersMetadata.setRasterBandCount(metadataList.getMetadataAt(i), bandCount);
                 }
             }
         }
-        if (rasterFileNames.size() == 0) {
-            try {
-                String[] allTiffFiles = productDirectory.findAll(".tif");
-                if (allTiffFiles != null) {
-                    rasterFileNames.addAll(Arrays.asList(allTiffFiles));
+        if (defaultProductWidth <= 0) {
+            throw new IllegalStateException("The product width " + defaultProductWidth + " is invalid.");
+        }
+        if (defaultProductHeight <= 0) {
+            throw new IllegalStateException("The product height " + defaultProductHeight + " is invalid.");
+        }
+        rastersMetadata.setMaximumSize(defaultProductWidth, defaultProductHeight);
+        return rastersMetadata;
+    }
+
+    protected static <MetadataType extends XmlMetadata> MetadataList<MetadataType> readMetadata(VirtualDirEx productDirectory, String metadataFileSuffix, Class<MetadataType> classType)
+                                                throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+
+        String[] existingRelativeFilePaths = productDirectory.listAllFiles();
+        MetadataList<MetadataType> metadataList = new MetadataList<>();
+        for (String relativeFilePath : existingRelativeFilePaths) {
+            if (org.apache.commons.lang.StringUtils.endsWithIgnoreCase(relativeFilePath, metadataFileSuffix)) {
+                MetadataType metaDataItem;
+                try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(relativeFilePath)) {
+                    metaDataItem = (MetadataType) XmlMetadataParserFactory.getParser(classType).parse(filePathInputStream);
+                    Path filePath = filePathInputStream.getPath();
+                    metaDataItem.setPath(filePath);
+                    metaDataItem.setFileName(filePath.getFileName().toString());
                 }
-            } catch (IOException e) {
-                logger.warning(e.getMessage());
+                String existingImageRelativePath = null;
+                String[] rasterFileNames = metaDataItem.getRasterFileNames();
+                if (rasterFileNames != null && rasterFileNames.length > 0) {
+                    // find the image file using the raster file names
+                    for (int i=0; i<rasterFileNames.length && existingImageRelativePath == null; i++) {
+                        for (int k=0; k<existingRelativeFilePaths.length && existingImageRelativePath == null; k++) {
+                            existingImageRelativePath = findImageRelativePath(rasterFileNames[i], existingRelativeFilePaths);
+                        }
+                    }
+                }
+                if (existingImageRelativePath == null) {
+                    // find the image file using the metadata file name
+                    existingImageRelativePath = findImageRelativePath(relativeFilePath, existingRelativeFilePaths);
+                }
+                if (existingImageRelativePath == null) {
+                    throw new IllegalStateException("There is no image file for metadata file '" + relativeFilePath + "'.");
+                }
+                metadataList.addMetadata(metaDataItem, existingImageRelativePath);
             }
         }
-        return rasterFileNames;
+        return metadataList;
     }
 
-    public static <MetadataType extends XmlMetadata> Dimension computeMaximumProductSize(List<MetadataType> metadata) {
-        MetadataType item = metadata.get(0);
-        int width = item.getRasterWidth();
-        int height = item.getRasterHeight();
-        for (int i=1; i<metadata.size(); i++) {
-            item = metadata.get(i);
-            if (width < item.getRasterWidth()) {
-                width = item.getRasterWidth();
-            }
-            if (height < item.getRasterHeight()) {
-                height = item.getRasterHeight();
-            }
+    private static String findImageRelativePath(String rasterFileNameToFind, String[] existingRelativeFilePaths) {
+        int lastPointIndex = rasterFileNameToFind.lastIndexOf('.');
+        if (lastPointIndex <= 0) {
+            throw new IllegalStateException("The raster file name to find '" + rasterFileNameToFind+"' has no extension.");
         }
-        if (width <= 0) {
-            throw new IllegalStateException("The product width " + width + " is invalid.");
-        }
-        if (height <= 0) {
-            throw new IllegalStateException("The product height " + height + " is invalid.");
-        }
-        return new Dimension(width, height);
-    }
-
-    protected static <MetadataType extends XmlMetadata> List<MetadataType> readMetadata(VirtualDirEx productDirectory, String[] metadataFiles, Class<MetadataType> classType)
-                                                                                        throws IOException, InstantiationException, ParserConfigurationException, SAXException {
-
-        List<MetadataType> metadata = new ArrayList<>(metadataFiles.length);
-        for (String file : metadataFiles) {
-            try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(file)) {
-                MetadataType metaDataItem = (MetadataType) XmlMetadataParserFactory.getParser(classType).parse(filePathInputStream);
-                Path filePath = filePathInputStream.getPath();
-                metaDataItem.setPath(filePath);
-                metaDataItem.setFileName(filePath.getFileName().toString());
-                metadata.add(metaDataItem);
+        String rasterFileNameWithoutExtension = rasterFileNameToFind.substring(0, lastPointIndex);
+        String existingImageRelativePath = null;
+        for (int k=0; k<existingRelativeFilePaths.length && existingImageRelativePath == null; k++) {
+            String existingRelativeFilePath = existingRelativeFilePaths[k];
+            if (StringUtils.endsWithIgnoreCase(existingRelativeFilePath, ".tif") || StringUtils.endsWithIgnoreCase(existingRelativeFilePath, ".tiff")) {
+                for (int index=rasterFileNameWithoutExtension.length()-1; index>=0 && existingImageRelativePath == null; index--) {
+                    if (existingRelativeFilePath.regionMatches(true, 0, rasterFileNameWithoutExtension, 0, index)) {
+                        existingImageRelativePath = existingRelativeFilePath;
+                    }
+                }
             }
         }
-        if (metadata.size() == 0) {
-            throw new IllegalStateException("No metadata files.");
-        }
-        return metadata;
-    }
-
-    protected static<MetadataType extends XmlMetadata> MetadataType findFirstMetadataItem(List<MetadataType> metadataList, String metadataProfilePrefix) {
-        for (int i=0; i<metadataList.size(); i++) {
-            MetadataType rapidEyeMetadata = metadataList.get(i);
-            String metadataProfile = rapidEyeMetadata.getMetadataProfile();
-            if (metadataProfile != null && metadataProfile.startsWith(metadataProfilePrefix)) {
-                return rapidEyeMetadata;
-            }
-        }
-        throw new IllegalArgumentException("The metadata list is invalid.");
+        return existingImageRelativePath;
     }
 }
