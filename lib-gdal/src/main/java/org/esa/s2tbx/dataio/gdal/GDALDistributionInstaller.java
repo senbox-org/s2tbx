@@ -12,7 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * GDAL Distribution Installer class for installing GDAL on SNAP (internal distribution or JNI drivers).
+ *
  * @author Jean Coravu
+ * @author Adrian Drăghici
  */
 class GDALDistributionInstaller {
     private static final Logger logger = Logger.getLogger(GDALDistributionInstaller.class.getName());
@@ -21,11 +24,12 @@ class GDALDistributionInstaller {
     }
 
     /**
-     * Install the GDAL library if missing.
+     * Installs the internal GDAL library distribution if missing from SNAP and not installed on OS.
      *
+     * @param gdalVersion the GDAL version to be installed
      * @throws IOException When IO error occurs
      */
-    private static Path installDistribution(GDALVersion gdalVersion) throws IOException {
+    private static void installDistribution(GDALVersion gdalVersion) throws IOException {
         // install the GDAL library from the distribution
         OSCategory osCategory = gdalVersion.getOsCategory();
         if (osCategory.getArchitecture() == null) {
@@ -68,15 +72,15 @@ class GDALDistributionInstaller {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "The GDAL library has been successfully installed.");
         }
-        return gdalDistributionRootFolderPath;
     }
 
     /**
-     * Install the GDAL JNI drivers if missing.
+     * Installs the GDAL JNI drivers if missing from SNAP and GDAL distribution installed on OS.
      *
+     * @param gdalVersion the GDAL version to which JNI drivers be installed
      * @throws IOException When IO error occurs
      */
-    private static Path installJNI(GDALVersion gdalVersion) throws IOException {
+    private static void installJNI(GDALVersion gdalVersion) throws IOException {
         // install the GDAL JNI drivers from the distribution
         OSCategory osCategory = gdalVersion.getOsCategory();
         if (osCategory.getArchitecture() == null) {
@@ -109,9 +113,16 @@ class GDALDistributionInstaller {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "The GDAL library has been successfully installed.");
         }
-        return gdalDistributionRootFolderPath;
     }
 
+    /**
+     * Processes the UNIX OS specific post-install steps.
+     * - adds the absolute path of the internal GDAL distribution installation location to the 'java.library.path'
+     * - updates the PATH environment variable with the absolute path of the internal GDAL distribution installation location, when needed
+     * - adds GDAL_DATA, GDAL_PLUGINS and PROJ_LIB environment variables
+     *
+     * @param gdalDistributionRootFolderPath the absolute path to the internal GDAL distribution installation location
+     */
     private static void processInstalledLinuxDistribution(Path gdalDistributionRootFolderPath) {
         Path libFolderPath = gdalDistributionRootFolderPath.resolve("lib");
 
@@ -149,6 +160,15 @@ class GDALDistributionInstaller {
         EnvironmentVariables.setEnvironmentVariable(projDataValue.toString());
     }
 
+    /**
+     * Processes the Windows OS specific post-install steps.
+     * - adds the absolute path of the internal GDAL distribution installation location to the 'java.library.path'
+     * - updates the PATH environment variable with the absolute path of the internal GDAL distribution installation location, when needed
+     * - adds GDAL_DATA, GDAL_PLUGINS and PROJ_LIB environment variables
+     *
+     * @param gdalDistributionRootFolderPath the absolute path to the internal GDAL distribution installation location
+     * @throws IOException When IO error occurs
+     */
     private static void processInstalledWindowsDistribution(Path gdalDistributionRootFolderPath) throws IOException {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Register native lib paths on Windows for folder '" + gdalDistributionRootFolderPath.toString() + "'.");
@@ -199,6 +219,14 @@ class GDALDistributionInstaller {
         EnvironmentVariables.setEnvironmentVariable(projDataValue.toString());
     }
 
+    /**
+     * Checks whether or not an directory path exists on the environment variable value.
+     *
+     * @param folderPathToCheck the directory path to be checked
+     * @param pathEnvironment  the environment variable value
+     * @return {@code true} if directory path found on environment variable value
+     * @throws IOException When IO error occurs
+     */
     private static boolean findFolderInPathEnvironment(Path folderPathToCheck, String pathEnvironment) throws IOException {
         String fullFolderPath = folderPathToCheck.toFile().getCanonicalPath();
         boolean foundFolderInPath = false;
@@ -214,11 +242,17 @@ class GDALDistributionInstaller {
         return foundFolderInPath;
     }
 
-    static Path setupJNI(GDALVersion gdalVersion) throws IOException {
+    /**
+     * Setups the GDAL distribution for SNAP
+     *
+     * @param gdalVersion the GDAL version to be setup
+     * @throws IOException When IO error occurs
+     */
+    static void setupDistribution(GDALVersion gdalVersion) throws IOException {
         if (gdalVersion.isJni()) {
-            return installJNI(gdalVersion);
+            installJNI(gdalVersion);
         } else {
-            return installDistribution(gdalVersion);
+            installDistribution(gdalVersion);
         }
     }
 }

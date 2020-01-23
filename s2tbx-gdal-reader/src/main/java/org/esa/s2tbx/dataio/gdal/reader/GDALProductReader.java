@@ -46,19 +46,19 @@ public class GDALProductReader extends AbstractProductReader {
 
     static {
         bufferTypes = new HashMap<>();
-        bufferTypes.put(GDALConstConstants.GDT_Byte(),
+        bufferTypes.put(GDALConstConstants.gdtByte(),
                 new BufferTypeDescriptor(8, true, ProductData.TYPE_UINT8, DataBuffer.TYPE_BYTE));
-        bufferTypes.put(GDALConstConstants.GDT_Int16(),
+        bufferTypes.put(GDALConstConstants.gdtInt16(),
                 new BufferTypeDescriptor(16, true, ProductData.TYPE_INT16, DataBuffer.TYPE_SHORT));
-        bufferTypes.put(GDALConstConstants.GDT_UInt16(),
+        bufferTypes.put(GDALConstConstants.gdtUint16(),
                 new BufferTypeDescriptor(16, false, ProductData.TYPE_UINT16, DataBuffer.TYPE_USHORT));
-        bufferTypes.put(GDALConstConstants.GDT_Int32(),
+        bufferTypes.put(GDALConstConstants.gdtInt32(),
                 new BufferTypeDescriptor(32, true, ProductData.TYPE_INT32, DataBuffer.TYPE_INT));
-        bufferTypes.put(GDALConstConstants.GDT_UInt32(),
+        bufferTypes.put(GDALConstConstants.gdtUint32(),
                 new BufferTypeDescriptor(32, false, ProductData.TYPE_UINT32, DataBuffer.TYPE_INT));
-        bufferTypes.put(GDALConstConstants.GDT_Float32(),
+        bufferTypes.put(GDALConstConstants.gdtFloat32(),
                 new BufferTypeDescriptor(32, true, ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT));
-        bufferTypes.put(GDALConstConstants.GDT_Float64(),
+        bufferTypes.put(GDALConstConstants.gdtFloat64(),
                 new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
     }
 
@@ -147,7 +147,7 @@ public class GDALProductReader extends AbstractProductReader {
 
         Path localFile = this.virtualFile.getLocalFile();
 
-        Dataset gdalDataset = GDAL.open(localFile.toString(), GDALConst.GA_ReadOnly());
+        Dataset gdalDataset = GDAL.open(localFile.toString(), GDALConst.gaReadonly());
         if (gdalDataset == null) {
             // unknown file format
             throw new NullPointerException("Failed opening a dataset from the file '" + inputFile.toString() + "' to load the product.");
@@ -199,7 +199,7 @@ public class GDALProductReader extends AbstractProductReader {
                 }
                 if (levels == 1) {
                     logger.fine("Optimizing read by building image pyramids");
-                    if (!GDALConst.CE_Failure().equals(gdalDataset.buildOverviews("NEAREST", new int[]{2, 4, 8, 16}))) {
+                    if (!GDALConst.ceFailure().equals(gdalDataset.buildOverviews("NEAREST", new int[]{2, 4, 8, 16}))) {
                         gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
                     } else {
                         logger.fine("Multiple levels not supported");
@@ -279,11 +279,11 @@ public class GDALProductReader extends AbstractProductReader {
                 if (maskBand != null) {
                     String maskName = null;
                     final int maskFlags = gdalBand.getMaskFlags();
-                    if ((maskFlags & (GDALConstConstants.GMF_NODATA() | GDALConstConstants.GMF_PER_DATASET())) != 0) {
+                    if ((maskFlags & (GDALConstConstants.gmfNodata() | GDALConstConstants.gmfPerDataset())) != 0) {
                         maskName = "nodata_";
-                    } else if ((maskFlags & (GDALConstConstants.GMF_PER_DATASET() | GDALConstConstants.GMF_ALPHA())) != 0) {
+                    } else if ((maskFlags & (GDALConstConstants.gmfPerDataset() | GDALConstConstants.gmfAlpha())) != 0) {
                         maskName = "alpha_";
-                    } else if ((maskFlags & (GDALConstConstants.GMF_NODATA() | GDALConstConstants.GMF_PER_DATASET() | GDALConstConstants.GMF_ALPHA() | GDALConstConstants.GMF_ALL_VALID())) != 0) {
+                    } else if ((maskFlags & (GDALConstConstants.gmfNodata() | GDALConstConstants.gmfPerDataset() | GDALConstConstants.gmfAlpha() | GDALConstConstants.gmfAllValid())) != 0) {
                         maskName = "mask_";
                     }
                     if (maskName != null) {

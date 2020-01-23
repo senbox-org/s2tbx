@@ -149,7 +149,7 @@ public abstract class AbstractTestDriverProductWriter {
     }
 
     private static int getBandDataTypeToSave(GDALDriverInfo driverInfo) {
-        int gdalDataType = GDALConstConstants.GDT_Byte();
+        int gdalDataType = GDALConstConstants.gdtByte();
         String creationDataTypes = driverInfo.getCreationDataTypes();
         if (driverInfo.getCreationDataTypes() != null) {
             // get the first data type

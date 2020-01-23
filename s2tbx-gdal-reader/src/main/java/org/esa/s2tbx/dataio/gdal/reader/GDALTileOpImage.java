@@ -150,8 +150,8 @@ class GDALTileOpImage extends SingleBandedOpImage {
         if (this.imageReader == null) {
             this.imageReader = new ImageReader(this.imageFile, this.bandIndex, this.sourceX, this.sourceY, this.dataBufferType, getLevel());
         }
-        int fileTileWidth = imageReader.getBandWidth();
-        int fileTileHeight = imageReader.getBandHeight();
+        int fileTileWidth = this.imageReader.getBandWidth();
+        int fileTileHeight = this.imageReader.getBandHeight();
         Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
 
         int tileWidth = getTileWidth();
@@ -163,14 +163,14 @@ class GDALTileOpImage extends SingleBandedOpImage {
             try {
                 int imageWidth = intersection.width;
                 int imageHeight = intersection.height;
-                int xOffset = imageReader.getOffsetX() + intersection.x;
-                int yOffset = imageReader.getOffsetY() + intersection.y;
+                int xOffset = this.imageReader.getOffsetX() + intersection.x;
+                int yOffset = this.imageReader.getOffsetY() + intersection.y;
                 int nXOffset = xOffset + imageWidth;
                 int nYOffset = yOffset + imageHeight;
-                int xBlock = xOffset / imageReader.getBandBlockWidth();
-                int yBlock = yOffset / imageReader.getBandBlockHeight();
-                int nXBlock = nXOffset / imageReader.getBandBlockWidth() + (nXOffset % imageReader.getBandBlockWidth() > 0 ? 1 : 0);
-                int nYBlock = nYOffset / imageReader.getBandBlockHeight() + (nYOffset % imageReader.getBandBlockHeight() > 0 ? 1 : 0);
+                int xBlock = xOffset / this.imageReader.getBandBlockWidth();
+                int yBlock = yOffset / this.imageReader.getBandBlockHeight();
+                int nXBlock = nXOffset / this.imageReader.getBandBlockWidth() + (nXOffset % this.imageReader.getBandBlockWidth() > 0 ? 1 : 0);
+                int nYBlock = nYOffset / this.imageReader.getBandBlockHeight() + (nYOffset % this.imageReader.getBandBlockHeight() > 0 ? 1 : 0);
 
                 long startTime = System.currentTimeMillis();
 
@@ -180,7 +180,7 @@ class GDALTileOpImage extends SingleBandedOpImage {
                 for (int iXBlock = xBlock; iXBlock < nXBlock; iXBlock++) {
                     int y = dest.getMinY();
                     for (int iYBlock = yBlock; iYBlock < nYBlock; iYBlock++) {
-                        RenderedImage readTileImage = imageReader.read(iXBlock, iYBlock);
+                        RenderedImage readTileImage = this.imageReader.read(iXBlock, iYBlock);
                         if (readTileImage != null) {
                             int[] bandList = new int[]{0}; // the band index is zero
                             Raster imageRaster = readTileImage.getData();
@@ -241,12 +241,12 @@ class GDALTileOpImage extends SingleBandedOpImage {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
 
-            this.gdalDataset = GDAL.open(inputFile.toString(), GDALConst.GA_ReadOnly());
+            this.gdalDataset = GDAL.open(inputFile.toString(), GDALConst.gaReadonly());
             // bands are not 0-base indexed, so we must add 1
-            if (gdalDataset == null) {
+            if (this.gdalDataset == null) {
                 throw new IllegalStateException("No data set received from GDAL.");
             }
-            Band rasterBand = gdalDataset.getRasterBand(bandIndex + 1);
+            Band rasterBand = this.gdalDataset.getRasterBand(bandIndex + 1);
             if (level > 0 && rasterBand.getOverviewCount() > 0) {
                 this.band = rasterBand.getOverview(this.level - 1);
             } else {
@@ -263,11 +263,11 @@ class GDALTileOpImage extends SingleBandedOpImage {
         }
 
         int getOffsetX() {
-            return offsetX;
+            return this.offsetX;
         }
 
         int getOffsetY() {
-            return offsetY;
+            return this.offsetY;
         }
 
         int getBandBlockWidth() {
@@ -293,7 +293,7 @@ class GDALTileOpImage extends SingleBandedOpImage {
 
             int returnVal = this.band.readBlockDirect(iXBlock, iYBlock, data);
 
-            if (returnVal == GDALConstConstants.CE_None()) {
+            if (returnVal == GDALConstConstants.ceNone()) {
                 DataBuffer imageDataBuffer;
                 if (this.dataBufferType == DataBuffer.TYPE_BYTE) {
                     byte[] bytes = new byte[pixels];
@@ -326,7 +326,7 @@ class GDALTileOpImage extends SingleBandedOpImage {
                 SampleModel sampleModel = new ComponentSampleModel(imageDataBuffer.getDataType(), imageWidth, imageHeight, 1, imageWidth, index);
                 WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, imageDataBuffer, null);
                 BufferedImage image;
-                if (this.band.getRasterColorInterpretation().equals(GDALConstConstants.GCI_PaletteIndex())) {
+                if (this.band.getRasterColorInterpretation().equals(GDALConstConstants.gciPaletteindex())) {
                     ColorModel cm = this.band.getRasterColorTable().getIndexColorModel(GDAL.getDataTypeSize(gdalBufferDataType));
                     image = new BufferedImage(cm, writableRaster, false, null);
                 } else if (imageDataBuffer instanceof DataBufferByte || imageDataBuffer instanceof DataBufferUShort) {

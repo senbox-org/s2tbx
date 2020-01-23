@@ -9,6 +9,11 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * GDAL Version enum for defining compatible GDAL versions with SNAP.
+ *
+ * @author Adrian Drăghici
+ */
 public enum GDALVersion {
 
     GDAL_300_FULL("3.0.0", "3-0-0", false),
@@ -36,7 +41,7 @@ public enum GDALVersion {
     private static final String GDAL_V21X = "2.1.X";
     private static final String GDAL_V20X = "2.0.X";
 
-    private static final Logger logger = Logger.getLogger(GDALInstaller.class.getName());
+    private static final Logger logger = Logger.getLogger(GDALVersion.class.getName());
 
     private static final GDALVersion internalVersion = retrieveInternalVersion();
     private static final GDALVersion installedVersion = retrieveInstalledVersion();
@@ -47,12 +52,24 @@ public enum GDALVersion {
     boolean jni;
     OSCategory osCategory;
 
+    /**
+     * Creates new instance for this enum.
+     *
+     * @param id   the id of version
+     * @param name the name of version
+     * @param jni  the type of version: {@code true} if version is JNI driver
+     */
     GDALVersion(String id, String name, boolean jni) {
         this.id = id;
         this.name = name;
         this.jni = jni;
     }
 
+    /**
+     * Gets the installed GDAL version when found or internal GDAL version otherwise.
+     *
+     * @return the installed GDAL version when found or internal GDAL version otherwise
+     */
     public static GDALVersion getGDALVersion() {
         if (GDALLoaderConfig.getInstance().useInstalledGDALLibrary() && installedVersion != null) {
             logger.log(Level.INFO, () -> "Installed GDAL " + installedVersion.getId() + " set to be used by SNAP.");
@@ -62,10 +79,20 @@ public enum GDALVersion {
         return internalVersion;
     }
 
+    /**
+     * Gets installed GDAL version.
+     *
+     * @return the installed GDAL version or {@code null} if not found
+     */
     public static GDALVersion getInstalledVersion() {
         return installedVersion;
     }
 
+    /**
+     * Retrieves the installed GDAl version on host OS by invoking 'gdalinfo --version' command and parsing the output.
+     *
+     * @return the installed GDAl version on host OS or {@code null} if not found
+     */
     private static GDALVersion retrieveInstalledVersion() {
         GDALVersion gdalVersion = null;
         try (java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(GDAL_INFO_CMD).getInputStream()).useDelimiter("\\A")) {
@@ -111,10 +138,20 @@ public enum GDALVersion {
         return gdalVersion;
     }
 
+    /**
+     * Gets internal GDAL version.
+     *
+     * @return the internal GDAL version
+     */
     public static GDALVersion getInternalVersion() {
         return internalVersion;
     }
 
+    /**
+     * Retrieves internal GDAL version from SNAP distribution packages.
+     *
+     * @return the internal GDAL version
+     */
     private static GDALVersion retrieveInternalVersion() {
         GDALVersion gdalVersion = GDAL_300_FULL;
         gdalVersion.setOsCategory(OSCategory.getOSCategory());
@@ -123,54 +160,109 @@ public enum GDALVersion {
         return gdalVersion;
     }
 
+    /**
+     * Gets the id of this version.
+     *
+     * @return the id of this version
+     */
     public String getId() {
         return this.id;
     }
 
+    /**
+     * Sets the id for this version.
+     *
+     * @param id the new id
+     */
     void setId(String id) {
         this.id = id;
     }
 
+    /**
+     * Gets the location of this version.
+     *
+     * @return the location of this version
+     */
     public String getLocation() {
-        return location;
+        return this.location;
     }
 
+    /**
+     * Sets the location of this version.
+     *
+     * @param location the new location
+     */
     private void setLocation(String location) {
         this.location = location;
     }
 
+    /**
+     * Gets the OS category of this version.
+     *
+     * @return the OS category of this version
+     */
     public OSCategory getOsCategory() {
-        return osCategory;
+        return this.osCategory;
     }
 
+    /**
+     * Sets the OS category of this version
+     *
+     * @param osCategory the new OS category
+     */
     private void setOsCategory(OSCategory osCategory) {
         this.osCategory = osCategory;
     }
 
+    /**
+     * Gets whether this version is JNI driver.
+     *
+     * @return {@code true} if this version is JNI driver
+     */
     public boolean isJni() {
-        return jni;
+        return this.jni;
     }
 
+    /**
+     * Gets the name of directory for this version.
+     *
+     * @return the name of directory for this version
+     */
     private String getDirName() {
-        if (jni) {
+        if (this.jni) {
             return DIR_NAME.replace(VERSION_NAME, this.name).replace(JNI_NAME, "-jni");
         } else {
             return DIR_NAME.replace(VERSION_NAME, this.name).replace(JNI_NAME, "");
         }
     }
 
+    /**
+     * Gets the name of ZIP archive for this version.
+     *
+     * @return the name of ZIP archive for this version
+     */
     private String getZipName() {
-        if (jni) {
+        if (this.jni) {
             return ZIP_NAME.replace(VERSION_NAME, this.name).replace(JNI_NAME, "-jni");
         } else {
             return ZIP_NAME.replace(VERSION_NAME, this.name).replace(JNI_NAME, "");
         }
     }
 
+    /**
+     * Gets the relative path of the directory based on OS category for this version.
+     *
+     * @return the relative path of the directory based on OS category for this version
+     */
     private String getDirectory() {
-        return osCategory.getOperatingSystemName() + "/" + osCategory.getArchitecture();
+        return this.osCategory.getOperatingSystemName() + "/" + this.osCategory.getArchitecture();
     }
 
+    /**
+     * Gets the ZIP archive URL from SNAP distribution packages for this version.
+     *
+     * @return the ZIP archive URL from SNAP distribution packages for this version
+     */
     public URL getZipFileURLFromSources() {
         String zipFileDirectoryFromSources = GDAL_NATIVE_LIBRARIES_SRC + "/" + getDirectory() + "/" + getZipName();
         try {
@@ -183,13 +275,23 @@ public enum GDALVersion {
         }
     }
 
+    /**
+     * Gets the ZIP archive root directory path for install this version.
+     *
+     * @return the ZIP archive root directory path for install this version
+     */
     public Path getZipFilePath() {
         Path zipFileDirectory = getNativeLibrariesRootFolderPath();
         return zipFileDirectory.resolve(getDirName()).resolve(getZipName());
     }
 
+    /**
+     * Gets the environment variables native library URL from SNAP distribution packages for this version.
+     *
+     * @return the environment variables native library URL from SNAP distribution packages for this version
+     */
     public URL getEnvironmentVariablesFilePathFromSources() {
-        String evFileNameFromSources = System.mapLibraryName(osCategory.getEnvironmentVariablesFileName());
+        String evFileNameFromSources = System.mapLibraryName(this.osCategory.getEnvironmentVariablesFileName());
         String evFileDirectoryFromSources = GDAL_NATIVE_LIBRARIES_SRC + "/" + getDirectory() + "/" + evFileNameFromSources;
         try {
             return getClass().getClassLoader().getResource(evFileDirectoryFromSources.replace(File.separator, "/"));
@@ -198,17 +300,32 @@ public enum GDALVersion {
         }
     }
 
+    /**
+     * Gets the environment variables native library root directory path for install this version.
+     *
+     * @return the environment variables native library root directory path for install this version
+     */
     public Path getEnvironmentVariablesFilePath() {
         Path zipFileDirectory = getNativeLibrariesRootFolderPath();
-        String evFileNameFromSources = System.mapLibraryName(osCategory.getEnvironmentVariablesFileName());
+        String evFileNameFromSources = System.mapLibraryName(this.osCategory.getEnvironmentVariablesFileName());
         return zipFileDirectory.resolve(evFileNameFromSources);
     }
 
+    /**
+     * Gets the root directory path for install this version.
+     *
+     * @return the root directory path for install this version
+     */
     public Path getNativeLibrariesRootFolderPath() {
         Path snapNativeLibrariesRootPath = SystemUtils.getAuxDataPath();
         return snapNativeLibrariesRootPath.resolve(GDAL_NATIVE_LIBRARIES_ROOT);
     }
 
+    /**
+     * Gets the path for JNI drivers of this version.
+     *
+     * @return the path for JNI drivers of this version
+     */
     public Path getJNILibraryFilePath() {
         return getNativeLibrariesRootFolderPath().resolve(getDirName()).resolve(GDAL_JNI_LIBRARY_FILE);
     }

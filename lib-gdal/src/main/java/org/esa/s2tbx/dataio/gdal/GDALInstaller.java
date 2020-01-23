@@ -43,17 +43,27 @@ import java.util.stream.Stream;
 import static org.apache.commons.lang.SystemUtils.IS_OS_UNIX;
 
 /**
- * Activator class for deploying GDAL binaries to the aux data dir
+ * GDAL installer class for deploying GDAL binaries to the aux data dir.
  *
  * @author Cosmin Cara
+ * @author Adrian Drăghici
  */
 class GDALInstaller {
+
+    private static final String CONFIG_NAME = "s2tbx";
+    private static final String PREFERENCE_KEY = "gdal.installer";
     private static final Logger logger = Logger.getLogger(GDALInstaller.class.getName());
 
     GDALInstaller() {
         //nothing to initialize
     }
 
+    /**
+     * Fixes the permissions issue with executables on UNIX OS.
+     *
+     * @param destPath the target directory/executable file path
+     * @throws IOException When IO error occurs
+     */
     static void fixUpPermissions(Path destPath) throws IOException {
         try (Stream<Path> files = Files.list(destPath)) {
             files.forEach(path -> {
@@ -70,6 +80,11 @@ class GDALInstaller {
         }
     }
 
+    /**
+     * Sets required permissions for executables on UNIX OS.
+     *
+     * @param executablePathName the target executable file path
+     */
     private static void setExecutablePermissions(Path executablePathName) {
         if (IS_OS_UNIX) {
             Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
@@ -91,6 +106,16 @@ class GDALInstaller {
         }
     }
 
+    /**
+     * Compares module version strings.
+     *
+     * @param currentModuleVersion the current module version string
+     * @param savedModuleVersion   the saved module version string
+     * @return comparision result index where:
+     * >0 when current module version greater than saved module version
+     * 0 when current module version same as saved module version
+     * <0 when current module version lower than saved module version
+     */
     private static int compareVersions(String currentModuleVersion, String savedModuleVersion) {
         int[] moduleVersionFragments = parseVersion(currentModuleVersion);
         int[] savedVersionFragments = parseVersion(savedModuleVersion);
@@ -106,6 +131,12 @@ class GDALInstaller {
         return 0;
     }
 
+    /**
+     * Parses the module version string
+     *
+     * @param version the module version string
+     * @return parsed module version array
+     */
     private static int[] parseVersion(String version) {
         StringTokenizer tok = new StringTokenizer(version, ".", true);
         int len = tok.countTokens();
@@ -135,23 +166,154 @@ class GDALInstaller {
         return digits;
     }
 
+    /**
+     * Fetches the saved module specification version from SNAP config.
+     *
+     * @return the saved module specification version
+     */
+    private static String fetchSavedModuleSpecificationVersion() {
+        Config config = Config.instance(CONFIG_NAME);
+        config.load();
+        Preferences preferences = config.preferences();
+        return preferences.get(PREFERENCE_KEY, null);
+    }
+
+    /**
+     * Sets the saved module specification version to SNAP config.
+     */
+    private static void setSavedModuleSpecificationVersion(String newModuleSpecificationVersion) {
+        Config config = Config.instance(CONFIG_NAME);
+        config.load();
+        Preferences preferences = config.preferences();
+        preferences.put(PREFERENCE_KEY, newModuleSpecificationVersion);
+        try {
+            preferences.flush();
+        } catch (BackingStoreException exception) {
+            // ignore exception
+        }
+    }
+
+    /**
+     * Registers the environment variables native library used for access OS environment variables.
+     *
+     * @param gdalVersion the GDAL version to which JNI environment variables native library be installed
+     */
+    private static void registerEnvironmentVariablesNativeLibrary(GDALVersion gdalVersion) {
+        Path evFilePath = gdalVersion.getEnvironmentVariablesFilePath();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Register the native paths for folder '" + evFilePath.getParent() + "'.");
+        }
+        NativeLibraryUtils.registerNativePaths(evFilePath.getParent());
+    }
+
+    /**
+     * Copies the environment variables native library used for access OS environment variables.
+     *
+     * @param gdalVersion the GDAL version to which JNI environment variables native library be installed
+     * @throws IOException When IO error occurs
+     */
+    private static void copyEnvironmentVariablesNativeLibrary(GDALVersion gdalVersion) throws IOException {
+        Path evFilePath = gdalVersion.getEnvironmentVariablesFilePath();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Copy the environment variables library file.");
+        }
+
+        URL libraryFileURLFromSources = gdalVersion.getEnvironmentVariablesFilePathFromSources();
+        if (libraryFileURLFromSources != null) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "The environment variables library file path on the local disk is '" + evFilePath.toString() + "' and the library file name from sources is '" + libraryFileURLFromSources.toString() + "'.");
+            }
+
+            FileHelper.copyFile(libraryFileURLFromSources, evFilePath);
+        } else {
+            throw new IllegalStateException("Unable to get environment variables libraryFileURLFromSources");
+        }
+    }
+
+    /**
+     * Copies and extracts the GDAL distribution archive on specified directory.
+     *
+     * @param gdalDistributionRootFolderPath the GDAL distribution root directory for install
+     * @param gdalVersion                    the GDAL version to which GDAL distribution be installed
+     * @throws IOException When IO error occurs
+     */
+    private static void copyDistributionArchiveAndInstall(Path gdalDistributionRootFolderPath, GDALVersion gdalVersion) throws IOException {
+        if (!Files.exists(gdalDistributionRootFolderPath)) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "create the distribution root folder '" + gdalDistributionRootFolderPath.toString() + "'.");
+            }
+            Files.createDirectories(gdalDistributionRootFolderPath);
+        }
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "The distribution root folder '" + gdalDistributionRootFolderPath.toString() + "' exists on the local disk.");
+        }
+        Path zipFilePath = gdalVersion.getZipFilePath();
+        try {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Copy the zip archive to folder '" + zipFilePath.toString() + "'.");
+            }
+            URL zipFileURLFromSources = gdalVersion.getZipFileURLFromSources();
+            if (zipFileURLFromSources == null) {
+                throw new ExceptionInInitializerError("No GDAL distribution drivers provided for this OS.");
+            }
+            FileHelper.copyFile(zipFileURLFromSources, zipFilePath);
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Decompress the zip archive to folder '" + gdalDistributionRootFolderPath.toString() + "'.");
+            }
+            FileHelper.unzip(zipFilePath, gdalDistributionRootFolderPath, true);
+        } finally {
+            try {
+                Files.deleteIfExists(zipFilePath);
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "GDAL configuration error: failed to delete the zip archive after decompression.", e);
+            }
+        }
+    }
+
+    /**
+     * Fetches the current module specification version from JAR /META-INF/MANIFEST.MF file.
+     *
+     * @return the current module specification version
+     */
+    private String fetchCurrentModuleSpecificationVersion() throws IOException {
+        Class<?> clazz = getClass();
+        String className = clazz.getSimpleName() + ".class";
+        String classPath = clazz.getResource(className).toString();
+        String manifestPath;
+        if (classPath.startsWith("jar")) {
+            manifestPath = classPath.substring(0, classPath.lastIndexOf('!') + 1) + "/META-INF/MANIFEST.MF";
+        } else {
+            // class not from jar archive
+            String relativePath = clazz.getName().replace('.', File.separatorChar) + ".class";
+            String classFolder = classPath.substring(0, classPath.length() - relativePath.length() - 1);
+            manifestPath = classFolder + "/META-INF/MANIFEST.MF";
+        }
+        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+        Attributes attributes = manifest.getMainAttributes();
+        return attributes.getValue("OpenIDE-Module-Specification-Version");
+    }
+
+    /**
+     * Copies the GDAL distribution/JNI drivers files from distribution package to the target install directory.
+     *
+     * @param gdalNativeLibrariesFolderPath the target install root directory
+     * @param gdalVersion                   the GDAL version for which files will be installed
+     * @return the distribution install root directory
+     * @throws IOException When IO error occurs
+     */
     final Path copyDistribution(Path gdalNativeLibrariesFolderPath, GDALVersion gdalVersion) throws IOException {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Copy the GDAL distribution to folder '" + gdalNativeLibrariesFolderPath.toString() + "'.");
         }
-
-        Config config = Config.instance("s2tbx");
-        config.load();
-        Preferences preferences = config.preferences();
-        String preferencesKey = "gdal.installer";
-        String moduleVersion = getModuleSpecificationVersion();
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Check the GDAL distribution folder from the local disk.");
-        }
+        String moduleVersion = fetchCurrentModuleSpecificationVersion();
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "The module version is '" + moduleVersion + "'.");
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Check the GDAL distribution folder from the local disk.");
         }
 
         boolean canCopyGDALDistribution = true;
@@ -161,131 +323,35 @@ class GDALInstaller {
 
         if (Files.exists(gdalNativeLibrariesFolderPath)) {
             // the the GDAL distribution folder already exists on the local disk
-            String savedVersion = preferences.get(preferencesKey, null);
+            String savedVersion = fetchSavedModuleSpecificationVersion();
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "The saved GDAL distribution folder version is '" + savedVersion + "'.");
             }
 
-            if (!StringUtils.isNullOrEmpty(savedVersion) && compareVersions(savedVersion, moduleVersion) >= 0 && Files.exists(gdalDistributionRootFolderPath)) {
+            if (!StringUtils.isNullOrEmpty(savedVersion) && compareVersions(savedVersion, moduleVersion) >= 0 && Files.exists(gdalDistributionRootFolderPath) && Files.size(gdalDistributionRootFolderPath) > 1) {
                 canCopyGDALDistribution = false;
-            }
-
-            try (Stream<Path> pathsList = Files.list(gdalDistributionRootFolderPath)) {
-                if (pathsList.count() < 1) {
-                    canCopyGDALDistribution = true;
-                }
-            }catch(Exception ignored){
-                canCopyGDALDistribution = true;
-            }
-
-            if (gdalVersion.getZipFileURLFromSources() == null) {
-                throw new ExceptionInInitializerError("No JNI drivers provided for installed GDAL version on this OS. Please uninstall!");
-            }
-
-            if (canCopyGDALDistribution) {
-                // different module versions and delete the library saved on the local disk
-                boolean deleted = FileUtils.deleteTree(gdalNativeLibrariesFolderPath.toFile());
-                if (!deleted) {
-                    throw new IllegalArgumentException("Failed to delete the GDAL distribution folder '" + gdalNativeLibrariesFolderPath.toString() + "'.");
-                }
             }
         }
 
         if (canCopyGDALDistribution) {
+            // different module versions and delete the library saved on the local disk
+            boolean deleted = FileUtils.deleteTree(gdalNativeLibrariesFolderPath.toFile());
+            if (!deleted) {
+                throw new IllegalArgumentException("Failed to delete the GDAL distribution folder '" + gdalNativeLibrariesFolderPath.toString() + "'.");
+            }
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "create the folder '" + gdalNativeLibrariesFolderPath.toString() + "' to copy the GDAL distribution.");
             }
-
             Files.createDirectories(gdalNativeLibrariesFolderPath);
+            copyEnvironmentVariablesNativeLibrary(gdalVersion);
+            copyDistributionArchiveAndInstall(gdalDistributionRootFolderPath, gdalVersion);
+            fixUpPermissions(gdalNativeLibrariesFolderPath);
+            setSavedModuleSpecificationVersion(moduleVersion);
         }
 
-        fixUpPermissions(gdalNativeLibrariesFolderPath);
-
-        if (Files.exists(gdalDistributionRootFolderPath)) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "The distribution root folder '" + gdalDistributionRootFolderPath.toString() + "' exists on the local disk.");
-            }
-        } else {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "create the distribution root folder '" + gdalDistributionRootFolderPath.toString() + "'.");
-            }
-
-            Files.createDirectories(gdalDistributionRootFolderPath);
-            try {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "Copy the zip archive to folder '" + zipFilePath.toString() + "'.");
-                }
-                URL zipFileURLFromSources = gdalVersion.getZipFileURLFromSources();
-                if (zipFileURLFromSources != null) {
-                    FileHelper.copyFile(zipFileURLFromSources, zipFilePath);
-
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, "Decompress the zip archive to folder '" + gdalDistributionRootFolderPath.toString() + "'.");
-                    }
-                    FileHelper.unzip(zipFilePath, gdalDistributionRootFolderPath, true);
-                } else {
-                    throw new ExceptionInInitializerError("No GDAL distribution drivers provided for this OS.");
-                }
-            } finally {
-                try {
-                    Files.deleteIfExists(zipFilePath);
-                } catch (IOException e) {
-                    logger.log(Level.SEVERE, "GDAL configuration error: failed to delete the zip archive after decompression.", e);
-                }
-            }
-        }
-        Path libraryFilePath = gdalVersion.getEnvironmentVariablesFilePath();
-        if (canCopyGDALDistribution) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Copy the environment variables library file.");
-            }
-
-            URL libraryFileURLFromSources = gdalVersion.getEnvironmentVariablesFilePathFromSources();
-            if (libraryFileURLFromSources != null) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "The environment variables library file path on the local disk is '" + libraryFilePath.toString() + "' and the library file name from sources is '" + libraryFileURLFromSources.toString() + "'.");
-                }
-
-                FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
-            } else {
-                throw new IllegalStateException("Unable to get environment variables libraryFileURLFromSources");
-            }
-        }
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Register the native paths for folder '" + libraryFilePath.getParent() + "'.");
-        }
-        NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
-
-        if (canCopyGDALDistribution) {
-            preferences.put(preferencesKey, moduleVersion);
-            try {
-                preferences.flush();
-            } catch (BackingStoreException exception) {
-                // ignore exception
-            }
-        }
-
+        registerEnvironmentVariablesNativeLibrary(gdalVersion);
         return gdalDistributionRootFolderPath;
     }
 
-    private String getModuleSpecificationVersion() throws IOException {
-        String manifestFilePath = "/META-INF/MANIFEST.MF";
-        Class<?> clazz = getClass();
-        String className = clazz.getSimpleName() + ".class";
-        String classPath = clazz.getResource(className).toString();
-        String manifestPath;
-        if (classPath.startsWith("jar")) {
-            manifestPath = classPath.substring(0, classPath.lastIndexOf('!') + 1) + manifestFilePath;
-        } else {
-            // class not from jar archive
-            String relativePath = clazz.getName().replace('.', File.separatorChar) + ".class";
-            String classFolder = classPath.substring(0, classPath.length() - relativePath.length() - 1);
-            manifestPath = classFolder + manifestFilePath;
-        }
-        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-        Attributes attributes = manifest.getMainAttributes();
-        return attributes.getValue("OpenIDE-Module-Specification-Version");
-    }
 }

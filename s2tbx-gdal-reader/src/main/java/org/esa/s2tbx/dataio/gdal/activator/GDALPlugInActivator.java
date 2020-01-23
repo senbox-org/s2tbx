@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Activator class to installDistribution the GDAL library and add the GDAL writer plugin.
+ * GDAL Plugin Activator class to install the GDAL library and add the GDAL writer plugin.
  *
  * @author Jean Coravu
  */
@@ -19,16 +19,22 @@ public class GDALPlugInActivator implements Activator {
         //nothing to init
     }
 
+    /**
+     * Starts the plugin activator
+     */
     @Override
     public void start() {
         try {
-            Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
-            GDALInstallInfo.INSTANCE.setLocations(gdalDistributionRootFolderPath);
+            Path gdalDistributionBinFolderPath = GDALLoader.getInstance().initGDAL();
+            GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
 
+    /**
+     * Stops the plugin activator
+     */
     @Override
     public void stop() {
         //nothing to do

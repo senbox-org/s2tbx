@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.gdal.activator;
 import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 
 /**
- * Simple class containing information about a GDAL driver.
+ * GDAL Driver Info class containing information about a GDAL driver.
  *
  * @author Jean Coravu
  */
@@ -14,6 +14,8 @@ public class GDALDriverInfo {
     private final String creationDataTypes;
 
     /**
+     * Creates new instance for this class.
+     *
      * @param extensionName     The driver extension name
      * @param driverName        The driver name
      * @param driverDisplayName The driver display name
@@ -26,27 +28,47 @@ public class GDALDriverInfo {
         this.creationDataTypes = creationDataTypes;
     }
 
+    /**
+     * Gets the driver display name
+     *
+     * @return the driver display name
+     */
     public String getDriverDisplayName() {
-        return driverDisplayName;
-    }
-
-    public String getExtensionName() {
-        return extensionName;
-    }
-
-    public String getDriverName() {
-        return driverName;
-    }
-
-    public String getCreationDataTypes() {
-        return creationDataTypes;
+        return this.driverDisplayName;
     }
 
     /**
-     * Check if the available creation data types of the driver contains the GDAL data type.
+     * Gets the driver extension name
      *
-     * @param gdalDataType The GDAl data type to check
-     * @return true if the driver can export the product containing the specified data type; false otherwise
+     * @return the driver extension name
+     */
+    public String getExtensionName() {
+        return this.extensionName;
+    }
+
+    /**
+     * Gets the driver name
+     *
+     * @return the driver name
+     */
+    public String getDriverName() {
+        return this.driverName;
+    }
+
+    /**
+     * Gets the data types used to create a band
+     *
+     * @return the data types used to create a band
+     */
+    public String getCreationDataTypes() {
+        return this.creationDataTypes;
+    }
+
+    /**
+     * Checks whether the available creation data types of the driver contains the GDAL data type.
+     *
+     * @param gdalDataType the GDAl data type to check
+     * @return {@code true} if the driver can export the product containing the specified data type; {@code false} otherwise
      */
     public boolean canExportProduct(int gdalDataType) {
         boolean allowedDataType = true;
@@ -57,6 +79,11 @@ public class GDALDriverInfo {
         return allowedDataType;
     }
 
+    /**
+     * Gets the writer plugin format name
+     *
+     * @return the writer plugin format name
+     */
     public final String getWriterPluginFormatName() {
         return "GDAL-" + this.driverName + "-WRITER";
     }

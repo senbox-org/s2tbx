@@ -8,7 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * A panel for GDAL native library loader.
+ * GDAL Options Panel for GDAL native library loader.
  * Used for provide a UI to the strategy with loading GDAL native library.
  *
  * @author Adrian Draghici
@@ -18,6 +18,11 @@ class GDALOptionsPanel extends JPanel {
     private JRadioButton useInternalGDALLibrary;
     private JRadioButton useInstalledGDALLibrary;
 
+    /**
+     * Creates new instance for this class
+     *
+     * @param controller the GDAL Options Controller instance
+     */
     GDALOptionsPanel(final GDALOptionsPanelController controller) {
         initComponents();
 
@@ -25,6 +30,9 @@ class GDALOptionsPanel extends JPanel {
         useInstalledGDALLibrary.addItemListener(e -> controller.changed());
     }
 
+    /**
+     * Initializes the UI components
+     */
     private void initComponents() {
         useInternalGDALLibrary = new JRadioButton();
         useInstalledGDALLibrary = new JRadioButton();
@@ -93,6 +101,9 @@ class GDALOptionsPanel extends JPanel {
         );
     }
 
+    /**
+     * Loads the configuration from GDAL Loader Config on UI
+     */
     void load() {
         if (GDALLoaderConfig.getInstance().useInstalledGDALLibrary()) {
             useInstalledGDALLibrary.setSelected(true);
@@ -101,12 +112,19 @@ class GDALOptionsPanel extends JPanel {
         }
     }
 
+    /**
+     * Saves the configuration on GDAL Loader Config from UI
+     */
     void store() {
         GDALLoaderConfig.getInstance().setUseInstalledGDALLibrary(useInstalledGDALLibrary.isSelected());
     }
 
+    /**
+     * Checks whether or not form is consistent and complete
+     *
+     * @return {@code true} if form is consistent and complete
+     */
     boolean valid() {
-        // Check whether form is consistent and complete
         return true;
     }
 }

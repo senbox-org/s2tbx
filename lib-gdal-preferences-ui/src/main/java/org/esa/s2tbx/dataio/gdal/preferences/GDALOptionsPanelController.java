@@ -9,8 +9,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
- * A controller for GDAL native library loader.
- * Used for provide a UI to the strategy with loading GDAL native library.
+ * GDAL Options Panel Controller for GDAL native library loader.
+ * Used for provide an controller for UI to the strategy with loading GDAL native library.
  *
  * @author Adrian Draghici
  */
@@ -27,13 +27,7 @@ public class GDALOptionsPanelController extends OptionsPanelController {
     private boolean changed;
 
     /**
-     * Component should load its data here. You should not do any
-     * time-consuming operations inside the constructor, because it
-     * blocks initialization of OptionsDialog. Initialization
-     * should be implemented in update method.
-     * This method is called after {@link #getComponent} method.
-     * Update method can be called more than one time for the same instance
-     * of JComponent obtained from {@link #getComponent} call.
+     * Updates the UI.
      */
     @Override
     public void update() {
@@ -61,11 +55,9 @@ public class GDALOptionsPanelController extends OptionsPanelController {
     }
 
     /**
-     * Should return <code>true</code> if some option value in this
-     * category is valid.
+     * Should return <code>true</code> if some option value in this category is valid.
      *
-     * @return <code>true</code> if some option value in this
-     * category is valid
+     * @return <code>true</code> if some option value in this category is valid
      */
     @Override
     public boolean isValid() {
@@ -73,11 +65,9 @@ public class GDALOptionsPanelController extends OptionsPanelController {
     }
 
     /**
-     * Should return <code>true</code> if some option value in this
-     * category has been changed.
+     * Should return <code>true</code> if some option value in this category has been changed.
      *
-     * @return <code>true</code> if some option value in this
-     * category has been changed
+     * @return <code>true</code> if some option value in this category has been changed
      */
     @Override
     public boolean isChanged() {
@@ -88,10 +78,8 @@ public class GDALOptionsPanelController extends OptionsPanelController {
      * Returns visual component representing this options category.
      * This method is called before {@link #update} method.
      *
-     * @param masterLookup master lookup composed from lookups provided by
-     *                     individual OptionsPanelControllers
-     *                     - {@link OptionsPanelController#getLookup}
-     * @return visual component representing this options category
+     * @param masterLookup the master lookup composed from lookups provided by individual OptionsPanelControllers - {@link OptionsPanelController#getLookup}
+     * @return the visual component representing this options category
      */
     @Override
     public JComponent getComponent(Lookup masterLookup) {
@@ -101,7 +89,7 @@ public class GDALOptionsPanelController extends OptionsPanelController {
     /**
      * Get current help context asociated with this panel.
      *
-     * @return current help context
+     * @return the current help context
      */
     @Override
     public HelpCtx getHelpCtx() {
@@ -111,7 +99,7 @@ public class GDALOptionsPanelController extends OptionsPanelController {
     /**
      * Registers new listener.
      *
-     * @param l a new listener
+     * @param l the new listener
      */
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -121,7 +109,7 @@ public class GDALOptionsPanelController extends OptionsPanelController {
     /**
      * Unregisters given listener.
      *
-     * @param l a listener to be removed
+     * @param l the listener to be removed
      */
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
