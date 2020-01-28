@@ -123,7 +123,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 }
             }
 
-            List<Band> angleBands = readAngleBands(productBounds, defaultProductSize, metadata);
+            List<Band> angleBands = readAngleBands(productBounds, defaultProductSize, metadata, subsetDef);
             for (Band band : angleBands) {
                 product.addBand(band);
             }
@@ -507,7 +507,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 product.addBand(geoTiffBand);
             }
             String maskName = computeAOTMaskName(geoTiffBandResult.getGeoPosition()); // "AOT_Interpolation_Mask_" + geoTiffBandResult.getGeoPosition().id;
-            if (isMaskAccepted(maskName)) {
+            if (isMaskAccepted(maskName) && !product.getMaskGroup().contains(maskName)) {
                 Mask mask = buildMaskFromBand(geoTiffBand, maskName, "Interpolated AOT pixels mask", String.format("bit_set(%s,%d)", geoTiffBand.getName(), bitNumber), Color.BLUE);
                 product.addMask(mask);
             }
@@ -531,7 +531,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 product.addBand(geoTiffBand);
             }
             String maskName = computeWVCMaskName(geoTiffBandResult.getGeoPosition()); // "WVC_Interpolation_Mask_" + geoTiffBandResult.getGeoPosition().id;
-            if (isMaskAccepted(maskName)) {
+            if (isMaskAccepted(maskName) && !product.getMaskGroup().contains(maskName)) {
                 Mask mask = buildMaskFromBand(geoTiffBand, maskName, "Interpolated WVC pixels mask", String.format("bit_set(%s,0)", geoTiffBand.getName()), Color.BLUE);
                 product.addMask(mask);
             }
@@ -554,7 +554,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             product.addBand(geoTiffBand);
 
             String maskName = computeEdgeMaskName(geoTiffBandResult.getGeoPosition()); // "edge_mask_" + geoTiffBandResult.getGeoPosition().id;
-            if (isMaskAccepted(maskName)) {
+            if (isMaskAccepted(maskName) && !product.getMaskGroup().contains(maskName)) {
                 Mask mask = buildMaskFromBand(geoTiffBand, maskName, "Edge mask", String.format("bit_set(%s,0)", geoTiffBand.getName()), Color.GREEN);
                 product.addMask(mask);
             }
@@ -579,7 +579,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             for (int bitCount=0; bitCount<bands.size(); bitCount++) {
                 String bandId = bands.get(bitCount);
                 String maskName = computeSaturationMaskName(bandId);
-                if (isMaskAccepted(maskName)) {
+                if (isMaskAccepted(maskName) && !product.getMaskGroup().contains(maskName)) {
                     Mask mask = buildMaskFromBand(geoTiffBand, maskName, String.format("Saturation mask of band %s", bandId), String.format("bit_set(%s,%d)", geoTiffBand.getName(), bitCount), Color.RED);
                     product.addMask(mask);
                 }
@@ -604,7 +604,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             String[] orderedBandNames = metadata.getOrderedBandNames(geoTiffBandResult.getGeoPosition().id);
             for (int i = 0; i < orderedBandNames.length; i++) {
                 String maskName = computeDetectorFootprintMaskName(tiffImageRelativeFilePath, orderedBandNames[i]);
-                if (isMaskAccepted(maskName)) {
+                if (isMaskAccepted(maskName) && !product.getMaskGroup().contains(maskName)) {
                     Mask mask = buildMaskFromBand(geoTiffBand, maskName, "Detector footprint", String.format("bit_set(%s,%d)", geoTiffBand.getName(), i), ColorIterator.next());
                     product.addMask(mask);
                 }
@@ -635,49 +635,49 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             MuscateMetadata.Geoposition geoposition = geoTiffBandResult.getGeoPosition();
 
             String maskName0 = computeCloudMaskAllName(geoposition);
-            if (isMaskAccepted(maskName0)) {
+            if (isMaskAccepted(maskName0) && !product.getMaskGroup().contains(maskName0)) {
                 Mask mask0 = buildMaskFromBand(geoTiffBand, computeCloudMaskAllName(geoposition), "Result of a 'logical OR' for all the cloud and shadow maks", String.format("bit_set(%s,0)", bandName), ColorIterator.next());
                 product.addMask(mask0);
             }
 
             String maskName1 = computeCloudMaskAllCloudName(geoposition);
-            if (isMaskAccepted(maskName1)) {
+            if (isMaskAccepted(maskName1) && !product.getMaskGroup().contains(maskName1)) {
                 Mask mask1 = buildMaskFromBand(geoTiffBand, maskName1, "Result of a 'logical OR' for all the cloud masks", String.format("bit_set(%s,1)", bandName), ColorIterator.next());
                 product.addMask(mask1);
             }
 
             String maskName2 = computeCloudMaskReflectanceName(geoposition);
-            if (isMaskAccepted(maskName2)) {
+            if (isMaskAccepted(maskName2) && !product.getMaskGroup().contains(maskName2)) {
                 Mask mask2 = buildMaskFromBand(geoTiffBand, maskName2, "Cloud mask identified by a reflectance threshold", String.format("bit_set(%s,2)", bandName), ColorIterator.next());
                 product.addMask(mask2);
             }
 
             String maskName3 = computeCloudMaskReflectanceVarianceName(geoposition);
-            if (isMaskAccepted(maskName3)) {
+            if (isMaskAccepted(maskName3) && !product.getMaskGroup().contains(maskName3)) {
                 Mask mask3 = buildMaskFromBand(geoTiffBand, maskName3, "Cloud mask identified by a threshold on reflectance variance", String.format("bit_set(%s,3)", bandName), ColorIterator.next());
                 product.addMask(mask3);
             }
 
             String maskName4 = computeCloudMaskExtensionName(geoposition);
-            if (isMaskAccepted(maskName4)) {
+            if (isMaskAccepted(maskName4) && !product.getMaskGroup().contains(maskName4)) {
                 Mask mask4 = buildMaskFromBand(geoTiffBand, maskName4, "Cloud mask identified by the extension of cloud masks", String.format("bit_set(%s,4)", bandName), ColorIterator.next());
                 product.addMask(mask4);
             }
 
             String maskName5 = computeCloudMaskInsideShadowName(geoposition);
-            if (isMaskAccepted(maskName5)) {
+            if (isMaskAccepted(maskName5) && !product.getMaskGroup().contains(maskName5)) {
                 Mask mask5 = buildMaskFromBand(geoTiffBand, maskName5, "Shadow mask of clouds inside the image", String.format("bit_set(%s,5)", bandName), ColorIterator.next());
                 product.addMask(mask5);
             }
 
             String maskName6 = computeCloudMaskOutsideShadowName(geoposition);
-            if (isMaskAccepted(maskName6)) {
+            if (isMaskAccepted(maskName6) && !product.getMaskGroup().contains(maskName6)) {
                 Mask mask6 = buildMaskFromBand(geoTiffBand, computeCloudMaskOutsideShadowName(geoposition), "Shadow mask of clouds outside the image", String.format("bit_set(%s,6)", bandName), ColorIterator.next());
                 product.addMask(mask6);
             }
 
             String maskName7 = computeCloudMaskCirrusName(geoposition);
-            if (isMaskAccepted(maskName7)) {
+            if (isMaskAccepted(maskName7) && !product.getMaskGroup().contains(maskName7)) {
                 Mask mask7 = buildMaskFromBand(geoTiffBand, computeCloudMaskCirrusName(geoposition), "Cloud mask identified with the cirrus spectral band", String.format("bit_set(%s,7)", bandName), ColorIterator.next());
                 product.addMask(mask7);
             }
@@ -701,7 +701,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
             for (MuscateConstants.GEOPHYSICAL_BIT geophysicalBit : MuscateConstants.GEOPHYSICAL_BIT.values()) {
                 String maskName = computeGeographicMaskName(geophysicalBit, geoTiffBandResult.getGeoPosition());
-                if (isMaskAccepted(maskName)) {
+                if (isMaskAccepted(maskName) && !product.getMaskGroup().contains(maskName)) {
                     Mask mask = buildGeophysicsMask(geophysicalBit, geoTiffBand, maskName);
                     product.addMask(mask);
                 }
@@ -725,7 +725,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 product.addBand(geoTiffBand);
             }
             String maskName = computeGeographicMaskName(geophysicalBit, geoTiffBandResult.getGeoPosition());
-            if (isMaskAccepted(maskName)) {
+            if (isMaskAccepted(maskName) && !product.getMaskGroup().contains(maskName)) {
                 Mask mask = buildGeophysicsMask(geophysicalBit, geoTiffBandResult.getBand(), maskName);
                 product.addMask(mask);
             }
@@ -750,7 +750,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             String[] orderedBandNames = metadata.getOrderedBandNames(geoposition.id);
             for (int i = 0; i < orderedBandNames.length; i++) {
                 String maskName = computeDefectivePixelMaskName(orderedBandNames[i]);
-                if (isMaskAccepted(maskName)) {
+                if (isMaskAccepted(maskName) && !product.getMaskGroup().contains(maskName)) {
                     Mask mask = buildMaskFromBand(geoTiffBand, maskName, "Defective pixel", String.format("bit_set(%s,%d)", geoTiffBand.getName(), i), ColorIterator.next());
                     product.addMask(mask);
                 }
@@ -888,47 +888,61 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         return String.format("defective_%s", orderedBandName);
     }
 
-    private static List<Band> readAngleBands(Rectangle productBounds, Dimension defaultProductSize, MuscateMetadata metadata) {
+    private static List<Band> readAngleBands(Rectangle productBounds, Dimension defaultProductSize, MuscateMetadata metadata, ProductSubsetDef subsetDef) {
         List<Band> angleBands = new ArrayList<>();
 
         MuscateMetadata.AnglesGrid sunAnglesGrid = metadata.getSunAnglesGrid();
-
+        Band band;
         // add Zenith
-        Band band = readAngleBand(productBounds, defaultProductSize, "sun_zenith", "Sun zenith angles", sunAnglesGrid.getSize(),
-                sunAnglesGrid.getZenith(), sunAnglesGrid.getResolution(), metadata);
-        angleBands.add(band);
+        if(subsetDef == null || subsetDef.isNodeAccepted("sun_zenith")) {
+            band = readAngleBand(productBounds, defaultProductSize, "sun_zenith", "Sun zenith angles", sunAnglesGrid.getSize(),
+                                      sunAnglesGrid.getZenith(), sunAnglesGrid.getResolution(), metadata);
+            angleBands.add(band);
+        }
 
         // add Azimuth
-        band = readAngleBand(productBounds, defaultProductSize, "sun_azimuth", "Sun azimuth angles", sunAnglesGrid.getSize(),
-                sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResolution(), metadata);
-        angleBands.add(band);
+        if(subsetDef == null || subsetDef.isNodeAccepted("sun_azimuth")) {
+            band = readAngleBand(productBounds, defaultProductSize, "sun_azimuth", "Sun azimuth angles", sunAnglesGrid.getSize(),
+                                 sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResolution(), metadata);
+            angleBands.add(band);
+        }
 
         // viewing angles
         for (String bandId : metadata.getBandNames()) {
             MuscateMetadata.AnglesGrid anglesGrid = metadata.getViewingAnglesGrid(bandId);
             // add Zenith
-            band = readAngleBand(productBounds, defaultProductSize, "view_zenith_" + anglesGrid.getBandId(), "Viewing zenith angles", anglesGrid.getSize(),
-                    anglesGrid.getZenith(), anglesGrid.getResolution(), metadata);
-            angleBands.add(band);
+            String bandNameZenith = "view_zenith_" + anglesGrid.getBandId();
+            if(subsetDef == null || subsetDef.isNodeAccepted(bandNameZenith)) {
+                band = readAngleBand(productBounds, defaultProductSize, bandNameZenith, "Viewing zenith angles", anglesGrid.getSize(),
+                                     anglesGrid.getZenith(), anglesGrid.getResolution(), metadata);
+                angleBands.add(band);
+            }
 
             // add Azimuth
-            band = readAngleBand(productBounds, defaultProductSize, "view_azimuth_" + anglesGrid.getBandId(), "Viewing azimuth angles", anglesGrid.getSize(),
-                    anglesGrid.getAzimuth(), anglesGrid.getResolution(), metadata);
-            angleBands.add(band);
+            String bandNameAzimuth = "view_azimuth_" + anglesGrid.getBandId();
+            if(subsetDef == null || subsetDef.isNodeAccepted(bandNameAzimuth)) {
+                band = readAngleBand(productBounds, defaultProductSize, bandNameAzimuth, "Viewing azimuth angles", anglesGrid.getSize(),
+                                     anglesGrid.getAzimuth(), anglesGrid.getResolution(), metadata);
+                angleBands.add(band);
+            }
         }
 
         // add mean angles
         MuscateMetadata.AnglesGrid meanViewingAnglesGrid = metadata.getMeanViewingAnglesGrid();
         if (meanViewingAnglesGrid != null) {
             // add Zenith
-            band = readAngleBand(productBounds, defaultProductSize, "view_zenith_mean", "Mean viewing zenith angles", meanViewingAnglesGrid.getSize(),
-                    meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResolution(), metadata);
-            angleBands.add(band);
+            if(subsetDef == null || subsetDef.isNodeAccepted("view_zenith_mean")) {
+                band = readAngleBand(productBounds, defaultProductSize, "view_zenith_mean", "Mean viewing zenith angles", meanViewingAnglesGrid.getSize(),
+                                     meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResolution(), metadata);
+                angleBands.add(band);
+            }
 
             // add Azimuth
-            band = readAngleBand(productBounds, defaultProductSize, "view_azimuth_mean", "Mean viewing azimuth angles", meanViewingAnglesGrid.getSize(),
-                    meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResolution(), metadata);
-            angleBands.add(band);
+            if(subsetDef == null || subsetDef.isNodeAccepted("view_azimuth_mean")) {
+                band = readAngleBand(productBounds, defaultProductSize, "view_azimuth_mean", "Mean viewing azimuth angles", meanViewingAnglesGrid.getSize(),
+                                     meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResolution(), metadata);
+                angleBands.add(band);
+            }
         }
 
         return angleBands;
@@ -978,7 +992,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         return band;
     }
 
-    private static int getDetectorFromFilename(String pathString) {
+    public static int getDetectorFromFilename(String pathString) {
         Pattern p = Pattern.compile(".*D[0-9]{2}\\.tif");
         Matcher m = p.matcher(pathString);
         if (!m.matches()) {
@@ -1055,7 +1069,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             @Override
             public String buildBandName(MuscateMetadata.Geoposition geoPosition, String tiffImageRelativeFilePath) {
                 String bandId = MuscateProductReader.getBandFromFileName(tiffImageRelativeFilePath);
-                return "Flat_Reflectance_" + bandId + geoPosition.id;
+                return "Flat_Reflectance_" + bandId;
             }
         };
     }
@@ -1065,7 +1079,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             @Override
             public String buildBandName(MuscateMetadata.Geoposition geoPosition, String tiffImageRelativeFilePath) {
                 String bandId = MuscateProductReader.getBandFromFileName(tiffImageRelativeFilePath);
-                return "Surface_Reflectance_" + bandId + geoPosition.id;
+                return "Surface_Reflectance_" + bandId;
             }
         };
     }
