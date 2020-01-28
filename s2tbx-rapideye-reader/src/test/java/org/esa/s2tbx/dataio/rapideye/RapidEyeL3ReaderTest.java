@@ -41,7 +41,7 @@ public class RapidEyeL3ReaderTest {
     private static final String PRODUCTS_FOLDER = "_rapideye" + File.separator;
 
     @Test
-    public void testReadProductNodes() throws IOException {
+    public void testReadProduct() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
         File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
