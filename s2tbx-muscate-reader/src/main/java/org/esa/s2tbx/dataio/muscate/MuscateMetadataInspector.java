@@ -36,12 +36,12 @@ public class MuscateMetadataInspector implements MetadataInspector {
             // add bands
             List<String> imageBandNames = computeImageBandNames(filePathsHelper, productDirectory, productMetadata);
             metadata.getBandList().addAll(imageBandNames);
+            addAngleBands(metadata,productMetadata);
 
             // add masks
             for (MuscateMask muscateMask : productMetadata.getMasks()) {
                 if (muscateMask != null && muscateMask.nature != null) {
-                    List<String> maskNames = computeMaskNames(productMetadata, filePathsHelper, productDirectory, muscateMask);
-                    metadata.getMaskList().addAll(maskNames);
+                    computeMaskNames(metadata, productMetadata, filePathsHelper, productDirectory, muscateMask);
                 }
             }
 
@@ -53,41 +53,32 @@ public class MuscateMetadataInspector implements MetadataInspector {
         }
     }
 
-    private static List<String> computeMaskNames(MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMask muscateMask)
+    private static void computeMaskNames(Metadata metadata, MuscateMetadata productMetadata, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMask muscateMask)
                                                  throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        List<String> maskNamesToReturn = new ArrayList<>();
-        float versionFloat = metadata.getVersion();
+        float versionFloat = productMetadata.getVersion();
         Set<String> addedFiles = new HashSet<>();
         if (muscateMask.nature.equals(MuscateMask.AOT_INTERPOLATION_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                String maskName = computeAOTMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                if (maskName != null) {
-                    maskNamesToReturn.add(maskName);
-                }
+                computeAOTMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
             }
         } else if (muscateMask.nature.equals(MuscateMask.DETAILED_CLOUD_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    List<String> cloudMaskNames = computeCloudMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                    maskNamesToReturn.addAll(cloudMaskNames);
+                    computeCloudMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.CLOUD_MASK)) {
             if (versionFloat < MuscateMask.CLOUD_MASK_VERSION) {
                 for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                     addedFiles.add(muscateMaskFile.path);
-                    List<String> cloudMaskNames = computeCloudMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                    maskNamesToReturn.addAll(cloudMaskNames);
+                    computeCloudMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
                 }
             } else {
                 for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                     addedFiles.add(muscateMaskFile.path);
-                    String maskName = computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata, MuscateConstants.GEOPHYSICAL_BIT.Cloud);
-                    if (maskName != null) {
-                        maskNamesToReturn.add(maskName);
-                    }
+                    computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, MuscateConstants.GEOPHYSICAL_BIT.Cloud, metadata);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.CLOUD_SHADOW_MASK)) {
@@ -95,231 +86,204 @@ public class MuscateMetadataInspector implements MetadataInspector {
                 // in some old products the Nature is Cloud_Shadow instead of Geophysics. Perhaps an error?
                 for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                     addedFiles.add(muscateMaskFile.path);
-                    List<String> cloudShadowMaskNames = computeGeophysicsMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                    maskNamesToReturn.addAll(cloudShadowMaskNames);
+                    computeGeophysicsMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
                 }
             } else {
                 for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                     addedFiles.add(muscateMaskFile.path);
-                    String maskName = computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata, MuscateConstants.GEOPHYSICAL_BIT.Cloud_Shadow);
-                    if (maskName != null) {
-                        maskNamesToReturn.add(maskName);
-                    }
+                    computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, MuscateConstants.GEOPHYSICAL_BIT.Cloud_Shadow, metadata);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.EDGE_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    String maskName = computeEdgeMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                    if (maskName != null) {
-                        maskNamesToReturn.add(maskName);
-                    }
+                    computeEdgeMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.SATURATION_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    List<String> saturationMaskNames = computeSaturationMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                    maskNamesToReturn.addAll(saturationMaskNames);
+                    computeSaturationMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.GEOPHYSICS_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    List<String> cloudShadowMaskNames = computeGeophysicsMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                    maskNamesToReturn.addAll(cloudShadowMaskNames);
+                    computeGeophysicsMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.DETECTOR_FOOTPRINT_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add( muscateMaskFile.path)) {
-                    List<String> detectorFootprintMaskNames = computeDetectorFootprintMaskNames( muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                    maskNamesToReturn.addAll(detectorFootprintMaskNames);
+                    computeDetectorFootprintMaskNames( muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.DEFECTIVE_PIXEL_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    List<String> defectivePixelMaskNames = computeDefectivePixelMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                    maskNamesToReturn.addAll(defectivePixelMaskNames);
+                    computeDefectivePixelMaskNames(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.HIDDEN_SURFACE_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                String maskName = computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata, MuscateConstants.GEOPHYSICAL_BIT.Hidden_Surface);
-                if (maskName != null) {
-                    maskNamesToReturn.add(maskName);
-                }
+                computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, MuscateConstants.GEOPHYSICAL_BIT.Hidden_Surface, metadata);
             }
         } else if (muscateMask.nature.equals(MuscateMask.SNOW_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                String maskName = computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata, MuscateConstants.GEOPHYSICAL_BIT.Snow);
-                if (maskName != null) {
-                    maskNamesToReturn.add(maskName);
-                }
+                computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, MuscateConstants.GEOPHYSICAL_BIT.Snow, metadata);
             }
         } else if (muscateMask.nature.equals(MuscateMask.SUN_TOO_LOW_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                String maskName = computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata, MuscateConstants.GEOPHYSICAL_BIT.Sun_Too_Low);
-                if (maskName != null) {
-                    maskNamesToReturn.add(maskName);
-                }
+                computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, MuscateConstants.GEOPHYSICAL_BIT.Sun_Too_Low, metadata);
             }
         } else if (muscateMask.nature.equals(MuscateMask.TANGENT_SUN_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                String maskName = computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata, MuscateConstants.GEOPHYSICAL_BIT.Tangent_Sun);
-                if (maskName != null) {
-                    maskNamesToReturn.add(maskName);
-                }
+                computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, MuscateConstants.GEOPHYSICAL_BIT.Tangent_Sun, metadata);
             }
         } else if (muscateMask.nature.equals(MuscateMask.TOPOGRAPHY_SHADOW_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                String maskName = computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata, MuscateConstants.GEOPHYSICAL_BIT.Topography_Shadow);
-                if (maskName != null) {
-                    maskNamesToReturn.add(maskName);
-                }
+                computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, MuscateConstants.GEOPHYSICAL_BIT.Topography_Shadow, metadata);
             }
         } else if (muscateMask.nature.equals(MuscateMask.WATER_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                String maskName = computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata, MuscateConstants.GEOPHYSICAL_BIT.Water);
-                if (maskName != null) {
-                    maskNamesToReturn.add(maskName);
-                }
+                computeGeophysicsMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, MuscateConstants.GEOPHYSICAL_BIT.Water, metadata);
             }
         } else if (muscateMask.nature.equals(MuscateMask.WVC_INTERPOLATION_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                String maskName = computeWVCMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, metadata);
-                if (maskName != null) {
-                    maskNamesToReturn.add(maskName);
-                }
+                computeWVCMaskName(muscateMaskFile.path, filePathsHelper, productDirectory, productMetadata, metadata);
             }
         }
-
-        return maskNamesToReturn;
     }
 
-    private static String computeAOTMaskName(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
+    private static void computeAOTMaskName(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata produMuscateMetadata, Metadata metadata)
             throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
+        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, produMuscateMetadata);
         if (geoposition != null) {
-            return MuscateProductReader.computeAOTMaskName(geoposition);
+            metadata.getMaskList().add(MuscateProductReader.computeAOTMaskName(geoposition));
+            String bandName = "Aux_IA_" + geoposition.id;
+            if(!metadata.getBandList().contains(bandName)){
+                metadata.getBandList().add(bandName);
+            }
         }
-        return null;
     }
 
-    private static String computeWVCMaskName(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
+    private static void computeWVCMaskName(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata productMetadata, Metadata metadata)
                                              throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
+        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, productMetadata);
         if (geoposition != null) {
-            return MuscateProductReader.computeWVCMaskName(geoposition);
+            metadata.getMaskList().add(MuscateProductReader.computeWVCMaskName(geoposition));
+            String bandName = "Aux_IA_" + geoposition.id;
+            if(!metadata.getBandList().contains(bandName)){
+                metadata.getBandList().add(bandName);
+            }
         }
-        return null;
     }
 
-    private static List<String> computeDefectivePixelMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
+    private static void computeDefectivePixelMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata productMetadata, Metadata metadata)
                                                                throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        List<String> maskNames = new ArrayList<>();
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
+        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, productMetadata);
         if (geoposition != null) {
-            String[] orderedBandNames = metadata.getOrderedBandNames(geoposition.id);
+            String[] orderedBandNames = productMetadata.getOrderedBandNames(geoposition.id);
             for (int i = 0; i < orderedBandNames.length; i++) {
-                maskNames.add(MuscateProductReader.computeDefectivePixelMaskName(orderedBandNames[i]));
+                metadata.getMaskList().add(MuscateProductReader.computeDefectivePixelMaskName(orderedBandNames[i]));
             }
+            String bandName = String.format("Aux_Mask_Defective_Pixel_%s", geoposition.id);
+            metadata.getBandList().add(bandName);
         }
-        return maskNames;
     }
 
-    private static List<String> computeDetectorFootprintMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
+    private static void computeDetectorFootprintMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata productMetadata, Metadata metadata)
                                                                   throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        List<String> maskNames = new ArrayList<>();
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
+        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, productMetadata);
         if (geoposition != null) {
-            String[] orderedBandNames = metadata.getOrderedBandNames(geoposition.id);
+            String[] orderedBandNames = productMetadata.getOrderedBandNames(geoposition.id);
             for (int i = 0; i < orderedBandNames.length; i++) {
                 String maskName = MuscateProductReader.computeDetectorFootprintMaskName(tiffImageRelativeFilePath, orderedBandNames[i]);
-                maskNames.add(maskName);
+                metadata.getMaskList().add(maskName);
             }
+            int detector = MuscateProductReader.getDetectorFromFilename(tiffImageRelativeFilePath);
+            String bandName = String.format("Aux_Mask_Detector_Footprint_%s_%02d", geoposition.id, detector);
+            metadata.getBandList().add(bandName);
         }
-        return maskNames;
     }
 
-    private static List<String> computeSaturationMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
+    private static void computeSaturationMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata productMetadata, Metadata metadata)
                                                            throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        List<String> maskNames = new ArrayList<>();
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
+        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, productMetadata);
         if (geoposition != null) {
-            List<String> bands = metadata.getBandNames(geoposition.id);
+            List<String> bands = productMetadata.getBandNames(geoposition.id);
             for (int bitCount=0; bitCount<bands.size(); bitCount++) {
                 String bandId = bands.get(bitCount);
-                maskNames.add(MuscateProductReader.computeSaturationMaskName(bandId));
+                metadata.getMaskList().add(MuscateProductReader.computeSaturationMaskName(bandId));
             }
+            String bandName = "Aux_Mask_Saturation_" + geoposition.id;
+            metadata.getBandList().add(bandName);
         }
-        return maskNames;
     }
 
-    private static String computeEdgeMaskName(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
+    private static void computeEdgeMaskName(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata productMetadata, Metadata metadata)
                                               throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
+        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, productMetadata);
         if (geoposition != null) {
-            return MuscateProductReader.computeEdgeMaskName(geoposition);
+            metadata.getMaskList().add(MuscateProductReader.computeEdgeMaskName(geoposition));
+            String bandName = "Aux_Mask_Edge_" + geoposition.id;
+            metadata.getBandList().add(bandName);
         }
-        return null;
     }
 
-    private static List<String> computeGeophysicsMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
+    private static void computeGeophysicsMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata productMedatada, Metadata metadata)
                                                            throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
-
-        List<String> cloudMaskNames = new ArrayList<>();
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
-        if (geoposition != null) {
-            for (MuscateConstants.GEOPHYSICAL_BIT geophysicalBit : MuscateConstants.GEOPHYSICAL_BIT.values()) {
-                String maskName = MuscateProductReader.computeGeographicMaskName(geophysicalBit, geoposition);
-                cloudMaskNames.add(maskName);
-            }
+        for (MuscateConstants.GEOPHYSICAL_BIT geophysical_bit : MuscateConstants.GEOPHYSICAL_BIT.values()) {
+            computeGeophysicsMaskName(tiffImageRelativeFilePath, filePathsHelper, productDirectory, productMedatada, geophysical_bit, metadata);
         }
-        return cloudMaskNames;
     }
 
-    private static String computeGeophysicsMaskName(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory,
-                                                    MuscateMetadata metadata, MuscateConstants.GEOPHYSICAL_BIT geophysicalBit)
+    private static void computeGeophysicsMaskName(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory,
+                                                    MuscateMetadata productMetadata, MuscateConstants.GEOPHYSICAL_BIT geophysicalBit, Metadata metadata)
                                                     throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
+        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, productMetadata);
         if (geoposition != null) {
-            return MuscateProductReader.computeGeographicMaskName(geophysicalBit, geoposition);
+            String maskName = MuscateProductReader.computeGeographicMaskName(geophysicalBit, geoposition);
+            metadata.getMaskList().add(maskName);
+            String bandName = "Aux_Mask_MG2_" + geoposition.id;
+            if(!metadata.getBandList().contains(bandName)){
+                metadata.getBandList().add(bandName);
+            }
         }
-        return null;
     }
 
-    private static List<String> computeCloudMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
+    private static void computeCloudMaskNames(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata productMetadata, Metadata metadata)
                                                       throws IOException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        List<String> cloudMaskNames = new ArrayList<>();
-        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, metadata);
+        MuscateMetadata.Geoposition geoposition = findGeoPosition(tiffImageRelativeFilePath, filePathsHelper, productDirectory, productMetadata);
         if (geoposition != null) {
-            cloudMaskNames.add(MuscateProductReader.computeCloudMaskAllName(geoposition));
-            cloudMaskNames.add(MuscateProductReader.computeCloudMaskAllCloudName(geoposition));
-            cloudMaskNames.add(MuscateProductReader.computeCloudMaskReflectanceName(geoposition));
-            cloudMaskNames.add(MuscateProductReader.computeCloudMaskReflectanceVarianceName(geoposition));
-            cloudMaskNames.add(MuscateProductReader.computeCloudMaskExtensionName(geoposition));
-            cloudMaskNames.add(MuscateProductReader.computeCloudMaskInsideShadowName(geoposition));
-            cloudMaskNames.add(MuscateProductReader.computeCloudMaskOutsideShadowName(geoposition));
-            cloudMaskNames.add(MuscateProductReader.computeCloudMaskCirrusName(geoposition));
+            metadata.getMaskList().add(MuscateProductReader.computeCloudMaskAllName(geoposition));
+            metadata.getMaskList().add(MuscateProductReader.computeCloudMaskAllCloudName(geoposition));
+            metadata.getMaskList().add(MuscateProductReader.computeCloudMaskReflectanceName(geoposition));
+            metadata.getMaskList().add(MuscateProductReader.computeCloudMaskReflectanceVarianceName(geoposition));
+            metadata.getMaskList().add(MuscateProductReader.computeCloudMaskExtensionName(geoposition));
+            metadata.getMaskList().add(MuscateProductReader.computeCloudMaskInsideShadowName(geoposition));
+            metadata.getMaskList().add(MuscateProductReader.computeCloudMaskOutsideShadowName(geoposition));
+            metadata.getMaskList().add(MuscateProductReader.computeCloudMaskCirrusName(geoposition));
+            String bandName = "Aux_Mask_Cloud_" + geoposition.id;
+            if(!metadata.getBandList().contains(bandName)){
+                metadata.getBandList().add(bandName);
+            }
         }
-        return cloudMaskNames;
     }
 
     private static List<String> computeImageBandNames(ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
@@ -370,6 +334,29 @@ public class MuscateMetadataInspector implements MetadataInspector {
             int defaultBandWidth = geoTiffImageReader.getImageWidth();
             int defaultBandHeight = geoTiffImageReader.getImageHeight();
             return metadata.getGeoposition(defaultBandWidth, defaultBandHeight);
+        }
+    }
+
+    private static void addAngleBands(Metadata metadata, MuscateMetadata productMetadata){
+        // add Zenith
+        metadata.getBandList().add("sun_zenith");
+        // add Azimuth
+        metadata.getBandList().add("sun_azimuth");
+        // viewing angles
+        for (String bandId : productMetadata.getBandNames()) {
+            MuscateMetadata.AnglesGrid anglesGrid = productMetadata.getViewingAnglesGrid(bandId);
+            // add Zenith
+            metadata.getBandList().add("view_zenith_" + anglesGrid.getBandId());
+            // add Azimuth
+            metadata.getBandList().add("view_azimuth_" + anglesGrid.getBandId());
+        }
+        // add mean angles
+        MuscateMetadata.AnglesGrid meanViewingAnglesGrid = productMetadata.getMeanViewingAnglesGrid();
+        if (meanViewingAnglesGrid != null) {
+            // add Zenith
+            metadata.getBandList().add("view_zenith_mean");
+            // add Azimuth
+            metadata.getBandList().add("view_azimuth_mean");
         }
     }
 }

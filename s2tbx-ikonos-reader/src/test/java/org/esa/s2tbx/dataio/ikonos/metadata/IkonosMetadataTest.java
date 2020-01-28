@@ -5,7 +5,6 @@ import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -38,7 +37,7 @@ public class IkonosMetadataTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         XmlMetadataParserFactory.registerParser(IkonosMetadata.class, new XmlMetadataParser<>(IkonosMetadata.class));
-        metadata = GenericXmlMetadata.create(IkonosMetadata.class, TestUtil.getTestFile(productsFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP\\IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML"));
+        metadata = GenericXmlMetadata.create(IkonosMetadata.class, TestUtil.getTestFile(productsFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP"+ File.separator+ "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML"));
     }
 
     @After
@@ -117,7 +116,7 @@ public class IkonosMetadataTest {
             assertEquals(tiePointGridPoints[1][index], metadata.getMetadataComponent().getTiePointGridPoints()[1][index], 0.e-6);
         }
         assertEquals("EPSG:32634", metadata.getMetadataComponent().getCrsCode());
-        assertEquals(38.0548528801, metadata.getMetadataComponent().getOriginPositionX());
-        assertEquals(23.9865276316, metadata.getMetadataComponent().getOriginPositionY());
+        assertEquals(38.0548528801, metadata.getMetadataComponent().getOriginPositionX(), 10);
+        assertEquals(23.9865276316, metadata.getMetadataComponent().getOriginPositionY(), 10);
     }
 }
