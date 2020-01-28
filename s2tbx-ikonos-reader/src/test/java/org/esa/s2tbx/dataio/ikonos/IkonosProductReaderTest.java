@@ -1,129 +1,149 @@
 package org.esa.s2tbx.dataio.ikonos;
 
-import com.bc.ceres.core.NullProgressMonitor;
-import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.utils.TestUtil;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 
 public class IkonosProductReaderTest {
 
-    private IkonosProductReader reader;
-    private String productFolder = "_ikonos" + File.separator;
+    private static final String PRODUCTS_FOLDER = "_ikonos" + File.separator;
 
-    @Before
-    public void setup() {
+    @Test
+    public void testReadProduct() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
+
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP" + File.separator + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML");
+
+        IkonosProductReader reader = buildProductReader();
+
+        Product product = reader.readProductNodes(productFile, null);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertEquals("IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001", product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals(200, product.getSceneRasterWidth());
+        assertEquals(200, product.getSceneRasterHeight());
+        assertEquals("Ikonos Product", product.getProductType());
+        assertEquals("20-AUG-2008 09:26:00.000000", product.getStartTime().toString());
+        assertEquals("20-AUG-2008 09:26:00.000000", product.getEndTime().toString());
+        assertEquals("metadata", product.getMetadataRoot().getName());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("World Geodetic System 1984", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(0, product.getMaskGroup().getNodeCount());
+
+        assertEquals(5, product.getBands().length);
+
+        Band band = product.getBandAt(0);
+        assertNotNull(band);
+        assertEquals(21, band.getDataType());
+        assertEquals(2500, band.getNumDataElems());
+        assertEquals("Red", band.getName());
+        assertEquals(50, band.getRasterWidth());
+        assertEquals(50, band.getRasterHeight());
+
+        assertEquals(0.3423f, band.getSampleFloat(0, 0), 0.0f);
+        assertEquals(0.2793f, band.getSampleFloat(22, 20), 0.0f);
+        assertEquals(0.26460f, band.getSampleFloat(21, 11), 0.0f);
+        assertEquals(0.52080f, band.getSampleFloat(11, 29), 0.0f);
+        assertEquals(0.3528f, band.getSampleFloat(23, 23), 0.0f);
+        assertEquals(0.273f, band.getSampleFloat(23, 47), 0.0f);
+        assertEquals(0.32865f, band.getSampleFloat(21, 20), 0.0f);
+        assertEquals(0.3234f, band.getSampleFloat(13, 44), 0.0f);
+        assertEquals(0.28035f, band.getSampleFloat(42, 49), 0.0f);
+        assertEquals(0.3423f, band.getSampleFloat(5, 17), 0.0f);
+        assertEquals(0.36645f, band.getSampleFloat(16, 13), 0.0f);
+        assertEquals(0.35595f, band.getSampleFloat(41, 14), 0.0f);
+        assertEquals(0.3801f, band.getSampleFloat(10, 10), 0.0f);
+        assertEquals(0.3108f, band.getSampleFloat(32, 44), 0.0f);
+        assertEquals(0.0f, band.getSampleFloat(50, 50), 0.0f);
+    }
+
+    @Test
+    public void testReadProductSubset() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP" + File.separator + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML");
+
+        IkonosProductReader reader = buildProductReader();
+
+        ProductSubsetDef subsetDef = new ProductSubsetDef();
+        subsetDef.setNodeNames(new String[] { "Pan", "Red", "Green" } );
+        subsetDef.setRegion(new Rectangle(12, 15, 30, 25));
+        subsetDef.setSubSampling(1, 1);
+
+        Product product = reader.readProductNodes(productFile, subsetDef);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertEquals("IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001", product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals(30, product.getSceneRasterWidth());
+        assertEquals(25, product.getSceneRasterHeight());
+        assertEquals("Ikonos Product", product.getProductType());
+        assertEquals("20-AUG-2008 09:26:00.000000", product.getStartTime().toString());
+        assertEquals("20-AUG-2008 09:26:00.000000", product.getEndTime().toString());
+        assertEquals("metadata", product.getMetadataRoot().getName());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("World Geodetic System 1984", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(0, product.getMaskGroup().getNodeCount());
+
+        assertEquals(3, product.getBands().length);
+
+        Band band = product.getBandAt(1);
+        assertNotNull(band);
+        assertEquals(21, band.getDataType());
+        assertEquals(750, band.getNumDataElems());
+        assertEquals("Pan", band.getName());
+        assertEquals(30, band.getRasterWidth());
+        assertEquals(25, band.getRasterHeight());
+
+        assertEquals(0.524145f, band.getSampleFloat(0, 0), 0.0f);
+        assertEquals(0.449445f, band.getSampleFloat(22, 20), 0.0f);
+        assertEquals(0.459405f, band.getSampleFloat(21, 11), 0.0f);
+        assertEquals(0.412095f, band.getSampleFloat(11, 21), 0.0f);
+        assertEquals(0.519165f, band.getSampleFloat(23, 23), 0.0f);
+        assertEquals(0.526635f, band.getSampleFloat(20, 24), 0.0f);
+        assertEquals(0.422055f, band.getSampleFloat(21, 20), 0.0f);
+        assertEquals(0.45318f, band.getSampleFloat(13, 14), 0.0f);
+        assertEquals(0.392175f, band.getSampleFloat(12, 19), 0.0f);
+        assertEquals(0.53037f, band.getSampleFloat(5, 17), 0.0f);
+        assertEquals(0.498f, band.getSampleFloat(16, 13), 0.0f);
+        assertEquals(0.444465f, band.getSampleFloat(21, 14), 0.0f);
+        assertEquals(0.489285f, band.getSampleFloat(20, 20), 0.0f);
+        assertEquals(0.41832f, band.getSampleFloat(10, 23), 0.0f);
+        assertEquals(0.0f, band.getSampleFloat(30, 25), 0.0f);
+    }
+
+    private static IkonosProductReader buildProductReader() {
         IkonosProductReaderPlugin plugin = new IkonosProductReaderPlugin();
-        reader = new IkonosProductReader(plugin);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        if (reader != null) {
-            reader.close();
-        }
-    }
-
-    @Test
-    public void testGetReaderPlugin() {
-        assertEquals(IkonosProductReaderPlugin.class, reader.getReaderPlugIn().getClass());
-    }
-
-    @Test
-    public void testReadProductNodes() {
-        Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP" + File.separator + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product product = reader.readProductNodes(file, null);
-            assertEquals(5, product.getBands().length);
-            assertEquals("EPSG:World Geodetic System 1984", product.getSceneGeoCoding().getGeoCRS().getName().toString());
-            assertEquals(IkonosConstants.IKONOS_PRODUCT, product.getProductType());
-            assertEquals(0, product.getMaskGroup().getNodeCount());
-            assertEquals(4101, product.getSceneRasterWidth());
-            assertEquals(3983, product.getSceneRasterHeight());
-            assertEquals("20-AUG-2008 09:26:00.000000", product.getStartTime().toString());
-            assertEquals("20-AUG-2008 09:26:00.000000", product.getEndTime().toString());
-            assertEquals("metadata", product.getMetadataRoot().getName());
-            assertEquals("IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001", product.getName());
-
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testReadBandRasterData() {
-        Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile(productFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP" + File.separator + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product product = reader.readProductNodes(file, null);
-            ProductData data = ProductData.createInstance(ProductData.TYPE_INT16, 20000);
-            assertNotNull(data);
-            data.setElemFloatAt(3, 5);
-            reader.readBandRasterData(product.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
-            assertNotEquals(0, data.getElemFloatAt(0));
-            assertNotEquals(-1000, data.getElemFloatAt(0));
-            assertNotEquals(0, data.getElemFloatAt(1999));
-            assertNotEquals(-1000, data.getElemFloatAt(1999));
-            assertNotEquals(5, data.getElemFloatAt(3));
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnFileInput() {
-        File file = TestUtil.getTestFile(productFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP" + File.separator + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(1, components.getChildren().length);
-            assertEquals("IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML", components.getChildren()[0].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnArchiveInput() {
-        File file = TestUtil.getTestFile(productFolder + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP.ZIP");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(1, components.getChildren().length);
-            assertEquals("IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP.ZIP", components.getChildren()[0].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
+        return new IkonosProductReader(plugin);
     }
 }
