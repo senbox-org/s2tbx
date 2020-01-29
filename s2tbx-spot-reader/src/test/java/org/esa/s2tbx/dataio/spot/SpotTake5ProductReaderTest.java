@@ -17,20 +17,20 @@
 
 package org.esa.s2tbx.dataio.spot;
 
-import com.bc.ceres.core.NullProgressMonitor;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.utils.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -38,104 +38,125 @@ import static org.junit.Assume.assumeTrue;
  */
 public class SpotTake5ProductReaderTest {
 
-    private SpotTake5ProductReader reader;
-    private String productsFolder = "_spot" + File.separator;
+    private static final String PRODUCTS_FOLDER = "_spot" + File.separator;
 
-    @Before
-    public void setup() {
+    @Test
+    public void testReadProductNodes() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
+
+        SpotTake5ProductReader reader = buildProductReader();
+        Product product = reader.readProductNodes(productFile, null);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertEquals("SPOT4_HRVIR1_XS_20130616_N2A_JTanzanieD0000B0000", product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals(4000, product.getSceneRasterWidth());
+        assertEquals(3750, product.getSceneRasterHeight());
+        assertEquals("SPOT4Take5", product.getProductType());
+        assertNotNull(product.getStartTime());
+        assertNotNull(product.getEndTime());
+        assertEquals("metadata", product.getMetadataRoot().getName());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(0, product.getMaskGroup().getNodeCount());
+
+        assertEquals(4, product.getBands().length);
+
+        Band band = product.getBandAt(2);
+        assertNotNull(band);
+        assertEquals(20, band.getDataType());
+        assertEquals(9000000, band.getNumDataElems());
+        assertEquals("XS3", band.getName());
+        assertEquals(3000, band.getRasterWidth());
+        assertEquals(3000, band.getRasterHeight());
+
+        assertEquals(66, band.getSampleInt(0, 0));
+        assertEquals(52, band.getSampleInt(231, 231));
+        assertEquals(81, band.getSampleInt(32, 1235));
+        assertEquals(97, band.getSampleInt(400, 2134));
+        assertEquals(54, band.getSampleInt(35, 983));
+        assertEquals(53, band.getSampleInt(763, 2658));
+        assertEquals(74, band.getSampleInt(33, 900));
+        assertEquals(64, band.getSampleInt(323, 896));
+        assertEquals(82, band.getSampleInt(65, 654));
+        assertEquals(111, band.getSampleInt(1500, 2000));
+        assertEquals(90, band.getSampleInt(345, 2234));
+        assertEquals(58, band.getSampleInt(542, 2434));
+        assertEquals(0, band.getSampleInt(3000, 3000));
+    }
+
+    @Test
+    public void testReadProductSubset() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
+
+        ProductSubsetDef subsetDef = new ProductSubsetDef();
+        subsetDef.setNodeNames(new String[] { "XS1", "XS2", "SWIR" } );
+        subsetDef.setRegion(new Rectangle(1200, 1000, 2567, 2000));
+        subsetDef.setSubSampling(1, 1);
+
+        SpotTake5ProductReader reader = buildProductReader();
+        Product product = reader.readProductNodes(productFile, subsetDef);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertEquals("SPOT4_HRVIR1_XS_20130616_N2A_JTanzanieD0000B0000", product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals(2567, product.getSceneRasterWidth());
+        assertEquals(2000, product.getSceneRasterHeight());
+        assertEquals("SPOT4Take5", product.getProductType());
+        assertNotNull(product.getStartTime());
+        assertNotNull(product.getEndTime());
+        assertEquals("metadata", product.getMetadataRoot().getName());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(0, product.getMaskGroup().getNodeCount());
+
+        assertEquals(3, product.getBands().length);
+
+        Band band = product.getBandAt(1);
+        assertNotNull(band);
+        assertEquals(20, band.getDataType());
+        assertEquals(3080000, band.getNumDataElems());
+        assertEquals("XS2", band.getName());
+        assertEquals(1925, band.getRasterWidth());
+        assertEquals(1600, band.getRasterHeight());
+
+        assertEquals(118, band.getSampleInt(0, 0));
+        assertEquals(104, band.getSampleInt(231, 231));
+        assertEquals(69, band.getSampleInt(32, 1235));
+        assertEquals(82, band.getSampleInt(400, 1134));
+        assertEquals(75, band.getSampleInt(35, 983));
+        assertEquals(98, band.getSampleInt(763, 1508));
+        assertEquals(39, band.getSampleInt(1733, 900));
+        assertEquals(148, band.getSampleInt(323, 896));
+        assertEquals(114, band.getSampleInt(65, 654));
+        assertEquals(42, band.getSampleInt(1500, 1500));
+        assertEquals(78, band.getSampleInt(345, 1234));
+        assertEquals(63, band.getSampleInt(542, 1434));
+        assertEquals(0, band.getSampleInt(1925, 1600));
+    }
+
+    private static SpotTake5ProductReader buildProductReader() {
         SpotTake5ProductReaderPlugin plugin = new SpotTake5ProductReaderPlugin();
-        reader = new SpotTake5ProductReader(plugin, plugin.getColorPaletteFilePath());
-    }
-
-    @Test
-    public void testGetReaderPlugin() {
-        assertEquals(SpotTake5ProductReaderPlugin.class, reader.getReaderPlugIn().getClass());
-    }
-
-    @Test
-    public void testReadProductNodes() {
-        Date startDate = Calendar.getInstance().getTime();
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(4, finalProduct.getBands().length);
-            assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
-            assertEquals("SPOT4Take5", finalProduct.getProductType());
-            assertEquals(0, finalProduct.getMaskGroup().getNodeCount());
-            assertEquals(4000, finalProduct.getSceneRasterWidth());
-            assertEquals(3750, finalProduct.getSceneRasterHeight());
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testReadBandRasterData() {
-        Date startDate = Calendar.getInstance().getTime();
-        //Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
-        //File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "200");
-        try {
-
-            Product finalProduct = reader.readProductNodes(file, null);
-            ProductData data = ProductData.createInstance(ProductData.TYPE_UINT16, 20000);
-            data.setElemFloatAt(3, 5);
-            reader.readBandRasterData(finalProduct.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
-            assertNotEquals(0, data.getElemFloatAt(0));
-            assertNotEquals(-1000, data.getElemFloatAt(0));
-            assertNotEquals(0, data.getElemFloatAt(1999));
-            assertNotEquals(-1000, data.getElemFloatAt(1999));
-            assertNotEquals(5, data.getElemFloatAt(3));
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnFileInput() {
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(2, components.getChildren().length);
-            assertEquals("SPOT4_HRVIR1_XS_88888888_N1A.xml", components.getChildren()[0].getId());
-            assertEquals("SPOT4_HRVIR1_XS_88888888_N1A.tif", components.getChildren()[1].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnArchiveInput() {
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.tgz");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(1, components.getChildren().length);
-            assertEquals("SPOT4_HRVIR1_XS_88888888_N1A.tgz", components.getChildren()[0].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
+        return new SpotTake5ProductReader(plugin, plugin.getColorPaletteFilePath());
     }
 }

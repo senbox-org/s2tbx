@@ -32,6 +32,7 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
@@ -149,6 +150,8 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             product.setEndTime(startTime);
             product.setDescription(SpotConstants.SPOT4_TAKE5_FORMAT + " level:" + imageMetadata.getMetadataProfile() + " zone:" + imageMetadata.getGeographicZone());
             product.setAutoGrouping(buildBandsGroupPattern());
+            Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+            product.setPreferredTileSize(preferredTileSize);
 
             // all the bands of the tiff files are added to the product
             Map<String, String> tiffFiles = imageMetadata.getTiffFiles();
