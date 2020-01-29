@@ -467,7 +467,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                     Color color = colorIterator.next();
                     String maskName = indexBandInformation.getPrefix() + indexName.toLowerCase();
-                    if (getSubsetDef() == null || getSubsetDef().isNodeAccepted(maskName)) {
+                    if (getSubsetDef() == null ||
+                            (getSubsetDef().isNodeAccepted(maskName) && getSubsetDef().isNodeAccepted(indexBandInformation.getPhysicalBand()))) {
                         Mask mask = Mask.BandMathsType.create(maskName, description, dimension.width, dimension.height,
                                                               String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
 

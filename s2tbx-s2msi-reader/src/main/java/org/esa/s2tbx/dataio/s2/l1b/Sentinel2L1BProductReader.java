@@ -22,7 +22,6 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.vividsolutions.jts.geom.Coordinate;
 import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
-import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadata;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bProductMetadataReader;
@@ -251,7 +250,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
                     for (String indexName : indexCoding.getIndexNames()) {
                         String maskName = indexBandInformation.getPrefix() + indexName.toLowerCase();
-                        if (subsetDef == null || subsetDef.isNodeAccepted(maskName)) {
+                        if (subsetDef == null || (subsetDef.isNodeAccepted(maskName) && subsetDef.isNodeAccepted(indexBandInformation.getPhysicalBand()))) {
                             int indexValue = indexCoding.getIndexValue(indexName);
                             String description = indexCoding.getIndex(indexName).getDescription();
                             if (!colorIterator.hasNext()) {

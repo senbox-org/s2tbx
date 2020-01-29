@@ -70,9 +70,9 @@ public class RetrieveTileLayoutTest {
     @Test
     public void testRetrieveLayoutForL1B10m() throws IOException {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
-//        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_10M);
-        L1bProductMetadataReader productReader = new L1bProductMetadataReader(null);
-        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent())), S2SpatialResolution.R10M);
+        VirtualPath input = new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent()));
+        L1bProductMetadataReader productReader = new L1bProductMetadataReader(input);
+        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(input, S2SpatialResolution.R10M);
         TileLayout realTileLayout = new TileLayout(2552, 2304, 2592, 2304, 1, 1, 4,1);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));
     }
@@ -80,9 +80,9 @@ public class RetrieveTileLayoutTest {
     @Test
     public void testRetrieveLayoutForL1B20m() throws IOException {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
-//        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_20M);
-        L1bProductMetadataReader productReader = new L1bProductMetadataReader(null);
-        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent())), S2SpatialResolution.R20M);
+        VirtualPath input = new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent()));
+        L1bProductMetadataReader productReader = new L1bProductMetadataReader(input);
+        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(input, S2SpatialResolution.R20M);
         TileLayout realTileLayout = new TileLayout(1276, 1152, 1296, 1152, 1, 1, 4,1);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));
     }
@@ -90,9 +90,9 @@ public class RetrieveTileLayoutTest {
     @Test
     public void testRetrieveLayoutForL1B60m() throws IOException {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
-//        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_60M);
-        L1bProductMetadataReader productReader = new L1bProductMetadataReader(null);
-        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent())), S2SpatialResolution.R60M);
+        VirtualPath input = new VirtualPath(productPath.getFileName().toString(), VirtualDirEx.build(productPath.getParent()));
+        L1bProductMetadataReader productReader = new L1bProductMetadataReader(input);
+        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(input, S2SpatialResolution.R60M);
         TileLayout realTileLayout =  new TileLayout(1276, 384, 1296, 384, 1, 1, 4, 1);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));
     }
