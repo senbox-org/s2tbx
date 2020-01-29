@@ -4,7 +4,6 @@ import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +28,7 @@ public class WorldView2ESATileMetadataTest {
 
         XmlMetadataParserFactory.registerParser(TileMetadata.class, new XmlMetadataParser<>(TileMetadata.class));
         metadata = GenericXmlMetadata.create(TileMetadata.class, TestUtil.getTestFile(productsFolder +
-                "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+File.separator+"WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061"+File.separator+"053963700060_01_P001_MUL"+File.separator+"11MAY25095346-M2AS-053963700060_01_P001.XML"));
+                "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+ File.separator+ "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061"+File.separator+"053963700060_01_P001_MUL"+File.separator+"11MAY25095346-M2AS-053963700060_01_P001.XML"));
     }
 
     @After
@@ -54,17 +53,17 @@ public class WorldView2ESATileMetadataTest {
 
     @Test
     public void testGetRasterHeight() throws Exception {
-        assertEquals(23051, metadata.getRasterHeight());
+        assertEquals(4096, metadata.getRasterHeight());
     }
 
     @Test
     public void testGetRasterWidth() throws Exception {
-        assertEquals(11891, metadata.getRasterWidth());
+        assertEquals(8192, metadata.getRasterWidth());
     }
     @Test
     public void testWorldView2TileComponent() throws Exception {
         Path path = TestUtil.getTestFile(productsFolder +
-                "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+File.separator+"WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061"+File.separator+"053963700060_01_P001_MUL"+File.separator+"11MAY25095346-M2AS-053963700060_01_P001.XML").toPath();
+                "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+ File.separator+ "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061"+File.separator+"053963700060_01_P001_MUL"+File.separator+"11MAY25095346-M2AS-053963700060_01_P001.XML").toPath();
         try (InputStream inputStream = Files.newInputStream(path)) {
             metadata =  TileMetadata.create(new FilePathInputStream(path, inputStream, null));
         }
