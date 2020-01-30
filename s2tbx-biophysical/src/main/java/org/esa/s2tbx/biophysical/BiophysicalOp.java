@@ -48,7 +48,7 @@ import java.util.Map;
  */
 @OperatorMetadata(
         alias = "BiophysicalOp",
-        category = "Optical/Thematic Land Processing",
+        category = "Optical/Thematic Land Processing/Biophysical Processor (LAI, fAPAR...)",
         description = "The 'Biophysical Processor' operator retrieves LAI from atmospherically corrected Sentinel-2 products",
         authors = "Julien Malik",
         copyright = "CS SI (foss-contact@c-s.fr)")
@@ -58,6 +58,9 @@ public class BiophysicalOp extends PixelOperator {
 
     @SourceProduct(alias = "source", description = "The source product.")
     private Product sourceProduct;
+
+    @Parameter(defaultValue = "S2A", label = "Sensor", description = "Sensor", valueSet = {"S2A", "S2B"})
+    private String sensor;
 
     @Parameter(defaultValue = "true", label = "Compute LAI", description = "Compute LAI (Leaf Area Index)")
     private boolean computeLAI;
@@ -73,6 +76,8 @@ public class BiophysicalOp extends PixelOperator {
 
     @Parameter(defaultValue = "true", label = "Compute CWC", description = "Compute Cw (Canopy Water Content)")
     private boolean computeCw;
+
+
 
     /**
      * Configures all source samples that this operator requires for the computation of target samples.
@@ -106,10 +111,14 @@ public class BiophysicalOp extends PixelOperator {
     }
 
     private void loadAuxData() throws OperatorException {
+        BiophysicalModel model = BiophysicalModel.getBiophysicalModel(sensor);
+        if(model == null) {
+            throw new OperatorException("Biophysical model not found. Not valid sensor: " + sensor);
+        }
         try {
             for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
-                if (isComputed(biophysicalVariable)) {
-                    algos.put(biophysicalVariable, new BiophysicalAlgo(BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable)));
+                if (model.computesVariable(biophysicalVariable) && isComputed(biophysicalVariable)) {
+                    algos.put(biophysicalVariable, new BiophysicalAlgo(BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable, model)));
                 }
             }
         } catch(IOException e) {
@@ -131,7 +140,7 @@ public class BiophysicalOp extends PixelOperator {
 
         int sampleIndex = 0;
         for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
-            if (isComputed(biophysicalVariable)) {
+            if (BiophysicalModel.S2A.computesVariable(biophysicalVariable) && isComputed(biophysicalVariable)) {
                 sampleConfigurer.defineSample(sampleIndex, biophysicalVariable.getSampleName());
                 sampleIndex++;
                 sampleConfigurer.defineSample(sampleIndex, biophysicalVariable.getSampleName() + "_flags");
@@ -176,7 +185,7 @@ public class BiophysicalOp extends PixelOperator {
         // todo setDescription
 
         for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
-            if (isComputed(biophysicalVariable)) {
+            if (BiophysicalModel.S2A.computesVariable(biophysicalVariable) && isComputed(biophysicalVariable)) {
                 // Add biophysical variable band
                 final Band biophysicalVariableBand = tp.addBand(biophysicalVariable.getBandName(), ProductData.TYPE_FLOAT32);
                 biophysicalVariableBand.setDescription(biophysicalVariable.getDescription());
@@ -250,7 +259,7 @@ public class BiophysicalOp extends PixelOperator {
 
         int targetIndex = 0;
         for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
-            if (isComputed(biophysicalVariable)) {
+            if (BiophysicalModel.S2A.computesVariable(biophysicalVariable) && isComputed(biophysicalVariable)) {
                 BiophysicalAlgo algo = algos.get(biophysicalVariable);
                 BiophysicalAlgo.Result result = algo.process(input);
                 targetSamples[targetIndex].set(result.getOutputValue());

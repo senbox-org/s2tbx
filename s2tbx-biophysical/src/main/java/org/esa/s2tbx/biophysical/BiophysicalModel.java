@@ -63,4 +63,13 @@ public enum BiophysicalModel {
         if(variable == BiophysicalVariable.FCOVER) return computesFCOVER();
         return false;
     }
+
+    public static BiophysicalModel getBiophysicalModel(String name) {
+        for (BiophysicalModel biophysicalModel : BiophysicalModel.values()) {
+            if (biophysicalModel.getName().equals(name.toLowerCase())) {
+                return biophysicalModel;
+            }
+        }
+        return null;
+    }
 }

@@ -1,1 +1,3 @@
 org.esa.s2tbx.biophysical.BiophysicalOp$Spi
+org.esa.s2tbx.biophysical.Biophysical10mOp$Spi
+org.esa.s2tbx.biophysical.BiophysicalLandsatOp$Spi

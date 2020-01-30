@@ -59,7 +59,7 @@ public class BiophysicalOpTest {
 
     @Test
     public void testOpLAI() throws Exception {
-        Product sourceProduct = createTestProduct(BiophysicalVariable.LAI);
+        Product sourceProduct = createTestProduct(BiophysicalVariable.LAI, BiophysicalModel.S2B);
 
         Map<String, Object> parameters = new HashMap<String, Object>() {{
             put("computeLAI", true);
@@ -67,6 +67,7 @@ public class BiophysicalOpTest {
             put("computeCw", false);
             put("computeFapar", false);
             put("computeFcover", false);
+            put("sensor", "S2B");
         }};
 
         Product targetProduct = GPF.createProduct("BiophysicalOp", parameters, sourceProduct);
@@ -98,8 +99,8 @@ public class BiophysicalOpTest {
         }
     }
 
-    public Product createTestProduct(BiophysicalVariable biophysicalVariable) throws IOException {
-        BiophysicalAuxdata auxdata = BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable);
+    public Product createTestProduct(BiophysicalVariable biophysicalVariable, BiophysicalModel biophysicalModel) throws IOException {
+        BiophysicalAuxdata auxdata = BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable, biophysicalModel);
         double [][] testCases = auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.TEST_CASES);
 
         width = testCases.length;
