@@ -14,9 +14,9 @@ import re
 
 import openpyxl
 
-AUXDATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'src/main/resources/auxdata/2_1')
+AUXDATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'src/main/resources/auxdata/3_0/S2B')
 BIOPHYSICAL_VARIABLES = ['LAI', 'LAI_Cab', 'LAI_Cw', 'FAPAR', 'FCOVER']
-FILENAME_TEMPLATE = 'Algo_S2_V2.1_SL2T_{variable}.xlsx'
+FILENAME_TEMPLATE = 'Algo_S2B_{variable}.xlsx'
 CELL_RE = re.compile('([A-Z]+)([0-9]+)')
 
 def letter_range(start, stop):
@@ -102,7 +102,7 @@ def process_variable(variable):
     # Definition Domain
     ws = wb[u'Definition_Domain']
     extract_table_to_csv(ws, os.path.join(target_dir, '%s_DefinitionDomain_MinMax' % variable), 'B4', 'I5')
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_DefinitionDomain_Grid' % variable), 'A10', 'H11048')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_DefinitionDomain_Grid' % variable), 'A10', 'H2939')
 
 if __name__ == '__main__':
     for variable in BIOPHYSICAL_VARIABLES:
