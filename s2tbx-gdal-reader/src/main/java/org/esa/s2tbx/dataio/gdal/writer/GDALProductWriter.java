@@ -16,6 +16,7 @@ import org.gdal.gdal.Driver;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
 
 import java.io.File;
 import java.io.IOException;
@@ -107,7 +108,17 @@ public class GDALProductWriter extends AbstractProductWriter {
         if (geoCoding == null) {
             this.gdalDataset.SetProjection("");
         } else {
-            this.gdalDataset.SetProjection(geoCoding.getGeoCRS().toWKT());
+            this.gdalDataset.SetProjection(geoCoding.getMapCRS().toWKT());
+            if (geoCoding.getImageToMapTransform() instanceof AffineTransform2D) {
+                AffineTransform2D transform = (AffineTransform2D) geoCoding.getImageToMapTransform();
+                double[] gdalGeoTransform = new double[6];
+                gdalGeoTransform[0] = transform.getTranslateX();
+                gdalGeoTransform[3] = transform.getTranslateY();
+                gdalGeoTransform[1] = transform.getScaleX();
+                gdalGeoTransform[5] = transform.getScaleY();
+
+                this.gdalDataset.SetGeoTransform(gdalGeoTransform);
+            }
         }
     }
 
