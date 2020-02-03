@@ -303,12 +303,49 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         for (AngleID angleID : sortedList) {
             String bandName = getAngleBandName(angleID);
             if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                RenderedImage bandSourceImage = buildBandAngleSourceImage(angleID, sceneDescription, anglesTileSize, bandAnglesGridsMap, masterOrigin, resolution, productBounds, defaultProductSize);
+                Rectangle bandBounds = null;
+                PlanarImage bandSourceImage = null;
+                List<PlanarImage> tileImages = buildMosaicTileImages(angleID, sceneDescription, anglesTileSize, bandAnglesGridsMap, masterOrigin);
+                if (!tileImages.isEmpty()) {
+                ImageLayout imageLayout = new ImageLayout();
+                imageLayout.setMinX(0);
+                imageLayout.setMinY(0);
+                imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+                imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
+                imageLayout.setTileGridXOffset(0);
+                imageLayout.setTileGridYOffset(0);
+
+                RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
+                hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+
+                RenderedImage[] sources = tileImages.toArray(new RenderedImage[tileImages.size()]);
+                RenderedOp mosaicOp = MosaicDescriptor.create(sources, MosaicDescriptor.MOSAIC_TYPE_OVERLAY, null, null, new double[][]{{-1.0}},
+                                                              new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES}, hints);
+
+                // Crop Mosaic if there are lines outside the scene
+                bandSourceImage = cropBordersOutsideScene(mosaicOp, resolution.x, resolution.y, sceneDescription);
+
+                int defaultBandWidth = bandSourceImage.getWidth();
+                int defaultBandHeight = bandSourceImage.getHeight();
+                bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                if (bandBounds.x > 0 || bandBounds.y > 0 || bandBounds.width != defaultBandWidth || bandBounds.height != defaultBandHeight) {
+                    Raster subsetSourceData = bandSourceImage.getData();
+                    WritableRaster subsetRaster = subsetSourceData.createCompatibleWritableRaster(bandBounds.width, bandBounds.height);
+                    for (int x = 0; x < bandBounds.width; x++) {
+                        for (int y = 0; y < bandBounds.height; y++) {
+                            float value = subsetSourceData.getSampleFloat(x + bandBounds.x, y + bandBounds.y, 0);
+                            subsetRaster.setSample(x, y, 0, value);
+                        }
+                    }
+                    ColorModel colorModel = bandSourceImage.getColorModel();
+                    BufferedImage image = new BufferedImage(colorModel, subsetRaster, colorModel.isAlphaPremultiplied(), null);
+                    bandSourceImage = PlanarImage.wrapRenderedImage(image);
+                }
+            }
                 if (bandSourceImage == null) {
                     logger.warning("No tile images for angles mosaic");
                     return;
                 }
-
                 Band band = new Band(bandName, ProductData.TYPE_FLOAT32, bandSourceImage.getWidth(), bandSourceImage.getHeight());
                 String description = "";
                 if (angleID.prefix.startsWith(VIEW_ZENITH_PREFIX)) {
@@ -327,8 +364,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 try {
                     CrsGeoCoding geoCoding = ImageUtils.buildCrsGeoCoding(sceneDescription.getSceneOrigin()[0], sceneDescription.getSceneOrigin()[1],
                                                                           resolution.x, resolution.y,
-                                                                          sceneDescription.getSceneDimension(productResolution),
-                                                                          CRS.decode(this.epsgCode), subsetDef.getRegion());
+                                                                          anglesTileSize.width, anglesTileSize.height,
+                                                                          CRS.decode(this.epsgCode), bandBounds);
                     band.setGeoCoding(geoCoding);
                 } catch (Exception e) {
                     continue;
@@ -352,10 +389,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
                 if (getSubsetDef() != null) {
                     if (isMultiResolution()) {
-                        bandBounds = ImageUtils.computeBandBounds(getSubsetDef().getRegion(), sceneDescription.getSceneDimension(productResolution),
-                                                defaultBandSize, productResolution.resolution, productResolution.resolution,
-                                                bandInfo.getBandInformation().getResolution().resolution,
-                                                bandInfo.getBandInformation().getResolution().resolution);
+                            bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(getSubsetDef().getRegion(),
+                                                                  sceneDescription.getSceneDimension(productResolution).width,sceneDescription.getSceneDimension(productResolution).height,
+                                                                  defaultBandSize.width, defaultBandSize.height);
                     } else {
                         bandBounds = new Rectangle(getSubsetDef().getRegion().width, getSubsetDef().getRegion().height);
                     }
@@ -446,10 +482,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 Dimension dimension;
                 Rectangle bandBounds = null;
                 if(getSubsetDef() != null) {
-                    bandBounds = ImageUtils.computeBandBounds(getSubsetDef().getRegion(), sceneDescription.getSceneDimension(productResolution),
-                                            defaultBandSize, productResolution.resolution,
-                                            productResolution.resolution, bandInfo.getBandInformation().getResolution().resolution,
-                                            bandInfo.getBandInformation().getResolution().resolution);
+                    bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(getSubsetDef().getRegion(),
+                                            sceneDescription.getSceneDimension(productResolution).width, sceneDescription.getSceneDimension(productResolution).height,
+                                            defaultBandSize.width, defaultBandSize.height);
                     dimension = new Dimension(bandBounds.width, bandBounds.height);
                 }else {
                     dimension = sceneDescription.getSceneDimension(bandInfo.getBandInformation().getResolution());
@@ -1164,52 +1199,5 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             tileImages.add(cropOpImage);
         }
         return tileImages;
-    }
-
-    private static RenderedImage buildBandAngleSourceImage(AngleID angleID, S2OrthoSceneLayout sceneDescription, Dimension anglesTileSize,
-                                                           HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap, Point.Float masterOrigin,
-                                                           Point.Float resolution, Rectangle productBounds, Dimension defaultProductSize) {
-
-        List<PlanarImage> tileImages = buildMosaicTileImages(angleID, sceneDescription, anglesTileSize, bandAnglesGridsMap, masterOrigin);
-        if (tileImages.isEmpty()) {
-            return null;
-        }
-
-        ImageLayout imageLayout = new ImageLayout();
-        imageLayout.setMinX(0);
-        imageLayout.setMinY(0);
-        imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
-        imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
-        imageLayout.setTileGridXOffset(0);
-        imageLayout.setTileGridYOffset(0);
-
-        RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
-        hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-
-        RenderedImage[] sources = tileImages.toArray(new RenderedImage[tileImages.size()]);
-        RenderedOp mosaicOp = MosaicDescriptor.create(sources, MosaicDescriptor.MOSAIC_TYPE_OVERLAY, null, null, new double[][]{{-1.0}},
-                new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES}, hints);
-
-        // Crop Mosaic if there are lines outside the scene
-        PlanarImage bandSourceImage = cropBordersOutsideScene(mosaicOp, resolution.x, resolution.y, sceneDescription);
-
-        int defaultBandWidth = bandSourceImage.getWidth();
-        int defaultBandHeight = bandSourceImage.getHeight();
-        Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
-        if (bandBounds.x > 0 || bandBounds.y > 0 || bandBounds.width != defaultBandWidth || bandBounds.height != defaultBandHeight) {
-            Raster subsetSourceData = bandSourceImage.getData();
-            WritableRaster subsetRaster = subsetSourceData.createCompatibleWritableRaster(bandBounds.width, bandBounds.height);
-            for (int x = 0; x<bandBounds.width; x++) {
-                for (int y = 0; y<bandBounds.height; y++) {
-                    float value = subsetSourceData.getSampleFloat(x + bandBounds.x, y + bandBounds.y, 0);
-                    subsetRaster.setSample(x, y, 0, value);
-                }
-            }
-            ColorModel colorModel = bandSourceImage.getColorModel();
-            BufferedImage image = new BufferedImage(colorModel, subsetRaster, colorModel.isAlphaPremultiplied(), null);
-            bandSourceImage = PlanarImage.wrapRenderedImage(image);
-        }
-
-        return bandSourceImage;
     }
 }
