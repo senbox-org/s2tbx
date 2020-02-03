@@ -49,7 +49,6 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-binding</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

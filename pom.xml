@@ -184,6 +184,12 @@
                 <artifactId>ceres-ui</artifactId>
                 <version>${snap.version}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>ceres-binding</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
@@ -203,6 +209,12 @@
                 <version>${snap.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-core</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-gpf</artifactId>
@@ -229,12 +241,6 @@
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
-                <artifactId>snap-core</artifactId>
-                <version>${snap.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.snap</groupId>
                 <artifactId>snap-geotiff</artifactId>
                 <version>${snap.version}</version>
             </dependency>
@@ -248,6 +254,42 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-sta-ui</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>ceres-binding</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-bigtiff</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-virtual-file-system</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-ndvi</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-graph-builder</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-binning</artifactId>
                 <version>${snap.version}</version>
             </dependency>
 

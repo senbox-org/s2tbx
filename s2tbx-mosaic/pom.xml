@@ -114,12 +114,12 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>7.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-gdal-reader</artifactId>
-            <version>7.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
 
