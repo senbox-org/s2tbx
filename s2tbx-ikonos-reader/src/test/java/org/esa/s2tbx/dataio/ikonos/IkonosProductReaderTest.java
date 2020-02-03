@@ -117,29 +117,42 @@ public class IkonosProductReaderTest {
 
         assertEquals(3, product.getBands().length);
 
-        Band band = product.getBandAt(1);
-        assertNotNull(band);
-        assertEquals(21, band.getDataType());
-        assertEquals(750, band.getNumDataElems());
-        assertEquals("Pan", band.getName());
-        assertEquals(30, band.getRasterWidth());
-        assertEquals(25, band.getRasterHeight());
+        Band bandRed = product.getBandAt(0);
+        assertNotNull(bandRed);
+        assertEquals(21, bandRed.getDataType());
+        assertEquals(42, bandRed.getNumDataElems());
+        assertEquals("Red", bandRed.getName());
+        assertEquals(7, bandRed.getRasterWidth());
+        assertEquals(6, bandRed.getRasterHeight());
 
-        assertEquals(0.524145f, band.getSampleFloat(0, 0), 0.0f);
-        assertEquals(0.449445f, band.getSampleFloat(22, 20), 0.0f);
-        assertEquals(0.459405f, band.getSampleFloat(21, 11), 0.0f);
-        assertEquals(0.412095f, band.getSampleFloat(11, 21), 0.0f);
-        assertEquals(0.519165f, band.getSampleFloat(23, 23), 0.0f);
-        assertEquals(0.526635f, band.getSampleFloat(20, 24), 0.0f);
-        assertEquals(0.422055f, band.getSampleFloat(21, 20), 0.0f);
-        assertEquals(0.45318f, band.getSampleFloat(13, 14), 0.0f);
-        assertEquals(0.392175f, band.getSampleFloat(12, 19), 0.0f);
-        assertEquals(0.53037f, band.getSampleFloat(5, 17), 0.0f);
-        assertEquals(0.498f, band.getSampleFloat(16, 13), 0.0f);
-        assertEquals(0.444465f, band.getSampleFloat(21, 14), 0.0f);
-        assertEquals(0.489285f, band.getSampleFloat(20, 20), 0.0f);
-        assertEquals(0.41832f, band.getSampleFloat(10, 23), 0.0f);
-        assertEquals(0.0f, band.getSampleFloat(30, 25), 0.0f);
+        assertEquals(0.34965f, bandRed.getSampleFloat(0, 0), 0.0f);
+        assertEquals(0.45255f, bandRed.getSampleFloat(1, 2), 0.0f);
+        assertEquals(0.30135f, bandRed.getSampleFloat(3, 1), 0.0f);
+        assertEquals(0.29925f, bandRed.getSampleFloat(6, 4), 0.0f);
+
+        Band bandPan = product.getBandAt(1);
+        assertNotNull(bandPan);
+        assertEquals(21, bandPan.getDataType());
+        assertEquals(750, bandPan.getNumDataElems());
+        assertEquals("Pan", bandPan.getName());
+        assertEquals(30, bandPan.getRasterWidth());
+        assertEquals(25, bandPan.getRasterHeight());
+
+        assertEquals(0.524145f, bandPan.getSampleFloat(0, 0), 0.0f);
+        assertEquals(0.449445f, bandPan.getSampleFloat(22, 20), 0.0f);
+        assertEquals(0.459405f, bandPan.getSampleFloat(21, 11), 0.0f);
+        assertEquals(0.412095f, bandPan.getSampleFloat(11, 21), 0.0f);
+        assertEquals(0.519165f, bandPan.getSampleFloat(23, 23), 0.0f);
+        assertEquals(0.526635f, bandPan.getSampleFloat(20, 24), 0.0f);
+        assertEquals(0.422055f, bandPan.getSampleFloat(21, 20), 0.0f);
+        assertEquals(0.45318f, bandPan.getSampleFloat(13, 14), 0.0f);
+        assertEquals(0.392175f, bandPan.getSampleFloat(12, 19), 0.0f);
+        assertEquals(0.53037f, bandPan.getSampleFloat(5, 17), 0.0f);
+        assertEquals(0.498f, bandPan.getSampleFloat(16, 13), 0.0f);
+        assertEquals(0.444465f, bandPan.getSampleFloat(21, 14), 0.0f);
+        assertEquals(0.489285f, bandPan.getSampleFloat(20, 20), 0.0f);
+        assertEquals(0.41832f, bandPan.getSampleFloat(10, 23), 0.0f);
+        assertEquals(0.0f, bandPan.getSampleFloat(30, 25), 0.0f);
     }
 
     private static IkonosProductReader buildProductReader() {
