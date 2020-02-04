@@ -74,7 +74,10 @@ public class GDALProductReader extends AbstractProductReader {
             Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
             this.virtualFile = new VirtualFile(productPath);
             Product product = readProduct(this.virtualFile.getLocalFile(), null);
+            product.setFileLocation(productPath.toFile());
+
             success = true;
+
             return product;
         } catch (RuntimeException | IOException exception) {
             throw exception;
