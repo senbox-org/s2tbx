@@ -130,7 +130,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-mosaic</artifactId>
-            <version>7.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -139,7 +139,6 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-binning</artifactId>
-            <version>7.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

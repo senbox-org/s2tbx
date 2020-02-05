@@ -69,6 +69,25 @@
             <groupId>it.geosolutions.jaiext.utilities</groupId>
             <artifactId>jt-utilities</artifactId>
             <version>1.0.13</version>
+            <!-- required since engine uses the openjdk version -->
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_codec</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_imageio</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
