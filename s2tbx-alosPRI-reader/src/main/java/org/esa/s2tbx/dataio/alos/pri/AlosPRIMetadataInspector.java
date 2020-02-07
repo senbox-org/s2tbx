@@ -4,9 +4,10 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIMetadata;
 import org.esa.s2tbx.dataio.alos.pri.internal.ImageMetadata;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -28,8 +29,8 @@ public class AlosPRIMetadataInspector implements MetadataInspector {
             Metadata metadata = new Metadata();
             metadata.setProductWidth(alosPriMetadata.getRasterWidth());
             metadata.setProductHeight(alosPriMetadata.getRasterHeight());
-
-            TiePointGeoCoding productGeoCoding = AlosPRIProductReader.buildTiePointGridGeoCoding(alosPriMetadata, metadata.getProductWidth(), metadata.getProductHeight(), null);
+            Dimension defaultProductSize = new Dimension(metadata.getProductWidth(), metadata.getProductHeight());
+            GeoCoding productGeoCoding = AlosPRIProductReader.buildGeoCoding(alosPriMetadata, defaultProductSize, null, null);
             metadata.setGeoCoding(productGeoCoding);
 
             for (int bandIndex = 0; bandIndex < alosPriMetadata.getImageMetadataList().size(); bandIndex++) {

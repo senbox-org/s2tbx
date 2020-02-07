@@ -127,7 +127,14 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
             }
 
             ProductSubsetDef subsetDef = getSubsetDef();
-            Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductWidth, defaultProductHeight, subsetDef);
+            GeoCoding productDefaultGeoCoding = null;
+            if(subsetDef != null) {
+                productDefaultGeoCoding = buildTiePointGridGeoCoding(firstMetadata, metadataList, null);
+                if (productDefaultGeoCoding == null) {
+                    productDefaultGeoCoding = bandImageReaders.get(0).buildGeoCoding(bandImageReaders.get(0).getImageMetadata(), defaultProductWidth, defaultProductHeight, null);
+                }
+            }
+            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, subsetDef);
 
             Product product = new Product(productName, getProductType(), productBounds.width, productBounds.height, this);
             product.setFileLocation(productPath.toFile());
@@ -161,7 +168,11 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                 MetadataType currentMetadata = metadataList.getMetadataAt(i);
                 int defaultBandWidth = geoTiffImageReader.getImageWidth();
                 int defaultBandHeight = geoTiffImageReader.getImageHeight();
-                Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight);
+                GeoCoding bandDefaultGeoCoding = null;
+                if(subsetDef != null) {
+                    bandDefaultGeoCoding = geoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight(), null);
+                }
+                Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight, subsetDef);
                 GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
                 Product getTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
                 if (bandCount != getTiffProduct.getNumBands()) {

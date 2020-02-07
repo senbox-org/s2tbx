@@ -78,10 +78,21 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                 imageMetadataRelativeFilePath = findImageMetadataRelativeFilePath(imageMetadataProductDirectory);
                 alosAV2Metadata = readMetadata(imageMetadataProductDirectory, imageMetadataRelativeFilePath);
             }
+            int extensionIndex = imageMetadataRelativeFilePath.lastIndexOf(AlosAV2Constants.IMAGE_METADATA_EXTENSION);
+            String tiffImageRelativeFilePath = imageMetadataRelativeFilePath.substring(0, extensionIndex) + AlosAV2Constants.IMAGE_FILE_EXTENSION;
+
+            this.geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imageMetadataParentPath, tiffImageRelativeFilePath);
 
             Dimension defaultProductSize = new Dimension(alosAV2Metadata.getRasterWidth(), alosAV2Metadata.getRasterHeight());
             ProductSubsetDef subsetDef = getSubsetDef();
-            Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+            GeoCoding productDefaultGeoCoding = null;
+            if(subsetDef != null) {
+                productDefaultGeoCoding = buildTiePointGridGeoCoding(alosAV2Metadata);
+                if (productDefaultGeoCoding == null) {
+                    productDefaultGeoCoding = this.geoTiffImageReader.buildGeoCoding(this.geoTiffImageReader.getImageMetadata(), defaultProductSize.width, defaultProductSize.height, null);
+                }
+            }
+            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
             Product product = new Product(alosAV2Metadata.getProductName(), AlosAV2Constants.FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setDescription(alosAV2Metadata.getProductDescription());
@@ -97,15 +108,8 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                 product.setEndTime(centerTime);
             }
 
-            int extensionIndex = imageMetadataRelativeFilePath.lastIndexOf(AlosAV2Constants.IMAGE_METADATA_EXTENSION);
-            String tiffImageRelativeFilePath = imageMetadataRelativeFilePath.substring(0, extensionIndex) + AlosAV2Constants.IMAGE_FILE_EXTENSION;
-
-            this.geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imageMetadataParentPath, tiffImageRelativeFilePath);
-            Dimension defaultBandSize = geoTiffImageReader.validateSize(alosAV2Metadata.getRasterWidth(), alosAV2Metadata.getRasterHeight());
-
-            Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
             GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
-            Product geoTiffProduct = geoTiffProductReader.readProduct(this.geoTiffImageReader, null, bandBounds);
+            Product geoTiffProduct = geoTiffProductReader.readProduct(this.geoTiffImageReader, null, productBounds);
 
             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                 product.getMetadataRoot().addElement(alosAV2Metadata.getRootElement());

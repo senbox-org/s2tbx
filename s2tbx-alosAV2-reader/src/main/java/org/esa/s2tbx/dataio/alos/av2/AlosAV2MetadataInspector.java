@@ -1,10 +1,12 @@
 package org.esa.s2tbx.dataio.alos.av2;
 
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.alos.av2.internal.AlosAV2Constants;
 import org.esa.s2tbx.dataio.alos.av2.internal.AlosAV2Metadata;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -33,7 +35,23 @@ public class AlosAV2MetadataInspector implements MetadataInspector {
             metadata.setProductWidth(alosAV2Metadata.getRasterWidth());
             metadata.setProductHeight(alosAV2Metadata.getRasterHeight());
 
-            TiePointGeoCoding productGeoCoding = AlosAV2ProductReader.buildTiePointGridGeoCoding(alosAV2Metadata);
+            GeoCoding productGeoCoding = AlosAV2ProductReader.buildTiePointGridGeoCoding(alosAV2Metadata);
+            if(productGeoCoding == null){
+                boolean inputStreamSuccess = false;
+                GeoTiffImageReader geoTiffImageReader;
+                int extensionIndex = imageMetadataRelativeFilePath.lastIndexOf(AlosAV2Constants.IMAGE_METADATA_EXTENSION);
+                String tiffImageRelativeFilePath = imageMetadataRelativeFilePath.substring(0, extensionIndex) + AlosAV2Constants.IMAGE_FILE_EXTENSION;
+                FilePathInputStream filePathInputStream = productDirectory.getInputStream(tiffImageRelativeFilePath);
+                try {
+                    geoTiffImageReader = new GeoTiffImageReader(filePathInputStream, null);
+                    inputStreamSuccess = true;
+                } finally {
+                    if (!inputStreamSuccess) {
+                        filePathInputStream.close();
+                    }
+                }
+                productGeoCoding = geoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), alosAV2Metadata.getRasterWidth(), alosAV2Metadata.getRasterHeight(), null);
+            }
             metadata.setGeoCoding(productGeoCoding);
 
             String[] bandNames = alosAV2Metadata.getBandNames();

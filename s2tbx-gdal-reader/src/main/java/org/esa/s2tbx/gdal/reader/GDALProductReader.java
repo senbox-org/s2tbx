@@ -30,7 +30,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -113,7 +112,11 @@ public class GDALProductReader extends AbstractProductReader {
             ProductSubsetDef subsetDef = getSubsetDef();
             Rectangle productBounds = inputProductBounds;
             if (productBounds == null) {
-                productBounds = ImageUtils.computeProductBounds(defaultProductWidth, defaultProductHeight, subsetDef);
+                GeoCoding productDefaultGeoCoding = null;
+                if(subsetDef != null){
+                    productDefaultGeoCoding = buildGeoCoding(gdalDataset, null);
+                }
+                productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, subsetDef);
             }
             if ((productBounds.x + productBounds.width) > defaultProductWidth) {
                 throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.x="+productBounds.x+", productBounds.width="+productBounds.width+", default product width=" + defaultProductWidth);

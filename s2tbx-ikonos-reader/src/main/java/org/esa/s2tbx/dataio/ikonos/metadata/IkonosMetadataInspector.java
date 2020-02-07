@@ -3,9 +3,11 @@ package org.esa.s2tbx.dataio.ikonos.metadata;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.ikonos.IkonosProductReader;
+import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -35,8 +37,17 @@ public class IkonosMetadataInspector implements MetadataInspector {
             Metadata metadata = new Metadata();
             metadata.setProductWidth(metadataUtil.getMaxNumColumns());
             metadata.setProductHeight(metadataUtil.getMaxNumLines());
+            BandMetadata bandMetadataForGeoCoding = null;
+            for (BandMetadata bandMetadata : bandMetadataList) {
+                String bandName = IkonosProductReader.getBandName(bandMetadata.getImageFileName());
+                if (bandName.equals(IkonosConstants.BAND_NAMES[4])) {
+                    bandMetadataForGeoCoding = bandMetadata;
+                    break;
+                }
+            }
+            Dimension defaultProductSize = new Dimension(metadataUtil.getMaxNumColumns(), metadataUtil.getMaxNumLines());
+            GeoCoding productGeoCoding = IkonosProductReader.buildDefaultGeoCoding(ikonosMetadata, bandMetadataForGeoCoding, zipArchivePath, defaultProductSize, null, null);
 
-            TiePointGeoCoding productGeoCoding = IkonosProductReader.buildTiePointGridGeoCoding(ikonosMetadata, metadata.getProductWidth(), metadata.getProductHeight(), null);
             metadata.setGeoCoding(productGeoCoding);
 
             for (int bandIndex = 0; bandIndex < bandMetadataList.size(); bandIndex++) {
