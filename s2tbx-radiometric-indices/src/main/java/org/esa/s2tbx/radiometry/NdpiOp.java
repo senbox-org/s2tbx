@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "NdpiOp",
+        label = "NDPI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Water Radiometric Indices",
         description = "The normalized differential pond index, combines the short-wave infrared band-I and the green band",

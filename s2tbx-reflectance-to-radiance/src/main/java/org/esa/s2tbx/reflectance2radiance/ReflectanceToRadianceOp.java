@@ -30,8 +30,9 @@ import java.util.Set;
  */
 @OperatorMetadata(
         alias = "ReflectanceToRadianceOp",
+        label = "Reflectance-To-Radiance Processor",
         version="1.0",
-        category = "Optical/Thematic Land Processing",
+        category = "Optical/Preprocessing",
         description = "The 'Reflectance To Radiance Processor' operator retrieves the radiance from reflectance using Sentinel-2 products",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")

@@ -35,6 +35,7 @@ import java.util.Map;
  */
 @OperatorMetadata(
         alias = "Msavi2Op",
+        label = "MSAVI2 Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "This retrieves the second Modified Soil Adjusted Vegetation Index (MSAVI2).",

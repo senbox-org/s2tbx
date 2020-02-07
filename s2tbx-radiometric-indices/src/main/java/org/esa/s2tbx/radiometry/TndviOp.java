@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "TndviOp",
+        label = "TNDVI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "Transformed Normalized Difference Vegetation Index retrieves the Isovegetation lines parallel to soil line",

@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "CiOp",
+        label = "CI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Soil Radiometric Indices",
         description = "Colour Index  was developed to differentiate soils in the field.\n" +

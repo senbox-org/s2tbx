@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "NdwiOp",
+        label = "NDWI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Water Radiometric Indices",
         description = "The Normalized Difference Water Index was developed for the extraction of water features",

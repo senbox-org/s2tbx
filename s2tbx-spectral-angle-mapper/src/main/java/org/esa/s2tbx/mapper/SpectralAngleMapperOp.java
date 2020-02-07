@@ -40,8 +40,9 @@ import java.util.concurrent.TimeUnit;
  */
 @OperatorMetadata(
         alias = "SpectralAngleMapperOp",
+        label = "Spectral Angle Mapper Processor",
         version="1.0",
-        category = "Optical/Thematic Land Processing",
+        category = "Geometric/Classification/Supervised Classification",
         description = "Classifies a product using the spectral angle mapper algorithm",
         authors = "Dumitrascu Razvan",
         copyright = "Copyright (C) 2017 by CS ROMANIA")

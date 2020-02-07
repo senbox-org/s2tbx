@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "DviOp",
+        label = "DVI Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "Difference Vegetation Index retrieves the Isovegetation lines parallel to soil line",

@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "S2repOp",
+        label = "S2REP processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "Sentinel-2 red-edge position index",

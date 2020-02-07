@@ -43,8 +43,9 @@ import java.util.logging.Logger;
  */
 @OperatorMetadata(
         alias = "GenericRegionMergingOp",
+        label = "Generic region merging processor",
         version="1.0",
-        category = "Optical/Thematic Land Processing",
+        category = "Raster/Segmentation", // "Optical/Thematic Land Processing", 
         description = "The 'Generic Region Merging' operator computes the distinct regions from a product",
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")

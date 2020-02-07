@@ -32,6 +32,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "ReipOp",
+        label = "REIP Processor",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "The red edge inflection point index",

@@ -21,9 +21,10 @@ import java.util.Map;
  */
 @OperatorMetadata(
         alias = "BandsDifferenceOp",
+        label = "Bands Difference",
         version="1.0",
-        category = "",
-        description = "",
+        category = "", // TODO: find correct category or hide it in the graph builder menu
+        description = "", // I think it should be internal= true
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class BandsDifferenceOp extends Operator {

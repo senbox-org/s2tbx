@@ -32,8 +32,9 @@ import java.util.Map;
  */
 @OperatorMetadata(
         alias = "CoregistrationOp",
+        label = "GeFolki Co-registration",
         version = "1.0",
-        category = "Raster/Geometric",
+        category = "Raster/Geometric Operations",
         description = "Coregisters two rasters, not considering their location",
         authors = "Ramona M",
         copyright = "Copyright (C) 2017 by CS ROMANIA")

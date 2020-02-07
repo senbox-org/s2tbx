@@ -124,7 +124,8 @@ import java.util.OptionalDouble;
  * @since 5.0.6
  */
 @OperatorMetadata(alias = "S2tbx-Reproject",
-        category = "Raster/Geometric",
+        label = "Reprojection",
+        category = "Raster/Geometric Operations", // TODO: Check where it is in the main menu 
         version = "1.0",
         authors = "Marco Zühlke, Marco Peters, Ralf Quast, Norman Fomferra, Razvan Dumitrascu",
         copyright = "(c) 2009 by Brockmann Consult, 2017 by CS Romania",
