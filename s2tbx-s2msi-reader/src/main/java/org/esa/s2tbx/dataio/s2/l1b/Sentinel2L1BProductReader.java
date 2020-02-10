@@ -135,7 +135,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             product = new Product(l1bMetadataHeader.getProductMetadataPath().getFileName().toString(), productType);
         } else {
             Dimension defaultProductSize = new Dimension(sceneDescription.getSceneRectangle().width, sceneDescription.getSceneRectangle().height);
-            Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+            //this product has no geoCoding
+            Rectangle productBounds = ImageUtils.computeProductBounds(null, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
             product = new Product(defaultProductName, productType, productBounds.width, productBounds.height);
             product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);

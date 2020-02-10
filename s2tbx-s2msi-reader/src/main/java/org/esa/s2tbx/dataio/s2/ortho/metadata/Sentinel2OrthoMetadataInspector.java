@@ -20,13 +20,17 @@ import org.esa.s2tbx.dataio.s2.l3.metadata.S2L3ProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoUtils;
+import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Placemark;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -82,6 +86,7 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
             Metadata metadata = new Metadata();
             metadata.setProductWidth(sceneDescription.getSceneDimension(productResolution).width);
             metadata.setProductHeight(sceneDescription.getSceneDimension(productResolution).height);
+            Dimension defaultProductSize = new Dimension(sceneDescription.getSceneDimension(productResolution).width, sceneDescription.getSceneDimension(productResolution).height);
             addStaticAngleBands(metadata);
             List<Sentinel2ProductReader.BandInfo> bandInfoList = metadataHeader.computeBandInfoByKey(tileList);
             for (S2Metadata.Tile tile : tileList) {
@@ -115,6 +120,8 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
                 }
             }
             addIndexMasks(bandInfoList, metadata);
+            GeoCoding geoCoding = Sentinel2OrthoProductReader.buildGeoCoding(sceneDescription, CRS.decode(epsg), productResolution.resolution, productResolution.resolution, defaultProductSize, null);
+            metadata.setGeoCoding(geoCoding);
             return metadata;
         } catch (RuntimeException | IOException exception) {
             throw exception;

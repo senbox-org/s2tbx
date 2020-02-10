@@ -38,6 +38,7 @@ import java.util.List;
  * Basic reader for Kompsat 2 products.
  *
  * @author Razvan Dumitrascu
+ * modified 20201002 to compute product and band bounds based on subset information by Denisa Stefanescu
  */
 
 public class Kompsat2ProductReader extends AbstractProductReader {
@@ -105,12 +106,25 @@ public class Kompsat2ProductReader extends AbstractProductReader {
 
         Dimension defaultProductSize = new Dimension(metadataUtil.getMaxNumColumns(), metadataUtil.getMaxNumLines());
         ProductSubsetDef subsetDef = getSubsetDef();
-        Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+        GeoCoding productDefaultGeoCoding = null;
+        if(subsetDef != null){
+            BandMetadata bandMetadataForDefaultProductGeoCoding = null;
+            for (BandMetadata bandMetadata : bandMetadataList) {
+                String bandName = getBandName(bandMetadata.getImageFileName());
+                if (bandName.equals(Kompsat2Constants.BAND_NAMES[4])) {
+                    bandMetadataForDefaultProductGeoCoding = bandMetadata;
+                    break;
+                }
+            }
+            productDefaultGeoCoding = buildDefaultGeoCoding(productMetadata, bandMetadataForDefaultProductGeoCoding, imagesMetadataParentPath, defaultProductSize, null, null);
+        }
+        Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
         Product product = new Product(productMetadata.getProductName(), Kompsat2Constants.KOMPSAT2_PRODUCT, productBounds.width, productBounds.height, this);
         product.setStartTime(productMetadata.getProductStartTime());
         product.setEndTime(productMetadata.getProductEndTime());
         product.setDescription(productMetadata.getProductDescription());
+
         Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
         product.setPreferredTileSize(preferredTileSize);
         if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
@@ -133,7 +147,11 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                 try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, bandMetadata.getImageFileName())) {
                     Dimension defaultBandSize = geoTiffImageReader.validateSize(bandMetadata.getNumColumns(), bandMetadata.getNumLines());
                     Kompsat2GeoTiffProductReader geoTiffProductReader = new Kompsat2GeoTiffProductReader(getReaderPlugIn(), productMetadata, product.getSceneRasterSize(), defaultProductSize, subsetDef);
-                    Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
+                    GeoCoding bandDefaultGeoCoding = null;
+                    if(subsetDef != null){
+                        bandDefaultGeoCoding = buildDefaultGeoCoding(productMetadata, bandMetadata, imagesMetadataParentPath, defaultProductSize, geoTiffImageReader, null);
+                    }
+                    Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize, defaultBandSize, subsetDef);
                     Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
                     if (geoTiffProduct.getBandAt(0).getGeoCoding() != null && product.getSceneGeoCoding() == null) {
                         product.setSceneGeoCoding(geoTiffProduct.getBandAt(0).getGeoCoding());
@@ -146,8 +164,11 @@ public class Kompsat2ProductReader extends AbstractProductReader {
 
                 Dimension defaultBandSize = geoTiffImageReader.validateSize(bandMetadata.getNumColumns(), bandMetadata.getNumLines());
                 Kompsat2GeoTiffProductReader geoTiffProductReader = new Kompsat2GeoTiffProductReader(getReaderPlugIn(), productMetadata, product.getSceneRasterSize(), defaultProductSize, subsetDef);
-
-                Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
+                GeoCoding bandDefaultGeoCoding = null;
+                if(subsetDef != null){
+                    bandDefaultGeoCoding = buildDefaultGeoCoding(productMetadata, bandMetadata, imagesMetadataParentPath, defaultProductSize, geoTiffImageReader, null);
+                }
+                Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize, defaultBandSize, subsetDef);
                 Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
 
                 if (geoTiffProduct.getSceneGeoCoding() == null && product.getSceneGeoCoding() == null) {
@@ -353,5 +374,17 @@ public class Kompsat2ProductReader extends AbstractProductReader {
             latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
         }
         return new TiePointGeoCoding(latGrid, lonGrid);
+    }
+
+    public static GeoCoding buildDefaultGeoCoding(Kompsat2Metadata metadata, BandMetadata bandMetadata, Path zipArchivePath, Dimension defaultProductSize, GeoTiffImageReader geoTiffImageReader, ProductSubsetDef subsetDef) throws Exception {
+        if(geoTiffImageReader == null) {
+            geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
+
+        }
+        GeoCoding productGeoCoding = geoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), defaultProductSize.width, defaultProductSize.height, null);
+        if (productGeoCoding == null) {
+            productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductSize.width, defaultProductSize.height, subsetDef);
+        }
+        return productGeoCoding;
     }
 }

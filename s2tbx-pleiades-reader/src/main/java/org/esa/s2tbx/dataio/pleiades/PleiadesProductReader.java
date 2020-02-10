@@ -130,47 +130,40 @@ public class PleiadesProductReader extends AbstractProductReader {
 
         Product product = null;
         if (this.metadata != null) {
-            Rectangle productSubsetRegion = null;
             List<ImageMetadata> imageMetadataList = this.metadata.getImageMetadataList();
             if (imageMetadataList.size() == 0) {
                 throw new IOException("No raster found");
             }
             this.isMultiSize = this.metadata.getImageMetadataList().size() > 1;
-            int width = this.metadata.getSceneWidth();
-            int height = this.metadata.getSceneHeight();
-            Dimension defaultProductBounds = new Dimension(width, height);
-            if(getSubsetDef() != null && getSubsetDef().getRegion() != null){
-                productSubsetRegion = getSubsetDef().getRegion();
-                width = productSubsetRegion.width;
-                height = productSubsetRegion.height;
-            }
-            product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), width, height);
-            product.setFileLocation(this.metadata.getPath().toFile());
+            int productDefaultWidth = this.metadata.getSceneWidth();
+            int productDefaultHeight = this.metadata.getSceneHeight();
+            Dimension defaultProductBounds = new Dimension(productDefaultWidth, productDefaultHeight);
+
             ImageMetadata maxResImageMetadata = this.metadata.getMaxResolutionImage();
+            ProductSubsetDef subsetDef = getSubsetDef();
+            GeoCoding productDefaultGeoCoding = null;
+            if(subsetDef != null){
+                productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, null, null);
+            }
+            Rectangle productSubsetRegion = ImageUtils.computeProductBounds(productDefaultGeoCoding, productDefaultWidth, productDefaultHeight, subsetDef);
+            product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), productSubsetRegion.width, productSubsetRegion.height);
+            product.setFileLocation(this.metadata.getPath().toFile());
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
             product.setDescription(maxResImageMetadata.getProductDescription());
-            ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
-            if (maxResImageMetadata.hasInsertPoint()) {
-                String crsCode = maxResImageMetadata.getCRSCode();
-                try {
-                    GeoCoding geoCoding = ImageUtils.buildCrsGeoCoding(origin.x, origin.y,
-                                                                       origin.stepX, origin.stepY,
-                                                                       defaultProductBounds,
-                                                                       CRS.decode(crsCode), productSubsetRegion);
-                    product.setSceneGeoCoding(geoCoding);
-                } catch (Exception e) {
-                    logger.warning(e.getMessage());
-                }
-            } else {
-                initProductTiePointGeoCoding(maxResImageMetadata, product);
+            GeoCoding geoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, productSubsetRegion, subsetDef);
+            if (geoCoding instanceof TiePointGeoCoding){
+                TiePointGeoCoding tiePointGeoCoding = (TiePointGeoCoding) geoCoding;
+                product.addTiePointGrid(tiePointGeoCoding.getLatGrid());
+                product.addTiePointGrid(tiePointGeoCoding.getLonGrid());
             }
+            product.setSceneGeoCoding(geoCoding);
 
             PleiadesProductReaderPlugin readerPlugin = (PleiadesProductReaderPlugin)getReaderPlugIn();
             Path colorPaletteFilePath = readerPlugin.getColorPaletteFilePath();
 
             for (ImageMetadata imageMetadata : imageMetadataList) {
-                if ((getSubsetDef() != null && !getSubsetDef().isIgnoreMetadata()) || getSubsetDef() == null) {
+                if (subsetDef == null || !getSubsetDef().isIgnoreMetadata()) {
                     product.getMetadataRoot().addElement(imageMetadata.getRootElement());
                 }
                 int numBands = imageMetadata.getNumBands();
@@ -184,38 +177,32 @@ public class PleiadesProductReader extends AbstractProductReader {
                 int noDataValue = imageMetadata.getNoDataValue();
                 int bandWidth = imageMetadata.getRasterWidth();
                 int bandHeight = imageMetadata.getRasterHeight();
-                ProductSubsetDef bandSubsetDef = null;
-                Rectangle bandSubsetRegion = null;
+
+                GeoCoding bandDefaultGeoCoding = null;
+                if(subsetDef != null){
+                    bandDefaultGeoCoding = initBandGeoCoding(imageMetadata, bandWidth, bandHeight, productDefaultWidth, null, null);
+                }
+                Rectangle bandSubsetRegion = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, productDefaultWidth, productDefaultHeight, bandWidth, bandHeight, subsetDef);
                 int subsetTileCols = tileCols;
                 int subsetTileRows = tileRows;
                 int subsetTileEndRow = tileRows;
                 int subsetTileEndCol = tileCols;
                 int subsetTileStartCol = 0;
                 int subsetTileStartRow = 0;
-                if (productSubsetRegion != null) {
-                    if(isMultiSize && (bandWidth < maxResImageMetadata.getRasterWidth() || bandHeight < maxResImageMetadata.getRasterHeight())){
-                        bandWidth = (int) (productSubsetRegion.width * origin.stepX / imageMetadata.getInsertPoint().stepX);
-                        bandHeight = (int) (productSubsetRegion.height * origin.stepY / imageMetadata.getInsertPoint().stepY);
-                        int startX = (int)(productSubsetRegion.x / imageMetadata.getInsertPoint().stepX * origin.stepX);
-                        int startY = (int) (productSubsetRegion.y / imageMetadata.getInsertPoint().stepY * origin.stepY);
-                        bandSubsetRegion = new Rectangle(startX,startY,bandWidth,bandHeight);
-                    }else {
-                        bandWidth = productSubsetRegion.width;
-                        bandHeight = productSubsetRegion.height;
-                        bandSubsetRegion = productSubsetRegion;
-                    }
+                ProductSubsetDef bandSubsetDef = null;
+                if (productSubsetRegion.width != productDefaultWidth || productSubsetRegion.height != productDefaultHeight) {
                     if(tileCols > 1 || tileRows > 1) {
                         //we need to compute the tiles on row and column from where the selected subset starts
                         subsetTileStartRow = bandSubsetRegion.y / tileHeight;
                         subsetTileStartCol = bandSubsetRegion.x / tileWidth;
 
                         //image width and height are already the one from the subset region (were retrieved when the product vas instantiated)
-                        subsetTileEndCol = (bandWidth  + bandSubsetRegion.x) /tileWidth;
-                        if ((bandWidth  + bandSubsetRegion.x)  % tileWidth != 0) {
+                        subsetTileEndCol = (bandSubsetRegion.width  + bandSubsetRegion.x) /tileWidth;
+                        if ((bandSubsetRegion.width  + bandSubsetRegion.x)  % tileWidth != 0) {
                             subsetTileEndCol++;
                         }
-                        subsetTileEndRow = (bandHeight + bandSubsetRegion.y) / tileHeight;
-                        if ((bandHeight + bandSubsetRegion.y) % tileHeight != 0) {
+                        subsetTileEndRow = (bandSubsetRegion.height + bandSubsetRegion.y) / tileHeight;
+                        if ((bandSubsetRegion.height + bandSubsetRegion.y) % tileHeight != 0) {
                             subsetTileEndRow++;
                         }
 
@@ -223,8 +210,8 @@ public class PleiadesProductReader extends AbstractProductReader {
                         subsetTileRows = subsetTileEndRow - subsetTileStartRow;
                     }
                 }
-                float factorX = (float) width / bandWidth;
-                float factorY = (float) height / bandHeight;
+                float factorX = (float) productSubsetRegion.width / bandSubsetRegion.width;
+                float factorY = (float) productSubsetRegion.height / bandSubsetRegion.height;
 
                 Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
                 Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
@@ -237,7 +224,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                         readTile = false;
                     }
                     if (readTile) {
-                        if(productSubsetRegion != null) {
+                        if(productSubsetRegion.width != productDefaultWidth || productSubsetRegion.height != productDefaultHeight) {
                             bandSubsetDef = new ProductSubsetDef();
                             if (tileCols == 1 && tileRows == 1) {
                                 bandSubsetDef.setRegion(bandSubsetRegion);
@@ -285,8 +272,8 @@ public class PleiadesProductReader extends AbstractProductReader {
                     product.setNumResolutionsMax(levels);
                 }
 
-                int colorWidth = Math.round(width / factorX);
-                int colorHeight = Math.round(height / factorY);
+                int colorWidth = Math.round(productSubsetRegion.width / factorX);
+                int colorHeight = Math.round(productSubsetRegion.height / factorY);
                 for (int i = 0; i < numBands; i++) {
                     if (getSubsetDef() == null || getSubsetDef().isNodeAccepted(bandInfos[i].getId())) {
                         Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, colorWidth, colorHeight, colorPaletteFilePath);
@@ -303,7 +290,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                             targetBand.setScalingFactor(1 / bandInfos[i].getGain() * 0.1);
                         }
                         targetBand.setScalingOffset(bandInfos[i].getBias());
-                        initBandGeoCoding(imageMetadata, targetBand, width, height, productSubsetRegion);
+                        initBandGeoCoding(imageMetadata, targetBand, bandWidth, bandHeight, productSubsetRegion.width, productSubsetRegion.height, bandSubsetRegion, bandSubsetDef);
                         Band[][] srcBands = new Band[subsetTileCols][subsetTileRows];
                         for (int x = 0; x < subsetTileCols; x++) {
                             for (int y = 0; y < subsetTileRows; y++) {
@@ -313,7 +300,7 @@ public class PleiadesProductReader extends AbstractProductReader {
 
                         MosaicMultiLevelSource bandSource =
                                 new MosaicMultiLevelSource(srcBands,
-                                                           bandWidth, bandHeight,
+                                                           bandSubsetRegion.width, bandSubsetRegion.height,
                                                            tileWidth, tileHeight, subsetTileCols, subsetTileRows,
                                                            levels, TYPE_MAP.get(pixelDataType),
                                                            imageMetadata.isGeocoded() ?
@@ -358,54 +345,47 @@ public class PleiadesProductReader extends AbstractProductReader {
         // do nothing
     }
 
-    private void initProductTiePointGeoCoding(ImageMetadata imageMetadata, Product product) {
-        float[][] cornerLonsLats = imageMetadata.getCornerLonsLats();
-        TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, metadata.getSceneWidth() , metadata.getSceneHeight(), cornerLonsLats[1]);
-        TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, metadata.getSceneWidth(), metadata.getSceneHeight(), cornerLonsLats[0]);
-        if(getSubsetDef() != null && getSubsetDef().getRegion()!=null) {
-            lonGrid = TiePointGrid.createSubset(lonGrid,getSubsetDef());
-            latGrid = TiePointGrid.createSubset(latGrid,getSubsetDef());
-        }
-        product.addTiePointGrid(latGrid);
-        product.addTiePointGrid(lonGrid);
-        product.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
-    }
-
-	private GeoCoding addTiePointGridGeo(ImageMetadata metadata, int width, int height) {
+	private GeoCoding addTiePointGridGeo(ImageMetadata metadata, int width, int height, ProductSubsetDef subsetDef) {
         float[][] cornerLonsLats = metadata.getCornerLonsLats();
         TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, width, height, cornerLonsLats[1]);
         TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, width, height, cornerLonsLats[0]);
         if(getSubsetDef() != null && getSubsetDef().getRegion()!=null) {
-            lonGrid = TiePointGrid.createSubset(lonGrid,getSubsetDef());
-            latGrid = TiePointGrid.createSubset(latGrid,getSubsetDef());
+            lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
+            latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
         }
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight, Rectangle productSubsetDef) {
+    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int defaultBandWidth, int defaultBandHeight, int sceneWidth, int sceneHeight, Rectangle productSubsetDef, ProductSubsetDef subsetDef) {
         int bandWidth = band.getRasterWidth();
         int bandHeight = band.getRasterHeight();
+        if (!imageMetadata.hasInsertPoint() && sceneWidth != bandWidth) {
+                AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);
+                band.setImageToModelTransform(transform2D);
+        }
+        band.setGeoCoding(initBandGeoCoding(imageMetadata, defaultBandWidth, defaultBandHeight, sceneWidth, productSubsetDef, subsetDef));
+    }
+
+    private GeoCoding initBandGeoCoding(ImageMetadata imageMetadata, int bandWidth, int bandHeight, int sceneWidth, Rectangle productSubsetDef, ProductSubsetDef subsetDef) {
         GeoCoding geoCoding = null;
         ImageMetadata.InsertionPoint insertPoint = imageMetadata.getInsertPoint();
         String crsCode = imageMetadata.getCRSCode();
         try {
             CoordinateReferenceSystem crs = CRS.decode(crsCode);
             if (imageMetadata.hasInsertPoint()) {
-                geoCoding = ImageUtils.buildCrsGeoCoding(insertPoint.x, insertPoint.y,
+                geoCoding =  ImageUtils.buildCrsGeoCoding(insertPoint.x, insertPoint.y,
                                                          insertPoint.stepX, insertPoint.stepY,
                                                          bandWidth, bandHeight,
                                                          crs, productSubsetDef);
-            } else {
+            }else {
                 if (sceneWidth != bandWidth) {
-                    AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);
-					geoCoding = addTiePointGridGeo(imageMetadata, bandWidth, bandHeight);
-                    band.setImageToModelTransform(transform2D);
+                    geoCoding = addTiePointGridGeo(imageMetadata, bandWidth, bandHeight, subsetDef);
                 }
             }
         } catch (Exception e) {
             logger.warning(e.getMessage());
         }
-        band.setGeoCoding(geoCoding);
+        return geoCoding;
     }
 
     private void addMasks(Product target, ImageMetadata metadata) {
@@ -475,5 +455,21 @@ public class PleiadesProductReader extends AbstractProductReader {
             resultComponent = new TreeNode<File>(componentId, componentFile);
             currentComponents.addChild(resultComponent);
         }
+    }
+
+    private GeoCoding buildGeoCoding(ImageMetadata maxResImageMetadata, Dimension defaultProductBounds, Rectangle productSubsetRegion, ProductSubsetDef subsetDef){
+        if (maxResImageMetadata.hasInsertPoint()) {
+            ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
+            String crsCode = maxResImageMetadata.getCRSCode();
+            try {
+                return ImageUtils.buildCrsGeoCoding(origin.x, origin.y,
+                                                                   origin.stepX, origin.stepY,
+                                                                   defaultProductBounds,
+                                                                   CRS.decode(crsCode), productSubsetRegion);
+            } catch (Exception e) {
+                logger.warning(e.getMessage());
+            }
+        }
+        return addTiePointGridGeo(maxResImageMetadata, metadata.getSceneWidth() , metadata.getSceneHeight(), subsetDef);
     }
 }

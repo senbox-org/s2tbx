@@ -118,7 +118,11 @@ public class RapidEyeL1Reader extends AbstractProductReader {
             int defaultProductWidth = metadata.getRasterWidth();
             int defaultProductHeight = metadata.getRasterHeight();
             ProductSubsetDef subsetDef = getSubsetDef();
-            Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductWidth, defaultProductHeight, subsetDef);
+            GeoCoding productDefaultGeoCoding = null;
+            if(subsetDef != null){
+                productDefaultGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, null);
+            }
+            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, subsetDef);
             Product product = new Product(productName, RapidEyeConstants.L1_FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setProductType(metadata.getMetadataProfile());
             product.setStartTime(metadata.getProductStartTime());
@@ -126,10 +130,6 @@ public class RapidEyeL1Reader extends AbstractProductReader {
             product.setFileLocation(productPath.toFile());
             Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
             product.setPreferredTileSize(preferredTileSize);
-            TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, subsetDef);
-            product.addTiePointGrid(productGeoCoding.getLatGrid());
-            product.addTiePointGrid(productGeoCoding.getLonGrid());
-            product.setSceneGeoCoding(productGeoCoding);
             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                 product.getMetadataRoot().addElement(metadata.getRootElement());
             }
@@ -210,6 +210,12 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                         product.getMaskGroup().add(mask);
                     }
                 }
+            }
+            if(product != null){
+                TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, subsetDef);
+                product.addTiePointGrid(productGeoCoding.getLatGrid());
+                product.addTiePointGrid(productGeoCoding.getLonGrid());
+                product.setSceneGeoCoding(productGeoCoding);
             }
 
             success = true;

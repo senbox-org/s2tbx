@@ -227,8 +227,8 @@ public class IkonosProductReader extends AbstractProductReader {
 
     public static TiePointGeoCoding buildTiePointGridGeoCoding(IkonosMetadata metadata, int defaultRasterWidth, int defaultRasterHeight, ProductSubsetDef subsetDef) {
         float[][] cornerLonsLats = metadata.getMetadataComponent().getTiePointGridPoints();
-        TiePointGrid latGrid = buildTiePointGrid("latitude", 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[1], TiePointGrid.DISCONT_NONE);
-        TiePointGrid lonGrid = buildTiePointGrid("longitude", 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[0], TiePointGrid.DISCONT_AT_180);
+        TiePointGrid latGrid = buildTiePointGrid("latitude", 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[0], TiePointGrid.DISCONT_NONE);
+        TiePointGrid lonGrid = buildTiePointGrid("longitude", 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[1], TiePointGrid.DISCONT_AT_180);
         if (subsetDef != null && subsetDef.getRegion() != null) {
             lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
             latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
