@@ -122,7 +122,15 @@ public class SpotDimapProductReader extends AbstractProductReader {
     private Product readMultipleVolumeProduct(Path productPath, SpotSceneMetadata wrappingMetadata, String productType) throws Exception {
         ProductSubsetDef subsetDef = getSubsetDef();
         Dimension defaultProductSize = new Dimension(wrappingMetadata.getExpectedVolumeWidth(), wrappingMetadata.getExpectedVolumeHeight());
-        Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+
+        // add bands
+        MosaicMatrix[] spotBandMatrices = buildMultipleVolumeBandMatrices(wrappingMetadata);
+
+        GeoCoding productDefaultGeoCoding = null;
+        if(subsetDef != null){
+            productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0));
+        }
+        Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
         java.util.List<SpotDimapMetadata> componentMetadataList = wrappingMetadata.getComponentsMetadata();
         SpotDimapMetadata firstDimapMetadata = componentMetadataList.get(0);
@@ -139,11 +147,8 @@ public class SpotDimapProductReader extends AbstractProductReader {
         product.setDescription(firstDimapMetadata.getProductDescription());
         product.setFileLocation(productPath.toFile());
 
-        // add bands
-        MosaicMatrix[] spotBandMatrices = buildMultipleVolumeBandMatrices(wrappingMetadata);
-
         for (int i=0; i<this.bandImageReaders.size(); i++) {
-            GeoCoding geoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(i));
+            GeoCoding geoCoding = GeoTiffImageReader.buildGeoCoding(bandImageReaders.get(i).getImageMetadata(), defaultProductSize.width, defaultProductSize.height, productBounds);
             if (geoCoding != null) {
                 product.setSceneGeoCoding(geoCoding);
                 break;
@@ -260,7 +265,19 @@ public class SpotDimapProductReader extends AbstractProductReader {
         }
         ProductSubsetDef subsetDef = getSubsetDef();
         Dimension defaultProductSize = new Dimension(dimapMetadata.getRasterWidth(), dimapMetadata.getRasterHeight());
-        Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+
+        // add bands
+        String rasterFileName = getTiffImageForSingleVolume(dimapMetadata);
+        File rasterFile = this.productDirectory.getFile(rasterFileName);
+        GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
+        this.bandImageReaders.add(geoTiffImageReader);
+
+        GeoCoding productDefaultGeoCoding = null;
+        if(subsetDef != null){
+            productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath());
+        }
+        Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
+
         String productName = (StringUtils.isNullOrEmpty(dimapMetadata.getProductName())) ? SpotConstants.DEFAULT_PRODUCT_NAME : dimapMetadata.getProductName();
         Product product = new Product(productName, productType, productBounds.width, productBounds.height, this);
         Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
@@ -277,11 +294,6 @@ public class SpotDimapProductReader extends AbstractProductReader {
         product.setDescription(dimapMetadata.getProductDescription());
         product.setFileLocation(productPath.toFile());
 
-        // add bands
-        String rasterFileName = getTiffImageForSingleVolume(dimapMetadata);
-        File rasterFile = this.productDirectory.getFile(rasterFileName);
-        GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
-        this.bandImageReaders.add(geoTiffImageReader);
 
         // validate the image size according to the product size
         geoTiffImageReader.validateSize(defaultProductSize.width, defaultProductSize.height);

@@ -138,7 +138,20 @@ public class SpotTake5ProductReader extends AbstractProductReader {
 
             Dimension defaultProductSize = new Dimension(imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight());
             ProductSubsetDef subsetDef = getSubsetDef();
-            Rectangle productBounds = ImageUtils.computeProductBounds(defaultProductSize.width, defaultProductSize.height, subsetDef);
+
+            Map<String, String> tiffFiles = imageMetadata.getTiffFiles();
+            List<String> sortedKeys = new ArrayList<>(tiffFiles.keySet());
+            Collections.sort(sortedKeys);
+
+            GeoCoding productDefaultGeoCoding = null;
+            if(subsetDef != null){
+                String key = sortedKeys.get(sortedKeys.size() - 1);
+                String tiffFile = imageMetadata.getMetaSubFolder() + tiffFiles.get(key);
+                File rasterFile = this.productDirectory.getFile(tiffFile);
+                GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
+                productDefaultGeoCoding = GeoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), defaultProductSize.width, defaultProductSize.height, null);
+            }
+            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
             Product product = new Product(imageMetadata.getProductName(), SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0], productBounds.width, productBounds.height, this);
             product.setFileLocation(productPath.toFile());
@@ -154,16 +167,13 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             product.setPreferredTileSize(preferredTileSize);
 
             // all the bands of the tiff files are added to the product
-            Map<String, String> tiffFiles = imageMetadata.getTiffFiles();
-            List<String> sortedKeys = new ArrayList<>(tiffFiles.keySet());
-            Collections.sort(sortedKeys);
             String[] bandNames = imageMetadata.getBandNames();
             this.bandImageReaders = new ArrayList<>(sortedKeys.size());
             for (int i = sortedKeys.size() - 1; i >= 0; i--) {
                 String key = sortedKeys.get(i);
                 String tiffFile = imageMetadata.getMetaSubFolder() + tiffFiles.get(key);
                 String bandNamePrefix = key + "_";
-                Product geoTiffProduct = readGeoTiffProduct(tiffFile, productBounds, defaultProductSize);
+                Product geoTiffProduct = readGeoTiffProduct(tiffFile, defaultProductSize, productDefaultGeoCoding, subsetDef);
                 if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                     if (geoTiffProduct.getMetadataRoot() != null) {
                         XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
@@ -190,7 +200,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 String bandName = entry.getKey();
                 if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                     String tiffFile = imageMetadata.getMetaSubFolder() + entry.getValue();
-                    Product geoTiffProduct = readGeoTiffProduct(tiffFile, productBounds, defaultProductSize);
+                    Product geoTiffProduct = readGeoTiffProduct(tiffFile, defaultProductSize, productDefaultGeoCoding, subsetDef);
                     Band geoTiffBand = geoTiffProduct.getBandAt(0);
                     geoTiffBand.setName(bandName);
                     product.addBand(geoTiffBand);
@@ -281,13 +291,14 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         System.gc();
     }
 
-    private Product readGeoTiffProduct(String tiffFile, Rectangle productBounds, Dimension defaultProductSize) throws Exception {
+    private Product readGeoTiffProduct(String tiffFile, Dimension defaultProductSize, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef) throws Exception {
         File rasterFile = this.productDirectory.getFile(tiffFile);
         GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
         this.bandImageReaders.add(geoTiffImageReader);
         int defaultBandWidth = geoTiffImageReader.getImageWidth();
         int defaultBandHeight = geoTiffImageReader.getImageHeight();
-        Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+        GeoCoding bandDefaultGeoCoding = GeoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), defaultBandWidth, defaultBandHeight, null);
+        Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, subsetDef);
         GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
         return geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
     }

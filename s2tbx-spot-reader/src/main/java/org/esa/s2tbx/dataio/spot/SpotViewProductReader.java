@@ -104,7 +104,14 @@ public class SpotViewProductReader extends AbstractProductReader {
                 productName = imageMetadata.getProductName();
             }
             ProductSubsetDef subsetDef = getSubsetDef();
-            Rectangle productBounds = ImageUtils.computeProductBounds(productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), getSubsetDef());
+            GeoCoding productDefaultGeoCoding = null;
+            if(subsetDef != null){
+                productDefaultGeoCoding = buildTiePointGridGeoCoding(productMetadata, imageMetadata, null);
+                if(productDefaultGeoCoding == null){
+                    productDefaultGeoCoding = buildCrsGeoCoding(productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), productMetadata, imageMetadata);
+                }
+            }
+            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), getSubsetDef());
 
             Product product = new Product(productName, SpotConstants.SPOTVIEW_FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setFileLocation(productPath.toFile());
