@@ -101,8 +101,13 @@ public class GDALProductWriter extends AbstractProductWriter {
         }
 
         final String gdalWriteOptions = Config.instance().preferences().get("snap.dataio.gdal.creationoptions", "");
-        String[] options = StringUtils.stringToArray(gdalWriteOptions, ";");
-        this.gdalDataset = this.gdalDriver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType,options);
+        if (!gdalWriteOptions.isEmpty()) {
+            String[] options = StringUtils.stringToArray(gdalWriteOptions, ";");
+            this.gdalDataset = this.gdalDriver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType, options);
+        }else{
+            this.gdalDataset = this.gdalDriver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
+        }
+
         if (this.gdalDataset == null) {
             throw new NullPointerException("Failed creating the file to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
         }
