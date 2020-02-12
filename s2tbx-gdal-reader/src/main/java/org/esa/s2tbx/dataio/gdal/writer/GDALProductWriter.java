@@ -10,12 +10,15 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.Guardian;
+import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.runtime.Config;
 import org.esa.snap.utils.StringHelper;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,7 +100,9 @@ public class GDALProductWriter extends AbstractProductWriter {
             logger.log(Level.FINE,"Using the GDAL driver '" + this.gdalDriver.getLongName() + "' ("+this.gdalDriver.getShortName()+") to save the product.");
         }
 
-        this.gdalDataset = this.gdalDriver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
+        final String gdalWriteOptions = Config.instance().preferences().get("snap.dataio.gdal.creationoptions", "");
+        String[] options = StringUtils.stringToArray(gdalWriteOptions, ";");
+        this.gdalDataset = this.gdalDriver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType,options);
         if (this.gdalDataset == null) {
             throw new NullPointerException("Failed creating the file to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
         }
@@ -107,7 +112,17 @@ public class GDALProductWriter extends AbstractProductWriter {
         if (geoCoding == null) {
             this.gdalDataset.SetProjection("");
         } else {
-            this.gdalDataset.SetProjection(geoCoding.getGeoCRS().toWKT());
+            this.gdalDataset.SetProjection(geoCoding.getMapCRS().toWKT());
+            if (geoCoding.getImageToMapTransform() instanceof AffineTransform2D) {
+                AffineTransform2D transform = (AffineTransform2D) geoCoding.getImageToMapTransform();
+                double[] gdalGeoTransform = new double[6];
+                gdalGeoTransform[0] = transform.getTranslateX();
+                gdalGeoTransform[3] = transform.getTranslateY();
+                gdalGeoTransform[1] = transform.getScaleX();
+                gdalGeoTransform[5] = transform.getScaleY();
+
+                this.gdalDataset.SetGeoTransform(gdalGeoTransform);
+            }
         }
     }
 
