@@ -131,8 +131,8 @@ public class Dataset {
      * @param prj the JNI GDAL Dataset class SetProjection(String prj) method 'prj' argument
      * @return the JNI GDAL Dataset class SetProjection(String prj) method result
      */
-    public String setProjection(String prj) {
-        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "SetProjection", String.class, this.jniDatasetInstance, new Class[]{String.class}, new Object[]{prj});
+    public Integer setProjection(String prj) {
+        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "SetProjection", Integer.class, this.jniDatasetInstance, new Class[]{String.class}, new Object[]{prj});
     }
 
 }
