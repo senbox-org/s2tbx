@@ -1,17 +1,16 @@
 package org.esa.s2tbx.dataio.alos.av2;
 
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.esa.snap.dataio.geotiff.GeoTiffMetadataInspector;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -36,7 +35,7 @@ public class AlosAV2MetadataInspectorTest {
         assertEquals(200, metadata.getProductWidth());
         assertEquals(200, metadata.getProductHeight());
 
-        assertNull(metadata.getGeoCoding());
+        assertNotNull(metadata.getGeoCoding());
 
         assertNotNull(metadata.getBandList());
         assertEquals(4, metadata.getBandList().size());

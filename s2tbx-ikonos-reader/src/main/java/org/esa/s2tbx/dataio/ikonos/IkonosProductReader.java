@@ -4,24 +4,35 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.ikonos.internal.IkonosConstants;
-import org.esa.s2tbx.dataio.ikonos.metadata.*;
-import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.s2tbx.dataio.ikonos.metadata.BandMetadata;
+import org.esa.s2tbx.dataio.ikonos.metadata.BandMetadataUtil;
+import org.esa.s2tbx.dataio.ikonos.metadata.IkonosMetadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 
 import javax.imageio.spi.ImageInputStreamSpi;
 import javax.media.jai.JAI;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Basic reader for Ikonos products.
@@ -151,7 +162,7 @@ public class IkonosProductReader extends AbstractProductReader {
                 Dimension defaultBandSize = geoTiffImageReader.validateSize(bandMetadata.getNumColumns(), bandMetadata.getNumLines());
                 GeoCoding bandDefaultGeoCoding = null;
                 if(subsetDef != null){
-                    bandDefaultGeoCoding = geoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), defaultBandSize.width, defaultBandSize.height, null);
+                    bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
                 }
                 Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize, defaultBandSize, subsetDef);
 
@@ -317,9 +328,8 @@ public class IkonosProductReader extends AbstractProductReader {
     public static GeoCoding buildDefaultGeoCoding(IkonosMetadata metadata, BandMetadata bandMetadata, Path zipArchivePath, Dimension defaultProductSize, GeoTiffImageReader geoTiffImageReader, ProductSubsetDef subsetDef) throws Exception {
         if(geoTiffImageReader == null) {
           geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
-
         }
-        GeoCoding productGeoCoding = geoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), defaultProductSize.width, defaultProductSize.height, null);
+        GeoCoding productGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
         if (productGeoCoding == null) {
             productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductSize.width, defaultProductSize.height, subsetDef);
         }

@@ -4,22 +4,16 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 public class AlosPRIProductReaderTest {
@@ -114,12 +108,12 @@ public class AlosPRIProductReaderTest {
         Band band_B = product.getBandAt(0);
         assertNotNull(band_B);
         assertEquals(20, band_B.getDataType());
-        assertEquals(100321705, band_B.getNumDataElems());
+        assertEquals(128112000, band_B.getNumDataElems());
         assertEquals("ALPSMB038921910", band_B.getName());
-        assertEquals(9559, band_B.getRasterWidth());
-        assertEquals(10495, band_B.getRasterHeight());
+        assertEquals(12000, band_B.getRasterWidth());
+        assertEquals(10676, band_B.getRasterHeight());
 
-        assertEquals(1, band_B.getSampleInt(0, 0));
+        assertEquals(0, band_B.getSampleInt(0, 0));
         assertEquals(0, band_B.getSampleInt(6124, 8532));
         assertEquals(1, band_B.getSampleInt(7601, 2010));
         assertEquals(0, band_B.getSampleInt(3024, 5126));
@@ -129,18 +123,18 @@ public class AlosPRIProductReaderTest {
         Band band_F = product.getBandAt(1);
         assertNotNull(band_F);
         assertEquals(20, band_F.getDataType());
-        assertEquals(100784566, band_F.getNumDataElems());
+        assertEquals(95175053, band_F.getNumDataElems());
         assertEquals("ALPSMF038921800", band_F.getName());
-        assertEquals(9638, band_F.getRasterWidth());
-        assertEquals(10457, band_F.getRasterHeight());
+        assertEquals(8231, band_F.getRasterWidth());
+        assertEquals(11563, band_F.getRasterHeight());
 
         assertEquals(0, band_F.getSampleInt(0, 0));
         assertEquals(0, band_F.getSampleInt(6124, 8532));
         assertEquals(0, band_F.getSampleInt(7601, 2010));
         assertEquals(0, band_F.getSampleInt(3024, 5126));
-        assertEquals(0, band_F.getSampleInt(9123, 9010));
+        assertEquals(0, band_F.getSampleInt(8123, 9010));
         assertEquals(0, band_F.getSampleInt(4010, 7021));
-        assertEquals(0, band_F.getSampleInt(9100, 8331));
+        assertEquals(0, band_F.getSampleInt(8100, 8331));
         assertEquals(0, band_F.getSampleInt(6452, 8742));
     }
 

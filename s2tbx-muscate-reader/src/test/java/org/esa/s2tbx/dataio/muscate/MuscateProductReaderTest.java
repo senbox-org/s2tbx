@@ -69,8 +69,8 @@ public class MuscateProductReaderTest {
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
 
             Mask maskWater = finalProduct.getMaskGroup().get("AOT_Interpolation_Mask_R2");
-            assertEquals(3219, maskWater.getRasterWidth());
-            assertEquals(2997, maskWater.getRasterHeight());
+            assertEquals(3220, maskWater.getRasterWidth());
+            assertEquals(2998, maskWater.getRasterHeight());
 
             Band band_R1 = finalProduct.getBand("AOT_R1");
             assertEquals(6439, band_R1.getRasterWidth());
@@ -86,8 +86,8 @@ public class MuscateProductReaderTest {
             assertEquals(0.1000f, pixelValue, 4);
 
             Band band_B11 = finalProduct.getBand("Surface_Reflectance_B11");
-            assertEquals(3219, band_B11.getRasterWidth());
-            assertEquals(2997, band_B11.getRasterHeight());
+            assertEquals(3220, band_B11.getRasterWidth());
+            assertEquals(2998, band_B11.getRasterHeight());
 
             pixelValue = band_B11.getSampleFloat(1489, 1307);
             assertEquals(0.2750f, pixelValue, 4);
@@ -99,8 +99,8 @@ public class MuscateProductReaderTest {
             assertEquals(0.0038f, pixelValue, 4);
 
             Band band_R2 = finalProduct.getBand("Aux_IA_R2");
-            assertEquals(3219, band_R2.getRasterWidth());
-            assertEquals(2997, band_R2.getRasterHeight());
+            assertEquals(3220, band_R2.getRasterWidth());
+            assertEquals(2998, band_R2.getRasterHeight());
 
             pixelValue = band_R2.getSampleFloat(1489, 1307);
             assertEquals(0.0f, pixelValue, 4);

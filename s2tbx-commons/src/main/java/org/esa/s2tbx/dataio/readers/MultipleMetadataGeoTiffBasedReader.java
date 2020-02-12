@@ -4,12 +4,18 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.apache.commons.lang.StringUtils;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.snap.core.metadata.XmlMetadata;
-import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
@@ -23,7 +29,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -131,7 +137,7 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
             if(subsetDef != null) {
                 productDefaultGeoCoding = buildTiePointGridGeoCoding(firstMetadata, metadataList, null);
                 if (productDefaultGeoCoding == null) {
-                    productDefaultGeoCoding = bandImageReaders.get(0).buildGeoCoding(bandImageReaders.get(0).getImageMetadata(), defaultProductWidth, defaultProductHeight, null);
+                    productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(bandImageReaders.get(0), null);
                 }
             }
             Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, subsetDef);
@@ -170,7 +176,7 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                 int defaultBandHeight = geoTiffImageReader.getImageHeight();
                 GeoCoding bandDefaultGeoCoding = null;
                 if(subsetDef != null) {
-                    bandDefaultGeoCoding = geoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight(), null);
+                    bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
                 }
                 Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight, subsetDef);
                 GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);

@@ -20,15 +20,24 @@ package org.esa.s2tbx.dataio.spot;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
+import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
+import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
+import org.esa.s2tbx.dataio.spot.dimap.VolumeComponent;
+import org.esa.s2tbx.dataio.spot.dimap.VolumeMetadata;
+import org.esa.snap.core.dataio.AbstractProductReader;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
-import org.esa.s2tbx.dataio.spot.dimap.*;
-import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.*;
-import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.TreeNode;
@@ -128,7 +137,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
         GeoCoding productDefaultGeoCoding = null;
         if(subsetDef != null){
-            productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0));
+            productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0), null);
         }
         Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
@@ -274,7 +283,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
         GeoCoding productDefaultGeoCoding = null;
         if(subsetDef != null){
-            productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath());
+            productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath(), null);
         }
         Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 

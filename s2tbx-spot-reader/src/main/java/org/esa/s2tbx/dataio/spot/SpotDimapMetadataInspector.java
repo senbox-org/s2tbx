@@ -4,11 +4,12 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
-import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -32,7 +33,7 @@ public class SpotDimapMetadataInspector implements MetadataInspector {
             if (SpotDimapProductReader.isSingleVolumeMetadata(spotMetadata.getVolumeMetadata())) {
                 metadata = readSingleVolumeMetadata(productDirectory, spotMetadata.getComponentMetadata(0));
             } else {
-                metadata = readMultipleVolumeMetadata(productDirectory, spotMetadata);
+                metadata = readMultipleVolumeMetadata(productDirectory, spotMetadata, null);
             }
             metadata.getMaskList().add(SpotConstants.NODATA_VALUE);
             metadata.getMaskList().add(SpotConstants.SATURATED_VALUE);
@@ -44,7 +45,7 @@ public class SpotDimapMetadataInspector implements MetadataInspector {
         }
     }
 
-    private static MetadataInspector.Metadata readMultipleVolumeMetadata(VirtualDirEx productDirectory, SpotSceneMetadata spotMetadata) throws Exception {
+    private static MetadataInspector.Metadata readMultipleVolumeMetadata(VirtualDirEx productDirectory, SpotSceneMetadata spotMetadata, Rectangle subsetRegion) throws Exception {
         MetadataInspector.Metadata metadata = new MetadataInspector.Metadata();
         metadata.setProductWidth(spotMetadata.getExpectedVolumeWidth());
         metadata.setProductHeight(spotMetadata.getExpectedVolumeHeight());
@@ -54,7 +55,7 @@ public class SpotDimapMetadataInspector implements MetadataInspector {
             SpotDimapMetadata componentMetadata = componentMetadataList.get(fileIndex);
             String rasterFileName = SpotDimapProductReader.getTiffImageForMultipleVolume(componentMetadata);
             File rasterFile = productDirectory.getFile(rasterFileName);
-            GeoCoding geoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath());
+            GeoCoding geoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath(), subsetRegion);
             if (geoCoding != null) {
                 metadata.setGeoCoding(geoCoding);
                 break;

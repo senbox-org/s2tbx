@@ -19,17 +19,23 @@ package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.snap.core.metadata.GenericXmlMetadata;
-import org.esa.snap.core.metadata.XmlMetadata;
-import org.esa.snap.core.metadata.XmlMetadataParser;
-import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotTake5Metadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.FlagCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.MetadataAttribute;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.jai.JAIUtils;
@@ -44,8 +50,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -149,7 +160,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 String tiffFile = imageMetadata.getMetaSubFolder() + tiffFiles.get(key);
                 File rasterFile = this.productDirectory.getFile(tiffFile);
                 GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
-                productDefaultGeoCoding = GeoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), defaultProductSize.width, defaultProductSize.height, null);
+                productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
             }
             Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
@@ -297,7 +308,10 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         this.bandImageReaders.add(geoTiffImageReader);
         int defaultBandWidth = geoTiffImageReader.getImageWidth();
         int defaultBandHeight = geoTiffImageReader.getImageHeight();
-        GeoCoding bandDefaultGeoCoding = GeoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), defaultBandWidth, defaultBandHeight, null);
+        GeoCoding bandDefaultGeoCoding = null;
+        if(subsetDef != null) {
+            bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+        }
         Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, subsetDef);
         GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
         return geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);

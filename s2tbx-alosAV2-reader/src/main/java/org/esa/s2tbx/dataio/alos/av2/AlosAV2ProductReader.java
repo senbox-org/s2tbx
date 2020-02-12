@@ -5,14 +5,21 @@ import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.alos.av2.internal.AlosAV2Constants;
 import org.esa.s2tbx.dataio.alos.av2.internal.AlosAV2Metadata;
-import org.esa.snap.core.metadata.XmlMetadata;
-import org.esa.snap.core.metadata.XmlMetadataParser;
-import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
@@ -87,10 +94,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
             ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
             if(subsetDef != null) {
-                productDefaultGeoCoding = buildTiePointGridGeoCoding(alosAV2Metadata);
-                if (productDefaultGeoCoding == null) {
-                    productDefaultGeoCoding = this.geoTiffImageReader.buildGeoCoding(this.geoTiffImageReader.getImageMetadata(), defaultProductSize.width, defaultProductSize.height, null);
-                }
+                productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
             }
             Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
@@ -245,8 +249,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
             if (org.apache.commons.lang.StringUtils.endsWithIgnoreCase(baseItemName, AlosAV2Constants.PRODUCT_FOLDER_SUFFIX)) {
                 int index = org.apache.commons.lang.StringUtils.lastIndexOfIgnoreCase(baseItemName, AlosAV2Constants.PRODUCT_FOLDER_SUFFIX);
                 String identifier = baseItemName.substring(0, index);
-                String zipArchiveFileName = identifier + AlosAV2Constants.IMAGE_ARCHIVE_FILE_EXTENSION;
-                return productDirectory.getFile(zipArchiveFileName).toPath();
+                return productDirectory.getFile(identifier).toPath();
             }
         }
         // search the image metadata file

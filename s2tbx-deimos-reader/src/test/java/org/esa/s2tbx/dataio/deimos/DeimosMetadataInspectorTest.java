@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -33,7 +35,7 @@ public class DeimosMetadataInspectorTest {
         assertEquals(3000, metadata.getProductWidth());
         assertEquals(3000, metadata.getProductHeight());
 
-        assertNull(metadata.getGeoCoding());
+        assertNotNull(metadata.getGeoCoding());
 
         assertNotNull(metadata.getBandList());
         assertEquals(4, metadata.getBandList().size());

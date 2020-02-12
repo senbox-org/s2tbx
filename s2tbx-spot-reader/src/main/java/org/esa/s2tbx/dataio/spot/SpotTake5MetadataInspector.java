@@ -3,17 +3,22 @@ package org.esa.s2tbx.dataio.spot;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotTake5Metadata;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.FlagCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by jcoravu on 10/12/2019.
@@ -56,7 +61,7 @@ public class SpotTake5MetadataInspector implements MetadataInspector {
             String tiffFile = spotImageMetadata.getMetaSubFolder() + tiffFiles.get(key);
             File rasterFile = productDirectory.getFile(tiffFile);
             GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
-            GeoCoding geoCoding = GeoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), spotImageMetadata.getRasterWidth(), spotImageMetadata.getRasterHeight(), null);
+            GeoCoding geoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
             metadata.setGeoCoding(geoCoding);
 
             // for each mask found in the metadata, the first band of the mask is added to the product, in order to create the masks
