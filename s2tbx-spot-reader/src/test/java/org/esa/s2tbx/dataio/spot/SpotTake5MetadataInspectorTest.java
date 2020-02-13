@@ -27,7 +27,7 @@ public class SpotTake5MetadataInspectorTest {
     public void testMetadataInspector() throws URISyntaxException, IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
-        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "SPOT4_HRVIR1_XS_20130608_N1_TUILE_EArgentinaD0000B0000.xml");
 
         SpotTake5MetadataInspector metadataInspector = new SpotTake5MetadataInspector();
         MetadataInspector.Metadata metadata = metadataInspector.getMetadata(productFile.toPath());
@@ -36,16 +36,17 @@ public class SpotTake5MetadataInspectorTest {
         assertEquals(3750, metadata.getProductHeight());
 
         GeoCoding geoCoding = metadata.getGeoCoding();
-        assertNull(geoCoding);
+        assertNotNull(geoCoding);
 
         assertNotNull(metadata.getBandList());
-        assertEquals(4, metadata.getBandList().size());
+        assertEquals(5, metadata.getBandList().size());
         assertTrue(metadata.getBandList().contains("XS1"));
         assertTrue(metadata.getBandList().contains("XS2"));
         assertTrue(metadata.getBandList().contains("XS3"));
         assertTrue(metadata.getBandList().contains("SWIR"));
+        assertTrue(metadata.getBandList().contains("MASK_SATURATION"));
 
         assertNotNull(metadata.getMaskList());
-        assertEquals(0, metadata.getMaskList().size());
+        assertEquals(4, metadata.getMaskList().size());
     }
 }

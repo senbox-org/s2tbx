@@ -115,8 +115,8 @@ public class WorldView2ProductReaderTest {
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
 
             Band band_NIR1 = finalProduct.getBand("NIR1");
-            assertEquals(1419, band_NIR1.getRasterWidth());
-            assertEquals(1221, band_NIR1.getRasterHeight());
+            assertEquals(1420, band_NIR1.getRasterWidth());
+            assertEquals(1222, band_NIR1.getRasterHeight());
 
             float pixelValue = band_NIR1.getSampleFloat(124, 130);
             assertEquals(6.2642f, pixelValue, 4);
@@ -130,8 +130,8 @@ public class WorldView2ProductReaderTest {
             assertEquals(8.8640f, pixelValue, 4);
 
             Band band_Red = finalProduct.getBand("Red");
-            assertEquals(1419, band_Red.getRasterWidth());
-            assertEquals(1221, band_Red.getRasterHeight());
+            assertEquals(1420, band_Red.getRasterWidth());
+            assertEquals(1222, band_Red.getRasterHeight());
 
             pixelValue = band_Red.getSampleFloat(124, 130);
             assertEquals(3.8646f, pixelValue, 4);

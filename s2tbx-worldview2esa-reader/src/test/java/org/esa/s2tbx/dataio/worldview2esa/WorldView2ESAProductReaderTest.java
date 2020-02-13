@@ -106,8 +106,8 @@ public class WorldView2ESAProductReaderTest {
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
 
             Band band_Coastal = finalProduct.getBand("Coastal");
-            assertEquals(3812, band_Coastal.getRasterWidth());
-            assertEquals(2873, band_Coastal.getRasterHeight());
+            assertEquals(3814, band_Coastal.getRasterWidth());
+            assertEquals(2874, band_Coastal.getRasterHeight());
 
             float pixelValue = band_Coastal.getSampleFloat(867, 1561);
             assertEquals(70.1595f, pixelValue, 4);
@@ -118,11 +118,11 @@ public class WorldView2ESAProductReaderTest {
             pixelValue = band_Coastal.getSampleFloat(2893, 1150);
             assertEquals(85.4885f, pixelValue, 4);
             pixelValue = band_Coastal.getSampleFloat(3539, 530);
-            assertEquals(105.1411f, pixelValue, 4);
+            assertEquals(122.4353f, pixelValue, 4);
 
             Band band_Red_Edge = finalProduct.getBand("Red Edge");
-            assertEquals(3812, band_Red_Edge.getRasterWidth());
-            assertEquals(2873, band_Red_Edge.getRasterHeight());
+            assertEquals(3814, band_Red_Edge.getRasterWidth());
+            assertEquals(2874, band_Red_Edge.getRasterHeight());
 
             pixelValue = band_Red_Edge.getSampleFloat(456, 405);
             assertEquals(31.6270f, pixelValue, 4);
@@ -131,9 +131,9 @@ public class WorldView2ESAProductReaderTest {
             pixelValue = band_Red_Edge.getSampleFloat(1142, 2071);
             assertEquals(67.4197f, pixelValue, 4);
             pixelValue = band_Red_Edge.getSampleFloat(2849, 1154);
-            assertEquals(122.0342f, pixelValue, 4);
+            assertEquals(111.0805f, pixelValue, 4);
             pixelValue = band_Red_Edge.getSampleFloat(3135, 343);
-            assertEquals(110.4634f, pixelValue, 4);
+            assertEquals(101.0524f, pixelValue, 4);
 
             Band band_Pan = finalProduct.getBand("Pan");
             assertEquals(15250, band_Pan.getRasterWidth());

@@ -251,14 +251,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     anglesGridsMap.put(tile.getId(), bandAnglesGrids);
                 }
             }
-            addAnglesBands(defaultProductSize, product, sceneDescription, anglesGridsMap, productDefaultGeoCoding, subsetDef);
+            addAnglesBands(defaultProductSize, product, sceneDescription, anglesGridsMap, productBounds, subsetDef);
         }
 
         return product;
     }
 
     private void addAnglesBands(Dimension defaultProductSize, Product product,
-                                S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef) throws FactoryException, IOException {
+                                S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap, Rectangle productBounds, ProductSubsetDef subsetDef) throws FactoryException, IOException {
 
         // the upper-left corner
         Point.Float masterOrigin = new Point.Float(Float.MAX_VALUE, -Float.MAX_VALUE);
@@ -323,12 +323,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                 int defaultBandWidth = bandSourceImage.getWidth();
                 int defaultBandHeight = bandSourceImage.getHeight();
-                Dimension defaultBandSize =  new Dimension(defaultBandWidth, defaultBandHeight);
-                GeoCoding bandDefaultGeoCoding = null;
-                if(subsetDef != null){
-                    bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), resolution.x, resolution.y, defaultBandSize, null);
-                }
-                bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize, defaultBandSize, subsetDef);
+                bandBounds = ImageUtils.computeBandAngleBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
                 if (bandBounds.x > 0 || bandBounds.y > 0 || bandBounds.width != defaultBandWidth || bandBounds.height != defaultBandHeight) {
                     Raster subsetSourceData = bandSourceImage.getData();
                     WritableRaster subsetRaster = subsetSourceData.createCompatibleWritableRaster(bandBounds.width, bandBounds.height);
@@ -402,7 +397,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 GeoCoding geoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, bandBounds);
                 band.setGeoCoding(geoCoding);
 
-                AffineTransform imageToModelTransform = Product.findImageToModelTransform(product.getSceneGeoCoding());
+                AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
                 MosaicMatrix mosaicMatrix = buildBandMatrix(sceneDescription.getOrderedTileIds(), sceneDescription, bandInfo);
                 BandMultiLevelSource bandScene = new BandMultiLevelSource(bandInfo.getImageLayout().numResolutions, mosaicMatrix, bandBounds, imageToModelTransform);
 

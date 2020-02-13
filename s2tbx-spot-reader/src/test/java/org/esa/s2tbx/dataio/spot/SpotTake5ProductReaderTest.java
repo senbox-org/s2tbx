@@ -99,7 +99,7 @@ public class SpotTake5ProductReaderTest {
     public void testReadProductSubset() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
-        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "SPOT4_HRVIR1_XS_20130608_N1_TUILE_EArgentinaD0000B0000.xml");
 
         ProductSubsetDef subsetDef = new ProductSubsetDef();
         subsetDef.setNodeNames(new String[] { "XS1", "XS2", "SWIR" } );
@@ -110,7 +110,7 @@ public class SpotTake5ProductReaderTest {
         Product product = reader.readProductNodes(productFile, subsetDef);
         assertNotNull(product.getFileLocation());
         assertNotNull(product.getName());
-        assertEquals("SPOT4_HRVIR1_XS_20130616_N2A_JTanzanieD0000B0000", product.getName());
+        assertEquals("SPOT4_HRVIR1_XS_20130608_N1_TUILE_EArgentinaD0000B0000", product.getName());
         assertNotNull(product.getPreferredTileSize());
         assertNotNull(product.getProductReader());
         assertEquals(product.getProductReader(), reader);
@@ -126,7 +126,7 @@ public class SpotTake5ProductReaderTest {
         CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
         assertNotNull(coordinateReferenceSystem);
         assertNotNull(coordinateReferenceSystem.getName());
-        assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+        assertEquals("World Geodetic System 1984", coordinateReferenceSystem.getName().getCode());
 
         assertEquals(0, product.getMaskGroup().getNodeCount());
 
@@ -134,25 +134,25 @@ public class SpotTake5ProductReaderTest {
 
         Band band = product.getBandAt(1);
         assertNotNull(band);
-        assertEquals(20, band.getDataType());
-        assertEquals(3080000, band.getNumDataElems());
+        assertEquals(11, band.getDataType());
+        assertEquals(5134000, band.getNumDataElems());
         assertEquals("XS2", band.getName());
-        assertEquals(1925, band.getRasterWidth());
-        assertEquals(1600, band.getRasterHeight());
+        assertEquals(2567, band.getRasterWidth());
+        assertEquals(2000, band.getRasterHeight());
 
-        assertEquals(118, band.getSampleInt(0, 0));
-        assertEquals(104, band.getSampleInt(231, 231));
-        assertEquals(69, band.getSampleInt(32, 1235));
-        assertEquals(82, band.getSampleInt(400, 1134));
-        assertEquals(75, band.getSampleInt(35, 983));
-        assertEquals(98, band.getSampleInt(763, 1508));
-        assertEquals(39, band.getSampleInt(1733, 900));
-        assertEquals(148, band.getSampleInt(323, 896));
-        assertEquals(114, band.getSampleInt(65, 654));
-        assertEquals(42, band.getSampleInt(1500, 1500));
-        assertEquals(78, band.getSampleInt(345, 1234));
-        assertEquals(63, band.getSampleInt(542, 1434));
-        assertEquals(0, band.getSampleInt(1925, 1600));
+        assertEquals(98, band.getSampleInt(0, 0));
+        assertEquals(90, band.getSampleInt(231, 231));
+        assertEquals(118, band.getSampleInt(32, 1235));
+        assertEquals(93, band.getSampleInt(400, 1134));
+        assertEquals(126, band.getSampleInt(35, 983));
+        assertEquals(103, band.getSampleInt(763, 1508));
+        assertEquals(92, band.getSampleInt(1733, 900));
+        assertEquals(80, band.getSampleInt(323, 896));
+        assertEquals(105, band.getSampleInt(65, 654));
+        assertEquals(108, band.getSampleInt(1500, 1500));
+        assertEquals(75, band.getSampleInt(345, 1234));
+        assertEquals(78, band.getSampleInt(542, 1434));
+        assertEquals(123, band.getSampleInt(1925, 1600));
     }
 
     private static SpotTake5ProductReader buildProductReader() {

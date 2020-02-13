@@ -39,7 +39,7 @@ public class Sentinel2OrthoMetadataInspectorTest {
         assertEquals(10980, metadata.getProductWidth());
         assertEquals(10980, metadata.getProductHeight());
 
-        assertNull(metadata.getGeoCoding());
+        assertNotNull(metadata.getGeoCoding());
 
         assertNotNull(metadata.getBandList());
         assertEquals(43, metadata.getBandList().size());
@@ -80,7 +80,7 @@ public class Sentinel2OrthoMetadataInspectorTest {
         assertEquals(10980, metadata.getProductWidth());
         assertEquals(10980, metadata.getProductHeight());
 
-        assertNull(metadata.getGeoCoding());
+        assertNotNull(metadata.getGeoCoding());
 
         assertNotNull(metadata.getBandList());
         assertEquals(47, metadata.getBandList().size());
@@ -126,7 +126,7 @@ public class Sentinel2OrthoMetadataInspectorTest {
         assertEquals(10980, metadata.getProductWidth());
         assertEquals(10980, metadata.getProductHeight());
 
-        assertNull(metadata.getGeoCoding());
+        assertNotNull(metadata.getGeoCoding());
 
         assertNotNull(metadata.getBandList());
         assertEquals(48, metadata.getBandList().size());
