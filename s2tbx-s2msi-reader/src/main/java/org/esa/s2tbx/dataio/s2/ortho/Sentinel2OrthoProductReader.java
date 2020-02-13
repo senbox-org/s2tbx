@@ -382,12 +382,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 } else {
                     pixelSize = (double) productResolution.resolution;
                 }
-                GeoCoding bandDefaultGeoCoding = null;
-                if(subsetDef != null){
-                   bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
+                Rectangle bandBounds;
+                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
+                } else {
+                    GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
+                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, sceneDescription.getSceneDimension(productResolution).width,sceneDescription.getSceneDimension(productResolution).height,
+                                                                            defaultBandSize.width, defaultBandSize.height);
                 }
-                Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, sceneDescription.getSceneDimension(productResolution).width,sceneDescription.getSceneDimension(productResolution).height,
-                                                                    defaultBandSize.width, defaultBandSize.height, subsetDef);
 
 
                 Band band = buildBand(bandInfo, bandBounds.width, bandBounds.height);
@@ -465,13 +467,16 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 } else {
                     pixelSize = (double) productResolution.resolution;
                 }
-                GeoCoding bandDefaultGeoCoding = null;
-                if(subsetDef != null) {
-                    bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
+
+                Rectangle bandBounds;
+                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
+                } else {
+                    GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
+                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, sceneDescription.getSceneDimension(productResolution).width, sceneDescription.getSceneDimension(productResolution).height,
+                                                                                    defaultBandSize.width, defaultBandSize.height);
                 }
-                Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding,
-                                                                    sceneDescription.getSceneDimension(productResolution).width, sceneDescription.getSceneDimension(productResolution).height,
-                                                                    defaultBandSize.width, defaultBandSize.height, subsetDef);
+
                 Dimension dimension = new Dimension(bandBounds.width, bandBounds.height);
 
                 List<Color> colors = indexBandInformation.getColors();

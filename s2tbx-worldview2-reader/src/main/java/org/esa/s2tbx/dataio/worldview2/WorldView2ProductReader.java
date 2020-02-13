@@ -249,11 +249,13 @@ class WorldView2ProductReader extends AbstractProductReader {
 
         int defaultBandWidth = mosaicMatrix.computeTotalWidth();
         int defaultBandHeight = mosaicMatrix.computeTotalHeight();
-        GeoCoding bandDefaultGeoCoding = null;
-        if(subsetDef != null){
-            bandDefaultGeoCoding = tileMetadata.buildBandGeoCoding(null);
+        Rectangle bandBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+        } else {
+            GeoCoding bandDefaultGeoCoding = tileMetadata.buildBandGeoCoding(null);
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
         }
-        Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, subsetDef);
 
         GeoCoding bandGeoCoding = tileMetadata.buildBandGeoCoding(bandBounds);
         if (bandGeoCoding == null) {

@@ -212,15 +212,19 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
     }
 
     private static Band buildBand(Dimension defaultProductSize, MosaicMatrix mosaicMatrix, TileMetadata tileMetadata,
-                                  String bandName, int bandIndex, Dimension preferredTileSize, GeoCoding productGeoCoding, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef) {
+                                  String bandName, int bandIndex, Dimension preferredTileSize, GeoCoding productGeoCoding,
+                                  GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef) {
 
         int defaultBandWidth = mosaicMatrix.computeTotalWidth();
         int defaultBandHeight = mosaicMatrix.computeTotalHeight();
-        GeoCoding bandDefaultGeoCoding = null;
-        if(subsetDef != null){
-            bandDefaultGeoCoding = buildBandGeoCoding(tileMetadata.getTileComponent(), defaultBandWidth, defaultBandHeight, null);
+        Rectangle bandBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+        } else {
+            GeoCoding bandDefaultGeoCoding = buildBandGeoCoding(tileMetadata.getTileComponent(), defaultBandWidth, defaultBandHeight, null);
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                            defaultProductSize.height, defaultBandWidth, defaultBandHeight);
         }
-        Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, subsetDef);
 
         int productDataType = tileMetadata.getProductDataType();
         Band band = new Band(bandName, productDataType, bandBounds.width, bandBounds.height);
