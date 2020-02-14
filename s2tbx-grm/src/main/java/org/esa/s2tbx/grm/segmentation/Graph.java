@@ -26,14 +26,6 @@ public class Graph {
         return this.nodes.get(index);
     }
 
-    public Node getNodeById(int id) {
-        Optional<Node> node = this.nodes.stream().filter(n -> n.getId() == id).findFirst();
-        if (node.isPresent()) {
-            return node.get();
-        }
-        return null;
-    }
-
     public void addNode(Node nodeToAdd) {
         this.nodes.add(nodeToAdd);
     }
