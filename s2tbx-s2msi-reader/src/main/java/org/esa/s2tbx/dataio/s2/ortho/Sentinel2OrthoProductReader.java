@@ -758,11 +758,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             pixelSize = (double) productResolution.resolution;
         }
 
-        GeoCoding bandDefaultGeoCoding = null;
-        if(subsetDef != null){
-            bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
+        Rectangle bandBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
+        } else {
+            GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                            defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
         }
-        Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize, defaultBandSize, subsetDef);
 
         Band band = new Band(bandInfo.getBandName(), ProductData.TYPE_INT16, dimension.width, dimension.height);
         S2BandInformation bandInformation = bandInfo.getBandInformation();
