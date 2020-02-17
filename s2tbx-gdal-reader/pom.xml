@@ -6,7 +6,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>7.0.1-SNAPSHOT</version>
+        <version>7.0.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-gdal-reader</artifactId>
