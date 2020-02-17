@@ -2,10 +2,16 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.utils.TestUtil;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import static org.junit.Assert.*;
 
 /**
@@ -15,6 +21,13 @@ public class Sentinel2L1BMetadataInspectorTest {
     private static final String SENTINEL2_DIR = "S2";
 
     private static final String L1B_PRODUCT_NAME = "L1B/Maricopa/S2A_OPER_PRD_MSIL1B_PDMC_20160404T102635_R084_V20160403T182456_20160403T182504.SAFE/S2A_OPER_MTD_SAFL1B_PDMC_20160404T102635_R084_V20160403T182456_20160403T182504.xml";
+
+    @Before
+    public void setup() {
+        String productPath = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
+        Path sentinel2TestProductsPath = Paths.get(productPath, SENTINEL2_DIR);
+        Assume.assumeTrue(Files.exists(sentinel2TestProductsPath));
+    }
 
     @Test
     public void testSentinel2L1BMetadataInspector() throws IOException {
