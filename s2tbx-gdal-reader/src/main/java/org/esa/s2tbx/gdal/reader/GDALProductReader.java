@@ -112,11 +112,12 @@ public class GDALProductReader extends AbstractProductReader {
             ProductSubsetDef subsetDef = getSubsetDef();
             Rectangle productBounds = inputProductBounds;
             if (productBounds == null) {
-                GeoCoding productDefaultGeoCoding = null;
-                if(subsetDef != null){
-                    productDefaultGeoCoding = buildGeoCoding(gdalDataset, null);
+                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
+                } else {
+                    GeoCoding productDefaultGeoCoding = buildGeoCoding(gdalDataset, null);
+                    productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight);
                 }
-                productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, subsetDef);
             }
             if ((productBounds.x + productBounds.width) > defaultProductWidth) {
                 throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.x="+productBounds.x+", productBounds.width="+productBounds.width+", default product width=" + defaultProductWidth);

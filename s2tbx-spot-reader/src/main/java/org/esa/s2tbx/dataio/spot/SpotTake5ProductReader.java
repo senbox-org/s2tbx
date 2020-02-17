@@ -155,14 +155,17 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             Collections.sort(sortedKeys);
 
             GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null){
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+            } else {
                 String key = sortedKeys.get(sortedKeys.size() - 1);
                 String tiffFile = imageMetadata.getMetaSubFolder() + tiffFiles.get(key);
                 File rasterFile = this.productDirectory.getFile(tiffFile);
                 GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
                 productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
             }
-            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
             Product product = new Product(imageMetadata.getProductName(), SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0], productBounds.width, productBounds.height, this);
             product.setFileLocation(productPath.toFile());

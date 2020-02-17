@@ -182,10 +182,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         ProductSubsetDef subsetDef = getSubsetDef();
         Dimension defaultProductSize = new Dimension(sceneDescription.getSceneDimension(productResolution).width, sceneDescription.getSceneDimension(productResolution).height);
         GeoCoding productDefaultGeoCoding = null;
-        if(subsetDef != null){
+        Rectangle productBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+        } else {
             productDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), productResolution.resolution, productResolution.resolution, defaultProductSize, null);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
         }
-        Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
         Product product = new Product(defaultProductName, productType, productBounds.width, productBounds.height, this);
         if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
@@ -303,41 +306,41 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 PlanarImage bandSourceImage = null;
                 List<PlanarImage> tileImages = buildMosaicTileImages(angleID, sceneDescription, anglesTileSize, bandAnglesGridsMap, masterOrigin);
                 if (!tileImages.isEmpty()) {
-                ImageLayout imageLayout = new ImageLayout();
-                imageLayout.setMinX(0);
-                imageLayout.setMinY(0);
-                imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
-                imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
-                imageLayout.setTileGridXOffset(0);
-                imageLayout.setTileGridYOffset(0);
+                    ImageLayout imageLayout = new ImageLayout();
+                    imageLayout.setMinX(0);
+                    imageLayout.setMinY(0);
+                    imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+                    imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
+                    imageLayout.setTileGridXOffset(0);
+                    imageLayout.setTileGridYOffset(0);
 
-                RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
-                hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+                    RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, JAI.getDefaultInstance().getTileCache());
+                    hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
-                RenderedImage[] sources = tileImages.toArray(new RenderedImage[tileImages.size()]);
-                RenderedOp mosaicOp = MosaicDescriptor.create(sources, MosaicDescriptor.MOSAIC_TYPE_OVERLAY, null, null, new double[][]{{-1.0}},
-                                                              new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES}, hints);
+                    RenderedImage[] sources = tileImages.toArray(new RenderedImage[tileImages.size()]);
+                    RenderedOp mosaicOp = MosaicDescriptor.create(sources, MosaicDescriptor.MOSAIC_TYPE_OVERLAY, null, null, new double[][]{{-1.0}},
+                            new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES}, hints);
 
-                // Crop Mosaic if there are lines outside the scene
-                bandSourceImage = cropBordersOutsideScene(mosaicOp, resolution.x, resolution.y, sceneDescription);
+                    // Crop Mosaic if there are lines outside the scene
+                    bandSourceImage = cropBordersOutsideScene(mosaicOp, resolution.x, resolution.y, sceneDescription);
 
-                int defaultBandWidth = bandSourceImage.getWidth();
-                int defaultBandHeight = bandSourceImage.getHeight();
-                bandBounds = ImageUtils.computeBandAngleBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
-                if (bandBounds.x > 0 || bandBounds.y > 0 || bandBounds.width != defaultBandWidth || bandBounds.height != defaultBandHeight) {
-                    Raster subsetSourceData = bandSourceImage.getData();
-                    WritableRaster subsetRaster = subsetSourceData.createCompatibleWritableRaster(bandBounds.width, bandBounds.height);
-                    for (int x = 0; x < bandBounds.width; x++) {
-                        for (int y = 0; y < bandBounds.height; y++) {
-                            float value = subsetSourceData.getSampleFloat(x + bandBounds.x, y + bandBounds.y, 0);
-                            subsetRaster.setSample(x, y, 0, value);
+                    int defaultBandWidth = bandSourceImage.getWidth();
+                    int defaultBandHeight = bandSourceImage.getHeight();
+                    bandBounds = computeBandAngleBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                    if (bandBounds.x > 0 || bandBounds.y > 0 || bandBounds.width != defaultBandWidth || bandBounds.height != defaultBandHeight) {
+                        Raster subsetSourceData = bandSourceImage.getData();
+                        WritableRaster subsetRaster = subsetSourceData.createCompatibleWritableRaster(bandBounds.width, bandBounds.height);
+                        for (int x = 0; x < bandBounds.width; x++) {
+                            for (int y = 0; y < bandBounds.height; y++) {
+                                float value = subsetSourceData.getSampleFloat(x + bandBounds.x, y + bandBounds.y, 0);
+                                subsetRaster.setSample(x, y, 0, value);
+                            }
                         }
+                        ColorModel colorModel = bandSourceImage.getColorModel();
+                        BufferedImage image = new BufferedImage(colorModel, subsetRaster, colorModel.isAlphaPremultiplied(), null);
+                        bandSourceImage = PlanarImage.wrapRenderedImage(image);
                     }
-                    ColorModel colorModel = bandSourceImage.getColorModel();
-                    BufferedImage image = new BufferedImage(colorModel, subsetRaster, colorModel.isAlphaPremultiplied(), null);
-                    bandSourceImage = PlanarImage.wrapRenderedImage(image);
                 }
-            }
                 if (bandSourceImage == null) {
                     logger.warning("No tile images for angles mosaic");
                     return;
@@ -1187,5 +1190,28 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         } catch (FactoryException | TransformException e) {
             throw new IOException(e);
         }
+    }
+
+    private static Rectangle computeBandAngleBoundsBasedOnPercent(Rectangle productBounds, int defaultProductWidth, int defaultProductHeight, int defaultBandWidth, int defaultBandHeight) {
+        float productOffsetXPercent = productBounds.x / (float) defaultProductWidth;
+        float productOffsetYPercent = productBounds.y / (float) defaultProductHeight;
+        float productWidthPercent = productBounds.width / (float) defaultProductWidth;
+        float productHeightPercent = productBounds.height / (float) defaultProductHeight;
+        int bandOffsetX = Math.round(productOffsetXPercent * defaultBandWidth);
+        int bandOffsetY = Math.round(productOffsetYPercent * defaultBandHeight);
+        int bandWidth = Math.round(productWidthPercent * defaultBandWidth);
+        int bandHeight = Math.round(productHeightPercent * defaultBandHeight);
+        if (Math.round(bandWidth / productWidthPercent) > defaultBandWidth) {
+            bandWidth--;
+        } else if (Math.round(bandWidth / productWidthPercent) < defaultBandWidth) {
+            bandWidth++;
+        }
+        if (Math.round(bandHeight / productHeightPercent) > defaultBandHeight) {
+            bandHeight--;
+        } else if (Math.round(bandHeight / productHeightPercent) < defaultBandHeight) {
+            bandHeight++;
+        }
+
+        return new Rectangle(bandOffsetX, bandOffsetY, bandWidth, bandHeight);
     }
 }

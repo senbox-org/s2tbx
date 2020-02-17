@@ -113,7 +113,10 @@ public class Kompsat2ProductReader extends AbstractProductReader {
         Dimension defaultProductSize = new Dimension(metadataUtil.getMaxNumColumns(), metadataUtil.getMaxNumLines());
         ProductSubsetDef subsetDef = getSubsetDef();
         GeoCoding productDefaultGeoCoding = null;
-        if(subsetDef != null){
+        Rectangle productBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+        } else {
             BandMetadata bandMetadataForDefaultProductGeoCoding = null;
             for (BandMetadata bandMetadata : bandMetadataList) {
                 String bandName = getBandName(bandMetadata.getImageFileName());
@@ -123,8 +126,8 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                 }
             }
             productDefaultGeoCoding = buildDefaultGeoCoding(productMetadata, bandMetadataForDefaultProductGeoCoding, imagesMetadataParentPath, defaultProductSize, null, null);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
         }
-        Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
         Product product = new Product(productMetadata.getProductName(), Kompsat2Constants.KOMPSAT2_PRODUCT, productBounds.width, productBounds.height, this);
         product.setStartTime(productMetadata.getProductStartTime());

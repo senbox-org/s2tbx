@@ -134,13 +134,16 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
 
             ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null) {
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
+            } else {
                 productDefaultGeoCoding = buildTiePointGridGeoCoding(firstMetadata, metadataList, null);
                 if (productDefaultGeoCoding == null) {
                     productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(bandImageReaders.get(0), null);
                 }
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight);
             }
-            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, subsetDef);
 
             Product product = new Product(productName, getProductType(), productBounds.width, productBounds.height, this);
             product.setFileLocation(productPath.toFile());

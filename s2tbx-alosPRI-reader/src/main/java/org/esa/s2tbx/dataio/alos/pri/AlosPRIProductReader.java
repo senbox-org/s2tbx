@@ -77,10 +77,13 @@ public class AlosPRIProductReader extends AbstractProductReader {
             ProductSubsetDef subsetDef = getSubsetDef();
 
             GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null) {
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+            } else {
                 productDefaultGeoCoding = buildGeoCoding(alosPriMetadata, defaultProductSize, null, null);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
             }
-            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
             Product product = new Product(alosPriMetadata.getProductName(), AlosPRIConstants.FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setStartTime(alosPriMetadata.getProductStartTime());

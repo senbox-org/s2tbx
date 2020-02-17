@@ -95,10 +95,14 @@ class WorldView2ProductReader extends AbstractProductReader {
             }
             ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null){
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+            } else {
                 productDefaultGeoCoding = metadata.buildProductGeoCoding(null);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
             }
-            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
+
             String productName = metadata.getOrderNumber();
             if (StringUtils.isBlank(productName)) {
                 productName = this.productDirectory.getBaseFile().getName();

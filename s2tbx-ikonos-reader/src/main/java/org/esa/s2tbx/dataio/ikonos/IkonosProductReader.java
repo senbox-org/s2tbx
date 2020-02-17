@@ -107,7 +107,10 @@ public class IkonosProductReader extends AbstractProductReader {
         Dimension defaultProductSize = new Dimension(metadataUtil.getMaxNumColumns(), metadataUtil.getMaxNumLines());
         ProductSubsetDef subsetDef = getSubsetDef();
         GeoCoding productDefaultGeoCoding = null;
-        if(subsetDef != null){
+        Rectangle productBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+        } else {
             BandMetadata bandMetadataForDefaultProductGeoCoding = null;
             for (BandMetadata bandMetadata : bandMetadataList) {
                 String bandName = getBandName(bandMetadata.getImageFileName());
@@ -117,8 +120,8 @@ public class IkonosProductReader extends AbstractProductReader {
                 }
             }
             productDefaultGeoCoding = buildDefaultGeoCoding(metadata, bandMetadataForDefaultProductGeoCoding, zipArchivePath, defaultProductSize, null, null);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
         }
-        Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
         Product product = new Product(metadata.getProductName(), IkonosConstants.PRODUCT_GENERIC_NAME, productBounds.width, productBounds.height, this);
         product.setStartTime(metadata.getProductStartTime());

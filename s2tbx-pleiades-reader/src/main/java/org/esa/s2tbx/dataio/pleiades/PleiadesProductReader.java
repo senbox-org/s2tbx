@@ -142,10 +142,14 @@ public class PleiadesProductReader extends AbstractProductReader {
             ImageMetadata maxResImageMetadata = this.metadata.getMaxResolutionImage();
             ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null){
+            Rectangle productSubsetRegion;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productSubsetRegion = new Rectangle(0, 0, productDefaultWidth, productDefaultHeight);
+            } else {
                 productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, null, null);
+                productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productDefaultWidth, productDefaultHeight);
             }
-            Rectangle productSubsetRegion = ImageUtils.computeProductBounds(productDefaultGeoCoding, productDefaultWidth, productDefaultHeight, subsetDef);
+
             product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), productSubsetRegion.width, productSubsetRegion.height);
             product.setFileLocation(this.metadata.getPath().toFile());
             product.setStartTime(maxResImageMetadata.getProductStartTime());

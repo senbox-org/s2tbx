@@ -33,6 +33,7 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 
 import java.awt.*;
@@ -135,8 +136,13 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             product = new Product(l1bMetadataHeader.getProductMetadataPath().getFileName().toString(), productType);
         } else {
             Dimension defaultProductSize = new Dimension(sceneDescription.getSceneRectangle().width, sceneDescription.getSceneRectangle().height);
-            //this product has no geoCoding
-            Rectangle productBounds = ImageUtils.computeProductBounds(null, defaultProductSize.width, defaultProductSize.height, subsetDef);
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+            } else {
+                GeoCoding productDefaultGeoCoding = null; //this product has no geoCoding
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+            }
 
             product = new Product(defaultProductName, productType, productBounds.width, productBounds.height);
             product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
@@ -165,7 +171,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoByKey.isEmpty()) {
                 List<S2SpatialResolution> resolutions = computeResolutions(this.interpretation);
                 if (!(resolutions.isEmpty() || tileList.isEmpty())) {
-                    addTileIndexes(defaultProductSize, productBounds, product, resolutions, tileList, sceneDescription, sceneDimensions, imageToModelTransform, config);
+                    addTileIndexes(defaultProductSize, product, resolutions, tileList, sceneDescription, sceneDimensions, imageToModelTransform, config);
                 }
             }
         }
@@ -200,7 +206,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     TileLayout thisBandTileLayout = tileBandInfo.getImageLayout();
                     validateBandSize(defaultBandWidth, defaultBandHeight, thisBandTileLayout, defaultProductSize, productTileLayout);
 
-                    Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                    Rectangle bandBounds;
+                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                        bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+                    } else {
+                        GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
+                        GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                                        defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                    }
 
                     Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height);
                     band.setDescription(tileBandInfo.getBandInformation().getDescription());
@@ -214,7 +228,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
     }
 
-    private void addTileIndexes(Dimension defaultProductSize, Rectangle productBounds, Product product, List<S2SpatialResolution> resolutions,
+    private void addTileIndexes(Dimension defaultProductSize, Product product, List<S2SpatialResolution> resolutions,
                                 List<L1bMetadata.Tile> tileList, L1bSceneDescription sceneDescription, Map<S2SpatialResolution, Dimension> sceneDimensions,
                                 AffineTransform imageToModelTransform, S2Config config) {
 
@@ -228,7 +242,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             for (L1BBandInfo bandInfo : tileInfoList) {
                 if (isMultiResolution() || bandInfo.getBandInformation().getResolution() == productResolution) {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandInfo.getBandInformation().getPhysicalBand())) {
-                        Band band = buildIndexBand(defaultProductSize, productBounds, bandInfo, sceneDescription, imageToModelTransform, productTileLayout);
+                        Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, productTileLayout);
                         product.addBand(band);
                     }
                 }
@@ -245,7 +259,16 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     S2SpatialResolution bandResolution = bandInfo.getBandInformation().getResolution();
                     int defaultMaskWidth = sceneDimensions.get(bandResolution).width;
                     int defaultMaskHeight = sceneDimensions.get(bandResolution).height;
-                    Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultMaskWidth, defaultMaskHeight);
+
+                    Rectangle bandBounds;
+                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                        bandBounds = new Rectangle(defaultMaskWidth, defaultMaskHeight);
+                    } else {
+                        GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
+                        GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                                        defaultProductSize.height, defaultMaskWidth, defaultMaskHeight);
+                    }
 
                     Iterator<Color> colorIterator = indexBandInformation.getColors().iterator();
 
@@ -298,7 +321,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
     }
 
-    private static Band buildIndexBand(Dimension defaultProductSize, Rectangle productBounds, L1BBandInfo bandInfo,
+    private static Band buildIndexBand(Dimension defaultProductSize, L1BBandInfo bandInfo, ProductSubsetDef subsetDef,
                                        L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, TileLayout productTileLayout) {
 
         MosaicMatrix mosaicMatrix = buildIndexBandMatrix(sceneDescription.getMatrixTileIds(bandInfo), sceneDescription, bandInfo);
@@ -307,7 +330,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         TileLayout thisBandTileLayout = bandInfo.getImageLayout();
         validateBandSize(defaultBandWidth, defaultBandHeight, thisBandTileLayout, defaultProductSize, productTileLayout);
 
-        Rectangle bandBounds = ImageUtils.computeBandBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+        Rectangle bandBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+        } else {
+            GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
+            GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                            defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+        }
 
         S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInfo.getBandInformation();
 

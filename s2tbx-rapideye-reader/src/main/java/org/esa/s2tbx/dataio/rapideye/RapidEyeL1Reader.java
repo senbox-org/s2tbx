@@ -118,11 +118,14 @@ public class RapidEyeL1Reader extends AbstractProductReader {
             int defaultProductWidth = metadata.getRasterWidth();
             int defaultProductHeight = metadata.getRasterHeight();
             ProductSubsetDef subsetDef = getSubsetDef();
-            GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null){
-                productDefaultGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, null);
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
+            } else {
+                GeoCoding productDefaultGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, null);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight);
             }
-            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, subsetDef);
+
             Product product = new Product(productName, RapidEyeConstants.L1_FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setProductType(metadata.getMetadataProfile());
             product.setStartTime(metadata.getProductStartTime());

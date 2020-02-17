@@ -127,10 +127,14 @@ public class Spot6ProductReader extends AbstractProductReader {
             Dimension defaultProductSize = new Dimension(defaultProductWidth, defaultProductHeight);
             ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
             GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null){
+            Rectangle productSubsetRegion;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productSubsetRegion = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
+            } else {
                 productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductSize, null, null);
+                productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight);
             }
-            Rectangle productSubsetRegion = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, subsetDef);
+
             product = new Product(metadata.getInternalReference(),
                                   metadata.getProductType(),
                                   productSubsetRegion.width, productSubsetRegion.height);

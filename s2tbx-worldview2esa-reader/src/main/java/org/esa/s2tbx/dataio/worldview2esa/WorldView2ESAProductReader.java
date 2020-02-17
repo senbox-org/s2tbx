@@ -102,10 +102,13 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
 
             ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null){
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+            } else {
                 productDefaultGeoCoding = tileMetadataList.buildProductGeoCoding(null);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
             }
-            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
             Product product = new Product(metadata.getProductName(), WorldView2ESAConstants.PRODUCT_TYPE, productBounds.width, productBounds.height, this);
             product.setStartTime(metadata.getProductStartTime());

@@ -90,10 +90,13 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             ProductSubsetDef subsetDef = getSubsetDef();
             Dimension defaultProductSize = new Dimension(metadata.getRasterWidth(), metadata.getRasterHeight());
             GeoCoding productDefaultGeoCoding = null;
-            if(subsetDef != null){
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+            } else {
                 productDefaultGeoCoding = metadata.buildCrsGeoCoding(null);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
             }
-            Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, getSubsetDef());
 
             // create product
             Product product = new Product(this.metadata.getProductName(), MuscateConstants.MUSCATE_FORMAT_NAMES[0], productBounds.width, productBounds.height);

@@ -135,11 +135,13 @@ public class SpotDimapProductReader extends AbstractProductReader {
         // add bands
         MosaicMatrix[] spotBandMatrices = buildMultipleVolumeBandMatrices(wrappingMetadata);
 
-        GeoCoding productDefaultGeoCoding = null;
-        if(subsetDef != null){
-            productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0), null);
+        Rectangle productBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+        } else {
+            GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0), null);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
         }
-        Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
         java.util.List<SpotDimapMetadata> componentMetadataList = wrappingMetadata.getComponentsMetadata();
         SpotDimapMetadata firstDimapMetadata = componentMetadataList.get(0);
@@ -281,11 +283,13 @@ public class SpotDimapProductReader extends AbstractProductReader {
         GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
         this.bandImageReaders.add(geoTiffImageReader);
 
-        GeoCoding productDefaultGeoCoding = null;
-        if(subsetDef != null){
-            productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath(), null);
+        Rectangle productBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+        } else {
+            GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath(), null);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
         }
-        Rectangle productBounds = ImageUtils.computeProductBounds(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, subsetDef);
 
         String productName = (StringUtils.isNullOrEmpty(dimapMetadata.getProductName())) ? SpotConstants.DEFAULT_PRODUCT_NAME : dimapMetadata.getProductName();
         Product product = new Product(productName, productType, productBounds.width, productBounds.height, this);
