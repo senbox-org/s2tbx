@@ -308,11 +308,14 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         this.bandImageReaders.add(geoTiffImageReader);
         int defaultBandWidth = geoTiffImageReader.getImageWidth();
         int defaultBandHeight = geoTiffImageReader.getImageHeight();
-        GeoCoding bandDefaultGeoCoding = null;
-        if(subsetDef != null) {
-            bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+        Rectangle bandBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+        } else {
+            GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
         }
-        Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, subsetDef);
+
         GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
         return geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
     }

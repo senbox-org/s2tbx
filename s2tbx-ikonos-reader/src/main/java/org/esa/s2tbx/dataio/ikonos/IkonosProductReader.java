@@ -143,11 +143,15 @@ public class IkonosProductReader extends AbstractProductReader {
             if (!bandIsSelected && bandName.equals(IkonosConstants.BAND_NAMES[4])) {
                 try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName())) {
                     Dimension defaultBandSize = new Dimension(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight());
-                    GeoCoding bandDefaultGeoCoding = null;
-                    if(subsetDef != null){
-                        bandDefaultGeoCoding = buildDefaultGeoCoding(metadata, bandMetadata, zipArchivePath, defaultProductSize, geoTiffImageReader, null);
+                    Rectangle bandBounds;
+                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                        bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
+                    } else {
+                        GeoCoding bandDefaultGeoCoding = buildDefaultGeoCoding(metadata, bandMetadata, zipArchivePath, defaultProductSize, geoTiffImageReader, null);
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                                        defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
                     }
-                    Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize, defaultBandSize, subsetDef);
+
                     IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, product.getSceneRasterSize(), defaultBandSize, getSubsetDef());
                     Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
                     if (geoTiffProduct.getBandAt(0).getGeoCoding() != null && product.getSceneGeoCoding() == null) {
@@ -160,11 +164,14 @@ public class IkonosProductReader extends AbstractProductReader {
                 this.bandImageReaders.add(geoTiffImageReader);
 
                 Dimension defaultBandSize = geoTiffImageReader.validateSize(bandMetadata.getNumColumns(), bandMetadata.getNumLines());
-                GeoCoding bandDefaultGeoCoding = null;
-                if(subsetDef != null){
-                    bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                Rectangle bandBounds;
+                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
+                } else {
+                    GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                            defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
                 }
-                Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize, defaultBandSize, subsetDef);
 
                 // read the Geo Tiff product
                 IkonosGeoTiffProductReader geoTiffProductReader = new IkonosGeoTiffProductReader(getReaderPlugIn(), metadata, product.getSceneRasterSize(), defaultBandSize, getSubsetDef());

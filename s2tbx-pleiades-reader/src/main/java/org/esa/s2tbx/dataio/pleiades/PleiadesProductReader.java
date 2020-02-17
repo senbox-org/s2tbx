@@ -178,11 +178,14 @@ public class PleiadesProductReader extends AbstractProductReader {
                 int bandWidth = imageMetadata.getRasterWidth();
                 int bandHeight = imageMetadata.getRasterHeight();
 
-                GeoCoding bandDefaultGeoCoding = null;
-                if(subsetDef != null){
-                    bandDefaultGeoCoding = initBandGeoCoding(imageMetadata, bandWidth, bandHeight, productDefaultWidth, null, null);
+                Rectangle bandSubsetRegion;
+                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    bandSubsetRegion = new Rectangle(bandWidth, bandHeight);
+                } else {
+                    GeoCoding bandDefaultGeoCoding = initBandGeoCoding(imageMetadata, bandWidth, bandHeight, productDefaultWidth, null, null);
+                    bandSubsetRegion = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, productDefaultWidth, productDefaultHeight, bandWidth, bandHeight);
                 }
-                Rectangle bandSubsetRegion = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, productDefaultWidth, productDefaultHeight, bandWidth, bandHeight, subsetDef);
+
                 int subsetTileCols = tileCols;
                 int subsetTileRows = tileRows;
                 int subsetTileEndRow = tileRows;

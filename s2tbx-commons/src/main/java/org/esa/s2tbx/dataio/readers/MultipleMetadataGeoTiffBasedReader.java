@@ -174,11 +174,14 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                 MetadataType currentMetadata = metadataList.getMetadataAt(i);
                 int defaultBandWidth = geoTiffImageReader.getImageWidth();
                 int defaultBandHeight = geoTiffImageReader.getImageHeight();
-                GeoCoding bandDefaultGeoCoding = null;
-                if(subsetDef != null) {
-                    bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                Rectangle bandBounds;
+                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+                } else {
+                    GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight);
                 }
-                Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight, subsetDef);
+
                 GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
                 Product getTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
                 if (bandCount != getTiffProduct.getNumBands()) {

@@ -416,11 +416,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 String bandName = bandNameCallback.buildBandName(geoPosition, tiffImageRelativeFilePath);// bandNamePrefix + geoPosition.id;
                 if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                     GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
-                    GeoCoding bandDefaultGeoCoding = null;
-                    if(subsetDef != null){
-                        bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                    Rectangle bandBounds;
+                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                        bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+                    } else {
+                        GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
                     }
-                    Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, subsetDef);
+
                     Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
                     Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
                     geoTiffBand.setName(bandName);
@@ -955,8 +958,12 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
     private static Band readAngleBand(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String angleBandName, String description,
                                       Dimension defaultSize, float[] data, Point.Float resolution, MuscateMetadata metadata, ProductSubsetDef subsetDef) {
-        GeoCoding bandDefaultGeoCoding = null;
-        if(subsetDef != null){
+
+        Rectangle bandBounds = null;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            bandBounds = new Rectangle(defaultSize.width, defaultSize.height);
+        } else {
+            GeoCoding bandDefaultGeoCoding = null;
             try {
                 CoordinateReferenceSystem mapCRS = CRS.decode("EPSG:" + metadata.getEPSG());
                 MuscateMetadata.Geoposition firstGeoPosition = metadata.getGeoPositions().get(0);
@@ -964,8 +971,8 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             } catch (Exception e) {
                 logger.warning(String.format("Unable to set geocoding to the band %s", angleBandName));
             }
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultSize.width, defaultSize.height);
         }
-        Rectangle bandBounds = ImageUtils.computeBandBounds(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultSize.width, defaultSize.height, subsetDef);
 
         int[] bandOffsets = {0};
         SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, bandBounds.width, bandBounds.height, 1, bandBounds.width, bandOffsets);
