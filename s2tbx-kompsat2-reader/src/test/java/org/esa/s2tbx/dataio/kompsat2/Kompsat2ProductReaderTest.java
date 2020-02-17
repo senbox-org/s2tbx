@@ -113,8 +113,8 @@ public class Kompsat2ProductReaderTest {
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
 
             Band band_MS1 = finalProduct.getBand("MS1");
-            assertEquals(2500, band_MS1.getRasterWidth());
-            assertEquals(2165, band_MS1.getRasterHeight());
+            assertEquals(2501, band_MS1.getRasterWidth());
+            assertEquals(2166, band_MS1.getRasterHeight());
 
             float pixelValue = band_MS1.getSampleFloat(199, 488);
             assertEquals(0.8481f, pixelValue, 4);
@@ -130,8 +130,8 @@ public class Kompsat2ProductReaderTest {
             assertEquals(0.7349f, pixelValue, 4);
 
             Band band_MS4 = finalProduct.getBand("MS4");
-            assertEquals(2500, band_MS4.getRasterWidth());
-            assertEquals(2165, band_MS4.getRasterHeight());
+            assertEquals(2501, band_MS4.getRasterWidth());
+            assertEquals(2166, band_MS4.getRasterHeight());
 
             pixelValue = band_MS4.getSampleFloat(199, 488);
             assertEquals(0.5273f, pixelValue, 4);

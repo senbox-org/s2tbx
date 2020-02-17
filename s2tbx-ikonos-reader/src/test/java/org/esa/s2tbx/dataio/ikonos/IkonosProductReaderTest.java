@@ -120,15 +120,15 @@ public class IkonosProductReaderTest {
         Band bandRed = product.getBandAt(0);
         assertNotNull(bandRed);
         assertEquals(21, bandRed.getDataType());
-        assertEquals(42, bandRed.getNumDataElems());
+        assertEquals(72, bandRed.getNumDataElems());
         assertEquals("Red", bandRed.getName());
-        assertEquals(7, bandRed.getRasterWidth());
-        assertEquals(6, bandRed.getRasterHeight());
+        assertEquals(9, bandRed.getRasterWidth());
+        assertEquals(8, bandRed.getRasterHeight());
 
-        assertEquals(0.34965f, bandRed.getSampleFloat(0, 0), 0.0f);
-        assertEquals(0.45255f, bandRed.getSampleFloat(1, 2), 0.0f);
-        assertEquals(0.30135f, bandRed.getSampleFloat(3, 1), 0.0f);
-        assertEquals(0.29925f, bandRed.getSampleFloat(6, 4), 0.0f);
+        assertEquals(0.3339f, bandRed.getSampleFloat(0, 0), 0.0f);
+        assertEquals(0.35385f, bandRed.getSampleFloat(1, 2), 0.0f);
+        assertEquals(0.40215f, bandRed.getSampleFloat(3, 1), 0.0f);
+        assertEquals(0.34125f, bandRed.getSampleFloat(6, 4), 0.0f);
 
         Band bandPan = product.getBandAt(1);
         assertNotNull(bandPan);
