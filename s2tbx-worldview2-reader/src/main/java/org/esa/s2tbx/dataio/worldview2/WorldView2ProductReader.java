@@ -29,6 +29,7 @@ import org.opengis.referencing.operation.TransformException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
 import java.awt.*;
+import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -142,16 +143,16 @@ class WorldView2ProductReader extends AbstractProductReader {
                 if (defaultSubProductSize == null) {
                     throw new NullPointerException("The subproduct default size is null.");
                 }
-                Rectangle subProductBounds;
+                GeoCoding subProductDefaultGeoCoding = null;
+                GeoCoding subProductGeoCoding = null;
                 if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
-                    subProductBounds = new Rectangle(defaultSubProductSize.width, defaultSubProductSize.height);
                 } else {
-                    GeoCoding bandDefaultGeoCoding = metadata.buildProductGeoCoding(null);
-                    subProductBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                                          defaultProductSize.height, defaultSubProductSize.width, defaultSubProductSize.height);
+                    subProductDefaultGeoCoding = subProductTileMetadataList.buildProductGeoCoding(null);
+                    Rectangle subProductBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, subProductDefaultGeoCoding,
+                                                    defaultProductSize.width, defaultProductSize.height, defaultSubProductSize.width, defaultSubProductSize.height);
+                    subProductGeoCoding = subProductTileMetadataList.buildProductGeoCoding(subProductBounds);
                 }
 
-                GeoCoding subProductGeoCoding = subProductTileMetadataList.buildProductGeoCoding(subProductBounds);
 
                 int bandsDataType = subProductTileMetadataList.getBandsDataType();
                 Set<String> tiffImageRelativeFiles = subProductTileMetadataList.getTiffImageRelativeFiles();
@@ -159,13 +160,16 @@ class WorldView2ProductReader extends AbstractProductReader {
                     if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                         product.getMetadataRoot().addElement(tileMetadata.getRootElement());
                     }
-                    MosaicMatrix mosaicMatrix = buildMosaicMatrix(tileMetadata, parentFolderPath, tiffImageRelativeFiles);
+                    MosaicMatrix subProductMosaicMatrix = buildMosaicMatrix(tileMetadata, parentFolderPath, tiffImageRelativeFiles);
                     TileComponent tileComponent = tileMetadata.getTileComponent();
                     String[] bandNames = subProductTileMetadataList.computeBandNames(tileMetadata);
                     for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
                         String bandName = bandPrefix + bandNames[bandIndex];
                         if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                            Band band = buildBand(defaultProductSize, mosaicMatrix, bandsDataType, bandName, bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, productDefaultGeoCoding, subsetDef);
+                            // use the default product size to compute the band of a subproduct because the subset region
+                            // is set according to the default product size
+                            Band band = buildSubProductBand(defaultProductSize, subProductDefaultGeoCoding, subProductMosaicMatrix, bandsDataType, bandName,
+                                                            bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, subsetDef);
                             band.setScalingFactor(tileComponent.getScalingFactor(bandNames[bandIndex]));
                             product.addBand(band);
                         }
@@ -251,18 +255,19 @@ class WorldView2ProductReader extends AbstractProductReader {
         return mosaicMatrix;
     }
 
-    private static Band buildBand(Dimension defaultProductSize, MosaicMatrix mosaicMatrix, int bandDataType,
-                                  String bandName, int bandIndex, TileMetadata tileMetadata, GeoCoding subProductGeoCoding, Dimension preferredTileSize, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef)
+    private static Band buildSubProductBand(Dimension defaultProductSize, GeoCoding subProductDefaultGeoCoding, MosaicMatrix subProductMosaicMatrix,
+                                  int bandDataType, String bandName, int bandIndex, TileMetadata tileMetadata, GeoCoding subProductGeoCoding,
+                                  Dimension preferredTileSize, ProductSubsetDef subsetDef)
                                   throws FactoryException, TransformException {
 
-        int defaultBandWidth = mosaicMatrix.computeTotalWidth();
-        int defaultBandHeight = mosaicMatrix.computeTotalHeight();
+        int defaultBandWidth = subProductMosaicMatrix.computeTotalWidth();
+        int defaultBandHeight = subProductMosaicMatrix.computeTotalHeight();
         Rectangle bandBounds;
         if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
             bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
         } else {
             GeoCoding bandDefaultGeoCoding = tileMetadata.buildBandGeoCoding(null);
-            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(subProductDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
         }
 
         GeoCoding bandGeoCoding = tileMetadata.buildBandGeoCoding(bandBounds);
@@ -275,7 +280,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         if (bandGeoCoding != null) {
             band.setGeoCoding(bandGeoCoding);
         }
-        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(mosaicMatrix, bandBounds, preferredTileSize, bandIndex, bandGeoCoding);
+        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(subProductMosaicMatrix, bandBounds, preferredTileSize, bandIndex, bandGeoCoding);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
         return band;
     }
