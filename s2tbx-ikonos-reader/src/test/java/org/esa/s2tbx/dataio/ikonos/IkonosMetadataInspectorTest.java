@@ -41,7 +41,7 @@ public class IkonosMetadataInspectorTest {
         CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
         assertNotNull(coordinateReferenceSystem);
         assertNotNull(coordinateReferenceSystem.getName());
-        assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+        assertEquals("World Geodetic System 1984", coordinateReferenceSystem.getName().getCode());
 
         assertNotNull(metadata.getBandList());
         assertEquals(5, metadata.getBandList().size());

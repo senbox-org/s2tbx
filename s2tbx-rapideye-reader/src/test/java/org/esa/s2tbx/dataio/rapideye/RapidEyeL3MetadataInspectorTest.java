@@ -33,7 +33,7 @@ public class RapidEyeL3MetadataInspectorTest {
         assertEquals(10985, metadata.getProductWidth());
         assertEquals(11232, metadata.getProductHeight());
 
-        assertNull(metadata.getGeoCoding());
+        assertNotNull(metadata.getGeoCoding());
 
         assertNotNull(metadata.getBandList());
         assertEquals(5, metadata.getBandList().size());

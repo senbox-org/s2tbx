@@ -17,7 +17,9 @@
 
 package org.esa.s2tbx.dataio.spot6;
 
+import com.bc.ceres.binding.ConversionException;
 import com.bc.ceres.core.NullProgressMonitor;
+import com.vividsolutions.jts.geom.Geometry;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoPos;
@@ -26,6 +28,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,7 +88,7 @@ public class Spot6ProductReaderTest {
     }
 
     @Test
-    public void testReadProductSubset() {
+    public void testReadProductPixelSubset() {
         Date startDate = Calendar.getInstance().getTime();
         File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short" + File.separator + "SPOT_LIST.XML");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
@@ -153,6 +156,84 @@ public class Spot6ProductReaderTest {
             pixelValue = band_B3.getSampleFloat(1035, 336);
             assertEquals(66.3986f, pixelValue, 4);
         } catch (IOException e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        }
+    }
+
+    @Test
+    public void testReadProductGeometrySubset() {
+        Date startDate = Calendar.getInstance().getTime();
+        File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short" + File.separator + "SPOT_LIST.XML");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "100");
+        try {
+            JtsGeometryConverter converter = new JtsGeometryConverter();
+            Geometry geometry = converter.parse("POLYGON ((-83.78767395019531 42.67092514038086, -83.78624725341797 42.67088317871094, -83.78482055664062 42.67084503173828, -83.78339385986328 42.67080307006836, -83.78196716308594 42.6707649230957, -83.7805404663086 42.67072296142578, -83.77911376953125 42.67068099975586, -83.77769470214844 42.6706428527832, -83.7762680053711 42.67060089111328, -83.77484130859375 42.670562744140625, -83.7734146118164 42.6705207824707, -83.77198791503906 42.67048263549805, -83.77056121826172 42.670440673828125, -83.7691421508789 42.67040252685547, -83.76771545410156 42.67036056518555, -83.76628875732422 42.67032241821289, -83.76486206054688 42.67028045654297, -83.76343536376953 42.67024230957031, -83.76270294189453 42.67021942138672, -83.76275634765625 42.669166564941406, -83.7628173828125 42.66811752319336, -83.76287078857422 42.66706466674805, -83.76292419433594 42.666011810302734, -83.76297760009766 42.66495895385742, -83.76303100585938 42.66390609741211, -83.7630844116211 42.66285705566406, -83.76314544677734 42.66180419921875, -83.76314544677734 42.66170883178711, -83.76387786865234 42.6617317199707, -83.76530456542969 42.66176986694336, -83.76673126220703 42.66181182861328, -83.76815795898438 42.66184997558594, -83.76957702636719 42.66189193725586, -83.77100372314453 42.661930084228516, -83.77243041992188 42.66197204589844, -83.77385711669922 42.662010192871094, -83.77528381347656 42.662052154541016, -83.77670288085938 42.66209411621094, -83.77812957763672 42.662132263183594, -83.77955627441406 42.662174224853516, -83.7809829711914 42.66221237182617, -83.78240966796875 42.662254333496094, -83.7838363647461 42.66229248046875, -83.7852554321289 42.66233444213867, -83.78668212890625 42.66237258911133, -83.7881088256836 42.66241455078125, -83.78810119628906 42.662506103515625, -83.78804779052734 42.66355895996094, -83.78799438476562 42.66461181640625, -83.7879409790039 42.66566467285156, -83.78788757324219 42.66671371459961, -83.78783416748047 42.66776657104492, -83.78778076171875 42.668819427490234, -83.78772735595703 42.66987228393555, -83.78767395019531 42.67092514038086))");
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setNodeNames(new String[] { "B1", "B3", "NODATA"} );
+            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubSampling(1, 1);
+
+            Product finalProduct = reader.readProductNodes(file, subsetDef);
+
+            assertNotNull(finalProduct.getSceneGeoCoding());
+            GeoPos productOrigin = ProductUtils.getCenterGeoPos(finalProduct);
+            assertEquals(39.8534f, productOrigin.lat,4);
+            assertEquals(-83.7753f, productOrigin.lon,4);
+
+            assertEquals(2, finalProduct.getBands().length);
+            assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
+            assertEquals("SPOT 6/7 Product", finalProduct.getProductType());
+            assertEquals(1, finalProduct.getMaskGroup().getNodeCount());
+            assertEquals(1367, finalProduct.getSceneRasterWidth());
+            assertEquals(632, finalProduct.getSceneRasterHeight());
+            //name should be changed
+            assertEquals("SPOT_20140129050233095_816009101_2", finalProduct.getName());
+            Date endDate = Calendar.getInstance().getTime();
+            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
+
+            Mask mask = finalProduct.getMaskGroup().get("NODATA");
+            assertEquals(1367, mask.getRasterWidth());
+            assertEquals(632, mask.getRasterHeight());
+
+            Band band_B1 = finalProduct.getBand("B1");
+            assertEquals(1367, band_B1.getRasterWidth());
+            assertEquals(632, band_B1.getRasterHeight());
+
+            float pixelValue = band_B1.getSampleFloat(105, 143);
+            assertEquals(38.8288f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(208, 246);
+            assertEquals(59.7124f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(467, 221);
+            assertEquals(170.9518f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(714, 389);
+            assertEquals(30.2235f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(824, 344);
+            assertEquals(39.1436f, pixelValue, 4);
+            pixelValue = band_B1.getSampleFloat(1035, 336);
+            assertEquals(55.9345f, pixelValue, 4);
+
+            Band band_B3 = finalProduct.getBand("B3");
+            assertEquals(1367, band_B3.getRasterWidth());
+            assertEquals(632, band_B3.getRasterHeight());
+
+            pixelValue = band_B3.getSampleFloat(105, 143);
+            assertEquals(36.5549f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(208, 246);
+            assertEquals(60.3299f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(467, 221);
+            assertEquals(135.1534f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(714, 389);
+            assertEquals(46.2649f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(824, 344);
+            assertEquals(76.6797f, pixelValue, 4);
+            pixelValue = band_B3.getSampleFloat(1035, 336);
+            assertEquals(66.3986f, pixelValue, 4);
+        } catch (IOException e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        } catch (ConversionException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
         }

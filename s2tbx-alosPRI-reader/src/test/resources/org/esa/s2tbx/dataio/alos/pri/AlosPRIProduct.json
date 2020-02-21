@@ -96,7 +96,7 @@
     ],
     "masks": [
       {
-        "name": "no data",
+        "name": "nodata",
         "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
         "color": "0,0,0",
         "description": "no data"
