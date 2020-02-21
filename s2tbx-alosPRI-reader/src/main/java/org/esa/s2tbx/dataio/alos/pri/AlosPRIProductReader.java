@@ -82,7 +82,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                 productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
             } else {
                 productDefaultGeoCoding = buildGeoCoding(alosPriMetadata, defaultProductSize, null, null);
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, alosPriMetadata.isMultiSize());
             }
 
             Product product = new Product(alosPriMetadata.getProductName(), AlosPRIConstants.FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
@@ -127,7 +127,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                     } else {
                         GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
                         bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                                        defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
+                                                                                        defaultProductSize.height, defaultBandSize.width, defaultBandSize.height, alosPriMetadata.isMultiSize());
                     }
 
                     AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductSize, bandBounds);
@@ -298,7 +298,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
         float[][] cornerLonsLats = metadata.getMaxCorners();
         TiePointGrid latGrid = buildTiePointGrid(AlosPRIConstants.LAT_DS_NAME, 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[1], TiePointGrid.DISCONT_NONE);
         TiePointGrid lonGrid = buildTiePointGrid(AlosPRIConstants.LON_DS_NAME, 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[0], TiePointGrid.DISCONT_AT_180);
-        if (subsetDef != null && subsetDef.getRegion() != null) {
+        if (subsetDef != null && subsetDef.getSubsetRegion() != null) {
             lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
             latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
         }

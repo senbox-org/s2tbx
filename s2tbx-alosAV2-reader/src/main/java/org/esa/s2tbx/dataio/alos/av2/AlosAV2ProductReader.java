@@ -20,7 +20,6 @@ import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
-import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
@@ -89,7 +88,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
             String tiffImageRelativeFilePath = imageMetadataRelativeFilePath.substring(0, extensionIndex) + AlosAV2Constants.IMAGE_FILE_EXTENSION;
 
             this.geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imageMetadataParentPath, tiffImageRelativeFilePath);
-
+            boolean isMultiSize = (alosAV2Metadata.getRasterWidth() != geoTiffImageReader.getImageWidth() || alosAV2Metadata.getRasterHeight() != geoTiffImageReader.getImageHeight());
             Dimension defaultProductSize = new Dimension(alosAV2Metadata.getRasterWidth(), alosAV2Metadata.getRasterHeight());
             ProductSubsetDef subsetDef = getSubsetDef();
             Rectangle productBounds;
@@ -97,7 +96,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                 productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
             } else {
                 GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
             }
 
             Product product = new Product(alosAV2Metadata.getProductName(), AlosAV2Constants.FORMAT_NAMES[0], productBounds.width, productBounds.height, this);

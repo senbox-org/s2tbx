@@ -1,12 +1,14 @@
 package org.esa.s2tbx.dataio.kompsat2;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.kompsat2.internal.Kompsat2Constants;
 import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadata;
 import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadataUtil;
 import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Metadata;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -32,8 +34,17 @@ public class Kompsat2MetadataInspector implements MetadataInspector {
             Metadata metadata = new Metadata();
             metadata.setProductWidth(metadataUtil.getMaxNumColumns());
             metadata.setProductHeight(metadataUtil.getMaxNumLines());
+            Dimension defaultProductSize = new Dimension(metadataUtil.getMaxNumColumns(), metadataUtil.getMaxNumLines());
 
-            TiePointGeoCoding productGeoCoding = Kompsat2ProductReader.buildTiePointGridGeoCoding(productMetadata, metadata.getProductWidth(), metadata.getProductHeight(), null);
+            BandMetadata bandMetadataForDefaultProductGeoCoding = null;
+            for (BandMetadata bandMetadata : bandMetadataList) {
+                String bandName = Kompsat2ProductReader.getBandName(bandMetadata.getImageFileName());
+                if (bandName.equals(Kompsat2Constants.BAND_NAMES[4])) {
+                    bandMetadataForDefaultProductGeoCoding = bandMetadata;
+                    break;
+                }
+            }
+            GeoCoding productGeoCoding = Kompsat2ProductReader.buildDefaultGeoCoding(productMetadata, bandMetadataForDefaultProductGeoCoding, imagesMetadataParentPath, defaultProductSize, null, null);
             metadata.setGeoCoding(productGeoCoding);
 
             for (int bandIndex = 0; bandIndex < bandMetadataList.size(); bandIndex++) {

@@ -19,7 +19,6 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
-import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
@@ -43,6 +42,7 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -91,11 +91,15 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             Dimension defaultProductSize = new Dimension(metadata.getRasterWidth(), metadata.getRasterHeight());
             GeoCoding productDefaultGeoCoding = null;
             Rectangle productBounds;
+
+            ProductFilePathsHelper filePathsHelper = new ProductFilePathsHelper(filePaths, this.productDirectory.getFileSystemSeparator());
+
+            boolean isMultiSize = isMultiSize(filePathsHelper);
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
                 productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
             } else {
                 productDefaultGeoCoding = metadata.buildCrsGeoCoding(null);
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
             }
 
             // create product
@@ -111,8 +115,6 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             product.setStartTime(parseDate(metadata.getAcquisitionDate(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
             product.setEndTime(parseDate(metadata.getAcquisitionDate(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
-            ProductFilePathsHelper filePathsHelper = new ProductFilePathsHelper(filePaths, this.productDirectory.getFileSystemSeparator());
-
             this.bandImageReaders = new ArrayList<>();
 
             // add bands
@@ -120,14 +122,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 if (muscateImage == null || muscateImage.nature == null) {
                     logger.warning(String.format("Unable to add an image with a null nature to the product: %s", product.getName()));
                 } else {
-                    List<Band> imageBands = readImageBands(muscateImage, defaultProductSize, metadata, filePathsHelper, productDefaultGeoCoding);
+                    List<Band> imageBands = readImageBands(muscateImage, defaultProductSize, metadata, filePathsHelper, productDefaultGeoCoding, isMultiSize);
                     for (Band band : imageBands) {
                         product.addBand(band);
                     }
                 }
             }
 
-            List<Band> angleBands = readAngleBands(productDefaultGeoCoding, defaultProductSize, metadata, subsetDef);
+            List<Band> angleBands = readAngleBands(productDefaultGeoCoding, defaultProductSize, metadata, subsetDef, isMultiSize);
             for (Band band : angleBands) {
                 product.addBand(band);
             }
@@ -137,7 +139,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 if (muscateMask == null || muscateMask.nature == null) {
                     logger.warning(String.format("Unable to add a mask with a null nature to the product: %s", product.getName()));
                 } else {
-                    readMaskBands(product, productDefaultGeoCoding, defaultProductSize, metadata, filePathsHelper, muscateMask);
+                    readMaskBands(product, productDefaultGeoCoding, defaultProductSize, metadata, filePathsHelper, muscateMask, isMultiSize);
                 }
             }
 
@@ -231,14 +233,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         System.gc();
     }
 
-    private List<Band> readImageBands(MuscateImage muscateImage, Dimension defaultProductSize, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, GeoCoding productDefaultGeoCoding)
+    private List<Band> readImageBands(MuscateImage muscateImage, Dimension defaultProductSize, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, GeoCoding productDefaultGeoCoding, boolean isMultiSize)
             throws Exception {
 
         List<Band> productBands = new ArrayList<>();
         //TODO Read together AOT and WVC? they should be in the same tif file
         if (muscateImage.nature.equals(MuscateImage.AEROSOL_OPTICAL_THICKNESS_IMAGE)) {
             for (String tiffImageRelativeFilePath : muscateImage.getImageFiles()) {
-                Band geoTiffBand = readAOTImageBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, metadata, filePathsHelper);
+                Band geoTiffBand = readAOTImageBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, metadata, filePathsHelper, isMultiSize);
                 if (geoTiffBand != null) {
                     productBands.add(geoTiffBand);
                 }
@@ -246,7 +248,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         } else if (muscateImage.nature.equals(MuscateImage.FLAT_REFLECTANCE_IMAGE)) {
             for (String tiffImageRelativeFilePath : muscateImage.getImageFiles()) {
                 BandNameCallback bandNameCallback = buildFlatReflectanceImageBandNameCallback();
-                Band geoTiffBand = readReflectanceImageBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, metadata, filePathsHelper, bandNameCallback);
+                Band geoTiffBand = readReflectanceImageBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, metadata, filePathsHelper, bandNameCallback, isMultiSize);
                 if (geoTiffBand != null) {
                     String bandId = getBandFromFileName(tiffImageRelativeFilePath);
                     geoTiffBand.setDescription(String.format("Ground reflectance with the correction of slope effects, band %s", bandId));
@@ -256,7 +258,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         } else if (muscateImage.nature.equals(MuscateImage.SURFACE_REFLECTANCE_IMAGE)) {
             for (String tiffImageRelativeFilePath : muscateImage.getImageFiles()) {
                 BandNameCallback bandNameCallback = buildSurfaceReflectanceImageBandNameCallback();
-                Band geoTiffBand = readReflectanceImageBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, metadata, filePathsHelper, bandNameCallback);
+                Band geoTiffBand = readReflectanceImageBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, metadata, filePathsHelper, bandNameCallback, isMultiSize);
                 if (geoTiffBand != null) {
                     String bandId = getBandFromFileName(tiffImageRelativeFilePath);
                     geoTiffBand.setDescription(String.format("Ground reflectance without the correction of slope effects, band %s", bandId));
@@ -265,7 +267,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             }
         } else if (muscateImage.nature.equals(MuscateImage.WATER_VAPOR_CONTENT_IMAGE)) {
             for (String tiffImageRelativeFilePath : muscateImage.getImageFiles()) {
-                Band geoTiffBand = readWVCImageBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, metadata, filePathsHelper);
+                Band geoTiffBand = readWVCImageBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, metadata, filePathsHelper, isMultiSize);
                 if (geoTiffBand != null) {
                     productBands.add(geoTiffBand);
                 }
@@ -277,7 +279,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readMaskBands(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, MuscateMetadata metadata,
-                               ProductFilePathsHelper filePathsHelper, MuscateMask muscateMask)
+                               ProductFilePathsHelper filePathsHelper, MuscateMask muscateMask, boolean isMultiSize)
             throws Exception {
 
         // the mask depends on the version
@@ -291,24 +293,24 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             }
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                readAOTMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, bitNumber);
+                readAOTMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, bitNumber, isMultiSize);
             }
         } else if (muscateMask.nature.equals(MuscateMask.DETAILED_CLOUD_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    readCloudMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper);
+                    readCloudMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.CLOUD_MASK)) {
             if (versionFloat < MuscateMask.CLOUD_MASK_VERSION) {
                 for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                     addedFiles.add(muscateMaskFile.path);
-                    readCloudMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper);
+                    readCloudMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
                 }
             } else {
                 for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                     addedFiles.add(muscateMaskFile.path);
-                    readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Cloud);
+                    readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Cloud, isMultiSize);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.CLOUD_SHADOW_MASK)) {
@@ -316,78 +318,78 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 // in some old products the Nature is Cloud_Shadow instead of Geophysics. Perhaps an error?
                 for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                     addedFiles.add(muscateMaskFile.path);
-                    readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper);
+                    readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
                 }
             } else {
                 for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                     addedFiles.add(muscateMaskFile.path);
-                    readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Cloud_Shadow);
+                    readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Cloud_Shadow, isMultiSize);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.EDGE_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    readEdgeMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper);
+                    readEdgeMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.SATURATION_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    readSaturationMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper);
+                    readSaturationMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.GEOPHYSICS_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper);
+                    readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.DETECTOR_FOOTPRINT_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add( muscateMaskFile.path)) {
-                    readDetectorFootprintMask(product, productDefaultGeoCoding, defaultProductSize,  muscateMaskFile.path, metadata, filePathsHelper);
+                    readDetectorFootprintMask(product, productDefaultGeoCoding, defaultProductSize,  muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.DEFECTIVE_PIXEL_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 if (addedFiles.add(muscateMaskFile.path)) {
-                    readDefectivePixelMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper);
+                    readDefectivePixelMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
                 }
             }
         } else if (muscateMask.nature.equals(MuscateMask.HIDDEN_SURFACE_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Hidden_Surface);
+                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Hidden_Surface, isMultiSize);
             }
         } else if (muscateMask.nature.equals(MuscateMask.SNOW_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Snow);
+                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Snow, isMultiSize);
             }
         } else if (muscateMask.nature.equals(MuscateMask.SUN_TOO_LOW_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Sun_Too_Low);
+                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Sun_Too_Low, isMultiSize);
             }
         } else if (muscateMask.nature.equals(MuscateMask.TANGENT_SUN_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Tangent_Sun);
+                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Tangent_Sun, isMultiSize);
             }
         } else if (muscateMask.nature.equals(MuscateMask.TOPOGRAPHY_SHADOW_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Topography_Shadow);
+                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Topography_Shadow, isMultiSize);
             }
         } else if (muscateMask.nature.equals(MuscateMask.WATER_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Water);
+                readGeophysicsMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT.Water, isMultiSize);
             }
         } else if (muscateMask.nature.equals(MuscateMask.WVC_INTERPOLATION_MASK)) {
             for (MuscateMaskFile muscateMaskFile : muscateMask.getMaskFiles()) {
                 addedFiles.add(muscateMaskFile.path);
-                readWVCMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper);
+                readWVCMask(product, productDefaultGeoCoding, defaultProductSize, muscateMaskFile.path, metadata, filePathsHelper, isMultiSize);
             }
         } else {
             logger.warning(String.format("Unable to add mask. Unknown nature: %s", muscateMask.nature));
@@ -400,7 +402,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private GeoTiffBandResult readGeoTiffProductBand(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath, int bandIndex,
-                                                     MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, BandNameCallback bandNameCallback)
+                                                     MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, BandNameCallback bandNameCallback, boolean isMultiSize)
             throws Exception {
 
         String tiffImageFilePath = filePathsHelper.computeImageRelativeFilePath(this.productDirectory, tiffImageRelativeFilePath);
@@ -424,7 +426,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                         bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
                     } else {
                         GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
-                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiSize);
                     }
 
                     Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
@@ -448,11 +450,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         return geoTiffBandResult;
     }
 
-    private Band readAOTImageBand(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+    private Band readAOTImageBand(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
             throws Exception {
 
         BandNameCallback bandNameCallback = buildAOTImageBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 1, metadata, filePathsHelper, bandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 1, metadata, filePathsHelper, bandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();
             geoTiffBand.setNoDataValue(metadata.getAOTNoDataValue());
@@ -465,11 +467,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         return null;
     }
 
-    private Band readWVCImageBand(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+    private Band readWVCImageBand(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
             throws Exception {
 
         BandNameCallback bandNameCallback = buildWVCImageBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, bandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, bandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();
             geoTiffBand.setNoDataValue(metadata.getWVCNoDataValue());
@@ -484,10 +486,10 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private Band readReflectanceImageBand(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath, MuscateMetadata metadata,
-                                          ProductFilePathsHelper filePathsHelper, BandNameCallback bandNameCallback)
+                                          ProductFilePathsHelper filePathsHelper, BandNameCallback bandNameCallback, boolean isMultiSize)
             throws Exception {
 
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, bandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, bandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             String bandId = getBandFromFileName(tiffImageRelativeFilePath);
             Band geoTiffBand = geoTiffBandResult.getBand();
@@ -502,11 +504,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readAOTMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath,
-                             MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, int bitNumber)
+                             MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, int bitNumber, boolean isMultiSize)
                              throws Exception {
 
         BandNameCallback maskBandNameCallback = buildAOTMaskBandNamesCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();
             if (!product.containsBand(geoTiffBand.getName())) {
@@ -526,11 +528,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readWVCMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath,
-                             MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+                             MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
                              throws Exception {
 
         BandNameCallback maskBandNameCallback = buildWVCMaskNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();
             if (!product.containsBand(geoTiffBand.getName())) {
@@ -550,11 +552,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readEdgeMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath,
-                              MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+                              MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
                               throws Exception {
 
         BandNameCallback maskBandNameCallback = buildEdgeMaskBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();
             geoTiffBand.setNoDataValueUsed(false);
@@ -573,11 +575,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readSaturationMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath,
-                                    MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+                                    MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
                                     throws Exception {
 
         BandNameCallback maskBandNameCallback = buildSaturationMaskBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();
             geoTiffBand.setNoDataValueUsed(false);
@@ -599,11 +601,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readDetectorFootprintMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath,
-                                           MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+                                           MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
                                            throws Exception {
 
         BandNameCallback maskBandNameCallback = buildDetectorFootprintMaskBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();// readGeoTiffProductBand(tiffImageRelativeFilePath, 0);
             geoTiffBand.setNoDataValueUsed(false);
@@ -624,11 +626,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readCloudMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath,
-                               MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+                               MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
                                throws Exception {
 
         BandNameCallback maskBandNameCallback = buildCloudMaskBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNameCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();
             // add band to product if it hasn't been added yet
@@ -695,11 +697,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         }
     }
 
-    private void readGeophysicsMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+    private void readGeophysicsMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
                                     throws Exception {
 
         BandNameCallback maskBandNamesCallback = buildGeophysicsMaskBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNamesCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNamesCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();// readGeoTiffProductBand(tiffImageRelativeFilePath, 0);
             if (!product.containsBand(geoTiffBand.getName())) {
@@ -721,11 +723,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readGeophysicsMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String tiffImageRelativeFilePath,
-                                    MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT geophysicalBit)
+                                    MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, MuscateConstants.GEOPHYSICAL_BIT geophysicalBit, boolean isMultiSize)
                                     throws Exception {
 
         BandNameCallback maskBandNamesCallback = buildGeophysicsMaskBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNamesCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNamesCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();
             if (!product.containsBand(geoTiffBand.getName())) {
@@ -744,11 +746,11 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private void readDefectivePixelMask(Product product, GeoCoding productDefaultGeoCoding, Dimension defaultProductSize,
-                                        String tiffImageRelativeFilePath, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper)
+                                        String tiffImageRelativeFilePath, MuscateMetadata metadata, ProductFilePathsHelper filePathsHelper, boolean isMultiSize)
                                         throws Exception {
 
         BandNameCallback maskBandNamesCallback = buildDefectivePixelMaskBandNameCallback();
-        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNamesCallback);
+        GeoTiffBandResult geoTiffBandResult = readGeoTiffProductBand(productDefaultGeoCoding, defaultProductSize, tiffImageRelativeFilePath, 0, metadata, filePathsHelper, maskBandNamesCallback, isMultiSize);
         if (geoTiffBandResult != null) {
             Band geoTiffBand = geoTiffBandResult.getBand();// readGeoTiffProductBand(tiffImageRelativeFilePath, 0);
             geoTiffBand.setNoDataValueUsed(false);
@@ -899,7 +901,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         return String.format("defective_%s", orderedBandName);
     }
 
-    private static List<Band> readAngleBands(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, MuscateMetadata metadata, ProductSubsetDef subsetDef) {
+    private static List<Band> readAngleBands(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, MuscateMetadata metadata, ProductSubsetDef subsetDef, boolean isMultiSize) {
         List<Band> angleBands = new ArrayList<>();
 
         MuscateMetadata.AnglesGrid sunAnglesGrid = metadata.getSunAnglesGrid();
@@ -907,14 +909,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         // add Zenith
         if(subsetDef == null || subsetDef.isNodeAccepted("sun_zenith")) {
             band = readAngleBand(productDefaultGeoCoding, defaultProductSize, "sun_zenith", "Sun zenith angles", sunAnglesGrid.getSize(),
-                                      sunAnglesGrid.getZenith(), sunAnglesGrid.getResolution(), metadata, subsetDef);
+                                      sunAnglesGrid.getZenith(), sunAnglesGrid.getResolution(), metadata, subsetDef, isMultiSize);
             angleBands.add(band);
         }
 
         // add Azimuth
         if(subsetDef == null || subsetDef.isNodeAccepted("sun_azimuth")) {
             band = readAngleBand(productDefaultGeoCoding, defaultProductSize, "sun_azimuth", "Sun azimuth angles", sunAnglesGrid.getSize(),
-                                 sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResolution(), metadata, subsetDef);
+                                 sunAnglesGrid.getAzimuth(), sunAnglesGrid.getResolution(), metadata, subsetDef, isMultiSize);
             angleBands.add(band);
         }
 
@@ -925,7 +927,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             String bandNameZenith = "view_zenith_" + anglesGrid.getBandId();
             if(subsetDef == null || subsetDef.isNodeAccepted(bandNameZenith)) {
                 band = readAngleBand(productDefaultGeoCoding, defaultProductSize, bandNameZenith, "Viewing zenith angles", anglesGrid.getSize(),
-                                     anglesGrid.getZenith(), anglesGrid.getResolution(), metadata, subsetDef);
+                                     anglesGrid.getZenith(), anglesGrid.getResolution(), metadata, subsetDef, isMultiSize);
                 angleBands.add(band);
             }
 
@@ -933,7 +935,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             String bandNameAzimuth = "view_azimuth_" + anglesGrid.getBandId();
             if(subsetDef == null || subsetDef.isNodeAccepted(bandNameAzimuth)) {
                 band = readAngleBand(productDefaultGeoCoding, defaultProductSize, bandNameAzimuth, "Viewing azimuth angles", anglesGrid.getSize(),
-                                     anglesGrid.getAzimuth(), anglesGrid.getResolution(), metadata, subsetDef);
+                                     anglesGrid.getAzimuth(), anglesGrid.getResolution(), metadata, subsetDef, isMultiSize);
                 angleBands.add(band);
             }
         }
@@ -944,14 +946,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             // add Zenith
             if(subsetDef == null || subsetDef.isNodeAccepted("view_zenith_mean")) {
                 band = readAngleBand(productDefaultGeoCoding, defaultProductSize, "view_zenith_mean", "Mean viewing zenith angles", meanViewingAnglesGrid.getSize(),
-                                     meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResolution(), metadata, subsetDef);
+                                     meanViewingAnglesGrid.getZenith(), meanViewingAnglesGrid.getResolution(), metadata, subsetDef, isMultiSize);
                 angleBands.add(band);
             }
 
             // add Azimuth
             if(subsetDef == null || subsetDef.isNodeAccepted("view_azimuth_mean")) {
                 band = readAngleBand(productDefaultGeoCoding, defaultProductSize, "view_azimuth_mean", "Mean viewing azimuth angles", meanViewingAnglesGrid.getSize(),
-                                     meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResolution(), metadata, subsetDef);
+                                     meanViewingAnglesGrid.getAzimuth(), meanViewingAnglesGrid.getResolution(), metadata, subsetDef, isMultiSize);
                 angleBands.add(band);
             }
         }
@@ -960,7 +962,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
     }
 
     private static Band readAngleBand(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, String angleBandName, String description,
-                                      Dimension defaultSize, float[] data, Point.Float resolution, MuscateMetadata metadata, ProductSubsetDef subsetDef) {
+                                      Dimension defaultSize, float[] data, Point.Float resolution, MuscateMetadata metadata, ProductSubsetDef subsetDef, boolean isMultiSize) {
 
         Rectangle bandBounds = null;
         if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
@@ -974,7 +976,7 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
             } catch (Exception e) {
                 logger.warning(String.format("Unable to set geocoding to the band %s", angleBandName));
             }
-            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultSize.width, defaultSize.height);
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultSize.width, defaultSize.height, isMultiSize);
         }
 
         int[] bandOffsets = {0};
@@ -1137,5 +1139,42 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         public MuscateMetadata.Geoposition getGeoPosition() {
             return geoPosition;
         }
+    }
+
+    private boolean isMultiSize(ProductFilePathsHelper filePathsHelper) throws IOException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        int defaultWidth = 0;
+        int defaultHeight = 0;
+        boolean isMultiSize = false;
+        for (MuscateImage muscateImage : metadata.getImages()) {
+            GeoTiffImageReader imageReader = null;
+            if (muscateImage != null || muscateImage.nature != null) {
+                for (String tiffImageRelativeFilePath : muscateImage.getImageFiles()) {
+                    String tiffImageFilePath = filePathsHelper.computeImageRelativeFilePath(this.productDirectory, tiffImageRelativeFilePath);
+                    try {
+                        imageReader = GeoTiffImageReader.buildGeoTiffImageReader(this.productDirectory.getBaseFile().toPath(), tiffImageFilePath);
+                        if (defaultWidth == 0) {
+                            defaultWidth = imageReader.getImageWidth();
+                        } else if (defaultWidth != imageReader.getImageWidth()) {
+                            isMultiSize = true;
+                            break;
+                        }
+                        if (defaultHeight == 0) {
+                            defaultHeight = imageReader.getImageHeight();
+                        } else if (defaultHeight != imageReader.getImageHeight()) {
+                            isMultiSize = true;
+                            break;
+                        }
+                    } finally {
+                        if (imageReader != null) {
+                            imageReader.close();
+                        }
+                    }
+                }
+            }
+            if(isMultiSize){
+                break;
+            }
+        }
+        return isMultiSize;
     }
 }

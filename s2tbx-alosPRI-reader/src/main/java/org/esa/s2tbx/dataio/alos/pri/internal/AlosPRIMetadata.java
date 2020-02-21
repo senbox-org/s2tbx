@@ -4,7 +4,6 @@ import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
@@ -321,5 +320,36 @@ public class AlosPRIMetadata extends XmlMetadata {
         ImageMetadata imageMetadata = GenericXmlMetadata.create(ImageMetadata.class, metadata.toPath());
         imageMetadata.setFileName(metadata.getName());
         this.componentMetadata.add(imageMetadata);
+    }
+
+    public boolean isMultiSize(){
+        int minHeight = componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterHeight)
+                .collect(Collectors.minBy(Integer::compare))
+                .get();
+
+        int maxHeight = componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterHeight)
+                .collect(Collectors.maxBy(Integer::compare))
+                .get();
+
+        int minWidth = componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterWidth)
+                .collect(Collectors.minBy(Integer::compare))
+                .get();
+
+        int maxWidth = componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterWidth)
+                .collect(Collectors.maxBy(Integer::compare))
+                .get();
+        return (minHeight != maxHeight || minWidth != maxWidth);
     }
 }

@@ -162,6 +162,33 @@ public class WorldView2Metadata extends XmlMetadata {
         return new Dimension(defaultProductWidth, defaultProductHeight);
     }
 
+    public boolean isMultiSize() {
+        int defaultProductWidth = 0;
+        int defaultProductHeight = 0;
+        boolean isMultiSize = false;
+        for (TileMetadataList tileMetadataList : this.products.values()) {
+            for (TileMetadata tileMetadata : tileMetadataList.getTiles()) {
+                TileComponent tileComponent = tileMetadata.getTileComponent();
+                if (defaultProductWidth == 0) {
+                    defaultProductWidth = tileComponent.getNumColumns();
+                } else if (defaultProductWidth != tileComponent.getNumColumns()) {
+                    isMultiSize = true;
+                    break;
+                }
+                if (defaultProductHeight == 0) {
+                    defaultProductHeight = tileComponent.getNumRows();
+                } else if (defaultProductHeight != tileComponent.getNumRows()) {
+                    isMultiSize = true;
+                    break;
+                }
+            }
+            if(isMultiSize){
+                break;
+            }
+        }
+        return isMultiSize;
+    }
+
     public CrsGeoCoding buildProductGeoCoding(Rectangle subsetBounds) throws FactoryException, TransformException {
         int defaultProductWidth = 0;
         int defaultProductHeight = 0;

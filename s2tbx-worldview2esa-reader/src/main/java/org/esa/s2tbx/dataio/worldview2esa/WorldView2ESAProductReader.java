@@ -103,11 +103,12 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
             Rectangle productBounds;
+            boolean isMultiSize = isMultiSize(tileMetadataList);
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
                 productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
             } else {
                 productDefaultGeoCoding = tileMetadataList.buildProductGeoCoding(null);
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
             }
 
             Product product = new Product(metadata.getProductName(), WorldView2ESAConstants.PRODUCT_TYPE, productBounds.width, productBounds.height, this);
@@ -135,7 +136,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
                     String bandName = bandNames[bandIndex];
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                        Band band = buildBand(defaultProductSize, mosaicMatrix, tileMetadata, bandName, bandIndex, preferredTileSize, productGeoCoding, productDefaultGeoCoding, subsetDef);
+                        Band band = buildBand(defaultProductSize, mosaicMatrix, tileMetadata, bandName, bandIndex, preferredTileSize, productGeoCoding, productDefaultGeoCoding, subsetDef, isMultiSize);
                         product.addBand(band);
                     }
                 }
@@ -216,7 +217,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
 
     private static Band buildBand(Dimension defaultProductSize, MosaicMatrix mosaicMatrix, TileMetadata tileMetadata,
                                   String bandName, int bandIndex, Dimension preferredTileSize, GeoCoding productGeoCoding,
-                                  GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef) {
+                                  GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef, boolean isMultiSize) {
 
         int defaultBandWidth = mosaicMatrix.computeTotalWidth();
         int defaultBandHeight = mosaicMatrix.computeTotalHeight();
@@ -226,7 +227,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         } else {
             GeoCoding bandDefaultGeoCoding = buildBandGeoCoding(tileMetadata.getTileComponent(), defaultBandWidth, defaultBandHeight, null);
             bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                            defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                                                                            defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiSize);
         }
 
         int productDataType = tileMetadata.getProductDataType();
@@ -290,6 +291,24 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             zipArchiveFileName = fileNameWithoutExtension + WorldView2ESAConstants.ARCHIVE_FILE_EXTENSION;
         }
         return productDirectory.getFile(zipArchiveFileName).toPath();
+    }
+
+    public boolean isMultiSize(TileMetadataList tileMetadataList) {
+        int defaultProductWidth = 0;
+        int defaultProductHeight = 0;
+        for (TileMetadata tileMetadata : tileMetadataList.getTiles()) {
+            if (defaultProductWidth == 0) {
+                defaultProductWidth = tileMetadata.getRasterWidth();
+            }else if (defaultProductWidth != tileMetadata.getRasterWidth()) {
+                return true;
+            }
+            if (defaultProductHeight == 0) {
+                defaultProductHeight = tileMetadata.getRasterHeight();
+            }else if (defaultProductHeight != tileMetadata.getRasterHeight()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static TileMetadataList readTileMetadataList(Path imagesMetadataParentPath) throws Exception {

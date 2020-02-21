@@ -187,7 +187,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
         } else {
             productDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), productResolution.resolution, productResolution.resolution, defaultProductSize, null);
-            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiResolution());
         }
 
         Product product = new Product(defaultProductName, productType, productBounds.width, productBounds.height, this);
@@ -254,14 +254,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     anglesGridsMap.put(tile.getId(), bandAnglesGrids);
                 }
             }
-            addAnglesBands(defaultProductSize, product, sceneDescription, anglesGridsMap, productBounds, subsetDef);
+            addAnglesBands(defaultProductSize, product, sceneDescription, anglesGridsMap, productDefaultGeoCoding, subsetDef);
         }
 
         return product;
     }
 
     private void addAnglesBands(Dimension defaultProductSize, Product product,
-                                S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap, Rectangle productBounds, ProductSubsetDef subsetDef) throws FactoryException, IOException {
+                                S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef) throws FactoryException, IOException {
 
         // the upper-left corner
         Point.Float masterOrigin = new Point.Float(Float.MAX_VALUE, -Float.MAX_VALUE);
@@ -326,7 +326,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                     int defaultBandWidth = bandSourceImage.getWidth();
                     int defaultBandHeight = bandSourceImage.getHeight();
-                    bandBounds = computeBandAngleBoundsBasedOnPercent(productBounds, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                    Dimension defaultBandSize =  new Dimension(defaultBandWidth, defaultBandHeight);
+                    GeoCoding bandDefaultGeoCoding = null;
+                    if(subsetDef != null){
+                        bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), resolution.x, resolution.y, defaultBandSize, null);
+                    }
+                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution());
+
                     if (bandBounds.x > 0 || bandBounds.y > 0 || bandBounds.width != defaultBandWidth || bandBounds.height != defaultBandHeight) {
                         Raster subsetSourceData = bandSourceImage.getData();
                         WritableRaster subsetRaster = subsetSourceData.createCompatibleWritableRaster(bandBounds.width, bandBounds.height);
@@ -391,7 +397,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 } else {
                     GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
                     bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, sceneDescription.getSceneDimension(productResolution).width,sceneDescription.getSceneDimension(productResolution).height,
-                                                                            defaultBandSize.width, defaultBandSize.height);
+                                                                            defaultBandSize.width, defaultBandSize.height, isMultiResolution());
                 }
 
 
@@ -477,7 +483,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 } else {
                     GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
                     bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, sceneDescription.getSceneDimension(productResolution).width, sceneDescription.getSceneDimension(productResolution).height,
-                                                                                    defaultBandSize.width, defaultBandSize.height);
+                                                                                    defaultBandSize.width, defaultBandSize.height, isMultiResolution());
                 }
 
                 Dimension dimension = new Dimension(bandBounds.width, bandBounds.height);
@@ -767,7 +773,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         } else {
             GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), pixelSize, pixelSize, defaultBandSize, null);
             bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                            defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
+                                                                            defaultProductSize.height, defaultBandSize.width, defaultBandSize.height, isMultiResolution());
         }
 
         Band band = new Band(bandInfo.getBandName(), ProductData.TYPE_INT16, dimension.width, dimension.height);
@@ -1190,28 +1196,5 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         } catch (FactoryException | TransformException e) {
             throw new IOException(e);
         }
-    }
-
-    private static Rectangle computeBandAngleBoundsBasedOnPercent(Rectangle productBounds, int defaultProductWidth, int defaultProductHeight, int defaultBandWidth, int defaultBandHeight) {
-        float productOffsetXPercent = productBounds.x / (float) defaultProductWidth;
-        float productOffsetYPercent = productBounds.y / (float) defaultProductHeight;
-        float productWidthPercent = productBounds.width / (float) defaultProductWidth;
-        float productHeightPercent = productBounds.height / (float) defaultProductHeight;
-        int bandOffsetX = Math.round(productOffsetXPercent * defaultBandWidth);
-        int bandOffsetY = Math.round(productOffsetYPercent * defaultBandHeight);
-        int bandWidth = Math.round(productWidthPercent * defaultBandWidth);
-        int bandHeight = Math.round(productHeightPercent * defaultBandHeight);
-        if (Math.round(bandWidth / productWidthPercent) > defaultBandWidth) {
-            bandWidth--;
-        } else if (Math.round(bandWidth / productWidthPercent) < defaultBandWidth) {
-            bandWidth++;
-        }
-        if (Math.round(bandHeight / productHeightPercent) > defaultBandHeight) {
-            bandHeight--;
-        } else if (Math.round(bandHeight / productHeightPercent) < defaultBandHeight) {
-            bandHeight++;
-        }
-
-        return new Rectangle(bandOffsetX, bandOffsetY, bandWidth, bandHeight);
     }
 }

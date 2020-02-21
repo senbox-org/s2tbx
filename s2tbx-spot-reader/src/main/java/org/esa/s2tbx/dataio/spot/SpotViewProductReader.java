@@ -112,7 +112,7 @@ public class SpotViewProductReader extends AbstractProductReader {
                 if (productDefaultGeoCoding == null) {
                     productDefaultGeoCoding = buildCrsGeoCoding(productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), productMetadata, imageMetadata);
                 }
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productMetadata.getRasterWidth(), productMetadata.getRasterHeight());
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), false);
             }
 
             Product product = new Product(productName, SpotConstants.SPOTVIEW_FORMAT_NAMES[0], productBounds.width, productBounds.height, this);

@@ -5,6 +5,8 @@ import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
+import java.awt.*;
+
 public class WorldView2ESAMetadata extends XmlMetadata {
 
     public WorldView2ESAMetadata(String name) {

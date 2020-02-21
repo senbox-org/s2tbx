@@ -16,7 +16,6 @@ import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
-import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
@@ -135,6 +134,7 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
             ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
             Rectangle productBounds;
+            boolean isMultiSize = isMultiSize();
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
                 productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
             } else {
@@ -142,7 +142,7 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                 if (productDefaultGeoCoding == null) {
                     productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(bandImageReaders.get(0), null);
                 }
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, isMultiSize);
             }
 
             Product product = new Product(productName, getProductType(), productBounds.width, productBounds.height, this);
@@ -182,7 +182,7 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                     bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
                 } else {
                     GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
-                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight);
+                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight, isMultiSize);
                 }
 
                 GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
@@ -369,5 +369,24 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
             }
         }
         return existingImageRelativePath;
+    }
+
+    private boolean isMultiSize() throws IOException {
+        int defaultWidth = 0;
+        int defaultHeight = 0;
+        for (GeoTiffImageReader imageReader: bandImageReaders) {
+            if(defaultWidth == 0){
+                defaultWidth = imageReader.getImageWidth();
+            }else if(defaultWidth != imageReader.getImageWidth()){
+                return true;
+            }
+
+            if(defaultHeight == 0){
+                defaultHeight = imageReader.getImageHeight();
+            }else if(defaultHeight != imageReader.getImageHeight()){
+                return true;
+            }
+        }
+        return false;
     }
 }

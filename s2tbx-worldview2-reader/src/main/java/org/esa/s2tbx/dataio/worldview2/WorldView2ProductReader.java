@@ -96,11 +96,12 @@ class WorldView2ProductReader extends AbstractProductReader {
             ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
             Rectangle productBounds;
+            boolean isMultiSize = metadata.isMultiSize();
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
                 productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
             } else {
                 productDefaultGeoCoding = metadata.buildProductGeoCoding(null);
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
             }
 
             String productName = metadata.getOrderNumber();
@@ -148,7 +149,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                 } else {
                     GeoCoding bandDefaultGeoCoding = metadata.buildProductGeoCoding(null);
                     subProductBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                                          defaultProductSize.height, defaultSubProductSize.width, defaultSubProductSize.height);
+                                                                                          defaultProductSize.height, defaultSubProductSize.width, defaultSubProductSize.height, isMultiSize);
                 }
 
                 GeoCoding subProductGeoCoding = subProductTileMetadataList.buildProductGeoCoding(subProductBounds);
@@ -165,7 +166,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                     for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
                         String bandName = bandPrefix + bandNames[bandIndex];
                         if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                            Band band = buildBand(defaultProductSize, mosaicMatrix, bandsDataType, bandName, bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, productDefaultGeoCoding, subsetDef);
+                            Band band = buildBand(defaultProductSize, mosaicMatrix, bandsDataType, bandName, bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, productDefaultGeoCoding, subsetDef, isMultiSize);
                             band.setScalingFactor(tileComponent.getScalingFactor(bandNames[bandIndex]));
                             product.addBand(band);
                         }
@@ -252,7 +253,7 @@ class WorldView2ProductReader extends AbstractProductReader {
     }
 
     private static Band buildBand(Dimension defaultProductSize, MosaicMatrix mosaicMatrix, int bandDataType,
-                                  String bandName, int bandIndex, TileMetadata tileMetadata, GeoCoding subProductGeoCoding, Dimension preferredTileSize, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef)
+                                  String bandName, int bandIndex, TileMetadata tileMetadata, GeoCoding subProductGeoCoding, Dimension preferredTileSize, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef, boolean isMultiSize)
                                   throws FactoryException, TransformException {
 
         int defaultBandWidth = mosaicMatrix.computeTotalWidth();
@@ -262,7 +263,7 @@ class WorldView2ProductReader extends AbstractProductReader {
             bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
         } else {
             GeoCoding bandDefaultGeoCoding = tileMetadata.buildBandGeoCoding(null);
-            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiSize);
         }
 
         GeoCoding bandGeoCoding = tileMetadata.buildBandGeoCoding(bandBounds);

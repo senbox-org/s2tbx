@@ -132,7 +132,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 productSubsetRegion = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
             } else {
                 productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductSize, null, null);
-                productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight);
+                productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, isMultiSize);
             }
 
             product = new Product(metadata.getInternalReference(),
@@ -177,7 +177,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 } else {
                     GeoCoding bandDefaultGeoCoding = initBandGeoCoding(imageMetadata, bandWidth, bandHeight, defaultProductWidth, null, null);
                     bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                                    defaultProductSize.height, defaultBandSize.width, defaultBandSize.height);
+                                                                                    defaultProductSize.height, defaultBandSize.width, defaultBandSize.height, isMultiSize);
                 }
                 ProductSubsetDef bandSubsetDef = null;
 

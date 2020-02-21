@@ -116,7 +116,7 @@ public class GDALProductReader extends AbstractProductReader {
                     productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
                 } else {
                     GeoCoding productDefaultGeoCoding = buildGeoCoding(gdalDataset, null);
-                    productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight);
+                    productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, false);
                 }
             }
             if ((productBounds.x + productBounds.width) > defaultProductWidth) {

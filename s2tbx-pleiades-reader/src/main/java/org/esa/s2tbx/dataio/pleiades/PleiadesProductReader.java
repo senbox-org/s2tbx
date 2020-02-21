@@ -146,8 +146,8 @@ public class PleiadesProductReader extends AbstractProductReader {
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
                 productSubsetRegion = new Rectangle(0, 0, productDefaultWidth, productDefaultHeight);
             } else {
-                productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, null, null);
-                productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productDefaultWidth, productDefaultHeight);
+                productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, metadata, null, null);
+                productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productDefaultWidth, productDefaultHeight, isMultiSize);
             }
 
             product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), productSubsetRegion.width, productSubsetRegion.height);
@@ -155,7 +155,7 @@ public class PleiadesProductReader extends AbstractProductReader {
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
             product.setDescription(maxResImageMetadata.getProductDescription());
-            GeoCoding geoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, productSubsetRegion, subsetDef);
+            GeoCoding geoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, metadata, productSubsetRegion, subsetDef);
             if (geoCoding instanceof TiePointGeoCoding){
                 TiePointGeoCoding tiePointGeoCoding = (TiePointGeoCoding) geoCoding;
                 product.addTiePointGrid(tiePointGeoCoding.getLatGrid());
@@ -187,7 +187,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                     bandSubsetRegion = new Rectangle(bandWidth, bandHeight);
                 } else {
                     GeoCoding bandDefaultGeoCoding = initBandGeoCoding(imageMetadata, bandWidth, bandHeight, productDefaultWidth, null, null);
-                    bandSubsetRegion = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, productDefaultWidth, productDefaultHeight, bandWidth, bandHeight);
+                    bandSubsetRegion = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, productDefaultWidth, productDefaultHeight, bandWidth, bandHeight, isMultiSize);
                 }
 
                 int subsetTileCols = tileCols;
@@ -352,10 +352,10 @@ public class PleiadesProductReader extends AbstractProductReader {
         // do nothing
     }
 
-	private GeoCoding addTiePointGridGeo(ImageMetadata metadata, int width, int height, ProductSubsetDef subsetDef) {
+	private static GeoCoding addTiePointGridGeo(ImageMetadata metadata, int width, int height, ProductSubsetDef subsetDef) {
         float[][] cornerLonsLats = metadata.getCornerLonsLats();
-        TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, width, height, cornerLonsLats[1]);
-        TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, width, height, cornerLonsLats[0]);
+        TiePointGrid latGrid = buildTiePointGrid("latitude", 2, 2, 0, 0, width, height, cornerLonsLats[1]);
+        TiePointGrid lonGrid = buildTiePointGrid("longitude", 2, 2, 0, 0, width, height, cornerLonsLats[0]);
         if(subsetDef != null) {
             lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
             latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
@@ -464,7 +464,7 @@ public class PleiadesProductReader extends AbstractProductReader {
         }
     }
 
-    private GeoCoding buildGeoCoding(ImageMetadata maxResImageMetadata, Dimension defaultProductBounds, Rectangle productSubsetRegion, ProductSubsetDef subsetDef){
+    public static GeoCoding buildGeoCoding(ImageMetadata maxResImageMetadata, Dimension defaultProductBounds, VolumeMetadata metadata, Rectangle productSubsetRegion, ProductSubsetDef subsetDef){
         if (maxResImageMetadata.hasInsertPoint()) {
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
             String crsCode = maxResImageMetadata.getCRSCode();

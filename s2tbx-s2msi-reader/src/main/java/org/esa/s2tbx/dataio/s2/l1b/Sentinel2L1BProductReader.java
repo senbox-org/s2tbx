@@ -141,7 +141,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
             } else {
                 GeoCoding productDefaultGeoCoding = null; //this product has no geoCoding
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiResolution());
             }
 
             product = new Product(defaultProductName, productType, productBounds.width, productBounds.height);
@@ -213,7 +213,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
                         GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
                         bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                                        defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                                                                                        defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution());
                     }
 
                     Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height);
@@ -242,7 +242,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             for (L1BBandInfo bandInfo : tileInfoList) {
                 if (isMultiResolution() || bandInfo.getBandInformation().getResolution() == productResolution) {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandInfo.getBandInformation().getPhysicalBand())) {
-                        Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, productTileLayout);
+                        Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, productTileLayout, isMultiResolution());
                         product.addBand(band);
                     }
                 }
@@ -267,7 +267,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
                         GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
                         bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                                        defaultProductSize.height, defaultMaskWidth, defaultMaskHeight);
+                                                                                        defaultProductSize.height, defaultMaskWidth, defaultMaskHeight, isMultiResolution());
                     }
 
                     Iterator<Color> colorIterator = indexBandInformation.getColors().iterator();
@@ -322,7 +322,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     private static Band buildIndexBand(Dimension defaultProductSize, L1BBandInfo bandInfo, ProductSubsetDef subsetDef,
-                                       L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, TileLayout productTileLayout) {
+                                       L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, TileLayout productTileLayout, boolean isMultiResolution) {
 
         MosaicMatrix mosaicMatrix = buildIndexBandMatrix(sceneDescription.getMatrixTileIds(bandInfo), sceneDescription, bandInfo);
         int defaultBandWidth = mosaicMatrix.computeTotalWidth();
@@ -337,7 +337,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
             GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
             bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                            defaultProductSize.height, defaultBandWidth, defaultBandHeight);
+                                                                            defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution);
         }
 
         S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInfo.getBandInformation();

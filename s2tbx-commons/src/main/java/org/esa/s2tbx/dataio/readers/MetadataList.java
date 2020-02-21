@@ -4,6 +4,8 @@ import org.esa.snap.core.metadata.XmlMetadata;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by jcoravu on 23/1/2020.
@@ -30,6 +32,14 @@ public class MetadataList<MetadataType extends XmlMetadata> {
 
     public String getMetadataImageRelativePath(int index) {
         return this.metadataList.get(index).getSecond();
+    }
+
+    public boolean isMultiSize(){
+        Optional<Integer> minWidth = this.metadataList.stream().map(metadataTypeStringPair -> metadataTypeStringPair.first.getRasterWidth()).collect(Collectors.minBy(Integer::compare));
+        Optional<Integer> maxWidth = this.metadataList.stream().map(metadataTypeStringPair -> metadataTypeStringPair.first.getRasterWidth()).collect(Collectors.minBy(Integer::compare));
+        Optional<Integer> minHeight = this.metadataList.stream().map(metadataTypeStringPair -> metadataTypeStringPair.first.getRasterHeight()).collect(Collectors.minBy(Integer::compare));
+        Optional<Integer> maxHeight = this.metadataList.stream().map(metadataTypeStringPair -> metadataTypeStringPair.first.getRasterHeight()).collect(Collectors.maxBy(Integer::compare));
+        return (minWidth != maxWidth || minHeight != maxHeight);
     }
 
     private static class Pair<First, Second> {

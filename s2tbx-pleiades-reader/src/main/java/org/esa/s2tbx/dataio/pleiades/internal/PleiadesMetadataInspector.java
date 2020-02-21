@@ -1,18 +1,16 @@
 package org.esa.s2tbx.dataio.pleiades.internal;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.pleiades.PleiadesProductReader;
 import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
 import org.esa.s2tbx.dataio.pleiades.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.pleiades.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.readers.GMLReader;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.geotools.referencing.CRS;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -41,30 +39,11 @@ public class PleiadesMetadataInspector implements MetadataInspector {
         int height = productMetadata.getSceneHeight();
         metadata.setProductWidth(width);
         metadata.setProductHeight(height);
+        Dimension productDefaultSize = new Dimension(width, height);
         addBandsAndMasks(productMetadata,metadata);
-        if (maxResImageMetadata.hasInsertPoint()) {
-            String crsCode = productMetadata.getMaxResolutionImage().getCRSCode();
-            ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
-            try {
-                GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
-                                                       width, height,
-                                                       origin.x, origin.y,
-                                                       origin.stepX, origin.stepY);
-                metadata.setGeoCoding(geoCoding);
-            } catch (Exception e) {
-                logger.warning(e.getMessage());
-            }
-        }else{
-            float[][] cornerLonsLats = maxResImageMetadata.getCornerLonsLats();
-            try {
-                TiePointGrid latGrid = new TiePointGrid("latitude", 2, 2, 0, 0, width, height, cornerLonsLats[1]);
-                TiePointGrid lonGrid = new TiePointGrid("longitude", 2, 2, 0, 0, width, height, cornerLonsLats[0]);
-                TiePointGeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-                metadata.setGeoCoding(geoCoding);
-            }catch (Exception e){
-                logger.warning(e.getMessage());
-            }
-        }
+
+        GeoCoding geoCoding = PleiadesProductReader.buildGeoCoding(maxResImageMetadata, productDefaultSize, productMetadata, null, null);
+        metadata.setGeoCoding(geoCoding);
         return metadata;
     }
 

@@ -56,7 +56,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * This product reader is intended for reading SPOT-1 to SPOT-5 scene files
@@ -140,7 +142,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
         } else {
             GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0), null);
-            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, false);
         }
 
         java.util.List<SpotDimapMetadata> componentMetadataList = wrappingMetadata.getComponentsMetadata();
@@ -288,7 +290,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
         } else {
             GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath(), null);
-            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, false);
         }
 
         String productName = (StringUtils.isNullOrEmpty(dimapMetadata.getProductName())) ? SpotConstants.DEFAULT_PRODUCT_NAME : dimapMetadata.getProductName();
@@ -484,5 +486,24 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     public static String getTiffImageForMultipleVolume(SpotDimapMetadata componentMetadata) {
         return componentMetadata.getPath().toString().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), componentMetadata.getRasterFileNames()[0].toLowerCase());
+    }
+
+    private boolean isMultiSize() throws IOException {
+        int defaultWidth = 0;
+        int defaultHeight = 0;
+        for (GeoTiffImageReader imageReader: bandImageReaders) {
+            if(defaultWidth == 0){
+                defaultWidth = imageReader.getImageWidth();
+            }else if(defaultWidth != imageReader.getImageWidth()){
+                return true;
+            }
+
+            if(defaultHeight == 0){
+                defaultHeight = imageReader.getImageHeight();
+            }else if(defaultHeight != imageReader.getImageHeight()){
+                return true;
+            }
+        }
+        return false;
     }
 }

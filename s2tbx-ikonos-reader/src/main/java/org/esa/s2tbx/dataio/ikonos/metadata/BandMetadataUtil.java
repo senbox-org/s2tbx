@@ -42,4 +42,13 @@ public class BandMetadataUtil {
         Arrays.sort(this.bandsMetadata, Comparator.comparing(BandMetadata::getPixelSizeY));
         return (int) this.bandsMetadata[bandsMetadata.length - 1].getPixelSizeY();
     }
+
+    public boolean isMultiSize(){
+        Arrays.sort(this.bandsMetadata, Comparator.comparing(BandMetadata::getNumColumns));
+        if(bandsMetadata[0].getNumColumns() != bandsMetadata[bandsMetadata.length - 1].getNumColumns()){
+            return true;
+        }
+        Arrays.sort(this.bandsMetadata, Comparator.comparing(BandMetadata::getNumLines));
+        return(bandsMetadata[0].getNumLines() != bandsMetadata[bandsMetadata.length - 1].getNumLines());
+    }
 }
