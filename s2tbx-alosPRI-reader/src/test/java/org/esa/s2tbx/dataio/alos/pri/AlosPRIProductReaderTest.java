@@ -174,7 +174,7 @@ public class AlosPRIProductReaderTest {
         AlosPRIProductReader reader = buildProductReader();
 
         ProductSubsetDef subsetDef = new ProductSubsetDef();
-        subsetDef.setNodeNames(new String[]{"ALPSMB038921910", "ALPSMF038921800", "nodata", "saturated"});
+        subsetDef.setNodeNames(new String[]{"ALPSMB038921910", "ALPSMF038921800", "no data", "saturated"});
         subsetDef.setRegion(new Rectangle(12354, 9874, 12000, 11563));
         subsetDef.setSubSampling(1, 1);
 

@@ -18,7 +18,6 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
-import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
@@ -29,7 +28,6 @@ import org.opengis.referencing.operation.TransformException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
 import java.awt.*;
-import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

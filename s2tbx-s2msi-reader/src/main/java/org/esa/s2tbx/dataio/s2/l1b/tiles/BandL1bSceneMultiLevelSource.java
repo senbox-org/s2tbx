@@ -17,8 +17,8 @@ import java.util.List;
  */
 public class BandL1bSceneMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLevelSource implements DecompressedTileOpImageCallback<S2MosaicBandMatrixCell> {
 
-    public BandL1bSceneMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, AffineTransform imageToModelTransform) {
-        super(levelCount, mosaicMatrix, imageMatrixReadBounds, null, imageToModelTransform);
+    public BandL1bSceneMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, Dimension preferredTileSize, AffineTransform imageToModelTransform) {
+        super(levelCount, mosaicMatrix, imageMatrixReadBounds, preferredTileSize, imageToModelTransform);
     }
 
     @Override

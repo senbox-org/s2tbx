@@ -410,7 +410,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                 AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
                 MosaicMatrix mosaicMatrix = buildBandMatrix(sceneDescription.getOrderedTileIds(), sceneDescription, bandInfo);
-                BandMultiLevelSource bandScene = new BandMultiLevelSource(bandInfo.getImageLayout().numResolutions, mosaicMatrix, bandBounds, imageToModelTransform);
+                BandMultiLevelSource bandScene = new BandMultiLevelSource(bandInfo.getImageLayout().numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
 
                 band.setSourceImage(new DefaultMultiLevelImage(bandScene));
                 product.addBand(band);
@@ -797,7 +797,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         band.setImageToModelTransform(product.findImageToModelTransform(band.getGeoCoding()));
 
-        TileIndexMultiLevelSource tileIndex = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, Product.findImageToModelTransform(band.getGeoCoding()));SystemUtils.LOG.fine("TileIndex: " + tileIndex);
+        TileIndexMultiLevelSource tileIndex = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), Product.findImageToModelTransform(band.getGeoCoding()));
+        SystemUtils.LOG.fine("TileIndex: " + tileIndex);
         band.setSourceImage(new DefaultMultiLevelImage(tileIndex));
         product.addBand(band);
     }

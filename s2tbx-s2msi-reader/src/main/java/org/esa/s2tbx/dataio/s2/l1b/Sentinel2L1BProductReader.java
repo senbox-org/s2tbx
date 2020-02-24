@@ -32,8 +32,6 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.MosaicMatrix;
-import org.esa.snap.core.util.ImageUtils;
-import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 
 import java.awt.*;
@@ -165,7 +163,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             AffineTransform imageToModelTransform = Product.findImageToModelTransform(product.getSceneGeoCoding());
-            addDetectorBands(defaultProductSize, productBounds, product, bandInfoByKey, sceneDescription, imageToModelTransform, productTileLayout);
+            addDetectorBands(defaultProductSize, product, bandInfoByKey, sceneDescription, imageToModelTransform, productTileLayout);
 
             // add TileIndex if there are more than 1 tile
             if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoByKey.isEmpty()) {
@@ -188,7 +186,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return product;
     }
 
-    private void addDetectorBands(Dimension defaultProductSize, Rectangle productBounds, Product product, Map<String, L1BBandInfo> bandInfoByKey,
+    private void addDetectorBands(Dimension defaultProductSize, Product product, Map<String, L1BBandInfo> bandInfoByKey,
                                   L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, TileLayout productTileLayout) {
 
         S2SpatialResolution productResolution = getProductResolution();
@@ -219,7 +217,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height);
                     band.setDescription(tileBandInfo.getBandInformation().getDescription());
 
-                    BandL1bSceneMultiLevelSource multiLevelSource = new BandL1bSceneMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, imageToModelTransform);
+                    BandL1bSceneMultiLevelSource multiLevelSource = new BandL1bSceneMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
                     band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
                     product.addBand(band);
@@ -242,7 +240,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             for (L1BBandInfo bandInfo : tileInfoList) {
                 if (isMultiResolution() || bandInfo.getBandInformation().getResolution() == productResolution) {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandInfo.getBandInformation().getPhysicalBand())) {
-                        Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, productTileLayout, isMultiResolution());
+                        Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, productTileLayout, product.getPreferredTileSize(), isMultiResolution());
                         product.addBand(band);
                     }
                 }
@@ -322,7 +320,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     private static Band buildIndexBand(Dimension defaultProductSize, L1BBandInfo bandInfo, ProductSubsetDef subsetDef,
-                                       L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, TileLayout productTileLayout, boolean isMultiResolution) {
+                                       L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, TileLayout productTileLayout, Dimension preferredTileSize, boolean isMultiResolution) {
 
         MosaicMatrix mosaicMatrix = buildIndexBandMatrix(sceneDescription.getMatrixTileIds(bandInfo), sceneDescription, bandInfo);
         int defaultBandWidth = mosaicMatrix.computeTotalWidth();
@@ -352,7 +350,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         band.setDescription(bandInfo.getBandInformation().getDescription());
         band.setValidPixelExpression(String.format("%s.raw > 0", indexBandInfo.getPhysicalBand()));
 
-        TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, imageToModelTransform);
+        TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, preferredTileSize, imageToModelTransform);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
         return band;

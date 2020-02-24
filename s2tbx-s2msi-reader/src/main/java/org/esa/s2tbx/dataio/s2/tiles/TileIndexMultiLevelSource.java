@@ -17,8 +17,8 @@ import java.awt.image.RenderedImage;
  */
 public class TileIndexMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLevelSource implements UncompressedTileOpImageCallback<TileIndexBandMatrixCell> {
 
-    public TileIndexMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, AffineTransform imageToModelTransform) {
-        super(levelCount, mosaicMatrix, imageMatrixReadBounds, null, imageToModelTransform);
+    public TileIndexMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, Dimension preferredTileSize, AffineTransform imageToModelTransform) {
+        super(levelCount, mosaicMatrix, imageMatrixReadBounds, preferredTileSize, imageToModelTransform);
     }
 
     @Override
