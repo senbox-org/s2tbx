@@ -6,6 +6,8 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Test;
@@ -93,7 +95,7 @@ public class IkonosProductReaderTest {
 
         ProductSubsetDef subsetDef = new ProductSubsetDef();
         subsetDef.setNodeNames(new String[] { "Pan", "Red", "Green" } );
-        subsetDef.setRegion(new Rectangle(12, 15, 30, 25));
+        subsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(12, 15, 30, 25), 0));
         subsetDef.setSubSampling(1, 1);
 
         Product product = reader.readProductNodes(productFile, subsetDef);
@@ -189,7 +191,7 @@ public class IkonosProductReaderTest {
 
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"Pan", "Red", "Green"});
-            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product product = reader.readProductNodes(productFile, subsetDef);

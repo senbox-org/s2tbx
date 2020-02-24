@@ -9,6 +9,8 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.junit.Test;
@@ -72,7 +74,7 @@ public class GTXDriverProductReaderTest extends AbstractTestDriverProductReader 
             Rectangle subsetRegion = new Rectangle(5, 10, 10, 20);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "band_1"} );
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             GTXDriverProductReaderPlugIn readerPlugin = new GTXDriverProductReaderPlugIn();
@@ -147,7 +149,7 @@ public class GTXDriverProductReaderTest extends AbstractTestDriverProductReader 
 
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "band_1"} );
-            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
             subsetDef.setSubSampling(1, 1);
 
             GTXDriverProductReaderPlugIn readerPlugin = new GTXDriverProductReaderPlugIn();

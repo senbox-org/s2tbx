@@ -6,6 +6,8 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Test;
@@ -99,7 +101,7 @@ public class AlosAV2ProductReaderTest {
 
         ProductSubsetDef subsetDef = new ProductSubsetDef();
         subsetDef.setNodeNames(new String[] { "blue", "near_infrared"} );
-        subsetDef.setRegion(new Rectangle(20, 35, 155, 165));
+        subsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(20, 35, 155, 165), 0));
         subsetDef.setSubSampling(1, 1);
 
         Product product = reader.readProductNodes(file, subsetDef);
@@ -192,7 +194,7 @@ public class AlosAV2ProductReaderTest {
 
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"blue", "near_infrared"});
-            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product product = reader.readProductNodes(file, subsetDef);

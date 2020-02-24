@@ -9,6 +9,8 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.junit.Test;
@@ -73,7 +75,7 @@ public class RSTDriverProductReaderTest extends AbstractTestDriverProductReader 
             Rectangle subsetRegion = new Rectangle(5, 10, 15, 10);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "band_1"} );
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             RSTDriverProductReaderPlugIn readerPlugin = new RSTDriverProductReaderPlugIn();
@@ -135,7 +137,7 @@ public class RSTDriverProductReaderTest extends AbstractTestDriverProductReader 
                                                            " 4.5 13.5, 4.5 14.5, 4.5 15.5, 4.5 16.5, 4.5 17.5, 4.5 18.5, 4.5 19.5, 4.5 20.5))");
                ProductSubsetDef subsetDef = new ProductSubsetDef();
                subsetDef.setNodeNames(new String[]{"band_1"});
-               subsetDef.setGeoRegion(geometry);
+               subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
                subsetDef.setSubSampling(1, 1);
 
                RSTDriverProductReaderPlugIn readerPlugin = new RSTDriverProductReaderPlugIn();

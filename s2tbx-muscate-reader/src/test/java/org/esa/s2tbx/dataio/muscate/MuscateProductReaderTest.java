@@ -8,6 +8,8 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.esa.snap.utils.TestUtil;
@@ -50,7 +52,7 @@ public class MuscateProductReaderTest {
             Rectangle subsetRegion = new Rectangle(1776, 1332, 6439, 5995);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "AOT_R1", "Surface_Reflectance_B11", "Aux_IA_R2", "AOT_Interpolation_Mask_R2", "edge_mask_R1"} );
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = reader.readProductNodes(file, subsetDef);
@@ -148,7 +150,7 @@ public class MuscateProductReaderTest {
                                                         " 4.493002891540527 44.956748962402344, 4.494754314422607 45.02415084838867))");
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "AOT_R1", "Surface_Reflectance_B11", "Aux_IA_R2", "AOT_Interpolation_Mask_R2", "edge_mask_R1"} );
-            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = reader.readProductNodes(file, subsetDef);

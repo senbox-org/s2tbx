@@ -27,6 +27,8 @@ import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
@@ -100,7 +102,7 @@ public class PleiadesProductReaderTest {
             Rectangle subsetRegion = new Rectangle(16650, 675, 12601, 3722);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "B0", "B2", "SATURATED"} );
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = reader.readProductNodes(file, subsetDef);
@@ -199,7 +201,7 @@ public class PleiadesProductReaderTest {
                                                         " -7.993382930755615 39.83122253417969, -7.99335241317749 39.833316802978516, -7.993321895599365 39.835411071777344))");
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "B0", "B2", "SATURATED"} );
-            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = reader.readProductNodes(file, subsetDef);

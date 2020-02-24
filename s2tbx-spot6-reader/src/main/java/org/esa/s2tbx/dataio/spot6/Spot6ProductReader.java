@@ -16,6 +16,7 @@ import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.geotools.referencing.CRS;
@@ -224,7 +225,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                         if(subsetDef != null) {
                             bandSubsetDef = new ProductSubsetDef();
                             if (tileCols == 1 && tileRows == 1) {
-                                bandSubsetDef.setRegion(bandBounds);
+                                bandSubsetDef.setSubsetRegion(new PixelSubsetRegion(bandBounds, 0));
                             } else {
                                 int tileOffsetX = 0;
                                 int tileOffsetY = 0;
@@ -254,7 +255,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                                 if (coords[1] > subsetTileStartCol && coords[1] == subsetTileEndCol - 1) {
                                     coordWidth = bandBounds.width - (coords[1] * tileWidth - bandBounds.x);
                                 }
-                                bandSubsetDef.setRegion(new Rectangle(tileOffsetX, tileOffsetY, coordWidth, coordHeight));
+                                bandSubsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(tileOffsetX, tileOffsetY, coordWidth, coordHeight), 0));
                             }
                         }
                         tiles[coords[0]-subsetTileStartRow][coords[1]-subsetTileStartCol] = ProductIO.readProduct(imageMetadata.getPath().resolve(rasterFile).toFile(), bandSubsetDef);

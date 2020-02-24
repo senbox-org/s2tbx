@@ -25,6 +25,7 @@ import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.geotools.referencing.CRS;
@@ -234,7 +235,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                         if(subsetDef != null) {
                             bandSubsetDef = new ProductSubsetDef();
                             if (tileCols == 1 && tileRows == 1) {
-                                bandSubsetDef.setRegion(bandSubsetRegion);
+                                bandSubsetDef.setSubsetRegion(new PixelSubsetRegion(bandSubsetRegion, 0));
                             } else {
                                 int tileOffsetX = 0;
                                 int tileOffsetY = 0;
@@ -266,7 +267,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                                     coordWidth = bandSubsetRegion.width - (coords[1] * tileWidth - bandSubsetRegion.x);
                                 }
 
-                                bandSubsetDef.setRegion(new Rectangle(tileOffsetX, tileOffsetY, coordWidth, coordHeight));
+                                bandSubsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(tileOffsetX, tileOffsetY, coordWidth, coordHeight), 0));
                             }
                         }
                         Path path = imageMetadata.getPath().resolve(rasterFile);

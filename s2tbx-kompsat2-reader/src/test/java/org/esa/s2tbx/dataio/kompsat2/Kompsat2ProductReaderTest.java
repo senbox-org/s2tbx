@@ -7,6 +7,8 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
@@ -92,7 +94,7 @@ public class Kompsat2ProductReaderTest {
             Rectangle subsetRegion = new Rectangle(3294, 4148, 10000, 8660);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"MS1", "MS4", "PAN"});
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = reader.readProductNodes(file, subsetDef);
@@ -200,7 +202,7 @@ public class Kompsat2ProductReaderTest {
                                                         " 129.607177734375 -14.447186470031738))");
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"MS1", "MS4", "PAN"});
-            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = reader.readProductNodes(file, subsetDef);

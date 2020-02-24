@@ -24,6 +24,8 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
@@ -202,7 +204,7 @@ public class SpotDimapProductReaderTest {
         try {
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "XS1", "SWIR", "SATURATED"} );
-            subsetDef.setRegion(new Rectangle(800, 540, 1721, 1801));
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(800, 540, 1721, 1801), 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = reader.readProductNodes(file, subsetDef);
@@ -270,7 +272,7 @@ public class SpotDimapProductReaderTest {
             JtsGeometryConverter converter = new JtsGeometryConverter();
             Geometry geometry = converter.parse("POLYGON ((6.563314914703369 33.60757827758789, 6.611313343048096 33.600948333740234, 6.6593122482299805 33.59431838989258, 6.707311153411865 33.58768844604492, 6.755309581756592 33.581058502197266, 6.803308486938477 33.57442855834961, 6.851306915283203 33.56779861450195, 6.899305820465088 33.5611686706543, 6.9473042488098145 33.55453872680664, 6.937067985534668 33.51668167114258, 6.926831245422363 33.478824615478516, 6.916594982147217 33.44096755981445, 6.906358242034912 33.40311050415039, 6.896121501922607 33.36525344848633, 6.885885238647461 33.327392578125, 6.875648498535156 33.28953552246094, 6.86541223526001 33.251678466796875, 6.861555576324463 33.2374153137207, 6.813730716705322 33.2440299987793, 6.765905857086182 33.250640869140625, 6.718080997467041 33.25725173950195, 6.670256614685059 33.26386642456055, 6.622431755065918 33.270477294921875, 6.574606895446777 33.2770881652832, 6.526782035827637 33.28369903564453, 6.478957176208496 33.290313720703125, 6.482751369476318 33.30458068847656, 6.49282169342041 33.34245681762695, 6.502892017364502 33.38032913208008, 6.512962818145752 33.41820526123047, 6.523033142089844 33.45608139038086, 6.5331034660339355 33.493953704833984, 6.543173789978027 33.531829833984375, 6.553244590759277 33.569705963134766, 6.563314914703369 33.60757827758789))");
             ProductSubsetDef subsetDef = new ProductSubsetDef();
-            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
             subsetDef.setNodeNames(new String[] { "XS1", "SWIR", "SATURATED"} );
             subsetDef.setSubSampling(1, 1);
 

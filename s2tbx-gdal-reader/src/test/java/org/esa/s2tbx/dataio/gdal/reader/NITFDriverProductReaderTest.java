@@ -7,6 +7,7 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.junit.Test;
 
 import java.awt.*;
@@ -68,7 +69,7 @@ public class NITFDriverProductReaderTest extends AbstractTestDriverProductReader
             Rectangle subsetRegion = new Rectangle(20, 10, 40, 50);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "band_1", "mask_band_1"} );
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             NITFDriverProductReaderPlugIn readerPlugin = new NITFDriverProductReaderPlugIn();

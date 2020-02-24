@@ -6,6 +6,7 @@ import org.esa.s2tbx.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.junit.Test;
 
 import java.awt.*;
@@ -67,7 +68,7 @@ public class PNGDriverProductReaderTest extends AbstractTestDriverProductReader 
             Rectangle subsetRegion = new Rectangle(480, 108, 1165, 1056);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "band_1", "band_2", "band_4"} );
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             PNGDriverProductReaderPlugIn readerPlugin = new PNGDriverProductReaderPlugIn();

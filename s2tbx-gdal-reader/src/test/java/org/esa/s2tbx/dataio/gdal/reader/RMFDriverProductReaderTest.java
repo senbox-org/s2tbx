@@ -8,6 +8,7 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.junit.Test;
 
@@ -70,7 +71,7 @@ public class RMFDriverProductReaderTest extends AbstractTestDriverProductReader 
             Rectangle subsetRegion = new Rectangle(200, 100, 500, 400);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[] { "band_1", "band_3", "nodata_band_2"} );
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             RMFDriverProductReaderPlugIn readerPlugin = new RMFDriverProductReaderPlugIn();

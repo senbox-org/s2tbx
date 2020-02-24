@@ -4,6 +4,7 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.runtime.Engine;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
@@ -65,7 +66,7 @@ public class Sentinel2L1BProductReaderTest {
             Rectangle subsetRegion = new Rectangle(238, 867, 1956, 1854);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"D11B2", "D12B8", "D11_tile_id_10m", "tile_10m_d11_20160403t182500", "tile_10m_d12_20160403t182500"});
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
             subsetDef.setIgnoreMetadata(true);
 
@@ -143,7 +144,7 @@ public class Sentinel2L1BProductReaderTest {
             Rectangle subsetRegion = new Rectangle(232, 1168, 921, 833);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"D11B11", "D12B5", "tile_20m_d11_20160403t182500", "tile_20m_d12_20160403t182500"});
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
             subsetDef.setIgnoreMetadata(true);
 
@@ -208,7 +209,7 @@ public class Sentinel2L1BProductReaderTest {
             Rectangle subsetRegion = new Rectangle(264, 176, 673, 672);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"D11B10", "D12B1", "D12_tile_id_60m", "tile_60m_d11_20160403t182500", "tile_60m_d12_20160403t182500"});
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = productReader.readProductNodes(productPath, subsetDef);
@@ -285,7 +286,7 @@ public class Sentinel2L1BProductReaderTest {
             Rectangle subsetRegion = new Rectangle(264, 176, 673, 672);
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"D11B2", "D11B11", "D11B10", "D12B8", "D12B5", "D12B1","tile_10m_d11_20160403t182500", "tile_60m_d12_20160403t182500"});
-            subsetDef.setRegion(subsetRegion);
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product finalProduct = productReader.readProductNodes(productPath, subsetDef);

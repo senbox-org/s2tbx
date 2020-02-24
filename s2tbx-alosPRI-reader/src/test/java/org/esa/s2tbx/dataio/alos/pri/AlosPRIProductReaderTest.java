@@ -6,6 +6,8 @@ import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Test;
@@ -102,7 +104,7 @@ public class AlosPRIProductReaderTest {
                                                         " -93.02961730957031 81.30195617675781))");
             ProductSubsetDef subsetDef = new ProductSubsetDef();
             subsetDef.setNodeNames(new String[]{"ALPSMB038921910", "ALPSMF038921800", "no data", "saturated"});
-            subsetDef.setGeoRegion(geometry);
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
             subsetDef.setSubSampling(1, 1);
 
             Product product = reader.readProductNodes(productFile, subsetDef);
@@ -175,7 +177,7 @@ public class AlosPRIProductReaderTest {
 
         ProductSubsetDef subsetDef = new ProductSubsetDef();
         subsetDef.setNodeNames(new String[]{"ALPSMB038921910", "ALPSMF038921800", "no data", "saturated"});
-        subsetDef.setRegion(new Rectangle(12354, 9874, 12000, 11563));
+        subsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(12354, 9874, 12000, 11563), 0));
         subsetDef.setSubSampling(1, 1);
 
         Product product = reader.readProductNodes(productFile, subsetDef);
