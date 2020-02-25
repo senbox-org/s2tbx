@@ -1289,7 +1289,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 dataType = bandInfo.getImageLayout().dataType;
             }
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(dataType, bandRectangle.width, bandRectangle.height);
+
             ImageLayout layout = new ImageLayout(0, 0, bandRectangle.width, bandRectangle.height, 0, 0, S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE, sampleModel, null);
+            //TileLayout imageLayout = bandInfo.getImageLayout();
+            //int tileWidth = imageLayout.tileWidth;
+            //int tileHeight = imageLayout.tileHeight;
+            //ImageLayout layout = new ImageLayout(0, 0, bandRectangle.width, bandRectangle.height, 0, 0, tileWidth, tileHeight, sampleModel, null);
 
             return new DefaultMultiLevelImage(bandScene, layout);
         }

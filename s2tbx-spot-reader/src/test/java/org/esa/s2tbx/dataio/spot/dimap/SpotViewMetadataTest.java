@@ -185,12 +185,16 @@ public class SpotViewMetadataTest {
     public void testGetPath() throws Exception {
         String root = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
         String partialPath = root + File.separator + productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL" + File.separator + "metadata.xml";
+        String metadataPath = metadata.getPath().toString();
         if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
         {
             partialPath = partialPath.replaceAll("\\\\", "/");
+        } else if (SystemUtils.IS_OS_WINDOWS) {
+            partialPath = partialPath.replace("\\", "/");
+            metadataPath = metadataPath.replace("\\", "/");
         }
         
-        assertEquals(partialPath, metadata.getPath().toString());
+        assertEquals(partialPath, metadataPath);
     }
 
     @Test

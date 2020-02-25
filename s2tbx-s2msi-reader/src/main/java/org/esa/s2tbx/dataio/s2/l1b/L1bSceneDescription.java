@@ -154,6 +154,103 @@ public class L1bSceneDescription extends S2SceneDescription {
         return sceneDescription;
     }
 
+
+
+    public static L1bSceneDescription create(L1bMetadata header, S2SpatialResolution productResolution, String detector) {
+        L1bSceneDescription sceneDescription = null;
+
+        List<S2Metadata.Tile> originalTileList = header.getTileList();
+        //filter TileList
+        List<S2Metadata.Tile> tileList = new ArrayList<>();
+        for(S2Metadata.Tile tile : originalTileList) {
+            if(tile.getDetectorId().equals(detector)) {
+                tileList.add(tile);
+            }
+        }
+
+        // initialise with default CRS
+        CoordinateReferenceSystem crs = DefaultGeographicCRS.WGS84;
+        Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
+        TileInfo[] tileInfos = new TileInfo[tileList.size()];
+        Envelope2D sceneEnvelope = null;
+
+
+        if (!tileList.isEmpty()) {
+
+
+            Map<String, Integer> detectorsTopPositionMap = computeTopPositions(tileList, productResolution);
+
+            for (int i = 0; i < tileList.size(); i++) {
+                L1bMetadata.Tile tile = tileList.get(i);
+
+                L1bMetadata.TileGeometry selectedGeometry = tile.getTileGeometry(productResolution);
+
+
+                // Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
+
+                Envelope2D envelope;
+
+                // data is referenced through 1 based indexes
+                // since position si computed for 10m, we need multiply by a ratio if product resolution is not 10m
+
+                int ratio = productResolution.resolution / S2SpatialResolution.R10M.resolution;
+                String detectorId = tile.getDetectorId();
+                int topPosition = detectorsTopPositionMap.get(detectorId);
+                int yOffset = (selectedGeometry.getPosition() - topPosition) / ratio;
+                double yWidth = yOffset * selectedGeometry.getyDim();
+
+
+                int xOffset = 0;
+
+                envelope = new Envelope2D(crs,
+                                          xOffset,
+                                          yWidth + selectedGeometry.getNumRows() * selectedGeometry.getyDim(),
+                                          selectedGeometry.getNumCols() * selectedGeometry.getxDim(),
+                                          -selectedGeometry.getNumRows() * selectedGeometry.getyDim());
+
+                tileEnvelopes[i] = envelope;
+
+                if (sceneEnvelope == null) {
+                    sceneEnvelope = new Envelope2D(crs, envelope);
+                } else {
+                    sceneEnvelope.add(envelope);
+                }
+                tileInfos[i] = new TileInfo(i, tile.getId(), new Rectangle());
+            }
+
+            // get back to upperLeft info in scene
+            double imageX = sceneEnvelope.getX();
+            double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
+            Rectangle sceneBounds = null;
+            for (int i = 0; i < tileEnvelopes.length; i++) {
+                L1bMetadata.Tile tile = tileList.get(i);
+                L1bMetadata.TileGeometry selectedGeometry = tile.getTileGeometry(productResolution);
+                Envelope2D tileEnvelope = tileEnvelopes[i];
+
+                // upperLeft again
+                double tileX = tileEnvelope.getX();
+                double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
+
+                Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.getxDim()),
+                                                    (int) ((imageY - tileY) / -selectedGeometry.getyDim()),
+                                                    selectedGeometry.getNumCols(),
+                                                    selectedGeometry.getNumRows());
+                if (sceneBounds == null) {
+                    sceneBounds = new Rectangle(rectangle);
+                } else {
+                    sceneBounds.add(rectangle);
+                }
+                tileInfos[i] = new TileInfo(i, tile.getId(), rectangle);
+            }
+
+            sceneDescription = new L1bSceneDescription(tileInfos, sceneEnvelope, sceneBounds);
+        }
+
+        return sceneDescription;
+    }
+
+
+
     private static Map<String, Integer> computeTopPositions(List<S2Metadata.Tile> tileList, S2SpatialResolution productResolution) {
         Map<String, Integer> detectorsTopPositionMap = new HashMap<>(12);
 
