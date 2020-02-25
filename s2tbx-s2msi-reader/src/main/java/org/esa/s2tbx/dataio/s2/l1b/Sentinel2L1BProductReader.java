@@ -133,22 +133,29 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         ProductSubsetDef subsetDef = getSubsetDef();
 
         //sceneDescriptionPerDetectorAndResolution
-        Map<String, L1bSceneDescription> sceneDescriptionMap = new HashMap<>();
-        //getDetectors
-        ArrayList<String> detectors = new ArrayList<>();
-        for(Tile tile : tileList) {
-            if (!detectors.contains(tile.getDetectorId())) detectors.add(tile.getDetectorId());
-        }
-        for(String detector : detectors) {
-            sceneDescriptionMap.put("D" + detector +"_10",L1bSceneDescription.create(metadataHeader, S2SpatialResolution.R10M,detector));
-            sceneDescriptionMap.put("D" + detector +"_20",L1bSceneDescription.create(metadataHeader, S2SpatialResolution.R20M,detector));
-            sceneDescriptionMap.put("D" + detector +"_60",L1bSceneDescription.create(metadataHeader, S2SpatialResolution.R60M,detector));
-        }
+        //TODO Jean: see: https://senbox.atlassian.net/projects/SIITBX/issues/?filter=allissues&orderby=priority%20DESC&keyword=SIITBX-394
+        // get detectors
+//        ArrayList<String> detectors = new ArrayList<>();
+//        for(Tile tile : tileList) {
+//            if (!detectors.contains(tile.getDetectorId())) {
+//                detectors.add(tile.getDetectorId());
+//            }
+//        }
+//        Map<String, L1bSceneDescription> sceneDescriptionMap = new HashMap<>();
+//        for(String detector : detectors) {
+//            sceneDescriptionMap.put("D" + detector +"_10", L1bSceneDescription.create(l1bMetadataHeader, S2SpatialResolution.R10M,detector));
+//            sceneDescriptionMap.put("D" + detector +"_20", L1bSceneDescription.create(l1bMetadataHeader, S2SpatialResolution.R20M,detector));
+//            sceneDescriptionMap.put("D" + detector +"_60", L1bSceneDescription.create(l1bMetadataHeader, S2SpatialResolution.R60M,detector));
+//        }
 
         Product product;
         if (sceneDescription == null) {
             product = new Product(l1bMetadataHeader.getProductMetadataPath().getFileName().toString(), productType);
         } else {
+            //String detector = tileBandInfo.detectorId;
+
+
+
             Dimension defaultProductSize = new Dimension(sceneDescription.getSceneRectangle().width, sceneDescription.getSceneRectangle().height);
             Rectangle productBounds;
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
@@ -177,7 +184,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     geoCodingsByDetector.put(tbi.getDetectorId(), tiePointGeoCoding);
                 }
             }
-//TODO
+            //TODO Jean: see: https://senbox.atlassian.net/projects/SIITBX/issues/?filter=allissues&orderby=priority%20DESC&keyword=SIITBX-394
+
 //            addDetectorBands(product, bandInfoByKey,
 //                             new L1bSceneMultiLevelImageFactory(sceneDescriptionMap, Product.findImageToModelTransform(product.getSceneGeoCoding())),sceneDescriptionMap);
             AffineTransform imageToModelTransform = Product.findImageToModelTransform(product.getSceneGeoCoding());
@@ -186,7 +194,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             // add TileIndex if there are more than 1 tile
             if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoByKey.isEmpty()) {
                 List<S2SpatialResolution> resolutions = computeResolutions(this.interpretation);
-//TODO
+
+                //TODO Jean: see: https://senbox.atlassian.net/projects/SIITBX/issues/?filter=allissues&orderby=priority%20DESC&keyword=SIITBX-394
+
 //                for(String detector : detectors) {
 //                    //filter TileList
 //                    ArrayList<Tile> auxTileList = new ArrayList<>();
