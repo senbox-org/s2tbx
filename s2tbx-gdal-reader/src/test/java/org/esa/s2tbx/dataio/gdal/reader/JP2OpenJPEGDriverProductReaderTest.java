@@ -186,15 +186,17 @@ public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProduc
                 assertEquals(2, product.getBands().length);
 
                 Band band = product.getBandAt(1);
+                assertNotNull(band);
+
                 assertEquals(20, band.getDataType());
-                assertEquals(42000, band.getNumDataElems());
+                assertEquals(42824, band.getNumDataElems());
                 assertEquals("Green", band.getName());
-                assertEquals(210, band.getRasterWidth());
-                assertEquals(200, band.getRasterHeight());
+                assertEquals(212, band.getRasterWidth());
+                assertEquals(202, band.getRasterHeight());
 
                 assertEquals(0, band.getSampleInt(0, 0));
                 assertEquals(0, band.getSampleInt(110, 110));
-                assertEquals(0, band.getSampleInt(200, 200));
+                assertEquals(14, band.getSampleInt(200, 200));
                 assertEquals(15, band.getSampleInt(198, 165));
                 assertEquals(11, band.getSampleInt(120, 198));
                 assertEquals(0, band.getSampleInt(50, 50));
