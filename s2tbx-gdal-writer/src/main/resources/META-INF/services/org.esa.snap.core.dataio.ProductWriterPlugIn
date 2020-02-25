@@ -1,0 +1,17 @@
+org.esa.s2tbx.gdal.writer.plugins.BMPDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.BTDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.GS7BGDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.GSBGDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.GTiffDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.GTXDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.HFADriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.ILWISDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.KRODriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.MFFDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.NITFDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.PCIDSKDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.PNMDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.RMFDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.RSTDriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.SAGADriverProductWriterPlugIn
+org.esa.s2tbx.gdal.writer.plugins.SGIDriverProductWriterPlugIn

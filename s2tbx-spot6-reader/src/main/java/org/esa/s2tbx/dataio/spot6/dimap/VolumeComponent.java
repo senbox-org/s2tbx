@@ -17,7 +17,7 @@
 
 package org.esa.s2tbx.dataio.spot6.dimap;
 
-import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
 
 import java.io.IOException;
 import java.nio.file.Files;

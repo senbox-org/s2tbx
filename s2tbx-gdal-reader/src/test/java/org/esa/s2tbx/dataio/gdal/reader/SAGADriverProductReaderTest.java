@@ -1,15 +1,20 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.SAGADriverProductReaderPlugIn;
+import org.esa.lib.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.gdal.reader.plugins.SAGADriverProductReaderPlugIn;
+import org.esa.s2tbx.gdal.reader.GDALProductReader;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -52,6 +57,51 @@ public class SAGADriverProductReaderTest extends AbstractTestDriverProductReader
 
             bandValue = band.getSampleFloat(15, 33);
             assertEquals(147.0f, bandValue, 0);
+        }
+    }
+
+    @Test
+    public void testSAGAReadProductSubset() throws IOException {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
+            File file = this.gdalTestsFolderPath.resolve("SAGA-driver.sdat").toFile();
+
+            Rectangle subsetRegion = new Rectangle(200, 100, 700, 500);
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setNodeNames(new String[] { "band_1"} );
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
+            subsetDef.setSubSampling(1, 1);
+
+            SAGADriverProductReaderPlugIn readerPlugin = new SAGADriverProductReaderPlugIn();
+            GDALProductReader reader = (GDALProductReader)readerPlugin.createReaderInstance();
+            Product finalProduct = reader.readProductNodes(file, subsetDef);
+
+            assertNull(finalProduct.getSceneGeoCoding());
+
+            assertNotNull(finalProduct.getMaskGroup());
+            assertEquals(0,finalProduct.getMaskGroup().getNodeNames().length);
+            assertEquals(1, finalProduct.getBands().length);
+            assertEquals("GDAL", finalProduct.getProductType());
+            assertEquals(700, finalProduct.getSceneRasterWidth());
+            assertEquals(500, finalProduct.getSceneRasterHeight());
+
+            Band band = finalProduct.getBandAt(0);
+            assertEquals(20, band.getDataType());
+            assertEquals(350000, band.getNumDataElems());
+
+            float bandValue = band.getSampleFloat(32, 11);
+            assertEquals(204.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(33, 32);
+            assertEquals(156.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(30, 30);
+            assertEquals(179.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(27, 29);
+            assertEquals(163.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(15, 33);
+            assertEquals(186.0f, bandValue, 0);
         }
     }
 }

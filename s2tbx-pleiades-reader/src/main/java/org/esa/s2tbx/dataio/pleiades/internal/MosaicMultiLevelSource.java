@@ -23,18 +23,12 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.util.ImageUtils;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -47,6 +41,7 @@ import java.util.logging.Logger;
  * A single banded multi-level mosaic image source.
  *
  * @author Cosmin Cara
+ * modified 20191120 to read a specific area from the input product by Denisa Stefanescu
  */
 public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
@@ -58,12 +53,14 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
     private final int numXTiles;
     private final int numYTiles;
     private final int dataType;
+    private final Rectangle subsetRegion;
+    private final Point tileStart;
     private ImageLayout imageLayout;
     private final Logger logger;
 
     public MosaicMultiLevelSource(Band[][] sourceBands, int imageWidth, int imageHeight,
                                   int tileWidth, int tileHeight, int numTilesX, int numTilesY, int levels, int dataType,
-                                  AffineTransform transform) {
+                                  AffineTransform transform, Rectangle subsetRegion, Point tileStart) {
         super(new DefaultMultiLevelModel(levels,
                                          //Product.findImageToModelTransform(geoCoding),
                                          transform,
@@ -74,6 +71,8 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
         this.tileHeight = tileHeight;
         this.numXTiles = numTilesX;
         this.numYTiles = numTilesY;
+        this.subsetRegion = subsetRegion;
+        this.tileStart = tileStart;
         this.sourceBands = sourceBands;
         this.dataType = dataType;
         logger = Logger.getLogger(MosaicMultiLevelSource.class.getName());
@@ -100,10 +99,21 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
                 PlanarImage opImage;
                 try {
                     opImage = createTileImage(x, y, level);
+                    int xTrans = x * tileWidth;
+                    int yTrans = y * tileHeight;
+                    if(subsetRegion != null){
+                        if(x > 0){
+                            xTrans = (tileStart.x + x) * tileWidth - subsetRegion.x;
+                        }
+                        if(y > 0){
+                            yTrans = (tileStart.y + y) * tileHeight - subsetRegion.y;
+                        }
+                    }
+
                     if (opImage != null) {
                         opImage = TranslateDescriptor.create(opImage,
-                                                             (float) (x * tileWidth * factorX),
-                                                             (float) (y * tileHeight * factorY),
+                                                             (float) (xTrans * factorX),
+                                                             (float) (yTrans * factorY),
                                                              Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                                              null);
                     }
@@ -134,8 +144,8 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
                                                       MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                       null, null, null, null,
                                                       new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-        int fittingRectWidth = scaleValue(imageWidth, level);
-        int fittingRectHeight = scaleValue(imageHeight, level);
+        int fittingRectWidth = ImageUtils.computeLevelSize(imageWidth, level);
+        int fittingRectHeight = ImageUtils.computeLevelSize(imageHeight, level);
 
         Rectangle fitRect = new Rectangle(0, 0, fittingRectWidth, fittingRectHeight);
         final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
@@ -148,20 +158,18 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
         }
 
+        //sometimes the when the values are scaled a pixel is loosed or added
+        if (mosaicOp.getWidth() != fitRect.width || mosaicOp.getHeight() != fitRect.height) {
+            int rightPad = fitRect.width - mosaicOp.getWidth();
+            int bottomPad = fitRect.height - mosaicOp.getHeight();
+            mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
+        }
+
         return mosaicOp;
     }
 
     @Override
     public synchronized void reset() {
         super.reset();
-    }
-
-    private int scaleValue(int source, int level) {
-        int size = source >> level;
-        int sizeTest = size << level;
-        if (sizeTest < source) {
-            size++;
-        }
-        return size;
     }
 }

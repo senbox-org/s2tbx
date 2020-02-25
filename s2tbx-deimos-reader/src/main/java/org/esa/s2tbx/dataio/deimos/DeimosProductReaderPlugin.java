@@ -20,15 +20,11 @@ package org.esa.s2tbx.dataio.deimos;
 import org.esa.s2tbx.dataio.deimos.dimap.DeimosConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
-import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.utils.FileHelper;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.Locale;
 
 /**
@@ -42,6 +38,11 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
 
     public DeimosProductReaderPlugin() {
         super("org/esa/s2tbx/dataio/deimos/" + DeimosProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new DeimosMetadataInspector();
     }
 
     @Override

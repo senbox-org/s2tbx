@@ -17,13 +17,14 @@
 package org.esa.s2tbx.dataio.pleiades;
 
 import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
+import org.esa.s2tbx.dataio.pleiades.internal.PleiadesMetadataInspector;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
-import java.io.File;
 import java.util.Locale;
 
 /**
@@ -39,6 +40,11 @@ public class PleiadesProductReaderPlugin extends BaseProductReaderPlugIn {
         super("org/esa/s2tbx/dataio/pleiades/" + PleiadesProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
 
         this.folderDepth = 3;
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new PleiadesMetadataInspector();
     }
 
     @Override

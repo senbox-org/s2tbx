@@ -18,9 +18,10 @@
 package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.apache.commons.lang.SystemUtils;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
@@ -45,7 +46,7 @@ public class SpotViewMetadataTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         XmlMetadataParserFactory.registerParser(SpotViewMetadata.class, new XmlMetadataParser<SpotViewMetadata>(SpotViewMetadata.class));
-        metadata = XmlMetadata.create(SpotViewMetadata.class, TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml"));
+        metadata = GenericXmlMetadata.create(SpotViewMetadata.class, TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml"));
     }
 
     @Test

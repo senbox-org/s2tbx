@@ -2,18 +2,30 @@ package org.esa.s2tbx.dataio.worldview2.metadata;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.commons.FilePathInputStream;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.util.ImageUtils;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.*;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Basic reader for WorldView 2 tiles.
@@ -23,7 +35,11 @@ import java.util.HashMap;
  */
 
 public class TileMetadata extends XmlMetadata {
+
     private TileComponent tileComponent;
+    private int tileRowsCount;
+    private int tileColsCount;
+
     private static class TileMetadataParser extends XmlMetadataParser<TileMetadata> {
 
         TileMetadataParser(Class metadataFileClass) {
@@ -81,7 +97,7 @@ public class TileMetadata extends XmlMetadata {
 
     @Override
     public String[] getRasterFileNames() {
-        return new String[0];
+        return this.tileComponent.getDeliveredTiles();
     }
 
     @Override
@@ -269,4 +285,68 @@ public class TileMetadata extends XmlMetadata {
         result.setTileComponent(tileComponent);
         return result;
     }
+
+    public int getTileRowsCount() {
+        return tileRowsCount;
+    }
+
+    public int getTileColsCount() {
+        return tileColsCount;
+    }
+
+    private void setTileRowsCount(int tileRowsCount) {
+        this.tileRowsCount = tileRowsCount;
+    }
+
+    private void setTileColsCount(int tileColsCount) {
+        this.tileColsCount = tileColsCount;
+    }
+
+    public Map<String, int[]> computeRasterTileInfo() {
+        String[] tiffImageRelativeFilePaths = getRasterFileNames();
+        List<Integer> rows = new ArrayList<>();
+        List<Integer> cols = new ArrayList<>();
+        String regex = "R\\d+C\\d+";
+        Pattern pattern = Pattern.compile(regex);
+        for (String name : tiffImageRelativeFilePaths) {
+            Matcher matcher = pattern.matcher(name);
+            if (matcher.find()) {
+                String splittingAfterRowColsIdentif = matcher.group();
+                int row = Integer.parseInt(splittingAfterRowColsIdentif.substring(splittingAfterRowColsIdentif.indexOf('R') + 1, splittingAfterRowColsIdentif.indexOf('C')));
+                int col = Integer.parseInt(splittingAfterRowColsIdentif.substring(splittingAfterRowColsIdentif.indexOf('C') + 1));
+                rows.add(row);
+                cols.add(col);
+            }
+        }
+        Map<String, int[]> tileInfo = new HashMap<>();
+        if (rows.size() == 0 || cols.size() == 0) {
+            if (tiffImageRelativeFilePaths.length == 1) {
+                tileInfo.put(tiffImageRelativeFilePaths[0], new int[]{0, 0});
+                setTileRowsCount(1);
+                setTileColsCount(1);
+            }
+        } else {
+            int minRowIndex = Collections.min(rows);
+            int minColIndex = Collections.min(cols);
+            int maxRowIndex = Collections.max(rows);
+            int maxColIndex = Collections.max(cols);
+            setTileRowsCount(maxRowIndex - minRowIndex + 1);
+            setTileColsCount(maxColIndex);
+            for (int i = 0; i < tiffImageRelativeFilePaths.length; i++) {
+                tileInfo.put(tiffImageRelativeFilePaths[i], new int[]{rows.get(i) - minRowIndex, cols.get(i) - minColIndex});
+            }
+        }
+        return tileInfo;
+    }
+
+    public CrsGeoCoding buildBandGeoCoding(Rectangle subsetBounds) throws FactoryException, TransformException {
+        String crsCode = tileComponent.computeCRSCode();
+        if (crsCode != null) {
+            CoordinateReferenceSystem mapCRS = CRS.decode(crsCode);
+            return ImageUtils.buildCrsGeoCoding(tileComponent.getOriginX(), tileComponent.getOriginY(), tileComponent.getStepSize(),
+                                                tileComponent.getStepSize(), tileComponent.getNumColumns(), tileComponent.getNumRows(), mapCRS, subsetBounds);
+        }
+        return null;
+    }
+
 }

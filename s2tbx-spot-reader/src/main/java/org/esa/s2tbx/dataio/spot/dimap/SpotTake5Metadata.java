@@ -18,7 +18,7 @@
 package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.apache.commons.lang.StringUtils;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
@@ -35,8 +35,9 @@ import java.util.Map;
 public class SpotTake5Metadata extends XmlMetadata {
 
     private String metadataFileName;
-    private Map<String, String> tiffFiles = null;
-    private Map<String, String> maskFiles = null;
+    private Map<String, String> tiffFiles;
+    private Map<String, String> maskFiles;
+    private String metaSubFolder;
 
     /**
      * Parameter for the SPOT4 TAKE5 products
@@ -46,6 +47,15 @@ public class SpotTake5Metadata extends XmlMetadata {
     public SpotTake5Metadata(String name) {
         super(name);
         this.tiffFiles = null;
+        this.metaSubFolder = "";
+    }
+
+    public String getMetaSubFolder() {
+        return metaSubFolder;
+    }
+
+    public void setMetaSubFolder(String metaSubFolder) {
+        this.metaSubFolder = metaSubFolder;
     }
 
     @Override

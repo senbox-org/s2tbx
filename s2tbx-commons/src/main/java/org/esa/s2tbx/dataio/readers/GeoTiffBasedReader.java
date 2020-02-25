@@ -21,9 +21,9 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -61,6 +61,8 @@ import java.util.logging.Logger;
  * Base class for all GeoTIFF-based readers for S2TBX.
  * This class has been created from the need of gathering all common code of several similar readers into a single place.
  */
+//TODO Jean remove the class
+@Deprecated
 public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends AbstractProductReader {
 
     protected static final Logger logger = Logger.getLogger(GeoTiffBasedReader.class.getName());

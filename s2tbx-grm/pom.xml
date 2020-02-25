@@ -54,8 +54,8 @@
             <artifactId>ceres-ui</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>s2tbx-jp2-reader</artifactId>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-jp2-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

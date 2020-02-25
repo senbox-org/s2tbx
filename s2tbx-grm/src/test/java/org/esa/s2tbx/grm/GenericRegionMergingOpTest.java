@@ -12,6 +12,9 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.internal.OperatorExecutor;
+import org.esa.snap.utils.TestUtil;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -20,7 +23,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -28,13 +30,30 @@ import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Jean Coravu.
- *
- * Note: Nodes order is not guaranteed to be identical on different platforms,
- * therefore the tests should be done by node area and nod perimeter.
+ * Note: Nodes order is not guaranteed to be identical on different platforms, therefore the tests should be done by node id, not by node order
  */
 public class GenericRegionMergingOpTest {
+    private Path segmentationTestsFolderPath;
+    private Product smallSourceProduct;
+    private Product largeSourceProduct;
 
     public GenericRegionMergingOpTest() {
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        assumeTrue(TestUtil.testdataAvailable());
+
+        checkTestDirectoryExists();
+
+        ImageProductReaderPlugIn readerPlugIn = new ImageProductReaderPlugIn();
+        ProductReader reader = readerPlugIn.createReaderInstance();
+
+        File smallProductFile = this.segmentationTestsFolderPath.resolve("picture-334x400.png").toFile();
+        this.smallSourceProduct = reader.readProductNodes(smallProductFile, null);
+
+        File largeProductFile = this.segmentationTestsFolderPath.resolve("picture-750x898.png").toFile();
+        this.largeSourceProduct = reader.readProductNodes(largeProductFile, null);
     }
 
     @Test
@@ -48,40 +67,42 @@ public class GenericRegionMergingOpTest {
             Float spectralWeight = null;
             Float shapeWeight = null;
 
-            GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
-                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+        GenericRegionMergingOp operator = executeOperator(this.smallSourceProduct, mergingCostCriterion, regionMergingCriterion,
+                                                          totalIterationsForSecondSegmentation, threshold, null, null);
 
-            AbstractSegmenter segmenter = operator.getSegmenter();
-            assertNotNull(segmenter);
+        Product targetProduct = operator.getTargetProduct();
+        AbstractSegmenter segmenter = operator.getSegmenter();
 
-            Graph graph = segmenter.getGraph();
-            assertNotNull(graph);
-            assertEquals(12, graph.getNodeCount());
+        assertNotNull(segmenter);
 
-            List<Node> nodes = findNodesByAreaAndPerimeter(graph, 6125, 798);
-            assertEquals(1, nodes.size());
-            float[] nodeExpectedMeansValues = new float[]{43.48049f, 92.38074f, 71.088326f};
-            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 0, 0, 287, 39, 1596, 3);
+        Graph graph = segmenter.getGraph();
+        assertNotNull(graph);
 
-            nodes = findNodesByAreaAndPerimeter(graph, 33468, 924);
-            assertEquals(1, nodes.size());
-            nodeExpectedMeansValues = new float[]{28.577358f, 77.67291f, 106.54587f};
-            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 35, 20, 265, 134, 1840, 6);
+        assertEquals(12, graph.getNodeCount());
 
-            nodes = findNodesByAreaAndPerimeter(graph, 7277, 600);
-            assertEquals(1, nodes.size());
-            nodeExpectedMeansValues = new float[]{7.4516973f, 204.85187f, 82.08506f};
-            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 36, 157, 260, 31, 1200, 4);
+        //Node node = graph.getNodeAt(0);
+        Node node = graph.getNodeById(0);
+        assertNotNull(node);
+        float[] nodeExpectedMeansValues = new float[] {43.48049f, 92.38074f, 71.088326f};
+        checkGraphNode(node, nodeExpectedMeansValues, 0, 0, 287, 39, 1596, 3);
 
-            nodes = findNodesByAreaAndPerimeter(graph, 13672, 1232);
-            assertEquals(1, nodes.size());
-            nodeExpectedMeansValues = new float[]{53.42437f, 96.581116f, 78.46628f};
-            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 0, 256, 334, 144, 2464, 3);
+        //node = graph.getNodeAt(3);
+        node = graph.getNodeById(6856);
+        assertNotNull(node);
+        nodeExpectedMeansValues = new float[] {28.577358f, 77.67291f, 106.54587f};
+        checkGraphNode(node, nodeExpectedMeansValues, 35, 20, 265, 134, 1840, 6);
 
-            nodes = findNodesByAreaAndPerimeter(graph, 46173, 1060);
-            assertEquals(1, nodes.size());
-            nodeExpectedMeansValues = new float[]{29.666191f, 78.3342f, 107.13783f};
-            checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 38, 194, 264, 184, 2120, 5);
+        //node = graph.getNodeAt(7);
+        node = graph.getNodeById(52515);
+        assertNotNull(node);
+        nodeExpectedMeansValues = new float[] {7.4516973f, 204.85187f, 82.08506f};
+        checkGraphNode(node, nodeExpectedMeansValues, 36, 157, 260, 31, 1200, 4);
+
+        //node = graph.getNodeAt(11);
+        node = graph.getNodeById(85823);
+        assertNotNull(node);
+        nodeExpectedMeansValues = new float[] {53.42437f, 96.581116f, 78.46628f};
+        checkGraphNode(node, nodeExpectedMeansValues, 0, 256, 334, 144, 2464, 3);
 
             nodes = findNodesByAreaAndPerimeter(graph, 1638, 578);
             assertEquals(1, nodes.size());

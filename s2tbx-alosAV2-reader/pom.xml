@@ -34,13 +34,17 @@
             <artifactId>snap-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-geotiff</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-jp2-reader</artifactId>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-jp2-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

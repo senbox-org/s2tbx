@@ -1,15 +1,20 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.BTDriverProductReaderPlugIn;
+import org.esa.lib.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.gdal.reader.plugins.BTDriverProductReaderPlugIn;
+import org.esa.s2tbx.gdal.reader.GDALProductReader;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -52,6 +57,57 @@ public class BTDriverProductReaderTest extends AbstractTestDriverProductReader {
 
             bandValue = band.getSampleFloat(158, 335);
             assertEquals(87.0f, bandValue, 0);
+        }
+    }
+
+    @Test
+    public void testBTReadProductSubset() throws IOException {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
+            File file = this.gdalTestsFolderPath.resolve("BT-driver.bt").toFile();
+
+            Rectangle subsetRegion = new Rectangle(200, 100, 400, 300);
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setNodeNames(new String[] { "band_1"} );
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
+            subsetDef.setSubSampling(1, 1);
+
+            BTDriverProductReaderPlugIn readerPlugin = new BTDriverProductReaderPlugIn();
+            GDALProductReader reader = (GDALProductReader)readerPlugin.createReaderInstance();
+            Product finalProduct = reader.readProductNodes(file, subsetDef);
+
+            assertNull(finalProduct.getSceneGeoCoding());
+
+            assertNotNull(finalProduct.getMaskGroup());
+            assertEquals(0,finalProduct.getMaskGroup().getNodeNames().length);
+
+            assertEquals(1, finalProduct.getBands().length);
+            assertNotNull(finalProduct.getMaskGroup());
+            assertEquals(0,finalProduct.getMaskGroup().getNodeNames().length);
+            assertEquals("GDAL", finalProduct.getProductType());
+            assertEquals(400, finalProduct.getSceneRasterWidth());
+            assertEquals(300, finalProduct.getSceneRasterHeight());
+
+            Band band = finalProduct.getBandAt(0);
+            assertEquals(12, band.getDataType());
+            assertEquals(120000, band.getNumDataElems());
+
+            float bandValue = band.getSampleFloat(109, 25);
+            assertEquals(219.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(170, 205);
+            assertEquals(67.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(171, 263);
+            assertEquals(19.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(227, 233);
+            assertEquals(21.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(288, 104);
+            assertEquals(83.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(379, 201);
+            assertEquals(43.0f, bandValue, 0);
         }
     }
 }

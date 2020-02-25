@@ -18,40 +18,38 @@
 package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotViewMetadata;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.core.util.jai.JAIUtils;
 import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
 import org.geotools.referencing.ReferencingFactoryFinder;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.xml.sax.SAXException;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
@@ -65,185 +63,150 @@ import java.util.logging.Logger;
  * modified 20190516 for VFS compatibility by Oana H.
  */
 public class SpotViewProductReader extends AbstractProductReader {
-    private static final Logger logger = Logger.getLogger(SpotViewProductReader.class.getName());
 
-    private ImageInputStream imageInputStream;
-    private SpotViewMetadata metadata;
-    private SpotDimapMetadata imageMetadata;
-    private VirtualDirEx zipDir;
-    private final Object sharedLock;
-    private final Path colorPaletteFilePath;
+    private static final Logger logger = Logger.getLogger(SpotViewProductReader.class.getName());
 
     static {
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
         XmlMetadataParserFactory.registerParser(SpotViewMetadata.class, new XmlMetadataParser<SpotViewMetadata>(SpotViewMetadata.class));
     }
 
-    protected SpotViewProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+    private final Path colorPaletteFilePath;
+
+    private VirtualDirEx productDirectory;
+    private SpotViewImageReader spotViewImageReader;
+
+    public SpotViewProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
 
         this.colorPaletteFilePath = colorPaletteFilePath;
-        this.sharedLock = new Object();
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+
+        closeResources();
     }
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        logger.info("Reading product metadata");
-        //zipDir = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
-        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        this.zipDir = VirtualDirEx.build(inputPath);
+        boolean success = false;
+        try {
+            Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+            this.productDirectory = VirtualDirEx.build(productPath);
 
-        File metadataFile = zipDir.getFile(SpotConstants.SPOTVIEW_METADATA_FILE);
-        File imageMetadataFile = zipDir.getFile(SpotConstants.SPOTSCENE_METADATA_FILE);
-        if (metadataFile != null) {
-            metadata = XmlMetadata.create(SpotViewMetadata.class, metadataFile);
-        }
-        if (imageMetadataFile != null) {
-            imageMetadata = XmlMetadata.create(SpotDimapMetadata.class, imageMetadataFile);
-        }
-        Product product = null;
-        if (metadata != null) {
-            String productName = metadata.getProductName().replace(" ", "_").replace("/", "_");
+            SpotViewMetadata productMetadata = readProductMetadata(this.productDirectory);
+            SpotDimapMetadata imageMetadata = readImageMetadata(this.productDirectory);
+
+            String productName = productMetadata.getProductName().replace(" ", "_").replace("/", "_");
             if (imageMetadata != null && imageMetadata.getProductName() != null) {
                 productName = imageMetadata.getProductName();
             }
-            product = new Product(productName,
-                                  SpotConstants.SPOTVIEW_FORMAT_NAMES[0],
-                                  metadata.getRasterWidth(),
-                                  metadata.getRasterHeight());
-            product.setProductReader(this);
-            //product.setFileLocation(metadataFile);
-            //product.setFileLocation(new File(zipDir.getBasePath()));
-            product.setFileLocation(inputPath.toFile());
-            product.getMetadataRoot().addElement(metadata.getRootElement());
-
-            logger.info("Trying to attach tiepoint geocoding");
-            initTiePointGeoCoding(product);
-            if (product.getSceneGeoCoding() == null) {
-                logger.info("Trying to attach geocoding");
-                initGeoCoding(product);
+            ProductSubsetDef subsetDef = getSubsetDef();
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, productMetadata.getRasterWidth(), productMetadata.getRasterHeight());
+            } else {
+                GeoCoding productDefaultGeoCoding = buildTiePointGridGeoCoding(productMetadata, imageMetadata, null);
+                if (productDefaultGeoCoding == null) {
+                    productDefaultGeoCoding = buildCrsGeoCoding(productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), productMetadata, imageMetadata);
+                }
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), false);
             }
-            //initGeoCoding(product, zipDir.getFile("geolayer.bil"), metadata.getGeolayerJavaByteOrder());
-            logger.info("Reading product bands");
-            initBands(product);
 
-            product.setPreferredTileSize(ImageManager.getPreferredTileSize(product));
+            Product product = new Product(productName, SpotConstants.SPOTVIEW_FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
+            product.setFileLocation(productPath.toFile());
+            if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                product.getMetadataRoot().addElement(productMetadata.getRootElement());
+            }
+            Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+            product.setPreferredTileSize(preferredTileSize);
 
-            initialiseInputStream(zipDir.getFile(SpotConstants.SPOTVIEW_RASTER_FILENAME), metadata.getRasterJavaByteOrder());
+            TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(productMetadata, imageMetadata, subsetDef);
+            if (productGeoCoding == null) {
+                CrsGeoCoding crsGeoCoding = buildCrsGeoCoding(product.getSceneRasterWidth(), product.getSceneRasterHeight(), productMetadata, imageMetadata);
+                if (crsGeoCoding != null) {
+                    product.setSceneGeoCoding(crsGeoCoding);
+                }
+            } else {
+                product.addTiePointGrid(productGeoCoding.getLatGrid());
+                product.addTiePointGrid(productGeoCoding.getLonGrid());
+                product.setSceneGeoCoding(productGeoCoding);
+            }
 
-            product.setModified(false);
+            File inputFile = this.productDirectory.getFile(SpotConstants.SPOTVIEW_RASTER_FILENAME);
+            this.spotViewImageReader = new SpotViewImageReader(inputFile, productMetadata.getRasterJavaByteOrder(), productMetadata.getRasterWidth(), productMetadata.getRasterPixelSize());
+
+            // add bands
+            int bandDataType = productMetadata.getRasterDataType();
+            int dataBufferType = ImageManager.getDataBufferType(bandDataType);
+            String[] bandNames = productMetadata.getBandNames();
+            GeoCoding bandGeoCoding = product.getSceneGeoCoding();
+            for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
+                if (subsetDef == null || subsetDef.isNodeAccepted(bandNames[bandIndex])) {
+                    ColorPaletteBand band = new ColorPaletteBand(bandNames[bandIndex], bandDataType, product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
+                    if (bandGeoCoding != null) {
+                        band.setGeoCoding(bandGeoCoding);
+                    }
+                    band.setSpectralWavelength(imageMetadata.getWavelength(bandIndex));
+                    band.setSpectralBandwidth(imageMetadata.getBandwidth(bandIndex));
+                    band.setNoDataValueUsed(true);
+                    band.setNoDataValue(imageMetadata.getNoDataValue());
+                    SpotViewMultiLevelSource multiLevelSource = new SpotViewMultiLevelSource(this.spotViewImageReader, dataBufferType, productBounds, preferredTileSize,
+                                                                                             bandIndex, bandNames.length, bandGeoCoding);
+                    band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+                    product.addBand(band);
+                }
+            }
+
+            success = true;
+
+            return product;
+        } catch (RuntimeException | IOException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IOException(exception);
+        } finally {
+            if (!success) {
+                closeResources();
+            }
         }
-        return product;
     }
 
     @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        final int sourceMaxY = sourceOffsetY + sourceHeight - 1;
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight,
+                                          ProductData destBuffer, ProgressMonitor pm)
+            throws IOException {
+
         Product product = destBand.getProduct();
-        final int elemSize = destBuffer.getElemSize();
-
-        final int bandIndex = product.getBandIndex(destBand.getName());
-
-        final long lineSizeInBytes = (long)metadata.getRasterWidth() * (long)metadata.getRasterPixelSize();
+        int bandIndex = product.getBandIndex(destBand.getName());
         int numBands = product.getNumBands();
-
-        pm.beginTask("Reading band '" + destBand.getName() + "'...", sourceMaxY - sourceOffsetY);
-        try {
-            int destPos = 0;
-            for (int sourceY = sourceOffsetY; sourceY <= sourceMaxY; sourceY += sourceStepY) {
-                if (pm.isCanceled()) {
-                    break;
-                }
-                synchronized (sharedLock) {
-                    long lineStartPos = sourceY * numBands * lineSizeInBytes + bandIndex * lineSizeInBytes;
-                    imageInputStream.seek(lineStartPos + elemSize * sourceOffsetX);
-                    destBuffer.readFrom(destPos, destWidth, imageInputStream);
-                    destPos += destWidth;
-                }
-                pm.worked(1);
-            }
-        } finally {
-            pm.done();
+        synchronized (this.spotViewImageReader) {
+            this.spotViewImageReader.readBandRasterData(bandIndex, numBands, sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer);
         }
     }
 
-    private void initialiseInputStream(File inputFile, ByteOrder rasterByteOrder) {
-        try {
-            imageInputStream = ImageIO.createImageInputStream(inputFile);
-            imageInputStream.setByteOrder(rasterByteOrder);
-        } catch (IOException ioEx) {
-            ioEx.printStackTrace();
-        }
-    }
-
-    private void initTiePointGeoCoding(Product product) {
-        TiePoint[] tiePoints = imageMetadata.getTiePoints();
-        if (tiePoints != null && tiePoints.length == 4) {
-            float[] latPoints = new float[tiePoints.length];
-            float[] lonPoints = new float[tiePoints.length];
-            for (int i = 0; i < tiePoints.length; i++) {
-                latPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = (float) tiePoints[i].getValueAt(4);
-                lonPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = (float) tiePoints[i].getValueAt(3);
-            }
-            TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), latPoints);
-            product.addTiePointGrid(latGrid);
-            TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), lonPoints);
-            product.addTiePointGrid(lonGrid);
-            GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-            product.setSceneGeoCoding(geoCoding);
-        }
-    }
-
-    private void initGeoCoding(Product product) {
-        try {
-            String projectionCode = metadata.getProjectionCode();
-            if (projectionCode != null && projectionCode.startsWith("epsg")) {
-                CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory("EPSG", null);
-                CoordinateReferenceSystem crs = factory.createProjectedCRS(projectionCode);
-                if (crs != null) {
-                    AffineTransform transformation = new AffineTransform();
-                    transformation.translate(metadata.getRasterGeoRefY(), metadata.getRasterGeoRefX());
-                    transformation.scale(metadata.getRasterGeoRefSizeX(), -metadata.getRasterGeoRefSizeY());
-                    transformation.rotate(-Math.toRadians(imageMetadata.getOrientation()));
-                    // Why do we need to do this??? Because it seems that the coordinates given were somehow
-                    // offset during processing
-                    transformation.translate(-product.getSceneRasterHeight(), -product.getSceneRasterWidth());
-                    Rectangle rectangle = new Rectangle(metadata.getRasterWidth(), metadata.getRasterHeight());
-                    CrsGeoCoding geoCoding = new CrsGeoCoding(crs, rectangle, transformation);
-                    product.setSceneGeoCoding(geoCoding);
-                }
-            }
-        } catch (FactoryException e) {
-            e.printStackTrace();
-        } catch (TransformException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void initBands(Product product) {
-        final int dataType = metadata.getRasterDataType();
-
-        final String[] bandNames = metadata.getBandNames();
-        for (int i = 0; i < bandNames.length; i++) {
-            ColorPaletteBand band = new ColorPaletteBand(bandNames[i], dataType, product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
-
-            band.setSpectralWavelength(imageMetadata.getWavelength(i));
-            band.setSpectralBandwidth(imageMetadata.getBandwidth(i));
-            //band.setScalingOffset(imageMetadata.getScalingOffset(i));
-            //band.setScalingFactor(imageMetadata.getScalingFactor(i));
-
-            band.setNoDataValueUsed(true);
-            band.setNoDataValue(imageMetadata.getNoDataValue());
-
-            product.addBand(band);
+    private void closeResources() {
+        if (this.spotViewImageReader != null) {
+            this.spotViewImageReader.close();
         }
     }
 
     @Override
     public TreeNode<File> getProductComponents() {
-        if (zipDir.isCompressed()) {
+        if (productDirectory.isCompressed()) {
             return super.getProductComponents();
         } else {
+            SpotViewMetadata metadata;
+            SpotDimapMetadata imageMetadata;
+            try {
+                metadata = readMetadata(this.productDirectory, SpotConstants.SPOTVIEW_METADATA_FILE, SpotViewMetadata.class);
+                imageMetadata = readMetadata(this.productDirectory, SpotConstants.SPOTSCENE_METADATA_FILE, SpotDimapMetadata.class);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
             TreeNode<File> result = super.getProductComponents();
             addProductComponentIfNotPresent(metadata.getFileName(), result);
             addProductComponentIfNotPresent(metadata.getGeolayerFileName(), result);
@@ -257,7 +220,7 @@ public class SpotViewProductReader extends AbstractProductReader {
 
     private void addProductComponentIfNotPresent(String componentId, TreeNode<File> currentComponents) {
         try {
-            File componentFile = zipDir.getFile(componentId);
+            File componentFile = productDirectory.getFile(componentId);
             TreeNode<File> resultComponent = null;
             for (TreeNode node : currentComponents.getChildren()) {
                 if (node.getId().toLowerCase().equals(componentId.toLowerCase())) {
@@ -275,11 +238,65 @@ public class SpotViewProductReader extends AbstractProductReader {
         }
     }
 
-    @Override
-    public void close() throws IOException {
-        if (imageInputStream != null) {
-            imageInputStream.close();
+    public static TiePointGeoCoding buildTiePointGridGeoCoding(SpotViewMetadata productMetadata, SpotDimapMetadata imageMetadata, ProductSubsetDef subsetDef) {
+        TiePoint[] tiePoints = imageMetadata.getTiePoints();
+        if (tiePoints != null && tiePoints.length == 4) {
+            float[] latPoints = new float[tiePoints.length];
+            float[] lonPoints = new float[tiePoints.length];
+            for (int i = 0; i < tiePoints.length; i++) {
+                latPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = (float) tiePoints[i].getValueAt(4);
+                lonPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = (float) tiePoints[i].getValueAt(3);
+            }
+            TiePointGrid latGrid = buildTiePointGrid("latitude", 2, 2, 0, 0, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), latPoints, TiePointGrid.DISCONT_NONE);
+            TiePointGrid lonGrid = buildTiePointGrid("longitude", 2, 2, 0, 0, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), lonPoints, TiePointGrid.DISCONT_AT_180);
+            if (subsetDef != null && subsetDef.getRegion() != null) {
+                lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
+                latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
+            }
+            return new TiePointGeoCoding(latGrid, lonGrid);
         }
-        super.close();
+        return null;
+    }
+
+    public static CrsGeoCoding buildCrsGeoCoding(int productWidth, int productHeight, SpotViewMetadata productMetadata, SpotDimapMetadata imageMetadata)
+            throws FactoryException, TransformException {
+
+        String projectionCode = productMetadata.getProjectionCode();
+        if (projectionCode != null && projectionCode.startsWith("epsg")) {
+            CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory("EPSG", null);
+            CoordinateReferenceSystem crs = factory.createProjectedCRS(projectionCode);
+            if (crs != null) {
+                AffineTransform transformation = new AffineTransform();
+                transformation.translate(productMetadata.getRasterGeoRefY(), productMetadata.getRasterGeoRefX());
+                transformation.scale(productMetadata.getRasterGeoRefSizeX(), -productMetadata.getRasterGeoRefSizeY());
+                transformation.rotate(-Math.toRadians(imageMetadata.getOrientation()));
+                // Why do we need to do this??? Because it seems that the coordinates given were somehow
+                // offset during processing
+                transformation.translate(-productHeight, -productWidth);
+                Rectangle rectangle = new Rectangle(productMetadata.getRasterWidth(), productMetadata.getRasterHeight());
+                return new CrsGeoCoding(crs, rectangle, transformation);
+            }
+        }
+        return null;
+    }
+
+    public static SpotViewMetadata readProductMetadata(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+        return readMetadata(productDirectory, SpotConstants.SPOTVIEW_METADATA_FILE, SpotViewMetadata.class);
+    }
+
+    public static SpotDimapMetadata readImageMetadata(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+        return readMetadata(productDirectory, SpotConstants.SPOTSCENE_METADATA_FILE, SpotDimapMetadata.class);
+    }
+
+    private static <MetadataType extends GenericXmlMetadata> MetadataType readMetadata(VirtualDirEx productDirectory, String metadataRelativeFilePath, Class<MetadataType> metadataClass)
+            throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+
+        try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(metadataRelativeFilePath)) {
+            MetadataType metaDataItem = (MetadataType) XmlMetadataParserFactory.getParser(metadataClass).parse(filePathInputStream);
+            Path filePath = filePathInputStream.getPath();
+            metaDataItem.setPath(filePath);
+            metaDataItem.setFileName(filePath.getFileName().toString());
+            return metaDataItem;
+        }
     }
 }

@@ -23,9 +23,11 @@ import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.commons.VirtualDirPath;
 import org.esa.s2tbx.commons.VirtualZipPath;
-import org.esa.s2tbx.commons.ZipFileSystemBuilder;
 import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.engine_utilities.util.FileSystemUtils;
+import org.esa.snap.engine_utilities.util.ZipFileSystemBuilder;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -54,11 +56,9 @@ import java.util.stream.Collectors;
  *
  * @author Cosmin Cara
  */
-public abstract class VirtualDirEx extends VirtualDir {
+public abstract class VirtualDirEx extends VirtualDir implements Closeable {
 
     private static final Logger logger = Logger.getLogger(VirtualDirEx.class.getName());
-
-    public static final int BUFFER_SIZE = 1024 * 1024;
 
     private final static HashSet<String> COMPRESSED_EXTENSIONS = new HashSet<String>() {{
         add(".zip");
@@ -96,7 +96,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                     // check if the file represents a zip archive
                     boolean zipFile;
                     try {
-                        zipFile = isZipFile(path);
+                        zipFile = FileSystemUtils.isZipFile(path);
                     } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
                         throw new IllegalStateException(e);
                     }
@@ -127,12 +127,6 @@ public abstract class VirtualDirEx extends VirtualDir {
 
     private static String getPathClassNameExceptionMessage(Path path) {
         return "The path type is '" + path.getClass().getName()+"'.";
-    }
-
-    private static boolean isZipFile(Path zipPath) throws IllegalAccessException, InstantiationException, InvocationTargetException, IOException {
-        try (FileSystem fileSystem = ZipFileSystemBuilder.newZipFileSystem(zipPath)) {
-            return (fileSystem != null);
-        }
     }
 
     /**

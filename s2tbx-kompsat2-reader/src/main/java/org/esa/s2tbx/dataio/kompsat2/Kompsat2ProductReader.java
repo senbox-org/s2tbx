@@ -1,270 +1,405 @@
 package org.esa.s2tbx.dataio.kompsat2;
 
 import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.glevel.MultiLevelImage;
-import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.kompsat2.internal.Kompsat2Constants;
-import org.esa.s2tbx.dataio.kompsat2.internal.MosaicMultiLevelSource;
 import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadata;
 import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadataUtil;
+import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Component;
 import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Metadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.core.transform.AffineTransform2D;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.jai.JAIUtils;
-import org.esa.snap.vfs.NioPaths;
+import org.esa.snap.dataio.ImageRegistryUtils;
+import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
+import org.xml.sax.SAXException;
 
+import javax.imageio.spi.ImageInputStreamSpi;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * Basic reader for Kompsat 2 products.
  *
  * @author Razvan Dumitrascu
+ * modified 20201002 to compute product and band bounds based on subset information by Denisa Stefanescu
  */
 
 public class Kompsat2ProductReader extends AbstractProductReader {
 
+    static {
+        XmlMetadataParserFactory.registerParser(Kompsat2Metadata.class, new XmlMetadataParser(Kompsat2Metadata.class));
+    }
+
     private VirtualDirEx productDirectory;
-    private Kompsat2Metadata metadata;
-    private List<Product> tiffProduct;
-    private Product product;
-    private int tiffImageIndex;
+    private ImageInputStreamSpi imageInputStreamSpi;
+    private List<GeoTiffImageReader> bandImageReaders;
 
-    /**
-     * Constructs a new abstract product reader.
-     *
-     * @param readerPlugIn the reader plug-in which created this reader, can be {@code null} for internal reader
-     *                     implementations
-     */
-    protected Kompsat2ProductReader(ProductReaderPlugIn readerPlugIn) {
+    public Kompsat2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
+
+        this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
     @Override
-    protected Product readProductNodesImpl() throws IOException {
-        Path inputFile = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-        VirtualDirEx productDirectoryTemp = VirtualDirEx.build(inputFile, false, true);
-        this.tiffProduct = new ArrayList<>();
-        try {
-            File file = productDirectoryTemp.getBaseFile();
-
-            String fileName;
-            //product file name differs from archive file name
-            if (productDirectoryTemp.isCompressed()) {
-                fileName = file.getName().substring(0, file.getName().lastIndexOf(Kompsat2Constants.PRODUCT_FILE_SUFFIX));
-            } else {
-                fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
-            }
-
-            this.metadata = Kompsat2Metadata.create(productDirectoryTemp.getFile(fileName + Kompsat2Constants.METADATA_FILE_SUFFIX).toPath());
-            if (metadata != null) {
-                //unzip the necessary files in a temporary directory
-                productDirectory = VirtualDirEx.build(productDirectoryTemp.getFile(fileName + Kompsat2Constants.ARCHIVE_FILE_EXTENSION).toPath());
-                for (String item : this.productDirectory.listAllFiles()) {
-                    if (item.endsWith(Kompsat2Constants.IMAGE_METADATA_EXTENSION) ||
-                            item.endsWith(Kompsat2Constants.IMAGE_EXTENSION)) {
-                        productDirectory.getFile(item);
-                        if (metadata.getImageDirectoryPath() == null) {
-                            metadata.setImageDirectoryPath(productDirectory.getTempDir().toString());
-                        }
-                    }
-                }
-
-                this.metadata.createBandMetadata();
-                List<BandMetadata> bandMetadataList = this.metadata.getBandsMetadata();
-                BandMetadataUtil bUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
-                int width = bUtil.getMaxNumColumns();
-                int height = bUtil.getMaxNumLines();
-                this.product = new Product(this.metadata.getProductName(), Kompsat2Constants.KOMPSAT2_PRODUCT, width, height);
-                this.product.setStartTime(this.metadata.getProductStartTime());
-                this.product.setEndTime(this.metadata.getProductEndTime());
-                this.product.setDescription(this.metadata.getProductDescription());
-                this.product.getMetadataRoot().addElement(this.metadata.getRootElement());
-                this.product.setFileLocation(inputFile.toFile());
-                this.product.setProductReader(this);
-                String dirPath = this.metadata.getImageDirectoryPath();
-                String dirNameExtension = this.metadata.getMetadataComponent().getImageDirectoryName();
-                String dirName = dirNameExtension.substring(0, dirNameExtension.lastIndexOf("."));
-                int levels;
-                for (BandMetadata aBandMetadataList : bandMetadataList) {
-                    String imageFileName = aBandMetadataList.getImageFileName();
-                    this.tiffProduct.add(ProductIO.readProduct(Paths.get(dirPath).resolve(dirName).resolve(imageFileName + Kompsat2Constants.IMAGE_EXTENSION).toFile()));
-                    this.tiffImageIndex++;
-                    Band band = this.tiffProduct.get(this.tiffImageIndex - 1).getBandAt(0);
-                    if (this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding() == null &&
-                            this.product.getSceneGeoCoding() == null) {
-                        initProductTiePointGeoCoding(this.metadata, this.product);
-                    }
-                    levels = band.getSourceImage().getModel().getLevelCount();
-                    final Dimension tileSize = JAIUtils.computePreferredTileSize(band.getRasterWidth(), band.getRasterHeight(), 1);
-                    String bandName = null;
-                    Double bandGain = null;
-                    for (int bandNameIndex = 0; bandNameIndex < Kompsat2Constants.BAND_NAMES.length - 1; bandNameIndex++) {
-                        if (imageFileName.contains(Kompsat2Constants.FILE_NAMES[bandNameIndex])) {
-                            bandName = Kompsat2Constants.BAND_NAMES[bandNameIndex];
-                            bandGain = Kompsat2Constants.KOMPSAT2_GAIN_VALUES[bandNameIndex];
-                        }
-                    }
-                    if (bandName == null) {
-                        bandName = Kompsat2Constants.BAND_NAMES[4];
-                        bandGain = Arrays.asList(Kompsat2Constants.KOMPSAT2_GAIN_VALUES).stream().mapToDouble(p -> p).sum() / (Kompsat2Constants.BAND_NAMES.length - 1);
-                        GeoCoding bandGeoCoding = this.tiffProduct.get(this.tiffImageIndex - 1).getSceneGeoCoding();
-                        if (bandGeoCoding != null && this.product.getSceneGeoCoding() == null) {
-                            this.product.setSceneGeoCoding(bandGeoCoding);
-                        }
-                    }
-                    Band targetBand = new Band(bandName, band.getDataType(), band.getRasterWidth(), band.getRasterHeight());
-                    targetBand.setSpectralBandIndex(band.getSpectralBandIndex());
-                    targetBand.setSpectralWavelength(Kompsat2Constants.BandWaveLengthConstants.getWavelengthCentral(targetBand.getName()));
-                    targetBand.setSpectralBandwidth(band.getSpectralBandwidth());
-                    targetBand.setSolarFlux(band.getSolarFlux());
-                    targetBand.setUnit(Kompsat2Constants.KOMPSAT2_UNIT);
-                    targetBand.setNoDataValue(band.getNoDataValue());
-                    targetBand.setNoDataValueUsed(true);
-                    targetBand.setScalingFactor(bandGain);
-                    targetBand.setScalingOffset(band.getScalingOffset());
-                    targetBand.setDescription(band.getDescription());
-                    if (band.getGeoCoding() != null) {
-                        targetBand.setGeoCoding(band.getGeoCoding());
-                    } else {
-                        if (width != band.getRasterWidth()) {
-                            AffineTransform2D transform2D =
-                                    new AffineTransform2D((float) width / band.getRasterWidth(), 0.0, 0.0,
-                                                          (float) height / band.getRasterHeight(), 0.0, 0.0);
-                            targetBand.setGeoCoding(addTiePointGridGeo(this.metadata, targetBand));
-                            targetBand.setImageToModelTransform(transform2D);
-                        }
-                    }
-                    MosaicMultiLevelSource bandSource =
-                            new MosaicMultiLevelSource(band,
-                                                       band.getRasterWidth(), band.getRasterHeight(),
-                                                       tileSize.width, tileSize.height,
-                                                       levels, band.getGeoCoding() != null ? targetBand.getGeoCoding() != null ?
-                                    Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                                    Product.findImageToModelTransform(product.getSceneGeoCoding()) :
-                                                               targetBand.getImageToModelTransform());
-                    targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-                    this.product.addBand(targetBand);
-                }
-            }
-            return this.product;
-        } finally {
-            productDirectoryTemp.close();
-        }
-    }
-
-
-    @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY,
-                                          int sourceWidth, int sourceHeight,
-                                          int sourceStepX, int sourceStepY,
-                                          Band destBand,
-                                          int destOffsetX, int destOffsetY,
-                                          int destWidth, int destHeight,
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight,
                                           ProductData destBuffer, ProgressMonitor pm) throws IOException {
-    }
 
-    /**
-     * Creates geo-coding based on latitude/longitude {@code TiePointGrid}s</li>
-     *
-     * @param k2Metadata Kompsat2Metadata parameter
-     * @param product    Product to add TiePointGrid and TiePointGridGeoCoding
-     */
-    private void initProductTiePointGeoCoding(Kompsat2Metadata k2Metadata, Product product) {
-        float[][] cornerLonsLats = k2Metadata.getMetadataComponent().getTiePointGridPoints();
-        int sceneWidth = product.getSceneRasterWidth();
-        int sceneHeight = product.getSceneRasterHeight();
-        TiePointGrid latGrid = createTiePointGrid(Kompsat2Constants.LAT_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
-        product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = createTiePointGrid(Kompsat2Constants.LON_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
-        product.addTiePointGrid(lonGrid);
-        if (latGrid != null && lonGrid != null) {
-            product.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
-        }
-    }
-
-    private GeoCoding addTiePointGridGeo(Kompsat2Metadata metadata, Band targetBand) {
-        float[][] cornerLonsLats = metadata.getMetadataComponent().getTiePointGridPoints();
-        int sceneWidth = targetBand.getRasterWidth();
-        int sceneHeight = targetBand.getRasterHeight();
-        TiePointGrid latGrid = createTiePointGrid(Kompsat2Constants.LAT_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
-        TiePointGrid lonGrid = createTiePointGrid(Kompsat2Constants.LON_DS_NAME, 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[1]);
-        return new TiePointGeoCoding(latGrid, lonGrid);
+        throw new UnsupportedOperationException("Method not implemented");
     }
 
     @Override
     public void close() throws IOException {
-        System.gc();
-        if (product != null) {
-            for (Band band : product.getBands()) {
-                MultiLevelImage sourceImage = band.getSourceImage();
-                if (sourceImage != null) {
-                    sourceImage.reset();
-                    sourceImage.dispose();
-                }
-            }
-        }
-        if (this.productDirectory != null) {
-            this.productDirectory.close();
-            this.productDirectory = null;
-        }
-        if (this.tiffProduct != null) {
-            for (Iterator<Product> iterator = this.tiffProduct.listIterator(); iterator.hasNext(); ) {
-                Product product = iterator.next();
-                if (product != null) {
-                    product.closeIO();
-                    product.dispose();
-                    iterator.remove();
-                }
-            }
-        }
-        if (this.metadata != null) {
-            File imageDir = new File(this.metadata.getImageDirectoryPath());
-            if (imageDir.exists()) {
-                deleteDirectory(imageDir);
-            }
-        }
         super.close();
+
+        closeResources();
     }
 
-    /**
-     * Force deletion of directory
-     *
-     * @param path path to file/directory
-     * @return return true if successful
-     */
-    private static boolean deleteDirectory(File path) {
-        if (path.exists()) {
-            File[] files = path.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        deleteDirectory(file);
+    @Override
+    protected Product readProductNodesImpl() throws IOException {
+        boolean success = false;
+        try {
+            Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+            this.productDirectory = VirtualDirEx.build(productPath, false, true);
+
+            String metadataFileName = buildMetadataFileName(this.productDirectory);
+            Path imagesMetadataParentPath = buildImagesMetadataParentPath(this.productDirectory, metadataFileName);
+            Kompsat2Metadata productMetadata = readProductMetadata(this.productDirectory, metadataFileName);
+            List<BandMetadata> bandMetadataList = readBandMetadata(imagesMetadataParentPath);
+
+            Product product = readProduct(productMetadata, bandMetadataList, imagesMetadataParentPath);
+            product.setFileLocation(productPath.toFile());
+
+            success = true;
+
+            return product;
+        } catch (RuntimeException | IOException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IOException(exception);
+        } finally {
+            if (!success) {
+                closeResources();
+            }
+        }
+    }
+
+    private Product readProduct(Kompsat2Metadata productMetadata, List<BandMetadata> bandMetadataList, Path imagesMetadataParentPath) throws Exception {
+        BandMetadataUtil metadataUtil = new BandMetadataUtil(bandMetadataList.toArray(new BandMetadata[bandMetadataList.size()]));
+
+        Dimension defaultProductSize = new Dimension(metadataUtil.getMaxNumColumns(), metadataUtil.getMaxNumLines());
+        ProductSubsetDef subsetDef = getSubsetDef();
+        GeoCoding productDefaultGeoCoding = null;
+        Rectangle productBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+        } else {
+            BandMetadata bandMetadataForDefaultProductGeoCoding = null;
+            for (BandMetadata bandMetadata : bandMetadataList) {
+                String bandName = getBandName(bandMetadata.getImageFileName());
+                if (bandName.equals(Kompsat2Constants.BAND_NAMES[4])) {
+                    bandMetadataForDefaultProductGeoCoding = bandMetadata;
+                    break;
+                }
+            }
+            productDefaultGeoCoding = buildDefaultGeoCoding(productMetadata, bandMetadataForDefaultProductGeoCoding, imagesMetadataParentPath, defaultProductSize, null, null);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, metadataUtil.isMultiSize());
+        }
+
+        Product product = new Product(productMetadata.getProductName(), Kompsat2Constants.KOMPSAT2_PRODUCT, productBounds.width, productBounds.height, this);
+        product.setStartTime(productMetadata.getProductStartTime());
+        product.setEndTime(productMetadata.getProductEndTime());
+        product.setDescription(productMetadata.getProductDescription());
+
+        Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+        product.setPreferredTileSize(preferredTileSize);
+        if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+            product.getMetadataRoot().addElement(productMetadata.getRootElement());
+        }
+
+        this.bandImageReaders = new ArrayList<>(bandMetadataList.size());
+
+        for (BandMetadata bandMetadata : bandMetadataList) {
+            if (bandMetadata.getNumColumns() > defaultProductSize.width) {
+                throw new IllegalStateException("The band width " + bandMetadata.getNumColumns() + " from the metadata file is greater than the product width " + defaultProductSize.width + ".");
+            }
+            if (bandMetadata.getNumLines() > defaultProductSize.height) {
+                throw new IllegalStateException("The band height " + bandMetadata.getNumLines() + " from the metadata file is greater than the product height " + defaultProductSize.height + ".");
+            }
+
+            String bandName = getBandName(bandMetadata.getImageFileName());
+            boolean bandIsSelected = (subsetDef == null || subsetDef.isNodeAccepted(bandName));
+            if (!bandIsSelected && bandName.equals(Kompsat2Constants.BAND_NAMES[4])) {
+                try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, bandMetadata.getImageFileName())) {
+                    Dimension defaultBandSize = geoTiffImageReader.validateSize(bandMetadata.getNumColumns(), bandMetadata.getNumLines());
+                    Kompsat2GeoTiffProductReader geoTiffProductReader = new Kompsat2GeoTiffProductReader(getReaderPlugIn(), productMetadata, product.getSceneRasterSize(), defaultProductSize, subsetDef);
+                    Rectangle bandBounds;
+                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                        bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
                     } else {
-                        file.delete();
+                        GeoCoding bandDefaultGeoCoding = buildDefaultGeoCoding(productMetadata, bandMetadata, imagesMetadataParentPath, defaultProductSize, geoTiffImageReader, null);
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                                        defaultProductSize.height, defaultBandSize.width, defaultBandSize.height, metadataUtil.isMultiSize());
+                    }
+
+                    Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
+                    if (geoTiffProduct.getBandAt(0).getGeoCoding() != null && product.getSceneGeoCoding() == null) {
+                        product.setSceneGeoCoding(geoTiffProduct.getBandAt(0).getGeoCoding());
                     }
                 }
             }
+            if (bandIsSelected) {
+                GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, bandMetadata.getImageFileName());
+                this.bandImageReaders.add(geoTiffImageReader);
+
+                Dimension defaultBandSize = geoTiffImageReader.validateSize(bandMetadata.getNumColumns(), bandMetadata.getNumLines());
+                Kompsat2GeoTiffProductReader geoTiffProductReader = new Kompsat2GeoTiffProductReader(getReaderPlugIn(), productMetadata, product.getSceneRasterSize(), defaultProductSize, subsetDef);
+                Rectangle bandBounds;
+                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
+                } else {
+                    GeoCoding bandDefaultGeoCoding = buildDefaultGeoCoding(productMetadata, bandMetadata, imagesMetadataParentPath, defaultProductSize, geoTiffImageReader, null);
+                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                                    defaultProductSize.height, defaultBandSize.width, defaultBandSize.height, metadataUtil.isMultiSize());
+                }
+
+                Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
+
+                if (geoTiffProduct.getSceneGeoCoding() == null && product.getSceneGeoCoding() == null) {
+                    TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(productMetadata, defaultProductSize.width, defaultProductSize.height, getSubsetDef());
+                    product.addTiePointGrid(productGeoCoding.getLatGrid());
+                    product.addTiePointGrid(productGeoCoding.getLonGrid());
+                    product.setSceneGeoCoding(productGeoCoding);
+                }
+
+                if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                    if (geoTiffProduct.getMetadataRoot() != null) {
+                        XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
+                    }
+                }
+
+                Band geoTiffBand = geoTiffProduct.getBandAt(0);
+                Double bandGain;
+                if (bandName.equals(Kompsat2Constants.BAND_NAMES[4])) {
+                    bandGain = Arrays.asList(Kompsat2Constants.KOMPSAT2_GAIN_VALUES).stream().mapToDouble(p -> p).sum() / (Kompsat2Constants.BAND_NAMES.length - 1);
+                    if (geoTiffBand.getGeoCoding() != null && product.getSceneGeoCoding() == null) {
+                        product.setSceneGeoCoding(geoTiffBand.getGeoCoding());
+                    }
+                } else {
+                    bandGain = getBandGain(bandMetadata.getImageFileName());
+                }
+                geoTiffBand.setName(bandName);
+                geoTiffBand.setScalingFactor(bandGain.doubleValue());
+                geoTiffBand.setUnit(Kompsat2Constants.KOMPSAT2_UNIT);
+
+                product.addBand(geoTiffBand);
+
+                // remove the bands from the geo tif product
+                geoTiffProduct.getBandGroup().removeAll();
+            }
         }
-        return (path.delete());
+
+        return product;
+    }
+
+    private void closeResources() {
+        try {
+            if (this.bandImageReaders != null) {
+                for (GeoTiffImageReader geoTiffImageReader : this.bandImageReaders) {
+                    try {
+                        geoTiffImageReader.close();
+                    } catch (Exception ignore) {
+                        // ignore
+                    }
+                }
+                this.bandImageReaders.clear();
+                this.bandImageReaders = null;
+            }
+        } finally {
+            try {
+                if (this.imageInputStreamSpi != null) {
+                    ImageRegistryUtils.deregisterImageInputStreamSpi(this.imageInputStreamSpi);
+                    this.imageInputStreamSpi = null;
+                }
+            } finally {
+                if (this.productDirectory != null) {
+                    this.productDirectory.close();
+                    this.productDirectory = null;
+                }
+            }
+        }
+        System.gc();
+    }
+
+    public static String getBandName(String bandFileName) {
+        for (int bandNameIndex = 0; bandNameIndex < Kompsat2Constants.BAND_NAMES.length - 1; bandNameIndex++) {
+            if (bandFileName.contains(Kompsat2Constants.FILE_NAMES[bandNameIndex])) {
+                return Kompsat2Constants.BAND_NAMES[bandNameIndex];
+            }
+        }
+        return Kompsat2Constants.BAND_NAMES[4]; // the default band name
+    }
+
+    private static Double getBandGain(String bandFileName) {
+        for (int bandNameIndex = 0; bandNameIndex < Kompsat2Constants.BAND_NAMES.length - 1; bandNameIndex++) {
+            if (bandFileName.contains(Kompsat2Constants.FILE_NAMES[bandNameIndex])) {
+                return Kompsat2Constants.KOMPSAT2_GAIN_VALUES[bandNameIndex];
+            }
+        }
+        return null;
+    }
+
+    public static String buildMetadataFileName(VirtualDirEx productDirectory) {
+        String baseItemName = productDirectory.getBaseFile().getName();
+        int index;
+        if (productDirectory.isArchive()) {
+            index = baseItemName.lastIndexOf(Kompsat2Constants.PRODUCT_FILE_SUFFIX);
+        } else {
+            index = baseItemName.lastIndexOf(".");
+        }
+        if (index > 0) {
+            return baseItemName.substring(0, index) + Kompsat2Constants.METADATA_FILE_SUFFIX;
+        }
+        throw new IllegalStateException("Invalid values: index " + index + ", baseItemName=" + baseItemName + ".");
+    }
+
+    public static Path buildImagesMetadataParentPath(VirtualDirEx productDirectory, String metadataFileName) throws IOException {
+        int extensionIndex = metadataFileName.lastIndexOf(Kompsat2Constants.METADATA_FILE_SUFFIX);
+        String fileNameWithoutExtension = metadataFileName.substring(0, extensionIndex);
+        String zipArchiveFileName;
+        if (!productDirectory.isArchive() && productDirectory.exists(fileNameWithoutExtension)) {
+            zipArchiveFileName = fileNameWithoutExtension;
+        } else {
+            zipArchiveFileName = fileNameWithoutExtension + Kompsat2Constants.ARCHIVE_FILE_EXTENSION;
+        }
+        return productDirectory.getFile(zipArchiveFileName).toPath();
+    }
+
+    public static List<BandMetadata> readBandMetadata(Path imagesMetadataParentPath)
+                                                      throws IOException, SAXException, ParserConfigurationException, InstantiationException {
+
+        try (VirtualDirEx zipArchiveProductDirectory = VirtualDirEx.build(imagesMetadataParentPath, false, false)) {
+            String[] allFileNames = zipArchiveProductDirectory.listAllFiles();
+            List<BandMetadata> componentMetadata = new ArrayList<>();
+            for (String relativeFilePath : allFileNames) {
+                if (relativeFilePath.endsWith(Kompsat2Constants.IMAGE_METADATA_EXTENSION)) {
+                    try (FilePathInputStream filePathInputStream = zipArchiveProductDirectory.getInputStream(relativeFilePath)) {
+                        int extensionIndex = relativeFilePath.lastIndexOf(Kompsat2Constants.IMAGE_METADATA_EXTENSION);
+                        String tifImageRelativeFilePath = relativeFilePath.substring(0, extensionIndex) + Kompsat2Constants.IMAGE_EXTENSION;
+                        if (!zipArchiveProductDirectory.exists(tifImageRelativeFilePath)) {
+                            throw new FileNotFoundException("The TIF image file path '" + tifImageRelativeFilePath + "' does not exists into the product directory '" + zipArchiveProductDirectory.getBasePath() + "'.");
+                        }
+                        BandMetadata bandMetadata = new BandMetadata(tifImageRelativeFilePath);
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(filePathInputStream))) {
+                            String line = reader.readLine();
+                            while (line != null) {
+                                if (line.startsWith(Kompsat2Constants.TAG_BAND_WIDTH)) {
+                                    String[] splitLine = line.split("\\t");
+                                    bandMetadata.setBandwidth(Double.parseDouble(splitLine[1]));
+                                } else if (line.startsWith(Kompsat2Constants.TAG_BITS_PER_PIXEL)) {
+                                    String[] splitLine = line.split("\\t");
+                                    bandMetadata.setBitsPerPixel(Integer.parseInt(splitLine[1]));
+                                } else if (line.startsWith(Kompsat2Constants.TAG_NUMBER_COLUMNS_MS_IMAGE) ||
+                                        (line.startsWith(Kompsat2Constants.TAG_NUMBER_COLUMNS_PAN_IMAGE))) {
+                                    String[] splitLine = line.split("\\t");
+                                    bandMetadata.setNumColumns(Integer.parseInt(splitLine[1]));
+                                } else if (line.startsWith(Kompsat2Constants.TAG_NUMBER_ROWS_MS_IMAGE) ||
+                                        (line.startsWith(Kompsat2Constants.TAG_NUMBER_ROWS_PAN_IMAGE))) {
+                                    String[] splitLine = line.split("\\t");
+                                    bandMetadata.setNumLines(Integer.parseInt(splitLine[1]));
+                                } else if (line.startsWith(Kompsat2Constants.TAG_PIXEL_SIZE)) {
+                                    String[] splitLine = line.split("\\t");
+                                    String[] splitResultLine = splitLine[1].split(" ");
+                                    bandMetadata.setStepSizeX(Double.parseDouble(splitResultLine[0]));
+                                    bandMetadata.setStepSizeY(Double.parseDouble(splitResultLine[1]));
+                                } else if (line.startsWith(Kompsat2Constants.TAG_AZIMUTH_ANGLE)) {
+                                    String[] splitLine = line.split("\\t");
+                                    bandMetadata.setAzimuth(Double.parseDouble(splitLine[1]));
+                                } else if (line.startsWith(Kompsat2Constants.TAG_INCIDENCE_ANGLE)) {
+                                    String[] splitLine = line.split("\\t");
+                                    bandMetadata.setIncidenceAngle(Double.parseDouble(splitLine[1]));
+                                }
+                                line = reader.readLine();
+                            }
+                        }
+                        componentMetadata.add(bandMetadata);
+                    }
+                }
+            }
+            return componentMetadata;
+        }
+    }
+
+    public static Kompsat2Metadata readProductMetadata(VirtualDirEx productDirectory, String metadataRelativeFilePath)
+                                                       throws IOException, SAXException, ParserConfigurationException, InstantiationException {
+
+        try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(metadataRelativeFilePath)) {
+            Kompsat2Metadata metadata = BaseProductReaderPlugIn.loadMetadata(Kompsat2Metadata.class, filePathInputStream);
+            metadata.setPath(filePathInputStream.getPath());
+            metadata.setFileName(filePathInputStream.getPath().getFileName().toString());
+            String directoryName = metadata.getAttributeValue(Kompsat2Constants.PATH_ZIP_FILE_NAME, null);
+            String tiePointGridPointsString = metadata.getAttributeValue(Kompsat2Constants.PATH_TIE_POINT_GRID, null);
+            String crsCode = metadata.getAttributeValue(Kompsat2Constants.PATH_CRS_NAME, null);
+            String originPos = metadata.getAttributeValue(Kompsat2Constants.PATH_ORIGIN, null);
+            if (directoryName != null) {
+                Kompsat2Component component = new Kompsat2Component(filePathInputStream.getPath().getParent());
+                component.setImageDirectoryName(directoryName);
+                if (tiePointGridPointsString != null) {
+                    component.setTiePointGridPoints(Kompsat2Metadata.parseTiePointGridAttribute(tiePointGridPointsString));
+                }
+                if (crsCode != null) {
+                    component.setCrsCode(crsCode);
+                }
+                if (originPos != null) {
+                    component.setOriginPos(originPos);
+                }
+                metadata.setMetadataComponent(component);
+            }
+            return metadata;
+        }
+    }
+
+    public static TiePointGeoCoding buildTiePointGridGeoCoding(Kompsat2Metadata k2Metadata, int defaultRasterWidth, int defaultRasterHeight, ProductSubsetDef subsetDef) {
+        float[][] cornerLonsLats = k2Metadata.getMetadataComponent().getTiePointGridPoints();
+        TiePointGrid latGrid = buildTiePointGrid(Kompsat2Constants.LAT_DS_NAME, 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[0], TiePointGrid.DISCONT_NONE);
+        TiePointGrid lonGrid = buildTiePointGrid(Kompsat2Constants.LON_DS_NAME, 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[1], TiePointGrid.DISCONT_AT_180);
+        if (subsetDef != null && subsetDef.getRegion() != null) {
+            lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
+            latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
+        }
+        return new TiePointGeoCoding(latGrid, lonGrid);
+    }
+
+    public static GeoCoding buildDefaultGeoCoding(Kompsat2Metadata metadata, BandMetadata bandMetadata, Path zipArchivePath, Dimension defaultProductSize, GeoTiffImageReader geoTiffImageReader, ProductSubsetDef subsetDef) throws Exception {
+        if(geoTiffImageReader == null) {
+            geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(zipArchivePath, bandMetadata.getImageFileName());
+        }
+        GeoCoding productGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+        if (productGeoCoding == null) {
+            productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductSize.width, defaultProductSize.height, subsetDef);
+        }
+        return productGeoCoding;
     }
 }

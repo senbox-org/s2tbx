@@ -18,85 +18,33 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.glevel.MultiLevelImage;
-import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
-import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Coordinate;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.math3.util.Pair;
-import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
-import org.esa.s2tbx.dataio.s2.AbstractMultiLevelImageFactory;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.s2.S2BandInformation;
-import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2TileOpImage;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
+import org.esa.s2tbx.dataio.s2.*;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadata;
+import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l1b.tiles.BandL1bSceneMultiLevelSource;
+import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
+import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.IndexCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.core.util.Guardian;
-import org.esa.snap.core.util.SystemUtils;
-import org.xml.sax.SAXException;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.image.MosaicMatrix;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.BorderDescriptor;
-import javax.media.jai.operator.ConstantDescriptor;
-import javax.media.jai.operator.MosaicDescriptor;
-import javax.media.jai.operator.TranslateDescriptor;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.image.RenderedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.s2tbx.dataio.s2.S2Metadata.ProductCharacteristics;
 import static org.esa.s2tbx.dataio.s2.S2Metadata.Tile;
-import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.convertDoublesToFloats;
-import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.getLatitudes;
-import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.getLongitudes;
-import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.parseHeader;
-import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadataProc.makeTileInformation;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
+import static org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
-
-// import com.jcabi.aspects.Loggable;
-
-// import org.github.jamm.MemoryMeter;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
@@ -130,24 +78,12 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         RESOLUTION_MULTI
     }
 
-    protected final Logger logger;
-    protected final ProductInterpretation interpretation;
+    private final ProductInterpretation interpretation;
 
     public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation) {
         super(readerPlugIn);
+
         this.interpretation = interpretation;
-        logger = SystemUtils.LOG;
-    }
-
-    public ProductInterpretation getInterpretation() {
-        return interpretation;
-    }
-
-    @Override
-    public S2SpatialResolution getProductResolution() {
-        if(interpretation == ProductInterpretation.RESOLUTION_20M) return S2SpatialResolution.R20M;
-        if(interpretation == ProductInterpretation.RESOLUTION_60M) return S2SpatialResolution.R60M;
-        return S2SpatialResolution.R10M;
     }
 
     @Override
@@ -164,97 +100,37 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
 
     @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        // Should never not come here, since we have an OpImage that reads data
-    }
-
-    private TiePointGrid addTiePointGrid(int width, int height, String gridName, float[] tiePoints) {
-        return createTiePointGrid(gridName, 2, 2, 0, 0, width, height, tiePoints);
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand,
+                                          int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
+                                          throws IOException {
+        // should never not come here, since we have an OpImage that reads data
     }
 
     @Override
-    protected Product buildMosaicProduct(VirtualPath metadataPath) throws IOException {
-        if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
-            throw new IOException("Invalid OpenJpeg executables");
-        }
+    protected AbstractS2MetadataReader buildMetadataReader(VirtualPath virtualPath) throws IOException {
+        return new L1bProductMetadataReader(virtualPath);
+    }
 
-        boolean isGranule = (namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA);
-        boolean foundProductMetadata = true;
+    @Override
+    protected Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention) throws Exception {
+        L1bMetadata l1bMetadataHeader = (L1bMetadata)metadataHeader;
 
-        if (isGranule) {
-            logger.fine("Reading a granule");
-        }
+        L1bSceneDescription sceneDescription = L1bSceneDescription.create(l1bMetadataHeader, getProductResolution());
+        Map<S2SpatialResolution, Dimension> sceneDimensions = L1bSceneDescription.computeSceneDimensions(l1bMetadataHeader);
 
-        if (!updateTileLayout(metadataPath, isGranule)) {
-            throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataPath.getFileName().toString()));
-        }
-
-        Objects.requireNonNull(metadataPath);
-
-        String filterTileId = null;
-        VirtualPath productMetadataPath = null;
-        String granuleDirName = null;
-
-        // we need to recover parent metadata file if we have a granule
-        if (isGranule) {
-            try {
-                Objects.requireNonNull(metadataPath.getParent());
-                granuleDirName = metadataPath.getParent().getFileName().toString();
-                VirtualPath tileIdFilter = metadataPath.getParent();
-                filterTileId = tileIdFilter.getFileName().toString();
-            } catch (NullPointerException npe) {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataPath.getFileName().toString()));
-            }
-
-            VirtualPath rootMetadataPath = namingConvention.getInputProductXml();
-            if (rootMetadataPath != null) {
-                productMetadataPath = rootMetadataPath;
-            }
-            if (productMetadataPath == null) {
-                foundProductMetadata = false;
-                productMetadataPath = metadataPath;
-            }
-        } else {
-            productMetadataPath = metadataPath;
-        }
-
-        final String aFilter = filterTileId;
-
-        L1bMetadata metadataHeader;
-
-        try {
-            long startTime = System.currentTimeMillis();
-
-            metadataHeader = parseHeader(productMetadataPath, granuleDirName, getConfig(), !foundProductMetadata, namingConvention);
-
-            if (logger.isLoggable(Level.FINE)) {
-                double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
-                logger.log(Level.FINE, "Finish parsing the header using the metadata file '" + productMetadataPath.getFullPathString()+"', elapsed time: " + elapsedTimeInSeconds + " seconds.");
-            }
-        } catch (ParserConfigurationException | SAXException e) {
-            SystemUtils.LOG.severe(Utils.getStackTrace(e));
-            throw new IOException("Failed to parse metadata in " + productMetadataPath.getFileName().toString());
-        }
-
-        L1bSceneDescription sceneDescription = L1bSceneDescription.create(metadataHeader, getProductResolution());
-        Map<S2SpatialResolution, Dimension> sceneDimensions = L1bSceneDescription.computeSceneDimensions(metadataHeader);
-        logger.fine("Scene Description: " + sceneDescription);
-
-        VirtualPath productDir = getProductDir(productMetadataPath);
+        VirtualPath productDir = l1bMetadataHeader.getProductMetadataPath().getParent();
+        S2Config config = l1bMetadataHeader.getConfig();
         initCacheDir(productDir);
 
-        ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
-
-        List<L1bMetadata.Tile> tileList = metadataHeader.getTileList();
-
-        if (isGranule) {
-            tileList = metadataHeader.getTileList().stream().filter(p -> p.getId().equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+        List<L1bMetadata.Tile> tileList = l1bMetadataHeader.computeTiles();
+        Map<String, L1BBandInfo> bandInfoByKey = l1bMetadataHeader.computeBandInfoByKey(tileList);
+        if (bandInfoByKey.isEmpty()) {
+            throw new IllegalStateException("No valid bands found.");
         }
 
-        Map<String, Tile> tilesById = new HashMap<>(tileList.size());
-        for (Tile aTile : tileList) {
-            tilesById.put(aTile.getId(), aTile);
-        }
+        ProductCharacteristics productCharacteristics = l1bMetadataHeader.getProductCharacteristics();
+        String productType = "S2_MSI_" + productCharacteristics.getProcessingLevel();
+        ProductSubsetDef subsetDef = getSubsetDef();
 
         //sceneDescriptionPerDetectorAndResolution
         Map<String, L1bSceneDescription> sceneDescriptionMap = new HashMap<>();
@@ -269,144 +145,81 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             sceneDescriptionMap.put("D" + detector +"_60",L1bSceneDescription.create(metadataHeader, S2SpatialResolution.R60M,detector));
         }
 
-        // Order bands by physicalBand
-        Map<String, S2BandInformation> sin = new HashMap<>();
-        for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
-            sin.put(bandInformation.getPhysicalBand(), bandInformation);
-        }
-
-        Map<Pair<String, String>, Map<String, VirtualPath>> detectorBandInfoMap = new HashMap<>();
-        Map<String, L1BBandInfo> bandInfoByKey = new HashMap<>();
-        if (productCharacteristics.getBandInformations() != null) {
-            for (Tile tile : tileList) {
-                S2L1BGranuleDirFilename gf = (S2L1BGranuleDirFilename) S2L1BGranuleDirFilename.create(tile.getId());
-                Guardian.assertNotNull("Product files don't match regular expressions", gf);
-
-                for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
-                    String imageFileName;
-                    if (foundProductMetadata) {
-                        imageFileName = String.format("GRANULE%s%s%s%s", File.separator, metadataHeader.resolveResource(tile.getId()).getFileName().toString(),
-                                File.separator,
-                                bandInformation.getImageFileTemplate()
-                                        .replace("{{TILENUMBER}}", gf.getTileID())
-                                        .replace("{{MISSION_ID}}", gf.missionID)
-                                        .replace("{{SITECENTRE}}", gf.siteCentre)
-                                        .replace("{{CREATIONDATE}}", gf.creationDate)
-                                        .replace("{{STARTDATE}}", gf.startDate)
-                                        .replace("{{DETECTOR}}", gf.detectorId)
-                                        .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
-
-                    } else {
-                        imageFileName = bandInformation.getImageFileTemplate()
-                                .replace("{{TILENUMBER}}", gf.getTileID())
-                                .replace("{{MISSION_ID}}", gf.missionID)
-                                .replace("{{SITECENTRE}}", gf.siteCentre)
-                                .replace("{{CREATIONDATE}}", gf.creationDate)
-                                .replace("{{STARTDATE}}", gf.startDate)
-                                .replace("{{DETECTOR}}", gf.detectorId)
-                                .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
-
-                    }
-                    logger.finer("Adding file " + imageFileName + " to band: " + bandInformation.getPhysicalBand() + ", and detector: " + gf.getDetectorId());
-
-                    VirtualPath path = productDir.resolve(imageFileName);
-                    if (path.exists()) {
-                        Pair<String, String> key = new Pair<>(bandInformation.getPhysicalBand(), gf.getDetectorId());
-                        Map<String, VirtualPath> pathMapper = detectorBandInfoMap.getOrDefault(key, new HashMap<>());
-                        pathMapper.put(tile.getId(), path);
-                        if (!detectorBandInfoMap.containsKey(key)) {
-                            detectorBandInfoMap.put(key, pathMapper);
-                        }
-                    } else {
-                        logger.warning(String.format("Warning: missing file %s\n", path));
-                    }
-
-                }
-            }
-
-            if (!detectorBandInfoMap.isEmpty()) {
-                for (Pair<String, String> key : detectorBandInfoMap.keySet()) {
-                    L1BBandInfo tileBandInfo = createBandInfoFromHeaderInfo(key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
-
-                    // composite band name : detector + band
-                    String keyMix = key.getSecond() + key.getFirst();
-                    bandInfoByKey.put(keyMix, tileBandInfo);
-                }
-            }
-        } else {
-            // fixme Look for optional info in schema
-            logger.warning("There are no spectral information here !");
-        }
-
         Product product;
+        if (sceneDescription == null) {
+            product = new Product(l1bMetadataHeader.getProductMetadataPath().getFileName().toString(), productType);
+        } else {
+            Dimension defaultProductSize = new Dimension(sceneDescription.getSceneRectangle().width, sceneDescription.getSceneRectangle().height);
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
+            } else {
+                GeoCoding productDefaultGeoCoding = null; //this product has no geoCoding
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiResolution());
+            }
 
-        if (sceneDescription != null) {
-            product = new Product(namingConvention.getProductName(),
-                    "S2_MSI_" + productCharacteristics.getProcessingLevel(),
-                    sceneDescription.getSceneRectangle().width,
-                    sceneDescription.getSceneRectangle().height);
-
+            product = new Product(defaultProductName, productType, productBounds.width, productBounds.height);
+            product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
+            TileLayout productTileLayout = config.getTileLayout(getProductResolution());
+            product.setNumResolutionsMax(productTileLayout.numResolutions);
+            product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
 
             Map<String, GeoCoding> geoCodingsByDetector = new HashMap<>();
-
-            if (!bandInfoByKey.isEmpty()) {
-                for (L1BBandInfo tbi : bandInfoByKey.values()) {
-                    if (!geoCodingsByDetector.containsKey(tbi.detectorId)) {
-                        GeoCoding gc = getGeoCodingFromTileBandInfo(tbi, tilesById, product);
-                        geoCodingsByDetector.put(tbi.detectorId, gc);
-                    }
+            Map<String, Tile> tilesById = new HashMap<>(tileList.size());
+            for (Tile tile : tileList) {
+                tilesById.put(tile.getId(), tile);
+            }
+            for (L1BBandInfo tbi : bandInfoByKey.values()) {
+                if (!geoCodingsByDetector.containsKey(tbi.getDetectorId())) {
+                    TiePointGeoCoding tiePointGeoCoding = buildGeoCodingFromTileBandInfo(tbi, tilesById);
+                    product.addTiePointGrid(tiePointGeoCoding.getLatGrid());
+                    product.addTiePointGrid(tiePointGeoCoding.getLonGrid());
+                    geoCodingsByDetector.put(tbi.getDetectorId(), tiePointGeoCoding);
                 }
             }
+//TODO
+//            addDetectorBands(product, bandInfoByKey,
+//                             new L1bSceneMultiLevelImageFactory(sceneDescriptionMap, Product.findImageToModelTransform(product.getSceneGeoCoding())),sceneDescriptionMap);
+            AffineTransform imageToModelTransform = Product.findImageToModelTransform(product.getSceneGeoCoding());
+            addDetectorBands(defaultProductSize, product, bandInfoByKey, sceneDescription, imageToModelTransform, productTileLayout);
 
-            addDetectorBands(product, bandInfoByKey,
-                    new L1bSceneMultiLevelImageFactory(sceneDescriptionMap, Product.findImageToModelTransform(product.getSceneGeoCoding())),sceneDescriptionMap);
-
-            //add TileIndex if there are more than 1 tile
+            // add TileIndex if there are more than 1 tile
             if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoByKey.isEmpty()) {
-                ArrayList<S2SpatialResolution> resolutions = new ArrayList<>();
-                //look for the resolutions used in bandInfoList for generating the tile index only for them
-                if (interpretation == ProductInterpretation.RESOLUTION_10M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
-                    resolutions.add(S2SpatialResolution.R10M);
-                }
-                if (interpretation == ProductInterpretation.RESOLUTION_20M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
-                    resolutions.add(S2SpatialResolution.R20M);
-                }
-                if (interpretation == ProductInterpretation.RESOLUTION_60M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
-                    resolutions.add(S2SpatialResolution.R60M);
-                }
-
-                for(String detector : detectors) {
-                    //filter TileList
-                    ArrayList<Tile> auxTileList = new ArrayList<>();
-                    for (Tile tile : tileList) {
-                        if (tile.getDetectorId().equals(detector)) {
-                            auxTileList.add(tile);
-                        }
-                    }
-
-                    L1bSceneDescription auxSceneDescription = null;
-                    if(getProductResolution() == S2SpatialResolution.R60M) {
-                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_60");
-                    } else if (getProductResolution() == S2SpatialResolution.R20M){
-                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_20");
-                    } else {
-                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_10");
-                    }
-                    Map<S2SpatialResolution, Dimension> auxSceneDimensions = new HashMap<>();
-                    auxSceneDimensions.put(S2SpatialResolution.R10M, sceneDescriptionMap.get("D" + detector + "_10").getSceneRectangle().getSize());
-                    auxSceneDimensions.put(S2SpatialResolution.R20M, sceneDescriptionMap.get("D" + detector + "_20").getSceneRectangle().getSize());
-                    auxSceneDimensions.put(S2SpatialResolution.R60M, sceneDescriptionMap.get("D" + detector + "_60").getSceneRectangle().getSize());
-                    addTileIndexes(product, resolutions, tileList, auxSceneDescription, auxSceneDimensions);
+                List<S2SpatialResolution> resolutions = computeResolutions(this.interpretation);
+//TODO
+//                for(String detector : detectors) {
+//                    //filter TileList
+//                    ArrayList<Tile> auxTileList = new ArrayList<>();
+//                    for (Tile tile : tileList) {
+//                        if (tile.getDetectorId().equals(detector)) {
+//                            auxTileList.add(tile);
+//                        }
+//                    }
+//
+//                    L1bSceneDescription auxSceneDescription = null;
+//                    if(getProductResolution() == S2SpatialResolution.R60M) {
+//                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_60");
+//                    } else if (getProductResolution() == S2SpatialResolution.R20M){
+//                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_20");
+//                    } else {
+//                        auxSceneDescription = sceneDescriptionMap.get("D" + detector + "_10");
+//                    }
+//                    Map<S2SpatialResolution, Dimension> auxSceneDimensions = new HashMap<>();
+//                    auxSceneDimensions.put(S2SpatialResolution.R10M, sceneDescriptionMap.get("D" + detector + "_10").getSceneRectangle().getSize());
+//                    auxSceneDimensions.put(S2SpatialResolution.R20M, sceneDescriptionMap.get("D" + detector + "_20").getSceneRectangle().getSize());
+//                    auxSceneDimensions.put(S2SpatialResolution.R60M, sceneDescriptionMap.get("D" + detector + "_60").getSceneRectangle().getSize());
+//                    addTileIndexes(product, resolutions, tileList, auxSceneDescription, auxSceneDimensions);
+//                }
+                if (!(resolutions.isEmpty() || tileList.isEmpty())) {
+                    addTileIndexes(defaultProductSize, product, resolutions, tileList, sceneDescription, sceneDimensions, imageToModelTransform, config);
                 }
             }
-
-        } else {
-            //TODO remove extension
-            product = new Product(productMetadataPath.getFileName().toString(), "S2_MSI_" + productCharacteristics.getProcessingLevel());
         }
 
-        for (MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
-            product.getMetadataRoot().addElement(metadataElement);
+        if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+            for (MetadataElement metadataElement : l1bMetadataHeader.getMetadataElements()) {
+                product.getMetadataRoot().addElement(metadataElement);
+            }
         }
 
         product.setStartTime(parseDate(productCharacteristics.getProductStartTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
@@ -415,13 +228,212 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return product;
     }
 
+    private void addDetectorBands(Dimension defaultProductSize, Product product, Map<String, L1BBandInfo> bandInfoByKey,
+                                  L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, TileLayout productTileLayout) {
+
+        S2SpatialResolution productResolution = getProductResolution();
+        List<String> bandIndexes = new ArrayList<>(bandInfoByKey.keySet());
+        Collections.sort(bandIndexes);
+        ProductSubsetDef subsetDef = getSubsetDef();
+        //TODO
+//        for (String bandIndex : bandIndexes) {
+//            L1BBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
+//            if (getInterpretation() == ProductInterpretation.RESOLUTION_MULTI || tileBandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
+//                TileLayout thisBandTileLayout = tileBandInfo.getImageLayout();
+//                TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
+//
+//                float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
+//                float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
+//
+//                String id = "";
+//                if(getProductResolution() == S2SpatialResolution.R60M) {
+//                    id = bandIndex.substring(0, 3) + "_60";
+//                } else if (getProductResolution() == S2SpatialResolution.R20M) {
+//                    id = bandIndex.substring(0, 3) + "_20";
+//                } else {
+//                    id = bandIndex.substring(0, 3) + "_10";
+//                }
+//                L1bSceneDescription sceneDescription = sceneDescriptionMap.get(id);
+//                Dimension dimension = new Dimension(Math.round(sceneDescription.getSceneRectangle().width / factorX), Math.round(sceneDescription.getSceneRectangle().height / factorY));
+//
+//
+//                Band band = addBand(product, tileBandInfo, dimension);
+//                band.setDescription(tileBandInfo.getBandInformation().getDescription());
+//                band.setSourceImage(mlif.createSourceImage(tileBandInfo));
+//            }
+//        }
+        for (String bandIndex : bandIndexes) {
+            L1BBandInfo tileBandInfo = bandInfoByKey.get(bandIndex);
+            if (isMultiResolution() || tileBandInfo.getBandInformation().getResolution() == productResolution) {
+                if (subsetDef == null || subsetDef.isNodeAccepted(tileBandInfo.getBandName())) {
+                    MosaicMatrix mosaicMatrix = buildBandMatrix(sceneDescription.getMatrixTileIds(tileBandInfo), sceneDescription, tileBandInfo);
+                    int defaultBandWidth = mosaicMatrix.computeTotalWidth();
+                    int defaultBandHeight = mosaicMatrix.computeTotalHeight();
+                    TileLayout thisBandTileLayout = tileBandInfo.getImageLayout();
+                    validateBandSize(defaultBandWidth, defaultBandHeight, thisBandTileLayout, defaultProductSize, productTileLayout);
+
+                    Rectangle bandBounds;
+                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                        bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+                    } else {
+                        GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
+                        GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                                        defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution());
+                    }
+
+                    Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height);
+                    band.setDescription(tileBandInfo.getBandInformation().getDescription());
+
+                    BandL1bSceneMultiLevelSource multiLevelSource = new BandL1bSceneMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
+                    band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+
+                    product.addBand(band);
+                }
+            }
+        }
+    }
+
+    private void addTileIndexes(Dimension defaultProductSize, Product product, List<S2SpatialResolution> resolutions,
+                                List<L1bMetadata.Tile> tileList, L1bSceneDescription sceneDescription, Map<S2SpatialResolution, Dimension> sceneDimensions,
+                                AffineTransform imageToModelTransform, S2Config config) {
+
+        List<L1BBandInfo> tileInfoList = computeTileIndexesList(resolutions, tileList, sceneDescription, config);
+        if (tileInfoList.size() > 0) {
+            ProductSubsetDef subsetDef = getSubsetDef();
+
+            // add the index bands
+            S2SpatialResolution productResolution = getProductResolution();
+            TileLayout productTileLayout = config.getTileLayout(productResolution);
+            for (L1BBandInfo bandInfo : tileInfoList) {
+                if (isMultiResolution() || bandInfo.getBandInformation().getResolution() == productResolution) {
+                    if (subsetDef == null || subsetDef.isNodeAccepted(bandInfo.getBandInformation().getPhysicalBand())) {
+                        Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, productTileLayout, product.getPreferredTileSize(), isMultiResolution());
+                        product.addBand(band);
+                    }
+                }
+            }
+
+            // add the index masks
+            for (L1BBandInfo bandInfo : tileInfoList) {
+                if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
+                    S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo.getBandInformation();
+                    IndexCoding indexCoding = indexBandInformation.getIndexCoding();
+
+                    product.getIndexCodingGroup().add(indexCoding);
+
+                    S2SpatialResolution bandResolution = bandInfo.getBandInformation().getResolution();
+                    int defaultMaskWidth = sceneDimensions.get(bandResolution).width;
+                    int defaultMaskHeight = sceneDimensions.get(bandResolution).height;
+
+                    Rectangle bandBounds;
+                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                        bandBounds = new Rectangle(defaultMaskWidth, defaultMaskHeight);
+                    } else {
+                        GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
+                        GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                                        defaultProductSize.height, defaultMaskWidth, defaultMaskHeight, isMultiResolution());
+                    }
+
+                    Iterator<Color> colorIterator = indexBandInformation.getColors().iterator();
+
+                    for (String indexName : indexCoding.getIndexNames()) {
+                        String maskName = indexBandInformation.getPrefix() + indexName.toLowerCase();
+                        if (subsetDef == null || (subsetDef.isNodeAccepted(maskName) && subsetDef.isNodeAccepted(indexBandInformation.getPhysicalBand()))) {
+                            int indexValue = indexCoding.getIndexValue(indexName);
+                            String description = indexCoding.getIndex(indexName).getDescription();
+                            if (!colorIterator.hasNext()) {
+                                // we should never be here : programming error.
+                                throw new IllegalStateException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding."));
+                            }
+                            Color color = colorIterator.next();
+                            String expression = String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue);
+                            Mask mask = Mask.BandMathsType.create(maskName, description, bandBounds.width, bandBounds.height, expression, color, 0.5d);
+                            product.addMask(mask);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private S2SpatialResolution getProductResolution() {
+        if (this.interpretation == ProductInterpretation.RESOLUTION_20M) {
+            return S2SpatialResolution.R20M;
+        }
+        if (this.interpretation == ProductInterpretation.RESOLUTION_60M) {
+            return S2SpatialResolution.R60M;
+        }
+        return S2SpatialResolution.R10M;
+    }
+
+    public static class L1BBandInfo extends BandInfo {
+
+        private final String detectorId;
+
+        public L1BBandInfo(Map<String, VirtualPath> tileIdToPathMap, String detector, S2BandInformation spectralInfo, TileLayout imageLayout) {
+            super(tileIdToPathMap, spectralInfo, imageLayout);
+
+            this.detectorId = detector == null ? "" : detector;
+        }
+
+        public String getDetectorId() {
+            return detectorId;
+        }
+
+        public String getBandName() {
+            return String.format("%s%s", getDetectorId(), getBandInformation().getPhysicalBand());
+        }
+    }
+
+    private static Band buildIndexBand(Dimension defaultProductSize, L1BBandInfo bandInfo, ProductSubsetDef subsetDef,
+                                       L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, TileLayout productTileLayout, Dimension preferredTileSize, boolean isMultiResolution) {
+
+        MosaicMatrix mosaicMatrix = buildIndexBandMatrix(sceneDescription.getMatrixTileIds(bandInfo), sceneDescription, bandInfo);
+        int defaultBandWidth = mosaicMatrix.computeTotalWidth();
+        int defaultBandHeight = mosaicMatrix.computeTotalHeight();
+        TileLayout thisBandTileLayout = bandInfo.getImageLayout();
+        validateBandSize(defaultBandWidth, defaultBandHeight, thisBandTileLayout, defaultProductSize, productTileLayout);
+
+        Rectangle bandBounds;
+        if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+            bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+        } else {
+            GeoCoding productDefaultGeoCoding = null; // no product geo coding for Sentinel L2 L1B
+            GeoCoding bandDefaultGeoCoding = null; // no band geo coding for Sentinel L2 L1B
+            bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
+                                                                            defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution);
+        }
+
+        S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInfo.getBandInformation();
+
+        Band band = new Band(indexBandInfo.getPhysicalBand(), ProductData.TYPE_INT16, bandBounds.width, bandBounds.height);
+        band.setScalingFactor(indexBandInfo.getScalingFactor());
+        band.setSpectralWavelength(0);
+        band.setSpectralBandwidth(0);
+        band.setSpectralBandIndex(-1);
+        band.setSampleCoding(indexBandInfo.getIndexCoding());
+        band.setImageInfo(indexBandInfo.getImageInfo());
+        band.setDescription(bandInfo.getBandInformation().getDescription());
+        band.setValidPixelExpression(String.format("%s.raw > 0", indexBandInfo.getPhysicalBand()));
+
+        TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, preferredTileSize, imageToModelTransform);
+        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+
+        return band;
+    }
+
+    private static TiePointGrid buildTiePointGrid(int width, int height, String gridName, float[] tiePoints) {
+        return buildTiePointGrid(gridName, 2, 2, 0, 0, width, height, tiePoints);
+    }
+
     /**
      * Uses the 4 lat-lon corners of a detector to create the geocoding
      */
-    private GeoCoding getGeoCodingFromTileBandInfo(L1BBandInfo tileBandInfo, Map<String, Tile> tileList, Product product) {
+    private static TiePointGeoCoding buildGeoCodingFromTileBandInfo(L1BBandInfo tileBandInfo, Map<String, Tile> tileList) {
         Objects.requireNonNull(tileBandInfo);
         Objects.requireNonNull(tileList);
-        Objects.requireNonNull(product);
 
         Set<String> ourTileIds = tileBandInfo.getTileIdToPathMap().keySet();
         List<Tile> aList = new ArrayList<>(ourTileIds.size());
@@ -442,548 +454,83 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
-        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getBandInformation().getPhysicalBand() + ",latitude", lats);
-        product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getBandInformation().getPhysicalBand() + ",longitude", lons);
-        product.addTiePointGrid(lonGrid);
+        TiePointGrid latGrid = buildTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(),
+                tileBandInfo.getDetectorId() + tileBandInfo.getBandInformation().getPhysicalBand() + ",latitude", lats);
+
+        TiePointGrid lonGrid = buildTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(),
+                tileBandInfo.getDetectorId() + tileBandInfo.getBandInformation().getPhysicalBand() + ",longitude", lons);
 
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, AbstractMultiLevelImageFactory mlif,Map<String, L1bSceneDescription> sceneDescriptionMap ) throws IOException {
-        product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(getConfig().getTileLayout(getProductResolution().resolution).numResolutions);
-
-        product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
-
-        ArrayList<String> bandIndexes = new ArrayList<>(stringBandInfoMap.keySet());
-        Collections.sort(bandIndexes);
-
-        if (bandIndexes.isEmpty()) {
-            throw new IOException("No valid bands found.");
+    private static void validateBandSize(int defaultBandWidth, int defaultBandHeight, TileLayout thisBandTileLayout, Dimension defaultProductSize, TileLayout productTileLayout) {
+        float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
+        int nativeBandWidth = Math.round(defaultProductSize.width / factorX);
+        if (nativeBandWidth != defaultBandWidth) {
+            throw new IllegalStateException("Invalid band width: nativeBandWidth="+nativeBandWidth+", defaultBandWidth="+defaultBandWidth);
         }
 
-        for (String bandIndex : bandIndexes) {
-            L1BBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
-            if (getInterpretation() == ProductInterpretation.RESOLUTION_MULTI || tileBandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
-                TileLayout thisBandTileLayout = tileBandInfo.getImageLayout();
-                TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
-
-                float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
-                float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
-
-                String id = "";
-                if(getProductResolution() == S2SpatialResolution.R60M) {
-                    id = bandIndex.substring(0, 3) + "_60";
-                } else if (getProductResolution() == S2SpatialResolution.R20M) {
-                    id = bandIndex.substring(0, 3) + "_20";
-                } else {
-                    id = bandIndex.substring(0, 3) + "_10";
-                }
-                L1bSceneDescription sceneDescription = sceneDescriptionMap.get(id);
-                Dimension dimension = new Dimension(Math.round(sceneDescription.getSceneRectangle().width / factorX), Math.round(sceneDescription.getSceneRectangle().height / factorY));
-
-
-                Band band = addBand(product, tileBandInfo, dimension);
-                band.setDescription(tileBandInfo.getBandInformation().getDescription());
-                band.setSourceImage(mlif.createSourceImage(tileBandInfo));
-            }
+        float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
+        int nativeBandHeight = Math.round(defaultProductSize.height / factorY);
+        if (nativeBandHeight != defaultBandHeight) {
+            throw new IllegalStateException("Invalid band height: nativeBandHeight="+nativeBandHeight+", defaultBandHeight="+defaultBandHeight);
         }
     }
 
-    private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2BandInformation bandInformation, Map<String, VirtualPath> tilePathMap) {
-        S2SpatialResolution spatialResolution = bandInformation.getResolution();
-        return new L1BBandInfo(tilePathMap,
-                               detector,
-                               bandInformation,
-                               getConfig().getTileLayout(spatialResolution.resolution));
-    }
-
-    static VirtualPath getProductDir(VirtualPath productPath) throws IOException {
-        if (!productPath.exists()) {
-            throw new FileNotFoundException("File not found: " + productPath.getFullPathString());
-        }
-
-        return productPath.getParent();
-    }
-
-    private void addTileIndexes(Product product, ArrayList<S2SpatialResolution> resolutions, List<L1bMetadata.Tile> tileList, L1bSceneDescription sceneDescription, Map<S2SpatialResolution,Dimension> sceneDimensions) {
-
-        if(resolutions.isEmpty() || tileList.isEmpty()) {
-            return;
-        }
-
-        List<BandInfo> tileInfoList = new ArrayList<>();
-        ArrayList<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
-
+    public static List<L1BBandInfo> computeTileIndexesList(List<S2SpatialResolution> resolutions, List<L1bMetadata.Tile> tileList, L1bSceneDescription sceneDescription, S2Config config) {
         //for each resolution, add the tile information
         //Set of detectors
         TreeSet<String> detectors = new TreeSet<>();
-        for(String tileId : sceneDescription.getOrderedTileIds()) {
+        for (String tileId : sceneDescription.getOrderedTileIds()) {
             String detectorId = ((S2L1BGranuleDirFilename) S2L1BGranuleDirFilename.create(tileId)).getDetectorId();
             if (!detectors.contains(detectorId)) {
                 detectors.add(detectorId);
             }
         }
 
-
+        List<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
         for (String detector : detectors) {
             for (S2SpatialResolution res : S2SpatialResolution.values()) {
-                if(resolutions.contains(res)) {
+                if (resolutions.contains(res)) {
                     listTileIndexBandInformation.add(makeTileInformation(detector, res, sceneDescription));
                 }
             }
         }
 
-
-        // Create BandInfo and add to tileInfoList
+        // create BandInfo and add to tileInfoList
+        List<L1BBandInfo> tileInfoList = new ArrayList<>();
         for (S2BandInformation bandInformation : listTileIndexBandInformation) {
-            String detector = bandInformation.getPhysicalBand().substring(0,bandInformation.getPhysicalBand().indexOf("_"));
+            String detector = bandInformation.getPhysicalBand().substring(0, bandInformation.getPhysicalBand().indexOf("_"));
             HashMap<String, VirtualPath> tilePathMap = new HashMap<>();
             for (L1bMetadata.Tile tile : tileList) {
-                if(("D" + tile.getDetectorId()).equals(detector)) {
+                if (("D" + tile.getDetectorId()).equals(detector)) {
                     tilePathMap.put(tile.getId(), null); //it is not necessary any file
                 }
             }
-
             if (!tilePathMap.isEmpty()) {
-                BandInfo tileInfo = createBandInfoFromHeaderInfo(bandInformation.getPhysicalBand().substring(0,bandInformation.getPhysicalBand().indexOf("_")),bandInformation, tilePathMap);
-                if(tileInfo != null) {
+                String bandDetector = bandInformation.getPhysicalBand().substring(0, bandInformation.getPhysicalBand().indexOf("_"));
+                L1BBandInfo tileInfo = L1bMetadata.createBandInfoFromHeaderInfo(bandDetector, bandInformation, tilePathMap, config);
+                if (tileInfo != null) {
                     tileInfoList.add(tileInfo);
                 }
             }
         }
 
-        if(tileInfoList.isEmpty()) {
-            return;
-        }
-
-
-        //Add the bands
-        for (BandInfo bandInfo : tileInfoList) {
-            try {
-                addTileIndex(product,
-                             bandInfo, sceneDescription);
-            } catch (Exception e) {
-                logger.warning(String.format("It has not been possible to add tile id for resolution %s\n", bandInfo.getBandInformation().getResolution().toString()));
-            }
-        }
-
-        //Add the index masks
-        try {
-            addIndexMasks(product, tileInfoList, sceneDimensions);
-        } catch (IOException e) {
-
-        }
+        return tileInfoList;
     }
 
-    private void addIndexMasks(Product product, List<BandInfo> bandInfoList, Map<S2SpatialResolution,Dimension> sceneDimensions) throws IOException {
-        for (BandInfo bandInfo : bandInfoList) {
-            if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
-                S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo.getBandInformation();
-                IndexCoding indexCoding = indexBandInformation.getIndexCoding();
-                product.getIndexCodingGroup().add(indexCoding);
-
-
-                List<Color> colors = indexBandInformation.getColors();
-                Iterator<Color> colorIterator = colors.iterator();
-
-                for (String indexName : indexCoding.getIndexNames()) {
-                    int indexValue = indexCoding.getIndexValue(indexName);
-                    String description = indexCoding.getIndex(indexName).getDescription();
-                    if (!colorIterator.hasNext()) {
-                        // we should never be here : programming error.
-                        throw new IOException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding"));
-                    }
-                    Color color = colorIterator.next();
-                    Mask mask = Mask.BandMathsType.create(indexBandInformation.getPrefix() + indexName.toLowerCase(), description, sceneDimensions.get(bandInfo.getBandInformation().getResolution()).width, sceneDimensions.get(bandInfo.getBandInformation().getResolution()).height,
-                                                          String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
-                    product.addMask(mask);
-                }
-            }
+    public static List<S2SpatialResolution> computeResolutions(ProductInterpretation interpretation) {
+        List<S2SpatialResolution> resolutions = new ArrayList<>();
+        // look for the resolutions used in bandInfoList for generating the tile index only for them
+        if (interpretation == ProductInterpretation.RESOLUTION_10M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
+            resolutions.add(S2SpatialResolution.R10M);
         }
-    }
-
-    private void addTileIndex(Product product, BandInfo bandInfo, L1bSceneDescription sceneDescription) throws IOException {
-        product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(getConfig().getTileLayout(getProductResolution().resolution).numResolutions);
-
-        product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
-
-
-        if (getInterpretation() == ProductInterpretation.RESOLUTION_MULTI || bandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
-            TileLayout thisBandTileLayout = bandInfo.getImageLayout();
-            TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
-
-            float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
-            float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
-
-            Dimension dimension = new Dimension(Math.round(sceneDescription.getSceneRectangle().width / factorX), Math.round(sceneDescription.getSceneRectangle().height / factorY));
-            //Band band = addBand(product, bandInfo, dimension);
-            Band band = new Band(
-                    bandInfo.getBandInformation().getPhysicalBand(),
-                    ProductData.TYPE_INT16,
-                    dimension.width,
-                    dimension.height
-            );
-            S2BandInformation bandInformation = bandInfo.getBandInformation();
-            band.setScalingFactor(bandInformation.getScalingFactor());
-            S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInformation;
-            band.setSpectralWavelength(0);
-            band.setSpectralBandwidth(0);
-            band.setSpectralBandIndex(-1);
-            band.setSampleCoding(indexBandInfo.getIndexCoding());
-            band.setImageInfo(indexBandInfo.getImageInfo());
-            band.setDescription(bandInfo.getBandInformation().getDescription());
-            band.setValidPixelExpression(String.format("%s.raw > 0",bandInfo.getBandInformation().getPhysicalBand()));
-
-            AbstractMultiLevelImageFactory mlif = new L1bTileIndexMultiLevelImageFactory(
-                    sceneDescription,
-                    Product.findImageToModelTransform(band.getGeoCoding()));
-
-            band.setSourceImage(mlif.createSourceImage((L1BBandInfo) bandInfo));
-            product.addBand(band);
-
+        if (interpretation == ProductInterpretation.RESOLUTION_20M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
+            resolutions.add(S2SpatialResolution.R20M);
         }
-    }
-
-    private class L1bSceneMultiLevelImageFactory extends AbstractMultiLevelImageFactory<L1BBandInfo> {
-
-        private final Map<String, L1bSceneDescription> sceneDescriptionMap;
-
-        public L1bSceneMultiLevelImageFactory(Map<String, L1bSceneDescription> sceneDescriptionMap, AffineTransform imageToModelTransform) {
-            super(imageToModelTransform);
-
-            SystemUtils.LOG.fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
-
-            this.sceneDescriptionMap = sceneDescriptionMap;
+        if (interpretation == ProductInterpretation.RESOLUTION_60M || interpretation == ProductInterpretation.RESOLUTION_MULTI) {
+            resolutions.add(S2SpatialResolution.R60M);
         }
-
-        @Override
-        // @Loggable
-        public MultiLevelImage createSourceImage(L1BBandInfo tileBandInfo) {
-            String detector = tileBandInfo.detectorId;
-            BandL1bSceneMultiLevelSource bandScene = null;
-            if(getInterpretation() == ProductInterpretation.RESOLUTION_60M) {
-                bandScene = new BandL1bSceneMultiLevelSource(sceneDescriptionMap.get(detector+"_60"), tileBandInfo, imageToModelTransform);
-            } else if(getInterpretation() == ProductInterpretation.RESOLUTION_20M) {
-                bandScene = new BandL1bSceneMultiLevelSource(sceneDescriptionMap.get(detector+"_20"), tileBandInfo, imageToModelTransform);
-            } else {
-                bandScene = new BandL1bSceneMultiLevelSource(sceneDescriptionMap.get(detector+"_10"), tileBandInfo, imageToModelTransform);
-            }
-            SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), "BandScene: " + bandScene);
-
-            int level = 0;
-            TileLayout tileLayout = tileBandInfo.getImageLayout();
-            ImageLayout imageLayout = JP2TileOpImage.buildImageLayout(tileLayout.tileWidth, tileLayout.tileHeight, S2Config.SAMPLE_DATA_BUFFER_TYPE, level);
-            return new DefaultMultiLevelImage(bandScene/*, imageLayout*/ );
-        }
-    }
-
-    private class L1bTileIndexMultiLevelImageFactory extends AbstractMultiLevelImageFactory<L1BBandInfo> {
-
-        private final L1bSceneDescription sceneDescription;
-
-        public L1bTileIndexMultiLevelImageFactory(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
-            super(imageToModelTransform);
-
-            SystemUtils.LOG.fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
-
-            this.sceneDescription = sceneDescription;
-        }
-
-        @Override
-        // @Loggable
-        public MultiLevelImage createSourceImage(L1BBandInfo tileBandInfo) {
-            TileIndexMultiLevelSource bandScene = new TileIndexMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
-            SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), "BandScene: " + bandScene);
-            return new DefaultMultiLevelImage(bandScene);
-        }
-    }
-
-    /**
-     * A MultiLevelSource for a scene made of multiple L1C tiles.
-     */
-    private abstract class AbstractL1bSceneMultiLevelSource extends AbstractMultiLevelSource {
-        protected final L1bSceneDescription sceneDescription;
-
-        AbstractL1bSceneMultiLevelSource(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
-            super(new DefaultMultiLevelModel(numResolutions,
-                                             imageToModelTransform,
-                                             sceneDescription.getSceneRectangle().width,
-                                             sceneDescription.getSceneRectangle().height));
-            this.sceneDescription = sceneDescription;
-        }
-    }
-
-    /**
-     * A MultiLevelSource used by bands for a scene made of multiple L1C tiles.
-     */
-    private final class BandL1bSceneMultiLevelSource extends AbstractL1bSceneMultiLevelSource {
-        private final L1BBandInfo tileBandInfo;
-
-        public BandL1bSceneMultiLevelSource(L1bSceneDescription sceneDescription, L1BBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
-            super(sceneDescription, imageToModelTransform, tileBandInfo.getImageLayout().numResolutions);
-            this.tileBandInfo = tileBandInfo;
-        }
-
-        private PlanarImage createL1bTileImage(String tileId, int level) {
-            VirtualPath imagePath = this.tileBandInfo.getTileIdToPathMap().get(tileId);
-
-            PlanarImage planarImage = null;
-            try {
-                planarImage = S2TileOpImage.create(imagePath.getLocalFile(),
-                                                   getCacheDir(),
-                                                   null,
-                                                   this.tileBandInfo.getImageLayout(),
-                                                   getConfig(),
-                                                   getModel(),
-                                                   getProductResolution(),
-                                                   level);
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Failed to create the image.", e);
-            }
-
-            logger.fine(String.format("Planar image model: %s", getModel().toString()));
-
-            logger.fine(String.format("Planar image created: %s %s: minX=%d, minY=%d, width=%d, height=%d\n",
-                                      tileBandInfo.getBandInformation().getPhysicalBand(), tileId,
-                                      planarImage.getMinX(), planarImage.getMinY(),
-                                      planarImage.getWidth(), planarImage.getHeight()));
-
-            return planarImage;
-        }
-
-        @Override
-        protected RenderedImage createImage(int level) {
-            ArrayList<RenderedImage> tileImages = new ArrayList<>();
-
-            List<String> tiles = sceneDescription.getTileIds().stream().filter(x -> x.contains(tileBandInfo.detectorId)).collect(Collectors.toList());
-
-            TileLayout thisBandTileLayout = this.tileBandInfo.getImageLayout();
-            TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
-            float layoutRatioX = (float) productTileLayout.width / thisBandTileLayout.width;
-            float layoutRatioY = (float) productTileLayout.height / thisBandTileLayout.height;
-
-            for (String tileId : tiles) {
-                int tileIndex = sceneDescription.getTileIndex(tileId);
-                Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
-
-                PlanarImage opImage = createL1bTileImage(tileId, level);
-                {
-
-                    double factorX = 1.0 / (Math.pow(2, level) * layoutRatioX);
-                    double factorY = 1.0 / (Math.pow(2, level) * layoutRatioY);
-
-                    opImage = TranslateDescriptor.create(opImage,
-                                                         (float) Math.floor((tileRectangle.x * factorX)),
-                                                         (float) Math.floor((tileRectangle.y * factorY)),
-                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
-
-                    logger.log(Level.parse(S2Config.LOG_SCENE), String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
-                }
-
-                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
-                tileImages.add(opImage);
-            }
-
-            if (tileImages.isEmpty()) {
-                logger.warning("No tile images for mosaic");
-                return null;
-            }
-
-            ImageLayout imageLayout = new ImageLayout();
-            imageLayout.setMinX(0);
-            imageLayout.setMinY(0);
-            imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileGridXOffset(0);
-            imageLayout.setTileGridYOffset(0);
-
-            RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                                                          MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
-                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-
-            int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() / (layoutRatioX * getProductResolution().resolution));
-            int fitRectHeight = (int) (sceneDescription.getSceneEnvelope().getHeight() / (layoutRatioY * getProductResolution().resolution));
-
-            Rectangle fitRect = new Rectangle(0, 0, fitRectWidht, fitRectHeight);
-            final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
-
-            BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
-
-            if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
-                int rightPad = destBounds.width - mosaicOp.getWidth();
-                int bottomPad = destBounds.height - mosaicOp.getHeight();
-                SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
-
-                mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
-            }
-
-            logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));
-
-            return mosaicOp;
-        }
-
-        @Override
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-
-    private final class TileIndexMultiLevelSource extends AbstractL1bSceneMultiLevelSource {
-        private final L1BBandInfo tileBandInfo;
-
-        public TileIndexMultiLevelSource(L1bSceneDescription sceneDescription, L1BBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
-            super(sceneDescription, imageToModelTransform, tileBandInfo.getImageLayout().numResolutions);
-            this.tileBandInfo = tileBandInfo;
-        }
-
-        private PlanarImage createConstantTileImage(String tileId, int level) {
-            S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) tileBandInfo.getBandInformation();
-            IndexCoding indexCoding = indexBandInformation.getIndexCoding();
-            Integer indexValue = indexCoding.getIndexValue(S2L1BGranuleDirFilename.create(tileId).getTileID());
-            short indexValueShort = indexValue.shortValue();
-
-            Rectangle tileRectangleL0 = new Rectangle();
-            tileRectangleL0.height = tileBandInfo.getImageLayout().height;
-            tileRectangleL0.width = tileBandInfo.getImageLayout().width;
-
-            sceneDescription.getTileRectangle(sceneDescription.getTileIndex(tileId));
-
-            Rectangle tileRectangle = DefaultMultiLevelSource.getLevelImageBounds(tileRectangleL0, getModel().getScale(level));
-            PlanarImage planarImage = ConstantDescriptor.create((float) tileRectangle.width,
-                                                                (float) tileRectangle.height,
-                                                                new Short[]{indexValueShort},
-                                                                null);
-
-            return planarImage;
-        }
-
-        @Override
-        protected RenderedImage createImage(int level) {
-            ArrayList<RenderedImage> tileImages = new ArrayList<>();
-
-            List<String> tiles = sceneDescription.getTileIds().stream().filter(x -> x.contains(tileBandInfo.detectorId)).collect(Collectors.toList());
-
-
-            TileLayout thisBandTileLayout = this.tileBandInfo.getImageLayout();
-            TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
-            float layoutRatioX = (float) productTileLayout.width / thisBandTileLayout.width;
-            float layoutRatioY = (float) productTileLayout.height / thisBandTileLayout.height;
-
-
-            for (String tileId : tiles) {
-                int tileIndex = sceneDescription.getTileIndex(tileId);
-                Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
-
-                PlanarImage opImage = createConstantTileImage(tileId, level);
-                {
-
-                    double factorX = 1.0 / (Math.pow(2, level) * layoutRatioX);
-                    double factorY = 1.0 / (Math.pow(2, level) * layoutRatioY);
-
-                    opImage = TranslateDescriptor.create(opImage,
-                                                         (float) Math.floor((tileRectangle.x * factorX)),
-                                                         (float) Math.floor((tileRectangle.y * factorY)),
-                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
-
-                    logger.log(Level.parse(S2Config.LOG_SCENE), String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
-                }
-
-                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
-                tileImages.add(opImage);
-            }
-
-            if (tileImages.isEmpty()) {
-                logger.warning("No tile images for mosaic");
-                return null;
-            }
-
-            ImageLayout imageLayout = new ImageLayout();
-            imageLayout.setMinX(0);
-            imageLayout.setMinY(0);
-            imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileGridXOffset(0);
-            imageLayout.setTileGridYOffset(0);
-
-            RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                                                          MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
-                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-
-
-            int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() /
-                    (layoutRatioX * getProductResolution().resolution));
-            int fitRectHeight = (int) (sceneDescription.getSceneEnvelope().getHeight() /
-                    (layoutRatioY * getProductResolution().resolution));
-
-            Rectangle fitRect = new Rectangle(0, 0, fitRectWidht, fitRectHeight);
-            final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
-
-            BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
-
-            if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
-                int rightPad = destBounds.width - mosaicOp.getWidth();
-                int bottomPad = destBounds.height - mosaicOp.getHeight();
-                SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
-
-                mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
-            }
-
-            logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));
-
-            return mosaicOp;
-        }
-
-        @Override
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-    @Override
-    protected String[] getBandNames(S2SpatialResolution resolution) {
-        String[] bandNames;
-
-        switch (resolution) {
-            case R10M:
-                bandNames = new String[]{"B02", "B03", "B04", "B08"};
-                break;
-            case R20M:
-                bandNames = new String[]{"B05", "B06", "B07", "B8A", "B11", "B12"};
-                break;
-            case R60M:
-                bandNames = new String[]{"B01", "B09", "B10"};
-                break;
-            default:
-                SystemUtils.LOG.warning("Invalid resolution: " + resolution);
-                bandNames = null;
-                break;
-        }
-
-        return bandNames;
-    }
-
-    public static class L1BBandInfo extends BandInfo {
-
-        private final String detectorId;
-
-        L1BBandInfo(Map<String, VirtualPath> tileIdToPathMap, String detector, S2BandInformation spectralInfo, TileLayout imageLayout) {
-            super(tileIdToPathMap, spectralInfo, imageLayout);
-
-            this.detectorId = detector == null ? "" : detector;
-        }
-
-        public String getDetectorId() {
-            return detectorId;
-        }
-
-        public String getBandName() {
-            return String.format("%s%s", getDetectorId(), getBandInformation().getPhysicalBand());
-        }
+        return resolutions;
     }
 }

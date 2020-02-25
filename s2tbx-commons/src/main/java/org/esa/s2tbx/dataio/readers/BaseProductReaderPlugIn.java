@@ -17,24 +17,28 @@
 
 package org.esa.s2tbx.dataio.readers;
 
+import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.snap.core.dataio.AbstractProductReader;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
-import org.esa.snap.utils.FileHelper;
+import org.esa.snap.engine_utilities.file.FileHelper;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,17 +109,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     }
 
     public static Path convertInputToPath(Object input) {
-        if (input == null) {
-            throw new NullPointerException();
-        } else if (input instanceof File) {
-            return ((File)input).toPath();
-        } else if (input instanceof Path) {
-            return (Path) input;
-        } else if (input instanceof String) {
-            return Paths.get((String) input);
-        } else {
-            throw new IllegalArgumentException("Unknown input '"+input+"'.");
-        }
+        return AbstractProductReader.convertInputToPath(input);
     }
 
     @Override
@@ -275,5 +269,17 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             }
             return shouldAccept;
         }
+    }
+
+    public static <T extends GenericXmlMetadata> T loadMetadata(Class<T> clazz, FilePathInputStream filePathInputStream)
+                                                                throws InstantiationException, IOException, SAXException, ParserConfigurationException {
+
+        T result = (T) XmlMetadataParserFactory.getParser(clazz).parse(filePathInputStream);
+        result.setPath(filePathInputStream.getPath());
+        String metadataProfile = result.getMetadataProfile();
+        if (metadataProfile != null) {
+            result.setName(metadataProfile);
+        }
+        return result;
     }
 }

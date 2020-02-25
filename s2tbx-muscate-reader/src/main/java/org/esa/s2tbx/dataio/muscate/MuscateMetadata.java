@@ -2,21 +2,27 @@ package org.esa.s2tbx.dataio.muscate;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.lib.openjpeg.utils.StackTraceUtils;
 import org.geotools.graph.util.geom.Coordinate2D;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.esa.snap.utils.DateHelper.parseDate;
 
@@ -29,18 +35,7 @@ public class MuscateMetadata extends XmlMetadata {
     private ArrayList<MuscateMask> masks;
     private AnglesGrid[] viewingAnglesGrids;
     private AnglesGrid sunAnglesGrids;
-
-    public static class MuscateMetadataParser extends XmlMetadataParser<MuscateMetadata> {
-
-        public MuscateMetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return false;
-        }
-    }
+    private List<Geoposition> geoPositions;
 
     public MuscateMetadata(String name) {
         super(name);
@@ -58,6 +53,26 @@ public class MuscateMetadata extends XmlMetadata {
         return name;
     }
 
+    public MuscateMetadata.Geoposition getGeoposition(int width, int height) {
+        for (MuscateMetadata.Geoposition geoposition : getGeoPositions()) {
+            if (geoposition.nRows == height && geoposition.nCols == width) {
+                return geoposition;
+            }
+        }
+        return null;
+    }
+
+    public List<Geoposition> getGeoPositions() {
+        if (this.geoPositions == null) {
+            String resolutionStrings[] = getResolutionStrings();
+            this.geoPositions = new ArrayList<>(resolutionStrings.length);
+            for (String resolution : resolutionStrings) {
+                this.geoPositions.add(getGeoposition(resolution));
+            }
+        }
+        return this.geoPositions;
+    }
+
     public String getProductDescription() {
         String descr = getAttributeValue(MuscateConstants.PATH_SOURCE_DESCRIPTION, MuscateConstants.VALUE_NOT_AVAILABLE);
         if (MuscateConstants.VALUE_NOT_AVAILABLE.equals(descr)) {
@@ -68,8 +83,12 @@ public class MuscateMetadata extends XmlMetadata {
     }
 
     public String getProductVersion() {
-        String version = getAttributeValue(MuscateConstants.PATH_PRODUCT_VERSION, null);
-        return version;
+        return getAttributeValue(MuscateConstants.PATH_PRODUCT_VERSION, null);
+    }
+
+    public float getVersion() {
+        String version = getProductVersion();
+        return (version == null) ? 0.0f : Float.valueOf(version);
     }
 
     @Override
@@ -233,34 +252,32 @@ public class MuscateMetadata extends XmlMetadata {
     }
 
     public Coordinate2D getUpperLeft() {
-        double x = Double.parseDouble(getAttributeSiblingValue(MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_NAME,"upperLeft",
-                                                               MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_X,MuscateConstants.STRING_ZERO));
-        double y = Double.parseDouble(getAttributeSiblingValue(MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_NAME,"upperLeft",
-                                                               MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_Y,MuscateConstants.STRING_ZERO));
-        return new Coordinate2D(x, y);
+        return new Coordinate2D(getUpperLeftX(), getUpperLeftY());
     }
 
-    public CrsGeoCoding getCrsGeoCoding () {
-        Coordinate2D coordUpperLeft = getUpperLeft();
-        CrsGeoCoding crsGeoCoding = null;
-        String EPSG = getEPSG();
-        try {
-            crsGeoCoding = new CrsGeoCoding(CRS.decode("EPSG:" + EPSG),
-                                            getRasterWidth(),
-                                            getRasterHeight(),
-                                            coordUpperLeft.x,
-                                            coordUpperLeft.y,
-                                            getBestResolution(),
-                                            getBestResolution(),
-                                            0.0, 0.0);
-        } catch (FactoryException e) {
-            e.printStackTrace();
-        } catch (TransformException e) {
-            e.printStackTrace();
-        }
-        return crsGeoCoding;
+    public double getUpperLeftX() {
+        return Double.parseDouble(getAttributeSiblingValue(MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_NAME, "upperLeft",
+                MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_X, MuscateConstants.STRING_ZERO));
     }
 
+    public double getUpperLeftY() {
+        return Double.parseDouble(getAttributeSiblingValue(MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_NAME, "upperLeft",
+                MuscateConstants.PATH_GLOBAL_GEOPOSITIONING_POINT_Y, MuscateConstants.STRING_ZERO));
+    }
+
+    public CrsGeoCoding buildCrsGeoCoding() throws FactoryException, TransformException {
+        return buildCrsGeoCoding(null);
+    }
+
+    public CrsGeoCoding buildCrsGeoCoding(Rectangle subsetBounds) throws FactoryException, TransformException {
+        double coordinateUpperLeftX = getUpperLeftX();
+        double coordinateUpperLeftY = getUpperLeftY();
+        double resolution = getBestResolution();
+        int rasterWidth = getRasterWidth();
+        int rasterHeight = getRasterHeight();
+        CoordinateReferenceSystem mapCRS = CRS.decode("EPSG:" + getEPSG());
+        return ImageUtils.buildCrsGeoCoding(coordinateUpperLeftX, coordinateUpperLeftY, resolution, resolution, rasterWidth, rasterHeight, mapCRS, subsetBounds);
+    }
 
     public double getWVCQuantificationValue() {
         String string = getAttributeValue(MuscateConstants.PATH_WVC_QUANTIFICATION,MuscateConstants.DEFAULT_WVC_QUANTIFICATION);
@@ -498,8 +515,8 @@ public class MuscateMetadata extends XmlMetadata {
             }
             sunAnglesGrids = wrapAngles(zenAnglesString, azAnglesString);
             sunAnglesGrids.setBandId("SUN");
-            sunAnglesGrids.setResX(Float.parseFloat(zenithElement.getAttributeString("COL_STEP")));
-            sunAnglesGrids.setResY(Float.parseFloat(zenithElement.getAttributeString("ROW_STEP")));
+            sunAnglesGrids.setResolutionX(Float.parseFloat(zenithElement.getAttributeString("COL_STEP")));
+            sunAnglesGrids.setResolutionY(Float.parseFloat(zenithElement.getAttributeString("ROW_STEP")));
         }
 
         return sunAnglesGrids;
@@ -541,8 +558,8 @@ public class MuscateMetadata extends XmlMetadata {
             if(gridWidth == 0 || gridHeight == 0) {
                 gridHeight = anglesGrid.getHeight();
                 gridWidth = anglesGrid.getWidth();
-                resX= anglesGrid.getResX();
-                resY= anglesGrid.getResY();
+                resX= anglesGrid.getResolutionX();
+                resY= anglesGrid.getResolutionY();
                 zenith = new float[gridWidth * gridHeight];
                 azimuth = new float[gridWidth * gridHeight];
                 Arrays.fill(zenith, Float.NaN);
@@ -569,8 +586,8 @@ public class MuscateMetadata extends XmlMetadata {
         bandAngleGrid.setZenith(zenith);
         bandAngleGrid.setBandId(bandId);
         bandAngleGrid.setDetectorId("ALL");
-        bandAngleGrid.setResX(resX);
-        bandAngleGrid.setResY(resY);
+        bandAngleGrid.setResolutionX(resX);
+        bandAngleGrid.setResolutionY(resY);
 
         return bandAngleGrid;
     }
@@ -636,8 +653,8 @@ public class MuscateMetadata extends XmlMetadata {
         meanViewingAnglesGrid.setAzimuth(azimuth);
         meanViewingAnglesGrid.setZenith(zenith);
         meanViewingAnglesGrid.setBandId("MEAN");
-        meanViewingAnglesGrid.setResX(viewingAnglesGrids.get(0).getResX());
-        meanViewingAnglesGrid.setResY(viewingAnglesGrids.get(0).getResY());
+        meanViewingAnglesGrid.setResolutionX(viewingAnglesGrids.get(0).getResolutionX());
+        meanViewingAnglesGrid.setResolutionY(viewingAnglesGrids.get(0).getResolutionY());
         return meanViewingAnglesGrid;
     }
 
@@ -646,12 +663,23 @@ public class MuscateMetadata extends XmlMetadata {
     }
 
     public static class AnglesGrid {
+        private final Dimension size;
+        private final Point.Float resolution;
+
         private String bandId;
         private String detectorId;
         private float[] zenith;
         private float[] azimuth;
-        private int width, height;
-        private float resX, resY;
+
+        public AnglesGrid() {
+            this.size = new Dimension(0, 0);
+            this.resolution = new Point.Float(0.0f, 0.0f);
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
 
         public String getBandId() {
             return bandId;
@@ -661,36 +689,44 @@ public class MuscateMetadata extends XmlMetadata {
             this.bandId = bandId;
         }
 
+        public Dimension getSize() {
+            return size;
+        }
+
+        public Point.Float getResolution() {
+            return resolution;
+        }
+
         public int getWidth() {
-            return width;
+            return this.size.width;
         }
 
         public void setWidth(int width) {
-            this.width = width;
+            this.size.width = width;
         }
 
         public int getHeight() {
-            return height;
+            return this.size.height;
         }
 
         public void setHeight(int height) {
-            this.height = height;
+            this.size.height = height;
         }
 
-        public float getResX() {
-            return resX;
+        public float getResolutionX() {
+            return this.resolution.x;
         }
 
-        public void setResX(float resX) {
-            this.resX = resX;
+        public void setResolutionX(float resolutionX) {
+            this.resolution.x = resolutionX;
         }
 
-        public float getResY() {
-            return resY;
+        public float getResolutionY() {
+            return this.resolution.y;
         }
 
-        public void setResY(float resY) {
-            this.resY = resY;
+        public void setResolutionY(float resolutionY) {
+            this.resolution.y = resolutionY;
         }
 
         public String getDetectorId() {
@@ -715,10 +751,6 @@ public class MuscateMetadata extends XmlMetadata {
 
         public void setAzimuth(float[] azimuth) {
             this.azimuth = azimuth;
-        }
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
     }
 
@@ -760,8 +792,8 @@ public class MuscateMetadata extends XmlMetadata {
                 AnglesGrid anglesGrid = wrapAngles(zenAnglesString, azAnglesString);
                 anglesGrid.setBandId(viewingAnglesGridsElement.getAttributeString("band_id"));
                 anglesGrid.setDetectorId(viewingAnglesElement.getAttributeString("detector_id"));
-                anglesGrid.setResX(Float.parseFloat(zenithElement.getAttributeString("COL_STEP")));
-                anglesGrid.setResY(Float.parseFloat(zenithElement.getAttributeString("ROW_STEP")));
+                anglesGrid.setResolutionX(Float.parseFloat(zenithElement.getAttributeString("COL_STEP")));
+                anglesGrid.setResolutionY(Float.parseFloat(zenithElement.getAttributeString("ROW_STEP")));
                 anglesGrids.add(anglesGrid);
             }
         }

@@ -1,6 +1,8 @@
 package org.esa.s2tbx.dataio.metadata;
 
 import com.bc.ceres.core.Assert;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.datamodel.MetadataElement;
 
 import java.io.InputStream;

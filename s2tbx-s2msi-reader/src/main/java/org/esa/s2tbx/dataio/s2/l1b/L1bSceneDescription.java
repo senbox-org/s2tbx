@@ -23,12 +23,12 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadata;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,6 +56,7 @@ public class L1bSceneDescription extends S2SceneDescription {
             this.rectangle = rectangle;
         }
 
+        @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
@@ -306,57 +307,31 @@ public class L1bSceneDescription extends S2SceneDescription {
         return tileInfos[tileIndex].rectangle;
     }
 
-    public BufferedImage createTilePicture(int width) {
-
-        Color[] colors = new Color[]{
-                Color.GREEN,
-                Color.RED,
-                Color.BLUE,
-                Color.YELLOW};
-
-        double scale = width / sceneRectangle.getWidth();
-        int height = (int) Math.round(sceneRectangle.getHeight() * scale);
-
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics = image.createGraphics();
-        graphics.scale(scale, scale);
-        graphics.translate(-sceneRectangle.getX(), -sceneRectangle.getY());
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        graphics.setPaint(Color.WHITE);
-        graphics.fill(sceneRectangle);
-        graphics.setStroke(new BasicStroke(100F));
-        graphics.setFont(new Font("Arial", Font.PLAIN, 800));
-
-        for (int i = 0; i < tileInfos.length; i++) {
-            Rectangle rect = tileInfos[i].rectangle;
-            graphics.setPaint(addAlpha(colors[i % colors.length].brighter(), 100));
-            graphics.fill(rect);
-        }
-        for (int i = 0; i < tileInfos.length; i++) {
-            Rectangle rect = tileInfos[i].rectangle;
-            graphics.setPaint(addAlpha(colors[i % colors.length].darker(), 100));
-            graphics.draw(rect);
-            graphics.setPaint(colors[i % colors.length].darker().darker());
-            graphics.drawString("Tile " + (i + 1) + ": " + tileInfos[i].id,
-                    rect.x + 1200F,
-                    rect.y + 2200F);
-        }
-        return image;
-    }
-
-    private static Color addAlpha(Color color, int alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
-    }
-
+    @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
+
+    @Override
+    public Rectangle getMatrixTileRectangle(String tileId, S2SpatialResolution resolution) {
+        int tileIndex = getTileIndex(tileId);
+        return getTileRectangle(tileIndex);
     }
 
     public java.util.List<String> getOrderedTileIds() {
         List<String> tileIds = this.getTileIds();
         java.util.List<String> tileIdsOrder = asSortedList(tileIds);
         return tileIdsOrder;
+    }
+
+    public List<String> getMatrixTileIds(Sentinel2L1BProductReader.L1BBandInfo tileBandInfo) {
+        List<String> matrixTileIds = new ArrayList<>();
+        for (String tileId : getTileIds()) {
+            if (tileId.contains(tileBandInfo.getDetectorId())) {
+                matrixTileIds.add(tileId);
+            }
+        }
+        return matrixTileIds;
     }
 
     public static Map<S2SpatialResolution, Dimension> computeSceneDimensions(L1bMetadata header) {

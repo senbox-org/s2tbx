@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.worldview2esa;
 
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -18,6 +19,11 @@ public class WorldView2ESAProductReaderPlugin extends BaseProductReaderPlugIn {
     public WorldView2ESAProductReaderPlugin() {
         super("org/esa/s2tbx/dataio/worldview2esa/" + WorldView2ESAProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
         this.folderDepth = 1;
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new WorldView2ESAMetadataInspector();
     }
 
     @Override

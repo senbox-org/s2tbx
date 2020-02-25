@@ -17,14 +17,23 @@
 
 package org.esa.s2tbx.dataio.spot;
 
-import com.bc.ceres.core.NullProgressMonitor;
+import com.bc.ceres.binding.ConversionException;
+import com.vividsolutions.jts.geom.Geometry;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
+import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
@@ -63,42 +72,13 @@ public class SpotDimapProductReaderTest {
         //System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             assertEquals(4, finalProduct.getBands().length);
             assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("SPOTSCENE_1A", finalProduct.getProductType());
             assertEquals(2, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(3000, finalProduct.getSceneRasterWidth());
             assertEquals(3000, finalProduct.getSceneRasterHeight());
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testReadBandRasterDataBySimpleProductReader(){
-        assumeTrue(TestUtil.testdataAvailable());
-
-        Date startDate = Calendar.getInstance().getTime();
-        Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "200");
-        try {
-
-            Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
-            ProductData data = ProductData.createInstance(ProductData.TYPE_UINT16, 20000);
-            data.setElemFloatAt(3, 5);
-            reader.readBandRasterData(finalProduct.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
-            assertNotEquals(0, data.getElemFloatAt(0));
-            assertNotEquals(-1000, data.getElemFloatAt(0));
-            assertNotEquals(0, data.getElemFloatAt(1999));
-            assertNotEquals(-1000, data.getElemFloatAt(1999));
-            assertNotEquals(5, data.getElemFloatAt(3));
             Date endDate = Calendar.getInstance().getTime();
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
         } catch (IOException e) {
@@ -117,7 +97,7 @@ public class SpotDimapProductReaderTest {
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(4, components.getChildren().length);
             String[] expectedIds = new String[]{"metadata.dim", "vol_list.dim", "mediumImage.tif", "icon.jpg"};
@@ -146,7 +126,7 @@ public class SpotDimapProductReaderTest {
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(1, components.getChildren().length);
             assertEquals("30382639609301123571X0_1A_NETWORK.ZIP", components.getChildren()[0].getId());
@@ -167,42 +147,13 @@ public class SpotDimapProductReaderTest {
         //System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             assertEquals(3, finalProduct.getBands().length);
             assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("SPOTDimap", finalProduct.getProductType());
             assertEquals(1, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(31770, finalProduct.getSceneRasterWidth());
             assertEquals(30620, finalProduct.getSceneRasterHeight());
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testReadBandRasterDataByVolumeProductReader(){
-        assumeTrue(TestUtil.testdataAvailable());
-
-        Date startDate = Calendar.getInstance().getTime();
-        Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3" + File.separator + "VOL_LIST.DIM");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "200");
-        try {
-
-            Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
-            ProductData data = ProductData.createInstance(ProductData.TYPE_UINT16, 20000);
-            data.setElemFloatAt(3, 5);
-            reader.readBandRasterData(finalProduct.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
-            assertNotEquals(0, data.getElemFloatAt(0));
-            assertNotEquals(-1000, data.getElemFloatAt(0));
-            assertNotEquals(0, data.getElemFloatAt(1999));
-            assertNotEquals(-1000, data.getElemFloatAt(1999));
-            assertNotEquals(5, data.getElemFloatAt(3));
             Date endDate = Calendar.getInstance().getTime();
             assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
         } catch (IOException e) {
@@ -221,7 +172,7 @@ public class SpotDimapProductReaderTest {
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(7, components.getChildren().length);
             String[] expectedIds = new String[]{"vol_list.dim", "SPVIEW01_0_0" + File.separator + "ICON_0_0.JPG", "SPVIEW01_0_0" + File.separator + "IMAGERY_0_0.TIF",
@@ -238,6 +189,145 @@ public class SpotDimapProductReaderTest {
             }
             assertEquals(7, componentsAsExpected);
         } catch (IOException e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        }
+    }
+
+    @Test
+    public void testReaderProductPixelSubset(){
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "100");
+        try {
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setNodeNames(new String[] { "XS1", "SWIR", "SATURATED"} );
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(800, 540, 1721, 1801), 0));
+            subsetDef.setSubSampling(1, 1);
+
+            Product finalProduct = reader.readProductNodes(file, subsetDef);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
+            TreeNode<File> components = reader.getProductComponents();
+            assertEquals(1, components.getChildren().length);
+            assertEquals("30382639609301123571X0_1A_NETWORK.ZIP", components.getChildren()[0].getId());
+            assertEquals(2, finalProduct.getBands().length);
+            assertEquals(1, finalProduct.getMaskGroup().getNodeCount());
+            assertEquals(1721, finalProduct.getSceneRasterWidth());
+            assertEquals(1801, finalProduct.getSceneRasterHeight());
+
+            assertNotNull(finalProduct.getSceneGeoCoding());
+            GeoPos productOrigin = ProductUtils.getCenterGeoPos(finalProduct);
+            assertEquals(33.6105f, productOrigin.lat,4);
+            assertEquals(6.5712f, productOrigin.lon,4);
+
+            Mask mask = finalProduct.getMaskGroup().get("SATURATED");
+            assertEquals(1721, mask.getRasterWidth());
+            assertEquals(1801, mask.getRasterHeight());
+
+            Band band_XS1 = finalProduct.getBand("XS1");
+            assertEquals(1721, band_XS1.getRasterWidth());
+            assertEquals(1801, band_XS1.getRasterHeight());
+
+            float pixelValue = band_XS1.getSampleFloat(232, 332);
+            assertEquals(134.0f, pixelValue, 0);
+            pixelValue = band_XS1.getSampleFloat(855, 1298);
+            assertEquals(136.0f, pixelValue, 0);
+            pixelValue = band_XS1.getSampleFloat(1481, 1075);
+            assertEquals(109.0f, pixelValue, 0);
+            pixelValue = band_XS1.getSampleFloat(1444, 333);
+            assertEquals(140.0f, pixelValue, 0);
+            pixelValue = band_XS1.getSampleFloat(1548, 1037);
+            assertEquals(101.0f, pixelValue, 0);
+
+            Band band_SWIR = finalProduct.getBand("SWIR");
+            assertEquals(1721, band_SWIR.getRasterWidth());
+            assertEquals(1801, band_SWIR.getRasterHeight());
+
+            pixelValue = band_SWIR.getSampleFloat(232, 332);
+            assertEquals(153.0f, pixelValue, 0);
+            pixelValue = band_SWIR.getSampleFloat(855, 1298);
+            assertEquals(155.0f, pixelValue, 0);
+            pixelValue = band_SWIR.getSampleFloat(1481, 1075);
+            assertEquals(118.0f, pixelValue, 0);
+            pixelValue = band_SWIR.getSampleFloat(1444, 333);
+            assertEquals(147.0f, pixelValue, 0);
+            pixelValue = band_SWIR.getSampleFloat(1548, 1037);
+            assertEquals(115.0f, pixelValue, 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        }
+    }
+
+    @Test
+    public void testReaderProductGeometrySubset(){
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "100");
+        try {
+            JtsGeometryConverter converter = new JtsGeometryConverter();
+            Geometry geometry = converter.parse("POLYGON ((6.563314914703369 33.60757827758789, 6.611313343048096 33.600948333740234, 6.6593122482299805 33.59431838989258, 6.707311153411865 33.58768844604492, 6.755309581756592 33.581058502197266, 6.803308486938477 33.57442855834961, 6.851306915283203 33.56779861450195, 6.899305820465088 33.5611686706543, 6.9473042488098145 33.55453872680664, 6.937067985534668 33.51668167114258, 6.926831245422363 33.478824615478516, 6.916594982147217 33.44096755981445, 6.906358242034912 33.40311050415039, 6.896121501922607 33.36525344848633, 6.885885238647461 33.327392578125, 6.875648498535156 33.28953552246094, 6.86541223526001 33.251678466796875, 6.861555576324463 33.2374153137207, 6.813730716705322 33.2440299987793, 6.765905857086182 33.250640869140625, 6.718080997467041 33.25725173950195, 6.670256614685059 33.26386642456055, 6.622431755065918 33.270477294921875, 6.574606895446777 33.2770881652832, 6.526782035827637 33.28369903564453, 6.478957176208496 33.290313720703125, 6.482751369476318 33.30458068847656, 6.49282169342041 33.34245681762695, 6.502892017364502 33.38032913208008, 6.512962818145752 33.41820526123047, 6.523033142089844 33.45608139038086, 6.5331034660339355 33.493953704833984, 6.543173789978027 33.531829833984375, 6.553244590759277 33.569705963134766, 6.563314914703369 33.60757827758789))");
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
+            subsetDef.setNodeNames(new String[] { "XS1", "SWIR", "SATURATED"} );
+            subsetDef.setSubSampling(1, 1);
+
+            Product finalProduct = reader.readProductNodes(file, subsetDef);
+            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapProductReader.class);
+            TreeNode<File> components = reader.getProductComponents();
+            assertEquals(1, components.getChildren().length);
+            assertEquals("30382639609301123571X0_1A_NETWORK.ZIP", components.getChildren()[0].getId());
+            assertEquals(2, finalProduct.getBands().length);
+            assertEquals(1, finalProduct.getMaskGroup().getNodeCount());
+            assertEquals(1724, finalProduct.getSceneRasterWidth());
+            assertEquals(1803, finalProduct.getSceneRasterHeight());
+
+            assertNotNull(finalProduct.getSceneGeoCoding());
+            GeoPos productOrigin = ProductUtils.getCenterGeoPos(finalProduct);
+            assertEquals(33.6105f, productOrigin.lat,4);
+            assertEquals(6.5712f, productOrigin.lon,4);
+
+            Mask mask = finalProduct.getMaskGroup().get("SATURATED");
+            assertEquals(1724, mask.getRasterWidth());
+            assertEquals(1803, mask.getRasterHeight());
+
+            Band band_XS1 = finalProduct.getBand("XS1");
+            assertEquals(1724, band_XS1.getRasterWidth());
+            assertEquals(1803, band_XS1.getRasterHeight());
+
+            float pixelValue = band_XS1.getSampleFloat(232, 332);
+            assertEquals(135.0f, pixelValue, 0);
+            pixelValue = band_XS1.getSampleFloat(855, 1298);
+            assertEquals(134.0f, pixelValue, 0);
+            pixelValue = band_XS1.getSampleFloat(1481, 1075);
+            assertEquals(100.0f, pixelValue, 0);
+            pixelValue = band_XS1.getSampleFloat(1444, 333);
+            assertEquals(144.0f, pixelValue, 0);
+            pixelValue = band_XS1.getSampleFloat(1548, 1037);
+            assertEquals(102.0f, pixelValue, 0);
+
+            Band band_SWIR = finalProduct.getBand("SWIR");
+            assertEquals(1724, band_SWIR.getRasterWidth());
+            assertEquals(1803, band_SWIR.getRasterHeight());
+
+            pixelValue = band_SWIR.getSampleFloat(232, 332);
+            assertEquals(152.0f, pixelValue, 0);
+            pixelValue = band_SWIR.getSampleFloat(855, 1298);
+            assertEquals(155.0f, pixelValue, 0);
+            pixelValue = band_SWIR.getSampleFloat(1481, 1075);
+            assertEquals(105.0f, pixelValue, 0);
+            pixelValue = band_SWIR.getSampleFloat(1444, 333);
+            assertEquals(144.0f, pixelValue, 0);
+            pixelValue = band_SWIR.getSampleFloat(1548, 1037);
+            assertEquals(103.0f, pixelValue, 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        } catch (ConversionException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
         }

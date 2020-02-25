@@ -20,8 +20,8 @@ package org.esa.s2tbx.dataio.s2;
 
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.s2.l1c.IL1cGranuleMetadata;
-import org.esa.s2tbx.dataio.s2.l1c.L1cMetadataFactory;
+import org.esa.s2tbx.dataio.s2.l1c.metadata.IL1cGranuleMetadata;
+import org.esa.s2tbx.dataio.s2.l1c.metadata.L1cMetadataFactory;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.esa.s2tbx.dataio.s2.l1c.IL1cProductMetadata;
+import org.esa.s2tbx.dataio.s2.l1c.metadata.IL1cProductMetadata;
 import org.xml.sax.SAXException;
 
 /**

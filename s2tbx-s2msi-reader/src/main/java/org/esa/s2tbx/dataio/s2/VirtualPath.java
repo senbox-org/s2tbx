@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.s2;
 
 import org.esa.s2tbx.commons.FilePath;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.jp2.JP2LocalFile;
+import org.esa.snap.jp2.reader.JP2LocalFile;
 
 import java.io.File;
 import java.io.IOException;

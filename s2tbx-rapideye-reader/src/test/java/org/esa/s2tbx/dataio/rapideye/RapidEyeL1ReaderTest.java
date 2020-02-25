@@ -17,20 +17,26 @@
 
 package org.esa.s2tbx.dataio.rapideye;
 
-import com.bc.ceres.core.NullProgressMonitor;
+import com.bc.ceres.binding.ConversionException;
+import com.vividsolutions.jts.geom.Geometry;
+import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.core.subset.GeometrySubsetRegion;
+import org.esa.snap.core.subset.PixelSubsetRegion;
+import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.esa.snap.utils.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -38,105 +44,185 @@ import static org.junit.Assume.assumeTrue;
  */
 public class RapidEyeL1ReaderTest {
 
-    private RapidEyeL1Reader reader;
-    private String productsFolder = "_rapideye" + File.separator;
+    private static final String PRODUCTS_FOLDER = "_rapideye" + File.separator;
 
-    @Before
-    public void setup() {
+    @Test
+    public void testReadProduct() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "Demo03_1B"+ File.separator+ "2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml");
+
+        RapidEyeL1Reader reader = buildProductReader();
+
+        Product product = reader.readProductNodes(productFile, null);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303", product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals("L1B", product.getProductType());
+        assertEquals(11829, product.getSceneRasterWidth());
+        assertEquals(7422, product.getSceneRasterHeight());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(7, product.getMaskGroup().getNodeCount());
+
+        assertEquals(6, product.getBands().length);
+
+        Band band = product.getBandAt(1);
+        assertNotNull(band);
+        assertEquals(21, band.getDataType());
+        assertEquals(87794838, band.getNumDataElems());
+        assertEquals("green", band.getName());
+        assertEquals(11829, band.getRasterWidth());
+        assertEquals(7422, band.getRasterHeight());
+
+        assertEquals(47.18f, band.getSampleFloat(0, 0), 0.0f);
+        assertEquals(43.87f, band.getSampleFloat(22, 20), 0.0f);
+        assertEquals(49.95f, band.getSampleFloat(123, 3221), 0.0f);
+        assertEquals(52.12f, band.getSampleFloat(246, 134), 0.0f);
+        assertEquals(57.67f, band.getSampleFloat(435, 6543), 0.0f);
+        assertEquals(43.02f, band.getSampleFloat(10000, 3245), 0.0f);
+        assertEquals(29.859999f, band.getSampleFloat(3214, 3242), 0.0f);
+        assertEquals(46.52f, band.getSampleFloat(221, 1233), 0.0f);
+        assertEquals(37.68f, band.getSampleFloat(9864, 532), 0.0f);
+        assertEquals(44.489998f, band.getSampleFloat(8763, 2445), 0.0f);
+        assertEquals(43.5f, band.getSampleFloat(7642, 3354), 0.0f);
+        assertEquals(32.92f, band.getSampleFloat(5444, 5544), 0.0f);
+        assertEquals(44.48f, band.getSampleFloat(5332, 4345), 0.0f);
+        assertEquals(68.95f, band.getSampleFloat(8000, 7000), 0.0f);
+        assertEquals(39.27f, band.getSampleFloat(543, 12), 0.0f);
+        assertEquals(43.27f, band.getSampleFloat(32, 6547), 0.0f);
+        assertEquals(0.0f, band.getSampleFloat(11829, 7422), 0.0f);
+    }
+
+    @Test
+    public void testReadProductPixelSubset() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "Demo03_1B"+ File.separator+ "2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml");
+
+        RapidEyeL1Reader reader = buildProductReader();
+
+        ProductSubsetDef subsetDef = new ProductSubsetDef();
+        subsetDef.setNodeNames(new String[] { "blue", "green", "red", "red_egde", "black_fill", "clouds", "missing_blue_data", "missing_red_data" } );
+        subsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(1000, 2000, 3000, 4000), 0));
+        subsetDef.setSubSampling(1, 1);
+
+        Product product = reader.readProductNodes(productFile, subsetDef);
+        assertNotNull(product.getFileLocation());
+        assertNotNull(product.getName());
+        assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303", product.getName());
+        assertNotNull(product.getPreferredTileSize());
+        assertNotNull(product.getProductReader());
+        assertEquals(product.getProductReader(), reader);
+        assertEquals("L1B", product.getProductType());
+        assertEquals(3000, product.getSceneRasterWidth());
+        assertEquals(4000, product.getSceneRasterHeight());
+
+        GeoCoding geoCoding = product.getSceneGeoCoding();
+        assertNotNull(geoCoding);
+        CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+        assertNotNull(coordinateReferenceSystem);
+        assertNotNull(coordinateReferenceSystem.getName());
+        assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+
+        assertEquals(4, product.getMaskGroup().getNodeCount());
+
+        assertEquals(3, product.getBands().length);
+
+        Band band = product.getBandAt(2);
+        assertNotNull(band);
+        assertEquals(21, band.getDataType());
+        assertEquals(12000000, band.getNumDataElems());
+        assertEquals("red", band.getName());
+        assertEquals(3000, band.getRasterWidth());
+        assertEquals(4000, band.getRasterHeight());
+
+        assertEquals(25.699999f, band.getSampleFloat(0, 0), 0.0f);
+        assertEquals(25.9f, band.getSampleFloat(22, 20), 0.0f);
+        assertEquals(23.3f, band.getSampleFloat(123, 3221), 0.0f);
+        assertEquals(21.64f, band.getSampleFloat(246, 134), 0.0f);
+        assertEquals(34.86f, band.getSampleFloat(435, 3543), 0.0f);
+        assertEquals(33.67f, band.getSampleFloat(1000, 3245), 0.0f);
+        assertEquals(35.329998f, band.getSampleFloat(2214, 3242), 0.0f);
+        assertEquals(16.619999f, band.getSampleFloat(221, 1233), 0.0f);
+        assertEquals(30.42f, band.getSampleFloat(864, 532), 0.0f);
+        assertEquals(24.1f, band.getSampleFloat(2763, 1445), 0.0f);
+        assertEquals(29.0f, band.getSampleFloat(2642, 3354), 0.0f);
+        assertEquals(27.98f, band.getSampleFloat(544, 544), 0.0f);
+        assertEquals(23.33f, band.getSampleFloat(1332, 2345), 0.0f);
+        assertEquals(24.609999f, band.getSampleFloat(2200, 700), 0.0f);
+        assertEquals(24.57f, band.getSampleFloat(543, 12), 0.0f);
+        assertEquals(52.11f, band.getSampleFloat(32, 547), 0.0f);
+        assertEquals(0.0f, band.getSampleFloat(3000, 4000), 0.0f);
+    }
+
+    @Test
+    public void testReadProductGeometrySubset() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "Demo03_1B"+ File.separator+ "2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml");
+        try {
+            RapidEyeL1Reader reader = buildProductReader();
+            JtsGeometryConverter converter = new JtsGeometryConverter();
+            Geometry geometry = converter.parse("POLYGON ((15.125024795532227 52.961814880371094, 15.160173416137695 52.95663833618164, 15.195322036743164 52.95146560668945, 15.23047161102295 52.9462890625, 15.265621185302734 52.94111633300781, 15.30077075958252 52.93593978881836, 15.335920333862305 52.930763244628906, 15.371070861816406 52.92559051513672, 15.406220436096191 52.920413970947266, 15.396490097045898 52.899322509765625, 15.386758804321289 52.87822723388672, 15.377028465270996 52.85713195800781, 15.367297172546387 52.83604049682617, 15.357566833496094 52.814945220947266, 15.347835540771484 52.79384994506836, 15.338105201721191 52.77275848388672, 15.328373908996582 52.75166320800781, 15.318643569946289 52.730567932128906, 15.30891227722168 52.709476470947266, 15.302425384521484 52.695411682128906, 15.267449378967285 52.7005615234375, 15.232474327087402 52.70570755004883, 15.197498321533203 52.71085739135742, 15.16252326965332 52.71600341796875, 15.127549171447754 52.721153259277344, 15.092574119567871 52.72629928588867, 15.057600021362305 52.731449127197266, 15.022625923156738 52.736595153808594, 15.02902603149414 52.75067138671875, 15.038625717163086 52.771785736083984, 15.048225402832031 52.79290008544922, 15.057826042175293 52.81401443481445, 15.067425727844238 52.83512878417969, 15.077025413513184 52.85624313354492, 15.086625099182129 52.877357482910156, 15.096224784851074 52.89847183227539, 15.105825424194336 52.919586181640625, 15.115425109863281 52.94070053100586, 15.125024795532227 52.961814880371094))");
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setNodeNames(new String[]{"blue", "green", "red", "red_edge", "black_fill", "clouds", "missing_blue_data", "missing_red_data"});
+            subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
+            subsetDef.setSubSampling(1, 1);
+
+            Product product = reader.readProductNodes(productFile, subsetDef);
+            assertNotNull(product.getFileLocation());
+            assertNotNull(product.getName());
+            assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303", product.getName());
+            assertNotNull(product.getPreferredTileSize());
+            assertNotNull(product.getProductReader());
+            assertEquals(product.getProductReader(), reader);
+            assertEquals("L1B", product.getProductType());
+            assertEquals(3017, product.getSceneRasterWidth());
+            assertEquals(4002, product.getSceneRasterHeight());
+
+            GeoCoding geoCoding = product.getSceneGeoCoding();
+            assertNotNull(geoCoding);
+            CoordinateReferenceSystem coordinateReferenceSystem = geoCoding.getGeoCRS();
+            assertNotNull(coordinateReferenceSystem);
+            assertNotNull(coordinateReferenceSystem.getName());
+            assertEquals("WGS84(DD)", coordinateReferenceSystem.getName().getCode());
+
+            assertEquals(4, product.getMaskGroup().getNodeCount());
+
+            assertEquals(4, product.getBands().length);
+
+            Band band = product.getBandAt(2);
+            assertNotNull(band);
+            assertEquals(21, band.getDataType());
+            assertEquals(12074034, band.getNumDataElems());
+            assertEquals("red", band.getName());
+            assertEquals(3017, band.getRasterWidth());
+            assertEquals(4002, band.getRasterHeight());
+
+            assertEquals(22.67f, band.getSampleFloat(0, 0), 2);
+            assertEquals(24.88f, band.getSampleFloat(22, 20), 2);
+            assertEquals(38.01f, band.getSampleFloat(123, 3221), 2);
+            assertEquals(25.08f, band.getSampleFloat(246, 134), 2);
+            assertEquals(19.53f, band.getSampleFloat(435, 3543), 2);
+            assertEquals(47.51f, band.getSampleFloat(1000, 3245), 2);
+        } catch (ConversionException e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        }
+    }
+
+    private static RapidEyeL1Reader buildProductReader() {
         RapidEyeL1ReaderPlugin plugin = new RapidEyeL1ReaderPlugin();
-        reader = new RapidEyeL1Reader(plugin, plugin.getColorPaletteFilePath());
-    }
-
-    @Test
-    public void testGetReaderPlugin() {
-        assertEquals(RapidEyeL1ReaderPlugin.class, reader.getReaderPlugIn().getClass());
-    }
-
-    @Test
-    public void testReadProductNodes() {
-        Date startDate = Calendar.getInstance().getTime();
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "Demo03_1B/2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "100");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(6, finalProduct.getBands().length);
-            assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
-            assertEquals("L1B", finalProduct.getProductType());
-            assertEquals(7, finalProduct.getMaskGroup().getNodeCount());
-            assertEquals(11829, finalProduct.getSceneRasterWidth());
-            assertEquals(7422, finalProduct.getSceneRasterHeight());
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testReadBandRasterData() {
-        Date startDate = Calendar.getInstance().getTime();
-        //Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile(productsFolder + "Demo05_1B.zip");
-        //File rasterFile = TestUtil.getTestFile("mediumImage.tif");
-        System.setProperty("snap.dataio.reader.tileWidth", "100");
-        System.setProperty("snap.dataio.reader.tileHeight", "200");
-        try {
-
-            Product finalProduct = reader.readProductNodes(file, null);
-            ProductData data = ProductData.createInstance(ProductData.TYPE_UINT16, 20000);
-            data.setElemFloatAt(3, 5);
-            reader.readBandRasterData(finalProduct.getBandAt(0), 2000, 2000, 100, 200, data, new NullProgressMonitor());
-            assertNotEquals(0, data.getElemFloatAt(0));
-            assertNotEquals(-1000, data.getElemFloatAt(0));
-            assertNotEquals(0, data.getElemFloatAt(1999));
-            assertNotEquals(-1000, data.getElemFloatAt(1999));
-            assertNotEquals(5, data.getElemFloatAt(3));
-            Date endDate = Calendar.getInstance().getTime();
-            assertTrue("The load time for the product is too big!", (endDate.getTime() - startDate.getTime()) / (60 * 1000) < 30);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnFileInput() {
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "Demo03_1B/2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(7, components.getChildren().length);
-            assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml", components.getChildren()[0].getId());
-            assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303_band1.ntf", components.getChildren()[1].getId());
-            assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303_band2.ntf", components.getChildren()[2].getId());
-            assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303_band3.ntf", components.getChildren()[3].getId());
-            assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303_band4.ntf", components.getChildren()[4].getId());
-            assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303_band5.ntf", components.getChildren()[5].getId());
-            assertEquals("2009-04-16T104920_RE4_1B-NAC_3436599_84303_udm.tif", components.getChildren()[6].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
-    public void testGetProductComponentsOnArchiveInput() {
-        //Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "Demo05_1B.zip");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            TreeNode<File> components = reader.getProductComponents();
-            assertEquals(1, components.getChildren().length);
-            assertEquals("Demo05_1B.zip", components.getChildren()[0].getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
+        return new RapidEyeL1Reader(plugin, plugin.getColorPaletteFilePath());
     }
 }

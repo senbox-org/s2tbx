@@ -1,29 +1,19 @@
 package org.esa.s2tbx.dataio.alos.pri.internal;
 
-import com.bc.ceres.core.VirtualDir;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * Holder class for .MD.XML metadata file.
@@ -32,11 +22,9 @@ import java.util.zip.ZipFile;
  */
 public class AlosPRIMetadata extends XmlMetadata {
 
-    private static final int BUFFER_SIZE = 4096;
     private String imageDirectoryPath;
-    ImageMetadata.InsertionPoint upperLeftPointOrigin;
-
-    List<ImageMetadata> componentMetadata;
+    private ImageMetadata.InsertionPoint upperLeftPointOrigin;
+    private List<ImageMetadata> componentMetadata;
 
     static {
         XmlMetadataParserFactory.registerParser(ImageMetadata.class, new ImageMetadata.ImageMetadataParser(ImageMetadata.class));
@@ -170,49 +158,6 @@ public class AlosPRIMetadata extends XmlMetadata {
 
     public void setImageDirectoryPath(String imageDirectoryPath) {
         this.imageDirectoryPath = imageDirectoryPath;
-    }
-
-    /**
-     * Unzip all elements in the zip file containing the tiff images in a temporary directory.
-     *
-     * @param path path to image zip files
-     */
-    public void unZipImageFiles(String path) {
-        try {
-            File tempImageFile = VirtualDir.createUniqueTempDir();
-            this.imageDirectoryPath = tempImageFile.getPath();
-            byte[] buffer;
-            Path directoryFilePath = Paths.get(this.getImageDirectoryPath());
-            try (ZipFile zipFile = new ZipFile(path)) {
-                ZipEntry entry;
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                while (entries.hasMoreElements()) {
-                    entry = entries.nextElement();
-                    Path filePath = directoryFilePath.resolve(entry.getName());
-                    if (entry.isDirectory()) {
-                        Files.createDirectories(filePath);
-                    } else {
-                        if (entry.getName().endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION) ||
-                                entry.getName().endsWith(AlosPRIConstants.IMAGE_EXTENSION.toUpperCase())
-                        ) {
-                            try (InputStream inputStream = zipFile.getInputStream(entry)) {
-                                try (BufferedOutputStream outputStream = new BufferedOutputStream(
-                                        new FileOutputStream(filePath.toFile()))) {
-                                    buffer = new byte[AlosPRIMetadata.BUFFER_SIZE];
-                                    int read;
-                                    while ((read = inputStream.read(buffer)) > 0) {
-                                        outputStream.write(buffer, 0, read);
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public boolean hasInsertPoint() {
@@ -365,9 +310,46 @@ public class AlosPRIMetadata extends XmlMetadata {
         return componentMetadata.stream().filter(metadata -> metadata instanceof ImageMetadata).map(metadata -> (ImageMetadata) metadata).collect(Collectors.toList());
     }
 
+    public void setComponentMetadata(List<ImageMetadata> componentMetadata) {
+        this.componentMetadata = componentMetadata;
+    }
+
+    //TODO Jean remove
+    @Deprecated
     public void addComponentMetadata(File metadata) {
-        ImageMetadata imageMetadata = create(ImageMetadata.class, metadata.toPath());
+        ImageMetadata imageMetadata = GenericXmlMetadata.create(ImageMetadata.class, metadata.toPath());
         imageMetadata.setFileName(metadata.getName());
         this.componentMetadata.add(imageMetadata);
+    }
+
+    public boolean isMultiSize(){
+        int minHeight = componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterHeight)
+                .collect(Collectors.minBy(Integer::compare))
+                .get();
+
+        int maxHeight = componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterHeight)
+                .collect(Collectors.maxBy(Integer::compare))
+                .get();
+
+        int minWidth = componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterWidth)
+                .collect(Collectors.minBy(Integer::compare))
+                .get();
+
+        int maxWidth = componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterWidth)
+                .collect(Collectors.maxBy(Integer::compare))
+                .get();
+        return (minHeight != maxHeight || minWidth != maxWidth);
     }
 }

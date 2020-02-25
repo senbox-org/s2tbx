@@ -1,7 +1,9 @@
 package org.esa.s2tbx.dataio.worldview2esa.metadata;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
@@ -25,7 +27,7 @@ public class WorldView2ESAMetadataTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         XmlMetadataParserFactory.registerParser(WorldView2ESAMetadata.class, new XmlMetadataParser<>(WorldView2ESAMetadata.class));
-        metadata = WorldView2ESAMetadata.create(WorldView2ESAMetadata.class, TestUtil.getTestFile(productsFolder +
+        metadata = GenericXmlMetadata.create(WorldView2ESAMetadata.class, TestUtil.getTestFile(productsFolder +
                 "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+File.separator+"WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.MD.XML"));
     }
 
