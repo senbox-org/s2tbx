@@ -328,11 +328,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     int defaultBandHeight = bandSourceImage.getHeight();
                     Dimension defaultBandSize =  new Dimension(defaultBandWidth, defaultBandHeight);
                     GeoCoding bandDefaultGeoCoding = null;
-                    if(subsetDef != null){
+                    if(subsetDef != null && subsetDef.getSubsetRegion() != null){
                         bandDefaultGeoCoding = buildGeoCoding(sceneDescription, CRS.decode(this.epsgCode), resolution.x, resolution.y, defaultBandSize, null);
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution());
+                    }else{
+                        bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
                     }
-                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution());
-
                     if (bandBounds.x > 0 || bandBounds.y > 0 || bandBounds.width != defaultBandWidth || bandBounds.height != defaultBandHeight) {
                         Raster subsetSourceData = bandSourceImage.getData();
                         WritableRaster subsetRaster = subsetSourceData.createCompatibleWritableRaster(bandBounds.width, bandBounds.height);
