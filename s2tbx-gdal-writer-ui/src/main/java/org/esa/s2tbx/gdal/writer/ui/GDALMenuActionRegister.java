@@ -16,11 +16,11 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  */
 @OnStart
-public class GDALMenuActionRegistrar implements Runnable, GDALWriterPlugInListener {
+public class GDALMenuActionRegister implements Runnable, GDALWriterPlugInListener {
 
-    private static final Logger logger = Logger.getLogger(GDALMenuActionRegistrar.class.getName());
+    private static final Logger logger = Logger.getLogger(GDALMenuActionRegister.class.getName());
 
-    public GDALMenuActionRegistrar() {
+    public GDALMenuActionRegister() {
     }
 
     @Override
