@@ -213,6 +213,8 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                 geoTiffBand.setName(bandName);
                 geoTiffBand.setScalingFactor(bandGain.doubleValue());
                 geoTiffBand.setUnit(Kompsat2Constants.KOMPSAT2_UNIT);
+                geoTiffBand.setSpectralWavelength(Kompsat2Constants.BandWaveLengthConstants.getWavelengthCentral(bandName));
+                geoTiffBand.setNoDataValueUsed(true);
 
                 product.addBand(geoTiffBand);
 

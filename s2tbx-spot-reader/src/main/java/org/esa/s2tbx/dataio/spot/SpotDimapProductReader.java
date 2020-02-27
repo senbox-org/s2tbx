@@ -200,6 +200,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                     band.setUnit(bandUnits[bandIndex]);
                 }
                 band.setSpectralBandIndex(bandIndex + 1);
+                band.setDescription(bandNames[bandIndex]);
 
                 GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds, preferredTileSize, bandIndex, band.getGeoCoding());
                 band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
@@ -343,6 +344,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 if (bandIndex < bandUnits.length) {
                     geoTiffBand.setUnit(bandUnits[bandIndex]);
                 }
+                geoTiffBand.setDescription(bandName);
                 product.addBand(geoTiffBand);
             }
         }

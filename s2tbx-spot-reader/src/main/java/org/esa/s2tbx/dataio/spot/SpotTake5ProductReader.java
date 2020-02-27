@@ -204,6 +204,11 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                         Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
                         geoTiffBand.setName(bandName);
+                        geoTiffBand.setDescription(bandName);
+                        if(geoTiffBand.getUnit() == null){
+                            geoTiffBand.setUnit(SpotConstants.VALUE_NOT_AVAILABLE);
+                        }
+                        geoTiffBand.setNoDataValueUsed(true);
                         product.addBand(geoTiffBand);
                     }
                 }
@@ -219,6 +224,11 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                     Product geoTiffProduct = readGeoTiffProduct(tiffFile, defaultProductSize, productDefaultGeoCoding, subsetDef, isMultiSize);
                     Band geoTiffBand = geoTiffProduct.getBandAt(0);
                     geoTiffBand.setName(bandName);
+                    geoTiffBand.setDescription(bandName);
+                    if(geoTiffBand.getUnit() == null){
+                        geoTiffBand.setUnit(SpotConstants.VALUE_NOT_AVAILABLE);
+                    }
+                    geoTiffBand.setNoDataValueUsed(true);
                     product.addBand(geoTiffBand);
                     maskBands.put(entry.getKey(), geoTiffBand);
                     geoTiffProduct.getBandGroup().removeAll(); // remove the bands from the geo tif product

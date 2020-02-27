@@ -2,24 +2,24 @@
   "id": "ikonos_product",
   "decodeQualification": "INTENDED",
   "expectedContent": {
-    "sceneWidth": 4101,
-    "sceneHeight": 3983,
+    "sceneWidth": 200,
+    "sceneHeight": 200,
     "geoCoding": {
       "coordinates": [
         {
-          "x": 1768.0,
-          "y": 2141.0,
-          "lat": 38.087617988676826,
-          "lon": 23.935240332498644
+          "x": 86.0,
+          "y": 107.0,
+          "lat": 38.10640341840057,
+          "lon": 23.916812971834993
         },
         {
-          "x": 3044.0,
-          "y": 2584.0,
-          "lat": 38.08326646648784,
-          "lon": 23.94961151776738
+          "x": 148.0,
+          "y": 129.0,
+          "lat": 38.10618784602702,
+          "lon": 23.917511365675843
         }
       ],
-      "reverseAccuracy": 4.319474101066589E-6
+      "reverseAccuracy": 4.050321877002716E-6
     },
     "bands": [
       {
