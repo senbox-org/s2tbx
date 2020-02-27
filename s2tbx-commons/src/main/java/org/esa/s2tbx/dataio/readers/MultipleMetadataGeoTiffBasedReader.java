@@ -14,6 +14,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.jai.JAIUtils;
@@ -314,20 +315,30 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
         return rastersMetadata;
     }
 
-    protected static <MetadataType extends XmlMetadata> MetadataList<MetadataType> readMetadata(VirtualDirEx productDirectory, String metadataFileSuffix, Class<MetadataType> classType)
-                                                throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+    public static <MetadataType extends GenericXmlMetadata> MetadataType readProductMetadata(VirtualDirEx productDirectory, String productMetadataRelativeFilePath,
+                                                                                             Class<MetadataType> metadataClass)
+                                                                    throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+
+        try (FilePathInputStream metadataInputStream = productDirectory.getInputStream(productMetadataRelativeFilePath)) {
+            MetadataType productMetadata = (MetadataType) XmlMetadataParserFactory.getParser(metadataClass).parse(metadataInputStream);
+            String metadataProfile = productMetadata.getMetadataProfile();
+            if (metadataProfile != null) {
+                productMetadata.setName(metadataProfile);
+            }
+            productMetadata.setPath(metadataInputStream.getPath());
+            productMetadata.setFileName(metadataInputStream.getPath().getFileName().toString());
+            return productMetadata;
+        }
+    }
+
+    protected static <MetadataType extends XmlMetadata> MetadataList<MetadataType> readMetadata(VirtualDirEx productDirectory, String metadataFileSuffix, Class<MetadataType> metadataClass)
+                                                                                            throws IOException, InstantiationException, ParserConfigurationException, SAXException {
 
         String[] existingRelativeFilePaths = productDirectory.listAllFiles();
         MetadataList<MetadataType> metadataList = new MetadataList<>();
         for (String relativeFilePath : existingRelativeFilePaths) {
             if (org.apache.commons.lang.StringUtils.endsWithIgnoreCase(relativeFilePath, metadataFileSuffix)) {
-                MetadataType metaDataItem;
-                try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(relativeFilePath)) {
-                    metaDataItem = (MetadataType) XmlMetadataParserFactory.getParser(classType).parse(filePathInputStream);
-                    Path filePath = filePathInputStream.getPath();
-                    metaDataItem.setPath(filePath);
-                    metaDataItem.setFileName(filePath.getFileName().toString());
-                }
+                MetadataType metaDataItem = readProductMetadata(productDirectory, relativeFilePath, metadataClass);
                 String existingImageRelativePath = null;
                 String[] rasterFileNames = metaDataItem.getRasterFileNames();
                 if (rasterFileNames != null && rasterFileNames.length > 0) {

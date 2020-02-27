@@ -20,6 +20,8 @@ package org.esa.s2tbx.dataio.rapideye;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.apache.commons.lang.StringUtils;
+import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
@@ -141,21 +143,24 @@ public class RapidEyeL1Reader extends AbstractProductReader {
 
             this.bandImageReaders = new ArrayList<>();
             String[] nitfFiles = metadata.getRasterFileNames();
-            if (nitfFiles != null) {
+            if (nitfFiles != null && nitfFiles.length > 0) {
                 GeoCoding bandGeoCoding = product.getSceneGeoCoding();
+                boolean addMetadataFromNitfAPI = false;
                 for (int i = 0; i < nitfFiles.length; i++) {
                     String bandName = getBandName(i);
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                         File localFile = this.productDirectory.getFile(nitfFiles[i]);
                         Band targetBand;
                         if (gdalProductReader == null) {
+                            // the GDAL library is not installed
                             NITFReaderWrapper nitfReader = new NITFReaderWrapper(localFile);
                             this.bandImageReaders.add(nitfReader);
 
                             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                                 NITFMetadata nitfMetadata = nitfReader.getMetadata();
-                                if (nitfMetadata != null) {
+                                if (nitfMetadata != null && !addMetadataFromNitfAPI) {
                                     product.getMetadataRoot().addElement(nitfMetadata.getMetadataRoot());
+                                    addMetadataFromNitfAPI = true;
                                 }
                             }
                             targetBand = new ColorPaletteBand(bandName, metadata.getPixelFormat(), productBounds.width, productBounds.height, this.colorPaletteFilePath);
@@ -166,6 +171,21 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                             RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, dataBufferType, productBounds, preferredTileSize, targetBand.getGeoCoding());
                             targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
                         } else {
+                            // the GDAL library is installed
+                            if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                                // add the firt metadata from NITF API
+                                if (!addMetadataFromNitfAPI) {
+                                    NITFReaderWrapper nitfReader = new NITFReaderWrapper(localFile);
+                                    this.bandImageReaders.add(nitfReader);
+
+                                    NITFMetadata nitfMetadata = nitfReader.getMetadata();
+                                    if (nitfMetadata != null) {
+                                        product.getMetadataRoot().addElement(nitfMetadata.getMetadataRoot());
+                                        addMetadataFromNitfAPI = true;
+                                    }
+                                }
+                            }
+
                             Product nitfProduct = gdalProductReader.readProduct(localFile.toPath(), productBounds);
                             product.setNumResolutionsMax(nitfProduct.getNumResolutionsMax());
                             nitfProduct.transferGeoCodingTo(product, null);
@@ -395,12 +415,7 @@ public class RapidEyeL1Reader extends AbstractProductReader {
         if (productMetadataRelativeFilePath == null) {
             throw new NullPointerException("The metadata file is null.");
         }
-        RapidEyeMetadata productMetadata;
-        try (FilePathInputStream metadataInputStream = productDirectory.getInputStream(productMetadataRelativeFilePath)) {
-            productMetadata = (RapidEyeMetadata) XmlMetadataParserFactory.getParser(RapidEyeMetadata.class).parse(metadataInputStream);
-            productMetadata.setPath(metadataInputStream.getPath());
-            productMetadata.setFileName(metadataInputStream.getPath().getFileName().toString());
-        }
+        RapidEyeMetadata productMetadata = MultipleMetadataGeoTiffBasedReader.readProductMetadata(productDirectory, productMetadataRelativeFilePath, RapidEyeMetadata.class);
         String metadataProfile = productMetadata.getMetadataProfile();
         if (metadataProfile == null || !metadataProfile.startsWith(RapidEyeConstants.PROFILE_L1)) {
             throw new IllegalStateException("The selected product is not a RapidEye L1 product. Please use the appropriate filter");
