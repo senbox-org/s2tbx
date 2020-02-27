@@ -38,8 +38,6 @@ import java.util.logging.Logger;
  */
 public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends XmlMetadata> extends AbstractProductReader {
 
-    private static final Logger logger = Logger.getLogger(MultipleMetadataGeoTiffBasedReader.class.getName());
-
     private VirtualDirEx productDirectory;
     private ImageInputStreamSpi imageInputStreamSpi;
     private List<GeoTiffImageReader> bandImageReaders;
@@ -141,7 +139,7 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
             } else {
                 productDefaultGeoCoding = buildTiePointGridGeoCoding(firstMetadata, metadataList, null);
                 if (productDefaultGeoCoding == null) {
-                    productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(bandImageReaders.get(0), null);
+                    productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0), null);
                 }
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, isMultiSize);
             }
@@ -362,7 +360,23 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
         return metadataList;
     }
 
+    private static boolean hasTiffExtension(String imageFilePath) {
+        if (StringUtils.isBlank(imageFilePath)) {
+            throw new NullPointerException("The image file path '" + imageFilePath + "' is null or empty.");
+        }
+        return (StringUtils.endsWithIgnoreCase(imageFilePath, ".tif") || StringUtils.endsWithIgnoreCase(imageFilePath, ".tiff"));
+    }
+
     private static String findImageRelativePath(String rasterFileNameToFind, String[] existingRelativeFilePaths) {
+        // check if the raster file name exists among the existing file paths
+        for (int i=0; i<existingRelativeFilePaths.length; i++) {
+            if (hasTiffExtension(existingRelativeFilePaths[i])) {
+                if (StringUtils.endsWithIgnoreCase(existingRelativeFilePaths[i], rasterFileNameToFind)) {
+                    return existingRelativeFilePaths[i];
+                }
+            }
+        }
+        // check if the raster file has extension and search if by extension
         int lastPointIndex = rasterFileNameToFind.lastIndexOf('.');
         if (lastPointIndex <= 0) {
             throw new IllegalStateException("The raster file name to find '" + rasterFileNameToFind+"' has no extension.");
@@ -371,7 +385,8 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
         String existingImageRelativePath = null;
         for (int k=0; k<existingRelativeFilePaths.length && existingImageRelativePath == null; k++) {
             String existingRelativeFilePath = existingRelativeFilePaths[k];
-            if (StringUtils.endsWithIgnoreCase(existingRelativeFilePath, ".tif") || StringUtils.endsWithIgnoreCase(existingRelativeFilePath, ".tiff")) {
+            // check if the existing file ends with '.tif' or '.tiff'
+            if (hasTiffExtension(existingRelativeFilePath)) {
                 for (int index=rasterFileNameWithoutExtension.length()-1; index>=0 && existingImageRelativePath == null; index--) {
                     if (existingRelativeFilePath.regionMatches(true, 0, rasterFileNameWithoutExtension, 0, index)) {
                         existingImageRelativePath = existingRelativeFilePath;
