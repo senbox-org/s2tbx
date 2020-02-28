@@ -1,32 +1,30 @@
 package org.esa.s2tbx.mapper;
 
 import com.bc.ceres.swing.TableLayout;
-import com.vividsolutions.jts.geom.Polygon;
-import org.esa.s2tbx.mapper.common.SpectrumInput;
 import org.esa.s2tbx.mapper.common.SpectrumCsvIO;
+import org.esa.s2tbx.mapper.common.SpectrumInput;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.image.VectorDataMaskOpImage;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.rcp.util.Dialogs;
 import org.esa.snap.tango.TangoIcons;
 import org.esa.snap.ui.AppContext;
-import org.esa.snap.ui.ModalDialog;
 import org.esa.snap.ui.ModelessDialog;
 import org.esa.snap.ui.diagram.DiagramGraphIO;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.CRS;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
