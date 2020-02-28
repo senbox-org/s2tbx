@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import com.bc.ceres.binding.ConversionException;
-import com.vividsolutions.jts.geom.Geometry;
 import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM32N_ReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM34S_ReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM36N_ReaderPlugIn;
@@ -20,6 +19,7 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.jts.geom.Geometry;
 
 import java.awt.*;
 import java.io.File;

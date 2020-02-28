@@ -10,15 +10,12 @@ import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.lib.openjpeg.utils.StackTraceUtils;
-import org.geotools.graph.util.geom.Coordinate2D;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -251,8 +248,8 @@ public class MuscateMetadata extends XmlMetadata {
         return getAttributeValue(MuscateConstants.PATH_DESCRIPTION, MuscateConstants.VALUE_NOT_AVAILABLE);
     }
 
-    public Coordinate2D getUpperLeft() {
-        return new Coordinate2D(getUpperLeftX(), getUpperLeftY());
+    public Point2D.Double getUpperLeft() {
+        return new Point2D.Double(getUpperLeftX(), getUpperLeftY());
     }
 
     public double getUpperLeftX() {

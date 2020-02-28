@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.worldview2esa;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
@@ -15,6 +14,7 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.jts.geom.Geometry;
 
 import java.awt.*;
 import java.io.File;

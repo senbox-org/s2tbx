@@ -18,7 +18,6 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -26,6 +25,7 @@ import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
+import org.locationtech.jts.geom.Coordinate;
 
 import javax.media.jai.BorderExtenderConstant;
 import javax.media.jai.ImageLayout;

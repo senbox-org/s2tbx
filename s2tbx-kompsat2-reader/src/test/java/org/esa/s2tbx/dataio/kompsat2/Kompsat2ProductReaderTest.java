@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.kompsat2;
 
 import com.bc.ceres.binding.ConversionException;
-import com.vividsolutions.jts.geom.Geometry;
 import org.esa.s2tbx.dataio.kompsat2.internal.Kompsat2Constants;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
@@ -16,6 +15,7 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.jts.geom.Geometry;
 
 import java.awt.*;
 import java.io.File;

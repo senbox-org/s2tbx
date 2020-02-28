@@ -1,20 +1,18 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
 import com.bc.ceres.binding.ConversionException;
-import com.vividsolutions.jts.geom.Geometry;
 import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.gdal.reader.plugins.JP2OpenJPEGDriverProductReaderPlugIn;
 import org.esa.s2tbx.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.subset.GeometrySubsetRegion;
 import org.esa.snap.core.subset.PixelSubsetRegion;
-import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.junit.Test;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.awt.*;
