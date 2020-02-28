@@ -170,6 +170,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                             Band band = buildSubProductBand(defaultProductSize, subProductDefaultGeoCoding, subProductMosaicMatrix, bandsDataType, bandName,
                                                             bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, subsetDef, isMultiSize);
                             band.setScalingFactor(tileComponent.getScalingFactor(bandNames[bandIndex]));
+                            band.setSpectralWavelength(WorldView2Constants.BAND_WAVELENGTH.get(bandName));
                             product.addBand(band);
                         }
                     }

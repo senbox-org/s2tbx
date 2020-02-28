@@ -205,6 +205,7 @@ public class IkonosProductReader extends AbstractProductReader {
                 geoTiffBand.setName(bandName);
                 geoTiffBand.setScalingFactor(bandGain.doubleValue());
                 geoTiffBand.setUnit(IkonosConstants.BAND_MEASURE_UNIT);
+                geoTiffBand.setNoDataValueUsed(true);
 
                 product.addBand(geoTiffBand);
 
