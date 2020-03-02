@@ -75,7 +75,7 @@ public class AlosPRIMetadata extends XmlMetadata {
         } else {
             return componentMetadata.stream()
                     .filter(metadata -> metadata instanceof ImageMetadata)
-                    .map(metadata -> (ImageMetadata) metadata)
+                    .map(metadata -> metadata)
                     .map(ImageMetadata::getRasterWidth)
                     .collect(Collectors.maxBy(Integer::compare))
                     .get();
@@ -90,7 +90,7 @@ public class AlosPRIMetadata extends XmlMetadata {
         } else {
             return componentMetadata.stream()
                     .filter(metadata -> metadata instanceof ImageMetadata)
-                    .map(metadata -> (ImageMetadata) metadata)
+                    .map(metadata -> metadata)
                     .map(ImageMetadata::getRasterHeight)
                     .collect(Collectors.maxBy(Integer::compare))
                     .get();
@@ -150,14 +150,6 @@ public class AlosPRIMetadata extends XmlMetadata {
     @Override
     public String getMetadataProfile() {
         return null;
-    }
-
-    public String getImageDirectoryPath() {
-        return this.imageDirectoryPath;
-    }
-
-    public void setImageDirectoryPath(String imageDirectoryPath) {
-        this.imageDirectoryPath = imageDirectoryPath;
     }
 
     public boolean hasInsertPoint() {

@@ -98,6 +98,9 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                 GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             Product product = new Product(alosAV2Metadata.getProductName(), AlosAV2Constants.FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setDescription(alosAV2Metadata.getProductDescription());

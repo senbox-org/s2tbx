@@ -110,6 +110,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 productDefaultGeoCoding = tileMetadataList.buildProductGeoCoding(null);
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             Product product = new Product(metadata.getProductName(), WorldView2ESAConstants.PRODUCT_TYPE, productBounds.width, productBounds.height, this);
             product.setStartTime(metadata.getProductStartTime());
@@ -137,7 +140,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                     String bandName = bandNames[bandIndex];
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                         Band band = buildBand(defaultProductSize, mosaicMatrix, tileMetadata, bandName, bandIndex, preferredTileSize, productGeoCoding, productDefaultGeoCoding, subsetDef, isMultiSize);
-                        product.addBand(band);
+                        if (band != null) {
+                            product.addBand(band);
+                        }
                     }
                 }
             }
@@ -229,7 +234,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
                                                                             defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiSize);
         }
-
+        if (bandBounds.isEmpty()) {
+            return null; // no intersection
+        }
         int productDataType = tileMetadata.getProductDataType();
         Band band = new Band(bandName, productDataType, bandBounds.width, bandBounds.height);
         band.setSpectralWavelength(WorldView2ESAConstants.BAND_WAVELENGTH.get(band.getName()));
@@ -293,18 +300,18 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         return productDirectory.getFile(zipArchiveFileName).toPath();
     }
 
-    public boolean isMultiSize(TileMetadataList tileMetadataList) {
+    private static boolean isMultiSize(TileMetadataList tileMetadataList) {
         int defaultProductWidth = 0;
         int defaultProductHeight = 0;
         for (TileMetadata tileMetadata : tileMetadataList.getTiles()) {
             if (defaultProductWidth == 0) {
                 defaultProductWidth = tileMetadata.getRasterWidth();
-            }else if (defaultProductWidth != tileMetadata.getRasterWidth()) {
+            } else if (defaultProductWidth != tileMetadata.getRasterWidth()) {
                 return true;
             }
             if (defaultProductHeight == 0) {
                 defaultProductHeight = tileMetadata.getRasterHeight();
-            }else if (defaultProductHeight != tileMetadata.getRasterHeight()) {
+            } else if (defaultProductHeight != tileMetadata.getRasterHeight()) {
                 return true;
             }
         }

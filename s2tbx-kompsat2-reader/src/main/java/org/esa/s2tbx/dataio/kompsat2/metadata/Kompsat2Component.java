@@ -1,7 +1,5 @@
 package org.esa.s2tbx.dataio.kompsat2.metadata;
 
-import java.nio.file.Path;
-
 /**
  * This maps to the corresponding Kompsat2 Component element.
  *
@@ -11,19 +9,16 @@ import java.nio.file.Path;
 public class Kompsat2Component {
 
     private String imageDirectoryName;
-    private Path parentPath;
     private float[][] tiePointGridPoints;
     private String crsCode;
     private String originPos;
 
-    public Kompsat2Component(Path parentPath) {
-        this.setParentPath(parentPath);
+    public Kompsat2Component() {
     }
 
     public String getImageDirectoryName() {
         return imageDirectoryName;
     }
-
 
     public float[][] getTiePointGridPoints() {
         return tiePointGridPoints;
@@ -43,14 +38,6 @@ public class Kompsat2Component {
 
     public void setImageDirectoryName(String imageDirectoryName) {
         this.imageDirectoryName = imageDirectoryName;
-    }
-
-    public Path getParentPath() {
-        return parentPath;
-    }
-
-    public void setParentPath(Path parentPath) {
-        this.parentPath = parentPath;
     }
 
     public String getOriginPos() {

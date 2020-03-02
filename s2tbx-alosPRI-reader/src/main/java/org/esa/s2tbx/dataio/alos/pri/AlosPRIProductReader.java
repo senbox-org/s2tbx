@@ -1,23 +1,16 @@
 package org.esa.s2tbx.dataio.alos.pri;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIConstants;
 import org.esa.s2tbx.dataio.alos.pri.internal.AlosPRIMetadata;
 import org.esa.s2tbx.dataio.alos.pri.internal.ImageMetadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.jai.JAIUtils;
@@ -35,6 +28,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,13 +70,17 @@ public class AlosPRIProductReader extends AbstractProductReader {
             Dimension defaultProductSize = new Dimension(alosPriMetadata.getRasterWidth(), alosPriMetadata.getRasterHeight());
             ProductSubsetDef subsetDef = getSubsetDef();
 
+            boolean isMultisize = alosPriMetadata.isMultiSize();
             GeoCoding productDefaultGeoCoding = null;
             Rectangle productBounds;
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
                 productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
             } else {
                 productDefaultGeoCoding = buildGeoCoding(alosPriMetadata, defaultProductSize, null, null);
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, alosPriMetadata.isMultiSize());
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultisize);
+            }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
             }
 
             Product product = new Product(alosPriMetadata.getProductName(), AlosPRIConstants.FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
@@ -96,7 +94,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
                 product.getMetadataRoot().addElement(alosPriMetadata.getRootElement());
             }
             GeoCoding productGeoCoding = buildGeoCoding(alosPriMetadata, defaultProductSize, productBounds, subsetDef);
-            if(productGeoCoding instanceof TiePointGeoCoding){
+            if (productGeoCoding instanceof TiePointGeoCoding) {
                 product.addTiePointGrid(((TiePointGeoCoding) productGeoCoding).getLatGrid());
                 product.addTiePointGrid(((TiePointGeoCoding) productGeoCoding).getLonGrid());
             }
@@ -104,6 +102,7 @@ public class AlosPRIProductReader extends AbstractProductReader {
 
             this.bandImageReaders = new ArrayList<>(alosPriMetadata.getImageMetadataList().size());
             ProductNodeGroup<Mask> maskGroup = product.getMaskGroup();
+            // each metadata represents a subproduct
             for (ImageMetadata imageMetadata : alosPriMetadata.getImageMetadataList()) {
                 if (subsetDef == null || subsetDef.isNodeAccepted(imageMetadata.getBandName())) {
                     if (imageMetadata.getRasterWidth() > defaultProductSize.width) {
@@ -115,36 +114,23 @@ public class AlosPRIProductReader extends AbstractProductReader {
                     if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                         product.getMetadataRoot().addElement(imageMetadata.getRootElement());
                     }
+                    double noDataValue = imageMetadata.getNoDataValue();
+                    Product geoTiffProduct = readGeoTiffProduct(productDefaultGeoCoding, defaultProductSize, imagesMetadataParentPath, alosPriMetadata,
+                                                                imageMetadata, subsetDef, isMultisize, noDataValue);
+                    if (geoTiffProduct != null) {
+                        Band geoTiffBand = geoTiffProduct.getBandAt(0);
+                        geoTiffBand.setName(imageMetadata.getBandName());
+                        geoTiffBand.setUnit(imageMetadata.getBandUnit());
+                        geoTiffBand.setDescription(imageMetadata.getBandDescription());
+                        geoTiffBand.setScalingFactor(imageMetadata.getGain());
+                        geoTiffBand.setNoDataValue(noDataValue);
+                        geoTiffBand.setNoDataValueUsed(true);
 
-                    GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, imageMetadata.getImageRelativeFilePath());
-                    this.bandImageReaders.add(geoTiffImageReader);
+                        product.addBand(geoTiffBand);
 
-                    Dimension defaultBandSize = geoTiffImageReader.validateSize(imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight());
-
-                    Rectangle bandBounds;
-                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
-                        bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
-                    } else {
-                        GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
-                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
-                                                                                        defaultProductSize.height, defaultBandSize.width, defaultBandSize.height, alosPriMetadata.isMultiSize());
+                        // remove the bands from the geo tif product
+                        geoTiffProduct.getBandGroup().removeAll();
                     }
-
-                    AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultProductSize, bandBounds);
-                    Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
-
-                    Band geoTiffBand = geoTiffProduct.getBandAt(0);
-                    geoTiffBand.setName(imageMetadata.getBandName());
-                    geoTiffBand.setUnit(imageMetadata.getBandUnit());
-                    geoTiffBand.setDescription(imageMetadata.getBandDescription());
-                    geoTiffBand.setScalingFactor(imageMetadata.getGain());
-                    geoTiffBand.setNoDataValue(imageMetadata.getNoDataValue());
-                    geoTiffBand.setNoDataValueUsed(true);
-
-                    product.addBand(geoTiffBand);
-
-                    // remove the bands from the geo tif product
-                    geoTiffProduct.getBandGroup().removeAll();
                 }
 
                 if (subsetDef == null || subsetDef.isNodeAccepted(AlosPRIConstants.NODATA)) {
@@ -223,6 +209,42 @@ public class AlosPRIProductReader extends AbstractProductReader {
         System.gc();
     }
 
+    private Product readGeoTiffProduct(GeoCoding productDefaultGeoCoding, Dimension defaultProductSize, Path imagesMetadataParentPath,
+                                       AlosPRIMetadata alosPriMetadata, ImageMetadata imageMetadata, ProductSubsetDef subsetDef,
+                                       boolean isMultisize, double noDataValue) throws Exception {
+
+        boolean success = false;
+        GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, imageMetadata.getImageRelativeFilePath());
+        try {
+            Dimension defaultSubProductSize = geoTiffImageReader.validateSize(imageMetadata.getRasterWidth(), imageMetadata.getRasterHeight());
+            Rectangle subProductBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                subProductBounds = new Rectangle(defaultSubProductSize.width, defaultSubProductSize.height);
+            } else {
+                GeoCoding subProductDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                // use the default product size to compute the band of a subproduct because the subset region
+                // is set according to the default product size
+                subProductBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, subProductDefaultGeoCoding, defaultProductSize.width,
+                                                                               defaultProductSize.height, defaultSubProductSize.width, defaultSubProductSize.height, isMultisize);
+            }
+            if (subProductBounds.isEmpty()) {
+                return null; // no intersection
+            }
+            AlosPRIGeoTiffProductReader geoTiffProductReader = new AlosPRIGeoTiffProductReader(getReaderPlugIn(), alosPriMetadata, imageMetadata, defaultSubProductSize, subProductBounds);
+            Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, subProductBounds, noDataValue);
+
+            success = true;
+
+            return geoTiffProduct;
+        } finally {
+            if (success) {
+                this.bandImageReaders.add(geoTiffImageReader);
+            } else {
+                geoTiffImageReader.close();
+            }
+        }
+    }
+
     private static Mask buildSaturatedMask(int productWith, int productHeight, int saturatedValue) {
         return Mask.BandMathsType.create(AlosPRIConstants.SATURATED, AlosPRIConstants.SATURATED, productWith, productHeight, String.valueOf(saturatedValue), Color.ORANGE, 0.5);
     }
@@ -232,12 +254,9 @@ public class AlosPRIProductReader extends AbstractProductReader {
     }
 
     public static AlosPRIMetadata readMetadata(VirtualDirEx productDirectory, String metadataRelativeFilePath, Path imagesMetadataParentPath)
-            throws IOException, SAXException, ParserConfigurationException, InstantiationException {
+                                               throws IOException, SAXException, ParserConfigurationException, InstantiationException {
 
-        AlosPRIMetadata alosPriMetadata;
-        try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(metadataRelativeFilePath)) {
-            alosPriMetadata = BaseProductReaderPlugIn.loadMetadata(AlosPRIMetadata.class, filePathInputStream);
-        }
+        AlosPRIMetadata alosPriMetadata = MultipleMetadataGeoTiffBasedReader.readProductMetadata(productDirectory, metadataRelativeFilePath, AlosPRIMetadata.class);
         List<ImageMetadata> imageMetadataList = readImagesMetadata(imagesMetadataParentPath);
         if (imageMetadataList.isEmpty()) {
             throw new IllegalStateException("No raster found.");
@@ -278,16 +297,14 @@ public class AlosPRIProductReader extends AbstractProductReader {
             List<ImageMetadata> componentMetadata = new ArrayList<>();
             for (String relativeFilePath : allFileNames) {
                 if (relativeFilePath.endsWith(AlosPRIConstants.IMAGE_METADATA_EXTENSION)) {
-                    try (FilePathInputStream filePathInputStream = zipArchiveProductDirectory.getInputStream(relativeFilePath)) {
-                        ImageMetadata imageMetadata = BaseProductReaderPlugIn.loadMetadata(ImageMetadata.class, filePathInputStream);
-                        int extensionIndex = relativeFilePath.lastIndexOf(AlosPRIConstants.IMAGE_METADATA_EXTENSION);
-                        String gtifImageRelativeFilePath = relativeFilePath.substring(0, extensionIndex) + AlosPRIConstants.IMAGE_EXTENSION;
-                        if (!zipArchiveProductDirectory.exists(gtifImageRelativeFilePath)) {
-                            throw new FileNotFoundException("The GTIF image file path '" + gtifImageRelativeFilePath + "' does not exists into the product directory '" + zipArchiveProductDirectory.getBasePath() + "'.");
-                        }
-                        imageMetadata.setImageRelativeFilePath(gtifImageRelativeFilePath);
-                        componentMetadata.add(imageMetadata);
+                    ImageMetadata imageMetadata = MultipleMetadataGeoTiffBasedReader.readProductMetadata(zipArchiveProductDirectory, relativeFilePath, ImageMetadata.class);
+                    int extensionIndex = relativeFilePath.lastIndexOf(AlosPRIConstants.IMAGE_METADATA_EXTENSION);
+                    String gtifImageRelativeFilePath = relativeFilePath.substring(0, extensionIndex) + AlosPRIConstants.IMAGE_EXTENSION;
+                    if (!zipArchiveProductDirectory.exists(gtifImageRelativeFilePath)) {
+                        throw new FileNotFoundException("The GTIF image file path '" + gtifImageRelativeFilePath + "' does not exists into the product directory '" + zipArchiveProductDirectory.getBasePath() + "'.");
                     }
+                    imageMetadata.setImageRelativeFilePath(gtifImageRelativeFilePath);
+                    componentMetadata.add(imageMetadata);
                 }
             }
             return componentMetadata;
@@ -305,12 +322,13 @@ public class AlosPRIProductReader extends AbstractProductReader {
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    public static GeoCoding buildGeoCoding(AlosPRIMetadata alosPriMetadata, Dimension defaultProductSize, Rectangle subsetBounds, ProductSubsetDef subsetDef) throws FactoryException, TransformException {
+    public static GeoCoding buildGeoCoding(AlosPRIMetadata alosPriMetadata, Dimension defaultProductSize, Rectangle subsetBounds, ProductSubsetDef subsetDef)
+                                           throws FactoryException, TransformException {
+
         if (alosPriMetadata.hasInsertPoint()) {
             CoordinateReferenceSystem mapCRS = CRS.decode(alosPriMetadata.getCrsCode());
             ImageMetadata.InsertionPoint origin = alosPriMetadata.getProductOrigin();
             return ImageUtils.buildCrsGeoCoding(origin.x, origin.y, origin.stepX, origin.stepY, defaultProductSize.width, defaultProductSize.height, mapCRS, subsetBounds);
-
         } else {
             return buildTiePointGridGeoCoding(alosPriMetadata, defaultProductSize.width, defaultProductSize.height, subsetDef);
         }

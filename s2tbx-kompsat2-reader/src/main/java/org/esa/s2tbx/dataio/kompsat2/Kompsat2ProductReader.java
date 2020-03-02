@@ -9,15 +9,11 @@ import org.esa.s2tbx.dataio.kompsat2.metadata.BandMetadataUtil;
 import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Component;
 import org.esa.s2tbx.dataio.kompsat2.metadata.Kompsat2Metadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
@@ -357,30 +353,26 @@ public class Kompsat2ProductReader extends AbstractProductReader {
     public static Kompsat2Metadata readProductMetadata(VirtualDirEx productDirectory, String metadataRelativeFilePath)
                                                        throws IOException, SAXException, ParserConfigurationException, InstantiationException {
 
-        try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(metadataRelativeFilePath)) {
-            Kompsat2Metadata metadata = BaseProductReaderPlugIn.loadMetadata(Kompsat2Metadata.class, filePathInputStream);
-            metadata.setPath(filePathInputStream.getPath());
-            metadata.setFileName(filePathInputStream.getPath().getFileName().toString());
-            String directoryName = metadata.getAttributeValue(Kompsat2Constants.PATH_ZIP_FILE_NAME, null);
-            String tiePointGridPointsString = metadata.getAttributeValue(Kompsat2Constants.PATH_TIE_POINT_GRID, null);
-            String crsCode = metadata.getAttributeValue(Kompsat2Constants.PATH_CRS_NAME, null);
-            String originPos = metadata.getAttributeValue(Kompsat2Constants.PATH_ORIGIN, null);
-            if (directoryName != null) {
-                Kompsat2Component component = new Kompsat2Component(filePathInputStream.getPath().getParent());
-                component.setImageDirectoryName(directoryName);
-                if (tiePointGridPointsString != null) {
-                    component.setTiePointGridPoints(Kompsat2Metadata.parseTiePointGridAttribute(tiePointGridPointsString));
-                }
-                if (crsCode != null) {
-                    component.setCrsCode(crsCode);
-                }
-                if (originPos != null) {
-                    component.setOriginPos(originPos);
-                }
-                metadata.setMetadataComponent(component);
+        Kompsat2Metadata metadata = MultipleMetadataGeoTiffBasedReader.readProductMetadata(productDirectory, metadataRelativeFilePath, Kompsat2Metadata.class);
+        String directoryName = metadata.getAttributeValue(Kompsat2Constants.PATH_ZIP_FILE_NAME, null);
+        String tiePointGridPointsString = metadata.getAttributeValue(Kompsat2Constants.PATH_TIE_POINT_GRID, null);
+        String crsCode = metadata.getAttributeValue(Kompsat2Constants.PATH_CRS_NAME, null);
+        String originPos = metadata.getAttributeValue(Kompsat2Constants.PATH_ORIGIN, null);
+        if (directoryName != null) {
+            Kompsat2Component component = new Kompsat2Component();
+            component.setImageDirectoryName(directoryName);
+            if (tiePointGridPointsString != null) {
+                component.setTiePointGridPoints(Kompsat2Metadata.parseTiePointGridAttribute(tiePointGridPointsString));
             }
-            return metadata;
+            if (crsCode != null) {
+                component.setCrsCode(crsCode);
+            }
+            if (originPos != null) {
+                component.setOriginPos(originPos);
+            }
+            metadata.setMetadataComponent(component);
         }
+        return metadata;
     }
 
     public static TiePointGeoCoding buildTiePointGridGeoCoding(Kompsat2Metadata k2Metadata, int defaultRasterWidth, int defaultRasterHeight, ProductSubsetDef subsetDef) {

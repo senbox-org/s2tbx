@@ -102,6 +102,9 @@ class WorldView2ProductReader extends AbstractProductReader {
                 productDefaultGeoCoding = metadata.buildProductGeoCoding(null);
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             String productName = metadata.getOrderNumber();
             if (StringUtils.isBlank(productName)) {
@@ -136,42 +139,53 @@ class WorldView2ProductReader extends AbstractProductReader {
                 }
 
                 TileMetadataList subProductTileMetadataList = entry.getValue();
-                List<TileMetadata> subProductTiles = subProductTileMetadataList.getTiles();
 
                 Dimension defaultSubProductSize = subProductTileMetadataList.computeDefaultProductSize();
                 if (defaultSubProductSize == null) {
                     throw new NullPointerException("The subproduct default size is null.");
                 }
+
                 GeoCoding subProductDefaultGeoCoding = null;
                 GeoCoding subProductGeoCoding = null;
+                boolean canContinue = true;
                 if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    // do nothing
                 } else {
                     subProductDefaultGeoCoding = subProductTileMetadataList.buildProductGeoCoding(null);
                     Rectangle subProductBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, subProductDefaultGeoCoding,
-                                                    defaultProductSize.width, defaultProductSize.height, defaultSubProductSize.width, defaultSubProductSize.height, isMultiSize);
+                                                          defaultProductSize.width, defaultProductSize.height, defaultSubProductSize.width, defaultSubProductSize.height, isMultiSize);
+                    if (subProductBounds.isEmpty()) {
+                        canContinue = false; // no intersection
+                    }
                     subProductGeoCoding = subProductTileMetadataList.buildProductGeoCoding(subProductBounds);
                 }
-
-
-                int bandsDataType = subProductTileMetadataList.getBandsDataType();
-                Set<String> tiffImageRelativeFiles = subProductTileMetadataList.getTiffImageRelativeFiles();
-                for (TileMetadata tileMetadata : subProductTiles) {
-                    if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
-                        product.getMetadataRoot().addElement(tileMetadata.getRootElement());
-                    }
-                    MosaicMatrix subProductMosaicMatrix = buildMosaicMatrix(tileMetadata, parentFolderPath, tiffImageRelativeFiles);
-                    TileComponent tileComponent = tileMetadata.getTileComponent();
-                    String[] bandNames = subProductTileMetadataList.computeBandNames(tileMetadata);
-                    for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
-                        String bandName = bandPrefix + bandNames[bandIndex];
-                        if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                            // use the default product size to compute the band of a subproduct because the subset region
-                            // is set according to the default product size
-                            Band band = buildSubProductBand(defaultProductSize, subProductDefaultGeoCoding, subProductMosaicMatrix, bandsDataType, bandName,
-                                                            bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, subsetDef, isMultiSize);
-                            band.setScalingFactor(tileComponent.getScalingFactor(bandNames[bandIndex]));
-                            band.setSpectralWavelength(WorldView2Constants.BAND_WAVELENGTH.get(bandName));
-                            product.addBand(band);
+                if (canContinue) {
+                    int bandsDataType = subProductTileMetadataList.getBandsDataType();
+                    Set<String> tiffImageRelativeFiles = subProductTileMetadataList.getTiffImageRelativeFiles();
+                    List<TileMetadata> subProductTiles = subProductTileMetadataList.getTiles();
+                    for (TileMetadata tileMetadata : subProductTiles) {
+                        if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                            product.getMetadataRoot().addElement(tileMetadata.getRootElement());
+                        }
+                        MosaicMatrix subProductMosaicMatrix = buildMosaicMatrix(tileMetadata, parentFolderPath, tiffImageRelativeFiles);
+                        TileComponent tileComponent = tileMetadata.getTileComponent();
+                        String[] bandNames = subProductTileMetadataList.computeBandNames(tileMetadata);
+                        for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
+                            String bandName = bandPrefix + bandNames[bandIndex];
+                            if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
+                                // use the default product size to compute the band of a subproduct because the subset region
+                                // is set according to the default product size
+                                Band band = buildSubProductBand(defaultProductSize, subProductDefaultGeoCoding, subProductMosaicMatrix, bandsDataType, bandName,
+                                                                bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, subsetDef, isMultiSize);
+                                if (band != null) {
+                                    band.setScalingFactor(tileComponent.getScalingFactor(bandNames[bandIndex]));
+                                    Integer spectralWavelength = WorldView2Constants.BAND_WAVELENGTH.get(bandName);
+                                    if (spectralWavelength != null) {
+                                        band.setSpectralWavelength(spectralWavelength.floatValue());
+                                    }
+                                    product.addBand(band);
+                                }
+                            }
                         }
                     }
                 }
@@ -269,7 +283,9 @@ class WorldView2ProductReader extends AbstractProductReader {
             GeoCoding bandDefaultGeoCoding = tileMetadata.buildBandGeoCoding(null);
             bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(subProductDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiSize);
         }
-
+        if (bandBounds.isEmpty()) {
+            return null; // no intersection
+        }
         GeoCoding bandGeoCoding = tileMetadata.buildBandGeoCoding(bandBounds);
         if (bandGeoCoding == null) {
             bandGeoCoding = subProductGeoCoding;

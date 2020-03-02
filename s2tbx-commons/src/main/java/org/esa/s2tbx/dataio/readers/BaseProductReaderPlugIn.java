@@ -17,12 +17,8 @@
 
 package org.esa.s2tbx.dataio.readers;
 
-import com.bc.ceres.core.Assert;
-import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.metadata.GenericXmlMetadata;
-import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -30,24 +26,13 @@ import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.engine_utilities.file.FileHelper;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -269,17 +254,5 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             }
             return shouldAccept;
         }
-    }
-
-    public static <T extends GenericXmlMetadata> T loadMetadata(Class<T> clazz, FilePathInputStream filePathInputStream)
-                                                                throws InstantiationException, IOException, SAXException, ParserConfigurationException {
-
-        T result = (T) XmlMetadataParserFactory.getParser(clazz).parse(filePathInputStream);
-        result.setPath(filePathInputStream.getPath());
-        String metadataProfile = result.getMetadataProfile();
-        if (metadataProfile != null) {
-            result.setName(metadataProfile);
-        }
-        return result;
     }
 }
