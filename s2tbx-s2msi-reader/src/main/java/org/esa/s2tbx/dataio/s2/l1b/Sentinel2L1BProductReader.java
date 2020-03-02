@@ -158,6 +158,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 GeoCoding productDefaultGeoCoding = null; //this product has no geoCoding
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiResolution());
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             product = new Product(defaultProductName, productType, productBounds.width, productBounds.height);
             product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
@@ -261,14 +264,16 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
                                                                                         defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution());
                     }
+                    if (!bandBounds.isEmpty()) {
+                        // there is an intersection
+                        Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height);
+                        band.setDescription(tileBandInfo.getBandInformation().getDescription());
 
-                    Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height);
-                    band.setDescription(tileBandInfo.getBandInformation().getDescription());
+                        BandL1bSceneMultiLevelSource multiLevelSource = new BandL1bSceneMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
+                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
-                    BandL1bSceneMultiLevelSource multiLevelSource = new BandL1bSceneMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
-                    band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
-
-                    product.addBand(band);
+                        product.addBand(band);
+                    }
                 }
             }
         }
@@ -289,7 +294,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 if (isMultiResolution() || bandInfo.getBandInformation().getResolution() == productResolution) {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandInfo.getBandInformation().getPhysicalBand())) {
                         Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, productTileLayout, product.getPreferredTileSize(), isMultiResolution());
-                        product.addBand(band);
+                        if (band != null) {
+                            product.addBand(band);
+                        }
                     }
                 }
             }
@@ -315,22 +322,24 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
                                                                                         defaultProductSize.height, defaultMaskWidth, defaultMaskHeight, isMultiResolution());
                     }
+                    if (!bandBounds.isEmpty()) {
+                        // there is an intersection
+                        Iterator<Color> colorIterator = indexBandInformation.getColors().iterator();
 
-                    Iterator<Color> colorIterator = indexBandInformation.getColors().iterator();
-
-                    for (String indexName : indexCoding.getIndexNames()) {
-                        String maskName = indexBandInformation.getPrefix() + indexName.toLowerCase();
-                        if (subsetDef == null || (subsetDef.isNodeAccepted(maskName) && subsetDef.isNodeAccepted(indexBandInformation.getPhysicalBand()))) {
-                            int indexValue = indexCoding.getIndexValue(indexName);
-                            String description = indexCoding.getIndex(indexName).getDescription();
-                            if (!colorIterator.hasNext()) {
-                                // we should never be here : programming error.
-                                throw new IllegalStateException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding."));
+                        for (String indexName : indexCoding.getIndexNames()) {
+                            String maskName = indexBandInformation.getPrefix() + indexName.toLowerCase();
+                            if (subsetDef == null || (subsetDef.isNodeAccepted(maskName) && subsetDef.isNodeAccepted(indexBandInformation.getPhysicalBand()))) {
+                                int indexValue = indexCoding.getIndexValue(indexName);
+                                String description = indexCoding.getIndex(indexName).getDescription();
+                                if (!colorIterator.hasNext()) {
+                                    // we should never be here : programming error.
+                                    throw new IllegalStateException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding."));
+                                }
+                                Color color = colorIterator.next();
+                                String expression = String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue);
+                                Mask mask = Mask.BandMathsType.create(maskName, description, bandBounds.width, bandBounds.height, expression, color, 0.5d);
+                                product.addMask(mask);
                             }
-                            Color color = colorIterator.next();
-                            String expression = String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue);
-                            Mask mask = Mask.BandMathsType.create(maskName, description, bandBounds.width, bandBounds.height, expression, color, 0.5d);
-                            product.addMask(mask);
                         }
                     }
                 }
@@ -386,7 +395,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
                                                                             defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiResolution);
         }
-
+        if (bandBounds.isEmpty()) {
+            return null; // no intersection
+        }
         S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInfo.getBandInformation();
 
         Band band = new Band(indexBandInfo.getPhysicalBand(), ProductData.TYPE_INT16, bandBounds.width, bandBounds.height);

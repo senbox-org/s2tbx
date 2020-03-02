@@ -164,9 +164,13 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 String key = sortedKeys.get(sortedKeys.size() - 1);
                 String tiffFile = imageMetadata.getMetaSubFolder() + tiffFiles.get(key);
                 File rasterFile = this.productDirectory.getFile(tiffFile);
-                GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
-                productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
+                try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath())) {
+                    productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
+                    productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
+                }
+            }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
             }
 
             Product product = new Product(imageMetadata.getProductName(), SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0], productBounds.width, productBounds.height, this);
@@ -190,29 +194,31 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 String tiffFile = imageMetadata.getMetaSubFolder() + tiffFiles.get(key);
                 String bandNamePrefix = key + "_";
                 Product geoTiffProduct = readGeoTiffProduct(tiffFile, defaultProductSize, productDefaultGeoCoding, subsetDef, isMultiSize);
-                if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
-                    if (geoTiffProduct.getMetadataRoot() != null) {
-                        XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
-                    }
-                }
-                geoTiffProduct.transferGeoCodingTo(product, null);
-                for (int bandIndex = 0; bandIndex < geoTiffProduct.getNumBands(); bandIndex++) {
-                    String bandName = (bandIndex < bandNames.length) ? bandNames[bandIndex] : (SpotConstants.DEFAULT_BAND_NAME_PREFIX + bandIndex);
-                    if (product.getBand(bandName) != null) {
-                        bandName = bandNamePrefix + bandName; // the product contains already the band
-                    }
-                    if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                        Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
-                        geoTiffBand.setName(bandName);
-                        geoTiffBand.setDescription(bandName);
-                        if(geoTiffBand.getUnit() == null){
-                            geoTiffBand.setUnit(SpotConstants.VALUE_NOT_AVAILABLE);
+                if (geoTiffProduct != null) {
+                    if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                        if (geoTiffProduct.getMetadataRoot() != null) {
+                            XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
                         }
-                        geoTiffBand.setNoDataValueUsed(true);
-                        product.addBand(geoTiffBand);
                     }
+                    geoTiffProduct.transferGeoCodingTo(product, null);
+                    for (int bandIndex = 0; bandIndex < geoTiffProduct.getNumBands(); bandIndex++) {
+                        String bandName = (bandIndex < bandNames.length) ? bandNames[bandIndex] : (SpotConstants.DEFAULT_BAND_NAME_PREFIX + bandIndex);
+                        if (product.getBand(bandName) != null) {
+                            bandName = bandNamePrefix + bandName; // the product contains already the band
+                        }
+                        if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
+                            Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
+                            geoTiffBand.setName(bandName);
+                            geoTiffBand.setDescription(bandName);
+                            if (geoTiffBand.getUnit() == null) {
+                                geoTiffBand.setUnit(SpotConstants.VALUE_NOT_AVAILABLE);
+                            }
+                            geoTiffBand.setNoDataValueUsed(true);
+                            product.addBand(geoTiffBand);
+                        }
+                    }
+                    geoTiffProduct.getBandGroup().removeAll(); // remove the bands from the geo tif product
                 }
-                geoTiffProduct.getBandGroup().removeAll(); // remove the bands from the geo tif product
             }
 
             // for each mask found in the metadata, the first band of the mask is added to the product, in order to create the masks
@@ -222,16 +228,18 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                     String tiffFile = imageMetadata.getMetaSubFolder() + entry.getValue();
                     Product geoTiffProduct = readGeoTiffProduct(tiffFile, defaultProductSize, productDefaultGeoCoding, subsetDef, isMultiSize);
-                    Band geoTiffBand = geoTiffProduct.getBandAt(0);
-                    geoTiffBand.setName(bandName);
-                    geoTiffBand.setDescription(bandName);
-                    if(geoTiffBand.getUnit() == null){
-                        geoTiffBand.setUnit(SpotConstants.VALUE_NOT_AVAILABLE);
+                    if (geoTiffProduct != null) {
+                        Band geoTiffBand = geoTiffProduct.getBandAt(0);
+                        geoTiffBand.setName(bandName);
+                        geoTiffBand.setDescription(bandName);
+                        if (geoTiffBand.getUnit() == null) {
+                            geoTiffBand.setUnit(SpotConstants.VALUE_NOT_AVAILABLE);
+                        }
+                        geoTiffBand.setNoDataValueUsed(true);
+                        product.addBand(geoTiffBand);
+                        maskBands.put(entry.getKey(), geoTiffBand);
+                        geoTiffProduct.getBandGroup().removeAll(); // remove the bands from the geo tif product
                     }
-                    geoTiffBand.setNoDataValueUsed(true);
-                    product.addBand(geoTiffBand);
-                    maskBands.put(entry.getKey(), geoTiffBand);
-                    geoTiffProduct.getBandGroup().removeAll(); // remove the bands from the geo tif product
                 }
             }
 
@@ -330,7 +338,9 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
             bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiSize);
         }
-
+        if (bandBounds.isEmpty()) {
+            return null; // no intersection
+        }
         GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
         return geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
     }

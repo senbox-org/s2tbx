@@ -150,6 +150,9 @@ public class PleiadesProductReader extends AbstractProductReader {
                 productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, metadata, null, null);
                 productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productDefaultWidth, productDefaultHeight, isMultiSize);
             }
+            if (productSubsetRegion.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), productSubsetRegion.width, productSubsetRegion.height);
             product.setFileLocation(this.metadata.getPath().toFile());
@@ -189,6 +192,9 @@ public class PleiadesProductReader extends AbstractProductReader {
                 } else {
                     GeoCoding bandDefaultGeoCoding = initBandGeoCoding(imageMetadata, bandWidth, bandHeight, productDefaultWidth, null, null);
                     bandSubsetRegion = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, productDefaultWidth, productDefaultHeight, bandWidth, bandHeight, isMultiSize);
+                }
+                if (bandSubsetRegion.isEmpty()) {
+                    continue; // no intersection
                 }
 
                 int subsetTileCols = tileCols;

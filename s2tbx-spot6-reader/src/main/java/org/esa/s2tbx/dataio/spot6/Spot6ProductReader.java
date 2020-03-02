@@ -135,6 +135,9 @@ public class Spot6ProductReader extends AbstractProductReader {
                 productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductSize, null, null);
                 productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, isMultiSize);
             }
+            if (productSubsetRegion.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             product = new Product(metadata.getInternalReference(),
                                   metadata.getProductType(),
@@ -179,6 +182,9 @@ public class Spot6ProductReader extends AbstractProductReader {
                     GeoCoding bandDefaultGeoCoding = initBandGeoCoding(imageMetadata, bandWidth, bandHeight, defaultProductWidth, null, null);
                     bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
                                                                                     defaultProductSize.height, defaultBandSize.width, defaultBandSize.height, isMultiSize);
+                }
+                if (bandBounds.isEmpty()) {
+                    continue; // no intersection
                 }
                 ProductSubsetDef bandSubsetDef = null;
 

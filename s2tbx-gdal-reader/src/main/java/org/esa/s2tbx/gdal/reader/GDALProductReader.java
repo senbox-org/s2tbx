@@ -119,6 +119,9 @@ public class GDALProductReader extends AbstractProductReader {
                     productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, false);
                 }
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
             if ((productBounds.x + productBounds.width) > defaultProductWidth) {
                 throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.x="+productBounds.x+", productBounds.width="+productBounds.width+", default product width=" + defaultProductWidth);
             }
@@ -217,14 +220,16 @@ public class GDALProductReader extends AbstractProductReader {
                         productBand.setUnit(unitType);
                     }
 
+                    Double noDataValue = null;
                     Double[] noData = new Double[1];
                     gdalBand.GetNoDataValue(noData);
                     if (noData[0] != null) {
-                        productBand.setNoDataValue(noData[0]);
+                        noDataValue = noData[0].doubleValue();
+                        productBand.setNoDataValue(noData[0].doubleValue());
                         productBand.setNoDataValueUsed(true);
                     }
 
-                    GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, productBounds, tileSize, bandIndex, levelCount, geoCoding);
+                    GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, productBounds, tileSize, bandIndex, levelCount, geoCoding, noDataValue);
                     productBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
                     if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {

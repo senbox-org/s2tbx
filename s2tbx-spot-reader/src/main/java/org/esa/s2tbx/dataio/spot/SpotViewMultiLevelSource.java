@@ -17,9 +17,10 @@ public class SpotViewMultiLevelSource extends AbstractMosaicSubsetMultiLevelSour
     private final int dataBufferType;
     private final int bandIndex;
     private final int bandCount;
+    private final Double noDataValue;
 
     public SpotViewMultiLevelSource(SpotViewImageReader spotViewImageReader, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize,
-                                    int bandIndex, int bandCount, GeoCoding geoCoding) {
+                                    int bandIndex, int bandCount, GeoCoding geoCoding, Double noDataValue) {
 
         super(imageReadBounds, tileSize, geoCoding);
 
@@ -27,6 +28,7 @@ public class SpotViewMultiLevelSource extends AbstractMosaicSubsetMultiLevelSour
         this.dataBufferType = dataBufferType;
         this.bandIndex = bandIndex;
         this.bandCount = bandCount;
+        this.noDataValue = noDataValue;
     }
 
     @Override
@@ -41,5 +43,13 @@ public class SpotViewMultiLevelSource extends AbstractMosaicSubsetMultiLevelSour
             return buildMosaicOp(level, tileImages, false);
         }
         return null;
+    }
+
+    @Override
+    protected double[] getMosaicOpBackgroundValues() {
+        if (this.noDataValue == null) {
+            return super.getMosaicOpBackgroundValues();
+        }
+        return new double[] { this.noDataValue.doubleValue() };
     }
 }

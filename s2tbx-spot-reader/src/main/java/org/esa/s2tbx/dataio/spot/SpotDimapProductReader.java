@@ -144,6 +144,9 @@ public class SpotDimapProductReader extends AbstractProductReader {
             GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0), null);
             productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize());
         }
+        if (productBounds.isEmpty()) {
+            throw new IllegalStateException("Empty product bounds.");
+        }
 
         java.util.List<SpotDimapMetadata> componentMetadataList = wrappingMetadata.getComponentsMetadata();
         SpotDimapMetadata firstDimapMetadata = componentMetadataList.get(0);
@@ -161,7 +164,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
         product.setFileLocation(productPath.toFile());
 
         for (int i=0; i<this.bandImageReaders.size(); i++) {
-            GeoCoding geoCoding = GeoTiffImageReader.buildGeoCoding(bandImageReaders.get(i).getImageMetadata(), defaultProductSize.width, defaultProductSize.height, productBounds);
+            GeoCoding geoCoding = GeoTiffImageReader.buildGeoCoding(this.bandImageReaders.get(i).getImageMetadata(), defaultProductSize.width, defaultProductSize.height, productBounds);
             if (geoCoding != null) {
                 product.setSceneGeoCoding(geoCoding);
                 break;
@@ -186,15 +189,20 @@ public class SpotDimapProductReader extends AbstractProductReader {
             if (subsetDef == null || subsetDef.isNodeAccepted(bandNames[bandIndex])) {
                 Band band = new Band(bandNames[bandIndex], firstDimapMetadata.getPixelDataType(), productBounds.width, productBounds.height);
                 band.setGeoCoding(bandGeoCoding);
-                if (firstDimapMetadata.getNoDataValue() > -1) {
-                    band.setNoDataValue(firstDimapMetadata.getNoDataValue());
+                int noDataValueAsInt = firstDimapMetadata.getNoDataValue();
+                Double noDataValue = null;
+                if (noDataValueAsInt > -1) {
+                    noDataValue = (double)noDataValueAsInt;
+                    band.setNoDataValue(noDataValueAsInt);
+                    band.setNoDataValueUsed(true);
                 }
-                band.setNoDataValueUsed((firstDimapMetadata.getNoDataValue() > -1));
-                if (firstDimapMetadata.getWavelength(bandIndex) > 0) {
-                    band.setSpectralWavelength(firstDimapMetadata.getWavelength(bandIndex));
+                float waveLength = firstDimapMetadata.getWavelength(bandIndex);
+                if (waveLength > 0) {
+                    band.setSpectralWavelength(waveLength);
                 }
-                if (firstDimapMetadata.getBandwidth(bandIndex) > 0) {
-                    band.setSpectralBandwidth(firstDimapMetadata.getBandwidth(bandIndex));
+                float bandWidth = firstDimapMetadata.getBandwidth(bandIndex);
+                if (bandWidth > 0) {
+                    band.setSpectralBandwidth(bandWidth);
                 }
                 if (bandIndex < bandUnits.length) {
                     band.setUnit(bandUnits[bandIndex]);
@@ -202,7 +210,8 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 band.setSpectralBandIndex(bandIndex + 1);
                 band.setDescription(bandNames[bandIndex]);
 
-                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds, preferredTileSize, bandIndex, band.getGeoCoding());
+                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds, preferredTileSize,
+                                                                                                bandIndex, band.getGeoCoding(), noDataValue);
                 band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
                 product.addBand(band);
             }
@@ -293,6 +302,12 @@ public class SpotDimapProductReader extends AbstractProductReader {
             GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath(), null);
             productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize());
         }
+        if (productBounds.isEmpty()) {
+            throw new IllegalStateException("Empty product bounds.");
+        }
+
+        int noDataValueAsInt = dimapMetadata.getNoDataValue();
+        Double noDataValue = (noDataValueAsInt >= 0) ? (double)noDataValueAsInt : null;
 
         String productName = (StringUtils.isNullOrEmpty(dimapMetadata.getProductName())) ? SpotConstants.DEFAULT_PRODUCT_NAME : dimapMetadata.getProductName();
         Product product = new Product(productName, productType, productBounds.width, productBounds.height, this);
@@ -310,11 +325,11 @@ public class SpotDimapProductReader extends AbstractProductReader {
         product.setDescription(dimapMetadata.getProductDescription());
         product.setFileLocation(productPath.toFile());
 
-
         // validate the image size according to the product size
         geoTiffImageReader.validateSize(defaultProductSize.width, defaultProductSize.height);
+
         GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
-        Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, productBounds);
+        Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, productBounds, noDataValue);
         geoTiffProduct.transferGeoCodingTo(product, null);
 
         if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
@@ -331,10 +346,10 @@ public class SpotDimapProductReader extends AbstractProductReader {
             if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                 Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
                 geoTiffBand.setName(bandName);
-                if (dimapMetadata.getNoDataValue() > -1) {
-                    geoTiffBand.setNoDataValue(dimapMetadata.getNoDataValue());
+                if (noDataValueAsInt >= 0) {
+                    geoTiffBand.setNoDataValue(noDataValueAsInt);
+                    geoTiffBand.setNoDataValueUsed(true);
                 }
-                geoTiffBand.setNoDataValueUsed((dimapMetadata.getNoDataValue() > -1));
                 if (dimapMetadata.getWavelength(bandIndex) > 0) {
                     geoTiffBand.setSpectralWavelength(dimapMetadata.getWavelength(bandIndex));
                 }
@@ -350,9 +365,8 @@ public class SpotDimapProductReader extends AbstractProductReader {
         }
 
         // add masks
-        int noDataValue = dimapMetadata.getNoDataValue();
-        if ((subsetDef == null || subsetDef.isNodeAccepted(SpotConstants.NODATA_VALUE)) && noDataValue >= 0) {
-            product.getMaskGroup().add(buildNoDataMask(product.getSceneRasterWidth(), product.getSceneRasterHeight(), noDataValue, dimapMetadata.getNoDataColor()));
+        if ((subsetDef == null || subsetDef.isNodeAccepted(SpotConstants.NODATA_VALUE)) && noDataValueAsInt >= 0) {
+            product.getMaskGroup().add(buildNoDataMask(product.getSceneRasterWidth(), product.getSceneRasterHeight(), noDataValueAsInt, dimapMetadata.getNoDataColor()));
         }
         int saturatedValue = dimapMetadata.getSaturatedPixelValue();
         if ((subsetDef == null || subsetDef.isNodeAccepted(SpotConstants.SATURATED_VALUE)) && saturatedValue >= 0) {
@@ -493,16 +507,16 @@ public class SpotDimapProductReader extends AbstractProductReader {
     private boolean isMultiSize() throws IOException {
         int defaultWidth = 0;
         int defaultHeight = 0;
-        for (GeoTiffImageReader imageReader: bandImageReaders) {
-            if(defaultWidth == 0){
+        for (GeoTiffImageReader imageReader : this.bandImageReaders) {
+            if (defaultWidth == 0) {
                 defaultWidth = imageReader.getImageWidth();
-            }else if(defaultWidth != imageReader.getImageWidth()){
+            } else if (defaultWidth != imageReader.getImageWidth()) {
                 return true;
             }
 
-            if(defaultHeight == 0){
+            if (defaultHeight == 0) {
                 defaultHeight = imageReader.getImageHeight();
-            }else if(defaultHeight != imageReader.getImageHeight()){
+            } else if (defaultHeight != imageReader.getImageHeight()) {
                 return true;
             }
         }

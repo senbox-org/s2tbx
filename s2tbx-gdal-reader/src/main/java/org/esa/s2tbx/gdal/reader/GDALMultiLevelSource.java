@@ -19,13 +19,15 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implemen
     private final Path sourceLocalFile;
     private final int dataBufferType;
     private final int bandIndex;
+    private final Double noDataValue;
 
-    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, int bandIndex, int levelCount, GeoCoding geoCoding) {
+    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, int bandIndex, int levelCount, GeoCoding geoCoding, Double noDataValue) {
         super(levelCount, imageReadBounds, tileSize, geoCoding);
 
         this.sourceLocalFile = sourceLocalFile;
         this.dataBufferType = dataBufferType;
         this.bandIndex = bandIndex;
+        this.noDataValue = noDataValue;
     }
 
     @Override
@@ -40,5 +42,13 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implemen
             return buildMosaicOp(level, tileImages,false);
         }
         return null;
+    }
+
+    @Override
+    protected double[] getMosaicOpBackgroundValues() {
+        if (this.noDataValue == null) {
+            return super.getMosaicOpBackgroundValues();
+        }
+        return new double[] { this.noDataValue.doubleValue() };
     }
 }

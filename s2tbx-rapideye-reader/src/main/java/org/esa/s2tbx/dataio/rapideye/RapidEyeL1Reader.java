@@ -127,6 +127,9 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                 GeoCoding productDefaultGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, null);
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, false);
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             Product product = new Product(productName, RapidEyeConstants.L1_FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setProductType(metadata.getMetadataProfile());
@@ -234,7 +237,7 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                     }
                 }
             }
-            if(product != null){
+            if (product != null) {
                 TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, subsetDef);
                 product.addTiePointGrid(productGeoCoding.getLatGrid());
                 product.addTiePointGrid(productGeoCoding.getLonGrid());

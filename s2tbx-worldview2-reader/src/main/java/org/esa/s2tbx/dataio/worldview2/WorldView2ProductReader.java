@@ -156,8 +156,9 @@ class WorldView2ProductReader extends AbstractProductReader {
                                                           defaultProductSize.width, defaultProductSize.height, defaultSubProductSize.width, defaultSubProductSize.height, isMultiSize);
                     if (subProductBounds.isEmpty()) {
                         canContinue = false; // no intersection
+                    } else {
+                        subProductGeoCoding = subProductTileMetadataList.buildProductGeoCoding(subProductBounds);
                     }
-                    subProductGeoCoding = subProductTileMetadataList.buildProductGeoCoding(subProductBounds);
                 }
                 if (canContinue) {
                     int bandsDataType = subProductTileMetadataList.getBandsDataType();
@@ -296,7 +297,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         if (bandGeoCoding != null) {
             band.setGeoCoding(bandGeoCoding);
         }
-        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(subProductMosaicMatrix, bandBounds, preferredTileSize, bandIndex, bandGeoCoding);
+        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(subProductMosaicMatrix, bandBounds, preferredTileSize, bandIndex, bandGeoCoding, null);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
         return band;
     }

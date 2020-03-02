@@ -143,6 +143,9 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                 }
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, isMultiSize);
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             Product product = new Product(productName, getProductType(), productBounds.width, productBounds.height, this);
             product.setFileLocation(productPath.toFile());
@@ -183,39 +186,41 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                     GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
                     bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth, defaultProductHeight, defaultBandWidth, defaultBandHeight, isMultiSize);
                 }
-
-                GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
-                Product getTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
-                if (bandCount != getTiffProduct.getNumBands()) {
-                    throw new IllegalStateException("Different band count: geo tiff image band count=" + bandCount+", geo tif product band count="+getTiffProduct.getNumBands()+".");
-                }
-                if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
-                    product.getMetadataRoot().addElement(currentMetadata.getRootElement());
-                    if (getTiffProduct.getMetadataRoot() != null) {
-                        XmlMetadata.CopyChildElements(getTiffProduct.getMetadataRoot(), product.getMetadataRoot());
+                if (!bandBounds.isEmpty()) {
+                    // there is an intersection
+                    GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn(), null);
+                    Product getTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
+                    if (bandCount != getTiffProduct.getNumBands()) {
+                        throw new IllegalStateException("Different band count: geo tiff image band count=" + bandCount+", geo tif product band count="+getTiffProduct.getNumBands()+".");
                     }
-                }
-                if (i == 0) {
-                    // the first image
-                    if (productGeoCoding == null) {
-                        getTiffProduct.transferGeoCodingTo(product, null);
+                    if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                        product.getMetadataRoot().addElement(currentMetadata.getRootElement());
+                        if (getTiffProduct.getMetadataRoot() != null) {
+                            XmlMetadata.CopyChildElements(getTiffProduct.getMetadataRoot(), product.getMetadataRoot());
+                        }
                     }
-                }
-
-                // add bands
-                String[] bandNames = getBandNames(currentMetadata);
-                String bandPrefix = computeBandPrefix(metadataList.getCount(), i);
-                for (int bandIndex= 0; bandIndex < getTiffProduct.getNumBands(); bandIndex++) {
-                    String bandName = bandPrefix + ((bandIndex < bandNames.length) ? bandNames[bandIndex] : ("band_" + bandIndex));
-                    if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                        Band geoTiffBand = getTiffProduct.getBandAt(bandIndex);
-                        geoTiffBand.setName(bandName);
-                        product.addBand(geoTiffBand);
+                    if (i == 0) {
+                        // the first image
+                        if (productGeoCoding == null) {
+                            getTiffProduct.transferGeoCodingTo(product, null);
+                        }
                     }
-                }
 
-                // remove the bands from the geo tif product
-                getTiffProduct.getBandGroup().removeAll();
+                    // add bands
+                    String[] bandNames = getBandNames(currentMetadata);
+                    String bandPrefix = computeBandPrefix(metadataList.getCount(), i);
+                    for (int bandIndex= 0; bandIndex < getTiffProduct.getNumBands(); bandIndex++) {
+                        String bandName = bandPrefix + ((bandIndex < bandNames.length) ? bandNames[bandIndex] : ("band_" + bandIndex));
+                        if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
+                            Band geoTiffBand = getTiffProduct.getBandAt(bandIndex);
+                            geoTiffBand.setName(bandName);
+                            product.addBand(geoTiffBand);
+                        }
+                    }
+
+                    // remove the bands from the geo tif product
+                    getTiffProduct.getBandGroup().removeAll();
+                }
             }
 
             // add masks

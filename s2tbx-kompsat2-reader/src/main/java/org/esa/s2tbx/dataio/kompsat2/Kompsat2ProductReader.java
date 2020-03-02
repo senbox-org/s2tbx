@@ -123,6 +123,9 @@ public class Kompsat2ProductReader extends AbstractProductReader {
             productDefaultGeoCoding = buildDefaultGeoCoding(productMetadata, bandMetadataForDefaultProductGeoCoding, imagesMetadataParentPath, defaultProductSize, null, null);
             productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, metadataUtil.isMultiSize());
         }
+        if (productBounds.isEmpty()) {
+            throw new IllegalStateException("Empty product bounds.");
+        }
 
         Product product = new Product(productMetadata.getProductName(), Kompsat2Constants.KOMPSAT2_PRODUCT, productBounds.width, productBounds.height, this);
         product.setStartTime(productMetadata.getProductStartTime());
@@ -180,42 +183,44 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                     bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width,
                                                                                     defaultProductSize.height, defaultBandSize.width, defaultBandSize.height, metadataUtil.isMultiSize());
                 }
+                if (!bandBounds.isEmpty()) {
+                    // there is an intersection
+                    Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
 
-                Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds);
-
-                if (geoTiffProduct.getSceneGeoCoding() == null && product.getSceneGeoCoding() == null) {
-                    TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(productMetadata, defaultProductSize.width, defaultProductSize.height, getSubsetDef());
-                    product.addTiePointGrid(productGeoCoding.getLatGrid());
-                    product.addTiePointGrid(productGeoCoding.getLonGrid());
-                    product.setSceneGeoCoding(productGeoCoding);
-                }
-
-                if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
-                    if (geoTiffProduct.getMetadataRoot() != null) {
-                        XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
+                    if (geoTiffProduct.getSceneGeoCoding() == null && product.getSceneGeoCoding() == null) {
+                        TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(productMetadata, defaultProductSize.width, defaultProductSize.height, getSubsetDef());
+                        product.addTiePointGrid(productGeoCoding.getLatGrid());
+                        product.addTiePointGrid(productGeoCoding.getLonGrid());
+                        product.setSceneGeoCoding(productGeoCoding);
                     }
-                }
 
-                Band geoTiffBand = geoTiffProduct.getBandAt(0);
-                Double bandGain;
-                if (bandName.equals(Kompsat2Constants.BAND_NAMES[4])) {
-                    bandGain = Arrays.asList(Kompsat2Constants.KOMPSAT2_GAIN_VALUES).stream().mapToDouble(p -> p).sum() / (Kompsat2Constants.BAND_NAMES.length - 1);
-                    if (geoTiffBand.getGeoCoding() != null && product.getSceneGeoCoding() == null) {
-                        product.setSceneGeoCoding(geoTiffBand.getGeoCoding());
+                    if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                        if (geoTiffProduct.getMetadataRoot() != null) {
+                            XmlMetadata.CopyChildElements(geoTiffProduct.getMetadataRoot(), product.getMetadataRoot());
+                        }
                     }
-                } else {
-                    bandGain = getBandGain(bandMetadata.getImageFileName());
+
+                    Band geoTiffBand = geoTiffProduct.getBandAt(0);
+                    Double bandGain;
+                    if (bandName.equals(Kompsat2Constants.BAND_NAMES[4])) {
+                        bandGain = Arrays.asList(Kompsat2Constants.KOMPSAT2_GAIN_VALUES).stream().mapToDouble(p -> p).sum() / (Kompsat2Constants.BAND_NAMES.length - 1);
+                        if (geoTiffBand.getGeoCoding() != null && product.getSceneGeoCoding() == null) {
+                            product.setSceneGeoCoding(geoTiffBand.getGeoCoding());
+                        }
+                    } else {
+                        bandGain = getBandGain(bandMetadata.getImageFileName());
+                    }
+                    geoTiffBand.setName(bandName);
+                    geoTiffBand.setScalingFactor(bandGain.doubleValue());
+                    geoTiffBand.setUnit(Kompsat2Constants.KOMPSAT2_UNIT);
+                    geoTiffBand.setSpectralWavelength(Kompsat2Constants.BandWaveLengthConstants.getWavelengthCentral(bandName));
+                    geoTiffBand.setNoDataValueUsed(true);
+
+                    product.addBand(geoTiffBand);
+
+                    // remove the bands from the geo tif product
+                    geoTiffProduct.getBandGroup().removeAll();
                 }
-                geoTiffBand.setName(bandName);
-                geoTiffBand.setScalingFactor(bandGain.doubleValue());
-                geoTiffBand.setUnit(Kompsat2Constants.KOMPSAT2_UNIT);
-                geoTiffBand.setSpectralWavelength(Kompsat2Constants.BandWaveLengthConstants.getWavelengthCentral(bandName));
-                geoTiffBand.setNoDataValueUsed(true);
-
-                product.addBand(geoTiffBand);
-
-                // remove the bands from the geo tif product
-                geoTiffProduct.getBandGroup().removeAll();
             }
         }
 
@@ -379,7 +384,7 @@ public class Kompsat2ProductReader extends AbstractProductReader {
         float[][] cornerLonsLats = k2Metadata.getMetadataComponent().getTiePointGridPoints();
         TiePointGrid latGrid = buildTiePointGrid(Kompsat2Constants.LAT_DS_NAME, 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[0], TiePointGrid.DISCONT_NONE);
         TiePointGrid lonGrid = buildTiePointGrid(Kompsat2Constants.LON_DS_NAME, 2, 2, 0, 0, defaultRasterWidth, defaultRasterHeight, cornerLonsLats[1], TiePointGrid.DISCONT_AT_180);
-        if (subsetDef != null && subsetDef.getRegion() != null) {
+        if (subsetDef != null && subsetDef.getSubsetRegion() != null) {
             lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
             latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
         }

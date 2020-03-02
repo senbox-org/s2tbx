@@ -101,6 +101,9 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                 productDefaultGeoCoding = metadata.buildCrsGeoCoding(null);
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             // create product
             Product product = new Product(this.metadata.getProductName(), MuscateConstants.MUSCATE_FORMAT_NAMES[0], productBounds.width, productBounds.height);
@@ -429,12 +432,14 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
                         GeoCoding bandDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(geoTiffImageReader, null);
                         bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth, defaultBandHeight, isMultiSize);
                     }
-
-                    Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds, noDataValue);
-                    Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
-                    geoTiffBand.setName(bandName);
-                    geoTiffBandResult = new GeoTiffBandResult(geoTiffBand, geoPosition);
-                    success = true;
+                    if (!bandBounds.isEmpty()) {
+                        // there is an intersection
+                        Product geoTiffProduct = geoTiffProductReader.readProduct(geoTiffImageReader, null, bandBounds, noDataValue);
+                        Band geoTiffBand = geoTiffProduct.getBandAt(bandIndex);
+                        geoTiffBand.setName(bandName);
+                        geoTiffBandResult = new GeoTiffBandResult(geoTiffBand, geoPosition);
+                        success = true;
+                    }
                 }
             }
         } catch (IOException e) {

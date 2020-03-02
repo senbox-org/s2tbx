@@ -114,6 +114,9 @@ public class SpotViewProductReader extends AbstractProductReader {
                 }
                 productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), false);
             }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
 
             Product product = new Product(productName, SpotConstants.SPOTVIEW_FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
             product.setFileLocation(productPath.toFile());
@@ -149,12 +152,13 @@ public class SpotViewProductReader extends AbstractProductReader {
                     if (bandGeoCoding != null) {
                         band.setGeoCoding(bandGeoCoding);
                     }
+                    double noDataValue = imageMetadata.getNoDataValue();
                     band.setSpectralWavelength(imageMetadata.getWavelength(bandIndex));
                     band.setSpectralBandwidth(imageMetadata.getBandwidth(bandIndex));
                     band.setNoDataValueUsed(true);
-                    band.setNoDataValue(imageMetadata.getNoDataValue());
+                    band.setNoDataValue(noDataValue);
                     SpotViewMultiLevelSource multiLevelSource = new SpotViewMultiLevelSource(this.spotViewImageReader, dataBufferType, productBounds, preferredTileSize,
-                                                                                             bandIndex, bandNames.length, bandGeoCoding);
+                                                                                             bandIndex, bandNames.length, bandGeoCoding, noDataValue);
                     band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
                     product.addBand(band);
                 }
