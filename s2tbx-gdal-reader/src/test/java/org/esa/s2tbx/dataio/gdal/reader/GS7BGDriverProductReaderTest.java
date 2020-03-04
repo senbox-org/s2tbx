@@ -94,22 +94,22 @@ public class GS7BGDriverProductReaderTest extends AbstractTestDriverProductReade
             assertEquals(150000, band.getNumDataElems());
 
             float bandValue = band.getSampleFloat(121, 50);
-            assertEquals(0.0f, bandValue, 0);
+            assertEquals(1.701410009187828E38, bandValue, 0.0f); // the no data value
 
             bandValue = band.getSampleFloat(170, 114);
-            assertEquals(64.0f, bandValue, 0);
+            assertEquals(64.0f, bandValue, 0.0f);
 
             bandValue = band.getSampleFloat(199, 103);
-            assertEquals(203.0f, bandValue, 0);
+            assertEquals(203.0f, bandValue, 0.0f);
 
             bandValue = band.getSampleFloat(469, 89);
-            assertEquals(165.0f, bandValue, 0);
+            assertEquals(165.0f, bandValue, 0.0f);
 
             bandValue = band.getSampleFloat(466, 140);
-            assertEquals(90.0f, bandValue, 0);
+            assertEquals(90.0f, bandValue, 0.0f);
 
             bandValue = band.getSampleFloat(456, 295);
-            assertEquals(37.0f, bandValue, 0);
+            assertEquals(37.0f, bandValue, 0.0f);
         }
     }
 }
