@@ -26,6 +26,13 @@ public class Band {
     }
 
     /**
+     * Calls the JNI GDAL Band class delete() method
+     */
+    public void delete() {
+        GDALReflection.callGDALLibraryMethod(CLASS_NAME, "delete", null, this.jniBandInstance, new Class[]{}, new Object[]{});
+    }
+
+    /**
      * Calls the JNI GDAL Band class getDataType() method
      *
      * @return the JNI GDAL Band class getDataType() method result

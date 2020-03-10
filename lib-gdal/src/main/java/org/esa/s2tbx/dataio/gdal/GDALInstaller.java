@@ -18,8 +18,8 @@ package org.esa.s2tbx.dataio.gdal;
 
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.io.FileUtils;
-import org.esa.snap.runtime.Config;
 import org.esa.snap.engine_utilities.file.FileHelper;
+import org.esa.snap.runtime.Config;
 import org.esa.snap.utils.NativeLibraryUtils;
 
 import java.io.File;
@@ -329,7 +329,14 @@ class GDALInstaller {
                 logger.log(Level.FINE, "The saved GDAL distribution folder version is '" + savedVersion + "'.");
             }
 
-            if (!StringUtils.isNullOrEmpty(savedVersion) && compareVersions(savedVersion, moduleVersion) >= 0 && Files.exists(gdalDistributionRootFolderPath) && Files.size(gdalDistributionRootFolderPath) > 1) {
+            boolean isDistributionRootFolderEmpty = true;
+            try (Stream<Path> s = Files.list(gdalDistributionRootFolderPath)) {
+                isDistributionRootFolderEmpty = s.count() < 1;
+            }catch (Exception ignored){
+                //nothing to do
+            }
+
+            if (!StringUtils.isNullOrEmpty(savedVersion) && compareVersions(savedVersion, moduleVersion) >= 0 && Files.exists(gdalDistributionRootFolderPath) && !isDistributionRootFolderEmpty && Files.exists(gdalVersion.getEnvironmentVariablesFilePath())){
                 canCopyGDALDistribution = false;
             }else{
                 // different module versions and delete the library saved on the local disk

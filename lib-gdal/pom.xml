@@ -19,11 +19,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.esa.s2tbx.gdal</groupId>
-            <artifactId>gdal</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-core</artifactId>
         </dependency>
@@ -99,9 +94,6 @@
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.esa.lib.gdal.*</publicPackage>
-                        <publicPackage>org.gdal.gdalconst.*</publicPackage>
-                        <publicPackage>org.gdal.gdal.*</publicPackage>
-                        <publicPackage>org.esa.s2tbx.dataio.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.gdal.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.jni.*</publicPackage>
                     </publicPackages>

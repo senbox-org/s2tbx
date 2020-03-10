@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  * @author Adrian Drăghici
  */
-class GDALDistributionInstaller {
+ class GDALDistributionInstaller {
     private static final Logger logger = Logger.getLogger(GDALDistributionInstaller.class.getName());
 
     private GDALDistributionInstaller() {
