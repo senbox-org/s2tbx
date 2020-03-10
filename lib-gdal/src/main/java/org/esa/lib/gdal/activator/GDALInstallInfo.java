@@ -8,25 +8,32 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 /**
- * Created by kraftek on 11/15/2016.
+ * GDAL Install Info class which stores the location of installed GDAL distribution.
+ *
+ * @author Cosmin Cara
  */
-public enum GDALInstallInfo {
-    INSTANCE;
+public class GDALInstallInfo {
+    public static final GDALInstallInfo INSTANCE = new GDALInstallInfo();
 
     private Path binLocation;
     private GDALWriterPlugInListener listener;
 
-    public synchronized void setLocations(Path binLocation) {
+    private GDALInstallInfo(){
+        //nothing to init
+    }
+
+    /**
+     * Sets the location which contains GDAL binaries.
+     *
+     * @param binLocation the location which contains GDAL binaries
+     */
+    synchronized void setLocations(Path binLocation) {
         this.binLocation = binLocation;
         try {
             Config config = Config.instance("s2tbx");
             config.load();
             Preferences preferences = config.preferences();
-            preferences.put("gdal.apps.path",
-                    this.binLocation.resolve("bin")
-                            .resolve("gdal")
-                            .resolve("apps")
-                            .toString());
+            preferences.put("gdal.apps.path", this.binLocation.toString());
             preferences.flush();
         } catch (BackingStoreException exception) {
             // ignore exception
@@ -34,11 +41,19 @@ public enum GDALInstallInfo {
         fireListener();
     }
 
+    /**
+     * Sets the GDAL writer plugin listener
+     *
+     * @param listener the GDAL writer plugin listener
+     */
     public synchronized void setListener(GDALWriterPlugInListener listener) {
         this.listener = listener;
         fireListener();
     }
 
+    /**
+     * Fires the stored GDAL writer plugin listener
+     */
     private void fireListener() {
         if (this.listener != null && isPresent()) {
             this.listener.writeDriversSuccessfullyInstalled();
@@ -46,6 +61,11 @@ public enum GDALInstallInfo {
         }
     }
 
+    /**
+     * Checks whether the location which contains GDAL binaries is stored and exists
+     *
+     * @return {@code true} if the location which contains GDAL binaries is stored and exists
+     */
     public boolean isPresent() {
         return this.binLocation != null && Files.exists(this.binLocation);
     }

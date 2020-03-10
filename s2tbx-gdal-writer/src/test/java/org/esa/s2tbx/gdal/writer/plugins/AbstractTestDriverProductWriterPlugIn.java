@@ -1,17 +1,19 @@
 package org.esa.s2tbx.gdal.writer.plugins;
 
-import org.esa.lib.gdal.activator.GDALDistributionInstaller;
 import org.esa.lib.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.media.jai.JAI;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +38,8 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     @Before
     public final void setUp() throws Exception {
         if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            GDALDistributionInstaller.install();
+            Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
+            Assume.assumeNotNull(gdalDistributionRootFolderPath);
         }
     }
 
@@ -74,8 +77,8 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
             assertEquals(2, classes.length);
 
             List<Class> list = Arrays.asList(classes);
-            assertEquals(true, list.contains(File.class));
-            assertEquals(true, list.contains(String.class));
+            assertTrue(list.contains(File.class));
+            assertTrue(list.contains(String.class));
         }
     }
 
@@ -88,7 +91,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     }
 
     @Test
-    public void testEncodingQualificationWithNullProduct() throws Exception {
+    public void testEncodingQualificationWithNullProduct() {
         if (GDALInstallInfo.INSTANCE.isPresent()) {
             EncodeQualification encodeQualification = this.writerPlugIn.getEncodeQualification(null);
             assertNotNull(encodeQualification);
@@ -97,7 +100,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     }
 
     @Test
-    public void testEncodingQualificationWithNonNullProduct() throws Exception {
+    public void testEncodingQualificationWithNonNullProduct() {
         if (GDALInstallInfo.INSTANCE.isPresent()) {
             Product product = new Product("tempProduct", getFormatNameToCheck(), 20, 30);
             product.setPreferredTileSize(JAI.getDefaultTileSize());
