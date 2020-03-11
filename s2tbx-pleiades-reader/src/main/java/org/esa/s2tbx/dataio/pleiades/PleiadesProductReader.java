@@ -3,7 +3,6 @@ package org.esa.s2tbx.dataio.pleiades;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.commons.FilePathInputStream;
-import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
 import org.esa.s2tbx.dataio.pleiades.dimap.ImageMetadata;
@@ -16,15 +15,7 @@ import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
@@ -39,12 +30,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -290,7 +277,8 @@ public class PleiadesProductReader extends AbstractProductReader {
                 int colorHeight = Math.round(productSubsetRegion.height / factorY);
                 for (int i = 0; i < numBands; i++) {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandInfos[i].getId())) {
-                        Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, colorWidth, colorHeight, colorPaletteFilePath);
+                        Band targetBand = new Band(bandInfos[i].getId(), pixelDataType, colorWidth, colorHeight);
+                        targetBand.setColorPaletteFilePath(colorPaletteFilePath);
                         targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
                         targetBand.setSpectralWavelength(bandInfos[i].getCentralWavelength());
                         targetBand.setSpectralBandwidth(bandInfos[i].getBandwidth());

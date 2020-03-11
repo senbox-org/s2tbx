@@ -50,7 +50,7 @@ public class DeimosProductReader extends MultipleMetadataGeoTiffBasedReader<Deim
     }
 
     public DeimosProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
-        super(readerPlugIn);
+        super(readerPlugIn, colorPaletteFilePath);
     }
 
     @Override

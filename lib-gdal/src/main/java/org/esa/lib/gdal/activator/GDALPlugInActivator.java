@@ -25,8 +25,9 @@ public class GDALPlugInActivator implements Activator {
     @Override
     public void start() {
         try {
-            Path gdalDistributionBinFolderPath = GDALLoader.getInstance().initGDAL();
-            GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
+            //TODO Jean do not use the GDAL distribution until fixing the bug to check if the installed version is valid
+            //Path gdalDistributionBinFolderPath = GDALLoader.getInstance().initGDAL();
+            //GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
         }

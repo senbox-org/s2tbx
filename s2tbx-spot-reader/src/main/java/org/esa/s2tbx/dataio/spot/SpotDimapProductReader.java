@@ -171,6 +171,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             }
         }
 
+        Path colorPaletteFilePath = ((SpotDimapProductReaderPlugin)getReaderPlugIn()).getColorPaletteFilePath();
         GeoCoding bandGeoCoding = product.getSceneGeoCoding();
         String[] bandNames = firstDimapMetadata.getBandNames();
         String[] bandUnits = firstDimapMetadata.getBandUnits();
@@ -188,6 +189,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             }
             if (subsetDef == null || subsetDef.isNodeAccepted(bandNames[bandIndex])) {
                 Band band = new Band(bandNames[bandIndex], firstDimapMetadata.getPixelDataType(), productBounds.width, productBounds.height);
+                band.setColorPaletteFilePath(colorPaletteFilePath);
                 band.setGeoCoding(bandGeoCoding);
                 int noDataValueAsInt = firstDimapMetadata.getNoDataValue();
                 Double noDataValue = null;

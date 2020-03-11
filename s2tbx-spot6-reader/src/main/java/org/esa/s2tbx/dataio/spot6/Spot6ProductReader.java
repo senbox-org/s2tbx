@@ -2,7 +2,6 @@ package org.esa.s2tbx.dataio.spot6;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.readers.ColorIterator;
@@ -275,8 +274,9 @@ public class Spot6ProductReader extends AbstractProductReader {
                 final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandInfos[i].getId())) {
-                        Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, Math.round(productSubsetRegion.width / factorX),
-                                                               Math.round(productSubsetRegion.height / factorY), colorPaletteFilePath);
+                        Band targetBand = new Band(bandInfos[i].getId(), pixelDataType, Math.round(productSubsetRegion.width / factorX),
+                                                               Math.round(productSubsetRegion.height / factorY));
+                        targetBand.setColorPaletteFilePath(colorPaletteFilePath);
                         targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
                         targetBand.setSpectralWavelength(bandInfos[i].getCentralWavelength());
                         targetBand.setSpectralBandwidth(bandInfos[i].getBandwidth());

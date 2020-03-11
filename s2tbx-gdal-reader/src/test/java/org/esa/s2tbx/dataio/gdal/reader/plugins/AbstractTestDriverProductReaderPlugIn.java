@@ -46,10 +46,11 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
 
     @Before
     public final void setUp() throws Exception {
-        if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
-            Assume.assumeNotNull(gdalDistributionRootFolderPath);
-        }
+        //TODO Jean do not use the GDAL distribution until fixing the bug to check if the installed version is valid
+//        if (!GDALInstallInfo.INSTANCE.isPresent()) {
+//            Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
+//            Assume.assumeNotNull(gdalDistributionRootFolderPath);
+//        }
     }
 
     @Test

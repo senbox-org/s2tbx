@@ -48,13 +48,16 @@ public class Kompsat2ProductReader extends AbstractProductReader {
         XmlMetadataParserFactory.registerParser(Kompsat2Metadata.class, new XmlMetadataParser(Kompsat2Metadata.class));
     }
 
+    private final Path colorPaletteFilePath;
+
     private VirtualDirEx productDirectory;
     private ImageInputStreamSpi imageInputStreamSpi;
     private List<GeoTiffImageReader> bandImageReaders;
 
-    public Kompsat2ProductReader(ProductReaderPlugIn readerPlugIn) {
+    public Kompsat2ProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
 
+        this.colorPaletteFilePath = colorPaletteFilePath;
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
@@ -210,6 +213,7 @@ public class Kompsat2ProductReader extends AbstractProductReader {
                     } else {
                         bandGain = getBandGain(bandMetadata.getImageFileName());
                     }
+                    geoTiffBand.setColorPaletteFilePath(this.colorPaletteFilePath);
                     geoTiffBand.setName(bandName);
                     geoTiffBand.setScalingFactor(bandGain.doubleValue());
                     geoTiffBand.setUnit(Kompsat2Constants.KOMPSAT2_UNIT);

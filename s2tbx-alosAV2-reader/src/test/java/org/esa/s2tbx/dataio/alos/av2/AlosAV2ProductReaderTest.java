@@ -262,6 +262,6 @@ public class AlosAV2ProductReaderTest {
 
     private static AlosAV2ProductReader buildProductReader() {
         AlosAV2ProductReaderPlugin plugin = new AlosAV2ProductReaderPlugin();
-        return  new AlosAV2ProductReader(plugin);
+        return  new AlosAV2ProductReader(plugin, plugin.getColorPaletteFilePath());
     }
 }

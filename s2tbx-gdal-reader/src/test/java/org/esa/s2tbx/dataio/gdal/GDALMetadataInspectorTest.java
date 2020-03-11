@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Denisa Stefanescu
@@ -25,6 +26,8 @@ public class GDALMetadataInspectorTest {
 
     @Test
     public void testGDALMetadataInspector() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
         if (GDALInstallInfo.INSTANCE.isPresent()) {
             String testDirectoryPathProperty = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
             Path testFolderPath = Paths.get(testDirectoryPathProperty);

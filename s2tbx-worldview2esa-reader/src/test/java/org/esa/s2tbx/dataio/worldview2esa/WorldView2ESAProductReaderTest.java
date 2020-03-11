@@ -33,7 +33,7 @@ public class WorldView2ESAProductReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         WorldView2ESAProductReaderPlugin plugin = new WorldView2ESAProductReaderPlugin();
-        reader = new WorldView2ESAProductReader(plugin);
+        reader = new WorldView2ESAProductReader(plugin, plugin.getColorPaletteFilePath());
     }
 
     @After

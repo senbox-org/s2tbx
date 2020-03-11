@@ -20,31 +20,28 @@ package org.esa.s2tbx.dataio.rapideye;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.apache.commons.lang.StringUtils;
-import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
-import org.esa.snap.core.metadata.GenericXmlMetadata;
-import org.esa.snap.engine_utilities.file.AbstractFile;
-import org.esa.s2tbx.commons.FilePathInputStream;
-import org.esa.s2tbx.dataio.ColorPaletteBand;
-import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.gdal.reader.GDALProductReader;
-import org.esa.snap.core.metadata.XmlMetadata;
-import org.esa.snap.core.metadata.XmlMetadataParser;
-import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.commons.FilePathInputStream;
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
+import org.esa.s2tbx.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.*;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
-import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
+import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.xml.sax.SAXException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
@@ -166,7 +163,8 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                                     addMetadataFromNitfAPI = true;
                                 }
                             }
-                            targetBand = new ColorPaletteBand(bandName, metadata.getPixelFormat(), productBounds.width, productBounds.height, this.colorPaletteFilePath);
+                            targetBand = new Band(bandName, metadata.getPixelFormat(), productBounds.width, productBounds.height);
+                            targetBand.setColorPaletteFilePath(this.colorPaletteFilePath);
                             if (bandGeoCoding != null) {
                                 targetBand.setGeoCoding(bandGeoCoding);
                             }

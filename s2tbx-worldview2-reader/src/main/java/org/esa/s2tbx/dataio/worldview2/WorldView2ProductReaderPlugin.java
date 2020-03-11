@@ -37,7 +37,7 @@ public class WorldView2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new WorldView2ProductReader(this);
+        return new WorldView2ProductReader(this, getColorPaletteFilePath());
     }
 
     @Override

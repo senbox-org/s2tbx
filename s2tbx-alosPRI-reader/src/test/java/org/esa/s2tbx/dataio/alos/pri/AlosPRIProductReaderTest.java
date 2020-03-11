@@ -238,6 +238,6 @@ public class AlosPRIProductReaderTest {
 
     private static AlosPRIProductReader buildProductReader() {
         AlosPRIProductReaderPlugin readerPlugin = new AlosPRIProductReaderPlugin();
-        return new AlosPRIProductReader(readerPlugin);
+        return new AlosPRIProductReader(readerPlugin, readerPlugin.getColorPaletteFilePath());
     }
 }

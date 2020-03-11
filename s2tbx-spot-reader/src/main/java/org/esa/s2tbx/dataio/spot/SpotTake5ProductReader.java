@@ -79,6 +79,8 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         XmlMetadataParserFactory.registerParser(SpotTake5Metadata.class, new XmlMetadataParser<SpotTake5Metadata>(SpotTake5Metadata.class));
     }
 
+    private final Path colorPaletteFilePath;
+
     private VirtualDirEx productDirectory;
     private ImageInputStreamSpi imageInputStreamSpi;
     private List<GeoTiffImageReader> bandImageReaders;
@@ -86,6 +88,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
     public SpotTake5ProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
 
+        this.colorPaletteFilePath = colorPaletteFilePath;
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
@@ -214,6 +217,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                                 geoTiffBand.setUnit(SpotConstants.VALUE_NOT_AVAILABLE);
                             }
                             geoTiffBand.setNoDataValueUsed(true);
+                            geoTiffBand.setColorPaletteFilePath(this.colorPaletteFilePath);
                             product.addBand(geoTiffBand);
                         }
                     }

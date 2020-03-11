@@ -36,7 +36,7 @@ public class AlosAV2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new AlosAV2ProductReader(this);
+        return new AlosAV2ProductReader(this, getColorPaletteFilePath());
     }
 
     @Override

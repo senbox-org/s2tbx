@@ -44,13 +44,16 @@ public class AlosAV2ProductReader extends AbstractProductReader {
         XmlMetadataParserFactory.registerParser(AlosAV2Metadata.class, new XmlMetadataParser<>(AlosAV2Metadata.class));
     }
 
+    private final Path colorPaletteFilePath;
+
     private VirtualDirEx productDirectory;
     private ImageInputStreamSpi imageInputStreamSpi;
     private GeoTiffImageReader geoTiffImageReader;
 
-    public AlosAV2ProductReader(ProductReaderPlugIn readerPlugIn) {
+    public AlosAV2ProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
 
+        this.colorPaletteFilePath = colorPaletteFilePath;
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
@@ -148,6 +151,7 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                     float scalingFactor = alosAV2Metadata.getGain(bandNames[i]);
 
                     Band geoTiffBand = geoTiffProduct.getBandAt(i);
+                    geoTiffBand.setColorPaletteFilePath(this.colorPaletteFilePath);
                     geoTiffBand.setName(bandNames[i]);
                     geoTiffBand.setUnit(bandUnit);
                     geoTiffBand.setScalingOffset(scalingOffset);

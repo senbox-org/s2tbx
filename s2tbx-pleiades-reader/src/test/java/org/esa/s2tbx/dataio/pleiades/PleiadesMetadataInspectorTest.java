@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Denisa Stefanescu
@@ -22,6 +23,8 @@ public class PleiadesMetadataInspectorTest {
 
     @Test
     public void testPleiadesMetadataInspector() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
         File file = TestUtil.getTestFile(productsFolder + "PL1_OPER_HIR_PMS_3__20151115T113200_N39-883_W007-992_5011.SIP"+File.separator+"TPP1600462598"+File.separator+"VOL_PHR.XML");
         assertNotNull(file);
 

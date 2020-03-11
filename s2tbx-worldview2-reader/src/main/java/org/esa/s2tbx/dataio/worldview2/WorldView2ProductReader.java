@@ -50,13 +50,16 @@ class WorldView2ProductReader extends AbstractProductReader {
         XmlMetadataParserFactory.registerParser(TileMetadata.class, new XmlMetadataParser<>(TileMetadata.class));
     }
 
+    private final Path colorPaletteFilePath;
+
     private VirtualDirEx productDirectory;
     private List<GeoTiffImageReader> bandImageReaders;
     private ImageInputStreamSpi imageInputStreamSpi;
 
-    public WorldView2ProductReader(ProductReaderPlugIn readerPlugIn) {
+    public WorldView2ProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
 
+        this.colorPaletteFilePath = colorPaletteFilePath;
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
@@ -179,6 +182,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                                 Band band = buildSubProductBand(defaultProductSize, subProductDefaultGeoCoding, subProductMosaicMatrix, bandsDataType, bandName,
                                                                 bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, subsetDef, isMultiSize);
                                 if (band != null) {
+                                    band.setColorPaletteFilePath(this.colorPaletteFilePath);
                                     band.setScalingFactor(tileComponent.getScalingFactor(bandNames[bandIndex]));
                                     Integer spectralWavelength = WorldView2Constants.BAND_WAVELENGTH.get(bandName);
                                     if (spectralWavelength != null) {

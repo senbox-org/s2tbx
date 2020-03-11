@@ -40,13 +40,16 @@ import java.util.Map;
  */
 public class IkonosProductReader extends AbstractProductReader {
 
+    private final Path colorPaletteFilePath;
+
     private VirtualDirEx productDirectory;
     private ImageInputStreamSpi imageInputStreamSpi;
     private List<GeoTiffImageReader> bandImageReaders;
 
-    protected IkonosProductReader(final ProductReaderPlugIn readerPlugIn) {
+    protected IkonosProductReader(final ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
 
+        this.colorPaletteFilePath = colorPaletteFilePath;
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
@@ -209,6 +212,7 @@ public class IkonosProductReader extends AbstractProductReader {
                     } else {
                         bandGain = getBandGain(bandMetadata.getImageFileName());
                     }
+                    geoTiffBand.setColorPaletteFilePath(this.colorPaletteFilePath);
                     geoTiffBand.setName(bandName);
                     geoTiffBand.setScalingFactor(bandGain.doubleValue());
                     geoTiffBand.setUnit(IkonosConstants.BAND_MEASURE_UNIT);

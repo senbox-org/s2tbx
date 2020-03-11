@@ -46,7 +46,7 @@ public class RapidEyeL3Reader extends MultipleMetadataGeoTiffBasedReader<RapidEy
     }
 
     public RapidEyeL3Reader(RapidEyeL3ReaderPlugin readerPlugIn, Path colorPaletteFilePath) {
-        super(readerPlugIn);
+        super(readerPlugIn, colorPaletteFilePath);
     }
 
     @Override
