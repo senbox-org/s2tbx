@@ -1,21 +1,39 @@
 package org.esa.s2tbx.gdal.reader;
 
 import com.bc.ceres.glevel.MultiLevelModel;
+import org.esa.s2tbx.dataio.gdal.drivers.Band;
+import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
+import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
+import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
+import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.snap.core.image.AbstractSubsetTileOpImage;
 import org.esa.snap.core.util.ImageUtils;
-import org.gdal.gdal.Band;
-import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconst;
-import org.gdal.gdalconst.gdalconstConstants;
+import org.esa.snap.core.util.SystemUtils;
 
 import javax.media.jai.PlanarImage;
 import java.awt.*;
 import java.awt.color.ColorSpace;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferDouble;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * A JAI operator for handling the tiles of the products imported with the GDAL library.
@@ -26,8 +44,7 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
 
     private ImageReader imageReader;
 
-    public GDALTileOpImage(Path sourceLocalFile, int bandIndex, MultiLevelModel imageMultiLevelModel,
-                           int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
+    GDALTileOpImage(Path sourceLocalFile, int bandIndex, MultiLevelModel imageMultiLevelModel, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
 
         super(imageMultiLevelModel, dataBufferType, imageReadBounds, tileSize, tileOffsetFromReadBounds, level);
 
@@ -52,23 +69,63 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
             int levelDestinationY = ImageUtils.computeLevelSize(normalBoundsIntersection.y, getLevel());
             int levelDestinationWidth = ImageUtils.computeLevelSize(normalBoundsIntersection.width, getLevel());
             int levelDestinationHeight = ImageUtils.computeLevelSize(normalBoundsIntersection.height, getLevel());
-//            int gdalLevelBandWidth = this.imageReader.getBandWidth();
-//            if (levelDestinationWidth != gdalLevelBandWidth) {
-//                throw new IllegalStateException("The level width is different: levelDestinationWidth=" + levelDestinationWidth + ", fileTileWidth=" + gdalLevelBandWidth);
-//            }
-//            int gdalLevelBandHeight = this.imageReader.getBandHeight();
-//            if (levelDestinationHeight != gdalLevelBandHeight) {
-//                throw new IllegalStateException("The level height is different: levelDestinationHeight=" + levelDestinationHeight + ", fileTileHeight=" + gdalLevelBandHeight);
-//            }
+
             Rectangle intersection = new Rectangle(levelDestinationX, levelDestinationY, levelDestinationWidth, levelDestinationHeight);
-            try {
-                RenderedImage readTileImage = this.imageReader.read(intersection);
-                Raster imageRaster = readTileImage.getData();
-                int bandList[] = new int[]{0}; // the band index is zero
-                Raster readBandRaster = imageRaster.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
-                levelDestinationRaster.setDataElements(levelDestinationRaster.getMinX(), levelDestinationRaster.getMinY(), readBandRaster);
-            } catch (IOException ex) {
-                throw new IllegalStateException("Failed to read the data for level " + getLevel() + " and rectangle " + levelDestinationRectangle + ".", ex);
+            if (!intersection.isEmpty()) {
+                try {
+                    int imageWidth = intersection.width;
+                    int imageHeight = intersection.height;
+                    int xOffset = intersection.x;
+                    int yOffset = intersection.y;
+                    int nXOffset = xOffset + imageWidth;
+                    int nYOffset = yOffset + imageHeight;
+                    int xBlock = xOffset / this.imageReader.getBandBlockWidth();
+                    int yBlock = yOffset / this.imageReader.getBandBlockHeight();
+                    int nXBlock = nXOffset / this.imageReader.getBandBlockWidth() + (nXOffset % this.imageReader.getBandBlockWidth() > 0 ? 1 : 0);
+                    int nYBlock = nYOffset / this.imageReader.getBandBlockHeight() + (nYOffset % this.imageReader.getBandBlockHeight() > 0 ? 1 : 0);
+
+                    long startTime = System.currentTimeMillis();
+
+                    int x = levelDestinationRaster.getMinX();
+                    Raster readBandRaster = null;
+
+                    for (int iXBlock = xBlock; iXBlock < nXBlock; iXBlock++) {
+                        int y = levelDestinationRaster.getMinY();
+                        for (int iYBlock = yBlock; iYBlock < nYBlock; iYBlock++) {
+                            RenderedImage readTileImage = this.imageReader.read(iXBlock, iYBlock);
+                            if (readTileImage != null) {
+                                int[] bandList = new int[]{0}; // the band index is zero
+                                Raster imageRaster = readTileImage.getData();
+                                int rasterWidth = Math.min(imageWidth, readTileImage.getTileWidth());
+                                int rasterHeight = Math.min(imageHeight, readTileImage.getTileHeight());
+                                int rasterParentX = 0;
+                                int rasterParentY = 0;
+
+                                if (levelDestinationRaster.getMinX() + rasterWidth <= imageRaster.getWidth()) {
+                                    rasterParentX = levelDestinationRaster.getMinX();
+                                }
+                                if (levelDestinationRaster.getMinY() + rasterHeight <= imageRaster.getHeight()) {
+                                    rasterParentY = levelDestinationRaster.getMinY();
+                                }
+                                readBandRaster = imageRaster.createChild(rasterParentX, rasterParentY, rasterWidth, rasterHeight, 0, 0, bandList);
+                                levelDestinationRaster.setDataElements(x, y, readBandRaster);
+                            }
+                            if (readBandRaster != null) {
+                                y += readBandRaster.getHeight();
+                            }
+                        }
+                        if (readBandRaster != null) {
+                            x += readBandRaster.getWidth();
+                        }
+                    }
+
+                    long endTime = System.currentTimeMillis();
+                    String msg = String.format("readBlockDirect (took %s)", (new SimpleDateFormat("mm:ss:SSS")).format(new Date(endTime - startTime)));
+                    SystemUtils.LOG.info(msg);
+
+                } catch (IOException ex) {
+                    throw new IllegalStateException("Failed to read the data for level " + getLevel() + " and rectangle " + levelDestinationRectangle + ".", ex);
+                }
             }
         }
     }
@@ -80,8 +137,8 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
         private final Path sourceLocalFile;
         private final int bandIndex;
 
-        private org.gdal.gdal.Dataset gdalDataset;
-        private org.gdal.gdal.Band band;
+        private Dataset gdalDataset;
+        private Band band;
 
         private ImageReader(Path sourceLocalFile, int bandIndex, int dataBufferType, int level) {
             this.sourceLocalFile = sourceLocalFile;
@@ -90,18 +147,18 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
             this.level = level;
         }
 
-        int getBandWidth() {
+        int getBandBlockWidth() {
             if (this.gdalDataset == null) {
                 createDataset();
             }
-            return this.band.getXSize();
+            return this.band.getBlockXSize();
         }
 
-        int getBandHeight() {
+        int getBandBlockHeight() {
             if (this.gdalDataset == null) {
                 createDataset();
             }
-            return this.band.getYSize();
+            return this.band.getBlockYSize();
         }
 
         void close() {
@@ -113,23 +170,22 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
             }
         }
 
-        RenderedImage read(Rectangle rectangle) throws IOException {
+        RenderedImage read(int iXBlock, int iYBlock) throws IOException {
             if (this.gdalDataset == null) {
                 createDataset();
             }
-            int imageWidth = rectangle.width;
-            int imageHeight = rectangle.height;
+            int imageWidth = getBandBlockWidth();
+            int imageHeight = getBandBlockHeight();
             int pixels = imageWidth * imageHeight;
             int gdalBufferDataType = this.band.getDataType();
-            int bufferSize = pixels * gdal.GetDataTypeSize(gdalBufferDataType);
+            int bufferSize = pixels * GDAL.getDataTypeSize(gdalBufferDataType);
             ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
             data.order(ByteOrder.nativeOrder());
 
-            int xSizeToRead = Math.min(rectangle.width, getBandWidth() -  rectangle.x);
-            int ySizeToRead = Math.min(rectangle.height, getBandHeight() -  rectangle.y);
-            int returnVal = this.band.ReadRaster_Direct(rectangle.x, rectangle.y, xSizeToRead, ySizeToRead, rectangle.width, rectangle.height, gdalBufferDataType, data);
-            if (returnVal == gdalconstConstants.CE_None) {
-                DataBuffer imageDataBuffer = null;
+            int returnVal = this.band.readBlockDirect(iXBlock, iYBlock, data);
+
+            if (returnVal == GDALConstConstants.ceNone()) {
+                DataBuffer imageDataBuffer;
                 if (this.dataBufferType == DataBuffer.TYPE_BYTE) {
                     byte[] bytes = new byte[pixels];
                     data.get(bytes);
@@ -157,12 +213,12 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
                 } else {
                     throw new IllegalArgumentException("Unknown data buffer type " + this.dataBufferType + ".");
                 }
-                int[] index = new int[] { 0 };
+                int[] index = new int[]{0};
                 SampleModel sampleModel = new ComponentSampleModel(imageDataBuffer.getDataType(), imageWidth, imageHeight, 1, imageWidth, index);
                 WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, imageDataBuffer, null);
                 BufferedImage image;
-                if (this.band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) {
-                    ColorModel cm = this.band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(gdalBufferDataType));
+                if (this.band.getRasterColorInterpretation().equals(GDALConstConstants.gciPaletteindex())) {
+                    ColorModel cm = this.band.getRasterColorTable().getIndexColorModel(GDAL.getDataTypeSize(gdalBufferDataType));
                     image = new BufferedImage(cm, writableRaster, false, null);
                 } else if (imageDataBuffer instanceof DataBufferByte || imageDataBuffer instanceof DataBufferUShort) {
                     int imageType = (imageDataBuffer instanceof DataBufferByte) ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_USHORT_GRAY;
@@ -175,18 +231,20 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
                 }
                 return image;
             } else {
-                throw new IOException("Failed to read the product band data: rectangle="+rectangle+" returnVal="+returnVal);
+                throw new IOException("Failed to read the product band data.");
             }
         }
 
         private void createDataset() {
-            this.gdalDataset = gdal.Open(sourceLocalFile.toString(), gdalconst.GA_ReadOnly);
+            this.gdalDataset = GDAL.open(this.sourceLocalFile.toString(), GDALConst.gaReadonly());
             // bands are not 0-base indexed, so we must add 1
-            Band gdalRasterBand = this.gdalDataset.GetRasterBand(this.bandIndex + 1);
-            if (level > 0 && gdalRasterBand.GetOverviewCount() > 0) {
-                this.band = gdalRasterBand.GetOverview(this.level - 1);
-            } else {
-                this.band = gdalRasterBand;
+            if (this.gdalDataset != null) {
+                Band gdalRasterBand = this.gdalDataset.getRasterBand(this.bandIndex + 1);
+                if (this.level > 0 && gdalRasterBand.getOverviewCount() > 0) {
+                    this.band = gdalRasterBand.getOverview(this.level - 1);
+                } else {
+                    this.band = gdalRasterBand;
+                }
             }
         }
     }

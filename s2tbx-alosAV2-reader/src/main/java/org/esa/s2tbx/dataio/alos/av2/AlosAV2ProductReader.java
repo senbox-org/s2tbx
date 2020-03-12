@@ -28,7 +28,8 @@ import org.xml.sax.SAXException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.nio.file.Path;
 

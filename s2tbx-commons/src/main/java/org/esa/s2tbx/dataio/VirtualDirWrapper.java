@@ -77,7 +77,7 @@ class VirtualDirWrapper extends VirtualDirEx {
             }
         }
         if (inputStream == null) {
-            String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
+            String key = FileUtils.getFilenameFromPath(relativePath).toLowerCase();
             String path = findKeyFile(key);
             if (path == null) {
                 throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
@@ -123,7 +123,7 @@ class VirtualDirWrapper extends VirtualDirEx {
                 file = new File(wrapped.getTempDir(), fileName + extension);
             }
             if(file == null || !Files.exists(file.toPath())) {
-                String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
+                String key = FileUtils.getFilenameFromPath(relativePath).toLowerCase();
                 String path = findKeyFile(key);
                 if (path == null) {
                     throw new FileNotFoundException(String.format("File %s does not exist", relativePath));
@@ -278,7 +278,7 @@ class VirtualDirWrapper extends VirtualDirEx {
     @Override
     public String[] listAll(Pattern...patterns) {
         String[] list = super.listAll(patterns);
-        Arrays.stream(list).forEach(item -> this.files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
+        Arrays.stream(list).forEach(item -> this.files.put(FileUtils.getFilenameFromPath(item).toLowerCase(), item));
         return list;
     }
 
@@ -298,11 +298,11 @@ class VirtualDirWrapper extends VirtualDirEx {
         }
         String ret = this.files.get(key);
         if (ret == null) {
-            String namePart = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(key));
+            String namePart = FileUtils.getFilenameWithoutExtension(FileUtils.getFilenameFromPath(key));
             String extPart = FileUtils.getExtension(key);
             ret = firstOrDefault(this.files.keySet(),
                     k -> {
-                        String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
+                        String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFilenameFromPath(k));
                         name = name.substring(name.lastIndexOf("/") + 1);
                         return (extPart != null && extPart.equalsIgnoreCase(FileUtils.getExtension(k))) && namePart.equals(name);
                     });
@@ -310,7 +310,7 @@ class VirtualDirWrapper extends VirtualDirEx {
             if(ret == null) {
                 ret = firstOrDefault(this.files.keySet(),
                         k -> {
-                            String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
+                            String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFilenameFromPath(k));
                             name = name.substring(name.lastIndexOf("/") + 1);
                             return (extPart != null && extPart.equalsIgnoreCase(FileUtils.getExtension(k))) && namePart.startsWith(name);
                         });

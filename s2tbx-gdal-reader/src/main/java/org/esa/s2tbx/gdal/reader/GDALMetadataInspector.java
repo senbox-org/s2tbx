@@ -17,7 +17,7 @@ public class GDALMetadataInspector implements MetadataInspector {
 
     @Override
     public Metadata getMetadata(Path productPath) throws IOException {
-        org.gdal.gdal.Dataset gdalDataset = null;
+        org.esa.s2tbx.dataio.gdal.drivers.Dataset gdalDataset = null;
         VirtualFile virtualFile = null;
         try {
             virtualFile = new VirtualFile(productPath);
@@ -31,7 +31,7 @@ public class GDALMetadataInspector implements MetadataInspector {
             int bandCount = gdalDataset.getRasterCount();
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // bands are not 0-base indexed, so we must add 1
-                org.gdal.gdal.Band gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
+                org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
 
                 String bandName = GDALProductReader.computeBandName(gdalBand, bandIndex);
                 metadata.getBandList().add(bandName);

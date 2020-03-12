@@ -52,6 +52,7 @@
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
         <module>lib-gdal</module>
+        <module>lib-gdal-preferences-ui</module>
         <module>s2tbx-gdal-reader</module>
         <module>s2tbx-gdal-writer</module>
         <module>s2tbx-gdal-writer-ui</module>
@@ -356,12 +357,6 @@
                 <groupId>com.github.relaxng</groupId>
                 <artifactId>relaxngDatatype</artifactId>
                 <version>2011.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.s2tbx.gdal</groupId>
-                <artifactId>gdal</artifactId>
-                <version>2.1.0</version>
             </dependency>
 
             <dependency>

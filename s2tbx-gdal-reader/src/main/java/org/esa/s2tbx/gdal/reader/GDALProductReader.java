@@ -2,20 +2,26 @@ package org.esa.s2tbx.gdal.reader;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.esa.s2tbx.commons.VirtualFile;
+import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
+import org.esa.s2tbx.dataio.gdal.drivers.Driver;
+import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
+import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
+import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.StringUtils;
-import org.gdal.gdal.Dataset;
-import org.gdal.gdal.Driver;
-import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconst;
-import org.gdal.gdalconst.gdalconstConstants;
+import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -44,13 +50,13 @@ public class GDALProductReader extends AbstractProductReader {
     private static final Map<Integer, BufferTypeDescriptor> BUFFER_TYPES;
     static {
         BUFFER_TYPES = new HashMap<>();
-        BUFFER_TYPES.put(gdalconstConstants.GDT_Byte, new BufferTypeDescriptor(8, true, ProductData.TYPE_UINT8, DataBuffer.TYPE_BYTE));
-        BUFFER_TYPES.put(gdalconstConstants.GDT_Int16, new BufferTypeDescriptor(16, true, ProductData.TYPE_INT16, DataBuffer.TYPE_SHORT));
-        BUFFER_TYPES.put(gdalconstConstants.GDT_UInt16, new BufferTypeDescriptor(16, false, ProductData.TYPE_UINT16, DataBuffer.TYPE_USHORT));
-        BUFFER_TYPES.put(gdalconstConstants.GDT_Int32, new BufferTypeDescriptor(32, true, ProductData.TYPE_INT32, DataBuffer.TYPE_INT));
-        BUFFER_TYPES.put(gdalconstConstants.GDT_UInt32, new BufferTypeDescriptor(32, false, ProductData.TYPE_UINT32, DataBuffer.TYPE_INT));
-        BUFFER_TYPES.put(gdalconstConstants.GDT_Float32, new BufferTypeDescriptor(32, true, ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT));
-        BUFFER_TYPES.put(gdalconstConstants.GDT_Float64, new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
+        BUFFER_TYPES.put(GDALConstConstants.gdtByte(), new BufferTypeDescriptor(8, true, ProductData.TYPE_UINT8, DataBuffer.TYPE_BYTE));
+        BUFFER_TYPES.put(GDALConstConstants.gdtInt16(), new BufferTypeDescriptor(16, true, ProductData.TYPE_INT16, DataBuffer.TYPE_SHORT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtUint16(), new BufferTypeDescriptor(16, false, ProductData.TYPE_UINT16, DataBuffer.TYPE_USHORT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtInt32(), new BufferTypeDescriptor(32, true, ProductData.TYPE_INT32, DataBuffer.TYPE_INT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtUint32(), new BufferTypeDescriptor(32, false, ProductData.TYPE_UINT32, DataBuffer.TYPE_INT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtFloat32(), new BufferTypeDescriptor(32, true, ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtFloat64(), new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
     }
 
     private VirtualFile virtualFile;
@@ -91,8 +97,7 @@ public class GDALProductReader extends AbstractProductReader {
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
-                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
-                                          throws IOException {
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) {
         // do nothing
     }
 
@@ -104,7 +109,7 @@ public class GDALProductReader extends AbstractProductReader {
             throw new IllegalArgumentException("The file '" + localFile.toString() + "' is not a local file.");
         }
 
-        org.gdal.gdal.Dataset gdalDataset = openGDALDataset(localFile);
+        Dataset gdalDataset = openGDALDataset(localFile);
         try {
             int defaultProductWidth = gdalDataset.getRasterXSize();
             int defaultProductHeight = gdalDataset.getRasterYSize();
@@ -132,8 +137,10 @@ public class GDALProductReader extends AbstractProductReader {
             Product product = new Product(localFile.getFileName().toString(), "GDAL", productBounds.width, productBounds.height, this);
             product.setPreferredTileSize(JAI.getDefaultTileSize());
 
+            MetadataElement metadataElement = null;
+
             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
-                MetadataElement metadataElement = buildMetadataElement(gdalDataset);
+                metadataElement = buildMetadataElement(gdalDataset);
                 product.getMetadataRoot().addElement(metadataElement);
             }
 
@@ -148,7 +155,7 @@ public class GDALProductReader extends AbstractProductReader {
             int bandCount = gdalDataset.getRasterCount();
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // bands are not 0-base indexed, so we must add 1
-                org.gdal.gdal.Band gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
+                org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
                 String bandName = computeBandName(gdalBand, bandIndex);
 
                 if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
@@ -160,24 +167,24 @@ public class GDALProductReader extends AbstractProductReader {
 
                     Dimension tileSize = computeBandTileSize(gdalBand, productBounds.width, productBounds.height);
 
-                    int levelCount = gdalBand.GetOverviewCount() + 1;
+                    int levelCount = gdalBand.getOverviewCount() + 1;
                     if (numResolutions >= levelCount) {
                         numResolutions = levelCount;
                     }
                     if (levelCount == 1) {
                         logger.fine("Optimizing read by building image pyramids");
-                        if (gdalconst.CE_Failure != gdalDataset.BuildOverviews("NEAREST", new int[]{2, 4, 8, 16})) {
-                            gdalBand = gdalDataset.GetRasterBand(bandIndex + 1);
+                        if (!GDALConst.ceFailure().equals(gdalDataset.buildOverviews("NEAREST", new int[]{2, 4, 8, 16}))) {
+                            gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
                         } else {
                             logger.fine("Multiple levels not supported");
                         }
                     }
-                    levelCount = gdalBand.GetOverviewCount() + 1;
+                    levelCount = gdalBand.getOverviewCount() + 1;
                     product.setNumResolutionsMax(levelCount);
 
-                    String colorInterpretationName = gdal.GetColorInterpretationName(gdalBand.GetRasterColorInterpretation());
+                    String colorInterpretationName = GDAL.getColorInterpretationName(gdalBand.getRasterColorInterpretation());
                     MetadataElement bandMetadataElement = new MetadataElement("Component");
-                    bandMetadataElement.setAttributeString("data type", gdal.GetDataTypeName(gdalDataType));
+                    bandMetadataElement.setAttributeString("data type", GDAL.getDataTypeName(gdalDataType));
                     bandMetadataElement.setAttributeString("color interpretation", colorInterpretationName);
                     bandMetadataElement.setAttributeString("block size", tileSize.width + "x" + tileSize.height);
                     bandMetadataElement.setAttributeInt("precision", dataBufferType.precision);
@@ -188,7 +195,7 @@ public class GDALProductReader extends AbstractProductReader {
                             if (iOverview != 0) {
                                 str.append(", ");
                             }
-                            org.gdal.gdal.Band hOverview = gdalBand.GetOverview(iOverview);
+                            org.esa.s2tbx.dataio.gdal.drivers.Band hOverview = gdalBand.getOverview(iOverview);
                             str.append(hOverview.getXSize())
                                     .append("x")
                                     .append(hOverview.getYSize());
@@ -202,19 +209,19 @@ public class GDALProductReader extends AbstractProductReader {
                     Band productBand = new Band(bandName, dataBufferType.bandDataType, productBounds.width, productBounds.height);
                     productBand.setGeoCoding(geoCoding);
 
-                    gdalBand.GetOffset(pass1);
+                    gdalBand.getOffset(pass1);
                     if (pass1[0] != null && pass1[0] != 0) {
                         bandMetadataElement.setAttributeDouble("offset", pass1[0]);
                         productBand.setScalingOffset(pass1[0]);
                     }
 
-                    gdalBand.GetScale(pass1);
+                    gdalBand.getScale(pass1);
                     if (pass1[0] != null && pass1[0] != 1) {
                         bandMetadataElement.setAttributeDouble("scale", pass1[0]);
                         productBand.setScalingFactor(pass1[0]);
                     }
 
-                    String unitType = gdalBand.GetUnitType();
+                    String unitType = gdalBand.getUnitType();
                     if (unitType != null && unitType.length() > 0) {
                         bandMetadataElement.setAttributeString("unit type", unitType);
                         productBand.setUnit(unitType);
@@ -222,18 +229,18 @@ public class GDALProductReader extends AbstractProductReader {
 
                     Double noDataValue = null;
                     Double[] noData = new Double[1];
-                    gdalBand.GetNoDataValue(noData);
+                    gdalBand.getNoDataValue(noData);
                     if (noData[0] != null) {
-                        noDataValue = noData[0].doubleValue();
-                        productBand.setNoDataValue(noData[0].doubleValue());
+                        noDataValue = noData[0];
+                        productBand.setNoDataValue(noDataValue);
                         productBand.setNoDataValueUsed(true);
                     }
 
                     GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, productBounds, tileSize, bandIndex, levelCount, geoCoding, noDataValue);
                     productBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
-                    if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
-                        product.getMetadataRoot().addElement(bandMetadataElement);
+                    if (metadataElement != null && (subsetDef == null || !subsetDef.isIgnoreMetadata())) {
+                        metadataElement.addElement(bandMetadataElement);
                     }
 
                     product.addBand(productBand);
@@ -260,8 +267,8 @@ public class GDALProductReader extends AbstractProductReader {
         }
     }
 
-    public static org.gdal.gdal.Dataset openGDALDataset(Path localProductPath) {
-        org.gdal.gdal.Dataset gdalDataset = gdal.Open(localProductPath.toString(), gdalconst.GA_ReadOnly);
+    static Dataset openGDALDataset(Path localProductPath) {
+        Dataset gdalDataset = GDAL.open(localProductPath.toString(), GDALConst.gaReadonly());
         if (gdalDataset == null) {
             // unknown file format
             throw new NullPointerException("Failed opening a dataset from the file '" + localProductPath.toString() + "' to load the product.");
@@ -269,16 +276,16 @@ public class GDALProductReader extends AbstractProductReader {
         return gdalDataset;
     }
 
-    public static String computeMaskName(org.gdal.gdal.Band gdalBand, String bandName) {
-        org.gdal.gdal.Band maskBand = gdalBand.GetMaskBand();
+    static String computeMaskName(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, String bandName) {
+        org.esa.s2tbx.dataio.gdal.drivers.Band maskBand = gdalBand.getMaskBand();
         if (maskBand != null) {
-            int maskFlags = gdalBand.GetMaskFlags();
+            int maskFlags = gdalBand.getMaskFlags();
             String maskPrefix = null;
-            if ((maskFlags & (gdalconstConstants.GMF_NODATA | gdalconstConstants.GMF_PER_DATASET)) != 0) {
+            if ((maskFlags & (GDALConstConstants.gmfNodata() | GDALConstConstants.gmfPerDataset())) != 0) {
                 maskPrefix = "nodata_";
-            } else if ((maskFlags & (gdalconstConstants.GMF_PER_DATASET | gdalconstConstants.GMF_ALPHA)) != 0) {
+            } else if ((maskFlags & (GDALConstConstants.gmfPerDataset() | GDALConstConstants.gmfAlpha())) != 0) {
                 maskPrefix = "alpha_";
-            } else if ((maskFlags & (gdalconstConstants.GMF_NODATA | gdalconstConstants.GMF_PER_DATASET | gdalconstConstants.GMF_ALPHA | gdalconstConstants.GMF_ALL_VALID)) != 0) {
+            } else if ((maskFlags & (GDALConstConstants.gmfNodata() | GDALConstConstants.gmfPerDataset() | GDALConstConstants.gmfAlpha() | GDALConstConstants.gmfAllValid())) != 0) {
                 maskPrefix = "mask_";
             }
             if (maskPrefix != null) {
@@ -288,8 +295,8 @@ public class GDALProductReader extends AbstractProductReader {
         return null;
     }
 
-    private static Dimension computeBandTileSize(org.gdal.gdal.Band gdalBand, int productWidth, int productHeight) {
-        Dimension tileSize = new Dimension(gdalBand.GetBlockXSize(), gdalBand.GetBlockYSize());
+    private static Dimension computeBandTileSize(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, int productWidth, int productHeight) {
+        Dimension tileSize = new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize());
         if (tileSize.width <= 1 || tileSize.width > productWidth) {
             tileSize.width = productWidth;
         }
@@ -299,8 +306,8 @@ public class GDALProductReader extends AbstractProductReader {
         return tileSize;
     }
 
-    public static String computeBandName(org.gdal.gdal.Band gdalBand, int bandIndex) {
-        String bandName = gdalBand.GetDescription();
+    static String computeBandName(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, int bandIndex) {
+        String bandName = gdalBand.getDescription();
         if (StringUtils.isNullOrEmpty(bandName)) {
             bandName = String.format("band_%s", bandIndex + 1);
         } else {
@@ -309,13 +316,13 @@ public class GDALProductReader extends AbstractProductReader {
         return bandName;
     }
 
-    public static CrsGeoCoding buildGeoCoding(Dataset gdalDataset, Rectangle subsetBounds) throws FactoryException, TransformException {
-        String wellKnownText = gdalDataset.GetProjectionRef();
+    static CrsGeoCoding buildGeoCoding(Dataset gdalDataset, Rectangle subsetBounds) throws FactoryException, TransformException {
+        String wellKnownText = gdalDataset.getProjectionRef();
         if (!StringUtils.isNullOrEmpty(wellKnownText)) {
             int imageWidth = gdalDataset.getRasterXSize();
             int imageHeight = gdalDataset.getRasterYSize();
             double[] adfGeoTransform = new double[6];
-            gdalDataset.GetGeoTransform(adfGeoTransform);
+            gdalDataset.getGeoTransform(adfGeoTransform);
             double originX = adfGeoTransform[0];
             double originY = adfGeoTransform[3];
             double resolutionX = adfGeoTransform[1];
@@ -327,7 +334,7 @@ public class GDALProductReader extends AbstractProductReader {
     }
 
     private static MetadataElement buildMetadataElement(Dataset gdalProduct) {
-        Driver hDriver = gdalProduct.GetDriver();
+        Driver hDriver = gdalProduct.getDriver();
         int imageWidth = gdalProduct.getRasterXSize();
         int imageHeight = gdalProduct.getRasterYSize();
         MetadataElement metadataElement = new MetadataElement("Image info");
@@ -336,7 +343,7 @@ public class GDALProductReader extends AbstractProductReader {
         metadataElement.setAttributeInt("height", imageHeight);
 
         double[] adfGeoTransform = new double[6];
-        gdalProduct.GetGeoTransform(adfGeoTransform);
+        gdalProduct.getGeoTransform(adfGeoTransform);
         double originX = adfGeoTransform[0];
         double originY = adfGeoTransform[3];
         double pixelSizeX = adfGeoTransform[1];
@@ -351,7 +358,7 @@ public class GDALProductReader extends AbstractProductReader {
             metadataElement.setAttributeString("geo transform", str1 + " " + str2);
         }
 
-        Hashtable<?, ?> dict = gdalProduct.GetMetadata_Dict("");
+        Hashtable<?, ?> dict = gdalProduct.getMetadataDict("");
         Enumeration keys = dict.keys();
         while (keys.hasMoreElements()) {
             String key = (String) keys.nextElement();
@@ -364,10 +371,10 @@ public class GDALProductReader extends AbstractProductReader {
     }
 
     private static class BufferTypeDescriptor {
-        public int precision;
-        public boolean signed;
-        public int bandDataType;
-        public int dataBufferType;
+        final int precision;
+        final boolean signed;
+        final int bandDataType;
+        final int dataBufferType;
 
         BufferTypeDescriptor(int precision, boolean signed, int bandDataType, int dataBufferType) {
             this.precision = precision;
