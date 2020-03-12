@@ -2,8 +2,11 @@ package org.esa.s2tbx.dataio.gdal;
 
 import org.esa.snap.core.util.SystemUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.logging.Level;
@@ -88,6 +91,36 @@ public enum GDALVersion {
         return installedVersion;
     }
 
+    private static String fetchProcessOutput(Process process) throws IOException {
+        StringBuilder output = new StringBuilder();
+        try (InputStream commandInputStream = process.getInputStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(commandInputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
+            boolean isStopped = false;
+            long startTime = System.currentTimeMillis();
+            int runningTime = 30;// allow only 30 seconds of running time for the process
+            while (!isStopped && runningTime > 0) {
+                if (process.isAlive()) {
+                    Thread.yield(); // yield the control to other threads
+                } else {
+                    isStopped = true;
+                }
+                while (bufferedReader.ready()) {
+                    String line = bufferedReader.readLine();
+                    if (line != null && !line.isEmpty()) {
+                        output.append(line).append("\n");
+                    } else {
+                        break;
+                    }
+                }
+                long endTime = System.currentTimeMillis();
+                runningTime -= (endTime - startTime) / 1000;
+            }
+            return output.toString();
+        }
+    }
+
     /**
      * Retrieves the installed GDAl version on host OS by invoking 'gdalinfo --version' command and parsing the output.
      *
@@ -95,8 +128,9 @@ public enum GDALVersion {
      */
     private static GDALVersion retrieveInstalledVersion() {
         GDALVersion gdalVersion = null;
-        try (java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(GDAL_INFO_CMD).getInputStream()).useDelimiter("\\A")) {
-            String result = s.hasNext() ? s.next() : "";
+        try {
+            Process checkGDALVersionProcess = Runtime.getRuntime().exec(GDAL_INFO_CMD);
+            String result = fetchProcessOutput(checkGDALVersionProcess);
             String versionId = result.replaceAll("[\\s\\S]*?(\\d*\\.\\d*\\.\\d*)[\\s\\S]*$", "$1");
             String version = versionId.replaceAll("(\\d*\\.\\d*)[\\s\\S]*$", "$1.X");
             switch (version) {
@@ -120,7 +154,7 @@ public enum GDALVersion {
                     break;
                 default:
                     if (version.isEmpty()) {
-                        logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + internalVersion.id + " from distribution will be used.");
+                        logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + internalVersion.id + " from distribution will be used. (f0)");
                     } else {
                         logger.log(Level.INFO, () -> "Incompatible GDAL " + versionId + " found on system. Internal GDAL " + internalVersion.id + " from distribution will be used.");
                     }
@@ -133,7 +167,7 @@ public enum GDALVersion {
                 logger.log(Level.INFO, () -> "GDAL " + versionId + " found on system. JNI driver will be used.");
             }
         } catch (IOException ignored) {
-            logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + internalVersion.id + " from distribution will be used.");
+            logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + internalVersion.id + " from distribution will be used. (f1)");
         }
         return gdalVersion;
     }
