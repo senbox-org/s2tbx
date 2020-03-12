@@ -42,7 +42,7 @@ public class WorldView2ProductReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         WorldView2ProductReaderPlugin plugin = new WorldView2ProductReaderPlugin();
-        reader = new WorldView2ProductReader(plugin, plugin.getColorPaletteFilePath());
+        reader = new WorldView2ProductReader(plugin);
     }
 
     @After

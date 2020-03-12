@@ -36,7 +36,7 @@ public class Kompsat2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new Kompsat2ProductReader(this, getColorPaletteFilePath());
+        return new Kompsat2ProductReader(this);
     }
 
     @Override

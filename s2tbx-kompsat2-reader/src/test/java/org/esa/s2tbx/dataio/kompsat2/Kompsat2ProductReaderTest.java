@@ -41,7 +41,7 @@ public class Kompsat2ProductReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         Kompsat2ProductReaderPlugin plugin = new Kompsat2ProductReaderPlugin();
-        reader = new Kompsat2ProductReader(plugin, plugin.getColorPaletteFilePath());
+        reader = new Kompsat2ProductReader(plugin);
     }
 
     @After

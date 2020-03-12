@@ -58,16 +58,13 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
 
     private static final String EXCLUSION_STRING = ".SI.XML";
 
-    private final Path colorPaletteFilePath;
-
     private VirtualDirEx productDirectory;
     private List<GeoTiffImageReader> bandImageReaders;
     private ImageInputStreamSpi imageInputStreamSpi;
 
-    public WorldView2ESAProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+    public WorldView2ESAProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
 
-        this.colorPaletteFilePath = colorPaletteFilePath;
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
@@ -144,7 +141,6 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                         Band band = buildBand(defaultProductSize, mosaicMatrix, tileMetadata, bandName, bandIndex, preferredTileSize, productGeoCoding, productDefaultGeoCoding, subsetDef, isMultiSize);
                         if (band != null) {
-                            band.setColorPaletteFilePath(this.colorPaletteFilePath);
                             product.addBand(band);
                         }
                     }

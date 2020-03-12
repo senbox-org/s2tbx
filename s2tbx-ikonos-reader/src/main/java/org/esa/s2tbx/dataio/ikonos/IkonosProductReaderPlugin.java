@@ -38,7 +38,7 @@ public class IkonosProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new IkonosProductReader(this, getColorPaletteFilePath());
+        return new IkonosProductReader(this);
     }
 
     @Override

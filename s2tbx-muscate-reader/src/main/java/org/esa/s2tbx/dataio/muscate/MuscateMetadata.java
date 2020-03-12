@@ -2,11 +2,11 @@ package org.esa.s2tbx.dataio.muscate;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.lib.openjpeg.utils.StackTraceUtils;
@@ -20,8 +20,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.esa.snap.utils.DateHelper.parseDate;
 
@@ -29,8 +27,6 @@ import static org.esa.snap.utils.DateHelper.parseDate;
  * Created by obarrile on 26/01/2017.
  */
 public class MuscateMetadata extends XmlMetadata {
-
-    private static final Logger logger = Logger.getLogger(MuscateMetadata.class.getName());
 
     private ArrayList<MuscateImage> images;
     private ArrayList<MuscateMask> masks;
@@ -576,8 +572,9 @@ public class MuscateMetadata extends XmlMetadata {
                         azimuth[index] = anglesGrid.getAzimuth()[index];
                     }
                 } catch (Exception e) {
-                    logger.log(Level.SEVERE, "Failed to check the angles.", e);
+                    logger.severe(StackTraceUtils.getStackTrace(e));
                 }
+
             }
         }
         bandAngleGrid.setHeight(gridHeight);

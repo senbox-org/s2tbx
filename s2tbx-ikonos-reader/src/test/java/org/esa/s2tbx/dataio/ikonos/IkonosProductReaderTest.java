@@ -262,6 +262,6 @@ public class IkonosProductReaderTest {
 
     private static IkonosProductReader buildProductReader() {
         IkonosProductReaderPlugin plugin = new IkonosProductReaderPlugin();
-        return new IkonosProductReader(plugin, plugin.getColorPaletteFilePath());
+        return new IkonosProductReader(plugin);
     }
 }

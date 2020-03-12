@@ -20,7 +20,11 @@ package org.esa.s2tbx.dataio.spot;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.commons.FilePathInputStream;
+import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
@@ -30,9 +34,7 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
-import org.esa.snap.core.metadata.GenericXmlMetadata;
-import org.esa.snap.core.metadata.XmlMetadataParser;
-import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
@@ -146,8 +148,7 @@ public class SpotViewProductReader extends AbstractProductReader {
             GeoCoding bandGeoCoding = product.getSceneGeoCoding();
             for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
                 if (subsetDef == null || subsetDef.isNodeAccepted(bandNames[bandIndex])) {
-                    Band band = new Band(bandNames[bandIndex], bandDataType, product.getSceneRasterWidth(), product.getSceneRasterHeight());
-                    band.setColorPaletteFilePath(this.colorPaletteFilePath);
+                    ColorPaletteBand band = new ColorPaletteBand(bandNames[bandIndex], bandDataType, product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
                     if (bandGeoCoding != null) {
                         band.setGeoCoding(bandGeoCoding);
                     }

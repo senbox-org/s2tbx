@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Denisa Stefanescu
@@ -19,7 +18,6 @@ public class WorldView2ESAMetadataInspectorTest {
 
     @Test
     public void testWorldView2ESAMetadataInspector() {
-        assumeTrue(TestUtil.testdataAvailable());
 
         File file = TestUtil.getTestFile(productsFolder + "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP" + File.separator + "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.MD.XML");
 

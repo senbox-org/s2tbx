@@ -9,14 +9,12 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 public class WorldView2MetadataInspectorTest {
     private String productsFolder = "_worldView" + File.separator;
 
     @Test
     public void testWorldView2ESAMetadataInspector() {
-        assumeTrue(TestUtil.testdataAvailable());
 
         File file = TestUtil.getTestFile(productsFolder + "ZON24_I200862_FL01-P369685/ZON24_README.XML");
 

@@ -10,7 +10,6 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Denisa Stefanescu
@@ -24,8 +23,6 @@ public class MuscateMetadataInspectorTest {
 
     @Test
     public void testMuscateMetadataInspector() throws IOException {
-        assumeTrue(TestUtil.testdataAvailable());
-
         File file = TestUtil.getTestFile(productsFolder + "SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0.zip");
         assertNotNull(file);
 

@@ -38,16 +38,12 @@ import java.util.logging.Logger;
  */
 public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends XmlMetadata> extends AbstractProductReader {
 
-    private final Path colorPaletteFilePath;
-
     private VirtualDirEx productDirectory;
     private ImageInputStreamSpi imageInputStreamSpi;
     private List<GeoTiffImageReader> bandImageReaders;
 
-    protected MultipleMetadataGeoTiffBasedReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+    protected MultipleMetadataGeoTiffBasedReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-
-        this.colorPaletteFilePath = colorPaletteFilePath;
 
         this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
@@ -217,7 +213,6 @@ public abstract class MultipleMetadataGeoTiffBasedReader<MetadataType extends Xm
                         String bandName = bandPrefix + ((bandIndex < bandNames.length) ? bandNames[bandIndex] : ("band_" + bandIndex));
                         if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                             Band geoTiffBand = getTiffProduct.getBandAt(bandIndex);
-                            geoTiffBand.setColorPaletteFilePath(this.colorPaletteFilePath);
                             geoTiffBand.setName(bandName);
                             product.addBand(geoTiffBand);
                         }

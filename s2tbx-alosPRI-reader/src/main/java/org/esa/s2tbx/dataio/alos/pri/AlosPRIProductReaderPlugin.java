@@ -34,7 +34,7 @@ public class AlosPRIProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new AlosPRIProductReader(this, getColorPaletteFilePath());
+        return new AlosPRIProductReader(this);
     }
 
     @Override
