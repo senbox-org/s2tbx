@@ -38,7 +38,6 @@ import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
-import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.jai.JAIUtils;
@@ -50,15 +49,15 @@ import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.geotools.metadata.InvalidMetadataException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.SampleModel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * This product reader is intended for reading SPOT-1 to SPOT-5 scene files
@@ -171,7 +170,6 @@ public class SpotDimapProductReader extends AbstractProductReader {
             }
         }
 
-        Path colorPaletteFilePath = ((SpotDimapProductReaderPlugin)getReaderPlugIn()).getColorPaletteFilePath();
         GeoCoding bandGeoCoding = product.getSceneGeoCoding();
         String[] bandNames = firstDimapMetadata.getBandNames();
         String[] bandUnits = firstDimapMetadata.getBandUnits();
@@ -189,7 +187,6 @@ public class SpotDimapProductReader extends AbstractProductReader {
             }
             if (subsetDef == null || subsetDef.isNodeAccepted(bandNames[bandIndex])) {
                 Band band = new Band(bandNames[bandIndex], firstDimapMetadata.getPixelDataType(), productBounds.width, productBounds.height);
-                band.setColorPaletteFilePath(colorPaletteFilePath);
                 band.setGeoCoding(bandGeoCoding);
                 int noDataValueAsInt = firstDimapMetadata.getNoDataValue();
                 Double noDataValue = null;
