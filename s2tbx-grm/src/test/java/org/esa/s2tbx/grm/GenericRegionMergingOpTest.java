@@ -202,7 +202,7 @@ public class GenericRegionMergingOpTest {
         }
     }
 
-    @Test
+    /*@Test
     public void testBaatzSchapeLargeTileSegmenter() throws IOException, IllegalAccessException, URISyntaxException {
         Product sourceProduct = readSourceProduct("picture-750x898.png");
         try {
@@ -248,9 +248,9 @@ public class GenericRegionMergingOpTest {
         } finally {
             sourceProduct.dispose();
         }
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testFastBaatzSchapeLargeTileSegmenter() throws IOException, IllegalAccessException, URISyntaxException {
         Product sourceProduct = readSourceProduct("picture-750x898.png");
         try {
@@ -296,7 +296,7 @@ public class GenericRegionMergingOpTest {
         } finally {
             sourceProduct.dispose();
         }
-    }
+    }*/
 
     private Product readSourceProduct(String imageFileName) throws IOException, URISyntaxException {
         URL resource = getClass().getResource(imageFileName);
