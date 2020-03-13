@@ -46,7 +46,7 @@ public class RSTDriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(20, finalProduct.getSceneRasterWidth());
             assertEquals(30, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(600, band.getNumDataElems());
 
@@ -94,7 +94,7 @@ public class RSTDriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(15, finalProduct.getSceneRasterWidth());
             assertEquals(10, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(150, band.getNumDataElems());
 
@@ -156,7 +156,7 @@ public class RSTDriverProductReaderTest extends AbstractTestDriverProductReader 
                assertEquals(15, finalProduct.getSceneRasterWidth());
                assertEquals(10, finalProduct.getSceneRasterHeight());
 
-               Band band = finalProduct.getBandAt(0);
+               Band band = finalProduct.getBand("band_1");
                assertEquals(20, band.getDataType());
                assertEquals(150, band.getNumDataElems());
 

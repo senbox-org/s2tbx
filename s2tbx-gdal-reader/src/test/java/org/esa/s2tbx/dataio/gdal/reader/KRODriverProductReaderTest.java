@@ -40,7 +40,7 @@ public class KRODriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(768, finalProduct.getSceneRasterWidth());
             assertEquals(512, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(1);
+            Band band = finalProduct.getBand("band_2");
             assertEquals(20, band.getDataType());
             assertEquals(393216, band.getNumDataElems());
 

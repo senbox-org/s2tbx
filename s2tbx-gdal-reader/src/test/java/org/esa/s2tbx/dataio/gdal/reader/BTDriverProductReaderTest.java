@@ -39,7 +39,7 @@ public class BTDriverProductReaderTest extends AbstractTestDriverProductReader {
             assertEquals(768, finalProduct.getSceneRasterWidth());
             assertEquals(512, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(12, band.getDataType());
             assertEquals(393216, band.getNumDataElems());
 
@@ -87,7 +87,7 @@ public class BTDriverProductReaderTest extends AbstractTestDriverProductReader {
             assertEquals(400, finalProduct.getSceneRasterWidth());
             assertEquals(300, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(12, band.getDataType());
             assertEquals(120000, band.getNumDataElems());
 

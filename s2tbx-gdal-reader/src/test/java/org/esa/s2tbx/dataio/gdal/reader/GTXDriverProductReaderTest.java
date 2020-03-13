@@ -45,7 +45,7 @@ public class GTXDriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(20, finalProduct.getSceneRasterWidth());
             assertEquals(30, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(30, band.getDataType());
             assertEquals(600, band.getNumDataElems());
 
@@ -94,7 +94,7 @@ public class GTXDriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(20, finalProduct.getSceneRasterHeight());
             assertEquals(0,finalProduct.getTiePointGridGroup().getNodeNames().length);
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(30, band.getDataType());
             assertEquals(200, band.getNumDataElems());
 
@@ -169,7 +169,7 @@ public class GTXDriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(21, finalProduct.getSceneRasterHeight());
             assertEquals(0,finalProduct.getTiePointGridGroup().getNodeNames().length);
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(30, band.getDataType());
             assertEquals(252, band.getNumDataElems());
 

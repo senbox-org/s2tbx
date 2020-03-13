@@ -40,7 +40,7 @@ public class NITFDriverProductReaderTest extends AbstractTestDriverProductReader
             assertEquals(64, finalProduct.getSceneRasterWidth());
             assertEquals(64, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(4096, band.getNumDataElems());
 
@@ -89,7 +89,7 @@ public class NITFDriverProductReaderTest extends AbstractTestDriverProductReader
             assertEquals(20, mask.getDataType());
             assertEquals(2000, mask.getNumDataElems());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(2000, band.getNumDataElems());
 
