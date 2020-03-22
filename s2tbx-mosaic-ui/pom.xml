@@ -22,7 +22,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>7.0.1-SNAPSHOT</version>
+        <version>7.0.1cv-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-mosaic-ui</artifactId>
@@ -35,7 +35,6 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-binding</artifactId>
-            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
@@ -130,7 +129,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-mosaic</artifactId>
-            <version>${project.version}</version>
+            <version>${s2tbx.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

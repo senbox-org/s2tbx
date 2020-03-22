@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>7.0.1-SNAPSHOT</version>
+    <version>7.0.1cv-SNAPSHOT</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -80,8 +80,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>7.0.4-SNAPSHOT</snap.version>
-        <s2tbx.version>7.0.1-SNAPSHOT</s2tbx.version>
+        <snap.version>7.0.4cv-SNAPSHOT</snap.version>
+        <s2tbx.version>7.0.1cv-SNAPSHOT</s2tbx.version>
         <geotools.version>17.1</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
@@ -202,6 +202,12 @@
                 <artifactId>ceres-jai</artifactId>
                 <version>${snap.version}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>ceres-binding</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
@@ -287,6 +293,12 @@
                 <version>${snap.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-binning</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-binning</artifactId>
