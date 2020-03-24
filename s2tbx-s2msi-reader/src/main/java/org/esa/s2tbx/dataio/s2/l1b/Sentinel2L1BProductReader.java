@@ -21,10 +21,12 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadata;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.l1b.tiles.BandL1bSceneMultiLevelSource;
+import org.esa.s2tbx.dataio.s2.tiles.TileIndexBandMatrixCell;
 import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
 import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -416,6 +418,33 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return band;
     }
 
+    private static MosaicMatrix buildIndexBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
+        MosaicMatrixCellCallback mosaicMatrixCellCallback = new MosaicMatrixCellCallback() {
+            @Override
+            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo, int cellWidth, int cellHeight) {
+                S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) tileBandInfo.getBandInformation();
+                S2GranuleDirFilename s2GranuleDirFilename = S2L1BGranuleDirFilename.create(tileId);
+                if (s2GranuleDirFilename == null) {
+                    throw new NullPointerException("The granule dir file name is null.");
+                }
+                String granuleName = s2GranuleDirFilename.getTileID();
+                Integer indexSample = indexBandInformation.findIndexSample(granuleName);
+                if (indexSample == null) {
+                    throw new NullPointerException("The index sample is null.");
+                }
+                short indexValueShort = indexSample.shortValue();
+                return new TileIndexBandMatrixCell(cellWidth, cellHeight, indexValueShort);
+
+                //TODO Jean old code
+//                TileLayout tileLayout = tileBandInfo.getImageLayout();
+//                int cellWidth = tileLayout.width;
+//                int cellHeight = tileLayout.height;
+//                return new TileIndexBandMatrixCell(cellWidth, cellHeight, indexValueShort);
+            }
+        };
+        return buildBandMatrix(bandMatrixTileIds, sceneDescription, tileBandInfo, mosaicMatrixCellCallback);
+    }
+
     private static TiePointGrid buildTiePointGrid(int width, int height, String gridName, float[] tiePoints) {
         return buildTiePointGrid(gridName, 2, 2, 0, 0, width, height, tiePoints);
     }
@@ -456,17 +485,18 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     private static void validateBandSize(int defaultBandWidth, int defaultBandHeight, TileLayout thisBandTileLayout, Dimension defaultProductSize, TileLayout productTileLayout) {
-        float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
-        int nativeBandWidth = Math.round(defaultProductSize.width / factorX);
-        if (nativeBandWidth != defaultBandWidth) {
-            throw new IllegalStateException("Invalid band width: nativeBandWidth="+nativeBandWidth+", defaultBandWidth="+defaultBandWidth);
-        }
-
-        float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
-        int nativeBandHeight = Math.round(defaultProductSize.height / factorY);
-        if (nativeBandHeight != defaultBandHeight) {
-            throw new IllegalStateException("Invalid band height: nativeBandHeight="+nativeBandHeight+", defaultBandHeight="+defaultBandHeight);
-        }
+        //TODO Jean old code
+//        float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
+//        int nativeBandWidth = Math.round(defaultProductSize.width / factorX);
+//        if (nativeBandWidth != defaultBandWidth) {
+//            throw new IllegalStateException("Invalid band width: nativeBandWidth="+nativeBandWidth+", defaultBandWidth="+defaultBandWidth);
+//        }
+//
+//        float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
+//        int nativeBandHeight = Math.round(defaultProductSize.height / factorY);
+//        if (nativeBandHeight != defaultBandHeight) {
+//            throw new IllegalStateException("Invalid band height: nativeBandHeight="+nativeBandHeight+", defaultBandHeight="+defaultBandHeight);
+//        }
     }
 
     public static List<L1BBandInfo> computeTileIndexesList(List<S2SpatialResolution> resolutions, List<L1bMetadata.Tile> tileList, L1bSceneDescription sceneDescription, S2Config config) {
