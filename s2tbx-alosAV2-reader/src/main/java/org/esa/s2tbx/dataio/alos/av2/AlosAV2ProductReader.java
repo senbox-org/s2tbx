@@ -254,7 +254,13 @@ public class AlosAV2ProductReader extends AbstractProductReader {
             if (org.apache.commons.lang.StringUtils.endsWithIgnoreCase(baseItemName, AlosAV2Constants.PRODUCT_FOLDER_SUFFIX)) {
                 int index = org.apache.commons.lang.StringUtils.lastIndexOfIgnoreCase(baseItemName, AlosAV2Constants.PRODUCT_FOLDER_SUFFIX);
                 String identifier = baseItemName.substring(0, index);
-                return productDirectory.getFile(identifier).toPath();
+                if (productDirectory.exists(identifier)) {
+                    // the identifier exists and it is a directory
+                    return productDirectory.getFile(identifier).toPath();
+                }
+                // the identifier does not exists and add the .zip extension
+                String zipArchiveFileName = identifier + AlosAV2Constants.IMAGE_ARCHIVE_FILE_EXTENSION;
+                return productDirectory.getFile(zipArchiveFileName).toPath();
             }
         }
         // search the image metadata file
