@@ -39,6 +39,81 @@
 <p><b><a href="ReflectanceToRadianceAlgorithmSpecification.html">Reflectance to Radiance Algorithm Specification </a></b></p>
 
 <br>
+
+<h4>I/O Parameters</h4>
+<table border="0">
+    <tr>
+        <td style="border-width:0;" valign="top">
+            <h5>Source Products</h5>
+
+            <p class="i1">
+                <b>Source:</b>
+                Specify the source product which will be used for the computation.
+            </p>
+
+            <h5>Target Product</h5>
+            <p class="i1">
+                <b>Name:</b>
+                Used to specify the name of the target product.
+            </p>
+
+            <p class="i1">
+                <b>Save as:</b>
+                Used to specify whether the target product should be saved to the file system. The
+                combo box presents a list of file formats.
+                The text field allows to specify a target directory. <br>
+            </p>
+
+            <p class="i1">
+                <b>Open in SNAP:</b>
+                Used to specify whether the target product should be opened in the Sentinel Toolbox.
+                When the target product is not saved, it is opened in the Sentinel Toolbox automatically.
+            </p></td>
+        <td style="border-width:0;" valign="top">
+            <img src="images/ReflToRad_IO_Parameters.png">
+        </td>
+    </tr>
+</table>
+
+<h4>Processing Parameters</h4>
+<table border="0">
+    <tr>
+        <td style="border-width:0;" valign="top">
+            <p class="i1">
+                <b>Solar irradiance (if neither Sentinel-2 nor SPOT):</b>
+                Specify the solar irradiance, only if the source product is neither Sentinel-2 nor SPOT.
+                For Sentinel-2 and SPOT products the solar irradiance is extracted from metadata.
+            </p>
+
+            <p class="i1">
+                <b>U (if not Sentinel-2):</b>
+                Specify the quantification value (U). For Sentinel-2 products this value is extracted from metadata.
+            </p>
+
+            <p class="i1">
+                <b>Incidence angle (if neither Sentinel-2 nor SPOT):</b>
+                Specify the incidence angle in degrees, only if the source product is neither Sentinel-2 nor SPOT.
+                For Sentinel-2 products the incidence angle is replaced with the values from the sun_zenith band.
+                For SPOT products the value is extracted from metadata.
+            </p>
+
+            <p class="i1">
+                <b>Source bands:</b>
+                Specify the source bands for the computation.
+            </p>
+
+            <p class="i1">
+                <b>Copy masks:</b>
+                If set, all the masks from the source product are written to target product.
+            </p>
+
+        </td>
+        <td style="border-width:0;" valign="top">
+            <img src="images/ReflToRad_Processing_Parameters.png">
+        </td>
+    </tr>
+</table>
+
 <hr>
 </body>
 </html>
