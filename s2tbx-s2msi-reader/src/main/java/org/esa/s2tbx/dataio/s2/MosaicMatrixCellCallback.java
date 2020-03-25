@@ -7,5 +7,5 @@ import org.esa.snap.core.image.MosaicMatrix;
  */
 public interface MosaicMatrixCellCallback {
 
-    public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, Sentinel2ProductReader.BandInfo tileBandInfo);
+    public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, Sentinel2ProductReader.BandInfo tileBandInfo, int cellWidth, int cellHeight);
 }

@@ -57,11 +57,11 @@ public class AlosPRIProductReaderTest {
 
         assertEquals(3, product.getBands().length);
 
-        Band band = product.getBandAt(0);
+        Band band = product.getBand("ALPSMB038921910");
         assertNotNull(band);
         assertEquals(20, band.getDataType());
         assertEquals(419548800, band.getNumDataElems());
-        assertEquals("ALPSMB038921910", band.getName());
+        //assertEquals("ALPSMB038921910", band.getName());
         assertEquals(20416, band.getRasterWidth());
         assertEquals(20550, band.getRasterHeight());
 
@@ -130,11 +130,11 @@ public class AlosPRIProductReaderTest {
 
             assertEquals(2, product.getBands().length);
 
-            Band band_B = product.getBandAt(0);
+            Band band_B = product.getBand("ALPSMB038921910");
             assertNotNull(band_B);
             assertEquals(20, band_B.getDataType());
             assertEquals(128112000, band_B.getNumDataElems());
-            assertEquals("ALPSMB038921910", band_B.getName());
+            //assertEquals("ALPSMB038921910", band_B.getName());
             assertEquals(12000, band_B.getRasterWidth());
             assertEquals(10676, band_B.getRasterHeight());
 
@@ -145,11 +145,11 @@ public class AlosPRIProductReaderTest {
             assertEquals(0, band_B.getSampleInt(9123, 9010));
             assertEquals(0, band_B.getSampleInt(4010, 7021));
 
-            Band band_F = product.getBandAt(1);
+            Band band_F = product.getBand("ALPSMF038921800");
             assertNotNull(band_F);
             assertEquals(20, band_F.getDataType());
             assertEquals(95183284, band_F.getNumDataElems());
-            assertEquals("ALPSMF038921800", band_F.getName());
+            //assertEquals("ALPSMF038921800", band_F.getName());
             assertEquals(8231, band_F.getRasterWidth());
             assertEquals(11564, band_F.getRasterHeight());
 
@@ -203,11 +203,11 @@ public class AlosPRIProductReaderTest {
 
         assertEquals(2, product.getBands().length);
 
-        Band band_B = product.getBandAt(0);
+        Band band_B = product.getBand("ALPSMB038921910");
         assertNotNull(band_B);
         assertEquals(20, band_B.getDataType());
         assertEquals(128112000, band_B.getNumDataElems());
-        assertEquals("ALPSMB038921910", band_B.getName());
+        //assertEquals("ALPSMB038921910", band_B.getName());
         assertEquals(12000, band_B.getRasterWidth());
         assertEquals(10676, band_B.getRasterHeight());
 
@@ -218,11 +218,11 @@ public class AlosPRIProductReaderTest {
         assertEquals(0, band_B.getSampleInt(9123, 9010));
         assertEquals(0, band_B.getSampleInt(4010, 7021));
 
-        Band band_F = product.getBandAt(1);
+        Band band_F = product.getBand("ALPSMF038921800");
         assertNotNull(band_F);
         assertEquals(20, band_F.getDataType());
         assertEquals(95183284, band_F.getNumDataElems());
-        assertEquals("ALPSMF038921800", band_F.getName());
+        //assertEquals("ALPSMF038921800", band_F.getName());
         assertEquals(8231, band_F.getRasterWidth());
         assertEquals(11564, band_F.getRasterHeight());
 

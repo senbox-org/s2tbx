@@ -63,7 +63,7 @@
         <dependency>
             <groupId>it.geosolutions.jaiext.utilities</groupId>
             <artifactId>jt-utilities</artifactId>
-            <version>1.0.13</version>
+            <version>1.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -76,6 +76,10 @@
                 <exclusion>
                     <groupId>javax.media</groupId>
                     <artifactId>jai_imageio</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.locationtech.jts</groupId>
+                    <artifactId>jts-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

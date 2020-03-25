@@ -15,21 +15,25 @@ public class S2MosaicBandMatrixCell implements MosaicMatrix.MatrixCell {
     private final JP2ImageFile jp2ImageFile;
     private final Path cacheDir;
     private final TileLayout tileLayout;
+    private final int cellWidth;
+    private final int cellHeight;
 
-    public S2MosaicBandMatrixCell(JP2ImageFile jp2ImageFile, Path cacheDir, TileLayout tileLayout) {
+    public S2MosaicBandMatrixCell(JP2ImageFile jp2ImageFile, Path cacheDir, TileLayout tileLayout, int cellWidth, int cellHeight) {
         this.jp2ImageFile = jp2ImageFile;
         this.cacheDir = cacheDir;
         this.tileLayout = tileLayout;
+        this.cellWidth = cellWidth;
+        this.cellHeight = cellHeight;
     }
 
     @Override
     public int getCellWidth() {
-        return tileLayout.width;
+        return this.cellWidth;
     }
 
     @Override
     public int getCellHeight() {
-        return tileLayout.height;
+        return this.cellHeight;
     }
 
     public Dimension getDefaultImageSize() {

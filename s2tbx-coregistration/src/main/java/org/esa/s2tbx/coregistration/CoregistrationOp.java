@@ -1,5 +1,6 @@
 package org.esa.s2tbx.coregistration;
 
+import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.coregistration.operators.ComputeCompareOp;
 import org.esa.s2tbx.coregistration.operators.ImageOperations;
 import org.esa.s2tbx.coregistration.operators.ImagePyramidCache;
@@ -70,6 +71,7 @@ public class CoregistrationOp extends Operator {
     private String radius = "32, 28, 24, 20, 16, 12, 8";
 
     public String hiddenSlaveBand;
+    private int[] radArray;
 
     public CoregistrationOp() {
     }
@@ -103,7 +105,6 @@ public class CoregistrationOp extends Operator {
             hiddenSlaveBand = slaveSourceBand;
         }
 
-        int[] radArray;
         try {
             radArray = Arrays.stream(radius.split(","))
                     .map(String::trim).mapToInt(Integer::parseInt).toArray();
@@ -117,34 +118,34 @@ public class CoregistrationOp extends Operator {
                     slaveProduct.getSceneRasterHeight());
             targetProduct.setDescription(slaveProduct.getDescription());
             targetProduct.setSceneGeoCoding(slaveProduct.getSceneGeoCoding());
-            doExecute(masterProduct, slaveProduct, radArray);
         }
     }
 
-    public void doExecute(Product sourceMasterProduct, Product sourceSlaveProduct, int[] radArray) {
+    @Override
+    public void doExecute(ProgressMonitor pm) throws OperatorException {
         if (masterSourceBand == null || masterSourceBand.isEmpty() ||
-                sourceMasterProduct.getBand(masterSourceBand) == null) {
+                masterProduct.getBand(masterSourceBand) == null) {
             throw new OperatorException("Band name " + masterSourceBand + " wrong for master product " +
-                    sourceMasterProduct.getName() + " having bands : " + Arrays.toString(sourceMasterProduct.getBandGroup().toArray()));
+                masterProduct.getName() + " having bands : " + Arrays.toString(masterProduct.getBandGroup().toArray()));
         }
         if (hiddenSlaveBand == null || hiddenSlaveBand.isEmpty() ||
-                sourceSlaveProduct.getBand(hiddenSlaveBand) == null) {
+                slaveProduct.getBand(hiddenSlaveBand) == null) {
             throw new OperatorException("Band name " + hiddenSlaveBand + " wrong for slave product " +
-                    sourceSlaveProduct.getName() + " having bands : " + Arrays.toString(sourceSlaveProduct.getBandGroup().toArray()));
+                    slaveProduct.getName() + " having bands : " + Arrays.toString(slaveProduct.getBandGroup().toArray()));
         }
         try {
-            getLogger().info("Started coregistration of products " + sourceMasterProduct.getName()
-                    + "(" + sourceMasterProduct.getSceneRasterWidth() + "X" + sourceMasterProduct.getSceneRasterHeight() + ")"
-                    + " and " + sourceSlaveProduct.getName()
-                    + "(" + sourceSlaveProduct.getSceneRasterWidth() + "X" + sourceSlaveProduct.getSceneRasterHeight() + ")");
+            getLogger().info("Started coregistration of products " + masterProduct.getName()
+                    + "(" + masterProduct.getSceneRasterWidth() + "X" + masterProduct.getSceneRasterHeight() + ")"
+                    + " and " + slaveProduct.getName()
+                    + "(" + slaveProduct.getSceneRasterWidth() + "X" + slaveProduct.getSceneRasterHeight() + ")");
             long startTime = System.currentTimeMillis();
 
-            Band originalMasterBand = sourceMasterProduct.getBand(masterSourceBand);
+            Band originalMasterBand = masterProduct.getBand(masterSourceBand);
             int levelMaster = originalMasterBand.getMultiLevelModel().getLevelCount();
             BufferedImage sourceMasterImage = ImageOperations.convertBufferedImage(originalMasterBand.getSourceImage().getImage(0));
             BufferedImage processedMasterImage = sourceMasterImage;
 
-            Band originalSlaveBand = sourceSlaveProduct.getBand(hiddenSlaveBand);
+            Band originalSlaveBand = slaveProduct.getBand(hiddenSlaveBand);
             int levelSlave = originalSlaveBand.getMultiLevelModel().getLevelCount();
             BufferedImage sourceSlaveImage = ImageOperations.convertBufferedImage(originalSlaveBand.getSourceImage().getImage(0));
             float xFactor = (float) processedMasterImage.getWidth() / sourceSlaveImage.getWidth();
@@ -369,7 +370,7 @@ public class CoregistrationOp extends Operator {
             targetBand.setSourceImage(targetImage);
             targetProduct.addBand(targetBand);
 
-            for (Band b : Arrays.asList(sourceSlaveProduct.getBands())) {
+            for (Band b : Arrays.asList(slaveProduct.getBands())) {
                 if (!b.getName().equals(hiddenSlaveBand)) {
 
                     BufferedImage bImage = ImageOperations.interpolate(
