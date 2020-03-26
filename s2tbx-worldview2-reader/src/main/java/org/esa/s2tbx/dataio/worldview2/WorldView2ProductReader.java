@@ -51,7 +51,6 @@ class WorldView2ProductReader extends AbstractProductReader {
     }
 
     private VirtualDirEx productDirectory;
-    private List<GeoTiffImageReader> bandImageReaders;
     private ImageInputStreamSpi imageInputStreamSpi;
 
     public WorldView2ProductReader(ProductReaderPlugIn readerPlugIn) {
@@ -124,7 +123,6 @@ class WorldView2ProductReader extends AbstractProductReader {
                 product.setSceneGeoCoding(productGeoCoding);
             }
 
-            this.bandImageReaders = new ArrayList<>();
             Path parentFolderPath = this.productDirectory.getBaseFile().toPath();
             String autoGroupPattern = "";
             String bandPrefix = "";
@@ -177,7 +175,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                                 // use the default product size to compute the band of a subproduct because the subset region
                                 // is set according to the default product size
                                 Band band = buildSubProductBand(defaultProductSize, subProductDefaultGeoCoding, subProductMosaicMatrix, bandsDataType, bandName,
-                                                                bandIndex, tileMetadata, subProductGeoCoding, preferredTileSize, subsetDef, isMultiSize);
+                                                                bandIndex, tileMetadata, subProductGeoCoding, subsetDef, isMultiSize);
                                 if (band != null) {
                                     band.setScalingFactor(tileComponent.getScalingFactor(bandNames[bandIndex]));
                                     Integer spectralWavelength = WorldView2Constants.BAND_WAVELENGTH.get(bandName);
@@ -209,28 +207,14 @@ class WorldView2ProductReader extends AbstractProductReader {
 
     private void closeResources() {
         try {
-            if (this.bandImageReaders != null) {
-                for (GeoTiffImageReader geoTiffImageReader : this.bandImageReaders) {
-                    try {
-                        geoTiffImageReader.close();
-                    } catch (Exception ignore) {
-                        // ignore
-                    }
-                }
-                this.bandImageReaders.clear();
-                this.bandImageReaders = null;
+            if (this.imageInputStreamSpi != null) {
+                ImageRegistryUtils.deregisterImageInputStreamSpi(this.imageInputStreamSpi);
+                this.imageInputStreamSpi = null;
             }
         } finally {
-            try {
-                if (this.imageInputStreamSpi != null) {
-                    ImageRegistryUtils.deregisterImageInputStreamSpi(this.imageInputStreamSpi);
-                    this.imageInputStreamSpi = null;
-                }
-            } finally {
-                if (this.productDirectory != null) {
-                    this.productDirectory.close();
-                    this.productDirectory = null;
-                }
+            if (this.productDirectory != null) {
+                this.productDirectory.close();
+                this.productDirectory = null;
             }
         }
         System.gc();
@@ -242,7 +226,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         Map<String, int[]> tileInfo = tileMetadata.computeRasterTileInfo();
         int tileRowCount = tileMetadata.getTileRowsCount();
         int tileColumnCount = tileMetadata.getTileColsCount();
-        GeoTiffImageReader[][] geoTiffImageReaders = new GeoTiffImageReader[tileRowCount][tileColumnCount];
+        String[][] geoTiffImagePaths = new String[tileRowCount][tileColumnCount];
         for (String rasterString : tileInfo.keySet()) {
             int[] coordinates = tileInfo.get(rasterString);
             if (!tiffImageRelativeFiles.isEmpty()) {
@@ -253,17 +237,22 @@ class WorldView2ProductReader extends AbstractProductReader {
                     }
                 }
             }
-            GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(parentFolderPath, rasterString);
-            this.bandImageReaders.add(geoTiffImageReader);
-            geoTiffImageReaders[coordinates[0]][coordinates[1]] = geoTiffImageReader;
+            geoTiffImagePaths[coordinates[0]][coordinates[1]] = rasterString;
         }
 
         MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRowCount, tileColumnCount);
         for (int rowIndex=0; rowIndex<tileRowCount; rowIndex++) {
             for (int columnIndex=0; columnIndex<tileColumnCount; columnIndex++) {
-                GeoTiffImageReader geoTiffImageReader = geoTiffImageReaders[rowIndex][columnIndex];
-                SampleModel sampleModel = geoTiffImageReader.getBaseImage().getSampleModel();
-                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(geoTiffImageReader.getImageWidth(), geoTiffImageReader.getImageHeight(), geoTiffImageReader, sampleModel.getDataType());
+                String rasterString = geoTiffImagePaths[rowIndex][columnIndex];
+                int cellWidth;
+                int cellHeight;
+                int dataBufferType;
+                try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(parentFolderPath, rasterString)) {
+                    cellWidth = geoTiffImageReader.getImageWidth();
+                    cellHeight = geoTiffImageReader.getImageHeight();
+                    dataBufferType = geoTiffImageReader.getSampleModel().getDataType();
+                }
+                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, parentFolderPath, rasterString);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
             }
         }
@@ -272,7 +261,7 @@ class WorldView2ProductReader extends AbstractProductReader {
 
     private static Band buildSubProductBand(Dimension defaultProductSize, GeoCoding subProductDefaultGeoCoding, MosaicMatrix subProductMosaicMatrix,
                                   int bandDataType, String bandName, int bandIndex, TileMetadata tileMetadata, GeoCoding subProductGeoCoding,
-                                  Dimension preferredTileSize, ProductSubsetDef subsetDef, boolean isMultiSize)
+                                  ProductSubsetDef subsetDef, boolean isMultiSize)
                                   throws FactoryException, TransformException {
 
         int defaultBandWidth = subProductMosaicMatrix.computeTotalWidth();
@@ -297,7 +286,7 @@ class WorldView2ProductReader extends AbstractProductReader {
         if (bandGeoCoding != null) {
             band.setGeoCoding(bandGeoCoding);
         }
-        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(subProductMosaicMatrix, bandBounds, preferredTileSize, bandIndex, bandGeoCoding, null);
+        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(subProductMosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
         return band;
     }

@@ -76,7 +76,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     private ImageInputStreamSpi imageInputStreamSpi;
     private VirtualDirEx productDirectory;
-    private java.util.List<GeoTiffImageReader> bandImageReaders;
+    private GeoTiffImageReader geoTiffImageReader;
 
     public SpotDimapProductReader(SpotDimapProductReaderPlugin readerPlugIn) {
         super(readerPlugIn);
@@ -105,7 +105,6 @@ public class SpotDimapProductReader extends AbstractProductReader {
         try {
             Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
             this.productDirectory = VirtualDirEx.build(productPath, false, true);
-            this.bandImageReaders = new ArrayList<>();
 
             SpotSceneMetadata metadata = SpotSceneMetadata.create(this.productDirectory, logger);
             String productType = SpotConstants.DIMAP_FORMAT_NAMES[0];
@@ -140,8 +139,13 @@ public class SpotDimapProductReader extends AbstractProductReader {
         if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
             productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
         } else {
-            GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(this.bandImageReaders.get(0), null);
-            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize());
+            java.util.List<SpotDimapMetadata> componentMetadataList = wrappingMetadata.getComponentsMetadata();
+            SpotDimapMetadata firstDimapMetadata = componentMetadataList.get(0);
+            String rasterFileName = getTiffImageForMultipleVolume(firstDimapMetadata);
+            File rasterFile = this.productDirectory.getFile(rasterFileName);
+            GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath(), null);
+            boolean isMultiSizeProduct = isMultiSize(spotBandMatrices);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSizeProduct);
         }
         if (productBounds.isEmpty()) {
             throw new IllegalStateException("Empty product bounds.");
@@ -162,11 +166,16 @@ public class SpotDimapProductReader extends AbstractProductReader {
         product.setDescription(firstDimapMetadata.getProductDescription());
         product.setFileLocation(productPath.toFile());
 
-        for (int i=0; i<this.bandImageReaders.size(); i++) {
-            GeoCoding geoCoding = GeoTiffImageReader.buildGeoCoding(this.bandImageReaders.get(i).getImageMetadata(), defaultProductSize.width, defaultProductSize.height, productBounds);
-            if (geoCoding != null) {
-                product.setSceneGeoCoding(geoCoding);
-                break;
+        for (int fileIndex=0; fileIndex<componentMetadataList.size(); fileIndex++) {
+            SpotDimapMetadata componentMetadata = componentMetadataList.get(fileIndex);
+            String rasterFileName = getTiffImageForMultipleVolume(componentMetadata);
+            File rasterFile = this.productDirectory.getFile(rasterFileName);
+            try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath())) {
+                GeoCoding geoCoding = GeoTiffImageReader.buildGeoCoding(geoTiffImageReader.getImageMetadata(), defaultProductSize.width, defaultProductSize.height, productBounds);
+                if (geoCoding != null) {
+                    product.setSceneGeoCoding(geoCoding);
+                    break;
+                }
             }
         }
 
@@ -209,7 +218,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 band.setSpectralBandIndex(bandIndex + 1);
                 band.setDescription(bandNames[bandIndex]);
 
-                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds, preferredTileSize,
+                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds,
                                                                                                 bandIndex, band.getGeoCoding(), noDataValue);
                 band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
                 product.addBand(band);
@@ -256,17 +265,23 @@ public class SpotDimapProductReader extends AbstractProductReader {
             }
             String rasterFileName = getTiffImageForMultipleVolume(componentMetadata);
             File rasterFile = this.productDirectory.getFile(rasterFileName);
-            GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
-            this.bandImageReaders.add(geoTiffImageReader);
-
-            SampleModel sampleModel = geoTiffImageReader.getBaseImage().getSampleModel();
-            if (sampleModel.getNumBands() != firstMetadataBandNames.length) {
-                throw new IllegalStateException("Invalid band count: band count from image="+sampleModel.getNumBands()+", band count from metadata="+firstMetadataBandNames.length);
+            Path tiffImagePath = rasterFile.toPath();
+            int cellWidth;
+            int cellHeight;
+            int bandCount;
+            int dataBufferType;
+            try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(tiffImagePath)) {
+                SampleModel sampleModel = geoTiffImageReader.getSampleModel();
+                if (sampleModel.getNumBands() != firstMetadataBandNames.length) {
+                    throw new IllegalStateException("Invalid band count: band count from image="+sampleModel.getNumBands()+", band count from metadata="+firstMetadataBandNames.length);
+                }
+                cellWidth = geoTiffImageReader.getImageWidth();
+                cellHeight = geoTiffImageReader.getImageHeight();
+                bandCount = sampleModel.getNumBands();
+                dataBufferType = sampleModel.getDataType();
             }
-            for (int bandIndex = 0; bandIndex<sampleModel.getNumBands(); bandIndex++) {
-                int cellWidth = geoTiffImageReader.getImageWidth();
-                int cellHeight = geoTiffImageReader.getImageHeight();
-                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, geoTiffImageReader, sampleModel.getDataType());
+            GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, tiffImagePath, null);
+            for (int bandIndex = 0; bandIndex<bandCount; bandIndex++) {
                 spotBandMatrices[bandIndex].addCell(matrixCell);
             }
         }
@@ -291,15 +306,14 @@ public class SpotDimapProductReader extends AbstractProductReader {
         // add bands
         String rasterFileName = getTiffImageForSingleVolume(dimapMetadata);
         File rasterFile = this.productDirectory.getFile(rasterFileName);
-        GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
-        this.bandImageReaders.add(geoTiffImageReader);
+        this.geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(rasterFile.toPath());
 
         Rectangle productBounds;
         if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
             productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
         } else {
             GeoCoding productDefaultGeoCoding = GeoTiffProductReader.readGeoCoding(rasterFile.toPath(), null);
-            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize());
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, false);
         }
         if (productBounds.isEmpty()) {
             throw new IllegalStateException("Empty product bounds.");
@@ -377,16 +391,12 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     private void closeResources() {
         try {
-            if (this.bandImageReaders != null) {
-                for (GeoTiffImageReader geoTiffImageReader : this.bandImageReaders) {
-                    try {
-                        geoTiffImageReader.close();
-                    } catch (Exception ignore) {
-                        // ignore
-                    }
+            if (this.geoTiffImageReader != null) {
+                try {
+                    this.geoTiffImageReader.close();
+                } catch (Exception ignore) {
+                    // ignore
                 }
-                this.bandImageReaders.clear();
-                this.bandImageReaders = null;
             }
         } finally {
             try {
@@ -503,19 +513,14 @@ public class SpotDimapProductReader extends AbstractProductReader {
         return componentMetadata.getPath().toString().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), componentMetadata.getRasterFileNames()[0].toLowerCase());
     }
 
-    private boolean isMultiSize() throws IOException {
-        int defaultWidth = 0;
-        int defaultHeight = 0;
-        for (GeoTiffImageReader imageReader : this.bandImageReaders) {
-            if (defaultWidth == 0) {
-                defaultWidth = imageReader.getImageWidth();
-            } else if (defaultWidth != imageReader.getImageWidth()) {
+    private static boolean isMultiSize(MosaicMatrix[] spotBandMatrices) throws IOException {
+        int defaultFirstBandWidth = spotBandMatrices[0].computeTotalWidth();
+        int defaultFirstBandHeight = spotBandMatrices[0].computeTotalHeight();
+        for (int i = 1; i < spotBandMatrices.length; i++) {
+            if (defaultFirstBandWidth != spotBandMatrices[i].computeTotalWidth()) {
                 return true;
             }
-
-            if (defaultHeight == 0) {
-                defaultHeight = imageReader.getImageHeight();
-            } else if (defaultHeight != imageReader.getImageHeight()) {
+            if (defaultFirstBandHeight != spotBandMatrices[i].computeTotalHeight()) {
                 return true;
             }
         }
