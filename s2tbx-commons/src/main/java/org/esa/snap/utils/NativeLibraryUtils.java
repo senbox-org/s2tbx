@@ -53,7 +53,10 @@ public class NativeLibraryUtils {
         }
         System.setProperty(ENV_LIB_PATH, propertyValue);
         try {
-            PrivilegedAccessor.setStaticValue(ClassLoader.class, "sys_paths", null);
+            java.lang.reflect.Method initializePathMethod = PrivilegedAccessor.getMethod(ClassLoader.class, "initializePath", new Class[]{String.class});
+            initializePathMethod.setAccessible(true);
+            String[] updatedUsrPaths = (String[]) initializePathMethod.invoke(null, ENV_LIB_PATH);
+            PrivilegedAccessor.setStaticValue(ClassLoader.class, "usr_paths", updatedUsrPaths);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

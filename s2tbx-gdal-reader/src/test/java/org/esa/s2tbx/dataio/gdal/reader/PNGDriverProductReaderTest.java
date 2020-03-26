@@ -39,7 +39,7 @@ public class PNGDriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(1920, finalProduct.getSceneRasterWidth());
             assertEquals(1200, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(2);
+            Band band = finalProduct.getBand("band_3");
             assertEquals(20, band.getDataType());
             assertEquals(2304000, band.getNumDataElems());
 

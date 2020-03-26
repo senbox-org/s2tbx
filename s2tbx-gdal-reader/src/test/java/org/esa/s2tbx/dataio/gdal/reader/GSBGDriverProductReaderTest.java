@@ -39,7 +39,7 @@ public class GSBGDriverProductReaderTest extends AbstractTestDriverProductReader
             assertEquals(768, finalProduct.getSceneRasterWidth());
             assertEquals(512, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(30, band.getDataType());
             assertEquals(393216, band.getNumDataElems());
 
@@ -84,7 +84,7 @@ public class GSBGDriverProductReaderTest extends AbstractTestDriverProductReader
             assertEquals(500, finalProduct.getSceneRasterWidth());
             assertEquals(300, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(30, band.getDataType());
             assertEquals(150000, band.getNumDataElems());
 

@@ -39,7 +39,7 @@ public class PNMDriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(768, finalProduct.getSceneRasterWidth());
             assertEquals(512, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(393216, band.getNumDataElems());
 

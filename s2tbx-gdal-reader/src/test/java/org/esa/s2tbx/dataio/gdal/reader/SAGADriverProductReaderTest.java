@@ -39,7 +39,7 @@ public class SAGADriverProductReaderTest extends AbstractTestDriverProductReader
             assertEquals(1024, finalProduct.getSceneRasterWidth());
             assertEquals(1024, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(1048576, band.getNumDataElems());
 
@@ -84,7 +84,7 @@ public class SAGADriverProductReaderTest extends AbstractTestDriverProductReader
             assertEquals(700, finalProduct.getSceneRasterWidth());
             assertEquals(500, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(350000, band.getNumDataElems());
 

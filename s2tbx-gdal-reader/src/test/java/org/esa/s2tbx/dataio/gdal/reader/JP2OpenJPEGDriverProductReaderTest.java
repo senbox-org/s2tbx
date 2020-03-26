@@ -58,10 +58,10 @@ public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProduc
 
             assertEquals(3, product.getBands().length);
 
-            Band band = product.getBandAt(0);
+            Band band = product.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(117649, band.getNumDataElems());
-            assertEquals("Red", band.getName());
+            assertEquals("band_1", band.getName());
             assertEquals(343, band.getRasterWidth());
             assertEquals(343, band.getRasterHeight());
 
@@ -84,7 +84,7 @@ public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProduc
             File productFile = this.gdalTestsFolderPath.resolve("JP2OpenJPEG-driver.jp2").toFile();
 
             ProductSubsetDef subsetDef = new ProductSubsetDef();
-            subsetDef.setNodeNames(new String[] { "Red", "Green" } );
+            subsetDef.setNodeNames(new String[] { "band_1", "band_2" } );
             subsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(123, 100, 210, 200), 0));
             subsetDef.setSubSampling(1, 1);
 
@@ -110,10 +110,10 @@ public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProduc
 
             assertEquals(2, product.getBands().length);
 
-            Band band = product.getBandAt(1);
+            Band band = product.getBand("band_2");
             assertEquals(20, band.getDataType());
             assertEquals(42000, band.getNumDataElems());
-            assertEquals("Green", band.getName());
+            assertEquals("band_2", band.getName());
             assertEquals(210, band.getRasterWidth());
             assertEquals(200, band.getRasterHeight());
 
@@ -157,7 +157,7 @@ public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProduc
                                                             " 6.029233932495117 44.82414245605469))");
 
                 ProductSubsetDef subsetDef = new ProductSubsetDef();
-                subsetDef.setNodeNames(new String[]{"Red", "Green"});
+                subsetDef.setNodeNames(new String[]{"band_1", "band_2"});
                 subsetDef.setSubsetRegion(new GeometrySubsetRegion(geometry, 0));
                 subsetDef.setSubSampling(1, 1);
 
@@ -183,12 +183,12 @@ public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProduc
 
                 assertEquals(2, product.getBands().length);
 
-                Band band = product.getBandAt(1);
+                Band band = product.getBand("band_2");
                 assertNotNull(band);
 
                 assertEquals(20, band.getDataType());
                 assertEquals(42824, band.getNumDataElems());
-                assertEquals("Green", band.getName());
+                assertEquals("band_2", band.getName());
                 assertEquals(212, band.getRasterWidth());
                 assertEquals(202, band.getRasterHeight());
 
