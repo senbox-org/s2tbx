@@ -16,6 +16,7 @@
 
 package org.esa.s2tbx.dataio.mosaic;
 
+import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -95,6 +96,9 @@ public class S2tbxMosaicOpTest {
         op.nativeResolution = true;
         op.overlappingMethod = "MOSAIC_TYPE_BLEND";
 
+        // execute the operator
+        op.execute(ProgressMonitor.NULL);
+        // get the operator target product
         final Product product = op.getTargetProduct();
 
         final GeoPos[] geoPositions = {
@@ -130,6 +134,9 @@ public class S2tbxMosaicOpTest {
         op.nativeResolution = true;
         op.overlappingMethod = "MOSAIC_TYPE_OVERLAY";
 
+        // execute the operator
+        op.execute(ProgressMonitor.NULL);
+        // get the operator target product
         final Product product = op.getTargetProduct();
         final GeoPos[] geoPositions = {
                 new GeoPos(-5, 3), new GeoPos(4, -4), new GeoPos(0, 0), new GeoPos(-4, 4), new GeoPos(5,3)
@@ -164,6 +171,9 @@ public class S2tbxMosaicOpTest {
         op.nativeResolution = true;
         op.overlappingMethod = "MOSAIC_TYPE_OVERLAY";
 
+        // execute the operator
+        op.execute(ProgressMonitor.NULL);
+        // get the operator target product
         final Product product = op.getTargetProduct();
         final GeoPos[] geoPositions = {
                 new GeoPos(-5, 3), new GeoPos(4, -4), new GeoPos(0, 0), new GeoPos(-4, 4), new GeoPos(5,3)
@@ -198,6 +208,9 @@ public class S2tbxMosaicOpTest {
         op.nativeResolution = false;
         op.overlappingMethod = "MOSAIC_TYPE_OVERLAY";
 
+        // execute the operator
+        op.execute(ProgressMonitor.NULL);
+        // get the operator target product
         final Product product = op.getTargetProduct();
 
         final GeoPos[] geoPositions = {
@@ -233,6 +246,9 @@ public class S2tbxMosaicOpTest {
         op.nativeResolution = false;
         op.overlappingMethod = "MOSAIC_TYPE_OVERLAY";
 
+        // execute the operator
+        op.execute(ProgressMonitor.NULL);
+        // get the operator target product
         final Product product = op.getTargetProduct();
 
         final GeoPos[] geoPositions = {
@@ -268,6 +284,9 @@ public class S2tbxMosaicOpTest {
         op.nativeResolution = false;
         op.overlappingMethod = "MOSAIC_TYPE_BLEND";
 
+        // execute the operator
+        op.execute(ProgressMonitor.NULL);
+        // get the operator target product
         final Product product = op.getTargetProduct();
 
         final GeoPos[] geoPositions = {

@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.mosaic;
 
 import com.bc.ceres.binding.Converter;
 import com.bc.ceres.binding.ConverterRegistry;
+import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -179,7 +180,10 @@ public final class S2tbxMosaicOp extends Operator {
             this.targetProduct = createTargetProduct();
         }
         addTargetBands(this.targetProduct);
+    }
 
+    @Override
+    public void doExecute(ProgressMonitor pm) throws OperatorException {
         // STEP 5: create target band images
         try {
             createBandImages();
