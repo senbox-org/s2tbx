@@ -1,7 +1,7 @@
-package org.esa.s2tbx.dataio.s2.ortho;
+package org.esa.s2tbx.dataio.s2.tiles;
 
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.snap.jp2.reader.internal.JP2TileOpImage;
-import org.esa.s2tbx.dataio.s2.S2MosaicBandMatrixCell;
 import org.esa.snap.core.image.AbstractMatrixMosaicSubsetMultiLevelSource;
 import org.esa.snap.core.image.DecompressedTileOpImageCallback;
 import org.esa.snap.core.image.MosaicMatrix;
@@ -10,13 +10,12 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 
-
 /**
  * @author Denisa Stefanescu
  */
 public class BandMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLevelSource implements DecompressedTileOpImageCallback<S2MosaicBandMatrixCell> {
 
-    protected BandMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, Dimension preferredTileSize, AffineTransform imageToModelTransform) {
+    public BandMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, Dimension preferredTileSize, AffineTransform imageToModelTransform) {
         super(levelCount, mosaicMatrix, imageMatrixReadBounds, preferredTileSize, imageToModelTransform);
     }
 
@@ -31,5 +30,15 @@ public class BandMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLevelSo
                                                                       MosaicMatrix.MatrixCell matrixCell) {
         S2MosaicBandMatrixCell mosaicMatrixCell = (S2MosaicBandMatrixCell)matrixCell;
         return buildDecompressedTileImages(level, imageCellReadBounds, mosaicMatrixCell.getDecompresedTileSize(), mosaicMatrixCell.getDefaultImageSize().width ,cellTranslateLevelOffsetX, cellTranslateLevelOffsetY, this, mosaicMatrixCell);
+    }
+
+    @Override
+    protected double[] getMosaicOpBackgroundValues() {
+        return new double[]{S2Config.FILL_CODE_MOSAIC_BG};
+    }
+
+    @Override
+    protected double[][] getMosaicOpSourceThreshold() {
+        return new double[][]{{1.0}};
     }
 }

@@ -17,8 +17,16 @@ import java.awt.image.RenderedImage;
  */
 public class TileIndexMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLevelSource implements UncompressedTileOpImageCallback<TileIndexBandMatrixCell> {
 
-    public TileIndexMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, Dimension preferredTileSize, AffineTransform imageToModelTransform) {
+    private final Double mosaicOpSourceThreshold;
+    private final double mosaicOpBackgroundValue;
+
+    public TileIndexMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, Dimension preferredTileSize,
+                                     AffineTransform imageToModelTransform, Double mosaicOpSourceThreshold, double mosaicOpBackgroundValue) {
+
         super(levelCount, mosaicMatrix, imageMatrixReadBounds, preferredTileSize, imageToModelTransform);
+
+        this.mosaicOpSourceThreshold = mosaicOpSourceThreshold; // the threshold value may be null
+        this.mosaicOpBackgroundValue = mosaicOpBackgroundValue;
     }
 
     @Override
@@ -39,11 +47,14 @@ public class TileIndexMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLe
 
     @Override
     protected double[] getMosaicOpBackgroundValues() {
-        return new double[]{S2Config.FILL_CODE_MOSAIC_BG};
+        return new double[]{this.mosaicOpBackgroundValue};
     }
 
     @Override
     protected double[][] getMosaicOpSourceThreshold() {
-        return new double[][]{{1.0}};
+        if (this.mosaicOpSourceThreshold == null) {
+            return super.getMosaicOpSourceThreshold();
+        }
+        return new double[][]{ {this.mosaicOpSourceThreshold.doubleValue()} };
     }
 }
