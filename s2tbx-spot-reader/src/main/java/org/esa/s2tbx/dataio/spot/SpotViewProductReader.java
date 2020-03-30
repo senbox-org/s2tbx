@@ -300,6 +300,10 @@ public class SpotViewProductReader extends AbstractProductReader {
             Path filePath = filePathInputStream.getPath();
             metaDataItem.setPath(filePath);
             metaDataItem.setFileName(filePath.getFileName().toString());
+            String metadataProfile = metaDataItem.getMetadataProfile();
+            if (metadataProfile != null) {
+                metaDataItem.setName(metadataProfile);
+            }
             return metaDataItem;
         }
     }
