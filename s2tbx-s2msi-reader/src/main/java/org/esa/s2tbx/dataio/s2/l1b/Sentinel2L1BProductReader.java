@@ -25,10 +25,11 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadata;
 import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bProductMetadataReader;
-import org.esa.s2tbx.dataio.s2.l1b.tiles.BandL1bSceneMultiLevelSource;
+import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
+import org.esa.s2tbx.dataio.s2.tiles.BandMultiLevelSource;
+import org.esa.s2tbx.dataio.s2.tiles.MosaicMatrixCellCallback;
 import org.esa.s2tbx.dataio.s2.tiles.TileIndexBandMatrixCell;
 import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
-import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
@@ -271,7 +272,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height);
                         band.setDescription(tileBandInfo.getBandInformation().getDescription());
 
-                        BandL1bSceneMultiLevelSource multiLevelSource = new BandL1bSceneMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
+//                        BandL1bSceneMultiLevelSource multiLevelSource = new BandL1bSceneMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
+                        BandMultiLevelSource multiLevelSource = new BandMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
                         product.addBand(band);
@@ -412,7 +414,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         band.setDescription(bandInfo.getBandInformation().getDescription());
         band.setValidPixelExpression(String.format("%s.raw > 0", indexBandInfo.getPhysicalBand()));
 
-        TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, preferredTileSize, imageToModelTransform);
+        Double mosaicOpSourceThreshold = 1.0d;
+        double mosaicOpBackgroundValue = S2Config.FILL_CODE_MOSAIC_BG;
+        TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, preferredTileSize,
+                                                                                   imageToModelTransform, mosaicOpSourceThreshold, mosaicOpBackgroundValue);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
         return band;
@@ -421,7 +426,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     private static MosaicMatrix buildIndexBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
         MosaicMatrixCellCallback mosaicMatrixCellCallback = new MosaicMatrixCellCallback() {
             @Override
-            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo, int cellWidth, int cellHeight) {
+            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo, int sceneCellWidth, int sceneCellHeight) {
                 S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) tileBandInfo.getBandInformation();
                 S2GranuleDirFilename s2GranuleDirFilename = S2L1BGranuleDirFilename.create(tileId);
                 if (s2GranuleDirFilename == null) {
@@ -433,13 +438,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     throw new NullPointerException("The index sample is null.");
                 }
                 short indexValueShort = indexSample.shortValue();
-                return new TileIndexBandMatrixCell(cellWidth, cellHeight, indexValueShort);
-
-                //TODO Jean old code
-//                TileLayout tileLayout = tileBandInfo.getImageLayout();
-//                int cellWidth = tileLayout.width;
-//                int cellHeight = tileLayout.height;
-//                return new TileIndexBandMatrixCell(cellWidth, cellHeight, indexValueShort);
+                return new TileIndexBandMatrixCell(sceneCellWidth, sceneCellHeight, indexValueShort);
             }
         };
         return buildBandMatrix(bandMatrixTileIds, sceneDescription, tileBandInfo, mosaicMatrixCellCallback);

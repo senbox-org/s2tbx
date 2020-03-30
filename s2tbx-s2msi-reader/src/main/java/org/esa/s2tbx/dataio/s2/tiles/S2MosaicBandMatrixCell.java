@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.tiles;
 
 import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.snap.core.image.MosaicMatrix;

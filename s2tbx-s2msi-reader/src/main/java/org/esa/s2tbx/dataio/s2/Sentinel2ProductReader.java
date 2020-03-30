@@ -19,14 +19,13 @@ package org.esa.s2tbx.dataio.s2;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.s2.tiles.MosaicMatrixCellCallback;
+import org.esa.s2tbx.dataio.s2.tiles.S2MosaicBandMatrixCell;
 import org.esa.snap.engine_utilities.util.Pair;
 import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
-import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
-import org.esa.s2tbx.dataio.s2.tiles.TileIndexBandMatrixCell;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -210,12 +209,13 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     protected final MosaicMatrix buildBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
         MosaicMatrixCellCallback mosaicMatrixCellCallback = new MosaicMatrixCellCallback() {
             @Override
-            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo, int cellWidth, int cellHeight) {
+            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo, int sceneCellWidth, int sceneCellHeight) {
                 VirtualPath imagePath = tileBandInfo.getTileIdToPathMap().get(tileId);
                 JP2ImageFile jp2ImageFile = new JP2ImageFile(imagePath);
                 TileLayout tileLayout = tileBandInfo.getImageLayout();
-//                return new S2MosaicBandMatrixCell(jp2ImageFile, Sentinel2ProductReader.this.cacheDir, tileLayout, cellWidth, cellHeight);
-                return new S2MosaicBandMatrixCell(jp2ImageFile, Sentinel2ProductReader.this.cacheDir, tileLayout, tileLayout.width, tileLayout.height);
+                int cellWidth = Math.min(sceneCellWidth, tileLayout.width);
+                int cellHeight = Math.min(sceneCellHeight, tileLayout.height);
+                return new S2MosaicBandMatrixCell(jp2ImageFile, Sentinel2ProductReader.this.cacheDir, tileLayout, cellWidth, cellHeight);
             }
         };
         return buildBandMatrix(bandMatrixTileIds, sceneDescription, tileBandInfo, mosaicMatrixCellCallback);
@@ -329,17 +329,17 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
             for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
                 BandRectangleCoordinates rectangleCoordinates = bandRectangleCoordinates[rowIndex][columnIndex];
-                int cellHeight = rectangleCoordinates.tileRectangle.height;
+                int sceneCellHeight = rectangleCoordinates.tileRectangle.height;
                 if (rowIndex < rowCount-1) {
                     BandRectangleCoordinates nextRowRectangle = bandRectangleCoordinates[rowIndex+1][columnIndex];
-                    cellHeight = nextRowRectangle.tileRectangle.y - rectangleCoordinates.tileRectangle.y;
+                    sceneCellHeight = nextRowRectangle.tileRectangle.y - rectangleCoordinates.tileRectangle.y;
                 }
-                int cellWidth = rectangleCoordinates.tileRectangle.width;
+                int sceneCellWidth = rectangleCoordinates.tileRectangle.width;
                 if (columnIndex < columnCount-1) {
                     BandRectangleCoordinates nextColumnRectangle = bandRectangleCoordinates[rowIndex][columnIndex+1];
-                    cellWidth = nextColumnRectangle.tileRectangle.x - rectangleCoordinates.tileRectangle.x;
+                    sceneCellWidth = nextColumnRectangle.tileRectangle.x - rectangleCoordinates.tileRectangle.x;
                 }
-                MosaicMatrix.MatrixCell matrixCell = mosaicMatrixCellCallback.buildMatrixCell(rectangleCoordinates.tileId, tileBandInfo, cellWidth, cellHeight);
+                MosaicMatrix.MatrixCell matrixCell = mosaicMatrixCellCallback.buildMatrixCell(rectangleCoordinates.tileId, tileBandInfo, sceneCellWidth, sceneCellHeight);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, false, false);
             }
         }
