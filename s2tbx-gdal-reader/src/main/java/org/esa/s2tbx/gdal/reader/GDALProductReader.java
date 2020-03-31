@@ -48,6 +48,7 @@ public class GDALProductReader extends AbstractProductReader {
     private static final Logger logger = Logger.getLogger(GDALProductReader.class.getName());
 
     private static final Map<Integer, BufferTypeDescriptor> BUFFER_TYPES;
+
     static {
         BUFFER_TYPES = new HashMap<>();
         BUFFER_TYPES.put(GDALConstConstants.gdtByte(), new BufferTypeDescriptor(8, true, ProductData.TYPE_UINT8, DataBuffer.TYPE_BYTE));
@@ -63,6 +64,113 @@ public class GDALProductReader extends AbstractProductReader {
 
     public GDALProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
+    }
+
+    static Dataset openGDALDataset(Path localProductPath) {
+        Dataset gdalDataset = GDAL.open(localProductPath.toString(), GDALConst.gaReadonly());
+        if (gdalDataset == null) {
+            // unknown file format
+            throw new NullPointerException("Failed opening a dataset from the file '" + localProductPath.toString() + "' to load the product.");
+        }
+        return gdalDataset;
+    }
+
+    static String computeMaskName(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, String bandName) {
+        org.esa.s2tbx.dataio.gdal.drivers.Band maskBand = gdalBand.getMaskBand();
+        if (maskBand != null) {
+            int maskFlags = gdalBand.getMaskFlags();
+            String maskPrefix = null;
+            if ((maskFlags & (GDALConstConstants.gmfNodata() | GDALConstConstants.gmfPerDataset())) != 0) {
+                maskPrefix = "nodata_";
+            } else if ((maskFlags & (GDALConstConstants.gmfPerDataset() | GDALConstConstants.gmfAlpha())) != 0) {
+                maskPrefix = "alpha_";
+            } else if ((maskFlags & (GDALConstConstants.gmfNodata() | GDALConstConstants.gmfPerDataset() | GDALConstConstants.gmfAlpha() | GDALConstConstants.gmfAllValid())) != 0) {
+                maskPrefix = "mask_";
+            }
+            if (maskPrefix != null) {
+                return maskPrefix + bandName;
+            }
+        }
+        return null;
+    }
+
+    private static Dimension computeBandTileSize(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, int productWidth, int productHeight) {
+        Dimension tileSize = new Dimension(gdalBand.getXSize(), gdalBand.getYSize());
+        if (tileSize.width <= 1 || tileSize.width > productWidth) {
+            tileSize.width = productWidth;
+        }
+        if (tileSize.height <= 1 || tileSize.height > productHeight) {
+            tileSize.height = productHeight;
+        }
+        return tileSize;
+    }
+
+    static String computeBandName(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, int bandIndex) {
+        String bandName = gdalBand.getDescription();
+        if (StringUtils.isNullOrEmpty(bandName)) {
+            bandName = String.format("band_%s", bandIndex + 1);
+        } else {
+            bandName = bandName.replace(' ', '_');
+        }
+        return bandName;
+    }
+
+    static CrsGeoCoding buildGeoCoding(Dataset gdalDataset, Rectangle subsetBounds) throws FactoryException, TransformException {
+        String wellKnownText = gdalDataset.getProjectionRef();
+        if (wellKnownText.contains("LOCAL_CS[\"Unknown\"]")) {
+            wellKnownText = "";
+        }
+        if (!StringUtils.isNullOrEmpty(wellKnownText)) {
+            int imageWidth = gdalDataset.getRasterXSize();
+            int imageHeight = gdalDataset.getRasterYSize();
+            double[] adfGeoTransform = new double[6];
+            gdalDataset.getGeoTransform(adfGeoTransform);
+            double originX = adfGeoTransform[0];
+            double originY = adfGeoTransform[3];
+            double resolutionX = adfGeoTransform[1];
+            double resolutionY = (adfGeoTransform[5] > 0) ? adfGeoTransform[5] : -adfGeoTransform[5];
+            wellKnownText = wellKnownText.replaceAll(",?(AXIS\\[\"([A-Za-z]*?)\",[A-Z]*?])", "");
+            CoordinateReferenceSystem mapCRS = CRS.parseWKT(wellKnownText);
+            return ImageUtils.buildCrsGeoCoding(originX, originY, resolutionX, resolutionY, imageWidth, imageHeight, mapCRS, subsetBounds, 0.5d, 0.5d);
+        }
+        return null;
+    }
+
+    private static MetadataElement buildMetadataElement(Dataset gdalProduct) {
+        Driver hDriver = gdalProduct.getDriver();
+        int imageWidth = gdalProduct.getRasterXSize();
+        int imageHeight = gdalProduct.getRasterYSize();
+        MetadataElement metadataElement = new MetadataElement("Image info");
+        metadataElement.setAttributeString("driver", hDriver.getShortName());
+        metadataElement.setAttributeInt("width", imageWidth);
+        metadataElement.setAttributeInt("height", imageHeight);
+
+        double[] adfGeoTransform = new double[6];
+        gdalProduct.getGeoTransform(adfGeoTransform);
+        double originX = adfGeoTransform[0];
+        double originY = adfGeoTransform[3];
+        double pixelSizeX = adfGeoTransform[1];
+        double pixelSizeY = (adfGeoTransform[5] > 0) ? adfGeoTransform[5] : -adfGeoTransform[5];
+
+        if (adfGeoTransform[2] == 0.0 && adfGeoTransform[4] == 0.0) {
+            metadataElement.setAttributeString("origin", originX + "x" + originY);
+            metadataElement.setAttributeString("pixel size", pixelSizeX + "x" + pixelSizeY);
+        } else {
+            String str1 = adfGeoTransform[0] + "," + adfGeoTransform[1] + "," + adfGeoTransform[3];
+            String str2 = adfGeoTransform[3] + "," + adfGeoTransform[4] + "," + adfGeoTransform[5];
+            metadataElement.setAttributeString("geo transform", str1 + " " + str2);
+        }
+
+        Hashtable<?, ?> dict = gdalProduct.getMetadataDict("");
+        Enumeration keys = dict.keys();
+        while (keys.hasMoreElements()) {
+            String key = (String) keys.nextElement();
+            String value = (String) dict.get(key);
+            if (!StringUtils.isNullOrEmpty(key) && !StringUtils.isNullOrEmpty(value)) {
+                metadataElement.setAttributeString(key, value);
+            }
+        }
+        return metadataElement;
     }
 
     @Override
@@ -128,10 +236,10 @@ public class GDALProductReader extends AbstractProductReader {
                 throw new IllegalStateException("Empty product bounds.");
             }
             if ((productBounds.x + productBounds.width) > defaultProductWidth) {
-                throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.x="+productBounds.x+", productBounds.width="+productBounds.width+", default product width=" + defaultProductWidth);
+                throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.x=" + productBounds.x + ", productBounds.width=" + productBounds.width + ", default product width=" + defaultProductWidth);
             }
             if ((productBounds.y + productBounds.height) > defaultProductHeight) {
-                throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.y="+productBounds.y+", productBounds.height="+productBounds.height+", default product height=" + defaultProductHeight);
+                throw new IllegalArgumentException("The coordinates are out of bounds: productBounds.y=" + productBounds.y + ", productBounds.height=" + productBounds.height + ", default product height=" + defaultProductHeight);
             }
 
             Product product = new Product(localFile.getFileName().toString(), "GDAL", productBounds.width, productBounds.height, this);
@@ -151,6 +259,8 @@ public class GDALProductReader extends AbstractProductReader {
 
             Double[] pass1 = new Double[1];
             int numResolutions = 1;
+
+            Dimension defaultImageSize = new Dimension(gdalDataset.getRasterXSize(), gdalDataset.getRasterYSize());
 
             int bandCount = gdalDataset.getRasterCount();
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
@@ -236,7 +346,7 @@ public class GDALProductReader extends AbstractProductReader {
                         productBand.setNoDataValueUsed(true);
                     }
 
-                    GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, productBounds, tileSize, bandIndex, levelCount, geoCoding, noDataValue);
+                    GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, defaultImageSize, productBounds, tileSize, bandIndex, levelCount, geoCoding, noDataValue);
                     productBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
                     if (metadataElement != null && (subsetDef == null || !subsetDef.isIgnoreMetadata())) {
@@ -265,109 +375,6 @@ public class GDALProductReader extends AbstractProductReader {
             this.virtualFile.close();
             this.virtualFile = null;
         }
-    }
-
-    static Dataset openGDALDataset(Path localProductPath) {
-        Dataset gdalDataset = GDAL.open(localProductPath.toString(), GDALConst.gaReadonly());
-        if (gdalDataset == null) {
-            // unknown file format
-            throw new NullPointerException("Failed opening a dataset from the file '" + localProductPath.toString() + "' to load the product.");
-        }
-        return gdalDataset;
-    }
-
-    static String computeMaskName(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, String bandName) {
-        org.esa.s2tbx.dataio.gdal.drivers.Band maskBand = gdalBand.getMaskBand();
-        if (maskBand != null) {
-            int maskFlags = gdalBand.getMaskFlags();
-            String maskPrefix = null;
-            if ((maskFlags & (GDALConstConstants.gmfNodata() | GDALConstConstants.gmfPerDataset())) != 0) {
-                maskPrefix = "nodata_";
-            } else if ((maskFlags & (GDALConstConstants.gmfPerDataset() | GDALConstConstants.gmfAlpha())) != 0) {
-                maskPrefix = "alpha_";
-            } else if ((maskFlags & (GDALConstConstants.gmfNodata() | GDALConstConstants.gmfPerDataset() | GDALConstConstants.gmfAlpha() | GDALConstConstants.gmfAllValid())) != 0) {
-                maskPrefix = "mask_";
-            }
-            if (maskPrefix != null) {
-                return maskPrefix + bandName;
-            }
-        }
-        return null;
-    }
-
-    private static Dimension computeBandTileSize(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, int productWidth, int productHeight) {
-        Dimension tileSize = new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize());
-        if (tileSize.width <= 1 || tileSize.width > productWidth) {
-            tileSize.width = productWidth;
-        }
-        if (tileSize.height <= 1 || tileSize.height >productHeight) {
-            tileSize.height = productHeight;
-        }
-        return tileSize;
-    }
-
-    static String computeBandName(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, int bandIndex) {
-        String bandName = gdalBand.getDescription();
-        if (StringUtils.isNullOrEmpty(bandName)) {
-            bandName = String.format("band_%s", bandIndex + 1);
-        } else {
-            bandName = bandName.replace(' ', '_');
-        }
-        return bandName;
-    }
-
-    static CrsGeoCoding buildGeoCoding(Dataset gdalDataset, Rectangle subsetBounds) throws FactoryException, TransformException {
-        String wellKnownText = gdalDataset.getProjectionRef();
-        if (!StringUtils.isNullOrEmpty(wellKnownText)) {
-            int imageWidth = gdalDataset.getRasterXSize();
-            int imageHeight = gdalDataset.getRasterYSize();
-            double[] adfGeoTransform = new double[6];
-            gdalDataset.getGeoTransform(adfGeoTransform);
-            double originX = adfGeoTransform[0];
-            double originY = adfGeoTransform[3];
-            double resolutionX = adfGeoTransform[1];
-            double resolutionY = (adfGeoTransform[5] > 0) ? adfGeoTransform[5] : -adfGeoTransform[5];
-            CoordinateReferenceSystem mapCRS = CRS.parseWKT(wellKnownText);
-            return ImageUtils.buildCrsGeoCoding(originX, originY, resolutionX, resolutionY, imageWidth, imageHeight, mapCRS, subsetBounds, 0.5d, 0.5d);
-        }
-        return null;
-    }
-
-    private static MetadataElement buildMetadataElement(Dataset gdalProduct) {
-        Driver hDriver = gdalProduct.getDriver();
-        int imageWidth = gdalProduct.getRasterXSize();
-        int imageHeight = gdalProduct.getRasterYSize();
-        MetadataElement metadataElement = new MetadataElement("Image info");
-        metadataElement.setAttributeString("driver", hDriver.getShortName());
-        metadataElement.setAttributeInt("width", imageWidth);
-        metadataElement.setAttributeInt("height", imageHeight);
-
-        double[] adfGeoTransform = new double[6];
-        gdalProduct.getGeoTransform(adfGeoTransform);
-        double originX = adfGeoTransform[0];
-        double originY = adfGeoTransform[3];
-        double pixelSizeX = adfGeoTransform[1];
-        double pixelSizeY = (adfGeoTransform[5] > 0) ? adfGeoTransform[5] : -adfGeoTransform[5];
-
-        if (adfGeoTransform[2] == 0.0 && adfGeoTransform[4] == 0.0) {
-            metadataElement.setAttributeString("origin", originX + "x" + originY);
-            metadataElement.setAttributeString("pixel size", pixelSizeX + "x" + pixelSizeY);
-        } else {
-            String str1 = adfGeoTransform[0] + "," + adfGeoTransform[1]+ "," + adfGeoTransform[3];
-            String str2 = adfGeoTransform[3] + "," + adfGeoTransform[4]+ "," + adfGeoTransform[5];
-            metadataElement.setAttributeString("geo transform", str1 + " " + str2);
-        }
-
-        Hashtable<?, ?> dict = gdalProduct.getMetadataDict("");
-        Enumeration keys = dict.keys();
-        while (keys.hasMoreElements()) {
-            String key = (String) keys.nextElement();
-            String value = (String)dict.get(key);
-            if (!StringUtils.isNullOrEmpty(key) && !StringUtils.isNullOrEmpty(value)) {
-                metadataElement.setAttributeString(key, value);
-            }
-        }
-        return metadataElement;
     }
 
     private static class BufferTypeDescriptor {

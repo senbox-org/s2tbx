@@ -8,9 +8,7 @@ import org.junit.Test;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Path;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -31,8 +29,7 @@ public class GDALDistributionInstallerTest {
     public void testInstall() {
         try {
             if (!GDALInstallInfo.INSTANCE.isPresent()) {
-                Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
-                assertNotNull(gdalDistributionRootFolderPath);
+                GDALLoader.getInstance().initGDAL();
             }
         } catch (Throwable e) {
             // the GDAL library has not been installed

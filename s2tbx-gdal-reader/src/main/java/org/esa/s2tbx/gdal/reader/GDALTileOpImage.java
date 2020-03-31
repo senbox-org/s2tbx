@@ -7,6 +7,7 @@ import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.snap.core.image.AbstractSubsetTileOpImage;
+import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
 
@@ -34,21 +35,38 @@ import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
 
 /**
  * A JAI operator for handling the tiles of the products imported with the GDAL library.
  *
  * @author Jean Coravu
+ * @author Adrian Draghici
  */
 class GDALTileOpImage extends AbstractSubsetTileOpImage {
 
     private ImageReader imageReader;
 
-    GDALTileOpImage(Path sourceLocalFile, int bandIndex, MultiLevelModel imageMultiLevelModel, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
+    GDALTileOpImage(Path sourceLocalFile, int bandIndex, MultiLevelModel imageMultiLevelModel, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, Dimension subTileSize, Point tileOffsetFromReadBounds, int level) {
 
-        super(imageMultiLevelModel, dataBufferType, imageReadBounds, tileSize, tileOffsetFromReadBounds, level);
+        super(dataBufferType, imageReadBounds, tileSize, subTileSize, tileOffsetFromReadBounds, ResolutionLevel.create(imageMultiLevelModel, level));
 
         this.imageReader = new ImageReader(sourceLocalFile, bandIndex, dataBufferType, level);
+    }
+
+    static Band getGDALLevelBand(Path sourceLocalFile, int bandIndex, int level) {
+        Dataset gdalDataset = GDAL.open(sourceLocalFile.toString(), GDALConst.gaReadonly());
+        Band gdalBand = null;
+        // bands are not 0-base indexed, so we must add 1
+        if (gdalDataset != null) {
+            Band gdalRasterBand = gdalDataset.getRasterBand(bandIndex + 1);
+            if (level > 0 && gdalRasterBand.getOverviewCount() > 0) {
+                gdalBand = gdalRasterBand.getOverview(level - 1);
+            } else {
+                gdalBand = gdalRasterBand;
+            }
+        }
+        return gdalBand;
     }
 
     @Override
@@ -73,56 +91,42 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
             Rectangle intersection = new Rectangle(levelDestinationX, levelDestinationY, levelDestinationWidth, levelDestinationHeight);
             if (!intersection.isEmpty()) {
                 try {
-                    int imageWidth = intersection.width;
-                    int imageHeight = intersection.height;
                     int xOffset = intersection.x;
                     int yOffset = intersection.y;
-                    int nXOffset = xOffset + imageWidth;
-                    int nYOffset = yOffset + imageHeight;
                     int xBlock = xOffset / this.imageReader.getBandBlockWidth();
                     int yBlock = yOffset / this.imageReader.getBandBlockHeight();
-                    int nXBlock = nXOffset / this.imageReader.getBandBlockWidth() + (nXOffset % this.imageReader.getBandBlockWidth() > 0 ? 1 : 0);
-                    int nYBlock = nYOffset / this.imageReader.getBandBlockHeight() + (nYOffset % this.imageReader.getBandBlockHeight() > 0 ? 1 : 0);
 
                     long startTime = System.currentTimeMillis();
 
-                    int x = levelDestinationRaster.getMinX();
-                    Raster readBandRaster = null;
-
-                    for (int iXBlock = xBlock; iXBlock < nXBlock; iXBlock++) {
-                        int y = levelDestinationRaster.getMinY();
-                        for (int iYBlock = yBlock; iYBlock < nYBlock; iYBlock++) {
-                            RenderedImage readTileImage = this.imageReader.read(iXBlock, iYBlock);
-                            if (readTileImage != null) {
-                                int[] bandList = new int[]{0}; // the band index is zero
-                                Raster imageRaster = readTileImage.getData();
-                                int rasterWidth = Math.min(imageWidth, readTileImage.getTileWidth());
-                                int rasterHeight = Math.min(imageHeight, readTileImage.getTileHeight());
-                                int rasterParentX = 0;
-                                int rasterParentY = 0;
-
-                                if (levelDestinationRaster.getMinX() + rasterWidth <= imageRaster.getWidth()) {
-                                    rasterParentX = levelDestinationRaster.getMinX();
-                                }
-                                if (levelDestinationRaster.getMinY() + rasterHeight <= imageRaster.getHeight()) {
-                                    rasterParentY = levelDestinationRaster.getMinY();
-                                }
-                                readBandRaster = imageRaster.createChild(rasterParentX, rasterParentY, rasterWidth, rasterHeight, 0, 0, bandList);
-                                levelDestinationRaster.setDataElements(x, y, readBandRaster);
-                            }
-                            if (readBandRaster != null) {
-                                y += readBandRaster.getHeight();
-                            }
-                        }
-                        if (readBandRaster != null) {
-                            x += readBandRaster.getWidth();
-                        }
-                    }
+                    RenderedImage blockRenderedImage = this.imageReader.readBlock(xBlock, yBlock);
 
                     long endTime = System.currentTimeMillis();
-                    String msg = String.format("readBlockDirect (took %s)", (new SimpleDateFormat("mm:ss:SSS")).format(new Date(endTime - startTime)));
-                    SystemUtils.LOG.info(msg);
 
+                    if (SystemUtils.LOG.isLoggable(Level.FINE)) {
+                        String msg = String.format("readBlockDirect (took %s)", (new SimpleDateFormat("mm:ss:SSS")).format(new Date(endTime - startTime)));
+                        SystemUtils.LOG.fine(msg);
+                    }
+
+                    Raster blockImageRaster = blockRenderedImage.getData();
+                    int[] bandList = new int[]{0}; // the band index is zero
+
+                    int rasterParentX = 0;
+                    int rasterParentY = 0;
+                    int rasterWidth = intersection.width;
+                    int rasterHeight = intersection.height;
+
+                    if (intersection.width < blockImageRaster.getWidth()) {
+                        rasterParentX = xOffset % this.imageReader.getBandBlockWidth();
+                        rasterWidth = Math.min(this.imageReader.getBandBlockWidth() - rasterParentX, rasterWidth);
+                    }
+
+                    if (intersection.height < blockImageRaster.getHeight()) {
+                        rasterParentY = yOffset % this.imageReader.getBandBlockHeight();
+                        rasterHeight = Math.min(this.imageReader.getBandBlockHeight() - rasterParentY, rasterHeight);
+                    }
+
+                    Raster readBandRaster = blockImageRaster.createChild(rasterParentX, rasterParentY, rasterWidth, rasterHeight, 0, 0, bandList);
+                    levelDestinationRaster.setDataElements(levelDestinationRaster.getMinX(), levelDestinationRaster.getMinY(), readBandRaster);
                 } catch (IOException ex) {
                     throw new IllegalStateException("Failed to read the data for level " + getLevel() + " and rectangle " + levelDestinationRectangle + ".", ex);
                 }
@@ -170,7 +174,7 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
             }
         }
 
-        RenderedImage read(int iXBlock, int iYBlock) throws IOException {
+        RenderedImage readBlock(int iXBlock, int iYBlock) throws IOException {
             if (this.gdalDataset == null) {
                 createDataset();
             }

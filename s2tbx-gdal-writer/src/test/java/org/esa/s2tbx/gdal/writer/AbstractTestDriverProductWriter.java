@@ -19,7 +19,6 @@ import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.TestUtil;
 import org.geotools.referencing.CRS;
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -85,8 +84,7 @@ public abstract class AbstractTestDriverProductWriter {
         assumeTrue(TestUtil.testdataAvailable());
 
         if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
-            Assume.assumeNotNull(gdalDistributionRootFolderPath);
+            GDALLoader.getInstance().initGDAL();
         }
     }
 

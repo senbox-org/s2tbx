@@ -2,6 +2,7 @@ package org.esa.s2tbx.gdal.writer.plugins;
 
 import org.esa.lib.gdal.activator.GDALDriverInfo;
 import org.esa.lib.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.gdal.writer.GDALProductWriter;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductWriter;
@@ -10,6 +11,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
 
 /**
@@ -22,6 +24,11 @@ public abstract class AbstractDriverProductWriterPlugIn implements ProductWriter
     private final GDALDriverInfo writerDriver;
 
     protected AbstractDriverProductWriterPlugIn(String fileExtension, String driverName, String driverDisplayName, String creationDataTypes) {
+        try {
+            GDALLoader.getInstance().initGDAL();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to init GDAL");
+        }
         this.writerDriver = new GDALDriverInfo(fileExtension, driverName, driverDisplayName, creationDataTypes);
     }
 

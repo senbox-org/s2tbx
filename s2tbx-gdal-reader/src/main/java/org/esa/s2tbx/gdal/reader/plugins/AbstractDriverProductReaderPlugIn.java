@@ -1,6 +1,7 @@
 package org.esa.s2tbx.gdal.reader.plugins;
 
 import org.esa.lib.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.gdal.reader.GDALMetadataInspector;
 import org.esa.s2tbx.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
@@ -11,6 +12,7 @@ import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.utils.StringHelper;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,7 +31,12 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
     private final String pluginFormatName;
 
     protected AbstractDriverProductReaderPlugIn(String driverName, String driverDisplayName) {
-        this.extensions = new HashSet<String>();
+        try {
+            GDALLoader.getInstance().initGDAL();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to init GDAL");
+        }
+        this.extensions = new HashSet<>();
         this.driverName = driverName;
         this.driverDisplayName = driverDisplayName;
         this.pluginFormatName = "GDAL-" + driverName + "-READER";

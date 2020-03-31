@@ -7,7 +7,6 @@ import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,8 +37,7 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     @Before
     public final void setUp() throws Exception {
         if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            Path gdalDistributionRootFolderPath = GDALLoader.getInstance().initGDAL();
-            Assume.assumeNotNull(gdalDistributionRootFolderPath);
+            GDALLoader.getInstance().initGDAL();
         }
     }
 
