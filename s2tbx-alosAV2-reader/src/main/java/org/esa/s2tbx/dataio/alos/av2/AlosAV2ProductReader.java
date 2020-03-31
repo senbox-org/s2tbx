@@ -292,7 +292,12 @@ public class AlosAV2ProductReader extends AbstractProductReader {
                                                throws InstantiationException, IOException, ParserConfigurationException, SAXException {
 
         try (FilePathInputStream filePathInputStream = imageMetadataProductDirectory.getInputStream(imageMetadataRelativeFilePath)) {
-            return (AlosAV2Metadata) XmlMetadataParserFactory.getParser(AlosAV2Metadata.class).parse(filePathInputStream);
+            AlosAV2Metadata metadataItem = (AlosAV2Metadata) XmlMetadataParserFactory.getParser(AlosAV2Metadata.class).parse(filePathInputStream);
+            String metadataProfile = metadataItem.getMetadataProfile();
+            if (metadataProfile != null) {
+                metadataItem.setName(metadataProfile);
+            }
+            return metadataItem;
         }
     }
 }
