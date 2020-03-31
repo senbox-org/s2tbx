@@ -31,7 +31,10 @@
             <artifactId>snap-land-cover</artifactId>
             <version>${snap.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-archiver</artifactId>
+        </dependency>
         <!-- JUnit -->
         <dependency>
             <groupId>junit</groupId>
