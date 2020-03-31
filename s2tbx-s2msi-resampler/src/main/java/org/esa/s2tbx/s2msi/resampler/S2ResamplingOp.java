@@ -1,5 +1,6 @@
 package org.esa.s2tbx.s2msi.resampler;
 
+import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -64,9 +65,11 @@ public class S2ResamplingOp extends Operator {
                     "are only retrieved when zooming in on a pixel.")
     private boolean resampleOnPyramidLevels;
 
+    private S2Resampler s2Resampler;
+
     @Override
     public void initialize() throws OperatorException {
-        S2Resampler s2Resampler = new S2Resampler(Integer.parseInt(targetResolution));
+        s2Resampler = new S2Resampler(Integer.parseInt(targetResolution));
         s2Resampler.setDownsamplingMethod(downsamplingMethod);
         s2Resampler.setFlagDownsamplingMethod(flagDownsamplingMethod);
         s2Resampler.setResampleOnPyramidLevels(resampleOnPyramidLevels);
@@ -76,10 +79,14 @@ public class S2ResamplingOp extends Operator {
             throw new OperatorException("Invalid S2 source product.");
         }
 
-        targetProduct = s2Resampler.resample(sourceProduct);
+        targetProduct = s2Resampler.initialize(sourceProduct);
     }
 
 
+    @Override
+    public void doExecute(ProgressMonitor pm) throws OperatorException  {
+        targetProduct = s2Resampler.resample(sourceProduct);       
+    }
 
     /**
      * The SPI is used to register this operator in the graph processing framework
