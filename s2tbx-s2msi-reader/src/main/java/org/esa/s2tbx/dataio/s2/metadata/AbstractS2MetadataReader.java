@@ -30,7 +30,7 @@ public abstract class AbstractS2MetadataReader {
         if (namingConvention == null) {
             throw new NullPointerException("The naming convention is null.");
         } else if (!namingConvention.hasValidStructure()) {
-            throw new IllegalStateException("The naming convention structure is invalid.");
+            throw new IllegalStateException("The naming convention structure is invalid for input file '"+namingConvention.getInputXml().getFullPathString()+"'");
         }
         this.namingConvention = namingConvention;
     }

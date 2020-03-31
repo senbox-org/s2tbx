@@ -1005,11 +1005,12 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
         SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, bandBounds.width, bandBounds.height, 1, bandBounds.width, bandOffsets);
         DataBuffer buffer = new DataBufferFloat(sampleModel.getWidth() * sampleModel.getHeight());
         WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
-        for (int x = bandBounds.x; x<(bandBounds.x + bandBounds.width); x++) {
-            int rowOffset = x * defaultSize.width;
-            for (int y = bandBounds.y; y<(bandBounds.y + bandBounds.height); y++) {
-                int index = rowOffset + y;
-                raster.setSample(x - bandBounds.x, y - bandBounds.y, 0, data[index]);
+
+        for (int rowIndex = bandBounds.y; rowIndex<(bandBounds.y + bandBounds.height); rowIndex++) {
+            int rowOffset = rowIndex * defaultSize.width;
+            for (int columnIndex = bandBounds.x; columnIndex<(bandBounds.x + bandBounds.width); columnIndex++) {
+                int index = rowOffset + columnIndex;
+                raster.setSample(columnIndex - bandBounds.x, rowIndex - bandBounds.y, 0, data[index]);
             }
         }
 

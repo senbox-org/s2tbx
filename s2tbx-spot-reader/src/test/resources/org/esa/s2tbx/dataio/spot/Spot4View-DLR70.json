@@ -100,15 +100,15 @@
         ],
         "metadata": [
             {
-                "path": "Metadata/Image/FORMAT",
+                "path": "SPOTScene/Image/FORMAT",
                 "value": "BIL"
             },
             {
-                "path": "Metadata/Production/DATASET_NAME",
+                "path": "SPOTScene/Production/DATASET_NAME",
                 "value": "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP"
             },
             {
-                 "path": "Metadata/Production/DATASET_SENSOR",
+                 "path": "SPOTScene/Production/DATASET_SENSOR",
                  "value": "SPOT 4"
             }
         ]
