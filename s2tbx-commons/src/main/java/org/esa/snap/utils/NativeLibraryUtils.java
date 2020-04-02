@@ -22,9 +22,11 @@ import java.util.stream.Collectors;
 /**
  * Helper methods for native libraries registration.
  *
- * @author  Cosmin Cara
- * @since   5.0.0
+ * @author Cosmin Cara
+ * @since 5.0.0
+ * @deprecated since 8.0.0, use {@link org.esa.snap.core.util.NativeLibraryUtils} instead
  */
+@Deprecated()
 public class NativeLibraryUtils {
     private static final String ENV_LIB_PATH = "java.library.path";
 

@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import org.esa.s2tbx.jni.EnvironmentVariables;
-import org.esa.snap.utils.NativeLibraryUtils;
+import org.esa.snap.core.util.NativeLibraryUtils;
 
 import java.io.File;
 import java.io.IOException;

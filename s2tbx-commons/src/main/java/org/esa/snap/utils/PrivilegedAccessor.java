@@ -40,7 +40,9 @@ import java.lang.reflect.Method;
  * @author Charlie Hubbard (chubbard@iss.net)
  * @author Prashant Dhokte (pdhokte@iss.net)
  * @author Dale Anson (danson@germane-software.com)
+ * @deprecated since 8.0.0, use {@link org.esa.snap.core.util.PrivilegedAccessor} instead
  */
+@Deprecated
 public class PrivilegedAccessor {
     /**
      * Gets the value of the named field and returns it as an object.

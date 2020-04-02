@@ -14,8 +14,8 @@ import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
 import org.esa.snap.core.gpf.ui.DefaultSingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelectorModel;
+import org.esa.snap.core.util.PrivilegedAccessor;
 import org.esa.snap.ui.AppContext;
-import org.esa.snap.utils.PrivilegedAccessor;
 
 import java.lang.reflect.Method;
 import java.util.List;
