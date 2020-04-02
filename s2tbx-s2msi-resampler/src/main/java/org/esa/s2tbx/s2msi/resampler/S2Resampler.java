@@ -19,6 +19,7 @@ import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.common.BandMathsOp;
 import org.esa.snap.core.gpf.common.resample.ResamplingOp;
 import org.esa.snap.core.util.jai.JAIUtils;
+import org.esa.snap.core.util.ProductUtils;
 import org.opengis.referencing.operation.MathTransform;
 
 import javax.media.jai.ImageLayout;
@@ -134,6 +135,16 @@ public class S2Resampler implements Resampler {
         //    return false;
         //todo check referencebandName
         return multiSizeProduct.getProductReader() instanceof S2AnglesGeometry;
+    }
+    public Product initialize(Product sourceProduct) {
+        Product targetProduct = new Product(sourceProduct.getName() + "_" + S2RESAMPLER_NAME, sourceProduct.getProductType(),
+                                    targetWidth, targetHeight);
+        ProductUtils.copyFlagCodings(sourceProduct, targetProduct);
+        ProductUtils.copyIndexCodings(sourceProduct, targetProduct);
+        ProductUtils.copyMetadata(sourceProduct, targetProduct);
+        ProductUtils.copyTimeInformation(sourceProduct, targetProduct);
+        targetProduct.setPreferredTileSize(referenceTileSize);
+        return targetProduct;
     }
 
     @Override
