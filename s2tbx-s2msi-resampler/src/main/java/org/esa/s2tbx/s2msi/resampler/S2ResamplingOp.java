@@ -79,13 +79,12 @@ public class S2ResamplingOp extends Operator {
             throw new OperatorException("Invalid S2 source product.");
         }
 
-        targetProduct = s2Resampler.initialize(sourceProduct);
+        targetProduct = s2Resampler.resample(sourceProduct);
     }
 
 
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException  {
-        targetProduct = s2Resampler.resample(sourceProduct);       
     }
 
     /**
