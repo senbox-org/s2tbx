@@ -72,10 +72,6 @@
             <artifactId>xsom</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.relaxng</groupId>
-            <artifactId>relaxngDatatype</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax.xml.parsers</groupId>
             <artifactId>jaxp-api</artifactId>
         </dependency>
