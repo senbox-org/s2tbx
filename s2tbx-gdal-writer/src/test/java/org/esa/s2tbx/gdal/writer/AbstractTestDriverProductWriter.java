@@ -134,7 +134,6 @@ public abstract class AbstractTestDriverProductWriter {
             int bandDataType = GDALLoader.getInstance().getBandDataType(gdalDataType);
             File file = new File(testsFolderPath.toFile(), this.driverName + driverInfo.getExtensionName());
             try {
-                file.delete();
                 Product product = buildProductToSave(driverInfo, canIgnore, sceneRasterWidth, sceneRasterHeight, geoCodingToSave, bandDataType);
 
                 checkSaveProductToFile(file, this.writerPlugIn, product);
@@ -235,5 +234,6 @@ public abstract class AbstractTestDriverProductWriter {
         assertEquals(savedProduct.getSceneRasterWidth(), finalProduct.getSceneRasterWidth());
         assertEquals(savedProduct.getSceneRasterHeight(), finalProduct.getSceneRasterHeight());
         assertEquals(savedProduct.getNumBands(), finalProduct.getNumBands());
+        finalProduct.dispose();
     }
 }
