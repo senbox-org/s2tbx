@@ -100,55 +100,55 @@
     ],
     "metadata": [
       {
-        "path": "Metadata/Metadata_Id/METADATA_FORMAT",
+        "path": "ALOS/Metadata_Id/METADATA_FORMAT",
         "value": "DIMAP"
       },
       {
-        "path": "Metadata/Metadata_Id/METADATA_PROFILE",
+        "path": "ALOS/Metadata_Id/METADATA_PROFILE",
         "value": "ALOS"
       },
       {
-        "path": "Metadata/Dataset_Id/DATASET_NAME",
+        "path": "ALOS/Dataset_Id/DATASET_NAME",
         "value": "AL01_AV2_OBS_1C_20080715T181736_20080715T181748_ESR_013182_3985"
       },
       {
-        "path": "Metadata/Production/DATASET_PRODUCTION_DATE",
+        "path": "ALOS/Production/DATASET_PRODUCTION_DATE",
         "value": "2018-07-20T16:20:34.442665"
       },
       {
-        "path": "Metadata/Production/PRODUCT_TYPE",
+        "path": "ALOS/Production/PRODUCT_TYPE",
         "value": "Level 1C"
       },
       {
-        "path": "Metadata/Coordinate_Reference_System/Horizontal_CS/HORIZONTAL_CS_CODE",
+        "path": "ALOS/Coordinate_Reference_System/Horizontal_CS/HORIZONTAL_CS_CODE",
         "value": "epsg:32625"
       },
       {
-        "path": "Metadata/Raster_Dimensions/NCOLS",
+        "path": "ALOS/Raster_Dimensions/NCOLS",
         "value": "200"
       },
       {
-        "path": "Metadata/Raster_Dimensions/NROWS",
+        "path": "ALOS/Raster_Dimensions/NROWS",
         "value": "200"
       },
       {
-        "path": "Metadata/Raster_Dimensions/NBANDS",
+        "path": "ALOS/Raster_Dimensions/NBANDS",
         "value": "4"
       },
       {
-        "path": "Metadata/Image_Display/Special_Value[1]/SPECIAL_VALUE_INDEX",
+        "path": "ALOS/Image_Display/Special_Value[1]/SPECIAL_VALUE_INDEX",
         "value": "0"
       },
       {
-        "path": "Metadata/Image_Display/Special_Value[1]/SPECIAL_VALUE_TEXT",
+        "path": "ALOS/Image_Display/Special_Value[1]/SPECIAL_VALUE_TEXT",
         "value": "no data"
       },
       {
-        "path": "Metadata/Image_Display/Special_Value[2]/SPECIAL_VALUE_INDEX",
+        "path": "ALOS/Image_Display/Special_Value[2]/SPECIAL_VALUE_INDEX",
         "value": "255"
       },
       {
-        "path": "Metadata/Image_Display/Special_Value[2]/SPECIAL_VALUE_TEXT",
+        "path": "ALOS/Image_Display/Special_Value[2]/SPECIAL_VALUE_TEXT",
         "value": "saturated"
       }
     ]
