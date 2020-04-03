@@ -32,7 +32,6 @@ import java.awt.image.SampleModel;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,7 +81,7 @@ class WorldView2ProductReader extends AbstractProductReader {
             this.productDirectory = VirtualDirEx.build(productPath, false, false);
 
             WorldView2Metadata metadata = readMetadata(this.productDirectory);
-            int subProductCount = metadata.getProducts().size();
+            int subProductCount = metadata.getSubProductCount();
             if (subProductCount == 0) {
                 throw new IllegalStateException("The product is empty.");
             }
@@ -126,8 +125,10 @@ class WorldView2ProductReader extends AbstractProductReader {
             Path parentFolderPath = this.productDirectory.getBaseFile().toPath();
             String autoGroupPattern = "";
             String bandPrefix = "";
-            for (Map.Entry<String, TileMetadataList> entry : metadata.getProducts().entrySet()) {
-                String subProductName = entry.getKey();
+            for (int k=0; k<subProductCount; k++) {
+                String subProductName = metadata.getSubProductNameAt(k);
+                TileMetadataList subProductTileMetadataList = metadata.getSubProductTileMetadataListAt(k);
+
                 if (subProductCount > 1) {
                     if (autoGroupPattern.length() > 0) {
                         autoGroupPattern += ":";
@@ -135,8 +136,6 @@ class WorldView2ProductReader extends AbstractProductReader {
                     autoGroupPattern += subProductName;
                     bandPrefix = subProductName + "_";
                 }
-
-                TileMetadataList subProductTileMetadataList = entry.getValue();
 
                 Dimension defaultSubProductSize = subProductTileMetadataList.computeDefaultProductSize();
                 if (defaultSubProductSize == null) {
@@ -307,23 +306,24 @@ class WorldView2ProductReader extends AbstractProductReader {
             worldView2Metadata = (WorldView2Metadata)XmlMetadataParserFactory.getParser(WorldView2Metadata.class).parse(filePathInputStream);
         }
 
-        String productNames[] = worldView2Metadata.findProductNames();
-        for (int i=0; i<productNames.length; i++) {
+        String subProductNames[] = worldView2Metadata.findSubProductNames();
+        for (int i=0; i<subProductNames.length; i++) {
             TileMetadataList tileMetadataList = new TileMetadataList();
             for (String fileRelativePath : allFileNames) {
-                if (fileRelativePath.contains(productNames[i])) {
+                if (fileRelativePath.contains(subProductNames[i])) {
                     if (fileRelativePath.endsWith(WorldView2Constants.METADATA_EXTENSION) && !fileRelativePath.endsWith(WorldView2Constants.METADATA_FILE_SUFFIX)
                             && !fileRelativePath.endsWith(WorldView2Metadata.EXCLUSION_STRING)) {
 
                         try (FilePathInputStream filePathInputStream = productDirectory.getInputStream(fileRelativePath)) {
                             TileMetadata tileMetadata = TileMetadata.create(filePathInputStream);
-                            tileMetadataList.getTiles().add(tileMetadata);
+                            tileMetadataList.addTileMetadata(tileMetadata);
                         }
                     } else if (fileRelativePath.endsWith(WorldView2Constants.IMAGE_EXTENSION)) {
                         tileMetadataList.getTiffImageRelativeFiles().add(fileRelativePath);
                     }
                 }
             }
+            tileMetadataList.sortTilesByFileName();
             int multiSpectralBandCount = 0;
             int bandsDataType = 0;
             for (TileMetadata tileMetadata : tileMetadataList.getTiles()) {
@@ -348,8 +348,9 @@ class WorldView2ProductReader extends AbstractProductReader {
                 }
             }
             tileMetadataList.setBandsData(multiSpectralBandCount, bandsDataType);
-            worldView2Metadata.addProductTileMetadataList(productNames[i], tileMetadataList);
+            worldView2Metadata.addSubProductTileMetadataList(subProductNames[i], tileMetadataList);
         }
+        worldView2Metadata.sortSubProductsByName();
 
         return worldView2Metadata;
     }

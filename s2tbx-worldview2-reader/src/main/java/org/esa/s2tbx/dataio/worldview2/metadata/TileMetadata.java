@@ -136,13 +136,13 @@ public class TileMetadata extends XmlMetadata {
      * @return TileMetadata object
      * @throws IOException
      */
-    public static TileMetadata create(final Path path) throws IOException {
+    public static TileMetadata create(final Path path) throws IOException, ParserConfigurationException, SAXException {
         try (InputStream inputStream = Files.newInputStream(path)) {
             return create(new FilePathInputStream(path, inputStream, null));
         }
     }
 
-    public static TileMetadata create(FilePathInputStream filePathInputStream) throws IOException {
+    public static TileMetadata create(FilePathInputStream filePathInputStream) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(filePathInputStream);
         Path path = filePathInputStream.getPath();
         TileMetadata result = null;
@@ -216,29 +216,29 @@ public class TileMetadata extends XmlMetadata {
 
             tileComponent.setTileNames(tileNames);
             tileComponent.setBandID(bandID);
-            if(numRows != null){
+            if (numRows != null) {
                 tileComponent.setNumRows(Integer.parseInt(numRows));
             }
-            if(numColumns != null) {
+            if (numColumns != null) {
                 tileComponent.setNumColumns(Integer.parseInt(numColumns));
             }
-            if(bitsPerPixel != null) {
+            if (bitsPerPixel != null) {
                 tileComponent.setBitsPerPixel(Integer.parseInt(bitsPerPixel));
             }
-            if(originX != null) {
+            if (originX != null) {
                 tileComponent.setOriginX(Double.parseDouble(originX));
             }
-            if(originY != null) {
+            if (originY != null) {
                 tileComponent.setOriginY(Double.parseDouble(originY));
             }
-            if(stepSize != null) {
+            if (stepSize != null) {
                 tileComponent.setStepSize(Double.parseDouble(stepSize));
             }
-            if(mapZone != null) {
+            if (mapZone != null) {
                 tileComponent.setMapZone(Integer.parseInt(mapZone));
             }
             tileComponent.setMapHemisphere(mapHemisphere);
-            if(numOfTiles != null) {
+            if (numOfTiles != null) {
                 tileComponent.setNumOfTiles(Integer.parseInt(numOfTiles));
             }
             assert upperLeftColumnOffset != null;
@@ -258,7 +258,7 @@ public class TileMetadata extends XmlMetadata {
             int[] lowerLeftRowOffsetInt = new int[lowerLeftRowOffset.length];
             int[] lowerRightColumnOffsetInt = new int[lowerRightColumnOffset.length];
             int[] lowerRightRowOffsetInt = new int[lowerRightRowOffset.length];
-            for(int index = 0; index < upperLeftColumnOffset.length; index++) {
+            for (int index = 0; index < upperLeftColumnOffset.length; index++) {
                 upperLeftColumnOffsetInt[index] = Integer.parseInt(upperLeftColumnOffset[index]);
                 upperLeftRowOffsetInt[index] = Integer.parseInt(upperLeftRowOffset[index]);
                 upperRightColumnOffsetInt[index] = Integer.parseInt(upperRightColumnOffset[index]);
@@ -277,9 +277,6 @@ public class TileMetadata extends XmlMetadata {
             tileComponent.setLowerRightColumnOffset(lowerRightColumnOffsetInt);
             tileComponent.setLowerRightRowOffset(lowerRightRowOffsetInt);
             tileComponent.setScalingFactor(abscalfactor, effectivebandwidth);
-
-        } catch (ParserConfigurationException | SAXException e) {
-            e.printStackTrace();
         }
         assert result != null;
         result.setTileComponent(tileComponent);

@@ -10,10 +10,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -64,6 +62,22 @@ public class TileMetadataList {
 
     public int getBandsDataType() {
         return bandsDataType;
+    }
+
+    public void addTileMetadata(TileMetadata tileMetadata) {
+        this.tiles.add(tileMetadata);
+    }
+
+    public void sortTilesByFileName() {
+        if (this.tiles.size() > 1) {
+            Comparator<TileMetadata> comparator = new Comparator<TileMetadata>() {
+                @Override
+                public int compare(TileMetadata leftItem, TileMetadata rightItem) {
+                    return leftItem.getFileName().compareTo(rightItem.getFileName());
+                }
+            };
+            Collections.sort(this.tiles, comparator);
+        }
     }
 
     public List<TileMetadata> getTiles() {

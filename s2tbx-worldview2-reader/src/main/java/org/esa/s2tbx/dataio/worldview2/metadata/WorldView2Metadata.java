@@ -1,11 +1,11 @@
 package org.esa.s2tbx.dataio.worldview2.metadata;
 
 import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.worldview2.common.WorldView2Constants;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.engine_utilities.util.Pair;
 import org.esa.snap.utils.DateHelper;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
@@ -14,6 +14,7 @@ import org.opengis.referencing.operation.TransformException;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Basic reader for WorldView 2 products.
@@ -25,7 +26,7 @@ public class WorldView2Metadata extends XmlMetadata {
 
     public static final String EXCLUSION_STRING = "README";
 
-    private final Map<String, TileMetadataList> products;
+    private final List<Pair<String, TileMetadataList>> subProducts;
 
     /**
      * Constructs an instance of metadata class and assigns a name to the root <code>MetadataElement</code>.
@@ -35,7 +36,7 @@ public class WorldView2Metadata extends XmlMetadata {
     public WorldView2Metadata(String name) {
         super(name);
 
-        this.products = new HashMap<>();
+        this.subProducts = new ArrayList<>();
     }
 
     @Override
@@ -126,7 +127,7 @@ public class WorldView2Metadata extends XmlMetadata {
         return null;
     }
 
-    public String[] findProductNames() {
+    public String[] findSubProductNames() {
         Set<String> products = new HashSet<>();
         final String[] fileNames = getAttributeValues(WorldView2Constants.PATH_FILE_LIST);
         for (String file : fileNames) {
@@ -139,18 +140,47 @@ public class WorldView2Metadata extends XmlMetadata {
         return products.toArray(new String[0]);
     }
 
-    public void addProductTileMetadataList(String productName, TileMetadataList tileMetadataList) {
-        this.products.put(productName, tileMetadataList);
+    public void addSubProductTileMetadataList(String subProductName, TileMetadataList tileMetadataList) {
+        for (int i = 0; i<this.subProducts.size(); i++) {
+            String existingProductName = this.subProducts.get(i).getFirst();
+            if (existingProductName.equalsIgnoreCase(subProductName)) {
+                throw new IllegalArgumentException("The subproduct name '" + subProductName + "' already exists.");
+            }
+        }
+        this.subProducts.add(new Pair<>(subProductName, tileMetadataList));
     }
 
-    public Map<String, TileMetadataList> getProducts() {
-        return products;
+    public void sortSubProductsByName() {
+        if (this.subProducts.size() > 1) {
+            Comparator<Pair<String, TileMetadataList> > comparator = new Comparator<Pair<String, TileMetadataList> >() {
+                @Override
+                public int compare(Pair<String, TileMetadataList> leftItem, Pair<String, TileMetadataList> rightItem) {
+                    return leftItem.getFirst().compareTo(rightItem.getFirst());
+                }
+            };
+            Collections.sort(this.subProducts, comparator);
+        }
+    }
+
+    public int getSubProductCount() {
+        return this.subProducts.size();
+    }
+
+    public String getSubProductNameAt(int index) {
+        Pair<String, TileMetadataList> pair = this.subProducts.get(index);
+        return pair.getFirst();
+    }
+
+    public TileMetadataList getSubProductTileMetadataListAt(int index) {
+        Pair<String, TileMetadataList> pair = this.subProducts.get(index);
+        return pair.getSecond();
     }
 
     public Dimension computeDefaultProductSize() {
         int defaultProductWidth = 0;
         int defaultProductHeight = 0;
-        for (TileMetadataList tileMetadataList : this.products.values()) {
+        for (int i = 0; i<this.subProducts.size(); i++) {
+            TileMetadataList tileMetadataList = this.subProducts.get(i).getSecond();
             Dimension size = tileMetadataList.computeDefaultProductSize();
             if (defaultProductWidth < size.width) {
                 defaultProductWidth = size.width;
@@ -166,7 +196,8 @@ public class WorldView2Metadata extends XmlMetadata {
         int defaultProductWidth = 0;
         int defaultProductHeight = 0;
         boolean isMultiSize = false;
-        for (TileMetadataList tileMetadataList : this.products.values()) {
+        for (int i = 0; i<this.subProducts.size(); i++) {
+            TileMetadataList tileMetadataList = this.subProducts.get(i).getSecond();
             for (TileMetadata tileMetadata : tileMetadataList.getTiles()) {
                 TileComponent tileComponent = tileMetadata.getTileComponent();
                 if (defaultProductWidth == 0) {
@@ -197,7 +228,8 @@ public class WorldView2Metadata extends XmlMetadata {
         double originX = Double.MAX_VALUE;//0.0d;
         double originY = -Double.MAX_VALUE;//0.0d;
 
-        for (TileMetadataList tileMetadataList : this.products.values()) {
+        for (int i = 0; i<this.subProducts.size(); i++) {
+            TileMetadataList tileMetadataList = this.subProducts.get(i).getSecond();
             java.util.List<TileMetadata> tiles = tileMetadataList.getTiles();
             for (TileMetadata tileMetadata : tiles) {
                 TileComponent tileComponent = tileMetadata.getTileComponent();
@@ -212,14 +244,14 @@ public class WorldView2Metadata extends XmlMetadata {
                     if (stepSize == null) {
                         stepSize = tileComponent.getStepSize();
                     } else if (stepSize.doubleValue() != tileComponent.getStepSize()) {
-                        throw new IllegalStateException("Different value for step size: previous value="+stepSize.doubleValue()+", new value="+tileComponent.getStepSize()+", number of subproducts="+this.products.size()+".");
+                        throw new IllegalStateException("Different value for step size: previous value="+stepSize.doubleValue()+", new value="+tileComponent.getStepSize()+", number of subproducts="+this.subProducts.size()+".");
                     }
 
                     String currentCRSCode = tileComponent.computeCRSCode();
                     if (crsCode == null) {
                         crsCode = currentCRSCode;
                     } else if (!crsCode.equalsIgnoreCase(currentCRSCode)) {
-                        throw new IllegalStateException("Different value for coordinate reference system: previous value="+crsCode+", new value="+currentCRSCode+", number of subproducts="+this.products.size()+".");
+                        throw new IllegalStateException("Different value for coordinate reference system: previous value="+crsCode+", new value="+currentCRSCode+", number of subproducts="+this.subProducts.size()+".");
                     }
 
                     if (defaultProductWidth < tileComponent.getNumColumns()) {

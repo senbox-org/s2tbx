@@ -10,7 +10,6 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 /**
  * Created by jcoravu on 7/1/2020.
@@ -24,7 +23,7 @@ public class WorldView2MetadataInspector implements MetadataInspector {
     public Metadata getMetadata(Path productPath) throws IOException {
         try (VirtualDirEx productDirectory = VirtualDirEx.build(productPath, false, false)) {
             WorldView2Metadata worldView2Metadata = WorldView2ProductReader.readMetadata(productDirectory);
-            int subProductCount = worldView2Metadata.getProducts().size();
+            int subProductCount = worldView2Metadata.getSubProductCount();
             if (subProductCount == 0) {
                 throw new IllegalStateException("The product is empty.");
             }
@@ -40,13 +39,14 @@ public class WorldView2MetadataInspector implements MetadataInspector {
             metadata.setGeoCoding(productGeoCoding);
 
             String bandPrefix = "";
-            for (Map.Entry<String, TileMetadataList> entry : worldView2Metadata.getProducts().entrySet()) {
-                String subProductName = entry.getKey();
+            for (int k=0; k<subProductCount; k++) {
+                String subProductName = worldView2Metadata.getSubProductNameAt(k);
+                TileMetadataList tileMetadataList = worldView2Metadata.getSubProductTileMetadataListAt(k);
+
                 if (subProductCount > 1) {
                     bandPrefix = subProductName + "_";
                 }
 
-                TileMetadataList tileMetadataList = entry.getValue();
                 java.util.List<TileMetadata> tiles = tileMetadataList.getTiles();
 
                 for (TileMetadata tileMetadata : tiles) {
