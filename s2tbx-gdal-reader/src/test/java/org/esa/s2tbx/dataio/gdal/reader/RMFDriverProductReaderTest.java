@@ -1,15 +1,12 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
 import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.gdal.reader.plugins.RMFDriverProductReaderPlugIn;
-import org.esa.s2tbx.gdal.reader.GDALProductReader;
+import org.esa.s2tbx.dataio.gdal.reader.plugins.RMFDriverProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.subset.PixelSubsetRegion;
-import org.esa.snap.core.util.ProductUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 

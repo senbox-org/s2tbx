@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.gdal.reader.GDALMetadataInspector;
+import org.esa.s2tbx.dataio.gdal.reader.GDALMetadataInspector;
 import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Test;

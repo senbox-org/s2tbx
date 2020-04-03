@@ -2,8 +2,7 @@ package org.esa.s2tbx.dataio.gdal.reader;
 
 import com.bc.ceres.binding.ConversionException;
 import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.gdal.reader.plugins.RSTDriverProductReaderPlugIn;
-import org.esa.s2tbx.gdal.reader.GDALProductReader;
+import org.esa.s2tbx.dataio.gdal.reader.plugins.RSTDriverProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoPos;
