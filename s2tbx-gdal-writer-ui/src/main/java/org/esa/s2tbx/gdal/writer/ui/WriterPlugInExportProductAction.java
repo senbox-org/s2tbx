@@ -3,7 +3,7 @@ package org.esa.s2tbx.gdal.writer.ui;
 import org.esa.lib.gdal.activator.GDALDriverInfo;
 import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
-import org.esa.s2tbx.gdal.writer.plugins.AbstractDriverProductWriterPlugIn;
+import org.esa.s2tbx.dataio.gdal.writer.plugins.AbstractDriverProductWriterPlugIn;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Band;

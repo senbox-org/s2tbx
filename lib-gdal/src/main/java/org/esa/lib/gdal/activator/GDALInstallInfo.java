@@ -27,7 +27,7 @@ public class GDALInstallInfo {
      *
      * @param binLocation the location which contains GDAL binaries
      */
-    synchronized void setLocations(Path binLocation) {
+    public synchronized void setLocations(Path binLocation) {
         this.binLocation = binLocation;
         try {
             Config config = Config.instance("s2tbx");

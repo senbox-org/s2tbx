@@ -342,7 +342,7 @@ class GDALInstaller {
                 // different module versions and delete the library saved on the local disk
                 boolean deleted = FileUtils.deleteTree(gdalNativeLibrariesFolderPath.toFile());
                 if (!deleted) {
-                    throw new IllegalArgumentException("Failed to delete the GDAL distribution folder '" + gdalNativeLibrariesFolderPath.toString() + "'.");
+                    logger.log(Level.WARNING,()->"Failed to delete the GDAL distribution folder '" + gdalNativeLibrariesFolderPath.toString() + "'.");
                 }
             }
         }

@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.snap.core.datamodel.ProductData;
@@ -47,10 +48,9 @@ public final class GDALLoader {
     /**
      * Initializes GDAL native libraries to be used by SNAP.
      *
-     * @return the absolute path of the GDAL distribution
      * @throws IOException When IO error occurs
      */
-    public Path initGDAL() throws IOException {
+    public void initGDAL() throws IOException {
         if (!this.ready) {
             this.gdalVersion = GDALVersion.getGDALVersion();
             GDALDistributionInstaller.setupDistribution(this.gdalVersion);
@@ -58,8 +58,9 @@ public final class GDALLoader {
             this.ready = true;
             initDrivers();
             postGDALInit();
+            Path gdalDistributionBinFolderPath = Paths.get(this.gdalVersion.getLocation());
+            GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
         }
-        return Paths.get(this.gdalVersion.getLocation());
     }
 
     /**

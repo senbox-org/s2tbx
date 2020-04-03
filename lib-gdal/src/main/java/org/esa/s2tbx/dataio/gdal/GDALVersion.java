@@ -93,14 +93,17 @@ public enum GDALVersion {
 
     private static String fetchProcessOutput(Process process) throws IOException {
         StringBuilder output = new StringBuilder();
+        Thread.yield(); // yield the control to other threads for ensure that the process has started
         try (InputStream commandInputStream = process.getInputStream();
              InputStreamReader inputStreamReader = new InputStreamReader(commandInputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
             boolean isStopped = false;
             long startTime = System.currentTimeMillis();
+            long endTime;
             int runningTime = 30;// allow only 30 seconds of running time for the process
-            while (!isStopped && runningTime > 0) {
+            long elapsedTime = 0;
+            while (!isStopped && elapsedTime <= runningTime) {
                 if (process.isAlive()) {
                     Thread.yield(); // yield the control to other threads
                 } else {
@@ -114,8 +117,8 @@ public enum GDALVersion {
                         break;
                     }
                 }
-                long endTime = System.currentTimeMillis();
-                runningTime -= (endTime - startTime) / 1000;
+                endTime = System.currentTimeMillis();
+                elapsedTime = (endTime - startTime) / 1000;
             }
             return output.toString();
         }

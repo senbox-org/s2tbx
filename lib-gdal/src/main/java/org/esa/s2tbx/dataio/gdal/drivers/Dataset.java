@@ -135,4 +135,13 @@ public class Dataset {
         return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "SetProjection", Integer.class, this.jniDatasetInstance, new Class[]{String.class}, new Object[]{prj});
     }
 
+    /**
+     * Calls the JNI GDAL Dataset class SetGeoTransform(double[] gdalGeoTransform) method
+     *
+     * @param gdalGeoTransform the JNI GDAL Dataset class SetGeoTransform(double[] gdalGeoTransform) method 'gdalGeoTransform' argument
+     * @return the JNI GDAL Dataset class SetGeoTransform(double[] gdalGeoTransform) method result
+     */
+    public Integer setGeoTransform(double[] gdalGeoTransform) {
+        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "SetGeoTransform", Integer.class, this.jniDatasetInstance, new Class[]{double[].class}, new Object[]{gdalGeoTransform});
+    }
 }
