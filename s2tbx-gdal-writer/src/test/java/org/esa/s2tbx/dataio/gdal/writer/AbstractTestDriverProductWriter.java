@@ -140,6 +140,11 @@ public abstract class AbstractTestDriverProductWriter {
 
                 checkReadProductFromFile(file, this.readerPlugIn, product, canIgnore);
             } finally {
+                try {
+                    Thread.sleep(100);//pause the thread for waiting resources releases
+                } catch (Exception ignored) {
+                    //nothing to do
+                }
                 file.delete();
             }
         }
