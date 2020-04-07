@@ -309,7 +309,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                             //targetBand.setStx(statistics[i]);
                         /*targetBand.setImageInfo(
                                 new ImageInfo(
-                                        new ColorPaletteDef(newil intrebai daca vrea mall sau  ColorPaletteDef.Point[] {
+                                        new ColorPaletteDef(new ColorPaletteDef.Point[] {
                                                 new ColorPaletteDef.Point(statistics[i].getMinimum(), Color.BLACK),
                                                 new ColorPaletteDef.Point(statistics[i].getMean(), Color.GRAY),
                                                 new ColorPaletteDef.Point(statistics[i].getMaximum(), Color.WHITE)
