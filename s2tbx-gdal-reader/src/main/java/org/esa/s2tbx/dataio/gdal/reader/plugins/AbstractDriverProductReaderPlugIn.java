@@ -12,7 +12,6 @@ import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.utils.StringHelper;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,11 +30,7 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
     private final String pluginFormatName;
 
     protected AbstractDriverProductReaderPlugIn(String driverName, String driverDisplayName) {
-        try {
-            GDALLoader.getInstance().initGDAL();
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to init GDAL");
-        }
+        GDALLoader.getInstance().initGDAL();
         this.extensions = new HashSet<>();
         this.driverName = driverName;
         this.driverDisplayName = driverDisplayName;
