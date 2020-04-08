@@ -22,6 +22,10 @@ public abstract class AbstractDriverProductWriterPlugIn implements ProductWriter
 
     private final GDALDriverInfo writerDriver;
 
+    static {
+        GDALLoader.getInstance().initGDAL();
+    }
+
     protected AbstractDriverProductWriterPlugIn(String fileExtension, String driverName, String driverDisplayName, String creationDataTypes) {
         GDALLoader.getInstance().initGDAL();
         this.writerDriver = new GDALDriverInfo(fileExtension, driverName, driverDisplayName, creationDataTypes);

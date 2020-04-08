@@ -80,12 +80,8 @@ public abstract class AbstractTestDriverProductWriter {
     }
 
     @Before
-    public final void setUp() throws Exception {
+    public final void setUp() {
         assumeTrue(TestUtil.testdataAvailable());
-
-        if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            GDALLoader.getInstance().initGDAL();
-        }
     }
 
     @Test

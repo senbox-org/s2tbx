@@ -5,9 +5,9 @@ import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.dataio.gdal.reader.GDALMetadataInspector;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
-import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.utils.StringHelper;
 
@@ -28,6 +28,10 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
     private final String driverName;
     private final String driverDisplayName;
     private final String pluginFormatName;
+
+    static {
+        GDALLoader.getInstance().initGDAL();
+    }
 
     protected AbstractDriverProductReaderPlugIn(String driverName, String driverDisplayName) {
         GDALLoader.getInstance().initGDAL();
