@@ -276,22 +276,26 @@ class GDALInstaller {
      *
      * @return the current module specification version
      */
-    private String fetchCurrentModuleSpecificationVersion() throws IOException {
-        Class<?> clazz = getClass();
-        String className = clazz.getSimpleName() + ".class";
-        String classPath = clazz.getResource(className).toString();
-        String manifestPath;
-        if (classPath.startsWith("jar")) {
-            manifestPath = classPath.substring(0, classPath.lastIndexOf('!') + 1) + "/META-INF/MANIFEST.MF";
-        } else {
-            // class not from jar archive
-            String relativePath = clazz.getName().replace('.', File.separatorChar) + ".class";
-            String classFolder = classPath.substring(0, classPath.length() - relativePath.length() - 1);
-            manifestPath = classFolder + "/META-INF/MANIFEST.MF";
+    private String fetchCurrentModuleSpecificationVersion() {
+        try {
+            Class<?> clazz = getClass();
+            String className = clazz.getSimpleName() + ".class";
+            String classPath = clazz.getResource(className).toString();
+            String manifestPath;
+            if (classPath.startsWith("jar")) {
+                manifestPath = classPath.substring(0, classPath.lastIndexOf('!') + 1) + "/META-INF/MANIFEST.MF";
+            } else {
+                // class not from jar archive
+                String relativePath = clazz.getName().replace('.', File.separatorChar) + ".class";
+                String classFolder = classPath.substring(0, classPath.length() - relativePath.length() - 1);
+                manifestPath = classFolder + "/META-INF/MANIFEST.MF";
+            }
+            Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+            Attributes attributes = manifest.getMainAttributes();
+            return attributes.getValue("OpenIDE-Module-Specification-Version");
+        } catch (Exception ignored) {
+            return "unknown";
         }
-        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-        Attributes attributes = manifest.getMainAttributes();
-        return attributes.getValue("OpenIDE-Module-Specification-Version");
     }
 
     /**
