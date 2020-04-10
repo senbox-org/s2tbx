@@ -11,7 +11,6 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Locale;
 
 /**
@@ -23,12 +22,12 @@ public abstract class AbstractDriverProductWriterPlugIn implements ProductWriter
 
     private final GDALDriverInfo writerDriver;
 
+    static {
+        GDALLoader.getInstance().initGDAL();
+    }
+
     protected AbstractDriverProductWriterPlugIn(String fileExtension, String driverName, String driverDisplayName, String creationDataTypes) {
-        try {
-            GDALLoader.getInstance().initGDAL();
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to init GDAL");
-        }
+        GDALLoader.getInstance().initGDAL();
         this.writerDriver = new GDALDriverInfo(fileExtension, driverName, driverDisplayName, creationDataTypes);
     }
 

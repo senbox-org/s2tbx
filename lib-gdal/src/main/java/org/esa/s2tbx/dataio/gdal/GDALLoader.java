@@ -5,7 +5,6 @@ import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.snap.core.datamodel.ProductData;
 
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -26,7 +25,7 @@ public final class GDALLoader {
     private static final GDALLoader INSTANCE = new GDALLoader();
     private static final Logger logger = Logger.getLogger(GDALLoader.class.getName());
 
-    private boolean ready = false;
+    private boolean gdalIsInitialized = false;
     private GDALVersion gdalVersion;
     private URLClassLoader gdalVersionLoader;
 
@@ -48,18 +47,22 @@ public final class GDALLoader {
     /**
      * Initializes GDAL native libraries to be used by SNAP.
      *
-     * @throws IOException When IO error occurs
      */
-    public void initGDAL() throws IOException {
-        if (!this.ready) {
-            this.gdalVersion = GDALVersion.getGDALVersion();
-            GDALDistributionInstaller.setupDistribution(this.gdalVersion);
-            this.gdalVersionLoader = new URLClassLoader(new URL[]{this.gdalVersion.getJNILibraryFilePath().toUri().toURL()}, GDALLoader.class.getClassLoader());
-            this.ready = true;
-            initDrivers();
-            postGDALInit();
-            Path gdalDistributionBinFolderPath = Paths.get(this.gdalVersion.getLocation());
-            GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
+    public void initGDAL() {
+        if (!this.gdalIsInitialized) {
+            try {
+                this.gdalVersion = GDALVersion.getGDALVersion();
+                GDALDistributionInstaller.setupDistribution(this.gdalVersion);
+                this.gdalVersionLoader = new URLClassLoader(new URL[]{this.gdalVersion.getJNILibraryFilePath().toUri().toURL()}, GDALLoader.class.getClassLoader());
+                this.gdalIsInitialized = true;
+                initDrivers();
+                postGDALInit();
+                Path gdalDistributionBinFolderPath = Paths.get(this.gdalVersion.getLocation());
+                GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                this.gdalIsInitialized = false;
+            }
         }
     }
 
@@ -82,8 +85,8 @@ public final class GDALLoader {
      * @return the GDAL JNI URL class loader for loading JNI drivers of current version native libraries
      */
     public URLClassLoader getGDALVersionLoader() {
-        if (!this.ready) {
-            throw new IllegalStateException("GDAL Loader not ready.");
+        if (!this.gdalIsInitialized) {
+            throw new IllegalStateException("GDAL Loader not initialized.");
         }
         return this.gdalVersionLoader;
     }
@@ -95,7 +98,7 @@ public final class GDALLoader {
      * @return the GDAL data type
      */
     public int getGDALDataType(int bandDataType) {
-        if (!this.ready) {
+        if (!this.gdalIsInitialized) {
             throw new IllegalStateException("GDAL library not initialized");
         }
         Integer gdalResult = this.bandToGDALDataTypes.get(bandDataType);
@@ -112,7 +115,7 @@ public final class GDALLoader {
      * @return the data type of the band
      */
     public int getBandDataType(int gdalDataType) {
-        if (!this.ready) {
+        if (!this.gdalIsInitialized) {
             throw new IllegalStateException("GDAL library not initialized");
         }
         for (Map.Entry<Integer, Integer> entry : this.bandToGDALDataTypes.entrySet()) {
