@@ -1,13 +1,11 @@
 package org.esa.s2tbx.dataio.gdal.writer.plugins;
 
 import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.media.jai.JAI;
@@ -31,13 +29,6 @@ public abstract class AbstractTestDriverProductWriterPlugIn {
     protected AbstractTestDriverProductWriterPlugIn(String driverName, AbstractDriverProductWriterPlugIn writerPlugIn) {
         this.driverName = driverName;
         this.writerPlugIn = writerPlugIn;
-    }
-
-    @Before
-    public final void setUp() throws Exception {
-        if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            GDALLoader.getInstance().initGDAL();
-        }
     }
 
     @Test
