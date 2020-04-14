@@ -22,6 +22,7 @@ import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
 
 import java.awt.image.DataBuffer;
+import java.util.logging.Logger;
 
 /**
  * Class to store S2 readers paramteters: static const, openjpeg executables path, tile layouts, ...
@@ -104,6 +105,7 @@ public class S2Config {
                 }
 
                 if (nonNullTileLayout != null) {
+                    Logger.getLogger(S2Config.class.getName()).info("NULL tile layout; create with default dataType=0 (S2C-1");
                     // resolutionForNonNullTileLayout is either R20M, either R60M
                     int factor = resolutionForNonNullTileLayout / S2SpatialResolution.R10M.resolution;
                     int width = nonNullTileLayout.width * factor;
@@ -119,6 +121,7 @@ public class S2Config {
             }
         }
 
+        Logger.getLogger(S2Config.class.getName()).info("tile layout data type (S2C-2)" + tileLayoutForResolution.dataType);
         return tileLayoutForResolution;
     }
 
