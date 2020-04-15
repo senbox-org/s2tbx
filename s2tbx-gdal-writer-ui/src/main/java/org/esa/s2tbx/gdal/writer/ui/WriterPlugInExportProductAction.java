@@ -163,6 +163,7 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
         ProductFileChooser fc = new ProductFileChooser(new File(preferences.get(ProductOpener.PREFERENCES_KEY_LAST_PRODUCT_DIR, ".")));
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setSubsetEnabled(useSubset);
+        fc.setAdvancedEnabled(false);
         if (filter != null) {
             fc.addChoosableFileFilter(filter);
         }
