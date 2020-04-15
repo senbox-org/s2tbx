@@ -260,8 +260,6 @@ public class GDALProductReader extends AbstractProductReader {
             Double[] pass1 = new Double[1];
             int numResolutions = 1;
 
-            Dimension defaultImageSize = new Dimension(gdalDataset.getRasterXSize(), gdalDataset.getRasterYSize());
-
             int bandCount = gdalDataset.getRasterCount();
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // bands are not 0-base indexed, so we must add 1
@@ -346,7 +344,7 @@ public class GDALProductReader extends AbstractProductReader {
                         productBand.setNoDataValueUsed(true);
                     }
 
-                    GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, defaultImageSize, productBounds, tileSize, bandIndex, levelCount, geoCoding, noDataValue);
+                    GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, productBounds, tileSize, bandIndex, levelCount, geoCoding, noDataValue);
                     productBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
                     if (metadataElement != null && (subsetDef == null || !subsetDef.isIgnoreMetadata())) {

@@ -105,7 +105,7 @@ public class RapidEyeL1ReaderTest {
     }
 
     @Test
-    @Ignore("temporary skip the test until fix subset reading for GDAL")
+//    @Ignore("temporary skip the test until fix subset reading for GDAL")
     public void testReadProductPixelSubset() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 

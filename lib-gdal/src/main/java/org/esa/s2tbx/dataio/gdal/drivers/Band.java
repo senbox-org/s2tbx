@@ -202,6 +202,23 @@ public class Band {
     }
 
     /**
+     * Calls the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method
+     *
+     * @param xoff      the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method 'xoff' argument
+     * @param yoff      the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method 'yoff' argument
+     * @param xsize     the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method 'xsize' argument
+     * @param ysize     the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method 'ysize' argument
+     * @param bufxsize  the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method 'buf_xsize' argument
+     * @param bufysize  the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method 'buf_ysize' argument
+     *                  @param buftype  the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method 'buf_type' argument
+     * @param nioBuffer the JNI GDAL Band class ReadBlock_Direct(int nXBlockOff, int nYBlockOff, ByteBuffer nioBuffer) method 'nioBuffer' argument
+     * @return the JNI GDAL Band class ReadRaster_Direct(int xoff, int yoff, int xsize, int ysize, int buf_xsize, int buf_ysize, int buf_type, ByteBuffer nioBuffer) method result
+     */
+    public Integer readRasterDirect(int xoff, int yoff, int xsize, int ysize, int bufxsize, int bufysize, int buftype, ByteBuffer nioBuffer) {
+        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "ReadRaster_Direct", Integer.class, this.jniBandInstance, new Class[]{int.class, int.class, int.class, int.class, int.class, int.class, int.class, ByteBuffer.class}, new Object[]{xoff, yoff, xsize, ysize, bufxsize, bufysize, buftype, nioBuffer});
+    }
+
+    /**
      * Calls the JNI GDAL Band class WriteRaster(int xoff, int yoff, int xsize, int ysize, int bufType, byte[] array) method
      *
      * @param xoff    the JNI GDAL Band class WriteRaster(int xoff, int yoff, int xsize, int ysize, int bufType, byte[] array) method 'xoff' argument
