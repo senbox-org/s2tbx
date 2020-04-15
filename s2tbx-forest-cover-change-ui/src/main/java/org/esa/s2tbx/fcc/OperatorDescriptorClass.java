@@ -7,57 +7,63 @@ import org.esa.snap.core.gpf.descriptor.*;
  * Created by rdumitrascu on 7/18/2017.
  */
 public class OperatorDescriptorClass implements OperatorDescriptor {
+
+    private final OperatorDescriptor baseOperatorDescriptor;
     private ParameterDescriptor[] params;
     private SourceProductDescriptor[] sourceProducts;
 
-    public OperatorDescriptorClass(ParameterDescriptor[] params, SourceProductDescriptor[] sourceProducts ) {
-        this.params  = params;
+    public OperatorDescriptorClass(OperatorDescriptor baseOperatorDescriptor, ParameterDescriptor[] params, SourceProductDescriptor[] sourceProducts) {
+        if (baseOperatorDescriptor == null) {
+            throw new NullPointerException("The operator descriptor is null.");
+        }
+        this.baseOperatorDescriptor = baseOperatorDescriptor;
+        this.params = params;
         this.sourceProducts = sourceProducts;
     }
 
     @Override
     public String getName() {
-        return null;
+        return this.baseOperatorDescriptor.getName();
     }
 
     @Override
     public String getAlias() {
-        return null;
+        return this.baseOperatorDescriptor.getAlias();
     }
 
     @Override
     public String getLabel() {
-        return null;
+        return this.baseOperatorDescriptor.getLabel();
     }
 
     @Override
     public String getDescription() {
-        return null;
+        return this.baseOperatorDescriptor.getDescription();
     }
 
     @Override
     public String getVersion() {
-        return null;
+        return this.baseOperatorDescriptor.getVersion();
     }
 
     @Override
     public String getAuthors() {
-        return null;
+        return this.baseOperatorDescriptor.getAuthors();
     }
 
     @Override
     public String getCopyright() {
-        return null;
+        return this.baseOperatorDescriptor.getCopyright();
     }
 
     @Override
     public boolean isInternal() {
-        return false;
+        return this.baseOperatorDescriptor.isInternal();
     }
 
     @Override
     public boolean isAutoWriteDisabled() {
-        return false;
+        return this.baseOperatorDescriptor.isAutoWriteDisabled();
     }
 
     @Override
