@@ -110,9 +110,9 @@ public enum GDALVersion {
                     if (line != null && !line.isEmpty()) {
                         output.append(line).append("\n");
                     } else {
-                        done = true;
                         break;
                     }
+                    done = true;
                 }
                 endTime = System.currentTimeMillis();
                 elapsedTime = (endTime - startTime) / 1000;
