@@ -77,7 +77,7 @@ import java.util.logging.Logger;
         alias = "ForestCoverChangeOp",
         version="1.0",
         category = "Optical/Thematic Land Processing",
-        description = "Creates forrest change masks out of two source products",
+        description = "Creates forest change masks out of two source products",
         authors = "Jean Coravu, Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class ForestCoverChangeOp extends Operator {

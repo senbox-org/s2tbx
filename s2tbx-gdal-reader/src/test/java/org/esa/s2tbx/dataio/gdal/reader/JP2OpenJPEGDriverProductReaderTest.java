@@ -133,7 +133,6 @@ public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProduc
 
     // disable the JP2 test due to JP2 driver no longer used
 //    @Test
-//    @Ignore// ignore the JP2 test due to driver not used
 //    public void testReadProductGeometrySubset() throws IOException {
 //        if (GDALInstallInfo.INSTANCE.isPresent()) {
 //            File productFile = this.gdalTestsFolderPath.resolve("JP2OpenJPEG-driver.jp2").toFile();
