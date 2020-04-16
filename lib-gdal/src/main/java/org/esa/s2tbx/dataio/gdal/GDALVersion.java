@@ -98,22 +98,19 @@ public enum GDALVersion {
              InputStreamReader inputStreamReader = new InputStreamReader(commandInputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
-            boolean isStopped = false;
+            boolean done = false;
             long startTime = System.currentTimeMillis();
             long endTime;
             int runningTime = 30;// allow only 30 seconds of running time for the process
             long elapsedTime = 0;
-            while (!isStopped && elapsedTime <= runningTime) {
-                if (process.isAlive()) {
-                    Thread.yield(); // yield the control to other threads
-                } else {
-                    isStopped = true;
-                }
+            while (!done && elapsedTime <= runningTime) {
+                Thread.yield(); // yield the control to other threads
                 while (bufferedReader.ready()) {
                     String line = bufferedReader.readLine();
                     if (line != null && !line.isEmpty()) {
                         output.append(line).append("\n");
                     } else {
+                        done = true;
                         break;
                     }
                 }
