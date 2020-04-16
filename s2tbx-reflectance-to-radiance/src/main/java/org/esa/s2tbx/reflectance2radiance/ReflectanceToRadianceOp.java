@@ -2,14 +2,7 @@ package org.esa.s2tbx.reflectance2radiance;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.MetadataAttribute;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -21,8 +14,7 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.StringHelper;
 
-import java.awt.Rectangle;
-import java.util.Arrays;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -205,7 +197,7 @@ public class ReflectanceToRadianceOp extends Operator {
 
         /*targetProduct.setNumResolutionsMax(this.sourceProduct.getNumResolutionsMax());*/
         targetProduct.setNumResolutionsMax(distictWidths.size());
-        copyStartAndEndTime();
+
         ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
         ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
@@ -293,19 +285,6 @@ public class ReflectanceToRadianceOp extends Operator {
         return StringHelper.startsWithIgnoreCase(product.getProductType(), "SPOTSCENE");
     }
 
-    private void copyStartAndEndTime() {
-        targetProduct.setStartTime(cloneUtc(sourceProduct.getStartTime()));
-        targetProduct.setEndTime(cloneUtc(sourceProduct.getEndTime()));
-    }
-
-    private ProductData.UTC cloneUtc(ProductData.UTC time) {
-        if (time == null) {
-            return null;
-        }
-        int[] ints = time.getArray();
-        return new ProductData.UTC(Arrays.copyOf(ints, ints.length));
-    }
-
     private void copyMasks(Product sourceProduct, Product targetProduct, String... bandNames) {
         if (isSentinelProduct(sourceProduct)) {
             final ProductNodeGroup<Mask> sourceMaskGroup = sourceProduct.getMaskGroup();
@@ -368,7 +347,7 @@ public class ReflectanceToRadianceOp extends Operator {
     /**
      * Find the solar irradiance for a certain band name of the Spot product.
      *
-     * @param product         the Spot product
+     * @param product the Spot product
      * @param sourceBandNames the band names to find their solar irradiance
      * @return the solar irradiance for a certain band name of the Spot product
      */
@@ -428,7 +407,7 @@ public class ReflectanceToRadianceOp extends Operator {
     /**
      * Extract the source band index from the xml file.
      *
-     * @param metadataRoot   the tree root element of the xml file
+     * @param metadataRoot the tree root element of the xml file
      * @param sourceBandName the band name
      * @return the band index
      */
