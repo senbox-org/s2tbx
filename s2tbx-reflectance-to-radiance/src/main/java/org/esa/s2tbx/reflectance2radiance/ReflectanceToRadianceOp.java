@@ -257,7 +257,7 @@ public class ReflectanceToRadianceOp extends Operator {
         try {
             Tile sourceTile = getSourceTile(this.sourceProduct.getBand(targetBand.getName()), rectangle);
             TiePointGrid tiePointGrid = this.tiePointGrids.get(targetBand.getName());
-            float slrIrr = this.solarIrradiances != null ?
+            float slrIrr = (this.solarIrradiances != null && this.solarIrradiances.get(targetBand.getName()) != null) ?
                     this.solarIrradiances.get(targetBand.getName()) :
                     this.solarIrradiance;
             double factor = slrIrr * this.scale / (Math.PI * this.d2);
