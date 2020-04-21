@@ -138,6 +138,9 @@ class GDALInstaller {
      * @return parsed module version array
      */
     private static int[] parseVersion(String version) {
+        if(version.toLowerCase().contentEquals("unknown")){
+            return new int[]{};
+        }
         StringTokenizer tok = new StringTokenizer(version, ".", true);
         int len = tok.countTokens();
         if (len % 2 == 0) {
