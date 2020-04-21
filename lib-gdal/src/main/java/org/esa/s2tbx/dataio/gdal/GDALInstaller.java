@@ -258,7 +258,7 @@ public class GDALInstaller {
                 String fragment = tok.nextToken();
                 if (expectingNumber) {
                     expectingNumber = false;
-                    int piece = Integer.parseInt(fragment);
+                    int piece = Integer.parseInt(fragment.replaceAll("[a-zA-Z]", ""));
                     if (piece < 0) {
                         throw new NumberFormatException("Spec version component '" + piece + "' is negative.");
                     }
