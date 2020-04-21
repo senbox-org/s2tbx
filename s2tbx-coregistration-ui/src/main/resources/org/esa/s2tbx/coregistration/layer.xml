@@ -22,7 +22,7 @@
 
     <folder name="Menu">
         <folder name="Raster">
-            <folder name="Geometric Operations">
+            <folder name="Geometric">
                 <attr name="position" intvalue="225"/>
                 <file name="org-esa-s2tbx-coregistration-Action.shadow">
                     <attr name="originalFile"
