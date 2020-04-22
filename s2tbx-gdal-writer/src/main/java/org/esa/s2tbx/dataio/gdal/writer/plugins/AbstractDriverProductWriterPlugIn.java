@@ -53,6 +53,10 @@ public abstract class AbstractDriverProductWriterPlugIn implements ProductWriter
 
     @Override
     public final EncodeQualification getEncodeQualification(Product product) {
+        if (product != null && product.isMultiSize()) {
+            return new EncodeQualification(EncodeQualification.Preservation.UNABLE,
+                                           "Cannot write multisize products. Consider resampling the product first.");
+        }
         if (GDALInstallInfo.INSTANCE.isPresent()) {
             return new EncodeQualification(EncodeQualification.Preservation.FULL);
         }
