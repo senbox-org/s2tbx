@@ -31,12 +31,16 @@
                     <attr name="position" intvalue="10010"/>
                 </file>
             </folder>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="Raster">
             <file name="org-esa-s2tbx-extractor-Action.shadow">
                 <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-extractor-Action.instance"/>
                 <attr name="position" intvalue="10011"/>
             </file>
         </folder>
     </folder>
-
 
 </filesystem>

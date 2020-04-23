@@ -56,7 +56,11 @@ public class BandsExtractorOp extends Operator {
         ProductUtils.copyGeoCoding(sourceProduct, product);
         ProductUtils.copyTiePointGrids(sourceProduct, product);
         ProductUtils.copyVectorData(sourceProduct, product);
+
         if (sourceMaskNames != null && sourceMaskNames.length > 0) {
+            // first the bands have to be copied and then the masks, otherwise the referenced bands, e.g. flag band,
+            // is not contained in the target product and the mask is not copied
+            ProductHelper.copyFlagBands(sourceProduct, product, true);
             ProductHelper.copyMasks(sourceProduct, product, sourceMaskNames);
         }
 

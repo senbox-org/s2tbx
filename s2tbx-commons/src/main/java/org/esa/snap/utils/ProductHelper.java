@@ -1,11 +1,9 @@
 package org.esa.snap.utils;
 
+import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.util.Guardian;
+import org.esa.snap.core.util.ProductUtils;
 import org.locationtech.jts.geom.Geometry;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.VectorDataNode;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -64,6 +62,29 @@ public class ProductHelper {
                 }
             } else if (imageType.canTransferMask(sourceMask, targetProduct)) {
                 imageType.transferMask(sourceMask, targetProduct);
+            }
+        }
+    }
+
+    /**
+     * Copies all bands which contain a flag-coding from the source product to the target product,
+     * without copying all masks
+     * @param sourceProduct   the source product
+     * @param targetProduct   the target product
+     * @param copySourceImage whether the source image of the source band should be copied.
+     */
+    public static void copyFlagBands(Product sourceProduct, Product targetProduct, boolean copySourceImage) {
+        Guardian.assertNotNull("source", sourceProduct);
+        Guardian.assertNotNull("target", targetProduct);
+        if (sourceProduct.getFlagCodingGroup().getNodeCount() > 0) {
+
+            // loop over bands and check if they have a flags coding attached
+            for (int i = 0; i < sourceProduct.getNumBands(); i++) {
+                Band sourceBand = sourceProduct.getBandAt(i);
+                String bandName = sourceBand.getName();
+                if (sourceBand.isFlagBand() && targetProduct.getBand(bandName) == null) {
+                    ProductUtils.copyBand(bandName, sourceProduct, targetProduct, copySourceImage);
+                }
             }
         }
     }
