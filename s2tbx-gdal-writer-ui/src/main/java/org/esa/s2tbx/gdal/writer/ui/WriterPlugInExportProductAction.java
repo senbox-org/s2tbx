@@ -19,9 +19,9 @@ import org.netbeans.api.progress.ProgressUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.plaf.basic.BasicFileChooserUI;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -77,14 +77,22 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
                 }
             }
             fileName += selectedFileFilter.getDriverInfo().getExtensionName();
-            BasicFileChooserUI basicFileChooserUI = (BasicFileChooserUI) fileChooser.getUI();
-            basicFileChooserUI.setFileName(fileName);
+            try {
+                Method setFileNameMethod = fileChooser.getUI().getClass().getDeclaredMethod("setFileName", String.class);
+                setFileNameMethod.invoke(fileChooser.getUI(), fileName);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
         });
 
         fileChooser.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY, event -> {
-            BasicFileChooserUI basicFileChooserUI = (BasicFileChooserUI) fileChooser.getUI();
             if (event.getOldValue() != null && event.getNewValue() == null) {
-                this.enteredFileName = basicFileChooserUI.getFileName();
+                try {
+                    Method getFileName = fileChooser.getUI().getClass().getDeclaredMethod("getFileName");
+                    this.enteredFileName = (String) getFileName.invoke(fileChooser.getUI());
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
             }
         });
 
