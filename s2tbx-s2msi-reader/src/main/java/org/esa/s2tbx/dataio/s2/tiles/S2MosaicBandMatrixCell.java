@@ -10,7 +10,7 @@ import java.nio.file.Path;
 /**
  * Created by jcoravu on 8/1/2020.
  */
-public class S2MosaicBandMatrixCell implements MosaicMatrix.MatrixCell {
+public class S2MosaicBandMatrixCell implements BandMatrixCell {
 
     private final JP2ImageFile jp2ImageFile;
     private final Path cacheDir;
@@ -36,11 +36,16 @@ public class S2MosaicBandMatrixCell implements MosaicMatrix.MatrixCell {
         return this.cellHeight;
     }
 
+    @Override
+    public int getDataBufferType() {
+        return tileLayout.dataType;// DataBuffer.TYPE_USHORT;
+    }
+
     public Dimension getDefaultImageSize() {
         return new Dimension(getCellWidth(), getCellHeight());
     }
 
-    public Dimension getDecompresedTileSize() {
+    public Dimension getDecompressedTileSize() {
         return new Dimension(tileLayout.tileWidth, tileLayout.tileHeight);
     }
 
@@ -60,7 +65,7 @@ public class S2MosaicBandMatrixCell implements MosaicMatrix.MatrixCell {
         return tileLayout.numBands;
     }
 
-    public int getDataBufferType() {
-        return tileLayout.dataType;// DataBuffer.TYPE_USHORT;
+    public int getResolutionCount() {
+        return tileLayout.numResolutions;
     }
 }

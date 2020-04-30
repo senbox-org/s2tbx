@@ -24,37 +24,36 @@ public class S2L2aProductMetadataReader extends AbstractS2OrthoMetadataReader {
     @Override
     protected S2OrthoMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
         try {
-            return L2aMetadata.parseHeader(path, granuleName, config, epsg, this.namingConvention.getResolution(), isAGranule, namingConvention);
+            return L2aMetadata.parseHeader(path, granuleName, config, epsg, this.namingConvention.getResolution(), isAGranule, this.namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
-            throw new IOException("Failed to parse metadata in " + path.getFileName().toString());
+            throw new IOException("Failed to parse metadata fiel '" + path.getFileName().toString() + "'.", e);
         }
     }
 
     @Override
     protected String[] getBandNames(S2SpatialResolution resolution) {
+        //TODO Jean implement the method to return the correct band names
         return null;
     }
 
     @Override
     protected List<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
+        //TODO Jean use the band names to filter the image files because thne result list contains more files than the band names
+        // and the files order may be different on each operating system or from a folder of a zip archive
 
-        ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
+        List<VirtualPath> imageDirectories = new ArrayList<>();
         String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
         VirtualPath pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
-        if (!pathToImagesOfResolution.exists()) {
-            return imageDirectories;
-        }
-        VirtualPath[] imagePaths = pathToImagesOfResolution.listPaths();
-        if(imagePaths == null || imagePaths.length == 0) {
-            return imageDirectories;
-        }
-
-        for (VirtualPath imagePath : imagePaths) {
-            if (imagePath.getFileName().toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
-                imageDirectories.add(imagePath);
+        if (pathToImagesOfResolution.exists()) {
+            VirtualPath[] imagePaths = pathToImagesOfResolution.listPaths();
+            if (imagePaths != null && imagePaths.length > 0) {
+                for (VirtualPath imagePath : imagePaths) {
+                    if (imagePath.getFileName().toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
+                        imageDirectories.add(imagePath);
+                    }
+                }
             }
         }
-
         return imageDirectories;
     }
 }

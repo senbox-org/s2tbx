@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -33,6 +34,7 @@ import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 import org.locationtech.jts.geom.Coordinate;
@@ -167,8 +169,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             product = new Product(defaultProductName, productType, productBounds.width, productBounds.height);
             product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-            TileLayout productTileLayout = config.getTileLayout(getProductResolution());
-            product.setNumResolutionsMax(productTileLayout.numResolutions);
             product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
 
             Map<String, GeoCoding> geoCodingsByDetector = new HashMap<>();
@@ -186,7 +186,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             AffineTransform imageToModelTransform = Product.findImageToModelTransform(product.getSceneGeoCoding());
-            addDetectorBands(defaultProductSize, product, bandInfoByKey, imageToModelTransform, productTileLayout, sceneDescriptionMap);
+            int productMaximumResolutionCount = addDetectorBands(defaultProductSize, product, bandInfoByKey, imageToModelTransform, sceneDescriptionMap);
+            product.setNumResolutionsMax(productMaximumResolutionCount);
 
             // add TileIndex if there are more than 1 tile
             if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoByKey.isEmpty()) {
@@ -231,13 +232,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return product;
     }
 
-    private void addDetectorBands(Dimension defaultProductSize, Product product, Map<String, L1BBandInfo> bandInfoByKey, AffineTransform imageToModelTransform,
-                                  TileLayout productTileLayout, Map<String, L1bSceneDescription> sceneDescriptionMap) {
+    private int addDetectorBands(Dimension defaultProductSize, Product product, Map<String, L1BBandInfo> bandInfoByKey, AffineTransform imageToModelTransform,
+                                  Map<String, L1bSceneDescription> sceneDescriptionMap) {
 
         S2SpatialResolution productResolution = getProductResolution();
         List<String> bandIndexes = new ArrayList<>(bandInfoByKey.keySet());
         Collections.sort(bandIndexes);
         ProductSubsetDef subsetDef = getSubsetDef();
+        int productMaximumResolutionCount = 0;
         for (String bandIndex : bandIndexes) {
             L1BBandInfo tileBandInfo = bandInfoByKey.get(bandIndex);
             if (isMultiResolution() || tileBandInfo.getBandInformation().getResolution() == productResolution) {
@@ -255,8 +257,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     MosaicMatrix mosaicMatrix = buildBandMatrix(sceneDescription.getMatrixTileIds(tileBandInfo), sceneDescription, tileBandInfo);
                     int defaultBandWidth = mosaicMatrix.computeTotalWidth();
                     int defaultBandHeight = mosaicMatrix.computeTotalHeight();
-                    TileLayout thisBandTileLayout = tileBandInfo.getImageLayout();
-                    validateBandSize(defaultBandWidth, defaultBandHeight, thisBandTileLayout, defaultProductSize, productTileLayout);
+
+                    int dataBufferType = computeMatrixCellsDataBufferType(mosaicMatrix);
+                    int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix);
+                    productMaximumResolutionCount = Math.max(productMaximumResolutionCount, resolutionCount);
 
                     Rectangle bandBounds;
                     if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
@@ -269,11 +273,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     }
                     if (!bandBounds.isEmpty()) {
                         // there is an intersection
-                        Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height);
+                        Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height, dataBufferType);
                         band.setDescription(tileBandInfo.getBandInformation().getDescription());
 
-//                        BandL1bSceneMultiLevelSource multiLevelSource = new BandL1bSceneMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
-                        BandMultiLevelSource multiLevelSource = new BandMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, product.getPreferredTileSize(), imageToModelTransform);
+                        BandMultiLevelSource multiLevelSource = new BandMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform);
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
                         product.addBand(band);
@@ -281,6 +284,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 }
             }
         }
+        return productMaximumResolutionCount;
     }
 
     private void addTileIndexes(Dimension defaultProductSize, Product product, List<S2SpatialResolution> resolutions,
@@ -293,11 +297,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             // add the index bands
             S2SpatialResolution productResolution = getProductResolution();
-            TileLayout productTileLayout = config.getTileLayout(productResolution);
             for (L1BBandInfo bandInfo : tileInfoList) {
                 if (isMultiResolution() || bandInfo.getBandInformation().getResolution() == productResolution) {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandInfo.getBandInformation().getPhysicalBand())) {
-                        Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, productTileLayout, product.getPreferredTileSize(), isMultiResolution());
+                        Band band = buildIndexBand(defaultProductSize, bandInfo, subsetDef, sceneDescription, imageToModelTransform, product.getPreferredTileSize(), isMultiResolution());
                         if (band != null) {
                             product.addBand(band);
                         }
@@ -382,13 +385,12 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     private static Band buildIndexBand(Dimension defaultProductSize, L1BBandInfo bandInfo, ProductSubsetDef subsetDef,
                                        L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform,
-                                       TileLayout productTileLayout, Dimension preferredTileSize, boolean isMultiResolution) {
+                                       Dimension preferredTileSize, boolean isMultiResolution) {
 
         MosaicMatrix mosaicMatrix = buildIndexBandMatrix(sceneDescription.getMatrixTileIds(bandInfo), sceneDescription, bandInfo);
+        int dataBufferType = computeMatrixCellsDataBufferType(mosaicMatrix);
         int defaultBandWidth = mosaicMatrix.computeTotalWidth();
         int defaultBandHeight = mosaicMatrix.computeTotalHeight();
-        TileLayout thisBandTileLayout = bandInfo.getImageLayout();
-        validateBandSize(defaultBandWidth, defaultBandHeight, thisBandTileLayout, defaultProductSize, productTileLayout);
 
         Rectangle bandBounds;
         if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
@@ -403,8 +405,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             return null; // no intersection
         }
         S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInfo.getBandInformation();
+        int bandDataType = ImageManager.getProductDataType(dataBufferType);
 
-        Band band = new Band(indexBandInfo.getPhysicalBand(), ProductData.TYPE_INT16, bandBounds.width, bandBounds.height);
+        Band band = new Band(indexBandInfo.getPhysicalBand(), bandDataType, bandBounds.width, bandBounds.height);
         band.setScalingFactor(indexBandInfo.getScalingFactor());
         band.setSpectralWavelength(0);
         band.setSpectralBandwidth(0);
@@ -416,7 +419,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         Double mosaicOpSourceThreshold = 1.0d;
         double mosaicOpBackgroundValue = S2Config.FILL_CODE_MOSAIC_BG;
-        TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(thisBandTileLayout.numResolutions, mosaicMatrix, bandBounds, preferredTileSize,
+        int resolutionCount = DefaultMultiLevelModel.getLevelCount(bandBounds.width, bandBounds.height); // thisBandTileLayout.numResolutions;
+
+        TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, preferredTileSize,
                                                                                    imageToModelTransform, mosaicOpSourceThreshold, mosaicOpBackgroundValue);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
@@ -481,21 +486,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 tileBandInfo.getDetectorId() + tileBandInfo.getBandInformation().getPhysicalBand() + ",longitude", lons);
 
         return new TiePointGeoCoding(latGrid, lonGrid);
-    }
-
-    private static void validateBandSize(int defaultBandWidth, int defaultBandHeight, TileLayout thisBandTileLayout, Dimension defaultProductSize, TileLayout productTileLayout) {
-        //TODO Jean old code
-//        float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
-//        int nativeBandWidth = Math.round(defaultProductSize.width / factorX);
-//        if (nativeBandWidth != defaultBandWidth) {
-//            throw new IllegalStateException("Invalid band width: nativeBandWidth="+nativeBandWidth+", defaultBandWidth="+defaultBandWidth);
-//        }
-//
-//        float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
-//        int nativeBandHeight = Math.round(defaultProductSize.height / factorY);
-//        if (nativeBandHeight != defaultBandHeight) {
-//            throw new IllegalStateException("Invalid band height: nativeBandHeight="+nativeBandHeight+", defaultBandHeight="+defaultBandHeight);
-//        }
     }
 
     public static List<L1BBandInfo> computeTileIndexesList(List<S2SpatialResolution> resolutions, List<L1bMetadata.Tile> tileList, L1bSceneDescription sceneDescription, S2Config config) {

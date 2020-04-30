@@ -44,9 +44,7 @@ public abstract class AbstractS2MetadataReader {
      */
     protected abstract String[] getBandNames(S2SpatialResolution resolution);
 
-    public S2Metadata readMetadataHeader(VirtualPath metadataPath, S2Config config) throws IOException, ParserConfigurationException, SAXException {
-        return null;
-    }
+    public abstract S2Metadata readMetadataHeader(VirtualPath metadataPath, S2Config config) throws IOException, ParserConfigurationException, SAXException;
 
     public boolean isGranule() {
         return (this.namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA);
@@ -179,15 +177,7 @@ public abstract class AbstractS2MetadataReader {
             List<VirtualPath> imageDirectories = getImageDirectories(pathToImages, resolution);
             for (VirtualPath imageFilePath : imageDirectories) {
                 try {
-                    if (OpenJpegUtils.canReadJP2FileHeaderWithOpenJPEG()) {
-                        Path jp2FilePath = imageFilePath.getLocalFile();
-                        tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, jp2FilePath);
-                    } else {
-                        try (FilePath filePath = imageFilePath.getFilePath()) {
-                            boolean canSetFilePosition = !imageFilePath.getVirtualDir().isArchive();
-                            tileLayoutForResolution = OpenJpegUtils.getTileLayoutWithInputStream(filePath.getPath(), 5 * 1024, canSetFilePosition);
-                        }
-                    }
+                    tileLayoutForResolution = readTileLayoutFromJP2File(imageFilePath);
                     if (tileLayoutForResolution != null) {
                         break;
                     }
@@ -201,5 +191,19 @@ public abstract class AbstractS2MetadataReader {
         }
 
         return tileLayoutForResolution;
+    }
+
+    public static TileLayout readTileLayoutFromJP2File(VirtualPath imageFilePath) throws IOException, InterruptedException {
+        TileLayout tileLayout;
+        if (OpenJpegUtils.canReadJP2FileHeaderWithOpenJPEG()) {
+            Path jp2FilePath = imageFilePath.getLocalFile();
+            tileLayout = OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, jp2FilePath);
+        } else {
+            try (FilePath filePath = imageFilePath.getFilePath()) {
+                boolean canSetFilePosition = !imageFilePath.getVirtualDir().isArchive();
+                tileLayout = OpenJpegUtils.getTileLayoutWithInputStream(filePath.getPath(), 5 * 1024, canSetFilePosition);
+            }
+        }
+        return tileLayout;
     }
 }

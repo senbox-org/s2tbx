@@ -23,25 +23,28 @@ public class S2L3ProductMetadataReader extends AbstractS2OrthoMetadataReader {
 
     @Override
     protected String[] getBandNames(S2SpatialResolution resolution) {
+        //TODO Jean implement the method to return the correct band names
         return null;
     }
 
     @Override
     protected List<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
-        ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
+        //TODO Jean use the band names to filter the image files because thne result list contains more files than the band names
+        // and the files order may be different on each operating system or from a folder of a zip archive
+
+        List<VirtualPath> imageDirectories = new ArrayList<>();
         String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
         VirtualPath pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
-        VirtualPath[] imagePaths = pathToImagesOfResolution.listPaths();
-        if(imagePaths == null || imagePaths.length == 0) {
-            return imageDirectories;
-        }
-
-        for (VirtualPath imagePath : imagePaths) {
-            if (imagePath.getFileName().toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
-                imageDirectories.add(imagePath);
+        if (pathToImagesOfResolution.exists()) {
+            VirtualPath[] imagePaths = pathToImagesOfResolution.listPaths();
+            if (imagePaths != null && imagePaths.length > 0) {
+                for (VirtualPath imagePath : imagePaths) {
+                    if (imagePath.getFileName().toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
+                        imageDirectories.add(imagePath);
+                    }
+                }
             }
         }
-
         return imageDirectories;
     }
 

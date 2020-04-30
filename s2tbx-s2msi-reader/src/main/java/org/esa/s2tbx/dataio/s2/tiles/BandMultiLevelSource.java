@@ -15,8 +15,8 @@ import java.awt.image.RenderedImage;
  */
 public class BandMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLevelSource implements DecompressedTileOpImageCallback<S2MosaicBandMatrixCell> {
 
-    public BandMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, Dimension preferredTileSize, AffineTransform imageToModelTransform) {
-        super(levelCount, mosaicMatrix, imageMatrixReadBounds, preferredTileSize, imageToModelTransform);
+    public BandMultiLevelSource(int levelCount, MosaicMatrix mosaicMatrix, Rectangle imageMatrixReadBounds, AffineTransform imageToModelTransform) {
+        super(levelCount, mosaicMatrix, imageMatrixReadBounds, new Dimension(1, 1), imageToModelTransform);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class BandMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLevelSo
     protected java.util.List<RenderedImage> buildMatrixCellTileImages(int level, Rectangle imageCellReadBounds, float cellTranslateLevelOffsetX, float cellTranslateLevelOffsetY,
                                                                       MosaicMatrix.MatrixCell matrixCell) {
         S2MosaicBandMatrixCell mosaicMatrixCell = (S2MosaicBandMatrixCell)matrixCell;
-        return buildDecompressedTileImages(level, imageCellReadBounds, mosaicMatrixCell.getDecompresedTileSize(), mosaicMatrixCell.getDefaultImageSize().width ,cellTranslateLevelOffsetX, cellTranslateLevelOffsetY, this, mosaicMatrixCell);
+        return buildDecompressedTileImages(level, imageCellReadBounds, mosaicMatrixCell.getDecompressedTileSize(), mosaicMatrixCell.getDefaultImageSize().width ,cellTranslateLevelOffsetX, cellTranslateLevelOffsetY, this, mosaicMatrixCell);
     }
 
     @Override

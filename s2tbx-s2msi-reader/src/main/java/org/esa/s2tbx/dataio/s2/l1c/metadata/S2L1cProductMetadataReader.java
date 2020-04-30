@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.s2.l1c.metadata;
 
+import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
@@ -23,23 +24,37 @@ public class S2L1cProductMetadataReader extends AbstractS2OrthoMetadataReader {
     @Override
     protected String[] getBandNames(S2SpatialResolution resolution) {
         String[] bandNames;
-
         switch (resolution) {
             case R10M:
-                bandNames = new String[]{"B02", "B03", "B04", "B08"};
+                //bandNames = new String[]{"B02", "B03", "B04", "B08"};
+                bandNames = new String[4];
+                bandNames[0] = S2BandConstants.B2.getFilenameBandId();
+                bandNames[1] = S2BandConstants.B3.getFilenameBandId();
+                bandNames[2] = S2BandConstants.B4.getFilenameBandId();
+                bandNames[3] = S2BandConstants.B8.getFilenameBandId();
                 break;
             case R20M:
-                bandNames = new String[]{"B05", "B06", "B07", "B8A", "B11", "B12"};
+                //bandNames = new String[]{"B05", "B06", "B07", "B8A", "B11", "B12"};
+                bandNames = new String[6];
+                bandNames[0] = S2BandConstants.B5.getFilenameBandId();
+                bandNames[1] = S2BandConstants.B6.getFilenameBandId();
+                bandNames[2] = S2BandConstants.B7.getFilenameBandId();
+                bandNames[3] = S2BandConstants.B8A.getFilenameBandId();
+                bandNames[4] = S2BandConstants.B11.getFilenameBandId();
+                bandNames[5] = S2BandConstants.B12.getFilenameBandId();
                 break;
             case R60M:
-                bandNames = new String[]{"B01", "B09", "B10"};
+                //bandNames = new String[]{"B01", "B09", "B10"};
+                bandNames = new String[3];
+                bandNames[0] = S2BandConstants.B1.getFilenameBandId();
+                bandNames[1] = S2BandConstants.B9.getFilenameBandId();
+                bandNames[2] = S2BandConstants.B10.getFilenameBandId();
                 break;
             default:
                 SystemUtils.LOG.warning("Invalid resolution: " + resolution);
                 bandNames = null;
                 break;
         }
-
         return bandNames;
     }
 

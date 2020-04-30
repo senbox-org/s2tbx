@@ -105,8 +105,6 @@ public class S2Config {
                 }
 
                 if (nonNullTileLayout != null) {
-                    Logger.getLogger("ProductReaderAcceptanceTest").info("NULL tile layout; create with default dataType=0 (S2C-1)");
-                    // resolutionForNonNullTileLayout is either R20M, either R60M
                     int factor = resolutionForNonNullTileLayout / S2SpatialResolution.R10M.resolution;
                     int width = nonNullTileLayout.width * factor;
                     int height = nonNullTileLayout.height * factor;
@@ -121,7 +119,6 @@ public class S2Config {
             }
         }
 
-        Logger.getLogger("ProductReaderAcceptanceTest").info("tile layout data type (S2C-2): " + tileLayoutForResolution.dataType);
         return tileLayoutForResolution;
     }
 

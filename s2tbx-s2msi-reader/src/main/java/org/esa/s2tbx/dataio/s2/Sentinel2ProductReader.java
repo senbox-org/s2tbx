@@ -19,8 +19,10 @@ package org.esa.s2tbx.dataio.s2;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.s2.tiles.BandMatrixCell;
 import org.esa.s2tbx.dataio.s2.tiles.MosaicMatrixCellCallback;
 import org.esa.s2tbx.dataio.s2.tiles.S2MosaicBandMatrixCell;
+import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.engine_utilities.util.Pair;
 import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
@@ -206,13 +208,54 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         closeResources();
     }
 
+    protected static int computeMatrixCellsDataBufferType(MosaicMatrix mosaicMatrix) {
+        if (mosaicMatrix.getRowCount() > 0 && mosaicMatrix.getColumnCount() > 0) {
+            BandMatrixCell firstMatrixCell = (BandMatrixCell)mosaicMatrix.getCellAt(0, 0);
+            for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
+                for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
+                    BandMatrixCell matrixCell = (BandMatrixCell)mosaicMatrix.getCellAt(rowIndex, columnIndex);
+                    if (firstMatrixCell.getDataBufferType() != matrixCell.getDataBufferType()) {
+                        throw new IllegalStateException("Different data buffer types: cell at "+rowIndex+", "+columnIndex+" has data type " + matrixCell.getDataBufferType()+" and cell at "+0+", "+0+" has data type " + firstMatrixCell.getDataBufferType()+".");
+                    }
+                }
+            }
+            return firstMatrixCell.getDataBufferType();
+        } else {
+            throw new IllegalArgumentException("The matrix is empty: rowCount="+mosaicMatrix.getRowCount()+", columnCount="+mosaicMatrix.getColumnCount()+".");
+        }
+    }
+
+    protected static int computeMatrixCellsResolutionCount(MosaicMatrix mosaicMatrix) {
+        if (mosaicMatrix.getRowCount() > 0 && mosaicMatrix.getColumnCount() > 0) {
+            S2MosaicBandMatrixCell firstMatrixCell = (S2MosaicBandMatrixCell)mosaicMatrix.getCellAt(0, 0);
+            for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
+                for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
+                    S2MosaicBandMatrixCell matrixCell = (S2MosaicBandMatrixCell)mosaicMatrix.getCellAt(rowIndex, columnIndex);
+                    if (firstMatrixCell.getResolutionCount() != matrixCell.getResolutionCount()) {
+                        throw new IllegalStateException("Different resolution count: cell at "+rowIndex+", "+columnIndex+" has data type " + matrixCell.getResolutionCount()+" and cell at "+0+", "+0+" has resolution count " + firstMatrixCell.getResolutionCount()+".");
+                    }
+                }
+            }
+            return firstMatrixCell.getResolutionCount();
+        } else {
+            throw new IllegalArgumentException("The matrix is empty: rowCount="+mosaicMatrix.getRowCount()+", columnCount="+mosaicMatrix.getColumnCount()+".");
+        }
+    }
+
     protected final MosaicMatrix buildBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
         MosaicMatrixCellCallback mosaicMatrixCellCallback = new MosaicMatrixCellCallback() {
             @Override
             public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo, int sceneCellWidth, int sceneCellHeight) {
-                VirtualPath imagePath = tileBandInfo.getTileIdToPathMap().get(tileId);
-                JP2ImageFile jp2ImageFile = new JP2ImageFile(imagePath);
-                TileLayout tileLayout = tileBandInfo.getImageLayout();
+                VirtualPath imageFilePath = tileBandInfo.getTileIdToPathMap().get(tileId);
+                TileLayout tileLayout;
+                try {
+                    tileLayout = AbstractS2MetadataReader.readTileLayoutFromJP2File(imageFilePath);
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to read the tile layout for jp2 image file '"+imageFilePath.getFullPathString()+"'.", e);
+                }
+                JP2ImageFile jp2ImageFile = new JP2ImageFile(imageFilePath);
                 int cellWidth = Math.min(sceneCellWidth, tileLayout.width);
                 int cellHeight = Math.min(sceneCellHeight, tileLayout.height);
                 return new S2MosaicBandMatrixCell(jp2ImageFile, Sentinel2ProductReader.this.cacheDir, tileLayout, cellWidth, cellHeight);
@@ -221,8 +264,9 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return buildBandMatrix(bandMatrixTileIds, sceneDescription, tileBandInfo, mosaicMatrixCellCallback);
     }
 
-    protected static Band buildBand(BandInfo bandInfo, int bandWidth, int bandHeight) {
-        Band band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, bandWidth, bandHeight);
+    protected static Band buildBand(BandInfo bandInfo, int bandWidth, int bandHeight, int dataBufferType) {
+        int bandDataType = ImageManager.getProductDataType(dataBufferType);
+        Band band = new Band(bandInfo.getBandName(), bandDataType, bandWidth, bandHeight);
 
         S2BandInformation bandInformation = bandInfo.getBandInformation();
         band.setScalingFactor(bandInformation.getScalingFactor());
@@ -350,12 +394,10 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         private final Map<String, VirtualPath> tileIdToPathMap;
         private final S2BandInformation bandInformation;
-        private final TileLayout imageLayout;
 
         public BandInfo(Map<String, VirtualPath> tileIdToPathMap, S2BandInformation spectralInformation, TileLayout imageLayout) {
             this.tileIdToPathMap = Collections.unmodifiableMap(tileIdToPathMap);
             this.bandInformation = spectralInformation;
-            this.imageLayout = imageLayout;
         }
 
         public S2BandInformation getBandInformation() {
@@ -364,10 +406,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         public Map<String, VirtualPath> getTileIdToPathMap() {
             return tileIdToPathMap;
-        }
-
-        public TileLayout getImageLayout() {
-            return imageLayout;
         }
 
         public String getBandName() {

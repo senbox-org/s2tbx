@@ -2,10 +2,12 @@ package org.esa.s2tbx.dataio.s2.tiles;
 
 import org.esa.snap.core.image.MosaicMatrix;
 
+import java.awt.image.DataBuffer;
+
 /**
  * Created by jcoravu on 10/1/2020.
  */
-public class TileIndexBandMatrixCell implements MosaicMatrix.MatrixCell {
+public class TileIndexBandMatrixCell implements BandMatrixCell {
 
     private final int cellWidth;
     private final int cellHeight;
@@ -25,6 +27,11 @@ public class TileIndexBandMatrixCell implements MosaicMatrix.MatrixCell {
     @Override
     public int getCellHeight() {
         return this.cellHeight;
+    }
+
+    @Override
+    public int getDataBufferType() {
+        return DataBuffer.TYPE_SHORT;
     }
 
     public short getBandValue() {
