@@ -19,6 +19,7 @@
                 <attr name="dialogTitle" stringvalue="Bands extractor"/>
                 <attr name="operatorName" stringvalue="BandsExtractorOp"/>
                 <attr name="targetProductNameSuffix" stringvalue="_extractor"/>
+                <attr name="helpId" stringvalue="bandsExtractorProcessor"/>
             </file>
         </folder>
     </folder>
