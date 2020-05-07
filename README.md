@@ -3,15 +3,21 @@ Sentinel-2 Toolbox (S2TBX)
 
 A toolbox for the MSI instruments on board of ESA's Sentinel-2 satellite.
 
-[![Build Status](https://travis-ci.org/senbox-org/s2tbx.svg?branch=master)](https://travis-ci.org/senbox-org/s2tbx) [![Coverity Scan Status](https://scan.coverity.com/projects/7175/badge.svg)](https://scan.coverity.com/projects/senbox-org-s2tbx)
+The project page of SNAP, and the sentinel toolboxes can be found at http://step.esa.int.
+There you can find tutorials, developer guides, a user forum and other interesting things.
 
 Building S2TBX from the source
 ------------------------------
 
 Download and install the required build tools
-	* Install J2SE 1.8 JDK and set JAVA_HOME accordingly. 
-	* Install Maven and set MAVEN_HOME accordingly. 
-	* Install git
+
+* Install Java 8 JDK and set JAVA_HOME accordingly. A distribution of OpenJDK is suggested.
+Several distributions are available, for example
+  * [Azul Zulu](https://www.azul.com/downloads/zulu-community)
+  * [AdoptOpenJDK](https://adoptopenjdk.net)
+  * [Amazon Corretto](https://aws.amazon.com/de/corretto)
+* Install Maven and set MAVEN_HOME accordingly.
+* Install git
 
 Add $JAVA_HOME/bin, $MAVEN_HOME/bin to your PATH.
 
