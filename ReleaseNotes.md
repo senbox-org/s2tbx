@@ -30,11 +30,14 @@ New remote data source modules are added to SNAP as plugins addressing the follo
     * Amazon Web Services (AWS): for Sentinel-2 and Landsat-8 data
     * Alaska Satellite Facility (ASF): for Sentinel-1 and ALOS data
     * US Geological Survey (USGS): for Landsat-8 data
+The searched products can be downloaded in parallel from several remote repositories (but parallel search is not allowed).
 
 #### Update the GDAL version to 3.0.0
 
 The GDAL version is updated to 3.0.0 in order to be able to write COG GeoTiff through the gdal writer.
 Also, GDAL binaries for MacOSX are added. (they were missing in the past)
+Allow usage of installed GDAL distribution on OS (supported versions from 2.0.X to 3.0.X).
+Allow setting which GDAL distribution is used by SNAP (installed or internal distribution).
 
 
 ### List of solved issues
