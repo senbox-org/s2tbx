@@ -86,7 +86,8 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [SIITBX-380, SIITBX-384] - Adapt Operators to use doExecute correctly (part 2)
     * [SIITBX-407] - Revise help material
     * [STEP-30, SIITBX-315] - Revise initialise method in operator implementations
-    
+    * Moving SNAP development and deployment chain to Zulu OpenJDK 8
+    * Moving SNAP installer to install4j 8 
 
 #### Task
     * [STEP-38]    - Wiki shall be used to provide MPR to ESA
