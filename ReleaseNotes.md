@@ -34,7 +34,7 @@ The searched products can be downloaded in parallel from several remote reposito
 
 #### Update the GDAL version to 3.0.0
 
-The GDAL version is updated to 3.0.0 in order to be able to write COG GeoTiff through the gdal writer.
+The GDAL version is updated to 3.0.0 in order to be able to write COG GeoTiff through the GDAL writer.
 Also, GDAL binaries for MacOSX are added. (they were missing in the past)
 Allow usage of installed GDAL distribution on OS (supported versions from 2.0.X to 3.0.X).
 Allow setting which GDAL distribution is used by SNAP (installed or internal distribution).
