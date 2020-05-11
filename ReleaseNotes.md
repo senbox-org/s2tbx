@@ -60,21 +60,34 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [SNAP-1285]  - ConversionException generated when opening a Beam Dimap product (Unknown type in attribute descriptor 'geometry:Point')
     * [SNAP-1289]  - GeoTiff reader fails to read Float32 bands
     * [SNAP-1298]  - "Advanced" button (from file chooser dialog) should not be visibile for File -> Export GDAL option
-
+    * [SNAP-1195]  - Fix operators order in the menu of the Graph Builder
+    * [SNAP-1168]  - Fix SubsetUI reference band issue
+    * [SNAP-1169]  - Fix Subset operator for multi-resolution products
+    * [SNAP-1152]  - Subset operator uses tie-point grids correctly  
+    
 #### New Feature
     * [STEP-12, SIITBX-373] - Parameters for Reader Plugins
     * [STEP-5,  SIITBX-373] - Windowed Reading of Products
     * [STEP-13, SNAP-1161]  - Product Library GUI Enhancements
     * [STEP-14, SNAP-1162]  - SciHub Search UI Enhancement in Product Library
     * [STEP-15, SNAP-1163]  - Support for New External Data Access Sources via Product Library
+    * [SNAP-1225] - Implement change detection validation trigger for Graph Builder
+    * [SNAP-1109] - Possibility to fix random seed value to reproduce results based on aleatory processing
+	* [SNAP-1166] - Subset operator updates scenegeocoding for single size products
+	* [SIITBX-413] - Allow GPT tests to fail graciously in a controlled way
+	* [SNAP-1013] - Implement automated reports web service       
+
 
 #### Improvement
     * [SNAP-1160]  - Allow custom S3 VFS parameters for AWS headers
     * [SIITBX-283] - Remove UI dependencies from jp2-reader and s2tbx-commons
     * [SIITBX-383] - Update the GDAL version
     * [SIITBX-379] - Adapt Operators to use doExecute correctly (part 1)
+    * [SIITBX-380, SIITBX-384] - Adapt Operators to use doExecute correctly (part 2)
     * [SIITBX-407] - Revise help material
     * [STEP-30, SIITBX-315] - Revise initialise method in operator implementations
+    * Moving SNAP development and deployment chain to Zulu OpenJDK 8
+    * Moving SNAP installer to install4j 8 
 
 #### Task
     * [STEP-38]    - Wiki shall be used to provide MPR to ESA
@@ -84,8 +97,10 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [SIITBX-388] - Tests need to be defined well in advance of releases
     * [SIITBX-389] - Graphical test coverage for release 8 needs to agree on early
     * [SIITBX-390] - Check skipped tests because of missing data (wrong path)
-
-
+    * [SNAP-1262]  - Create wiki on test syntax and functionality
+    * [SIITBX-401] - Clean up dependencies on 3rd-party libraries
+    * [SIITBX-402] - Check sepearation between UI and Engine components
+    * [SIITBX-322] - Integrate S2TBX tests
 
 Changes in S2TBX 7.0
 --------------------
