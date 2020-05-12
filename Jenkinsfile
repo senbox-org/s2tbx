@@ -36,7 +36,7 @@ pipeline {
                 docker {
                     label 'snap-test'
                     image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8'
-                    args '-e MAVEN_CONFIG=/var/maven/.m2 -v /data/ssd/testData/:/data/ssd/testData/ -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v docker_local-update-center:/local-update-center'
+                    args '-e MAVEN_CONFIG=/var/maven/.m2 -v /data/ssd/testData/:/data/ssd/testData/ -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v docker_local-update-center:/local-update-center -v /data/ssd/tmp/data/ssd/tmp'
                 }
             }
             steps {
@@ -58,6 +58,9 @@ pipeline {
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                 sh "/opt/scripts/setUpUnitTestLibraries.sh"
                 sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install ${sonarOption} ${longTestsOption} -Dsnap.reader.tests.data.dir=/data/ssd/testData/${toolName} -U -DskipTests=false"
+                echo "Copy workspace to shared folder /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}"
+                sh "mkdir -p /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}"
+                sh "cp -R * /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/"
             }
             post {
                 always {
@@ -75,31 +78,12 @@ pipeline {
                 }
             }
         }
-        /*stage('Deploy') {
-            agent {
-                docker {
-                    label 'snap-test'
-                    image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8'
-                    args '-e MAVEN_CONFIG=/var/maven/.m2 -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v docker_local-update-center:/local-update-center'
-                }
-            }
-            when {
-                expression {
-                    return "${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/;
-                }
-            }
-            steps {
-                echo "Deploy ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap deploy -U -DskipTests=true"
-                sh "/opt/scripts/saveToLocalUpdateCenter.sh *-kit/target/netbeans_site/ ${deployDirName} ${branchVersion} ${toolName}"
-            }
-        }*/
         stage('Save installer data') {
             agent {
                 docker {
                     label 'snap-test'
                     image 'snap-build-server.tilaa.cloud/scripts:1.0'
-                    args '-v docker_snap-installer:/snap-installer'
+                    args '-v docker_snap-installer:/snap-installer -v /data/ssd/tmp/data/ssd/tmp'
                 }
             }
             when {
@@ -109,8 +93,10 @@ pipeline {
                 }
             }
             steps {
-                echo "Save data for SNAP Installer ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh "/opt/scripts/saveInstallData.sh ${toolName} ${env.GIT_BRANCH}"
+                dir("/data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/") {
+                    echo "Save data for SNAP Installer ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
+                    sh "/opt/scripts/saveInstallData.sh ${toolName} ${env.GIT_BRANCH}"
+                }
             }
         }
         stage('Create SNAP Installer') {
