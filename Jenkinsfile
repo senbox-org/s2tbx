@@ -97,7 +97,13 @@ pipeline {
                     echo "Save data for SNAP Installer ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                     sh "/opt/scripts/saveInstallData.sh ${toolName} ${env.GIT_BRANCH}"
                 }
-                sh "rm -R /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/"
+
+            }
+            post {
+                always {
+                    echo "Clean-up temporary directory `/data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/`"
+                    sh "rm -R /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/"
+                }
             }
         }
         stage('Create SNAP Installer') {
