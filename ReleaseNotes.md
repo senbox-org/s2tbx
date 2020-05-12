@@ -71,11 +71,11 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [STEP-13, SNAP-1161]  - Product Library GUI Enhancements
     * [STEP-14, SNAP-1162]  - SciHub Search UI Enhancement in Product Library
     * [STEP-15, SNAP-1163]  - Support for New External Data Access Sources via Product Library
-    * [SNAP-1225] - Implement change detection validation trigger for Graph Builder
-    * [SNAP-1109] - Possibility to fix random seed value to reproduce results based on aleatory processing
-	* [SNAP-1166] - Subset operator updates scenegeocoding for single size products
+    * [SNAP-1225]  - Implement change detection validation trigger for Graph Builder
+    * [SNAP-1109]  - Possibility to fix random seed value to reproduce results based on aleatory processing
+	* [SNAP-1166]  - Subset operator updates scenegeocoding for single size products
 	* [SIITBX-413] - Allow GPT tests to fail graciously in a controlled way
-	* [SNAP-1013] - Implement automated reports web service       
+	* [SNAP-1013]  - Implement automated reports web service
 
 
 #### Improvement
@@ -85,6 +85,7 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [SIITBX-379] - Adapt Operators to use doExecute correctly (part 1)
     * [SIITBX-380, SIITBX-384] - Adapt Operators to use doExecute correctly (part 2)
     * [SIITBX-407] - Revise help material
+    * [SIITBX-409] - Clean up dependencies on 3rd-party libraries (CSRO)
     * [STEP-30, SIITBX-315] - Revise initialise method in operator implementations
     * Moving SNAP development and deployment chain to Zulu OpenJDK 8
     * Moving SNAP installer to install4j 8 
@@ -95,6 +96,7 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [STEP-40]    - Update JIRA tickets to create proper roadmap
     * [STEP-41]    - List of GUI tests should be established
     * [STEP-43]    - STEP website - SEOM link and logo to be replaced with EO Science for Society
+    * [SIITBX-387] - Ignored tests shall be properly annotated
     * [SIITBX-388] - Tests need to be defined well in advance of releases
     * [SIITBX-389] - Graphical test coverage for release 8 needs to agree on early
     * [SIITBX-390] - Check skipped tests because of missing data (wrong path)
@@ -103,6 +105,8 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [SIITBX-401] - Clean up dependencies on 3rd-party libraries
     * [SIITBX-402] - Check separation between UI and Engine components
     * [SIITBX-322] - Integrate S2TBX tests
+
+
 
 Changes in S2TBX 7.0
 --------------------
