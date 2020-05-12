@@ -94,12 +94,14 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [STEP-39]    - Unassigned issues in JIRA shall be checked
     * [STEP-40]    - Update JIRA tickets to create proper roadmap
     * [STEP-41]    - List of GUI tests should be established
+    * [STEP-43]    - STEP website - SEOM link and logo to be replaced with EO Science for Society
     * [SIITBX-388] - Tests need to be defined well in advance of releases
     * [SIITBX-389] - Graphical test coverage for release 8 needs to agree on early
     * [SIITBX-390] - Check skipped tests because of missing data (wrong path)
+    * [SIITBX-428] - Update S2TBX about dialog with new ESA images
     * [SNAP-1262]  - Create wiki on test syntax and functionality
     * [SIITBX-401] - Clean up dependencies on 3rd-party libraries
-    * [SIITBX-402] - Check sepearation between UI and Engine components
+    * [SIITBX-402] - Check separation between UI and Engine components
     * [SIITBX-322] - Integrate S2TBX tests
 
 Changes in S2TBX 7.0
