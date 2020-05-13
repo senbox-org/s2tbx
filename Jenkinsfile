@@ -94,7 +94,7 @@ pipeline {
             }
             steps {
                 echo "Save data for SNAP Installer ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
-                sh "cd data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/ && /opt/scripts/saveInstallData.sh ${toolName} ${env.GIT_BRANCH}"
+                sh "cd /data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/ && /opt/scripts/saveInstallData.sh ${toolName} ${env.GIT_BRANCH}"
                 echo "[DATA SAVED]"
             }
             post {
