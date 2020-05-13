@@ -36,7 +36,7 @@ pipeline {
                 docker {
                     label 'snap-test'
                     image 'snap-build-server.tilaa.cloud/maven:3.6.0-jdk-8'
-                    args '-e MAVEN_CONFIG=/var/maven/.m2 -v /data/ssd/testData/:/data/ssd/testData/ -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v docker_local-update-center:/local-update-center -v /data/ssd/tmp/data/ssd/tmp'
+                    args '-e MAVEN_CONFIG=/var/maven/.m2 -v /data/ssd/testData/:/data/ssd/testData/ -v /opt/maven/.m2/settings.xml:/var/maven/.m2/settings.xml -v docker_local-update-center:/local-update-center -v snap_cache:/data/cache/'
                 }
             }
             steps {
@@ -58,9 +58,9 @@ pipeline {
                 echo "Build Job ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                 sh "/opt/scripts/setUpUnitTestLibraries.sh"
                 sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install ${sonarOption} ${longTestsOption} -Dsnap.reader.tests.data.dir=/data/ssd/testData/${toolName} -U -DskipTests=false"
-                echo "Copy workspace to shared folder /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}"
-                sh "mkdir -p /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}"
-                sh "cp -R * /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/"
+                echo "Copy workspace to shared folder /data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}"
+                sh "mkdir -p /data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}"
+                sh "cp -R * /data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/"
             }
             post {
                 always {
@@ -83,7 +83,7 @@ pipeline {
                 docker {
                     label 'snap-test'
                     image 'snap-build-server.tilaa.cloud/scripts:1.0'
-                    args '-v docker_snap-installer:/snap-installer -v /data/ssd/tmp/data/ssd/tmp'
+                    args '-v docker_snap-installer:/snap-installer -v snap_cache:/data/cache'
                 }
             }
             when {
@@ -93,7 +93,7 @@ pipeline {
                 }
             }
             steps {
-                dir("/data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/") {
+                dir("/data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/") {
                     echo "Save data for SNAP Installer ${env.JOB_NAME} from ${env.GIT_BRANCH} with commit ${env.GIT_COMMIT}"
                     sh "/opt/scripts/saveInstallData.sh ${toolName} ${env.GIT_BRANCH}"
                 }
@@ -101,8 +101,8 @@ pipeline {
             }
             post {
                 always {
-                    echo "Clean-up temporary directory `/data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/`"
-                    sh "rm -R /data/ssd/tmp/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/"
+                    echo "Clean-up temporary directory `/data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/`"
+                    sh "rm -R /data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/"
                 }
             }
         }
