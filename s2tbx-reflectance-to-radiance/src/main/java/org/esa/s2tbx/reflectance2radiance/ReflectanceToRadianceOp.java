@@ -66,7 +66,7 @@ public class ReflectanceToRadianceOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
+    @Parameter(alias = "sourceBands", label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
     private String[] sourceBandNames;
 
     @Parameter(label = "Copy masks", description = "Copy masks from the source product", defaultValue = "false")
@@ -169,17 +169,18 @@ public class ReflectanceToRadianceOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
-        if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
-            throw new OperatorException("Please select at least one band.");
+        String[] bandNames = this.sourceBandNames;
+        if (bandNames == null || bandNames.length == 0) {
+            bandNames = this.sourceProduct.getBandNames();
         }
         Band sunZenithBand = this.sourceProduct.getBand("sun_zenith");
 
         if (isSentinelProduct(this.sourceProduct)) {
-            this.solarIrradiances = extractSolarIrradiancesFromSentinelProduct(this.sourceProduct, this.sourceBandNames);
-            this.u = extractUFromSentinelProduct(this.sourceProduct);
+            this.solarIrradiances = extractSolarIrradiancesFromSentinelProduct(this.sourceProduct, bandNames);
+            this.u = this.u == 0.0f ? extractUFromSentinelProduct(this.sourceProduct) : this.u;
         } else if (isSpotProduct(this.sourceProduct)) {
-            this.solarIrradiances = extractSolarIrradianceFromSpotProduct(this.sourceProduct, this.sourceBandNames);
-            this.incidenceAngle = extractIncidenceAngleFromSpotProduct(this.sourceProduct);
+            this.solarIrradiances = extractSolarIrradianceFromSpotProduct(this.sourceProduct, bandNames);
+            this.incidenceAngle = this.incidenceAngle == 0 ? extractIncidenceAngleFromSpotProduct(this.sourceProduct) : this.incidenceAngle;
         }
 
         if (this.solarIrradiances == null && this.solarIrradiance == 0.0f) {
@@ -190,7 +191,7 @@ public class ReflectanceToRadianceOp extends Operator {
         }
         int sceneWidth = 0, sceneHeight = 0;
         Set<Integer> distictWidths = new HashSet<>();
-        for (String bandName : this.sourceBandNames) {
+        for (String bandName : bandNames) {
             Band band = this.sourceProduct.getBand(bandName);
             if (sceneWidth < band.getRasterWidth()) {
                 sceneWidth = band.getRasterWidth();
@@ -211,19 +212,19 @@ public class ReflectanceToRadianceOp extends Operator {
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
         ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
         if (this.copyMasks) {
-            copyMasks(sourceProduct, targetProduct, sourceBandNames);
+            copyMasks(sourceProduct, targetProduct, bandNames);
         }
         ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
 
-        Band[] sourceBands = new Band[this.sourceBandNames.length];
+        Band[] sourceBands = new Band[bandNames.length];
         this.tiePointGrids = new HashMap<>();
-        for (int i = 0; i < this.sourceBandNames.length; i++) {
-            Band sourceBand = sourceProduct.getBand(this.sourceBandNames[i]);
-            sourceBands[i] = this.sourceProduct.getBand(this.sourceBandNames[i]);
+        for (int i = 0; i < bandNames.length; i++) {
+            Band sourceBand = this.sourceProduct.getBand(bandNames[i]);
+            sourceBands[i] = this.sourceProduct.getBand(bandNames[i]);
             int sourceBandWidth = sourceBands[i].getRasterWidth();
             int sourceBandHeight = sourceBands[i].getRasterHeight();
 
-            Band targetBand = new Band(this.sourceBandNames[i], ProductData.TYPE_FLOAT32, sourceBandWidth, sourceBandHeight);
+            Band targetBand = new Band(bandNames[i], ProductData.TYPE_FLOAT32, sourceBandWidth, sourceBandHeight);
             ProductUtils.copyRasterDataNodeProperties(sourceBand, targetBand);
             // SIITBX-297 : The unit is copied from the source to the target. But it should be set accordingly to the conversion to radiance values.
             targetBand.setUnit("Watts/m^2/micrometer/steradian");
