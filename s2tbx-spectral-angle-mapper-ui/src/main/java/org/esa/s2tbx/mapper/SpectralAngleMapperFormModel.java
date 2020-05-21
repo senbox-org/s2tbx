@@ -34,11 +34,17 @@ public class SpectralAngleMapperFormModel {
 
     private SpectralAngleMapperForm parentForm;
     private final PropertySet container;
-    private final Map<String, Object> parameterMap = new HashMap<>();
+    private final Map<String, Object> parameterMap;
     private final Map<File, Product> sourceProductMap = Collections.synchronizedMap(new HashMap<>());
     SpectralAngleMapperFormModel(SpectralAngleMapperForm parentForm) {
         this.parentForm = parentForm;
+        parameterMap = new HashMap<>();
         container = ParameterDescriptorFactory.createMapBackedOperatorPropertyContainer("SpectralAngleMapperOp", parameterMap);
+    }
+
+    SpectralAngleMapperFormModel(PropertySet propertySet, Map<String, Object> paramMap){
+        this.container = propertySet;
+        this.parameterMap = paramMap;
     }
 
     PropertySet getPropertySet() {

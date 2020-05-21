@@ -59,13 +59,15 @@ public class SpectrumInputDomConverter implements DomConverter {
 
             if (xPosStr != null)
             {
+                xPosStr = xPosStr.replaceAll("\\[|]|\\s", "");
                 String [] stringTokens = xPosStr.split(",");
-                xintArr = Stream.of(stringTokens).mapToInt(strToken -> Integer.parseInt(strToken)).toArray();
+                xintArr = Stream.of(stringTokens).mapToInt(Integer::parseInt).toArray();
             }
             if (yPosStr != null)
             {
+                yPosStr = yPosStr.replaceAll("\\[|]|\\s", "");
                 String [] stringTokens = yPosStr.split(",");
-                yintArr = Stream.of(stringTokens).mapToInt(strToken -> Integer.parseInt(strToken)).toArray();
+                yintArr = Stream.of(stringTokens).mapToInt(Integer::parseInt).toArray();
             }
 
             final SpectrumInput spectrum = new SpectrumInput(nameStr, xintArr, yintArr);
@@ -76,7 +78,7 @@ public class SpectrumInputDomConverter implements DomConverter {
             spectrumList.add(spectrum);
         }
 
-        return spectrumList.toArray(new SpectrumInput[spectrumList.size()]);
+        return spectrumList.toArray(new SpectrumInput[0]);
     }
 
 
@@ -84,20 +86,22 @@ public class SpectrumInputDomConverter implements DomConverter {
     public void convertValueToDom(Object value, DomElement parentElement) throws ConversionException {
         final SpectrumInput[] spectrumInputs = (SpectrumInput[])value;
 
-        for(SpectrumInput spectrumInput : spectrumInputs) {
-            DomElement spectrum = parentElement.createChild("spectrum");
+        if(spectrumInputs != null) {
+            for (SpectrumInput spectrumInput : spectrumInputs) {
+                DomElement spectrum = parentElement.createChild("spectrum");
 
-            final DomElement name = spectrum.createChild("name");
-            name.setValue(spectrumInput.getName());
+                final DomElement name = spectrum.createChild("name");
+                name.setValue(spectrumInput.getName());
 
-            DomElement xPixelPolygonPositions = spectrum.createChild("xPixelPolygonPositions");
-            xPixelPolygonPositions.setValue(Arrays.toString(spectrumInput.getXPixelPolygonPositions()));
+                DomElement xPixelPolygonPositions = spectrum.createChild("xPixelPolygonPositions");
+                xPixelPolygonPositions.setValue(Arrays.toString(spectrumInput.getXPixelPolygonPositions()));
 
-            DomElement yPixelPolygonPositions = spectrum.createChild("yPixelPolygonPositions");
-            yPixelPolygonPositions.setValue(Arrays.toString(spectrumInput.getYPixelPolygonPositions()));
+                DomElement yPixelPolygonPositions = spectrum.createChild("yPixelPolygonPositions");
+                yPixelPolygonPositions.setValue(Arrays.toString(spectrumInput.getYPixelPolygonPositions()));
 
-            DomElement isShapeDefined = spectrum.createChild("isShapeDefined");
-            isShapeDefined.setValue(Boolean.toString(spectrumInput.getIsShapeDefined()));
+                DomElement isShapeDefined = spectrum.createChild("isShapeDefined");
+                isShapeDefined.setValue(Boolean.toString(spectrumInput.getIsShapeDefined()));
+            }
         }
     }
 }

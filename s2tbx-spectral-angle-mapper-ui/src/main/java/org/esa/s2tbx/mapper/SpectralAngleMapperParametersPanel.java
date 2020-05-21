@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * @author Dumitrascu Razvan.
@@ -54,6 +55,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
     private DefaultListModel<SpectrumInput> hiddenSpectrumListModel;
     private SAMSpectralFormModel formModel;
     private SpectralAngleMapperThresholdPanel thresholdPanel;
+    private Callable<Product> sourceProductAccessor;
 
     private String[] resampleTypeValues;
     private String[] upsamplingMethodValues;
@@ -74,6 +76,24 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         createUI();
         bindingCtx.adjustComponents();
         bindComponents();
+    }
+
+    SpectralAngleMapperParametersPanel(AppContext appContext, SpectralAngleMapperFormModel samModel, Callable<Product> productAccessor, SpectralAngleMapperThresholdPanel thresholdPanel){
+        this(null, appContext, samModel);
+        if (productAccessor == null) {
+            throw new IllegalArgumentException("The accessor for fetching source products must not be null");
+        }
+        this.formModel = new SAMSpectralFormModel(this.appContext, productAccessor);
+        this.thresholdPanel = thresholdPanel;
+        this.sourceProductAccessor = productAccessor;
+    }
+
+    SAMSpectralFormModel getFormModel() {
+        return this.formModel;
+    }
+
+    JList<String> getSourceBandNames() {
+        return this.sourceBandNames;
     }
 
     private void initResampleValues() {
@@ -135,9 +155,13 @@ class SpectralAngleMapperParametersPanel extends JPanel {
                     selectedIndexes[index] = index;
                 }
                 hiddenSpectrumList.setSelectedIndices(selectedIndexes);
-                thresholdPanel =  samForm.getThresholdPanelInstance();
-                thresholdPanel.updateThresholdComponents(this.spectrumList.getSelectedValuesList());
-                samForm.setSelectedIndex(THRESHOLDS_TAB_INDEX);
+                if(samForm != null) {
+                    thresholdPanel = samForm.getThresholdPanelInstance();
+                    thresholdPanel.updateThresholdComponents(this.spectrumList.getSelectedValuesList());
+                    samForm.setSelectedIndex(THRESHOLDS_TAB_INDEX);
+                }else {
+                    thresholdPanel.updateThresholdComponents(this.spectrumList.getSelectedValuesList());
+                }
             }
         });
         createThresholdsPanel.setMaximumSize(new Dimension(20, 40));
@@ -224,7 +248,7 @@ class SpectralAngleMapperParametersPanel extends JPanel {
         return panel;
     }
 
-    private TableLayout getTableLayout( int columnCount) {
+    TableLayout getTableLayout( int columnCount) {
         final TableLayout layout = new TableLayout(columnCount);
         layout.setTableAnchor(TableLayout.Anchor.WEST);
         layout.setTableFill(TableLayout.Fill.BOTH);
@@ -235,8 +259,18 @@ class SpectralAngleMapperParametersPanel extends JPanel {
 
     private void checkResampling() {
         PropertySet propertySet = this.bindingCtx.getPropertySet();
-        final Map<String, Product>sourceProducts = samForm.getSourceProductMap();
-        Product product = sourceProducts.entrySet().stream().findFirst().get().getValue();
+
+        Product product = null;
+        if(samForm != null) {
+            final Map<String, Product> sourceProducts = samForm.getSourceProductMap();
+            product = sourceProducts.entrySet().stream().findFirst().get().getValue();
+        }else{
+            try {
+                product = sourceProductAccessor.call();
+            } catch (Exception ignored) {
+                //ignore
+            }
+        }
         boolean needsResampling = isResampleNeeded(product);
         if (!needsResampling) {
             propertySet.setValue(SpectralAngleMapperFormModel.RESAMPLE_TYPE_PROPERTY, RESAMPLE_NONE);

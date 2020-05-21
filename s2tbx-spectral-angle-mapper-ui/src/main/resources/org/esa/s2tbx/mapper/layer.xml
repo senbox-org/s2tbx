@@ -31,8 +31,8 @@
     </folder>
     <folder name="OperatorUIs">
         <file name="org.esa.s2tbx.mapper.SpectralAngleMapperOp">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.mapper.SpectralAngleMapperUI"/>
             <attr name="operatorName" stringvalue="SpectralAngleMapperOp"/>
-            <attr name="disableFromGraphBuilder" stringvalue="true"/>
         </file>
     </folder>
 </filesystem>

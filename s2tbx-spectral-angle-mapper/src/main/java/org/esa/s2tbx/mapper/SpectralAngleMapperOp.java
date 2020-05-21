@@ -1,13 +1,15 @@
 package org.esa.s2tbx.mapper;
 
+import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.mapper.common.SpectralAngleMapperConstants;
+import org.esa.s2tbx.mapper.common.SpectrumInput;
+import org.esa.s2tbx.mapper.common.SpectrumInputConverter;
 import org.esa.s2tbx.mapper.common.SpectrumInputDomConverter;
-import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixelsContainer;
-import org.esa.s2tbx.mapper.pixels.mean.Spectrum;
 import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassPixelsComputing;
 import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixels;
+import org.esa.s2tbx.mapper.pixels.computing.SpectrumClassReferencePixelsContainer;
+import org.esa.s2tbx.mapper.pixels.mean.Spectrum;
 import org.esa.s2tbx.mapper.pixels.mean.SpectrumComputing;
-import org.esa.s2tbx.mapper.common.SpectrumInput;
 import org.esa.s2tbx.mapper.pixels.mean.SpectrumContainer;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -21,9 +23,9 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.util.ProductUtils;
-import java.awt.Rectangle;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * spectral angle mapper operator
@@ -67,10 +70,10 @@ public class SpectralAngleMapperOp extends Operator {
     @Parameter(description = "thresholds", defaultValue = "0.0")
     private String thresholds;
 
-    @Parameter(alias = "spectra", itemAlias = "spectrum", domConverter = SpectrumInputDomConverter.class, description = "The list of spectra.")
+    @Parameter(alias = "spectra", itemAlias = "spectrum", domConverter = SpectrumInputDomConverter.class, converter = SpectrumInputConverter.class, description = "The list of spectra.")
     private SpectrumInput[] spectra;
 
-    @Parameter(alias = "hiddenSpectra", itemAlias = "spectrum", domConverter = SpectrumInputDomConverter.class, description = "The list of spectra.")
+    @Parameter(alias = "hiddenSpectra", itemAlias = "spectrum", domConverter = SpectrumInputDomConverter.class, converter = SpectrumInputConverter.class, description = "The list of spectra.")
     private SpectrumInput[] hiddenSpectra;
 
     @Parameter(label = "Resample Type",
@@ -97,14 +100,18 @@ public class SpectralAngleMapperOp extends Operator {
     private SpectrumClassReferencePixelsContainer specPixelsContainer;
     private SpectrumContainer spectrumContainer;
     private int threadCount;
+    private Logger logger = Logger.getLogger(SpectralAngleMapperOp.class.getName());
 
     @Override
     public void initialize() throws OperatorException {
+        this.targetProduct = new Product(SpectralAngleMapperConstants.TARGET_PRODUCT_NAME, this.sourceProduct.getProductType() + "_SAM", 1, 1);
         if (this.sourceProduct == null) {
-            throw new OperatorException("Source product not set");
+            logger.warning("Source product not set");
+            return;
         }
         if(spectra.length == 0) {
-            throw new OperatorException("No spectrum classes have been set");
+            logger.warning("No spectrum classes have been set");
+            return;
         }
         if (spectra.length != hiddenSpectra.length) {
             spectra = new SpectrumInput[hiddenSpectra.length];
