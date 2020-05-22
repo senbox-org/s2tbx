@@ -108,10 +108,14 @@ public class SpectralAngleMapperOp extends Operator {
         if (this.sourceProduct == null) {
             logger.warning("Source product not set");
             return;
+            //do not throw exception for allow Graph Builder to initialize the UI
+//            throw new OperatorException("Source product not set");
         }
         if(spectra.length == 0) {
             logger.warning("No spectrum classes have been set");
             return;
+            //do not throw exception for allow Graph Builder to initialize the UI
+//            throw new OperatorException("No spectrum classes have been set");
         }
         if (spectra.length != hiddenSpectra.length) {
             spectra = new SpectrumInput[hiddenSpectra.length];

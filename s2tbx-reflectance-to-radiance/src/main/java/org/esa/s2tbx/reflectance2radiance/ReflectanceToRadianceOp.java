@@ -171,6 +171,8 @@ public class ReflectanceToRadianceOp extends Operator {
     public void initialize() throws OperatorException {
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
             this.sourceBandNames = this.sourceProduct.getBandNames();
+            //do not throw exception for allow Graph Builder to initialize the UI
+//            throw new OperatorException("Please select at least one band.");
         }
         Band sunZenithBand = this.sourceProduct.getBand("sun_zenith");
 
