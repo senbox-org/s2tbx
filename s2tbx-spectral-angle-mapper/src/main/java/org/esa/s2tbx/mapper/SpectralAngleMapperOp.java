@@ -104,19 +104,13 @@ public class SpectralAngleMapperOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
-        this.targetProduct = new Product(SpectralAngleMapperConstants.TARGET_PRODUCT_NAME, this.sourceProduct.getProductType() + "_SAM", 1, 1);
-        if (this.sourceProduct == null) {
-            logger.warning("Source product not set");
-            return;
-            //do not throw exception for allow Graph Builder to initialize the UI
+        //move the verification of required fields to doExecute() for allow Graph Builder to initialize the UI
+//        if (this.sourceProduct == null) {
 //            throw new OperatorException("Source product not set");
-        }
-        if(spectra.length == 0) {
-            logger.warning("No spectrum classes have been set");
-            return;
-            //do not throw exception for allow Graph Builder to initialize the UI
+//        }
+//        if(spectra.length == 0) {
 //            throw new OperatorException("No spectrum classes have been set");
-        }
+//        }
         if (spectra.length != hiddenSpectra.length) {
             spectra = new SpectrumInput[hiddenSpectra.length];
             spectra = hiddenSpectra;
@@ -124,14 +118,15 @@ public class SpectralAngleMapperOp extends Operator {
         this.threshold = new ArrayList<>();
         this.classColor = new HashMap<>();
         parseThresholds();
-        validateSpectra();
-        validateNumberOfThresholds();
+        //move the call of verification methods to doExecute() for allow Graph Builder to initialize the UI
+//        validateSpectra();
+//        validateNumberOfThresholds();
 
         int initialProductWidth = this.sourceProduct.getSceneRasterWidth();
         int initialProductHeight = this.sourceProduct.getSceneRasterHeight();
         float xRatio = 1.0f;
         float yRatio = 1.0f;
-        int sceneWidth = 0, sceneHeight = 0;
+        int sceneWidth = 1, sceneHeight = 1;
 
         // resample source product if needed
         boolean resampleNeeded = !RESAMPLE_NONE.equals(this.resampleType);
@@ -145,7 +140,7 @@ public class SpectralAngleMapperOp extends Operator {
                         sceneHeight = band.getRasterHeight();
                     }
                 } else {
-                    if (sceneWidth == 0 || sceneWidth >= bandRasterWidth) {
+                    if (sceneWidth == 1 || sceneWidth >= bandRasterWidth) {
                         sceneWidth = bandRasterWidth;
                         sceneHeight = band.getRasterHeight();
                     }
@@ -156,7 +151,7 @@ public class SpectralAngleMapperOp extends Operator {
                 xRatio = initialProductWidth / sceneWidth;
                 yRatio = initialProductHeight / sceneHeight;
             }
-        } else {
+        } else if(this.referenceBands != null) {//ensure referenceBands not null for allow Graph Builder to initialize the UI
             sceneWidth = sourceProduct.getSceneRasterWidth();
             sceneHeight = sourceProduct.getSceneRasterHeight();
             int firstSourceBandWidth = sourceProduct.getBand(this.referenceBands[0]).getRasterWidth();
@@ -209,6 +204,18 @@ public class SpectralAngleMapperOp extends Operator {
 
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
+
+        //move the verification of required fields from initialize()
+        if (this.sourceProduct == null) {
+            throw new OperatorException("Source product not set");
+        }
+        if(spectra.length == 0) {
+            throw new OperatorException("No spectrum classes have been set");
+        }
+
+        //move the call of verification methods from initialize() for allow Graph Builder to initialize the UI
+        validateSpectra();
+        validateNumberOfThresholds();
 
         ExecutorService threadPool;
 
