@@ -100,17 +100,16 @@ public class SpectralAngleMapperOp extends Operator {
     private SpectrumClassReferencePixelsContainer specPixelsContainer;
     private SpectrumContainer spectrumContainer;
     private int threadCount;
-    private Logger logger = Logger.getLogger(SpectralAngleMapperOp.class.getName());
 
     @Override
     public void initialize() throws OperatorException {
-        //move the verification of required fields to doExecute() for allow Graph Builder to initialize the UI
-//        if (this.sourceProduct == null) {
-//            throw new OperatorException("Source product not set");
-//        }
-//        if(spectra.length == 0) {
-//            throw new OperatorException("No spectrum classes have been set");
-//        }
+        // SIITBX-410: move the verification of required fields into doExecute() for allowing Graph Builder to initialize the UI
+        /*if (this.sourceProduct == null) {
+            throw new OperatorException("Source product not set");
+        }
+        if(spectra.length == 0) {
+            throw new OperatorException("No spectrum classes have been set");
+        }*/
         if (spectra.length != hiddenSpectra.length) {
             spectra = new SpectrumInput[hiddenSpectra.length];
             spectra = hiddenSpectra;
@@ -118,9 +117,10 @@ public class SpectralAngleMapperOp extends Operator {
         this.threshold = new ArrayList<>();
         this.classColor = new HashMap<>();
         parseThresholds();
-        //move the call of verification methods to doExecute() for allow Graph Builder to initialize the UI
-//        validateSpectra();
-//        validateNumberOfThresholds();
+
+        // SIITBX-410: move the call of verification methods into doExecute() for allowing Graph Builder to initialize the UI
+        //validateSpectra();
+        //validateNumberOfThresholds();
 
         int initialProductWidth = this.sourceProduct.getSceneRasterWidth();
         int initialProductHeight = this.sourceProduct.getSceneRasterHeight();
@@ -151,7 +151,7 @@ public class SpectralAngleMapperOp extends Operator {
                 xRatio = initialProductWidth / sceneWidth;
                 yRatio = initialProductHeight / sceneHeight;
             }
-        } else if(this.referenceBands != null) {//ensure referenceBands not null for allow Graph Builder to initialize the UI
+        } else if(this.referenceBands != null) {//ensure referenceBands not null for allowing Graph Builder to initialize the UI
             sceneWidth = sourceProduct.getSceneRasterWidth();
             sceneHeight = sourceProduct.getSceneRasterHeight();
             int firstSourceBandWidth = sourceProduct.getBand(this.referenceBands[0]).getRasterWidth();
@@ -205,7 +205,7 @@ public class SpectralAngleMapperOp extends Operator {
     @Override
     public void doExecute(ProgressMonitor pm) throws OperatorException {
 
-        //move the verification of required fields from initialize()
+        // SIITBX-410: move the verification of required fields from initialize()
         if (this.sourceProduct == null) {
             throw new OperatorException("Source product not set");
         }
@@ -213,7 +213,7 @@ public class SpectralAngleMapperOp extends Operator {
             throw new OperatorException("No spectrum classes have been set");
         }
 
-        //move the call of verification methods from initialize() for allow Graph Builder to initialize the UI
+        // SIITBX-410: move the call of verification methods from initialize() for allowing Graph Builder to initialize the UI
         validateSpectra();
         validateNumberOfThresholds();
 

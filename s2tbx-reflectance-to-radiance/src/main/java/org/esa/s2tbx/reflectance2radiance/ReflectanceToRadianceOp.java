@@ -170,18 +170,18 @@ public class ReflectanceToRadianceOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
+            // SIITBX-410: do not throw exception for allowing Graph Builder to initialize the UI
+            //throw new OperatorException("Please select at least one band.");
             this.sourceBandNames = this.sourceProduct.getBandNames();
-            //do not throw exception for allow Graph Builder to initialize the UI
-//            throw new OperatorException("Please select at least one band.");
         }
         Band sunZenithBand = this.sourceProduct.getBand("sun_zenith");
 
         if (isSentinelProduct(this.sourceProduct)) {
             this.solarIrradiances = extractSolarIrradiancesFromSentinelProduct(this.sourceProduct, this.sourceBandNames);
-            this.u = this.u == 0.0f ? extractUFromSentinelProduct(this.sourceProduct) : this.u;
+            this.u = extractUFromSentinelProduct(this.sourceProduct);
         } else if (isSpotProduct(this.sourceProduct)) {
             this.solarIrradiances = extractSolarIrradianceFromSpotProduct(this.sourceProduct, this.sourceBandNames);
-            this.incidenceAngle = this.incidenceAngle == 0 ? extractIncidenceAngleFromSpotProduct(this.sourceProduct) : this.incidenceAngle;
+            this.incidenceAngle = extractIncidenceAngleFromSpotProduct(this.sourceProduct);
         }
 
         if (this.solarIrradiances == null && this.solarIrradiance == 0.0f) {
