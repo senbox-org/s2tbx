@@ -46,7 +46,7 @@ public class SpectralAngleMapperUI extends BaseOperatorUI {
             return new UIValidation(state, "classification has to be done on at least 2 source product bands");
         }
         if (!validateSpectrumClassInput(formModel)) {
-            return new UIValidation(state, "No Spectrum Class set, " + this.msg);
+            return new UIValidation(state, "No Spectrum Class set" + (this.msg.isEmpty() ? "" : ", " + this.msg + ""));
         }
         if (!validateThresholds(formModel)) {
             return new UIValidation(state, "No thresholds set");
