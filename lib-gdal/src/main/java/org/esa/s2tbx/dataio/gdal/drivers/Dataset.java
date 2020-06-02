@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.drivers;
 
 import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * GDAL Dataset JNI driver class
@@ -94,6 +95,15 @@ public class Dataset {
     }
 
     /**
+     * Calls the JNI GDAL Dataset class GetGCPProjection() method
+     *
+     * @return the JNI GDAL Dataset class GetGCPProjection() method result
+     */
+    public String getGCPProjection() {
+        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetGCPProjection", String.class, this.jniDatasetInstance, new Class[]{}, new Object[]{});
+    }
+
+    /**
      * Calls the JNI GDAL Dataset class GetGeoTransform(double[] argout) method
      *
      * @param argout the JNI GDAL Dataset class GetGeoTransform(double[] argout) method 'argout' argument
@@ -119,10 +129,28 @@ public class Dataset {
      * Calls the JNI GDAL Dataset class GetMetadata_Dict(String pszDomain) method
      *
      * @param pszDomain the JNI GDAL Dataset class GetMetadata_Dict(String pszDomain) method 'pszDomain' argument
-     * @return the JNI GDAL Dataset class GetMetadata_Dict(int nBand) method result
+     * @return the JNI GDAL Dataset class GetMetadata_Dict(String pszDomain) method result
      */
     public Hashtable getMetadataDict(String pszDomain) {
         return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetMetadata_Dict", Hashtable.class, this.jniDatasetInstance, new Class[]{String.class}, new Object[]{pszDomain});
+    }
+
+    /**
+     * Calls the JNI GDAL Dataset class GetGCPs() method
+     *
+     * @return the JNI GDAL Dataset class GetGCPs() method result
+     */
+    public Vector getGCPs() {
+        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetGCPs", Vector.class, this.jniDatasetInstance, new Class[]{}, new Object[]{});
+    }
+
+    /**
+     * Calls the JNI GDAL Dataset class GetGCPCount() method
+     *
+     * @return the JNI GDAL Dataset class GetGCPCount() method result
+     */
+    public Integer getGCPCount() {
+        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetGCPCount", Integer.class, this.jniDatasetInstance, new Class[]{}, new Object[]{});
     }
 
     /**
@@ -144,4 +172,5 @@ public class Dataset {
     public Integer setGeoTransform(double[] gdalGeoTransform) {
         return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "SetGeoTransform", Integer.class, this.jniDatasetInstance, new Class[]{double[].class}, new Object[]{gdalGeoTransform});
     }
+
 }
