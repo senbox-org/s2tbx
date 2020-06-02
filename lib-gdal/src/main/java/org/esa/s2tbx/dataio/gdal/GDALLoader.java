@@ -26,6 +26,7 @@ public final class GDALLoader {
     private static final Logger logger = Logger.getLogger(GDALLoader.class.getName());
 
     private boolean gdalIsInitialized = false;
+    private boolean gdalInitialisationExecuted = false;
     private GDALVersion gdalVersion;
     private URLClassLoader gdalVersionLoader;
 
@@ -46,10 +47,9 @@ public final class GDALLoader {
 
     /**
      * Initializes GDAL native libraries to be used by SNAP.
-     *
      */
     public void initGDAL() {
-        if (!this.gdalIsInitialized) {
+        if (!this.gdalInitialisationExecuted) {
             try {
                 this.gdalVersion = GDALVersion.getGDALVersion();
                 GDALDistributionInstaller.setupDistribution(this.gdalVersion);
@@ -60,9 +60,10 @@ public final class GDALLoader {
                 Path gdalDistributionBinFolderPath = Paths.get(this.gdalVersion.getLocation());
                 GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
             } catch (Exception ex) {
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logger.log(Level.SEVERE, "Failed to initialize GDAL native drivers. GDAL readers and writers were disabled."+ex.getMessage());
                 this.gdalIsInitialized = false;
             }
+            this.gdalInitialisationExecuted = true;
         }
     }
 
