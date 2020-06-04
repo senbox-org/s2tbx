@@ -1,5 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
+import org.esa.s2tbx.dataio.gdal.GDALVersion;
+
 /**
  * Reader plugin for products using the GDAL library.
  *
@@ -8,7 +10,7 @@ package org.esa.s2tbx.dataio.gdal.reader.plugins;
 public class GTiffDriverProductReaderPlugIn extends AbstractDriverProductReaderPlugIn {
 
     public GTiffDriverProductReaderPlugIn() {
-        super("GTiff", "GeoTIFF");
+        super("GTiff", "GeoTIFF (GDAL " + GDALVersion.getGDALVersion().getId() + ")");
 
         addExtensin(".tif");
         addExtensin(".tiff");
