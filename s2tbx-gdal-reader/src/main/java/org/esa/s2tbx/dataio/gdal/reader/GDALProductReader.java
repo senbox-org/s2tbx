@@ -162,7 +162,7 @@ public class GDALProductReader extends AbstractProductReader {
                 final ProductNodeGroup<Placemark> gcpGroup = product.getGcpGroup();
                 for (Object gcpJNI : gcps) {
                     GCP gcp = new GCP(gcpJNI);
-                    final PixelPos pixelPos = new PixelPos(gcp.getGCPLine(), gcp.getGCPPixel());
+                    final PixelPos pixelPos = new PixelPos(gcp.getGCPPixel(), gcp.getGCPLine());
                     final GeoPos geoPos = new GeoPos(gcp.getGCPY(), gcp.getGCPX());
                     final Placemark gcpPlacemark = Placemark.createPointPlacemark(gcpDescriptor, "gcp_" + i, "GCP_" + i++, "", pixelPos, geoPos, product.getSceneGeoCoding());
                     gcpGroup.add(gcpPlacemark);
