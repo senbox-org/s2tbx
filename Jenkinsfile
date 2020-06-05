@@ -114,7 +114,7 @@ pipeline {
             agent { label 'snap-test' }
             when {
                 expression {
-                    return true;
+                    return false;
                 }
             }
             steps {
