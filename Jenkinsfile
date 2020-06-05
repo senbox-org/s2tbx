@@ -55,10 +55,6 @@ pipeline {
                 sh "cp -R * /data/cache/${toolName}/${env.GIT_BRANCH}/${env.BUILD_NUMBER}/"
             }
             post {
-                always {
-                    junit "**/target/surefire-reports/*.xml"
-                    jacoco(execPattern: '**/*.exec')
-                }
                 success {
                     script {
                         if ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) {
@@ -127,41 +123,6 @@ pipeline {
                 quietPeriod: 0,
                 propagate: true,
                 wait: true
-            }
-        }
-        stage ('Starting Tests') {
-            parallel {
-                stage ('Starting GPT Tests') {
-                    agent { label 'snap-test' }
-                    when {
-                        expression {
-                            return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) && "${params.launchTests}" == "true";
-                        }
-                    }
-                    steps {
-                        echo "Launch snap-gpt-tests using docker image snap:${branchVersion} and scope REGULAR"
-                        // build job: "snap-gpt-tests/${branchVersion}", parameters: [
-                        //    [$class: 'StringParameterValue', name: 'dockerTagName', value: "snap:${branchVersion}"],
-                        //    [$class: 'StringParameterValue', name: 'testScope', value: "REGULAR"]
-                        //]
-                    }
-                }
-                // Disabled gui testing
-                // stage ('Starting GUI Tests') {
-                //     agent { label 'snap-test' }
-                //     when {
-                //         expression {
-                //             return ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) && "${params.launchTests}" == "true";
-                //         }
-                //     }
-                //     steps {
-                //         echo "Launch snap-gui-tests using docker image snap:${branchVersion}"
-                //         build job: "snap-gui-tests/${branchVersion}", parameters: [
-                //             [$class: 'StringParameterValue', name: 'dockerTagName', value: "snap:${branchVersion}"],
-                //             [$class: 'StringParameterValue', name: 'testFileList', value: "qftests.lst"]
-                //         ]
-                //     }
-                // }
             }
         }
     }
