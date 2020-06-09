@@ -4,6 +4,10 @@ import com.bc.ceres.binding.Converter;
 import com.bc.ceres.binding.ConverterRegistry;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.esa.s2tbx.dataio.mosaic.internal.MosaicOpConditionConverter;
+import org.esa.s2tbx.dataio.mosaic.internal.MosaicOpConditionDomConverter;
+import org.esa.s2tbx.dataio.mosaic.internal.MosaicOpVariableConverter;
+import org.esa.s2tbx.dataio.mosaic.internal.MosaicOpVariableDomConverter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.esa.s2tbx.dataio.mosaic.internal.S2MosaicMultiLevelSource;
@@ -85,10 +89,10 @@ public final class S2tbxMosaicOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(itemAlias = "variable", description = "Specifies the bands in the target product.")
+    @Parameter(itemAlias = "variable", converter = MosaicOpVariableConverter.class, domConverter = MosaicOpVariableDomConverter.class, description = "Specifies the bands in the target product.")
     MosaicOp.Variable[] variables;
 
-    @Parameter(itemAlias = "condition", description = "Specifies valid pixels considered in the target product.")
+    @Parameter(itemAlias = "condition", converter = MosaicOpConditionConverter.class,domConverter = MosaicOpConditionDomConverter.class, description = "Specifies valid pixels considered in the target product.")
     MosaicOp.Condition[] conditions;
 
     @Parameter(description = "Specifies the way how conditions are combined.", defaultValue = "OR",
