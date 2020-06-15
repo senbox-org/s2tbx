@@ -7,6 +7,7 @@ import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.snap.core.image.AbstractSubsetTileOpImage;
+import org.esa.snap.core.image.ImageReadBoundsSupport;
 import org.esa.snap.core.util.ImageUtils;
 
 import javax.media.jai.PlanarImage;
@@ -42,11 +43,12 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
 
     private ImageReader imageReader;
 
-    GDALTileOpImage(Path sourceLocalFile, int bandIndex, MultiLevelModel imageMultiLevelModel, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
+    GDALTileOpImage(Path sourceLocalFile, int bandIndex, int dataBufferType, int tileWidth, int tileHeight, int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY,
+                    ImageReadBoundsSupport imageReadBoundsSupport) {
 
-        super(imageMultiLevelModel, dataBufferType, imageReadBounds, tileSize, tileOffsetFromReadBounds, level);
+        super(dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport);
 
-        this.imageReader = new ImageReader(sourceLocalFile, bandIndex, dataBufferType, level);
+        this.imageReader = new ImageReader(sourceLocalFile, bandIndex, dataBufferType, imageReadBoundsSupport.getLevel());
     }
 
     @Override

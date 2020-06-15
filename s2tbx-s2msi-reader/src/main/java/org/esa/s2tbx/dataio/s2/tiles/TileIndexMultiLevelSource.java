@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.s2.tiles;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.snap.core.image.AbstractMatrixMosaicSubsetMultiLevelSource;
+import org.esa.snap.core.image.ImageReadBoundsSupport;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.image.UncompressedTileOpImageCallback;
 import org.esa.snap.core.util.ImageUtils;
@@ -30,9 +31,11 @@ public class TileIndexMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLe
     }
 
     @Override
-    public PlanarImage buildTileOpImage(Rectangle imageCellReadBounds, int level, Point tileOffset, Dimension tileSize, TileIndexBandMatrixCell matrixCell) {
-        int levelImageTileWidth = ImageUtils.computeLevelSize(tileSize.width, level);
-        int levelImageTileHeight = ImageUtils.computeLevelSize(tileSize.height, level);
+    public PlanarImage buildTileOpImage(ImageReadBoundsSupport imageReadBoundsSupport, int tileWidth, int tileHeight,
+                                        int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, TileIndexBandMatrixCell matrixCell) {
+
+        int levelImageTileWidth = ImageUtils.computeLevelSize(tileWidth, imageReadBoundsSupport.getLevel());
+        int levelImageTileHeight = ImageUtils.computeLevelSize(tileHeight, imageReadBoundsSupport.getLevel());
         return ConstantDescriptor.create((float)levelImageTileWidth, (float)levelImageTileHeight, new Short[]{matrixCell.getBandValue()}, null);
     }
 
@@ -41,8 +44,8 @@ public class TileIndexMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLe
                                                                       MosaicMatrix.MatrixCell matrixCell) {
 
         TileIndexBandMatrixCell tileIndexBandMatrixCell = (TileIndexBandMatrixCell)matrixCell;
-        Dimension uncompressedTileSize = new Dimension(imageCellReadBounds.width, imageCellReadBounds.height);
-        return buildUncompressedTileImages(level, imageCellReadBounds, uncompressedTileSize, cellTranslateLevelOffsetX, cellTranslateLevelOffsetY, this, tileIndexBandMatrixCell);
+        return buildUncompressedTileImages(level, imageCellReadBounds, imageCellReadBounds.width, imageCellReadBounds.height,
+                                           cellTranslateLevelOffsetX, cellTranslateLevelOffsetY, this, tileIndexBandMatrixCell);
     }
 
     @Override
