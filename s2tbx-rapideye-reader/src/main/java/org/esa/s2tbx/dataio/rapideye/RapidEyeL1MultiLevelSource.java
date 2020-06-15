@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.rapideye;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.image.AbstractMosaicSubsetMultiLevelSource;
+import org.esa.snap.core.image.ImageReadBoundsSupport;
 import org.esa.snap.core.image.UncompressedTileOpImageCallback;
 
 import javax.media.jai.SourcelessOpImage;
@@ -25,13 +26,16 @@ public class RapidEyeL1MultiLevelSource extends AbstractMosaicSubsetMultiLevelSo
     }
 
     @Override
-    public SourcelessOpImage buildTileOpImage(Rectangle imageCellReadBounds, int level, Point tileOffsetFromReadBounds, Dimension tileSize, Void tileData) {
-        return new RapidEyeL1TileOpImage(this.nitfReader, getModel(), dataBufferType, imageCellReadBounds, tileSize, tileOffsetFromReadBounds, level);
+    public SourcelessOpImage buildTileOpImage(ImageReadBoundsSupport imageReadBoundsSupport, int tileWidth, int tileHeight,
+                                              int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, Void tileData) {
+
+        return new RapidEyeL1TileOpImage(this.nitfReader, this.dataBufferType, tileWidth, tileHeight,
+                                         tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        java.util.List<RenderedImage> tileImages = buildUncompressedTileImages(level, this.imageReadBounds, this.tileSize, 0.0f, 0.0f, this, null);
+        java.util.List<RenderedImage> tileImages = buildUncompressedTileImages(level, this.imageReadBounds, this.tileSize.width, this.tileSize.height, 0.0f, 0.0f, this, null);
         if (tileImages.size() > 0) {
             return buildMosaicOp(level, tileImages, false);
         }

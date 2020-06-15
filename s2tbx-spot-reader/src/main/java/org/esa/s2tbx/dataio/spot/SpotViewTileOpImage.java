@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.spot;
 import com.bc.ceres.glevel.MultiLevelModel;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.image.AbstractSubsetTileOpImage;
+import org.esa.snap.core.image.ImageReadBoundsSupport;
 
 import javax.media.jai.PlanarImage;
 import java.awt.*;
@@ -17,10 +18,10 @@ public class SpotViewTileOpImage extends AbstractSubsetTileOpImage {
     private final int bandIndex;
     private final int bandCount;
 
-    public SpotViewTileOpImage(SpotViewImageReader spotViewImageReader, MultiLevelModel imageMultiLevelModel, int dataBufferType, int bandIndex,
-                               int bandCount, Rectangle imageBounds, Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
+    public SpotViewTileOpImage(SpotViewImageReader spotViewImageReader, int dataBufferType, int bandIndex, int bandCount,
+                               int tileWidth, int tileHeight, int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, ImageReadBoundsSupport imageBoundsSupport) {
 
-        super(imageMultiLevelModel, dataBufferType, imageBounds, tileSize, tileOffsetFromReadBounds, level);
+        super(dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageBoundsSupport);
 
         this.spotViewImageReader = spotViewImageReader;
         this.bandIndex = bandIndex;

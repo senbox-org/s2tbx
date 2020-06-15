@@ -4,6 +4,7 @@ import org.esa.s2tbx.dataio.gdal.drivers.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.image.AbstractMosaicSubsetMultiLevelSource;
 import org.esa.snap.core.image.DecompressedTileOpImageCallback;
+import org.esa.snap.core.image.ImageReadBoundsSupport;
 import org.esa.snap.core.image.UncompressedTileOpImageCallback;
 import org.esa.snap.core.util.ImageUtils;
 
@@ -37,13 +38,16 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implemen
 
 
     @Override
-    public PlanarImage buildTileOpImage(Rectangle imageCellReadBounds, int level, Point tileOffsetFromCellReadBounds, Dimension tileSize, Void tileData) {
-        return new GDALTileOpImage(this.sourceLocalFile, this.bandIndex, getModel(), this.dataBufferType, this.imageReadBounds, tileSize, tileOffsetFromCellReadBounds, level);
+    public PlanarImage buildTileOpImage(ImageReadBoundsSupport imageReadBoundsSupport, int tileWidth, int tileHeight,
+                                        int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, Void tileData) {
+
+        return new GDALTileOpImage(this.sourceLocalFile, bandIndex, this.dataBufferType, tileWidth, tileHeight,
+                                   tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        java.util.List<RenderedImage> tileImages = buildUncompressedTileImages(level, this.imageReadBounds, this.tileSize, 0.0f, 0.0f, this, null);
+        java.util.List<RenderedImage> tileImages = buildUncompressedTileImages(level, this.imageReadBounds, this.tileSize.width, this.tileSize.height, 0.0f, 0.0f, this, null);
         if (!tileImages.isEmpty()) {
             return buildMosaicOp(level, tileImages, false);
         }

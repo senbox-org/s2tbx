@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.spot;
 
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.image.AbstractMosaicSubsetMultiLevelSource;
+import org.esa.snap.core.image.ImageReadBoundsSupport;
 import org.esa.snap.core.image.UncompressedTileOpImageCallback;
 
 import javax.media.jai.SourcelessOpImage;
@@ -32,13 +33,16 @@ public class SpotViewMultiLevelSource extends AbstractMosaicSubsetMultiLevelSour
     }
 
     @Override
-    public SourcelessOpImage buildTileOpImage(Rectangle imageCellReadBounds, int level, Point tileOffset, Dimension tileSize, Void tileData) {
-        return new SpotViewTileOpImage(this.spotViewImageReader, getModel(), this.dataBufferType, this.bandIndex, this.bandCount, imageCellReadBounds, tileSize, tileOffset, level);
+    public SourcelessOpImage buildTileOpImage(ImageReadBoundsSupport imageReadBoundsSupport, int tileWidth, int tileHeight,
+                                              int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, Void tileData) {
+
+        return new SpotViewTileOpImage(this.spotViewImageReader, this.dataBufferType, this.bandIndex, this.bandCount,
+                                       tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        java.util.List<RenderedImage> tileImages = buildUncompressedTileImages(level, this.imageReadBounds, this.tileSize, 0.0f, 0.0f, this, null);
+        java.util.List<RenderedImage> tileImages = buildUncompressedTileImages(level, this.imageReadBounds, this.tileSize.width, this.tileSize.height, 0.0f, 0.0f, this, null);
         if (tileImages.size() > 0) {
             return buildMosaicOp(level, tileImages, false);
         }

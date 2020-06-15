@@ -5,6 +5,7 @@ import com.bc.ceres.glevel.MultiLevelModel;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.image.AbstractSubsetTileOpImage;
+import org.esa.snap.core.image.ImageReadBoundsSupport;
 
 import javax.media.jai.PlanarImage;
 import java.awt.*;
@@ -18,10 +19,10 @@ public class RapidEyeL1TileOpImage extends AbstractSubsetTileOpImage {
 
     private final NITFReaderWrapper nitfReader;
 
-    public RapidEyeL1TileOpImage(NITFReaderWrapper nitfReader, MultiLevelModel imageMultiLevelModel, int dataBufferType, Rectangle imageReadBounds,
-                                 Dimension tileSize, Point tileOffsetFromReadBounds, int level) {
+    public RapidEyeL1TileOpImage(NITFReaderWrapper nitfReader, int dataBufferType, int tileWidth, int tileHeight,
+                                 int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, ImageReadBoundsSupport imageBoundsSupport) {
 
-        super(imageMultiLevelModel, dataBufferType, imageReadBounds, tileSize, tileOffsetFromReadBounds, level);
+        super(dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageBoundsSupport);
 
         this.nitfReader = nitfReader;
     }
