@@ -120,7 +120,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     @Override
-    protected Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention) throws Exception {
+    protected Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention, ProductSubsetDef subsetDef)
+                                  throws Exception {
+
         L1bMetadata l1bMetadataHeader = (L1bMetadata)metadataHeader;
 
         long startTime = System.currentTimeMillis();
@@ -144,7 +146,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         ProductCharacteristics productCharacteristics = l1bMetadataHeader.getProductCharacteristics();
         String productType = "S2_MSI_" + productCharacteristics.getProcessingLevel();
-        ProductSubsetDef subsetDef = getSubsetDef();
 
         Product product;
         if (sceneDescription == null) {
@@ -188,7 +189,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             AffineTransform imageToModelTransform = Product.findImageToModelTransform(product.getSceneGeoCoding());
-            int productMaximumResolutionCount = addDetectorBands(defaultProductSize, product, bandInfoByKey, imageToModelTransform, sceneDescriptionMap);
+            int productMaximumResolutionCount = addDetectorBands(defaultProductSize, product, bandInfoByKey, imageToModelTransform, sceneDescriptionMap, subsetDef);
             product.setNumResolutionsMax(productMaximumResolutionCount);
 
             // add TileIndex if there are more than 1 tile
@@ -216,7 +217,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         auxSceneDimensions.put(S2SpatialResolution.R10M, sceneDescriptionMap.get("D" + detector + "_10").getSceneRectangle().getSize());
                         auxSceneDimensions.put(S2SpatialResolution.R20M, sceneDescriptionMap.get("D" + detector + "_20").getSceneRectangle().getSize());
                         auxSceneDimensions.put(S2SpatialResolution.R60M, sceneDescriptionMap.get("D" + detector + "_60").getSceneRectangle().getSize());
-                        addTileIndexes(defaultProductSize, product, resolutions, tileList, auxSceneDescription, auxSceneDimensions, imageToModelTransform, config);
+                        addTileIndexes(defaultProductSize, product, resolutions, tileList, auxSceneDescription, auxSceneDimensions, imageToModelTransform, config, subsetDef);
                     }
                 }
             }
@@ -235,12 +236,12 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     private int addDetectorBands(Dimension defaultProductSize, Product product, Map<String, L1BBandInfo> bandInfoByKey, AffineTransform imageToModelTransform,
-                                  Map<String, L1bSceneDescription> sceneDescriptionMap) {
+                                  Map<String, L1bSceneDescription> sceneDescriptionMap, ProductSubsetDef subsetDef) {
 
         S2SpatialResolution productResolution = getProductResolution();
         List<String> bandIndexes = new ArrayList<>(bandInfoByKey.keySet());
         Collections.sort(bandIndexes);
-        ProductSubsetDef subsetDef = getSubsetDef();
+
         int productMaximumResolutionCount = 0;
         double mosaicOpBackgroundValue = S2Config.FILL_CODE_MOSAIC_BG;
         int bandIndexNumber = 0;
@@ -296,12 +297,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     private void addTileIndexes(Dimension defaultProductSize, Product product, List<S2SpatialResolution> resolutions,
                                 List<L1bMetadata.Tile> tileList, L1bSceneDescription sceneDescription, Map<S2SpatialResolution, Dimension> sceneDimensions,
-                                AffineTransform imageToModelTransform, S2Config config) {
+                                AffineTransform imageToModelTransform, S2Config config, ProductSubsetDef subsetDef) {
 
         List<L1BBandInfo> tileInfoList = computeTileIndexesList(resolutions, tileList, sceneDescription, config);
         if (tileInfoList.size() > 0) {
-            ProductSubsetDef subsetDef = getSubsetDef();
-
             // add the index bands
             S2SpatialResolution productResolution = getProductResolution();
             for (L1BBandInfo bandInfo : tileInfoList) {

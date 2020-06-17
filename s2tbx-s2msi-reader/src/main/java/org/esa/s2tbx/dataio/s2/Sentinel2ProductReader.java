@@ -22,6 +22,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.jp2.reader.internal.BandMatrixCell;
 import org.esa.s2tbx.dataio.s2.tiles.MosaicMatrixCellCallback;
 import org.esa.snap.core.dataio.AbstractProductReader;
@@ -73,11 +74,19 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return true;
     }
 
-    protected abstract Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention) throws Exception;
+    protected abstract Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention, ProductSubsetDef subsetDef)
+                                           throws Exception;
 
     protected abstract String getReaderCacheDir();
 
     protected abstract AbstractS2MetadataReader buildMetadataReader(VirtualPath virtualPath) throws IOException;
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+
+        closeResources();
+    }
 
     protected void initCacheDir(VirtualPath productPath) throws IOException {
         Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
@@ -116,6 +125,16 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     @Override
+    public Object getInput() {
+        throw new UnsupportedOperationException("The 'getInput()' method is no longer supported.");
+    }
+
+    @Override
+    public ProductSubsetDef getSubsetDef() {
+        throw new UnsupportedOperationException("The 'getSubsetDef()' method is no longer supported.");
+    }
+
+    @Override
     protected final Product readProductNodesImpl() throws IOException {
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
             throw new IllegalStateException("Invalid OpenJpeg executables.");
@@ -123,7 +142,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         boolean success = false;
         try {
-            Object inputObject = getInput();
+            Object inputObject = super.getInput(); // invoke the 'getInput' method from the parent class
+            ProductSubsetDef subsetDef = super.getSubsetDef(); // invoke the 'getSubsetDef' method from the parent class
 
             this.virtualPath = null;
             if (inputObject instanceof File) {
@@ -131,7 +151,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 Path inputPath = S2ProductNamingUtils.processInputPath(inputFile.toPath());
                 this.virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
             } else if (inputObject instanceof VirtualPath) {
-                this.virtualPath = (VirtualPath) getInput();
+                this.virtualPath = (VirtualPath) inputObject;
             } else if (inputObject instanceof Path) {
                 Path inputPath = S2ProductNamingUtils.processInputPath((Path) inputObject);
                 this.virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
@@ -167,7 +187,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 }
 
                 String defaultProductName = metadataReader.getNamingConvention().getProductName();
-                product = readProduct(defaultProductName, metadataReader.isGranule(), metadataHeader, metadataReader.getNamingConvention());
+                product = readProduct(defaultProductName, metadataReader.isGranule(), metadataHeader, metadataReader.getNamingConvention(), subsetDef);
 
                 File productFileLocation;
                 if (inputVirtualPath.getVirtualDir().isArchive()) {
@@ -220,13 +240,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
         return null;
-    }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-
-        closeResources();
     }
 
     protected static int computeMatrixCellsDataBufferType(MosaicMatrix mosaicMatrix) {
