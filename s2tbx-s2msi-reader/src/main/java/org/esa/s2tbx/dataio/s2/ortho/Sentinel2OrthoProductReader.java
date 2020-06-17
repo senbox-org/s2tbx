@@ -136,7 +136,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     @Override
-    protected final Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention) throws Exception {
+    protected final Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention, ProductSubsetDef subsetDef)
+                                        throws Exception {
+
         this.orthoMetadataHeader = (S2OrthoMetadata) metadataHeader;
 
         VirtualPath rootMetadataPath = this.orthoMetadataHeader.getPath();
@@ -171,7 +173,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         S2Metadata.ProductCharacteristics productCharacteristics = this.orthoMetadataHeader.getProductCharacteristics();
 
         String productType = "S2_MSI_" + productCharacteristics.getProcessingLevel();
-        ProductSubsetDef subsetDef = getSubsetDef();
 
         CoordinateReferenceSystem mapCRS = CRS.decode(this.epsgCode);
         GeoCoding productDefaultGeoCoding = null;
