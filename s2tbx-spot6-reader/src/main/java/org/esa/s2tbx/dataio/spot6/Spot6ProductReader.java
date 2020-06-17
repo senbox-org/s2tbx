@@ -27,6 +27,8 @@ import org.esa.snap.engine_utilities.util.Pair;
 import org.esa.snap.engine_utilities.util.PathUtils;
 import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.snap.jp2.reader.JP2LocalFile;
+import org.esa.snap.jp2.reader.internal.JP2MatrixBandMultiLevelSource;
+import org.esa.snap.jp2.reader.internal.JP2MosaicBandMatrixCell;
 import org.esa.snap.jp2.reader.metadata.Jp2XmlMetadata;
 import org.esa.snap.lib.openjpeg.dataio.Utils;
 import org.esa.snap.lib.openjpeg.jp2.TileLayout;
