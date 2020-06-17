@@ -143,8 +143,7 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
 
     public java.util.List<String> getOrderedTileIds() {
         Set<String> tileIds = this.getTileIds();
-        java.util.List<String> tileIdsOrder = asSortedList(tileIds);
-        return tileIdsOrder;
+        return asSortedList(tileIds);
     }
 
     @Override
@@ -160,8 +159,7 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
     }
 
-    public static
-    <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
+    public static <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
         java.util.List<T> list = new ArrayList<T>(c);
         java.util.Collections.sort(list);
         return list;
