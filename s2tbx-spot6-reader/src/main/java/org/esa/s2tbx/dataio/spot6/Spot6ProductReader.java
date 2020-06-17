@@ -40,6 +40,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
+import javax.media.jai.ImageLayout;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.File;
@@ -122,7 +123,7 @@ public class Spot6ProductReader extends AbstractProductReader {
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand,
                                           int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
-            throws IOException {
+                                          throws IOException {
         // do nothing
     }
 
@@ -135,14 +136,27 @@ public class Spot6ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
+        if (this.productDirectory != null) {
+            throw new IllegalStateException("There is already a product directory.");
+        }
+        if (this.localCacheFolder != null) {
+            throw new IllegalStateException("There is already a local cache folder.");
+        }
+
         boolean success = false;
         try {
-            Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+            Object productInput = super.getInput(); // invoke the 'getInput' method from the parent class
+            ProductSubsetDef subsetDef = super.getSubsetDef(); // invoke the 'getSubsetDef' method from the parent class
+
+            setInput(null); // reset the attribute
+            setSubsetDef(null); // reset the attribute
+
+            Path inputPath = BaseProductReaderPlugIn.convertInputToPath(productInput);
             this.productDirectory = VirtualDirEx.build(inputPath);
 
             this.localCacheFolder = initLocalCacheFolder(inputPath);
 
-            try (FilePathInputStream metadataInputStream = productDirectory.getInputStream(Spot6Constants.ROOT_METADATA)) {
+            try (FilePathInputStream metadataInputStream = this.productDirectory.getInputStream(Spot6Constants.ROOT_METADATA)) {
                 metadata = VolumeMetadata.create(metadataInputStream);
             }
             List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
@@ -155,7 +169,6 @@ public class Spot6ProductReader extends AbstractProductReader {
             ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
             GeoCoding productDefaultGeoCoding = null;
             Rectangle productBounds;
-            ProductSubsetDef subsetDef = getSubsetDef();
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
                 productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
             } else {
@@ -192,11 +205,10 @@ public class Spot6ProductReader extends AbstractProductReader {
                 Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
                 double[][] scalingAndOffsets = imageMetadata.getScalingAndOffsets();
 
-                Pair<Integer, MosaicMatrix> item = buildMosaicMatrix(imageMetadata, this.localCacheFolder);
-                int levelCount = item.getFirst().intValue();
-                MosaicMatrix mosaicMatrix = item.getSecond();
-                int defaultBandWidth = mosaicMatrix.computeTotalWidth();
-                int defaultBandHeight = mosaicMatrix.computeTotalHeight();
+                BandMatrixData result = buildMosaicMatrix(imageMetadata, this.localCacheFolder);
+
+                int defaultBandWidth = result.getMosaicMatrix().computeTotalWidth();
+                int defaultBandHeight = result.getMosaicMatrix().computeTotalHeight();
 
                 ProductSubsetDef bandSubsetDef = null;
                 Rectangle bandBounds;
@@ -205,14 +217,14 @@ public class Spot6ProductReader extends AbstractProductReader {
                 } else {
                     GeoCoding bandDefaultGeoCoding = buildBandGeoCoding(imageMetadata, defaultBandWidth, defaultBandHeight, defaultProductWidth, defaultProductHeight, null, null);
                     bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth,
-                            defaultProductHeight, defaultBandWidth, defaultBandHeight, isMultiSize);
+                                                                                    defaultProductHeight, defaultBandWidth, defaultBandHeight, isMultiSize);
                     bandSubsetDef = new ProductSubsetDef();
                     bandSubsetDef.setSubsetRegion(new PixelSubsetRegion(bandBounds, 0));
                 }
                 if (bandBounds.isEmpty()) {
                     continue;
                 }
-                product.setNumResolutionsMax(levelCount);
+                product.setNumResolutionsMax(result.getLevelCount());
                 AffineTransform2D transform2D = buildBandTransform(imageMetadata, productBounds, bandBounds);
                 GeoCoding bandGeoCoding = buildBandGeoCoding(imageMetadata, defaultBandWidth, defaultBandHeight, defaultProductWidth, defaultProductHeight, bandBounds, bandSubsetDef);
                 for (int i = 0; i < bandInfos.length; i++) {
@@ -245,8 +257,9 @@ public class Spot6ProductReader extends AbstractProductReader {
                             imageToModelTransform = band.getImageToModelTransform();
                         }
                         int bandIndex = bandInfos[i].getIndex();
-                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(levelCount, mosaicMatrix, productBounds, imageToModelTransform, bandIndex, (double)noDataValue, null);
-                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(result.getLevelCount(), result.getMosaicMatrix(), productBounds, imageToModelTransform, bandIndex, (double)noDataValue, null);
+                        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(result.getDataType(), productBounds.width, productBounds.height, 0);
+                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         product.addBand(band);
                     }
                 }
@@ -299,7 +312,7 @@ public class Spot6ProductReader extends AbstractProductReader {
         return null;
     }
 
-    private static Pair<Integer, MosaicMatrix> buildMosaicMatrix(ImageMetadata imageMetadata, Path cacheDir) throws IOException, InterruptedException {
+    private static BandMatrixData buildMosaicMatrix(ImageMetadata imageMetadata, Path cacheDir) throws IOException, InterruptedException {
         int dataTypeFromMetadata = imageMetadata.getPixelDataType();
         int tileRows = imageMetadata.getTileRowsCount();
         int tileCols = imageMetadata.getTileColsCount();
@@ -353,12 +366,12 @@ public class Spot6ProductReader extends AbstractProductReader {
         if (defaultBandHeight != imageMetadata.getRasterHeight()) {
             throw new IllegalStateException("Different height.");
         }
-        return new Pair<>(levelCount, mosaicMatrix);
+        return new BandMatrixData(dataType, levelCount, mosaicMatrix);
     }
 
     private static GeoCoding buildBandGeoCoding(ImageMetadata imageMetadata, int defaultBandWidth, int defaultBandHeight, int defaultProductWidth, int defaultProductHeight,
                                                 Rectangle bandBounds, ProductSubsetDef bandSubsetDef)
-            throws FactoryException, TransformException {
+                                                throws FactoryException, TransformException {
 
         GeoCoding geoCoding = null;
         ImageMetadata.InsertionPoint insertPoint = imageMetadata.getInsertPoint();
@@ -441,13 +454,13 @@ public class Spot6ProductReader extends AbstractProductReader {
 
     private static GeoCoding buildProductGeoCoding(ImageMetadata maxResImageMetadata, int defaultRasterWidth, int defaultRasterHeight,
                                                    Rectangle productSubsetRegion, ProductSubsetDef subsetDef)
-            throws FactoryException, TransformException {
+                                                   throws FactoryException, TransformException {
 
         if (maxResImageMetadata.hasInsertPoint()) {
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
             CoordinateReferenceSystem mapCRS = CRS.decode(maxResImageMetadata.getCRSCode());
             return ImageUtils.buildCrsGeoCoding(origin.x, origin.y, origin.stepX, origin.stepY, defaultRasterWidth, defaultRasterHeight,
-                    mapCRS, productSubsetRegion, 0.5d, 0.5d);
+                                                mapCRS, productSubsetRegion, 0.5d, 0.5d);
 
         }
         return buildTiePointGridGeoCoding(maxResImageMetadata, defaultRasterWidth, defaultRasterHeight, subsetDef);
@@ -501,6 +514,31 @@ public class Spot6ProductReader extends AbstractProductReader {
         @Override
         public Path getLocalFile() throws IOException {
             return this.jp2File;
+        }
+    }
+
+    private static class BandMatrixData {
+
+        private final int dataType;
+        private final int levelCount;
+        private final MosaicMatrix mosaicMatrix;
+
+        private BandMatrixData(int dataType, int levelCount, MosaicMatrix mosaicMatrix) {
+            this.dataType = dataType;
+            this.levelCount = levelCount;
+            this.mosaicMatrix = mosaicMatrix;
+        }
+
+        public int getDataType() {
+            return dataType;
+        }
+
+        public int getLevelCount() {
+            return levelCount;
+        }
+
+        public MosaicMatrix getMosaicMatrix() {
+            return mosaicMatrix;
         }
     }
 }
