@@ -148,8 +148,8 @@ public class Spot6ProductReader extends AbstractProductReader {
             Object productInput = super.getInput(); // invoke the 'getInput' method from the parent class
             ProductSubsetDef subsetDef = super.getSubsetDef(); // invoke the 'getSubsetDef' method from the parent class
 
-            setInput(null); // reset the attribute
-            setSubsetDef(null); // reset the attribute
+            //setInput(null); // reset the attribute
+            //setSubsetDef(null); // reset the attribute
 
             Path inputPath = BaseProductReaderPlugIn.convertInputToPath(productInput);
             this.productDirectory = VirtualDirEx.build(inputPath);
