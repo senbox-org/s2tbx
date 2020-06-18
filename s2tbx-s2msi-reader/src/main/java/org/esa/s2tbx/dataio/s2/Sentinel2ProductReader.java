@@ -125,16 +125,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     @Override
-    public Object getInput() {
-        throw new UnsupportedOperationException("The 'getInput()' method is no longer supported.");
-    }
-
-    @Override
-    public ProductSubsetDef getSubsetDef() {
-        throw new UnsupportedOperationException("The 'getSubsetDef()' method is no longer supported.");
-    }
-
-    @Override
     protected final Product readProductNodesImpl() throws IOException {
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
             throw new IllegalStateException("Invalid OpenJpeg executables.");
