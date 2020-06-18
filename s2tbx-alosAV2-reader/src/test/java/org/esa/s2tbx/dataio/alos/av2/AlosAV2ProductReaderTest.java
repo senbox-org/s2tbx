@@ -8,7 +8,9 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.subset.GeometrySubsetRegion;
 import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
+import org.esa.snap.runtime.LogUtils;
 import org.esa.snap.utils.TestUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -23,6 +25,11 @@ import static org.junit.Assume.assumeTrue;
 public class AlosAV2ProductReaderTest {
 
     private static final String PRODUCT_FOLDER = "_alos"+ File.separator;
+
+    @BeforeClass
+    public static void setup() throws Exception {
+        LogUtils.initLogger();
+    }
 
     @Test
     public void testReadProduct() throws IOException {

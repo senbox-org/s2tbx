@@ -2,36 +2,34 @@ package org.esa.s2tbx.dataio.spot6;
 
 import org.esa.s2tbx.dataio.spot6.internal.Spot6MetadataInspector;
 import org.esa.snap.core.metadata.MetadataInspector;
+import org.esa.snap.runtime.LogUtils;
 import org.esa.snap.utils.TestUtil;
-import org.junit.Assume;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 public class Spot6MetadataInspectorTest {
 
-    private String productsFolder = "_spot6_7" + File.separator;
+    private static final String PRODUCTS_FOLDER = "_spot6_7" + File.separator;
 
     public Spot6MetadataInspectorTest() {
     }
 
-    @Before
-    public void setup() {
-        String productPath = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
-        Path spot6TestProductsPath = Paths.get(productPath, productsFolder);
-        Assume.assumeTrue(Files.exists(spot6TestProductsPath));
+    @BeforeClass
+    public static void setup() throws Exception {
+        LogUtils.initLogger();
     }
 
     @Test
     public void testSpot6MetadataInspector() throws IOException {
-        File file = TestUtil.getTestFile(productsFolder + "SPOT6_1.5m_short" + File.separator + "SPOT_LIST.XML");
+        assumeTrue(TestUtil.testdataAvailable());
+
+        File file = TestUtil.getTestFile(PRODUCTS_FOLDER + "SPOT6_1.5m_short" + File.separator + "SPOT_LIST.XML");
         assertNotNull(file);
 
         Spot6MetadataInspector metadataInspector = new Spot6MetadataInspector();
