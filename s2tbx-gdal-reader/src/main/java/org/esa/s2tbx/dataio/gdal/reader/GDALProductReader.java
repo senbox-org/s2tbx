@@ -280,12 +280,7 @@ public class GDALProductReader extends AbstractProductReader {
                         numResolutions = levelCount;
                     }
                     if (levelCount == 1) {
-                        logger.fine("Optimizing read by building image pyramids");
-                        if (!GDALConst.ceFailure().equals(gdalDataset.buildOverviews("NEAREST", new int[]{2, 4, 8, 16}))) {
-                            gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
-                        } else {
-                            logger.fine("Multiple levels not supported");
-                        }
+                        gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
                     }
                     levelCount = gdalBand.getOverviewCount() + 1;
                     product.setNumResolutionsMax(levelCount);
