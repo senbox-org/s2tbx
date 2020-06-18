@@ -406,7 +406,9 @@ public class Spot6ProductReader extends AbstractProductReader {
         final Iterator<Color> colorIterator = ColorIterator.create();
         Band refBand = findReferenceBand(product, metadata.getRasterWidth());
         gmlMasks.stream().forEach(mask -> {
-            logger.info(String.format("Parsing mask %s of component %s", mask.name, metadata.getFileName()));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, String.format("Parsing mask %s of component %s", mask.name, metadata.getFileName()));
+            }
             VectorDataNode node = GMLReader.parse(mask.name, mask.path);
             if (node != null && node.getFeatureCollection().size() > 0) {
                 node.setOwner(product);

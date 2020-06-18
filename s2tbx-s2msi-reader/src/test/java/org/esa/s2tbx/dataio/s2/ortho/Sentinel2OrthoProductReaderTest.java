@@ -15,9 +15,11 @@ import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
 import org.esa.snap.runtime.Engine;
+import org.esa.snap.runtime.LogUtils;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 
@@ -47,6 +49,11 @@ public class Sentinel2OrthoProductReaderTest {
     private static final String L1C_PRODUCT_NAME = "L1C"+ File.separator+ "S2A_MSIL1C_20161206T080312_N0204_R035_T34HFH_20161206T081929.SAFE"+ File.separator+ "MTD_MSIL1C.xml";
     private static final String L2A_PRODUCT_NAME = "L2A"+ File.separator+ "S2B_MSIL2A_20190528T085609_N0212_R007_T36VWK_20190528T121447.zip";
     private static final String L3_PRODUCT_NAME = "L3"+ File.separator+ "Darmstadt"+ File.separator+ "10m"+ File.separator+ "S2A_USER_PRD_MSIL03_PDMC_20150812T193220_R108_V20161231T235959_20161231T235959.SAFE"+ File.separator+ "S2A_USER_MTD_SAFL03_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.xml";
+
+    @BeforeClass
+    public static void setupLogger() throws Exception {
+        LogUtils.initLogger();
+    }
 
     @Before
     public void setup() {
