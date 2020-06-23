@@ -34,10 +34,12 @@ import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.jai.JAIUtils;
@@ -46,9 +48,12 @@ import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixMultiLevelSource;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
+import org.esa.snap.jp2.reader.internal.BandMatrixCell;
 import org.geotools.metadata.InvalidMetadataException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.JAI;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -155,8 +160,6 @@ public class SpotDimapProductReader extends AbstractProductReader {
         SpotDimapMetadata firstDimapMetadata = componentMetadataList.get(0);
 
         Product product = new Product(firstDimapMetadata.getProductName(), productType, productBounds.width, productBounds.height, this);
-        Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
-        product.setPreferredTileSize(preferredTileSize);
         if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
             product.getMetadataRoot().addElement(wrappingMetadata.getRootElement());
         }
@@ -165,6 +168,9 @@ public class SpotDimapProductReader extends AbstractProductReader {
         product.setEndTime(centerTime);
         product.setDescription(firstDimapMetadata.getProductDescription());
         product.setFileLocation(productPath.toFile());
+
+        Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+        product.setPreferredTileSize(defaultJAIReadTileSize);
 
         for (int fileIndex=0; fileIndex<componentMetadataList.size(); fileIndex++) {
             SpotDimapMetadata componentMetadata = componentMetadataList.get(fileIndex);
@@ -194,8 +200,9 @@ public class SpotDimapProductReader extends AbstractProductReader {
             if (matrixTotalHeight != defaultProductSize.height) {
                 throw new IllegalStateException("Invalid values: matrix total height=" + matrixTotalHeight+", default product height="+ defaultProductSize.height);
             }
+            int dataBufferType = computeMatrixCellsDataBufferType(spotBandMatrices[bandIndex]);
             if (subsetDef == null || subsetDef.isNodeAccepted(bandNames[bandIndex])) {
-                Band band = new Band(bandNames[bandIndex], firstDimapMetadata.getPixelDataType(), productBounds.width, productBounds.height);
+                Band band = new Band(bandNames[bandIndex], ImageManager.getProductDataType(dataBufferType), productBounds.width, productBounds.height);
                 band.setGeoCoding(bandGeoCoding);
                 int noDataValueAsInt = firstDimapMetadata.getNoDataValue();
                 Double noDataValue = null;
@@ -219,8 +226,9 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 band.setDescription(bandNames[bandIndex]);
 
                 GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds,
-                                                                                                bandIndex, band.getGeoCoding(), noDataValue);
-                band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+                                                                                                bandIndex, band.getGeoCoding(), noDataValue, defaultJAIReadTileSize);
+                ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, productBounds.width, productBounds.height, 0, defaultJAIReadTileSize);
+                band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                 product.addBand(band);
             }
         }
@@ -257,6 +265,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             spotBandMatrices[bandIndex] = new MosaicMatrix(tileRowCount, tileColumnCount);
         }
 
+        int dataType = 0;
         for (int fileIndex=0; fileIndex<componentMetadataList.size(); fileIndex++) {
             SpotDimapMetadata componentMetadata = componentMetadataList.get(fileIndex);
             String[] metadataBandNames = componentMetadata.getBandNames();
@@ -280,6 +289,12 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 bandCount = sampleModel.getNumBands();
                 dataBufferType = sampleModel.getDataType();
             }
+            if (fileIndex == 0) {
+                dataType = dataBufferType;
+            } else if (dataType != dataBufferType) {
+                throw new IllegalStateException("Different data type count: fileIndex=" + fileIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
+            }
+
             GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, tiffImagePath, null);
             for (int bandIndex = 0; bandIndex<bandCount; bandIndex++) {
                 spotBandMatrices[bandIndex].addCell(matrixCell);
@@ -525,5 +540,21 @@ public class SpotDimapProductReader extends AbstractProductReader {
             }
         }
         return false;
+    }
+    private static int computeMatrixCellsDataBufferType(MosaicMatrix mosaicMatrix) {
+        if (mosaicMatrix.getRowCount() > 0 && mosaicMatrix.getColumnCount() > 0) {
+            GeoTiffMatrixCell firstMatrixCell = (GeoTiffMatrixCell)mosaicMatrix.getCellAt(0, 0);
+            for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
+                for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
+                    GeoTiffMatrixCell matrixCell = (GeoTiffMatrixCell)mosaicMatrix.getCellAt(rowIndex, columnIndex);
+                    if (firstMatrixCell.getDataBufferType() != matrixCell.getDataBufferType()) {
+                        throw new IllegalStateException("Different data buffer types: cell at "+rowIndex+", "+columnIndex+" has data type " + matrixCell.getDataBufferType()+" and cell at "+0+", "+0+" has data type " + firstMatrixCell.getDataBufferType()+".");
+                    }
+                }
+            }
+            return firstMatrixCell.getDataBufferType();
+        } else {
+            throw new IllegalArgumentException("The matrix is empty: rowCount="+mosaicMatrix.getRowCount()+", columnCount="+mosaicMatrix.getColumnCount()+".");
+        }
     }
 }
