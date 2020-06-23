@@ -17,6 +17,7 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
@@ -26,11 +27,14 @@ import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixMultiLevelSource;
+import org.esa.snap.engine_utilities.util.Pair;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.SAXException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.JAI;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.image.SampleModel;
@@ -120,12 +124,13 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             product.setEndTime(metadata.getProductEndTime());
             product.setDescription(metadata.getProductDescription());
             product.setFileLocation(productPath.toFile());
-            Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
-            product.setPreferredTileSize(preferredTileSize);
             GeoCoding productGeoCoding = tileMetadataList.buildProductGeoCoding(productBounds);
             if (productGeoCoding != null) {
                 product.setSceneGeoCoding(productGeoCoding);
             }
+
+            Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+            product.setPreferredTileSize(defaultJAIReadTileSize);
 
             // add bands
             Set<String> tiffImageRelativeFiles = tileMetadataList.getTiffImageRelativeFiles();
@@ -134,12 +139,15 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                     product.getMetadataRoot().addElement(tileMetadata.getRootElement());
                 }
-                MosaicMatrix mosaicMatrix = buildMosaicMatrix(tileMetadata, tiffImageRelativeFiles, imagesMetadataParentPath);
+                Pair<Integer, MosaicMatrix> result = buildMosaicMatrix(tileMetadata, tiffImageRelativeFiles, imagesMetadataParentPath);
+                int dataBufferType = result.getFirst().intValue();
+                MosaicMatrix mosaicMatrix = result.getSecond();
                 String[] bandNames = tileMetadataList.computeBandNames(tileMetadata);
                 for (int bandIndex = 0; bandIndex < bandNames.length; bandIndex++) {
                     String bandName = bandNames[bandIndex];
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
-                        Band band = buildBand(defaultProductSize, mosaicMatrix, tileMetadata, bandName, bandIndex, productGeoCoding, productDefaultGeoCoding, subsetDef, isMultiSize);
+                        Band band = buildBand(defaultProductSize, dataBufferType, mosaicMatrix, tileMetadata, bandName, bandIndex, productGeoCoding,
+                                              productDefaultGeoCoding, subsetDef, isMultiSize, defaultJAIReadTileSize);
                         if (band != null) {
                             product.addBand(band);
                         }
@@ -160,7 +168,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         }
     }
 
-    private MosaicMatrix buildMosaicMatrix(TileMetadata tileMetadata, Set<String> tiffImageRelativeFiles, Path imagesMetadataParentPath) throws Exception {
+    private Pair<Integer, MosaicMatrix> buildMosaicMatrix(TileMetadata tileMetadata, Set<String> tiffImageRelativeFiles, Path imagesMetadataParentPath) throws Exception {
         Map<String, int[]> tileInfo = tileMetadata.computeRasterTileInfo();
         int tileRowCount = tileMetadata.getTileRowsCount();
         int tileColumnCount = tileMetadata.getTileColsCount();
@@ -177,6 +185,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             }
             geoTiffImageReaders[coordinates[0]][coordinates[1]] = rasterString;
         }
+        int dataType = 0;
         MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRowCount, tileColumnCount);
         for (int rowIndex=0; rowIndex<tileRowCount; rowIndex++) {
             for (int columnIndex=0; columnIndex<tileColumnCount; columnIndex++) {
@@ -189,11 +198,16 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                     cellHeight = geoTiffImageReader.getImageHeight();
                     dataBufferType = geoTiffImageReader.getSampleModel().getDataType();
                 }
+                if (columnIndex == 0 && rowIndex == 0) {
+                    dataType = dataBufferType;
+                } else if (dataType != dataBufferType) {
+                    throw new IllegalStateException("Different data type count: rowIndex=" + rowIndex + ", columnIndex=" + columnIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
+                }
                 GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, imagesMetadataParentPath, rasterString);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
             }
         }
-        return mosaicMatrix;
+        return new Pair(dataType, mosaicMatrix);
     }
 
     private void closeResources() {
@@ -211,9 +225,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         System.gc();
     }
 
-    private static Band buildBand(Dimension defaultProductSize, MosaicMatrix mosaicMatrix, TileMetadata tileMetadata,
+    private static Band buildBand(Dimension defaultProductSize, int dataBufferType, MosaicMatrix mosaicMatrix, TileMetadata tileMetadata,
                                   String bandName, int bandIndex, GeoCoding productGeoCoding,
-                                  GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef, boolean isMultiSize) {
+                                  GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef, boolean isMultiSize, Dimension defaultJAIReadTileSize) {
 
         int defaultBandWidth = mosaicMatrix.computeTotalWidth();
         int defaultBandHeight = mosaicMatrix.computeTotalHeight();
@@ -229,8 +243,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             return null; // no intersection
         }
 
-        int productDataType = tileMetadata.getProductDataType();
-        Band band = new Band(bandName, productDataType, bandBounds.width, bandBounds.height);
+        Band band = new Band(bandName, ImageManager.getProductDataType(dataBufferType), bandBounds.width, bandBounds.height);
         band.setSpectralWavelength(WorldView2ESAConstants.BAND_WAVELENGTH.get(band.getName()));
         band.setNoDataValueUsed(true);
 
@@ -241,8 +254,9 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         if (bandGeoCoding != null) {
             band.setGeoCoding(bandGeoCoding);
         }
-        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(mosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null);
-        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(mosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null, defaultJAIReadTileSize);
+        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0, defaultJAIReadTileSize);
+        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
 
         band.setScalingFactor(tileMetadata.getTileComponent().getScalingFactor(band.getName()));
         return band;
