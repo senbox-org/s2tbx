@@ -3,7 +3,9 @@ package org.esa.s2tbx.dataio.ikonos;
 import org.esa.s2tbx.dataio.ikonos.metadata.IkonosMetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
+import org.esa.snap.runtime.LogUtils;
 import org.esa.snap.utils.TestUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -24,8 +26,13 @@ public class IkonosMetadataInspectorTest {
     public IkonosMetadataInspectorTest() {
     }
 
+    @BeforeClass
+    public static void setup() throws Exception {
+        LogUtils.initLogger();
+    }
+
     @Test
-    public void testMetadataInspector() throws URISyntaxException, IOException {
+    public void testMetadataInspector() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
         File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.SIP" + File.separator + "IK2_OPER_OSA_GEO_1P_20080820T092600_N38-054_E023-986_0001.MD.XML");
