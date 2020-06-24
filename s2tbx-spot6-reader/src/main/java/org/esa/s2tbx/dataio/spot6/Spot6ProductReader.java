@@ -41,6 +41,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.ImageLayout;
+import javax.media.jai.JAI;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.File;
@@ -190,6 +191,9 @@ public class Spot6ProductReader extends AbstractProductReader {
             }
             product.setSceneGeoCoding(productGeoCoding);
 
+            Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+            product.setPreferredTileSize(defaultJAIReadTileSize);
+
             Path colorPaletteFilePath = ((Spot6ProductReaderPlugin) getReaderPlugIn()).getColorPaletteFilePath();
             for (ImageMetadata imageMetadata : imageMetadataList) {
                 if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
@@ -254,8 +258,9 @@ public class Spot6ProductReader extends AbstractProductReader {
                             imageToModelTransform = band.getImageToModelTransform();
                         }
                         int bandIndex = bandInfos[i].getIndex();
-                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(result.getLevelCount(), result.getMosaicMatrix(), productBounds, imageToModelTransform, bandIndex, (double)noDataValue, null);
-                        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(result.getDataType(), productBounds.width, productBounds.height, 0);
+                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(result.getLevelCount(), result.getMosaicMatrix(), productBounds, imageToModelTransform, bandIndex,
+                                                                                    (double)noDataValue, null, defaultJAIReadTileSize);
+                        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(result.getDataType(), productBounds.width, productBounds.height, 0, defaultJAIReadTileSize);
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         product.addBand(band);
                     }

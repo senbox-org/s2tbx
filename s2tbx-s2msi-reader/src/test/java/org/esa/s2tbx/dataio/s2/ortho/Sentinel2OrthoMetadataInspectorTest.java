@@ -6,9 +6,11 @@ import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM32N_Re
 import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM34S_ReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM36N_ReaderPlugIn;
 import org.esa.snap.core.metadata.MetadataInspector;
+import org.esa.snap.runtime.LogUtils;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -31,6 +33,11 @@ public class Sentinel2OrthoMetadataInspectorTest {
     private static final String L1C_PRODUCT_NAME = "L1C/S2A_MSIL1C_20161206T080312_N0204_R035_T34HFH_20161206T081929.SAFE/MTD_MSIL1C.xml";
     private static final String L2A_PRODUCT_NAME = "L2A/S2B_MSIL2A_20190528T085609_N0212_R007_T36VWK_20190528T121447.zip";
     private static final String L3_PRODUCT_NAME = "L3/Darmstadt/10m/S2A_USER_PRD_MSIL03_PDMC_20150812T193220_R108_V20161231T235959_20161231T235959.SAFE/S2A_USER_MTD_SAFL03_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.xml";
+
+    @BeforeClass
+    public static void setupLogger() throws Exception {
+        LogUtils.initLogger();
+    }
 
     @Before
     public void setup() {
