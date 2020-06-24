@@ -197,7 +197,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         GeoCoding productGeoCoding = buildGeoCoding(sceneDescription, mapCRS, productResolution.resolution, productResolution.resolution, defaultProductSize, productBounds);
         product.setSceneGeoCoding(productGeoCoding);
 
-        product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
+        Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+        product.setPreferredTileSize(defaultJAIReadTileSize);
+
         product.setAutoGrouping(buildAutoGroupingPattern());
         product.setStartTime(parseDate(productCharacteristics.getProductStartTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
@@ -207,7 +209,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         List<BandInfo> bandInfoList = orthoMetadataHeader.computeBandInfoByKey(tileList);
 
         if (!bandInfoList.isEmpty()) {
-            int productMaximumResolutionCount = addBands(product, bandInfoList, sceneDescription, productResolution, productDefaultGeoCoding, mapCRS, subsetDef);
+            int productMaximumResolutionCount = addBands(product, bandInfoList, sceneDescription, productResolution, productDefaultGeoCoding, mapCRS, subsetDef, defaultJAIReadTileSize);
             product.setNumResolutionsMax(productMaximumResolutionCount);
 
             // In MultiResolution mode, all bands are kept at their native resolution
@@ -377,7 +379,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     private int addBands(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription, S2SpatialResolution productResolution, GeoCoding productDefaultGeoCoding,
-                         CoordinateReferenceSystem mapCRS, ProductSubsetDef subsetDef)
+                         CoordinateReferenceSystem mapCRS, ProductSubsetDef subsetDef, Dimension defaultJAIReadTileSize)
                          throws IOException {
 
         Dimension defaultProductSize = sceneDescription.getSceneDimension(productResolution);
@@ -428,9 +430,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     band.setGeoCoding(geoCoding);
 
                     AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
-                    JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, bandIndexNumber, mosaicOpBackgroundValue, mosaicOpSourceThreshold);
+                    JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform,
+                                                                            bandIndexNumber, mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
 
-                    ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0);
+                    ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0, defaultJAIReadTileSize);
                     band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                     product.addBand(band);
                 }
@@ -821,10 +824,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             Double mosaicOpSourceThreshold = null;
             double mosaicOpBackgroundValue = Double.NaN;
             int resolutionCount = DefaultMultiLevelModel.getLevelCount(bandBounds.width, bandBounds.height); // thisBandTileLayout.numResolutions;
+            Dimension preferredTileSize = product.getPreferredTileSize();
 
-            TileIndexMultiLevelSource tileIndex = new TileIndexMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, product.getPreferredTileSize(),
+            TileIndexMultiLevelSource tileIndex = new TileIndexMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, preferredTileSize,
                                                                                 imageToModelTransform, mosaicOpSourceThreshold, mosaicOpBackgroundValue);
-            ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0);
+            ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0, preferredTileSize);
             band.setSourceImage(new DefaultMultiLevelImage(tileIndex, imageLayout));
 
             product.addBand(band);

@@ -41,8 +41,15 @@ import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 import org.locationtech.jts.geom.Coordinate;
 
 import javax.media.jai.ImageLayout;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.SampleModel;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -174,8 +181,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             product = new Product(defaultProductName, productType, productBounds.width, productBounds.height);
-            product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
             product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
+
+            Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+            product.setPreferredTileSize(defaultJAIReadTileSize);
 
             Map<String, Tile> tilesById = new HashMap<>(tileList.size());
             for (Tile tile : tileList) {
@@ -189,7 +198,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             AffineTransform imageToModelTransform = Product.findImageToModelTransform(product.getSceneGeoCoding());
-            int productMaximumResolutionCount = addDetectorBands(defaultProductSize, product, bandInfoByKey, imageToModelTransform, sceneDescriptionMap, subsetDef);
+            int productMaximumResolutionCount = addDetectorBands(defaultProductSize, product, bandInfoByKey, imageToModelTransform, sceneDescriptionMap, subsetDef, defaultJAIReadTileSize);
             product.setNumResolutionsMax(productMaximumResolutionCount);
 
             // add TileIndex if there are more than 1 tile
@@ -236,7 +245,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     private int addDetectorBands(Dimension defaultProductSize, Product product, Map<String, L1BBandInfo> bandInfoByKey, AffineTransform imageToModelTransform,
-                                  Map<String, L1bSceneDescription> sceneDescriptionMap, ProductSubsetDef subsetDef) {
+                                  Map<String, L1bSceneDescription> sceneDescriptionMap, ProductSubsetDef subsetDef, Dimension defaultJAIReadTileSize) {
 
         S2SpatialResolution productResolution = getProductResolution();
         List<String> bandIndexes = new ArrayList<>(bandInfoByKey.keySet());
@@ -283,9 +292,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         Band band = buildBand(tileBandInfo, bandBounds.width, bandBounds.height, dataBufferType);
                         band.setDescription(tileBandInfo.getBandInformation().getDescription());
 
-                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, bandIndexNumber, mosaicOpBackgroundValue, mosaicOpSourceThreshold);
-                        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0);
-                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform,
+                                                                                    bandIndexNumber, mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
+                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
 
                         product.addBand(band);
                     }
@@ -429,7 +438,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         TileIndexMultiLevelSource multiLevelSource = new TileIndexMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, preferredTileSize,
                                                                                    imageToModelTransform, mosaicOpSourceThreshold, mosaicOpBackgroundValue);
-        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0);
+        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0, preferredTileSize);
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
 
         return band;
