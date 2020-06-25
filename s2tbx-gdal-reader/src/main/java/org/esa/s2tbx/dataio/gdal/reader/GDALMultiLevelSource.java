@@ -1,15 +1,12 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.drivers.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.image.AbstractMosaicSubsetMultiLevelSource;
-import org.esa.snap.core.image.DecompressedTileOpImageCallback;
 import org.esa.snap.core.image.ImageReadBoundsSupport;
 import org.esa.snap.core.image.UncompressedTileOpImageCallback;
-import org.esa.snap.core.util.ImageUtils;
 
+import javax.media.jai.ImageLayout;
 import javax.media.jai.PlanarImage;
-import javax.media.jai.SourcelessOpImage;
 import java.awt.*;
 import java.awt.image.RenderedImage;
 import java.nio.file.Path;
@@ -20,29 +17,36 @@ import java.nio.file.Path;
  * @author Jean Coravu
  * @author Adrian Draghici
  */
-class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implements UncompressedTileOpImageCallback<Void> {
+class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implements UncompressedTileOpImageCallback<Void>, GDALBandSource {
 
     private final Path sourceLocalFile;
     private final int dataBufferType;
     private final int bandIndex;
     private final Double noDataValue;
+    private final Dimension defaultJAIReadTileSize;
 
-    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, int bandIndex, int levelCount, GeoCoding geoCoding, Double noDataValue) {
+    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, int bandIndex,
+                         int levelCount, GeoCoding geoCoding, Double noDataValue, Dimension defaultJAIReadTileSize) {
+
         super(levelCount, imageReadBounds, tileSize, geoCoding);
 
         this.sourceLocalFile = sourceLocalFile;
         this.dataBufferType = dataBufferType;
         this.bandIndex = bandIndex;
         this.noDataValue = noDataValue;
+        this.defaultJAIReadTileSize = defaultJAIReadTileSize;
     }
 
+    @Override
+    protected ImageLayout builMosaicImageLayout(int level) {
+        return null; // no image layout to configure the mosaic image since the tile images are configured
+    }
 
     @Override
     public PlanarImage buildTileOpImage(ImageReadBoundsSupport imageReadBoundsSupport, int tileWidth, int tileHeight,
                                         int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, Void tileData) {
 
-        return new GDALTileOpImage(this.sourceLocalFile, bandIndex, this.dataBufferType, tileWidth, tileHeight,
-                                   tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport);
+        return new GDALTileOpImage(this, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport, this.defaultJAIReadTileSize);
     }
 
     @Override
@@ -60,5 +64,20 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implemen
             return super.getMosaicOpBackgroundValues();
         }
         return new double[]{this.noDataValue};
+    }
+
+    @Override
+    public Path getSourceLocalFile() {
+        return sourceLocalFile;
+    }
+
+    @Override
+    public int getDataBufferType() {
+        return dataBufferType;
+    }
+
+    @Override
+    public int getBandIndex() {
+        return bandIndex;
     }
 }
