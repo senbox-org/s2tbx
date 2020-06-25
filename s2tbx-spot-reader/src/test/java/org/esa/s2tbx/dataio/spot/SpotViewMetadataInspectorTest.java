@@ -2,13 +2,14 @@ package org.esa.s2tbx.dataio.spot;
 
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
+import org.esa.snap.runtime.LogUtils;
 import org.esa.snap.utils.TestUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -23,8 +24,13 @@ public class SpotViewMetadataInspectorTest {
     public SpotViewMetadataInspectorTest() {
     }
 
+    @BeforeClass
+    public static void setup() throws Exception {
+        LogUtils.initLogger();
+    }
+
     @Test
-    public void testMetadataInspector() throws URISyntaxException, IOException {
+    public void testMetadataInspector() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
         File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
