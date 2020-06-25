@@ -45,6 +45,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.xml.sax.SAXException;
 
+import javax.media.jai.ImageLayout;
+import javax.media.jai.JAI;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -103,16 +105,20 @@ public class SpotViewProductReader extends AbstractProductReader {
             if (imageMetadata != null && imageMetadata.getProductName() != null) {
                 productName = imageMetadata.getProductName();
             }
+
+            int defaultProductWidth = productMetadata.getRasterWidth();
+            int defaultProductHeight = productMetadata.getRasterHeight();
+
             ProductSubsetDef subsetDef = getSubsetDef();
             Rectangle productBounds;
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
-                productBounds = new Rectangle(0, 0, productMetadata.getRasterWidth(), productMetadata.getRasterHeight());
+                productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
             } else {
                 GeoCoding productDefaultGeoCoding = buildTiePointGridGeoCoding(productMetadata, imageMetadata, null);
                 if (productDefaultGeoCoding == null) {
-                    productDefaultGeoCoding = buildCrsGeoCoding(productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), productMetadata, imageMetadata);
+                    productDefaultGeoCoding = buildCrsGeoCoding(defaultProductWidth, defaultProductHeight, productMetadata, imageMetadata);
                 }
-                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productMetadata.getRasterWidth(), productMetadata.getRasterHeight(), false);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, false);
             }
             if (productBounds.isEmpty()) {
                 throw new IllegalStateException("Empty product bounds.");
@@ -123,7 +129,10 @@ public class SpotViewProductReader extends AbstractProductReader {
             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                 product.getMetadataRoot().addElement(productMetadata.getRootElement());
             }
-            Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+
+            Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+            Dimension preferredTileSize = defaultJAIReadTileSize; // new Dimension(defaultJAIReadTileSize.width * 2, defaultJAIReadTileSize.height *2); // multiple mosaic tile size
+
             product.setPreferredTileSize(preferredTileSize);
 
             TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(productMetadata, imageMetadata, subsetDef);
@@ -139,9 +148,10 @@ public class SpotViewProductReader extends AbstractProductReader {
             }
 
             File inputFile = this.productDirectory.getFile(SpotConstants.SPOTVIEW_RASTER_FILENAME);
-            this.spotViewImageReader = new SpotViewImageReader(inputFile, productMetadata.getRasterJavaByteOrder(), productMetadata.getRasterWidth(), productMetadata.getRasterPixelSize());
+            this.spotViewImageReader = new SpotViewImageReader(inputFile, productMetadata.getRasterJavaByteOrder(), defaultProductWidth, productMetadata.getRasterPixelSize());
 
             // add bands
+            double noDataValue = imageMetadata.getNoDataValue();
             int bandDataType = productMetadata.getRasterDataType();
             int dataBufferType = ImageManager.getDataBufferType(bandDataType);
             String[] bandNames = productMetadata.getBandNames();
@@ -152,14 +162,17 @@ public class SpotViewProductReader extends AbstractProductReader {
                     if (bandGeoCoding != null) {
                         band.setGeoCoding(bandGeoCoding);
                     }
-                    double noDataValue = imageMetadata.getNoDataValue();
                     band.setSpectralWavelength(imageMetadata.getWavelength(bandIndex));
                     band.setSpectralBandwidth(imageMetadata.getBandwidth(bandIndex));
                     band.setNoDataValueUsed(true);
                     band.setNoDataValue(noDataValue);
+
                     SpotViewMultiLevelSource multiLevelSource = new SpotViewMultiLevelSource(this.spotViewImageReader, dataBufferType, productBounds, preferredTileSize,
-                                                                                             bandIndex, bandNames.length, bandGeoCoding, noDataValue);
-                    band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+                                                                                             bandIndex, bandNames.length, bandGeoCoding, noDataValue, defaultJAIReadTileSize);
+                    // compute the tile size of the image layout object based on the tile size from the tileOpImage used to read the data
+                    ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, productBounds.width, productBounds.height, 0, defaultJAIReadTileSize);
+                    band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+
                     product.addBand(band);
                 }
             }
@@ -182,19 +195,13 @@ public class SpotViewProductReader extends AbstractProductReader {
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
                                           Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight,
                                           ProductData destBuffer, ProgressMonitor pm)
-            throws IOException {
+                                          throws IOException {
 
         Product product = destBand.getProduct();
         int bandIndex = product.getBandIndex(destBand.getName());
         int numBands = product.getNumBands();
         synchronized (this.spotViewImageReader) {
             this.spotViewImageReader.readBandRasterData(bandIndex, numBands, sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer);
-        }
-    }
-
-    private void closeResources() {
-        if (this.spotViewImageReader != null) {
-            this.spotViewImageReader.close();
         }
     }
 
@@ -219,6 +226,20 @@ public class SpotViewProductReader extends AbstractProductReader {
             for (String name : imageMetadata.getRasterFileNames())
                 addProductComponentIfNotPresent(name, result);
             return result;
+        }
+    }
+
+    private void closeResources() {
+        try {
+            if (this.spotViewImageReader != null) {
+                this.spotViewImageReader.close();
+                this.spotViewImageReader = null;
+            }
+        } finally {
+            if (this.productDirectory != null) {
+                this.productDirectory.close();
+                this.productDirectory = null;
+            }
         }
     }
 

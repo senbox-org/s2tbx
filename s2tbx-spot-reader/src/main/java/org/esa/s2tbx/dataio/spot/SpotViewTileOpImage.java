@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.spot;
 
-import com.bc.ceres.glevel.MultiLevelModel;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.image.AbstractSubsetTileOpImage;
 import org.esa.snap.core.image.ImageReadBoundsSupport;
@@ -15,17 +14,15 @@ import java.io.IOException;
 public class SpotViewTileOpImage extends AbstractSubsetTileOpImage {
 
     private final SpotViewImageReader spotViewImageReader;
-    private final int bandIndex;
-    private final int bandCount;
+    private final SpotViewBandSource bandSource;
 
-    public SpotViewTileOpImage(SpotViewImageReader spotViewImageReader, int dataBufferType, int bandIndex, int bandCount,
-                               int tileWidth, int tileHeight, int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, ImageReadBoundsSupport imageBoundsSupport) {
+    public SpotViewTileOpImage(SpotViewImageReader spotViewImageReader, SpotViewBandSource bandSource, int dataBufferType, int tileWidth, int tileHeight,
+                               int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, ImageReadBoundsSupport imageBoundsSupport, Dimension defaultJAIReadTileSize) {
 
-        super(dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageBoundsSupport);
+        super(dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageBoundsSupport, defaultJAIReadTileSize);
 
         this.spotViewImageReader = spotViewImageReader;
-        this.bandIndex = bandIndex;
-        this.bandCount = bandCount;
+        this.bandSource = bandSource;
     }
 
     @Override
@@ -51,8 +48,8 @@ public class SpotViewTileOpImage extends AbstractSubsetTileOpImage {
         int sourceHeight = sourceStepY * (normalBounds.height - 1) + 1;
         ProductData tileData = ProductData.createInstance(getProductDataType(), normalBounds.width * normalBounds.height);
         synchronized (this.spotViewImageReader) {
-            this.spotViewImageReader.readBandRasterData(this.bandIndex, this.bandCount, sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY,
-                    normalBounds.x, normalBounds.y, normalBounds.width, normalBounds.height, tileData);
+            this.spotViewImageReader.readBandRasterData(this.bandSource.getBandIndex(), this.bandSource.getBandCount(), sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight,
+                                                sourceStepX, sourceStepY, normalBounds.x, normalBounds.y, normalBounds.width, normalBounds.height, tileData);
         }
         return tileData;
     }
