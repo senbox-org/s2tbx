@@ -27,6 +27,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
+import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import java.awt.*;
 import java.awt.image.DataBuffer;
@@ -243,7 +244,9 @@ public class GDALProductReader extends AbstractProductReader {
             }
 
             Product product = new Product(localFile.getFileName().toString(), "GDAL", productBounds.width, productBounds.height, this);
-            product.setPreferredTileSize(JAI.getDefaultTileSize());
+
+            Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+            product.setPreferredTileSize(defaultJAIReadTileSize);
 
             MetadataElement metadataElement = null;
 
@@ -258,7 +261,7 @@ public class GDALProductReader extends AbstractProductReader {
             }
 
             Double[] pass1 = new Double[1];
-            int numResolutions = 1;
+            int maximumResolutionCount = 1;
 
             int bandCount = gdalDataset.getRasterCount();
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
@@ -276,14 +279,13 @@ public class GDALProductReader extends AbstractProductReader {
                     Dimension tileSize = computeBandTileSize(gdalBand, productBounds.width, productBounds.height);
 
                     int levelCount = gdalBand.getOverviewCount() + 1;
-                    if (numResolutions >= levelCount) {
-                        numResolutions = levelCount;
+                    if (maximumResolutionCount >= levelCount) {
+                        maximumResolutionCount = levelCount;
                     }
                     if (levelCount == 1) {
                         gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
+                        levelCount = gdalBand.getOverviewCount() + 1;
                     }
-                    levelCount = gdalBand.getOverviewCount() + 1;
-                    product.setNumResolutionsMax(levelCount);
 
                     String colorInterpretationName = GDAL.getColorInterpretationName(gdalBand.getRasterColorInterpretation());
                     MetadataElement bandMetadataElement = new MetadataElement("Component");
@@ -339,8 +341,11 @@ public class GDALProductReader extends AbstractProductReader {
                         productBand.setNoDataValueUsed(true);
                     }
 
-                    GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, productBounds, tileSize, bandIndex, levelCount, geoCoding, noDataValue);
-                    productBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+                    GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, productBounds, tileSize, bandIndex,
+                                                                                     levelCount, geoCoding, noDataValue, defaultJAIReadTileSize);
+                    // compute the tile size of the image layout object based on the tile size from the tileOpImage used to read the data
+                    ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType.dataBufferType, productBounds.width, productBounds.height, 0, defaultJAIReadTileSize);
+                    productBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
 
                     if (metadataElement != null && (subsetDef == null || !subsetDef.isIgnoreMetadata())) {
                         metadataElement.addElement(bandMetadataElement);
@@ -356,7 +361,7 @@ public class GDALProductReader extends AbstractProductReader {
                     product.addMask(mask);
                 }
             }
-            product.setNumResolutionsMax(numResolutions);
+            product.setNumResolutionsMax(maximumResolutionCount);
             return product;
         } finally {
             gdalDataset.delete();
