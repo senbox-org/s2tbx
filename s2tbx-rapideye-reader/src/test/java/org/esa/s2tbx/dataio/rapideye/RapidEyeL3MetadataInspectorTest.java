@@ -1,12 +1,13 @@
 package org.esa.s2tbx.dataio.rapideye;
 
 import org.esa.snap.core.metadata.MetadataInspector;
+import org.esa.snap.runtime.LogUtils;
 import org.esa.snap.utils.TestUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -21,8 +22,13 @@ public class RapidEyeL3MetadataInspectorTest {
     public RapidEyeL3MetadataInspectorTest() {
     }
 
+    @BeforeClass
+    public static void setup() throws Exception {
+        LogUtils.initLogger();
+    }
+
     @Test
-    public void testMetadataInspector() throws URISyntaxException, IOException {
+    public void testMetadataInspector() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
         File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");

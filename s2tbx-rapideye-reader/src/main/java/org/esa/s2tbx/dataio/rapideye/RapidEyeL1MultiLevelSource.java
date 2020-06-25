@@ -6,6 +6,7 @@ import org.esa.snap.core.image.AbstractMosaicSubsetMultiLevelSource;
 import org.esa.snap.core.image.ImageReadBoundsSupport;
 import org.esa.snap.core.image.UncompressedTileOpImageCallback;
 
+import javax.media.jai.ImageLayout;
 import javax.media.jai.SourcelessOpImage;
 import java.awt.*;
 import java.awt.image.RenderedImage;
@@ -17,20 +18,29 @@ public class RapidEyeL1MultiLevelSource extends AbstractMosaicSubsetMultiLevelSo
 
     private final NITFReaderWrapper nitfReader;
     private final int dataBufferType;
+    private final Dimension defaultJAIReadTileSize;
 
-    public RapidEyeL1MultiLevelSource(NITFReaderWrapper nitfReader, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, GeoCoding geoCoding) {
+    public RapidEyeL1MultiLevelSource(NITFReaderWrapper nitfReader, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, GeoCoding geoCoding,
+                                      Dimension defaultJAIReadTileSize) {
+
         super(imageReadBounds, tileSize, geoCoding);
 
         this.nitfReader = nitfReader;
         this.dataBufferType = dataBufferType;
+        this.defaultJAIReadTileSize = defaultJAIReadTileSize;
+    }
+
+    @Override
+    protected ImageLayout builMosaicImageLayout(int level) {
+        return null; // no image layout to configure the mosaic image since the tile images are configured
     }
 
     @Override
     public SourcelessOpImage buildTileOpImage(ImageReadBoundsSupport imageReadBoundsSupport, int tileWidth, int tileHeight,
                                               int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, Void tileData) {
 
-        return new RapidEyeL1TileOpImage(this.nitfReader, this.dataBufferType, tileWidth, tileHeight,
-                                         tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport);
+        return new RapidEyeL1TileOpImage(this.nitfReader, this.dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX,
+                                         tileOffsetFromReadBoundsY, imageReadBoundsSupport, this.defaultJAIReadTileSize);
     }
 
     @Override

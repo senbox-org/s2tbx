@@ -19,27 +19,25 @@ public class RapidEyeL1TileOpImage extends AbstractSubsetTileOpImage {
 
     private final NITFReaderWrapper nitfReader;
 
-    public RapidEyeL1TileOpImage(NITFReaderWrapper nitfReader, int dataBufferType, int tileWidth, int tileHeight,
-                                 int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, ImageReadBoundsSupport imageBoundsSupport) {
+    public RapidEyeL1TileOpImage(NITFReaderWrapper nitfReader, int dataBufferType, int tileWidth, int tileHeight, int tileOffsetFromReadBoundsX,
+                                 int tileOffsetFromReadBoundsY, ImageReadBoundsSupport imageBoundsSupport, Dimension defaultJAIReadTileSize) {
 
-        super(dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageBoundsSupport);
+        super(dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageBoundsSupport, defaultJAIReadTileSize);
 
         this.nitfReader = nitfReader;
     }
 
     @Override
-    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster levelDestinationRaster, Rectangle levelDestinationRectangle) {
+    protected void computeRect(PlanarImage[] sources, WritableRaster levelDestinationRaster, Rectangle levelDestinationRectangle) {
         Rectangle normalBoundsIntersection = computeIntersectionOnNormalBounds(levelDestinationRectangle);
         if (!normalBoundsIntersection.isEmpty()) {
-            if (!normalBoundsIntersection.isEmpty()) {
-                ProductData tileData;
-                try {
-                    tileData = readRasterData(normalBoundsIntersection);
-                } catch (IOException ex) {
-                    throw new IllegalStateException("Failed to read the data for level " + getLevel() + " and rectangle " + levelDestinationRectangle + ".", ex);
-                }
-                writeDataOnLevelRaster(normalBoundsIntersection, tileData, levelDestinationRaster, levelDestinationRectangle);
+            ProductData normalBoundsIntersectionData;
+            try {
+                normalBoundsIntersectionData = readRasterData(normalBoundsIntersection);
+            } catch (IOException ex) {
+                throw new IllegalStateException("Failed to read the data for level " + getLevel() + " and rectangle " + levelDestinationRectangle + ".", ex);
             }
+            writeDataOnLevelRaster(normalBoundsIntersection, normalBoundsIntersectionData, levelDestinationRaster, levelDestinationRectangle);
         }
     }
 
@@ -51,7 +49,9 @@ public class RapidEyeL1TileOpImage extends AbstractSubsetTileOpImage {
         int sourceWidth = sourceStepX * (normalBounds.width - 1) + 1;
         int sourceHeight = sourceStepY * (normalBounds.height - 1) + 1;
         ProductData tileData = ProductData.createInstance(getProductDataType(), normalBounds.width * normalBounds.height);
-        this.nitfReader.readBandData(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, tileData, ProgressMonitor.NULL);
+        synchronized (this.nitfReader) {
+            this.nitfReader.readBandData(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, tileData, ProgressMonitor.NULL);
+        }
         return tileData;
     }
 }

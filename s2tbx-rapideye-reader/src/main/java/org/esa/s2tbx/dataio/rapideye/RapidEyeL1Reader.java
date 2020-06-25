@@ -21,6 +21,7 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.apache.commons.lang.StringUtils;
 import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
@@ -46,7 +47,9 @@ import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.xml.sax.SAXException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
+import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.ScaleDescriptor;
 import javax.xml.parsers.ParserConfigurationException;
@@ -57,6 +60,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -134,13 +138,33 @@ public class RapidEyeL1Reader extends AbstractProductReader {
             product.setStartTime(metadata.getProductStartTime());
             product.setEndTime(metadata.getProductEndTime());
             product.setFileLocation(productPath.toFile());
-            Dimension preferredTileSize = JAIUtils.computePreferredTileSize(product.getSceneRasterWidth(), product.getSceneRasterHeight(), 1);
+
+            Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+            //Dimension preferredTileSize = defaultJAIReadTileSize; // new Dimension(defaultJAIReadTileSize.width * 2, defaultJAIReadTileSize.height *2); // multiple mosaic tile size
+            Dimension preferredTileSize = new Dimension(defaultProductWidth, defaultProductHeight);
+
             product.setPreferredTileSize(preferredTileSize);
+
             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                 product.getMetadataRoot().addElement(metadata.getRootElement());
             }
 
-            GDALProductReader gdalProductReader = getGDALProductReader();
+            String value = System.getProperty("rapid.eye.force.read.product.with.nitf.api");
+            GDALProductReader gdalProductReader = null;
+            if (!Boolean.parseBoolean(value)) {
+                gdalProductReader = getGDALProductReader();
+            }
+
+            if (logger.isLoggable(Level.FINE)) {
+                String logMessage;
+                if (gdalProductReader == null) {
+                    logMessage = "Use the NITF API";
+                } else {
+                    logMessage = "Use the GDAL product reader";
+                }
+                logMessage += " to read the RapidEye L1 product from input '" + productPath.toString() + "'.";
+                logger.log(Level.FINE, logMessage);
+            }
 
             this.bandImageReaders = new ArrayList<>();
             String[] nitfFiles = metadata.getRasterFileNames();
@@ -169,8 +193,11 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                                 targetBand.setGeoCoding(bandGeoCoding);
                             }
                             int dataBufferType = ImageManager.getDataBufferType(targetBand.getDataType());
-                            RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, dataBufferType, productBounds, preferredTileSize, targetBand.getGeoCoding());
-                            targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+                            RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, dataBufferType, productBounds, preferredTileSize,
+                                                                                                         targetBand.getGeoCoding(), defaultJAIReadTileSize);
+                            // compute the tile size of the image layout object based on the tile size from the tileOpImage used to read the data
+                            ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, productBounds.width, productBounds.height, 0, defaultJAIReadTileSize);
+                            targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         } else {
                             // the GDAL library is installed
                             if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {

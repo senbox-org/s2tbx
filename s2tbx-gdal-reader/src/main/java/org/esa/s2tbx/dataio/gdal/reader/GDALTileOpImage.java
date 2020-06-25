@@ -23,15 +23,20 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
 
     private ImageReader imageReader;
 
-    GDALTileOpImage(GDALBandSource bandSource, int tileWidth, int tileHeight, int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY,
+    GDALTileOpImage(GDALBandSource bandSource, int dataBufferType, int tileWidth, int tileHeight, int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY,
                     ImageReadBoundsSupport imageReadBoundsSupport, Dimension defaultJAIReadTileSize) {
 
-        super(bandSource.getDataBufferType(), tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport, defaultJAIReadTileSize);
+        super(dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport, defaultJAIReadTileSize);
 
         this.imageReader = new ImageReader(bandSource) {
             @Override
             protected int getLevel() {
                 return GDALTileOpImage.this.getLevel();
+            }
+
+            @Override
+            protected int getDataBufferType() {
+                return GDALTileOpImage.this.getSampleModel().getDataType();
             }
         };
     }
@@ -80,6 +85,8 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
 
         protected abstract int getLevel();
 
+        protected abstract int getDataBufferType();
+
         int getBandWidth() {
             if (this.gdalDataset == null) {
                 createDataset();
@@ -115,7 +122,7 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
             ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
             data.order(ByteOrder.nativeOrder());
 
-            int dataBufferType = this.bandSource.getDataBufferType();
+            int dataBufferType = getDataBufferType();
             int xSizeToRead = Math.min(areaWidth, getBandWidth() -  areaX);
             int ySizeToRead = Math.min(areaHeight, getBandHeight() -  areaY);
             int returnVal = this.gdalBand.readRasterDirect(areaX, areaY, xSizeToRead, ySizeToRead, areaWidth, areaHeight, gdalBufferDataType, data);
