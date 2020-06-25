@@ -46,7 +46,7 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implemen
     public PlanarImage buildTileOpImage(ImageReadBoundsSupport imageReadBoundsSupport, int tileWidth, int tileHeight,
                                         int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, Void tileData) {
 
-        return new GDALTileOpImage(this, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport, this.defaultJAIReadTileSize);
+        return new GDALTileOpImage(this, this.dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport, this.defaultJAIReadTileSize);
     }
 
     @Override
@@ -68,16 +68,11 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implemen
 
     @Override
     public Path getSourceLocalFile() {
-        return sourceLocalFile;
-    }
-
-    @Override
-    public int getDataBufferType() {
-        return dataBufferType;
+        return this.sourceLocalFile;
     }
 
     @Override
     public int getBandIndex() {
-        return bandIndex;
+        return this.bandIndex;
     }
 }

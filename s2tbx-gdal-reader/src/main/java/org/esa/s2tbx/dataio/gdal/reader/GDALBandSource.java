@@ -6,7 +6,5 @@ public interface GDALBandSource {
 
     public Path getSourceLocalFile();
 
-    public int getDataBufferType();
-
     public int getBandIndex();
 }
