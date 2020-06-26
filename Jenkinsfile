@@ -54,10 +54,6 @@ pipeline {
                 sh "mvn -Duser.home=/var/maven -Dsnap.userdir=/home/snap clean package install ${sonarOption} -Dsnap.reader.tests.data.dir=/data/ssd/testData/${toolName} -U -DskipTests=false"
             }
             post {
-                always {
-                    junit "**/target/surefire-reports/*.xml"
-                    jacoco(execPattern: '**/*.exec')
-                }
                 success {
                     script {
                         if ("${env.GIT_BRANCH}" == 'master' || "${env.GIT_BRANCH}" =~ /\d+\.x/ || "${env.GIT_BRANCH}" =~ /\d+\.\d+\.\d+(-rc\d+)?$/) {
