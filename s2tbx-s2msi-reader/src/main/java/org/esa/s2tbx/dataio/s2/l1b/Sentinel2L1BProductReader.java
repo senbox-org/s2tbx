@@ -294,7 +294,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
                         JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform,
                                                                                     bandIndexNumber, mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
-                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource));
+                        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
+                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
 
                         product.addBand(band);
                     }

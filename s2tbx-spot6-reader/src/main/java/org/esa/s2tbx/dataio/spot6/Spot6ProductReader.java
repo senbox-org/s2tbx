@@ -260,7 +260,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                         int bandIndex = bandInfos[i].getIndex();
                         JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(result.getLevelCount(), result.getMosaicMatrix(), productBounds, imageToModelTransform, bandIndex,
                                                                                     (double)noDataValue, null, defaultJAIReadTileSize);
-                        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(result.getDataType(), productBounds.width, productBounds.height, 0, defaultJAIReadTileSize);
+                        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         product.addBand(band);
                     }
