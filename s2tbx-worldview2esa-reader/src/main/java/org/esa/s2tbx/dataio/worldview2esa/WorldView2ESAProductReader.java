@@ -255,7 +255,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             band.setGeoCoding(bandGeoCoding);
         }
         GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(mosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null, defaultJAIReadTileSize);
-        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0, defaultJAIReadTileSize);
+        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
 
         band.setScalingFactor(tileMetadata.getTileComponent().getScalingFactor(band.getName()));

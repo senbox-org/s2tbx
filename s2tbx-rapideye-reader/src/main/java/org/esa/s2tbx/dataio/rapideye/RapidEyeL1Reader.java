@@ -196,7 +196,7 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                             RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, dataBufferType, productBounds, preferredTileSize,
                                                                                                          targetBand.getGeoCoding(), defaultJAIReadTileSize);
                             // compute the tile size of the image layout object based on the tile size from the tileOpImage used to read the data
-                            ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, productBounds.width, productBounds.height, 0, defaultJAIReadTileSize);
+                            ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                             targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         } else {
                             // the GDAL library is installed
