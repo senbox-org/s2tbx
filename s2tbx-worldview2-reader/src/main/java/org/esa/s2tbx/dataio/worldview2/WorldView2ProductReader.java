@@ -300,7 +300,7 @@ class WorldView2ProductReader extends AbstractProductReader {
             band.setGeoCoding(bandGeoCoding);
         }
         GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(subProductMosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null, defaultJAIReadTileSize);
-        ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, bandBounds.width, bandBounds.height, 0, defaultJAIReadTileSize);
+        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
         return band;
     }

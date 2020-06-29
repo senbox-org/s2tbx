@@ -4,6 +4,7 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.image.AbstractMosaicSubsetMultiLevelSource;
 import org.esa.snap.core.image.ImageReadBoundsSupport;
 import org.esa.snap.core.image.UncompressedTileOpImageCallback;
+import org.esa.snap.core.util.ImageUtils;
 
 import javax.media.jai.ImageLayout;
 import javax.media.jai.PlanarImage;
@@ -74,5 +75,11 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implemen
     @Override
     public int getBandIndex() {
         return this.bandIndex;
+    }
+
+    public ImageLayout buildMultiLevelImageLayout() {
+        int topLeftTileWidth = computeTopLeftUncompressedTileWidth(this.imageReadBounds, this.tileSize.width);
+        int topLeftTileHeight = computeTopLeftUncompressedTileHeight(this.imageReadBounds, this.tileSize.height);
+        return ImageUtils.buildMosaicImageLayout(this.dataBufferType, this.imageReadBounds.width, this.imageReadBounds.height, 0, this.defaultJAIReadTileSize, topLeftTileWidth, topLeftTileHeight);
     }
 }

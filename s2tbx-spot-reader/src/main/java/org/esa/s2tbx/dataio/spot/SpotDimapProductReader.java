@@ -227,7 +227,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
                 GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds,
                                                                                                 bandIndex, band.getGeoCoding(), noDataValue, defaultJAIReadTileSize);
-                ImageLayout imageLayout = ImageUtils.buildMosaicImageLayout(dataBufferType, productBounds.width, productBounds.height, 0, defaultJAIReadTileSize);
+                ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                 band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                 product.addBand(band);
             }
