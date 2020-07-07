@@ -1,6 +1,7 @@
 package org.esa.s2tbx.gdal.writer.ui;
 
 import org.esa.lib.gdal.activator.GDALDriverInfo;
+import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 import org.esa.s2tbx.dataio.gdal.writer.plugins.AbstractDriverProductWriterPlugIn;
@@ -39,7 +40,7 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
     @Override
     public boolean isEnabled() {
         Product product = SnapApp.getDefault().getAppContext().getSelectedProduct();
-        return (product != null);
+        return (product != null && GDALInstallInfo.INSTANCE.isPresent());
     }
 
     @Override

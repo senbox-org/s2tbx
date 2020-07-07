@@ -5,6 +5,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.commons.VirtualFile;
 import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
 import org.esa.s2tbx.dataio.gdal.drivers.Driver;
+import org.esa.s2tbx.dataio.gdal.drivers.GCP;
 import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
@@ -13,14 +14,21 @@ import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GcpDescriptor;
+import org.esa.snap.core.datamodel.GcpGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.PixelPos;
+import org.esa.snap.core.datamodel.Placemark;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.dataop.maptransf.Datum;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.core.util.geotiff.EPSGCodes;
 import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
@@ -36,6 +44,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
@@ -58,6 +67,10 @@ public class GDALProductReader extends AbstractProductReader {
         BUFFER_TYPES.put(GDALConstConstants.gdtUint32(), new BufferTypeDescriptor(32, false, ProductData.TYPE_UINT32, DataBuffer.TYPE_INT));
         BUFFER_TYPES.put(GDALConstConstants.gdtFloat32(), new BufferTypeDescriptor(32, true, ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT));
         BUFFER_TYPES.put(GDALConstConstants.gdtFloat64(), new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
+        BUFFER_TYPES.put(GDALConstConstants.gdtCInt16(), new BufferTypeDescriptor(16, true, ProductData.TYPE_INT16, DataBuffer.TYPE_SHORT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtCInt32(), new BufferTypeDescriptor(32, true, ProductData.TYPE_INT32, DataBuffer.TYPE_INT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtCFloat32(), new BufferTypeDescriptor(32, true, ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtCFloat64(), new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
     }
 
     private VirtualFile virtualFile;
@@ -115,7 +128,7 @@ public class GDALProductReader extends AbstractProductReader {
         return bandName;
     }
 
-    static CrsGeoCoding buildGeoCoding(Dataset gdalDataset, Rectangle subsetBounds) throws FactoryException, TransformException {
+    static GeoCoding buildGeoCoding(Dataset gdalDataset, Rectangle subsetBounds, Product product) throws FactoryException, TransformException {
         String wellKnownText = gdalDataset.getProjectionRef();
         if (wellKnownText.contains("LOCAL_CS[\"Unknown\"]")) {
             wellKnownText = "";
@@ -132,8 +145,58 @@ public class GDALProductReader extends AbstractProductReader {
             wellKnownText = wellKnownText.replaceAll(",?(AXIS\\[\"([A-Za-z]*?)\",[A-Z]*?])", "");
             CoordinateReferenceSystem mapCRS = CRS.parseWKT(wellKnownText);
             return ImageUtils.buildCrsGeoCoding(originX, originY, resolutionX, resolutionY, imageWidth, imageHeight, mapCRS, subsetBounds, 0.5d, 0.5d);
+        } else if (product != null) {
+            String gcpProjection = gdalDataset.getGCPProjection();
+
+            int gcpCount = gdalDataset.getGCPCount();
+            final GcpGeoCoding.Method method;
+            if (gcpCount >= GcpGeoCoding.Method.POLYNOMIAL3.getTermCountP()) {
+                method = GcpGeoCoding.Method.POLYNOMIAL3;
+            } else if (gcpCount >= GcpGeoCoding.Method.POLYNOMIAL2.getTermCountP()) {
+                method = GcpGeoCoding.Method.POLYNOMIAL2;
+            } else if (gcpCount >= GcpGeoCoding.Method.POLYNOMIAL1.getTermCountP()) {
+                method = GcpGeoCoding.Method.POLYNOMIAL1;
+            } else {
+                return null; // not able to apply GCP geo coding; not enough tie points
+            }
+            int i = 0;
+            if (gcpCount > 0) {
+                Vector gcps = gdalDataset.getGCPs();
+                final GcpDescriptor gcpDescriptor = GcpDescriptor.getInstance();
+                final ProductNodeGroup<Placemark> gcpGroup = product.getGcpGroup();
+                for (Object gcpJNI : gcps) {
+                    GCP gcp = new GCP(gcpJNI);
+                    final PixelPos pixelPos = new PixelPos(gcp.getGCPPixel(), gcp.getGCPLine());
+                    final GeoPos geoPos = new GeoPos(gcp.getGCPY(), gcp.getGCPX());
+                    final Placemark gcpPlacemark = Placemark.createPointPlacemark(gcpDescriptor, "gcp_" + i, "GCP_" + i++, "", pixelPos, geoPos, product.getSceneGeoCoding());
+                    gcpGroup.add(gcpPlacemark);
+                }
+                final Placemark[] gcpPlacemarks = gcpGroup.toArray(new Placemark[gcpGroup.getNodeCount()]);
+                final Datum datum = getDatum(gcpProjection);
+                final int productWidth = gdalDataset.getRasterXSize();
+                final int productHeight = gdalDataset.getRasterYSize();
+                return new GcpGeoCoding(method, gcpPlacemarks, productWidth, productHeight, datum);
+            }
         }
         return null;
+    }
+
+    private static Datum getDatum(String gcpProjection) {
+        String datums = gcpProjection.replaceAll("[\\s\\S]*?AUTHORITY\\[\"EPSG\",\"([\\d]+)\"]?[\\s\\S]*", "$1");
+        final Datum datum;
+        if (datums.replaceAll("\\d*", "").isEmpty()) {
+            final int value = Integer.parseInt(datums);
+            if (value == EPSGCodes.GCS_WGS_72) {
+                datum = Datum.WGS_72;
+            } else if (value == EPSGCodes.GCS_WGS_84) {
+                datum = Datum.WGS_84;
+            } else {
+                datum = Datum.WGS_84;
+            }
+        } else {
+            datum = Datum.WGS_84;
+        }
+        return datum;
     }
 
     private static MetadataElement buildMetadataElement(Dataset gdalProduct) {
@@ -228,7 +291,7 @@ public class GDALProductReader extends AbstractProductReader {
                 if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
                     productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
                 } else {
-                    GeoCoding productDefaultGeoCoding = buildGeoCoding(gdalDataset, null);
+                    GeoCoding productDefaultGeoCoding = buildGeoCoding(gdalDataset, null, null);
                     productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, false);
                 }
             }
@@ -252,7 +315,7 @@ public class GDALProductReader extends AbstractProductReader {
                 product.getMetadataRoot().addElement(metadataElement);
             }
 
-            GeoCoding geoCoding = buildGeoCoding(gdalDataset, productBounds);
+            GeoCoding geoCoding = buildGeoCoding(gdalDataset, productBounds, product);
             if (geoCoding != null) {
                 product.setSceneGeoCoding(geoCoding);
             }

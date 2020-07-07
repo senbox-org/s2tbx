@@ -25,7 +25,7 @@ public class GDALMetadataInspector implements MetadataInspector {
 
             Metadata metadata = new Metadata(gdalDataset.getRasterXSize(), gdalDataset.getRasterYSize());
 
-            GeoCoding productGeoCoding = GDALProductReader.buildGeoCoding(gdalDataset, null);
+            GeoCoding productGeoCoding = GDALProductReader.buildGeoCoding(gdalDataset, null, null);
             metadata.setGeoCoding(productGeoCoding);
 
             int bandCount = gdalDataset.getRasterCount();
