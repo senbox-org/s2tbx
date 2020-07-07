@@ -55,7 +55,7 @@ public class S2tbxAboutBox extends JPanel {
     private JPanel createVersionPanel() {
         Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.ENGLISH);
         int year = utc.get(Calendar.YEAR);
-        JLabel copyRightLabel = new JLabel("<html><b>© 2014-" + year + " CS GROUP FRANCE, CS GROUP ROMANIA and contributors</b>", SwingConstants.CENTER);
+        JLabel copyRightLabel = new JLabel("<html><b>© 2014-" + year + " CS GROUP FRANCE, CS ROMANIA and contributors</b>", SwingConstants.CENTER);
 
         final ModuleInfo moduleInfo = Modules.getDefault().ownerOf(S2tbxAboutBox.class);
         JLabel versionLabel = new JLabel("<html><b>Sentinel-2 Toolbox (S2TBX) version " + moduleInfo.getImplementationVersion() + "</b>", SwingConstants.CENTER);
