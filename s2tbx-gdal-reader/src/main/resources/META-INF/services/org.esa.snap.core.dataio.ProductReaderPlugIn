@@ -2,7 +2,6 @@ org.esa.s2tbx.dataio.gdal.reader.plugins.BTDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.ERMapperDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.GS7BGDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.GSBGDriverProductReaderPlugIn
-org.esa.s2tbx.dataio.gdal.reader.plugins.GTiffDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.GTXDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.HFADriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.ILWISDriverProductReaderPlugIn
