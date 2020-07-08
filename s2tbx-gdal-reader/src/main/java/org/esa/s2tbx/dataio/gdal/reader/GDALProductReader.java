@@ -67,6 +67,10 @@ public class GDALProductReader extends AbstractProductReader {
         BUFFER_TYPES.put(GDALConstConstants.gdtUint32(), new BufferTypeDescriptor(32, false, ProductData.TYPE_UINT32, DataBuffer.TYPE_INT));
         BUFFER_TYPES.put(GDALConstConstants.gdtFloat32(), new BufferTypeDescriptor(32, true, ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT));
         BUFFER_TYPES.put(GDALConstConstants.gdtFloat64(), new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
+        BUFFER_TYPES.put(GDALConstConstants.gdtCInt16(), new BufferTypeDescriptor(16, true, ProductData.TYPE_INT16, DataBuffer.TYPE_SHORT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtCInt32(), new BufferTypeDescriptor(32, true, ProductData.TYPE_INT32, DataBuffer.TYPE_INT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtCFloat32(), new BufferTypeDescriptor(32, true, ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT));
+        BUFFER_TYPES.put(GDALConstConstants.gdtCFloat64(), new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
     }
 
     private VirtualFile virtualFile;
@@ -162,7 +166,7 @@ public class GDALProductReader extends AbstractProductReader {
                 final ProductNodeGroup<Placemark> gcpGroup = product.getGcpGroup();
                 for (Object gcpJNI : gcps) {
                     GCP gcp = new GCP(gcpJNI);
-                    final PixelPos pixelPos = new PixelPos(gcp.getGCPLine(), gcp.getGCPPixel());
+                    final PixelPos pixelPos = new PixelPos(gcp.getGCPPixel(), gcp.getGCPLine());
                     final GeoPos geoPos = new GeoPos(gcp.getGCPY(), gcp.getGCPX());
                     final Placemark gcpPlacemark = Placemark.createPointPlacemark(gcpDescriptor, "gcp_" + i, "GCP_" + i++, "", pixelPos, geoPos, product.getSceneGeoCoding());
                     gcpGroup.add(gcpPlacemark);

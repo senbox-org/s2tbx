@@ -20,27 +20,27 @@ public class GDALConst {
     }
 
     /**
-     * Calls the JNI GDAL gdalconst class GA_ReadOnly() method
+     * Calls the JNI GDAL GA_ReadOnly constant
      *
-     * @return the JNI GDAL gdalconst class GA_ReadOnly() method result
+     * @return the JNI GDAL GA_ReadOnly constant
      */
     public static Integer gaReadonly() {
         return GDALReflection.fetchGDALLibraryConstant(CLASS_NAME, "GA_ReadOnly", Integer.class);
     }
 
     /**
-     * Calls the JNI GDAL gdalconst class CE_Failure() method
+     * Calls the JNI GDAL CE_Failure constant
      *
-     * @return the JNI GDAL gdalconst class CE_Failure() method result
+     * @return the JNI GDAL CE_Failure constant
      */
     public static Integer ceFailure() {
         return GDALReflection.fetchGDALLibraryConstant(CLASS_NAME, "CE_Failure", Integer.class);
     }
 
     /**
-     * Calls the JNI GDAL gdalconst class CE_None() method
+     * Calls the JNI GDAL CE_None constant
      *
-     * @return the JNI GDAL gdalconst class CE_None() method result
+     * @return the JNI GDAL CE_None constant
      */
     public static Integer ceNone() {
         return GDALReflection.fetchGDALLibraryConstant(CLASS_NAME, "CE_None", Integer.class);
