@@ -9,7 +9,8 @@ import org.esa.snap.core.util.ImageUtils;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 
@@ -31,9 +32,9 @@ public class TileIndexMultiLevelSource extends AbstractMatrixMosaicSubsetMultiLe
     }
 
     @Override
-    protected ImageLayout builMosaicImageLayout(int level) {
+    protected ImageLayout buildMosaicImageLayout(int level) {
         // create the image layout object of the mosaic image because the tiles are not confired with sub-tiles
-        return ImageUtils.buildMosaicImageLayout(null, this.imageReadBounds.width, this.imageReadBounds.height, level, this.tileSize);
+        return ImageUtils.buildImageLayout(null, this.imageReadBounds.width, this.imageReadBounds.height, level, this.tileSize);
     }
 
     @Override

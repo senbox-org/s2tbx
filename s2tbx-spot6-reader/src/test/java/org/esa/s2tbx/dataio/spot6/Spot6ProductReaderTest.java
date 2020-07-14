@@ -20,25 +20,32 @@ package org.esa.s2tbx.dataio.spot6;
 import com.bc.ceres.binding.ConversionException;
 import com.bc.ceres.core.NullProgressMonitor;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.subset.GeometrySubsetRegion;
 import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
-import org.esa.snap.runtime.LogUtils;
+import org.esa.snap.runtime.LogUtils4Tests;
 import org.esa.snap.utils.TestUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -50,7 +57,7 @@ public class Spot6ProductReaderTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        LogUtils.initLogger();
+        LogUtils4Tests.initLogger();
     }
 
     @Test

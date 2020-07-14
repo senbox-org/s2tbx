@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.muscate;
 
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.esa.snap.runtime.LogUtils;
+import org.esa.snap.runtime.LogUtils4Tests;
 import org.esa.snap.utils.TestUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class MuscateMetadataInspectorTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        LogUtils.initLogger();
+        LogUtils4Tests.initLogger();
     }
 
     @Test

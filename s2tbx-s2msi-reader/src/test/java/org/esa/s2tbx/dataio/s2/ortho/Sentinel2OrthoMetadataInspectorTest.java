@@ -6,7 +6,7 @@ import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM32N_Re
 import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM34S_ReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM36N_ReaderPlugIn;
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.esa.snap.runtime.LogUtils;
+import org.esa.snap.runtime.LogUtils4Tests;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Assume;
 import org.junit.Before;
@@ -36,7 +36,7 @@ public class Sentinel2OrthoMetadataInspectorTest {
 
     @BeforeClass
     public static void setupLogger() throws Exception {
-        LogUtils.initLogger();
+        LogUtils4Tests.initLogger();
     }
 
     @Before

@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.ikonos;
 import org.esa.s2tbx.dataio.ikonos.metadata.IkonosMetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
-import org.esa.snap.runtime.LogUtils;
+import org.esa.snap.runtime.LogUtils4Tests;
 import org.esa.snap.utils.TestUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,9 +11,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -28,7 +29,7 @@ public class IkonosMetadataInspectorTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        LogUtils.initLogger();
+        LogUtils4Tests.initLogger();
     }
 
     @Test
