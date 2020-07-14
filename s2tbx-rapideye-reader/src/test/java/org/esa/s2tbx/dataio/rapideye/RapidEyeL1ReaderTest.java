@@ -19,7 +19,6 @@ package org.esa.s2tbx.dataio.rapideye;
 
 import com.bc.ceres.binding.ConversionException;
 import org.esa.s2tbx.dataio.gdal.GDALLibraryInstaller;
-import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
@@ -28,14 +27,14 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.subset.GeometrySubsetRegion;
 import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.converters.JtsGeometryConverter;
-import org.esa.snap.runtime.LogUtils;
+import org.esa.snap.runtime.LogUtils4Tests;
 import org.esa.snap.utils.TestUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 
@@ -52,7 +51,7 @@ public class RapidEyeL1ReaderTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        LogUtils.initLogger();
+        LogUtils4Tests.initLogger();
 
         GDALLibraryInstaller.install();
     }
