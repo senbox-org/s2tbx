@@ -23,15 +23,12 @@ public class MuscateMetadataInspector implements MetadataInspector {
     @Override
     public Metadata getMetadata(Path productPath) throws IOException {
         try (VirtualDirEx productDirectory = VirtualDirEx.build(productPath, false, false)) {
-            String[] filePaths = productDirectory.listAllFiles();
-            MuscateMetadata productMetadata = MuscateProductReader.readMetadata(productDirectory, filePaths);
+            ProductFilePathsHelper filePathsHelper = new ProductFilePathsHelper(productDirectory);
 
-            Metadata metadata = new Metadata();
-            metadata.setProductWidth(productMetadata.getRasterWidth());
-            metadata.setProductHeight(productMetadata.getRasterHeight());
+            MuscateMetadata productMetadata = filePathsHelper.getMetadata();
+
+            Metadata metadata = new Metadata(productMetadata.getRasterWidth(), productMetadata.getRasterHeight());
             metadata.setGeoCoding(productMetadata.buildCrsGeoCoding());
-
-            ProductFilePathsHelper filePathsHelper = new ProductFilePathsHelper(filePaths, productDirectory.getFileSystemSeparator());
 
             // add bands
             List<String> imageBandNames = computeImageBandNames(filePathsHelper, productDirectory, productMetadata);
@@ -329,7 +326,7 @@ public class MuscateMetadataInspector implements MetadataInspector {
     private static MuscateMetadata.Geoposition findGeoPosition(String tiffImageRelativeFilePath, ProductFilePathsHelper filePathsHelper, VirtualDirEx productDirectory, MuscateMetadata metadata)
                                                                throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
 
-        String tiffImageFilePath = filePathsHelper.computeImageRelativeFilePath(productDirectory, tiffImageRelativeFilePath);
+        String tiffImageFilePath = filePathsHelper.computeImageRelativeFilePath(tiffImageRelativeFilePath);
         try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(productDirectory.getBaseFile().toPath(), tiffImageFilePath)) {
             int defaultBandWidth = geoTiffImageReader.getImageWidth();
             int defaultBandHeight = geoTiffImageReader.getImageHeight();

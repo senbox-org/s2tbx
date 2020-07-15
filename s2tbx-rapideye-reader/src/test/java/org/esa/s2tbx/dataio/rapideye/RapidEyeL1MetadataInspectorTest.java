@@ -1,16 +1,20 @@
 package org.esa.s2tbx.dataio.rapideye;
 
+import org.esa.s2tbx.dataio.gdal.GDALLibraryInstaller;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
+import org.esa.snap.runtime.LogUtils4Tests;
 import org.esa.snap.utils.TestUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -23,8 +27,15 @@ public class RapidEyeL1MetadataInspectorTest {
     public RapidEyeL1MetadataInspectorTest() {
     }
 
+    @BeforeClass
+    public static void setup() throws Exception {
+        LogUtils4Tests.initLogger();
+
+        GDALLibraryInstaller.install();
+    }
+
     @Test
-    public void testMetadataInspector() throws URISyntaxException, IOException {
+    public void testMetadataInspector() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
 
         File productFile = TestUtil.getTestFile(PRODUCTS_FOLDER + "Demo03_1B/2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml");

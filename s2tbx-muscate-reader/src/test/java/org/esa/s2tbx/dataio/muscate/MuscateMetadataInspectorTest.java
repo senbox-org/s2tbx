@@ -1,7 +1,9 @@
 package org.esa.s2tbx.dataio.muscate;
 
 import org.esa.snap.core.metadata.MetadataInspector;
+import org.esa.snap.runtime.LogUtils4Tests;
 import org.esa.snap.utils.TestUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -17,15 +19,21 @@ import static org.junit.Assume.assumeTrue;
  */
 public class MuscateMetadataInspectorTest {
 
-    private String productsFolder = "S2"+ File.separator+ "MUSCATE" + File.separator;
+    private static final String PRODUCTS_FOLDER = "S2"+ File.separator+ "MUSCATE" + File.separator;
 
     public MuscateMetadataInspectorTest() {
+    }
+
+    @BeforeClass
+    public static void setup() throws Exception {
+        LogUtils4Tests.initLogger();
     }
 
     @Test
     public void testMuscateMetadataInspector() throws IOException {
         assumeTrue(TestUtil.testdataAvailable());
-        File file = TestUtil.getTestFile(productsFolder + "SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0.zip");
+
+        File file = TestUtil.getTestFile(PRODUCTS_FOLDER + "SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0.zip");
         assertNotNull(file);
 
         MuscateMetadataInspector metadataInspector = new MuscateMetadataInspector();
