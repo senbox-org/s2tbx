@@ -977,7 +977,9 @@ public class MuscateProductReader extends AbstractProductReader implements S2Ang
 
         Band band = new Band(angleBandName, ProductData.TYPE_FLOAT32, sourceBandImage.getWidth(), sourceBandImage.getHeight());
         band.setDescription(description);
-        band.setUnit("°");
+        //20200716 - issue with degree sign in DIMAP, decision to use "deg" fo unit instead of "°"
+        //band.setUnit("°");
+        band.setUnit("deg");
         band.setNoDataValue(Double.NaN);
         band.setNoDataValueUsed(true);
 

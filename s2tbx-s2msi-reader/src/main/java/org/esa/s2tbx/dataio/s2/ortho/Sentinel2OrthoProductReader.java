@@ -387,7 +387,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     description = "Solar azimuth angle";
                 }
                 band.setDescription(description);
-                band.setUnit("°");
+                //20200716 - issue with degree sign in DIMAP, decision to use "deg" fo unit instead of "°"
+                //band.setUnit("°");
+                band.setUnit("deg");
                 band.setNoDataValue(Double.NaN);
                 band.setNoDataValueUsed(true);
 
