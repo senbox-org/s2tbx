@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/senbox-org/s2tbx.svg?branch=master)](https://travis-ci.org/senbox-org/s2tbx)
+
 Sentinel-2 Toolbox (S2TBX)
 ==========================
 
