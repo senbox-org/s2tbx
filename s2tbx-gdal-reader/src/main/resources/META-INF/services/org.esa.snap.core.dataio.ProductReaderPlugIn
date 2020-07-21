@@ -13,3 +13,4 @@ org.esa.s2tbx.dataio.gdal.reader.plugins.RMFDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.RSTDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.SAGADriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.SGIDriverProductReaderPlugIn
+org.esa.s2tbx.dataio.gdal.reader.plugins.GTiffDriverProductReaderPlugIn
