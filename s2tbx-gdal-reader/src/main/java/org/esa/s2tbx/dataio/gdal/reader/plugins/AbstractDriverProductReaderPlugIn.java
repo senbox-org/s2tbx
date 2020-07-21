@@ -13,8 +13,8 @@ import org.esa.snap.utils.StringHelper;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 
@@ -24,10 +24,10 @@ import java.util.Set;
  * @author Jean Coravu
  */
 public abstract class AbstractDriverProductReaderPlugIn implements ProductReaderPlugIn {
-    private final Set<String> extensions;
     private final String driverName;
     private final String driverDisplayName;
     private final String pluginFormatName;
+    protected final Set<String> extensions;
 
     static {
         GDALLoader.getInstance().initGDAL();
@@ -44,7 +44,7 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
     protected AbstractDriverProductReaderPlugIn(String extension, String driverShortName, String driverLongName) {
         this(driverShortName, driverLongName);
 
-        addExtensin(extension);
+        addExtension(extension);
     }
 
     @Override
@@ -65,19 +65,8 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         if (GDALInstallInfo.INSTANCE.isPresent()) {
-            String filePath = null;
-            if (input instanceof String) {
-                filePath = (String)input;
-            } else if (input instanceof File) {
-                filePath = ((File)input).getAbsolutePath();
-            } else if (input instanceof Path) {
-                filePath = ((Path)input).toFile().getAbsolutePath();
-            } else {
-                throw new IllegalArgumentException("Unknown type '"+input.getClass()+"' for input '"+ input.toString()+"'.");
-            }
-            Iterator<String> it = this.extensions.iterator();
-            while (it.hasNext()) {
-                String extension = it.next();
+            final String filePath = getInput(input).toString();
+            for (String extension : this.extensions) {
                 if (StringHelper.endsWithIgnoreCase(filePath, extension)) {
                     return DecodeQualification.SUITABLE;
                 }
@@ -108,8 +97,20 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
         return new SnapFileFilter(getFormatNames()[0], getDefaultFileExtensions(), getDescription(Locale.getDefault()));
     }
 
-    protected final void addExtensin(String extension) {
+    protected final void addExtension(String extension) {
         this.extensions.add(extension);
+    }
+
+    protected Path getInput(Object input) {
+        if (input instanceof String) {
+            return Paths.get((String)input);
+        } else if (input instanceof File) {
+            return ((File)input).toPath().toAbsolutePath();
+        } else if (input instanceof Path) {
+            return ((Path)input).toAbsolutePath();
+        } else {
+            throw new IllegalArgumentException("Unsupported type '" + input.getClass() + "' for input '"+ input.toString() + "'.");
+        }
     }
 
     public final String getDriverName() {

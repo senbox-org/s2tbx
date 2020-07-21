@@ -10,7 +10,7 @@ public class ILWISDriverProductReaderPlugIn extends AbstractDriverProductReaderP
     public ILWISDriverProductReaderPlugIn() {
         super("ILWIS", "ILWIS Raster Map");
 
-        addExtensin(".mpr");
-        addExtensin(".mpl");
+        addExtension(".mpr");
+        addExtension(".mpl");
     }
 }
