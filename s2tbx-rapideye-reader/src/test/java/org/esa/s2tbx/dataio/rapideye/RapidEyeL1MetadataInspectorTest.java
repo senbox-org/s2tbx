@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.rapideye;
 
-import org.esa.s2tbx.dataio.gdal.GDALLibraryInstaller;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.runtime.LogUtils4Tests;
@@ -31,7 +30,6 @@ public class RapidEyeL1MetadataInspectorTest {
     public static void setup() throws Exception {
         LogUtils4Tests.initLogger();
 
-        GDALLibraryInstaller.install();
     }
 
     @Test
