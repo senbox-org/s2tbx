@@ -9,7 +9,6 @@ import org.esa.s2tbx.dataio.gdal.drivers.GCP;
 import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
 import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.NITFDriverProductReaderPlugIn;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -147,7 +146,7 @@ public class GDALProductReader extends AbstractProductReader {
             wellKnownText = wellKnownText.replaceAll(",?(AXIS\\[\"([A-Za-z]*?)\",[A-Z]*?])", "");
             CoordinateReferenceSystem mapCRS = CRS.parseWKT(wellKnownText);
             return ImageUtils.buildCrsGeoCoding(originX, originY, resolutionX, resolutionY, imageWidth, imageHeight, mapCRS, subsetBounds, 0.5d, 0.5d);
-        } else if (product != null  && !(product.getProductReader().getReaderPlugIn() instanceof NITFDriverProductReaderPlugIn)) {
+        } else if (product != null) {
             String gcpProjection = gdalDataset.getGCPProjection();
 
             int gcpCount = gdalDataset.getGCPCount();
