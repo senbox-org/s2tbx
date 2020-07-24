@@ -21,13 +21,10 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.apache.commons.lang.StringUtils;
 import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
-import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.engine_utilities.file.AbstractFile;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
 import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.metadata.XmlMetadataParserFactory;
@@ -40,7 +37,6 @@ import org.esa.snap.core.dataio.*;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.TreeNode;
-import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.dataio.ImageRegistryUtils;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
@@ -149,20 +145,8 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                 product.getMetadataRoot().addElement(metadata.getRootElement());
             }
 
-            String value = System.getProperty("rapid.eye.force.read.product.with.nitf.api");
-            GDALProductReader gdalProductReader = null;
-            if (!Boolean.parseBoolean(value)) {
-                gdalProductReader = getGDALProductReader();
-            }
-
             if (logger.isLoggable(Level.FINE)) {
-                String logMessage;
-                if (gdalProductReader == null) {
-                    logMessage = "Use the NITF API";
-                } else {
-                    logMessage = "Use the GDAL product reader";
-                }
-                logMessage += " to read the RapidEye L1 product from input '" + productPath.toString() + "'.";
+                String logMessage = "Use the NITF API to read the RapidEye L1 product from input '" + productPath.toString() + "'.";
                 logger.log(Level.FINE, logMessage);
             }
 
@@ -176,50 +160,26 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                     if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
                         File localFile = this.productDirectory.getFile(nitfFiles[i]);
                         Band targetBand;
-                        if (gdalProductReader == null) {
-                            // the GDAL library is not installed
-                            NITFReaderWrapper nitfReader = new NITFReaderWrapper(localFile);
-                            this.bandImageReaders.add(nitfReader);
+                        NITFReaderWrapper nitfReader = new NITFReaderWrapper(localFile);
+                        this.bandImageReaders.add(nitfReader);
 
-                            if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
-                                NITFMetadata nitfMetadata = nitfReader.getMetadata();
-                                if (nitfMetadata != null && !addMetadataFromNitfAPI) {
-                                    product.getMetadataRoot().addElement(nitfMetadata.getMetadataRoot());
-                                    addMetadataFromNitfAPI = true;
-                                }
+                        if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                            NITFMetadata nitfMetadata = nitfReader.getMetadata();
+                            if (nitfMetadata != null && !addMetadataFromNitfAPI) {
+                                product.getMetadataRoot().addElement(nitfMetadata.getMetadataRoot());
+                                addMetadataFromNitfAPI = true;
                             }
-                            targetBand = new ColorPaletteBand(bandName, metadata.getPixelFormat(), productBounds.width, productBounds.height, this.colorPaletteFilePath);
-                            if (bandGeoCoding != null) {
-                                targetBand.setGeoCoding(bandGeoCoding);
-                            }
-                            int dataBufferType = ImageManager.getDataBufferType(targetBand.getDataType());
-                            RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, dataBufferType, productBounds, preferredTileSize,
-                                                                                                         targetBand.getGeoCoding(), defaultJAIReadTileSize);
-                            // compute the tile size of the image layout object based on the tile size from the tileOpImage used to read the data
-                            ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
-                            targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
-                        } else {
-                            // the GDAL library is installed
-                            if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
-                                // add the firt metadata from NITF API
-                                if (!addMetadataFromNitfAPI) {
-                                    NITFReaderWrapper nitfReader = new NITFReaderWrapper(localFile);
-                                    this.bandImageReaders.add(nitfReader);
-
-                                    NITFMetadata nitfMetadata = nitfReader.getMetadata();
-                                    if (nitfMetadata != null) {
-                                        product.getMetadataRoot().addElement(nitfMetadata.getMetadataRoot());
-                                        addMetadataFromNitfAPI = true;
-                                    }
-                                }
-                            }
-
-                            Product nitfProduct = gdalProductReader.readProduct(localFile.toPath(), productBounds);
-                            product.setNumResolutionsMax(nitfProduct.getNumResolutionsMax());
-                            nitfProduct.transferGeoCodingTo(product, null);
-                            targetBand = nitfProduct.getBandAt(0);
-                            targetBand.setName(bandName);
                         }
+                        targetBand = new ColorPaletteBand(bandName, metadata.getPixelFormat(), productBounds.width, productBounds.height, this.colorPaletteFilePath);
+                        if (bandGeoCoding != null) {
+                            targetBand.setGeoCoding(bandGeoCoding);
+                        }
+                        int dataBufferType = ImageManager.getDataBufferType(targetBand.getDataType());
+                        RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, dataBufferType, productBounds, preferredTileSize,
+                                                                                                     targetBand.getGeoCoding(), defaultJAIReadTileSize);
+                        // compute the tile size of the image layout object based on the tile size from the tileOpImage used to read the data
+                        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
+                        targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         targetBand.setSpectralWavelength(RapidEyeConstants.WAVELENGTHS[i]);
                         targetBand.setUnit("cW/m\u00B2 sr μm");
                         targetBand.setSpectralBandwidth(RapidEyeConstants.BANDWIDTHS[i]);
@@ -484,18 +444,6 @@ public class RapidEyeL1Reader extends AbstractProductReader {
             latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
         }
         return new TiePointGeoCoding(latGrid, lonGrid);
-    }
-
-    private static GDALProductReader getGDALProductReader() {
-        GDALProductReader gdalProductReader = null;
-        if (GDALInstallInfo.INSTANCE.isPresent()) {
-            // the GDAL application is installed on the local computer
-            ProductReader productReaderReader = ProductIO.getProductReader("GDAL-NITF-READER");
-            if (productReaderReader != null) {
-                gdalProductReader = (GDALProductReader) productReaderReader;
-            }
-        }
-        return gdalProductReader;
     }
 
     protected static class ColorIterator {

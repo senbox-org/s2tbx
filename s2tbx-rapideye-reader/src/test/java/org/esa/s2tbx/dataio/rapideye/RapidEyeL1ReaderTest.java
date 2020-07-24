@@ -18,7 +18,6 @@
 package org.esa.s2tbx.dataio.rapideye;
 
 import com.bc.ceres.binding.ConversionException;
-import org.esa.s2tbx.dataio.gdal.GDALLibraryInstaller;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
@@ -52,8 +51,6 @@ public class RapidEyeL1ReaderTest {
     @BeforeClass
     public static void setup() throws Exception {
         LogUtils4Tests.initLogger();
-
-        GDALLibraryInstaller.install();
     }
 
     @Test
