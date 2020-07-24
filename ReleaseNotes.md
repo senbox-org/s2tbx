@@ -86,6 +86,8 @@ Allow setting which GDAL distribution is used by SNAP (installed or internal dis
     * [SIITBX-380, SIITBX-384] - Adapt Operators to use doExecute correctly (part 2)
     * [SIITBX-407] - Revise help material
     * [SIITBX-409] - Clean up dependencies on 3rd-party libraries (CSRO)
+    * [SIITBX-431] - Improve reading time of a product/bands within a product for readers using JP2
+    * [SIITBX-432] - Improve reading time of a product/bands within a product for readers using GeoTiff
     * [STEP-30, SIITBX-315] - Revise initialise method in operator implementations
     * Moving SNAP development and deployment chain to Zulu OpenJDK 8
     * Moving SNAP installer to install4j 8 
