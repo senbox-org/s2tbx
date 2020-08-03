@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
@@ -225,7 +226,12 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 band.setSpectralBandIndex(bandIndex + 1);
                 band.setDescription(bandNames[bandIndex]);
 
-                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds,
+                int maximumBandLevelCount = spotBandMatrices[bandIndex].computeMinimumLevelCount();
+                int bandLevelCount = DefaultMultiLevelModel.getLevelCount(productBounds.width, productBounds.height);
+                if (bandLevelCount > maximumBandLevelCount) {
+                    bandLevelCount = maximumBandLevelCount;
+                }
+                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(bandLevelCount, spotBandMatrices[bandIndex], productBounds,
                                                                                                 bandIndex, band.getGeoCoding(), noDataValue, defaultJAIReadTileSize);
                 ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                 band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));

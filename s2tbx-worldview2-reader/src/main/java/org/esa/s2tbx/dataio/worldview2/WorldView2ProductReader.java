@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.worldview2;
 
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.apache.commons.lang.StringUtils;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
@@ -299,9 +300,16 @@ class WorldView2ProductReader extends AbstractProductReader {
         if (bandGeoCoding != null) {
             band.setGeoCoding(bandGeoCoding);
         }
-        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(subProductMosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null, defaultJAIReadTileSize);
+
+        int maximumBandLevelCount = subProductMosaicMatrix.computeMinimumLevelCount();
+        int bandLevelCount = DefaultMultiLevelModel.getLevelCount(bandBounds.width, bandBounds.height);
+        if (bandLevelCount > maximumBandLevelCount) {
+            bandLevelCount = maximumBandLevelCount;
+        }
+        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(bandLevelCount, subProductMosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null, defaultJAIReadTileSize);
         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+
         return band;
     }
 
