@@ -269,6 +269,11 @@ class VirtualDirWrapper extends VirtualDirEx {
     }
 
     @Override
+    public Path makeLocalTempFolder() throws IOException {
+        return this.wrapped.makeLocalTempFolder();
+    }
+
+    @Override
     protected void finalize() throws Throwable {
         this.wrapped = null;
 
