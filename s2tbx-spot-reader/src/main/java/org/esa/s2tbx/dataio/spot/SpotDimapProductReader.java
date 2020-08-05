@@ -271,6 +271,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             spotBandMatrices[bandIndex] = new MosaicMatrix(tileRowCount, tileColumnCount);
         }
 
+        Path localTempFolder = this.productDirectory.makeLocalTempFolder();
         int dataType = 0;
         for (int fileIndex=0; fileIndex<componentMetadataList.size(); fileIndex++) {
             SpotDimapMetadata componentMetadata = componentMetadataList.get(fileIndex);
@@ -301,7 +302,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 throw new IllegalStateException("Different data type count: fileIndex=" + fileIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
             }
 
-            GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, tiffImagePath, null);
+            GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, tiffImagePath, null, localTempFolder);
             for (int bandIndex = 0; bandIndex<bandCount; bandIndex++) {
                 spotBandMatrices[bandIndex].addCell(matrixCell);
             }

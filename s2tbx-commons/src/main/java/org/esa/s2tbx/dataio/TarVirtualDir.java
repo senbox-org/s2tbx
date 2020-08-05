@@ -148,6 +148,14 @@ class TarVirtualDir extends VirtualDirEx {
         return this.extractDir;
     }
 
+    @Override
+    public Path makeLocalTempFolder() throws IOException {
+        if (this.extractDir == null) {
+            this.extractDir = VirtualDir.createUniqueTempDir();
+        }
+        return this.extractDir.toPath();
+    }
+
     public void ensureUnpacked(File unpackFolder) throws IOException {
         if (this.extractDir == null) {
             this.extractDir = (unpackFolder == null) ? VirtualDir.createUniqueTempDir() : unpackFolder;

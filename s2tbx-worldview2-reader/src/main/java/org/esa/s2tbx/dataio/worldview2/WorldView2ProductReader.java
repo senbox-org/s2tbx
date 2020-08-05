@@ -34,6 +34,7 @@ import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import java.awt.*;
 import java.awt.image.SampleModel;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -248,6 +249,7 @@ class WorldView2ProductReader extends AbstractProductReader {
             geoTiffImagePaths[coordinates[0]][coordinates[1]] = rasterString;
         }
 
+        Path localTempFolder = this.productDirectory.makeLocalTempFolder();
         int dataType = 0;
         MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRowCount, tileColumnCount);
         for (int rowIndex=0; rowIndex<tileRowCount; rowIndex++) {
@@ -266,7 +268,7 @@ class WorldView2ProductReader extends AbstractProductReader {
                 } else if (dataType != dataBufferType) {
                     throw new IllegalStateException("Different data type count: rowIndex=" + rowIndex + ", columnIndex=" + columnIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
                 }
-                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, parentFolderPath, rasterString);
+                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, parentFolderPath, rasterString, localTempFolder);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
             }
         }
