@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
@@ -225,7 +226,12 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 band.setSpectralBandIndex(bandIndex + 1);
                 band.setDescription(bandNames[bandIndex]);
 
-                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(spotBandMatrices[bandIndex], productBounds,
+                int maximumBandLevelCount = spotBandMatrices[bandIndex].computeMinimumLevelCount();
+                int bandLevelCount = DefaultMultiLevelModel.getLevelCount(productBounds.width, productBounds.height);
+                if (bandLevelCount > maximumBandLevelCount) {
+                    bandLevelCount = maximumBandLevelCount;
+                }
+                GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(bandLevelCount, spotBandMatrices[bandIndex], productBounds,
                                                                                                 bandIndex, band.getGeoCoding(), noDataValue, defaultJAIReadTileSize);
                 ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                 band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
@@ -265,6 +271,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             spotBandMatrices[bandIndex] = new MosaicMatrix(tileRowCount, tileColumnCount);
         }
 
+        Path localTempFolder = this.productDirectory.makeLocalTempFolder();
         int dataType = 0;
         for (int fileIndex=0; fileIndex<componentMetadataList.size(); fileIndex++) {
             SpotDimapMetadata componentMetadata = componentMetadataList.get(fileIndex);
@@ -295,7 +302,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 throw new IllegalStateException("Different data type count: fileIndex=" + fileIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
             }
 
-            GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, tiffImagePath, null);
+            GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, tiffImagePath, null, localTempFolder);
             for (int bandIndex = 0; bandIndex<bandCount; bandIndex++) {
                 spotBandMatrices[bandIndex].addCell(matrixCell);
             }

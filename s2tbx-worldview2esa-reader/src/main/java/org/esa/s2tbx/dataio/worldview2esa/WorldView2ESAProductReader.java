@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.worldview2esa;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
@@ -38,6 +39,7 @@ import javax.media.jai.JAI;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.image.SampleModel;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -185,6 +187,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
             }
             geoTiffImageReaders[coordinates[0]][coordinates[1]] = rasterString;
         }
+        Path localTempFolder = this.productDirectory.makeLocalTempFolder();
         int dataType = 0;
         MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRowCount, tileColumnCount);
         for (int rowIndex=0; rowIndex<tileRowCount; rowIndex++) {
@@ -203,7 +206,7 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
                 } else if (dataType != dataBufferType) {
                     throw new IllegalStateException("Different data type count: rowIndex=" + rowIndex + ", columnIndex=" + columnIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
                 }
-                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, imagesMetadataParentPath, rasterString);
+                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, imagesMetadataParentPath, rasterString, localTempFolder);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
             }
         }
@@ -254,7 +257,13 @@ public class WorldView2ESAProductReader extends AbstractProductReader {
         if (bandGeoCoding != null) {
             band.setGeoCoding(bandGeoCoding);
         }
-        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(mosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null, defaultJAIReadTileSize);
+
+        int maximumBandLevelCount = mosaicMatrix.computeMinimumLevelCount();
+        int bandLevelCount = DefaultMultiLevelModel.getLevelCount(bandBounds.width, bandBounds.height);
+        if (bandLevelCount > maximumBandLevelCount) {
+            bandLevelCount = maximumBandLevelCount;
+        }
+        GeoTiffMatrixMultiLevelSource multiLevelSource = new GeoTiffMatrixMultiLevelSource(bandLevelCount, mosaicMatrix, bandBounds, bandIndex, bandGeoCoding, null, defaultJAIReadTileSize);
         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
 

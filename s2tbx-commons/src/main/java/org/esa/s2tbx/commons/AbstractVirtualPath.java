@@ -59,6 +59,13 @@ public abstract class AbstractVirtualPath extends VirtualDir {
         return this.localTempDir;
     }
 
+    public Path makeLocalTempFolder() throws IOException {
+        if (this.localTempDir == null) {
+            this.localTempDir = VirtualDir.createUniqueTempDir();
+        }
+        return this.localTempDir.toPath();
+    }
+
     protected final Path copyFileOnLocalDiskIfNeeded(Path entryPath, String childRelativePath) throws IOException {
         if (this.copyFilesOnLocalDisk && Files.isRegularFile(entryPath)) {
             // copy the file from the zip archive on the local disk

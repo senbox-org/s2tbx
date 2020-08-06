@@ -162,6 +162,8 @@ public abstract class VirtualDirEx extends VirtualDir implements Closeable {
 
     public abstract FilePath getFilePath(String childRelativePath) throws IOException;
 
+    public abstract Path makeLocalTempFolder() throws IOException;
+
     public void setFolderDepth(int value) {
         this.depth = value;
     }
