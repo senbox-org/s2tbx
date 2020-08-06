@@ -258,7 +258,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                             imageToModelTransform = band.getImageToModelTransform();
                         }
                         int bandIndex = bandInfos[i].getIndex();
-                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(result.getLevelCount(), result.getMosaicMatrix(), productBounds, imageToModelTransform, bandIndex,
+                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(result.getLevelCount(), result.getMosaicMatrix(), bandBounds, imageToModelTransform, bandIndex,
                                                                                     (double)noDataValue, null, defaultJAIReadTileSize);
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
