@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.pleiades.internal;
 
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.pleiades.PleiadesProductReader;
 import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
@@ -10,7 +11,6 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.metadata.MetadataInspector;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -32,33 +32,24 @@ public class PleiadesMetadataInspector implements MetadataInspector {
 
     @Override
     public Metadata getMetadata(Path productPath) throws IOException {
-        VolumeMetadata productMetadata = getProductMetadata(productPath);
-        ImageMetadata maxResImageMetadata = productMetadata.getMaxResolutionImage();
-        Metadata metadata = new Metadata();
-        int width = productMetadata.getSceneWidth();
-        int height = productMetadata.getSceneHeight();
-        metadata.setProductWidth(width);
-        metadata.setProductHeight(height);
-        Dimension productDefaultSize = new Dimension(width, height);
-        addBandsAndMasks(productMetadata,metadata);
+        try (VirtualDirEx productDirectory = VirtualDirEx.build(productPath)) {
+            VolumeMetadata productMetadata;
+            try (FilePathInputStream inputStream = productDirectory.getInputStream(Constants.ROOT_METADATA)) {
+                productMetadata = VolumeMetadata.create(inputStream);
+            }
+            List<ImageMetadata> imageMetadataList = productMetadata.getImageMetadataList();
+            if (imageMetadataList.isEmpty()) {
+                throw new IllegalStateException("No raster found.");
+            }
 
-        GeoCoding geoCoding = PleiadesProductReader.buildGeoCoding(maxResImageMetadata, productDefaultSize, productMetadata, null, null);
-        metadata.setGeoCoding(geoCoding);
-        return metadata;
-    }
+            ImageMetadata maxResImageMetadata = productMetadata.getMaxResolutionImage();
+            int defaultProductWidth = productMetadata.getSceneWidth();
+            int defaultProductHeight = productMetadata.getSceneHeight();
+            Metadata metadata = new Metadata(defaultProductWidth, defaultProductHeight);
 
-    private VolumeMetadata getProductMetadata(Path productPath) throws IOException{
-        VirtualDirEx productDirectory = VirtualDirEx.build(productPath);
-        return VolumeMetadata.create(productDirectory.getFile(Constants.ROOT_METADATA).toPath());
-    }
-
-    private void addBandsAndMasks(VolumeMetadata productMetadata, Metadata metadata) throws IOException {
-        List<ImageMetadata> imageMetadataList = productMetadata.getImageMetadataList();
-        if (imageMetadataList.isEmpty()) {
-            throw new IOException("No raster found");
-        } else {
             metadata.getMaskList().add("NODATA");
             metadata.getMaskList().add("SATURATED");
+
             for (ImageMetadata imageMetadata : imageMetadataList) {
                 ImageMetadata.BandInfo[] bandInfos = imageMetadata.getBandsInformation();
                 Arrays.stream(bandInfos).forEach(bandInfo -> metadata.getBandList().add(bandInfo.getId()));
@@ -73,6 +64,15 @@ public class PleiadesMetadataInspector implements MetadataInspector {
                     });
                 }
             }
+
+            GeoCoding geoCoding = PleiadesProductReader.buildGeoCoding(maxResImageMetadata, defaultProductWidth, defaultProductHeight, productMetadata, null, null);
+            metadata.setGeoCoding(geoCoding);
+
+            return metadata;
+        } catch (RuntimeException | IOException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IOException(exception);
         }
     }
 }
