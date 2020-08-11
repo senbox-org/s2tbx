@@ -2,6 +2,8 @@ package org.esa.s2tbx.dataio.pleiades;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
+import org.apache.commons.lang.StringUtils;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
@@ -9,42 +11,49 @@ import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
 import org.esa.s2tbx.dataio.pleiades.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.pleiades.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.pleiades.dimap.VolumeMetadata;
-import org.esa.s2tbx.dataio.pleiades.internal.MosaicMultiLevelSource;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.snap.core.dataio.AbstractProductReader;
-import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductSubsetDef;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.image.ImageManager;
+import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReaderPlugIn;
+import org.esa.snap.engine_utilities.util.PathUtils;
+import org.esa.snap.jp2.reader.JP2ImageFile;
+import org.esa.snap.jp2.reader.JP2LocalFile;
+import org.esa.snap.jp2.reader.internal.JP2MosaicBandMatrixCell;
+import org.esa.snap.lib.openjpeg.dataio.Utils;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegUtils;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
+import javax.media.jai.JAI;
 import java.awt.*;
-import java.awt.image.DataBuffer;
+import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -57,25 +66,12 @@ public class PleiadesProductReader extends AbstractProductReader {
 
     private static final Logger logger = Logger.getLogger(PleiadesProductReader.class.getName());
 
-    private final static Map<Integer, Integer> TYPE_MAP = new HashMap<Integer, Integer>() {{
-        put(ProductData.TYPE_UINT8, DataBuffer.TYPE_BYTE);
-        put(ProductData.TYPE_INT8, DataBuffer.TYPE_BYTE);
-        put(ProductData.TYPE_UINT16, DataBuffer.TYPE_USHORT);
-        put(ProductData.TYPE_INT16, DataBuffer.TYPE_SHORT);
-        put(ProductData.TYPE_UINT32, DataBuffer.TYPE_INT);
-        put(ProductData.TYPE_INT32, DataBuffer.TYPE_INT);
-        put(ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT);
-    }};
-
+    private Path localJp2CacheFolder;
     private VirtualDirEx productDirectory;
     private VolumeMetadata metadata;
-    private Set<WeakReference<Product>> tileRefs;
-    private boolean isMultiSize = false;
 
     protected PleiadesProductReader(PleiadesProductReaderPlugin readerPlugIn) {
         super(readerPlugIn);
-
-        this.tileRefs = new HashSet<>();
     }
 
     @Override
@@ -121,55 +117,63 @@ public class PleiadesProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-
-        this.productDirectory = VirtualDirEx.build(inputPath);
-
-        try (FilePathInputStream inputStream = this.productDirectory.getInputStream(Constants.ROOT_METADATA)) {
-            this.metadata = VolumeMetadata.create(inputStream);
+        if (this.productDirectory != null) {
+            throw new IllegalStateException("There is already a product directory.");
+        }
+        if (this.localJp2CacheFolder != null) {
+            throw new IllegalStateException("There is already a local cache folder.");
         }
 
-        Product product = null;
-        if (this.metadata != null) {
-            List<ImageMetadata> imageMetadataList = this.metadata.getImageMetadataList();
-            if (imageMetadataList.size() == 0) {
+        boolean success = false;
+        try {
+            Object productInput = super.getInput(); // invoke the 'getInput' method from the parent class
+            ProductSubsetDef subsetDef = super.getSubsetDef(); // invoke the 'getSubsetDef' method from the parent class
+
+            Path inputPath = BaseProductReaderPlugIn.convertInputToPath(productInput);
+            this.productDirectory = VirtualDirEx.build(inputPath);
+
+            try (FilePathInputStream inputStream = this.productDirectory.getInputStream(Constants.ROOT_METADATA)) {
+                this.metadata = VolumeMetadata.create(inputStream);
+            }
+            List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
+            if (imageMetadataList.isEmpty()) {
                 throw new IOException("No raster found");
             }
-            this.isMultiSize = this.metadata.getImageMetadataList().size() > 1;
-            int productDefaultWidth = this.metadata.getSceneWidth();
-            int productDefaultHeight = this.metadata.getSceneHeight();
-            Dimension defaultProductBounds = new Dimension(productDefaultWidth, productDefaultHeight);
+
+            boolean isMultiSize = (this.metadata.getImageMetadataList().size() > 1);
+            int defaultProductWidth = this.metadata.getSceneWidth();
+            int defaultProductHeight = this.metadata.getSceneHeight();
 
             ImageMetadata maxResImageMetadata = this.metadata.getMaxResolutionImage();
-            ProductSubsetDef subsetDef = getSubsetDef();
             GeoCoding productDefaultGeoCoding = null;
-            Rectangle productSubsetRegion;
+            Rectangle productBounds;
             if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
-                productSubsetRegion = new Rectangle(0, 0, productDefaultWidth, productDefaultHeight);
+                productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
             } else {
-                productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, metadata, null, null);
-                productSubsetRegion = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, productDefaultWidth, productDefaultHeight, isMultiSize);
+                productDefaultGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductWidth, defaultProductHeight, metadata, null, null);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, isMultiSize);
             }
-            if (productSubsetRegion.isEmpty()) {
+            if (productBounds.isEmpty()) {
                 throw new IllegalStateException("Empty product bounds.");
             }
 
-            product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), productSubsetRegion.width, productSubsetRegion.height);
+            Product product = new Product(this.metadata.getInternalReference(), this.metadata.getProductType(), productBounds.width, productBounds.height, this);
             product.setFileLocation(this.metadata.getPath().toFile());
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
             product.setDescription(maxResImageMetadata.getProductDescription());
-            GeoCoding geoCoding = buildGeoCoding(maxResImageMetadata, defaultProductBounds, metadata, productSubsetRegion, subsetDef);
-            if (geoCoding instanceof TiePointGeoCoding){
-                TiePointGeoCoding tiePointGeoCoding = (TiePointGeoCoding) geoCoding;
+            GeoCoding productGeoCoding = buildGeoCoding(maxResImageMetadata, defaultProductWidth, defaultProductHeight, metadata, productBounds, subsetDef);
+            if (productGeoCoding instanceof TiePointGeoCoding){
+                TiePointGeoCoding tiePointGeoCoding = (TiePointGeoCoding) productGeoCoding;
                 product.addTiePointGrid(tiePointGeoCoding.getLatGrid());
                 product.addTiePointGrid(tiePointGeoCoding.getLonGrid());
             }
-            product.setSceneGeoCoding(geoCoding);
+            product.setSceneGeoCoding(productGeoCoding);
 
-            PleiadesProductReaderPlugin readerPlugin = (PleiadesProductReaderPlugin)getReaderPlugIn();
-            Path colorPaletteFilePath = readerPlugin.getColorPaletteFilePath();
+            Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+            product.setPreferredTileSize(defaultJAIReadTileSize);
 
+            Path colorPaletteFilePath = ((PleiadesProductReaderPlugin)getReaderPlugIn()).getColorPaletteFilePath();
             for (ImageMetadata imageMetadata : imageMetadataList) {
                 if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
                     product.getMetadataRoot().addElement(imageMetadata.getRootElement());
@@ -177,251 +181,220 @@ public class PleiadesProductReader extends AbstractProductReader {
                 int numBands = imageMetadata.getNumBands();
                 ImageMetadata.BandInfo[] bandInfos = imageMetadata.getBandsInformation();
 
-                int pixelDataType = imageMetadata.getPixelDataType();
-                int tileRows = imageMetadata.getTileRowsCount();
-                int tileCols = imageMetadata.getTileColsCount();
-                int tileWidth = imageMetadata.getTileWidth();
-                int tileHeight = imageMetadata.getTileHeight();
+                int dataTypeFromMetadata = imageMetadata.getPixelDataType();
                 int noDataValue = imageMetadata.getNoDataValue();
-                int bandWidth = imageMetadata.getRasterWidth();
-                int bandHeight = imageMetadata.getRasterHeight();
 
-                Rectangle bandSubsetRegion;
-                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
-                    bandSubsetRegion = new Rectangle(bandWidth, bandHeight);
-                } else {
-                    GeoCoding bandDefaultGeoCoding = initBandGeoCoding(imageMetadata, bandWidth, bandHeight, productDefaultWidth, null, null);
-                    bandSubsetRegion = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, productDefaultWidth, productDefaultHeight, bandWidth, bandHeight, isMultiSize);
-                }
-                if (bandSubsetRegion.isEmpty()) {
-                    continue; // no intersection
-                }
+                BandMatrixData result = buildMosaicMatrix(imageMetadata, inputPath);
 
-                int subsetTileCols = tileCols;
-                int subsetTileRows = tileRows;
-                int subsetTileEndRow = tileRows;
-                int subsetTileEndCol = tileCols;
-                int subsetTileStartCol = 0;
-                int subsetTileStartRow = 0;
+                int defaultBandWidth = result.getMosaicMatrix().computeTotalWidth();
+                int defaultBandHeight = result.getMosaicMatrix().computeTotalHeight();
+
                 ProductSubsetDef bandSubsetDef = null;
-                if (subsetDef != null) {
-                    if(tileCols > 1 || tileRows > 1) {
-                        //we need to compute the tiles on row and column from where the selected subset starts
-                        subsetTileStartRow = bandSubsetRegion.y / tileHeight;
-                        subsetTileStartCol = bandSubsetRegion.x / tileWidth;
-
-                        //image width and height are already the one from the subset region (were retrieved when the product vas instantiated)
-                        subsetTileEndCol = (bandSubsetRegion.width  + bandSubsetRegion.x) /tileWidth;
-                        if ((bandSubsetRegion.width  + bandSubsetRegion.x)  % tileWidth != 0) {
-                            subsetTileEndCol++;
-                        }
-                        subsetTileEndRow = (bandSubsetRegion.height + bandSubsetRegion.y) / tileHeight;
-                        if ((bandSubsetRegion.height + bandSubsetRegion.y) % tileHeight != 0) {
-                            subsetTileEndRow++;
-                        }
-
-                        subsetTileCols = subsetTileEndCol - subsetTileStartCol;
-                        subsetTileRows = subsetTileEndRow - subsetTileStartRow;
-                    }
+                Rectangle bandBounds;
+                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                    bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
+                } else {
+                    GeoCoding bandDefaultGeoCoding = buildBandGeoCoding(imageMetadata, defaultBandWidth, defaultBandHeight, defaultProductWidth, defaultProductHeight, null, null);
+                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding, bandDefaultGeoCoding, defaultProductWidth,
+                            defaultProductHeight, defaultBandWidth, defaultBandHeight, isMultiSize);
+                    bandSubsetDef = new ProductSubsetDef();
+                    bandSubsetDef.setSubsetRegion(new PixelSubsetRegion(bandBounds, 0));
                 }
-                float factorX = (float) productSubsetRegion.width / bandSubsetRegion.width;
-                float factorY = (float) productSubsetRegion.height / bandSubsetRegion.height;
+                if (bandBounds.isEmpty()) {
+                    continue;
+                }
 
+                product.setNumResolutionsMax(result.getLevelCount());
+                AffineTransform2D transform2D = buildBandTransform(imageMetadata, productBounds, bandBounds);
+                GeoCoding bandGeoCoding = buildBandGeoCoding(imageMetadata, defaultBandWidth, defaultBandHeight, defaultProductWidth, defaultProductHeight, bandBounds, bandSubsetDef);
+                if (bandGeoCoding == null) {
+                    bandGeoCoding = productGeoCoding;
+                }
                 Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
-                Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
-                Product[][] tiles = new Product[subsetTileCols][subsetTileRows];
-                for (String rasterFile : tileInfo.keySet()) {
-                    boolean readTile = true;
-                    int[] coords = tileInfo.get(rasterFile);
-                    if(subsetDef != null && (subsetTileStartCol > coords[1] || subsetTileEndCol -1 < coords[1] ||
-                            subsetTileStartRow > coords[0] || subsetTileEndRow - 1 < coords[0])){
-                        readTile = false;
-                    }
-                    if (readTile) {
-                        if(subsetDef != null) {
-                            bandSubsetDef = new ProductSubsetDef();
-                            if (tileCols == 1 && tileRows == 1) {
-                                bandSubsetDef.setSubsetRegion(new PixelSubsetRegion(bandSubsetRegion, 0));
-                            } else {
-                                int tileOffsetX = 0;
-                                int tileOffsetY = 0;
-                                int coordHeight = tileHeight;
-                                int coordWidth = tileWidth;
 
-                                if (coords[0] == subsetTileStartRow) {
-                                    tileOffsetY = bandSubsetRegion.y - coords[0] * tileHeight;
-                                    if(coords[0] != subsetTileEndRow - 1) {
-                                        coordHeight = tileHeight - tileOffsetY;
-                                    }else{
-                                        coordHeight = bandSubsetRegion.height;
-                                    }
-                                }
-                                if (coords[0] > subsetTileStartRow && coords[0] == subsetTileEndRow - 1) {
-                                    coordHeight = bandSubsetRegion.height - (coords [0] * tileHeight - bandSubsetRegion.y);
-                                }
-
-                                if (coords[1] == subsetTileStartCol) {
-                                    tileOffsetX = bandSubsetRegion.x - coords[1] * tileWidth;
-                                    if(coords[1] != subsetTileEndCol - 1) {
-                                        coordWidth = tileWidth - tileOffsetX;
-                                    }else{
-                                        coordWidth = bandSubsetRegion.width;
-                                    }
-                                }
-
-                                if (coords[1] > subsetTileStartCol && coords[1] == subsetTileEndCol - 1) {
-                                    coordWidth = bandSubsetRegion.width - (coords[1] * tileWidth - bandSubsetRegion.x);
-                                }
-
-                                bandSubsetDef.setSubsetRegion(new PixelSubsetRegion(new Rectangle(tileOffsetX, tileOffsetY, coordWidth, coordHeight), 0));
-                            }
-                        }
-                        Path path = imageMetadata.getPath().resolve(rasterFile);
-                        tiles[coords[1] - subsetTileStartCol][coords[0] - subsetTileStartRow] = ProductIO.readProduct(path.toFile(), bandSubsetDef);
-                        this.tileRefs.add(new WeakReference<Product>(tiles[coords[1] - subsetTileStartCol][coords[0] - subsetTileStartRow]));
-                    }
-                }
-                int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
-                if (levels > product.getNumResolutionsMax()) {
-                    product.setNumResolutionsMax(levels);
-                }
-
-                int colorWidth = Math.round(productSubsetRegion.width / factorX);
-                int colorHeight = Math.round(productSubsetRegion.height / factorY);
-                for (int i = 0; i < numBands; i++) {
-                    if (subsetDef == null || subsetDef.isNodeAccepted(bandInfos[i].getId())) {
-                        Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, colorWidth, colorHeight, colorPaletteFilePath);
-                        targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
-                        targetBand.setSpectralWavelength(bandInfos[i].getCentralWavelength());
-                        targetBand.setSpectralBandwidth(bandInfos[i].getBandwidth());
-                        targetBand.setSolarFlux(solarIrradiances[i]);
-                        targetBand.setUnit(bandInfos[i].getUnit());
-                        targetBand.setNoDataValue(noDataValue);
-                        targetBand.setNoDataValueUsed(true);
+                for (int i = 0; i < bandInfos.length; i++) {
+                    String bandName = bandInfos[i].getId();
+                    if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
+                        Band band = new ColorPaletteBand(bandName, dataTypeFromMetadata, bandBounds.width, bandBounds.height, colorPaletteFilePath);
+                        band.setSpectralBandIndex(numBands > 1 ? i : -1);
+                        band.setSpectralWavelength(bandInfos[i].getCentralWavelength());
+                        band.setSpectralBandwidth(bandInfos[i].getBandwidth());
+                        band.setSolarFlux(solarIrradiances[i]);
+                        band.setUnit(bandInfos[i].getUnit());
+                        band.setNoDataValue(noDataValue);
+                        band.setNoDataValueUsed(true);
                         if (!bandInfos[i].getUnit().toLowerCase().contains("mw")) {
-                            targetBand.setScalingFactor(1 / bandInfos[i].getGain());
+                            band.setScalingFactor(1 / bandInfos[i].getGain());
                         } else {
-                            targetBand.setScalingFactor(1 / bandInfos[i].getGain() * 0.1);
+                            band.setScalingFactor(1 / bandInfos[i].getGain() * 0.1);
                         }
-                        targetBand.setScalingOffset(bandInfos[i].getBias());
-                        initBandGeoCoding(imageMetadata, targetBand, bandWidth, bandHeight, productSubsetRegion.width, productSubsetRegion.height, bandSubsetRegion, bandSubsetDef);
-                        Band[][] srcBands = new Band[subsetTileCols][subsetTileRows];
-                        for (int x = 0; x < subsetTileCols; x++) {
-                            for (int y = 0; y < subsetTileRows; y++) {
-                                srcBands[x][y] = tiles[x][y].getBandAt(bandInfos[i].getIndex());
-                            }
+                        band.setScalingOffset(bandInfos[i].getBias());
+                        if (transform2D != null) {
+                            band.setImageToModelTransform(transform2D);
+                        }
+                        if (bandGeoCoding != null) {
+                            band.setGeoCoding(bandGeoCoding);
                         }
 
-                        MosaicMultiLevelSource bandSource =
-                                new MosaicMultiLevelSource(srcBands,
-                                                           bandSubsetRegion.width, bandSubsetRegion.height,
-                                                           tileWidth, tileHeight, subsetTileCols, subsetTileRows,
-                                                           levels, TYPE_MAP.get(pixelDataType),
-                                                           imageMetadata.isGeocoded() ?
-                                                                   targetBand.getGeoCoding() != null ?
-                                                                           Product.findImageToModelTransform(targetBand.getGeoCoding()) :
-                                                                           Product.findImageToModelTransform(product.getSceneGeoCoding()) :
-                                                                   targetBand.getImageToModelTransform(),
-                                                           bandSubsetRegion, new Point(subsetTileStartRow,subsetTileStartCol));
-                        targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-                        product.addBand(targetBand);
+                        AffineTransform imageToModelTransform;
+                        if (imageMetadata.isGeocoded()) {
+                            GeoCoding geoCoding = band.getGeoCoding();
+                            if (geoCoding == null) {
+                                geoCoding = product.getSceneGeoCoding();
+                            }
+                            imageToModelTransform = Product.findImageToModelTransform(geoCoding);
+                        } else {
+                            imageToModelTransform = band.getImageToModelTransform();
+                        }
+                        int bandIndex = bandInfos[i].getIndex();
+
+                        int maximumBandLevelCount = result.getLevelCount();
+                        int bandLevelCount = DefaultMultiLevelModel.getLevelCount(bandBounds.width, bandBounds.height);
+                        if (bandLevelCount > maximumBandLevelCount) {
+                            bandLevelCount = maximumBandLevelCount;
+                        }
+
+                        DefaultMultiLevelImage multiLevelImage = result.buildBandSourceImage(bandLevelCount, noDataValue, defaultJAIReadTileSize,  bandIndex,
+                                bandBounds, bandGeoCoding, imageToModelTransform);
+                        band.setSourceImage(multiLevelImage);
+
+                        product.addBand(band);
                     }
                 }
+
                 addMasks(product, imageMetadata, subsetDef);
-                addGMLMasks(product, imageMetadata, subsetDef);
-
+                addGMLMasks(product, imageMetadata, isMultiSize, subsetDef);
             }
-            product.setModified(false);
-        }
 
-        return product;
+            success = true;
+
+            return product;
+        } catch (RuntimeException | IOException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IOException(exception);
+        } finally {
+            if (!success) {
+                closeResources();
+            }
+        }
     }
 
     @Override
     public void close() throws IOException {
-        System.gc();
-        for (WeakReference<Product> ref : tileRefs) {
-            Product product = ref.get();
-            if (product != null) {
-                product.closeIO();
-            }
-            ref.clear();
-        }
-
         super.close();
+
+        closeResources();
     }
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
                                           Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight,
                                           ProductData destBuffer, ProgressMonitor pm)
-                                          throws IOException {
+            throws IOException {
         // do nothing
     }
 
-	private static GeoCoding addTiePointGridGeo(ImageMetadata metadata, int width, int height, ProductSubsetDef subsetDef) {
+    private void closeResources() throws IOException {
+        try {
+            if (this.localJp2CacheFolder != null) {
+                List<Path> files = PathUtils.listFiles(this.localJp2CacheFolder);
+                this.localJp2CacheFolder.toFile().deleteOnExit();
+                if (files != null) {
+                    for (Path file : files) {
+                        file.toFile().deleteOnExit();
+                    }
+                }
+                this.localJp2CacheFolder = null;
+            }
+        } finally {
+            if (this.productDirectory != null) {
+                this.productDirectory.close();
+                this.productDirectory = null;
+            }
+        }
+        System.gc();
+    }
+
+    private static Path initLocalCacheFolder(Path inputPath) throws IOException {
+        String fullPathString = inputPath.toString();
+        String md5sum = Utils.getMD5sum(fullPathString);
+        if (md5sum == null) {
+            throw new IllegalStateException("Unable to get md5sum of path '" + fullPathString+"'.");
+        }
+        String readerDirName = "pleiades-reader";//getReaderCacheDir();
+        String productName = inputPath.getFileName().toString();
+        Path cacheFolderPath = SystemUtils.getCacheDir().toPath();
+        cacheFolderPath = cacheFolderPath.resolve("s2tbx");
+        cacheFolderPath = cacheFolderPath.resolve(readerDirName);
+        cacheFolderPath = cacheFolderPath.resolve(md5sum);
+        cacheFolderPath = cacheFolderPath.resolve(productName);
+        Path cacheDir = cacheFolderPath;
+        if (!Files.exists(cacheDir)) {
+            Files.createDirectories(cacheDir);
+        }
+        if (!Files.exists(cacheDir) || !Files.isDirectory(cacheDir) || !Files.isWritable(cacheDir)) {
+            throw new IOException("Can't access package cache directory");
+        }
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Successfully set up cache dir for product " + productName + " to " + cacheDir.toString());
+        }
+        return cacheDir;
+    }
+
+    private static TiePointGeoCoding buildTiePointGridGeoCoding(ImageMetadata metadata, int width, int height, ProductSubsetDef subsetDef) {
         float[][] cornerLonsLats = metadata.getCornerLonsLats();
         TiePointGrid latGrid = buildTiePointGrid("latitude", 2, 2, 0, 0, width, height, cornerLonsLats[1]);
         TiePointGrid lonGrid = buildTiePointGrid("longitude", 2, 2, 0, 0, width, height, cornerLonsLats[0]);
-        if(subsetDef != null) {
+        if (subsetDef != null) {
             lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
             latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
         }
         return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int defaultBandWidth, int defaultBandHeight, int sceneWidth, int sceneHeight, Rectangle productSubsetDef, ProductSubsetDef subsetDef) {
-        int bandWidth = band.getRasterWidth();
-        int bandHeight = band.getRasterHeight();
-        if (!imageMetadata.hasInsertPoint() && sceneWidth != bandWidth) {
-                AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);
-                band.setImageToModelTransform(transform2D);
+    private static AffineTransform2D buildBandTransform(ImageMetadata imageMetadata, Rectangle productBounds, Rectangle bandBounds) {
+        if (!imageMetadata.hasInsertPoint() && (productBounds.width != bandBounds.width || productBounds.height != bandBounds.height)) {
+            float m00 = (float) productBounds.width / bandBounds.width;
+            float m11 = (float) productBounds.height / bandBounds.height;
+            return new AffineTransform2D(m00, 0.0, 0.0, m11, 0.0, 0.0);
         }
-        band.setGeoCoding(initBandGeoCoding(imageMetadata, defaultBandWidth, defaultBandHeight, sceneWidth, productSubsetDef, subsetDef));
+        return null;
     }
 
-    private GeoCoding initBandGeoCoding(ImageMetadata imageMetadata, int bandWidth, int bandHeight, int sceneWidth, Rectangle productSubsetDef, ProductSubsetDef subsetDef) {
+    private static GeoCoding buildBandGeoCoding(ImageMetadata imageMetadata, int defaultBandWidth, int defaultBandHeight, int defaultProductWidth,
+                                                int defaultProductHeight, Rectangle bandBounds, ProductSubsetDef bandSubsetDef)
+                                                throws FactoryException, TransformException {
+
         GeoCoding geoCoding = null;
         ImageMetadata.InsertionPoint insertPoint = imageMetadata.getInsertPoint();
         String crsCode = imageMetadata.getCRSCode();
-        try {
+        if (imageMetadata.hasInsertPoint()) {
             CoordinateReferenceSystem crs = CRS.decode(crsCode);
-            if (imageMetadata.hasInsertPoint()) {
-                geoCoding =  ImageUtils.buildCrsGeoCoding(insertPoint.x, insertPoint.y,
-                                                         insertPoint.stepX, insertPoint.stepY,
-                                                         bandWidth, bandHeight,
-                                                         crs, productSubsetDef);
-            }else {
-                if (sceneWidth != bandWidth) {
-                    geoCoding = addTiePointGridGeo(imageMetadata, bandWidth, bandHeight, subsetDef);
-                }
-            }
-        } catch (Exception e) {
-            logger.warning(e.getMessage());
+            geoCoding = ImageUtils.buildCrsGeoCoding(insertPoint.x, insertPoint.y, insertPoint.stepX, insertPoint.stepY, defaultBandWidth, defaultBandHeight, crs, bandBounds);
+        } else if (defaultProductWidth != defaultBandWidth || defaultProductHeight != defaultBandHeight) {
+            geoCoding = buildTiePointGridGeoCoding(imageMetadata, defaultBandWidth, defaultBandHeight, bandSubsetDef);
         }
         return geoCoding;
     }
 
-    private void addMasks(Product target, ImageMetadata metadata, ProductSubsetDef subsetDef) {
+    private static void addMasks(Product target, ImageMetadata metadata, ProductSubsetDef subsetDef) {
         ProductNodeGroup<Mask> maskGroup = target.getMaskGroup();
-        if (!maskGroup.contains(Constants.NODATA)&& (subsetDef == null ||
-                subsetDef.isNodeAccepted(Constants.NODATA))) {
+        if (!maskGroup.contains(Constants.NODATA) && (subsetDef == null || subsetDef.isNodeAccepted(Constants.NODATA))) {
             int noDataValue = metadata.getNoDataValue();
             maskGroup.add(Mask.BandMathsType.create(Constants.NODATA, Constants.NODATA,
-                                                    target.getSceneRasterWidth(), target.getSceneRasterHeight(),
-                                                    String.valueOf(noDataValue), Color.BLACK, 0.5));
+                    target.getSceneRasterWidth(), target.getSceneRasterHeight(),
+                    String.valueOf(noDataValue), Color.BLACK, 0.5));
         }
-        if (!maskGroup.contains(Constants.SATURATED) && (subsetDef == null ||
-                (subsetDef.getNodeNames() != null &&
-                        subsetDef.isNodeAccepted(Constants.SATURATED)))) {
+        if (!maskGroup.contains(Constants.SATURATED) && (subsetDef == null || (subsetDef.getNodeNames() != null && subsetDef.isNodeAccepted(Constants.SATURATED)))) {
             int saturatedValue = metadata.getSaturatedValue();
             maskGroup.add(Mask.BandMathsType.create(Constants.SATURATED, Constants.SATURATED,
-                                                    target.getSceneRasterWidth(), target.getSceneRasterHeight(),
-                                                    String.valueOf(saturatedValue), Color.ORANGE, 0.5));
+                    target.getSceneRasterWidth(), target.getSceneRasterHeight(),
+                    String.valueOf(saturatedValue), Color.ORANGE, 0.5));
         }
     }
 
-    private void addGMLMasks(Product target, ImageMetadata metadata, ProductSubsetDef subsetDef) {
+    private static void addGMLMasks(Product target, ImageMetadata metadata, boolean isMultiSize, ProductSubsetDef subsetDef) {
         List<ImageMetadata.MaskInfo> gmlMasks = metadata.getMasks();
         final Iterator<Color> colorIterator = ColorIterator.create();
         Band refBand = findReferenceBand(target, metadata.getRasterWidth());
@@ -435,7 +408,7 @@ public class PleiadesProductReader extends AbstractProductReader {
                     String resolution = "_" + new DecimalFormat("#.#").format(metadata.getPixelSize()) + "m";
                     maskName += resolution.endsWith(".") ? resolution.substring(0, resolution.length() - 1) : resolution;
                 }
-                if(subsetDef == null || subsetDef.isNodeAccepted(maskName)) {
+                if (subsetDef == null || subsetDef.isNodeAccepted(maskName)) {
                     if (refBand != null) {
                         target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
                     } else {
@@ -471,19 +444,160 @@ public class PleiadesProductReader extends AbstractProductReader {
         }
     }
 
-    public static GeoCoding buildGeoCoding(ImageMetadata maxResImageMetadata, Dimension defaultProductBounds, VolumeMetadata metadata, Rectangle productSubsetRegion, ProductSubsetDef subsetDef){
+    public static GeoCoding buildGeoCoding(ImageMetadata maxResImageMetadata, int defaultProductWidth, int defaultProductHeight, VolumeMetadata metadata,
+                                           Rectangle productSubsetRegion, ProductSubsetDef subsetDef)
+            throws FactoryException, TransformException {
+
         if (maxResImageMetadata.hasInsertPoint()) {
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
-            String crsCode = maxResImageMetadata.getCRSCode();
-            try {
-                return ImageUtils.buildCrsGeoCoding(origin.x, origin.y,
-                                                                   origin.stepX, origin.stepY,
-                                                                   defaultProductBounds,
-                                                                   CRS.decode(crsCode), productSubsetRegion);
-            } catch (Exception e) {
-                logger.warning(e.getMessage());
+            CoordinateReferenceSystem mapCRS = CRS.decode(maxResImageMetadata.getCRSCode());
+            return ImageUtils.buildCrsGeoCoding(origin.x, origin.y, origin.stepX, origin.stepY, defaultProductWidth, defaultProductHeight, mapCRS, productSubsetRegion);
+        }
+        return buildTiePointGridGeoCoding(maxResImageMetadata, metadata.getSceneWidth() , metadata.getSceneHeight(), subsetDef);
+    }
+
+    private BandMatrixData buildMosaicMatrix(ImageMetadata imageMetadata, Path inputPath)
+            throws IOException, InterruptedException, IllegalAccessException, InstantiationException, InvocationTargetException {
+
+        int tileRows = imageMetadata.getTileRowsCount();
+        int tileCols = imageMetadata.getTileColsCount();
+        Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
+        String[][] matrixFiles = new String[tileRows][tileCols];
+        boolean allFilesJP2 = true;
+        boolean allFilesGeoTiff = true;
+        for (Map.Entry<String, int[]> entry : tileInfo.entrySet()) {
+            int[] matrixCoordinates = entry.getValue();
+            String filePath = entry.getKey();
+            boolean extensionMatches = Arrays.stream(GeoTiffProductReaderPlugIn.TIFF_FILE_EXTENSION).anyMatch(filePath.toLowerCase()::endsWith);
+            if (!extensionMatches) {
+                allFilesGeoTiff = false;
+            }
+            if (!StringUtils.endsWithIgnoreCase(entry.getKey(), "jp2")) {
+                allFilesJP2 = false;
+            }
+            matrixFiles[matrixCoordinates[0]][matrixCoordinates[1]] = entry.getKey();
+        }
+        if (allFilesJP2) {
+            if (this.localJp2CacheFolder == null) {
+                this.localJp2CacheFolder = initLocalCacheFolder(inputPath);
+            }
+            return buildJP2MosaicMatrix(imageMetadata, matrixFiles, this.localJp2CacheFolder);
+        }
+        if (allFilesGeoTiff) {
+            Path geotiffMatrixTempFolder = this.productDirectory.makeLocalTempFolder();
+            return buildGeoTiffMosaicMatrix(imageMetadata, matrixFiles, geotiffMatrixTempFolder);
+        }
+        throw new IllegalStateException("Unknown image files.");
+    }
+
+    private static BandGeoTiffMatrixData buildGeoTiffMosaicMatrix(ImageMetadata imageMetadata, String[][] matrixFiles, Path localTempFolder)
+            throws IOException, InterruptedException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        int tileRows = imageMetadata.getTileRowsCount();
+        int tileCols = imageMetadata.getTileColsCount();
+        int levelCount = 0;
+        int dataType = 0;
+        Path imagesMetadataParentPath = imageMetadata.getPath();
+        MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRows, tileCols);
+        for (int rowIndex = 0; rowIndex < tileRows; rowIndex++) {
+            for (int columnIndex = 0; columnIndex < tileCols; columnIndex++) {
+                String imageRelativeFilePath = matrixFiles[rowIndex][columnIndex];
+                int cellWidth;
+                int cellHeight;
+                int dataBufferType;
+                try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, imageRelativeFilePath)) {
+                    cellWidth = geoTiffImageReader.getImageWidth();
+                    cellHeight = geoTiffImageReader.getImageHeight();
+                    dataBufferType = geoTiffImageReader.getSampleModel().getDataType();
+                }
+                int cellLevelCount = DefaultMultiLevelModel.getLevelCount(cellWidth, cellHeight);
+                if (columnIndex == 0 && rowIndex == 0) {
+                    dataType = dataBufferType;
+                    levelCount = cellLevelCount;
+                } else {
+                    if (dataType != dataBufferType) {
+                        throw new IllegalStateException("Different data type count: rowIndex=" + rowIndex + ", columnIndex=" + columnIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
+                    }
+                    if (levelCount != cellLevelCount) {
+                        throw new IllegalStateException("Different level count: rowIndex="+rowIndex+", columnIndex="+columnIndex+", levelCount="+levelCount+", cellLevelCount="+cellLevelCount+".");
+                    }
+                }
+                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, imagesMetadataParentPath, imageRelativeFilePath, localTempFolder);
+                mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
             }
         }
-        return addTiePointGridGeo(maxResImageMetadata, metadata.getSceneWidth() , metadata.getSceneHeight(), subsetDef);
+
+        validateMatrix(imageMetadata, dataType, mosaicMatrix);
+        return new BandGeoTiffMatrixData(dataType, levelCount, mosaicMatrix);
+    }
+
+    private static BandJP2MatrixData buildJP2MosaicMatrix(ImageMetadata imageMetadata, String[][] matrixFiles, Path cacheFolder) throws IOException, InterruptedException {
+        int tileRows = imageMetadata.getTileRowsCount();
+        int tileCols = imageMetadata.getTileColsCount();
+        int levelCount = 0;
+        int dataType = 0;
+        MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRows, tileCols);
+        for (int rowIndex = 0; rowIndex < tileRows; rowIndex++) {
+            for (int columnIndex = 0; columnIndex < tileCols; columnIndex++) {
+                Path jp2File = imageMetadata.getPath().resolve(matrixFiles[rowIndex][columnIndex]);
+                TileLayout tileLayout;
+                if (OpenJpegUtils.canReadJP2FileHeaderWithOpenJPEG()) {
+                    tileLayout = OpenJpegUtils.getTileLayoutWithOpenJPEG(OpenJpegExecRetriever.getOpjDump(), jp2File);
+                } else {
+                    boolean canSetFilePosition = true;//!imageFilePath.getVirtualDir().isArchive();
+                    tileLayout = OpenJpegUtils.getTileLayoutWithInputStream(jp2File, 5 * 1024, canSetFilePosition);
+                }
+                if (rowIndex == 0 && columnIndex == 0) {
+                    levelCount = tileLayout.numResolutions;
+                    dataType = tileLayout.dataType;
+                } else {
+                    if (levelCount != tileLayout.numResolutions) {
+                        throw new IllegalStateException("Different level count: rowIndex="+rowIndex+", columnIndex="+columnIndex+", levelCount="+levelCount+", tileLayout.numResolutions="+tileLayout.numResolutions+".");
+                    }
+                    if (dataType != tileLayout.dataType) {
+                        throw new IllegalStateException("Different data type count: rowIndex="+rowIndex+", columnIndex="+columnIndex+", dataType="+dataType+", tileLayout.dataType="+tileLayout.dataType+".");
+                    }
+                }
+                JP2LocalFile jp2LocalFile = new JP2LocalFileImpl(jp2File);
+                JP2ImageFile jp2ImageFile = new JP2ImageFile(jp2LocalFile);
+                int cellWidth = tileLayout.width;
+                int cellHeight = tileLayout.height;
+                JP2MosaicBandMatrixCell matrixCell = new JP2MosaicBandMatrixCell(jp2ImageFile, cacheFolder, tileLayout, cellWidth, cellHeight);
+                mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, false, false);
+            }
+        }
+
+        validateMatrix(imageMetadata, dataType, mosaicMatrix);
+        return new BandJP2MatrixData(dataType, levelCount, mosaicMatrix);
+    }
+
+    private static void validateMatrix(ImageMetadata imageMetadata, int dataType, MosaicMatrix mosaicMatrix) {
+        int dataTypeFromMetadata = imageMetadata.getPixelDataType();
+        int bandDataType = ImageManager.getProductDataType(dataType);
+        if (bandDataType != dataTypeFromMetadata) {
+            throw new IllegalStateException("Different data types: bandDataType="+bandDataType+", dataTypeFromMetadata="+dataTypeFromMetadata+".");
+        }
+        int defaultBandWidth = mosaicMatrix.computeTotalWidth();
+        if (defaultBandWidth != imageMetadata.getRasterWidth()) {
+            throw new IllegalStateException("Different widths.");
+        }
+        int defaultBandHeight = mosaicMatrix.computeTotalHeight();
+        if (defaultBandHeight != imageMetadata.getRasterHeight()) {
+            throw new IllegalStateException("Different height.");
+        }
+    }
+
+    private static class JP2LocalFileImpl implements JP2LocalFile {
+
+        private final Path jp2File;
+
+        private JP2LocalFileImpl(Path jp2File) {
+            this.jp2File = jp2File;
+        }
+
+        @Override
+        public Path getLocalFile() throws IOException {
+            return this.jp2File;
+        }
     }
 }
