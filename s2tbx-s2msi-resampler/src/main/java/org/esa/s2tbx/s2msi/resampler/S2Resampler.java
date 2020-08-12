@@ -16,7 +16,6 @@ import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.Resampler;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorSpi;
-import org.esa.snap.core.gpf.common.BandMathsOp;
 import org.esa.snap.core.gpf.common.resample.ResamplingOp;
 import org.esa.snap.core.util.jai.JAIUtils;
 import org.esa.snap.core.util.ProductUtils;
@@ -25,6 +24,7 @@ import org.opengis.referencing.operation.MathTransform;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.AddCollectionDescriptor;
 import javax.media.jai.operator.MultiplyConstDescriptor;
@@ -64,6 +64,8 @@ public class S2Resampler implements Resampler {
     private String flagDownsamplingMethod = "First";
     private boolean resampleOnPyramidLevels = true;
 
+    private ArrayList<S2BandConstants> listUpdatedBands = new ArrayList<>(17);
+
     public S2Resampler(String referenceBandName) {
         this.referenceBandName = new String(referenceBandName);
     }
@@ -78,6 +80,9 @@ public class S2Resampler implements Resampler {
     }
 
 
+    public ArrayList<S2BandConstants> getListUpdatedBands() {
+        return this.listUpdatedBands;
+    }
 
     public String getUpsamplingMethod() {
         return upsamplingMethod;
@@ -187,7 +192,6 @@ public class S2Resampler implements Resampler {
         Product targetProduct = operator.getTargetProduct();
 
         //Update the angle bands
-        ArrayList<S2BandConstants> listUpdatedBands = new ArrayList<>(17);
         for (S2BandConstants bandConstants : S2BandConstants.values()) {
             if(updateAngleBands(multiSizeProduct, targetProduct, bandConstants)) {
                 listUpdatedBands.add(bandConstants);
@@ -195,7 +199,7 @@ public class S2Resampler implements Resampler {
         }
 
         //mean angles, computed only with the updated bands
-        replaceMeanAnglesBand(listUpdatedBands,targetProduct);
+        // replaceMeanAnglesBand(listUpdatedBands,targetProduct);
 
         //sun angles
         updateSolarAngles(multiSizeProduct,targetProduct);
@@ -374,36 +378,6 @@ public class S2Resampler implements Resampler {
         return true;
     }
 
-
-    public static void replaceMeanAnglesBand(ArrayList<S2BandConstants> listOfBands, Product sourceProduct) {
-        BandMathsOp.BandDescriptor bandDescriptorZenith = new BandMathsOp.BandDescriptor();
-        bandDescriptorZenith.name = "view_zenith_mean";
-        bandDescriptorZenith.expression = "";
-        for(S2BandConstants bandConstant : listOfBands) {
-            bandDescriptorZenith.expression = bandDescriptorZenith.expression + String.format("view_zenith_%s +",bandConstant.getPhysicalName());
-        }
-        bandDescriptorZenith.expression = String.format("(%s)/%d", (bandDescriptorZenith.expression).substring(0,(bandDescriptorZenith.expression).lastIndexOf('+')-1), listOfBands.size());
-        bandDescriptorZenith.type = ProductData.TYPESTRING_FLOAT32;
-        BandMathsOp bandMathsOpZenith = new BandMathsOp();
-        bandMathsOpZenith.setParameterDefaultValues();
-        bandMathsOpZenith.setSourceProduct(sourceProduct);
-        bandMathsOpZenith.setTargetBandDescriptors(bandDescriptorZenith);
-        sourceProduct.getBand(bandDescriptorZenith.name).setSourceImage(bandMathsOpZenith.getTargetProduct().getBandAt(0).getSourceImage());
-
-        BandMathsOp.BandDescriptor bandDescriptorAzimuth = new BandMathsOp.BandDescriptor();
-        bandDescriptorAzimuth.name = "view_azimuth_mean";
-        bandDescriptorAzimuth.expression = "";
-        for(S2BandConstants bandConstant : listOfBands) {
-            bandDescriptorAzimuth.expression = bandDescriptorAzimuth.expression + String.format("view_azimuth_%s +",bandConstant.getPhysicalName());
-        }
-        bandDescriptorAzimuth.expression = String.format("(%s)/%d", (bandDescriptorAzimuth.expression).substring(0,(bandDescriptorAzimuth.expression).lastIndexOf('+')-1), listOfBands.size());
-        bandDescriptorAzimuth.type = ProductData.TYPESTRING_FLOAT32;
-        BandMathsOp bandMathsOpAzimuth = new BandMathsOp();
-        bandMathsOpAzimuth.setParameterDefaultValues();
-        bandMathsOpAzimuth.setSourceProduct(sourceProduct);
-        bandMathsOpAzimuth.setTargetBandDescriptors(bandDescriptorAzimuth);
-        sourceProduct.getBand(bandDescriptorAzimuth.name).setSourceImage(bandMathsOpAzimuth.getTargetProduct().getBandAt(0).getSourceImage());
-    }
 
     public void updateSolarAngles(Product multiSizeProduct, Product targetProduct) {
         String azimuthBandName = "sun_azimuth";
