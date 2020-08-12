@@ -18,7 +18,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
-import javax.media.jai.JAI;
 
 /**
  * Created by obarrile on 05/07/2017.
@@ -90,8 +89,6 @@ public class S2ResamplingOp extends Operator {
         }
 
         targetProduct = s2Resampler.resample(sourceProduct);
-        Dimension tileSize = JAI.getDefaultTileSize();
-        this.targetProduct.setPreferredTileSize(tileSize);
         this.targetProduct.getBand("view_zenith_mean").setSourceImage(null);
         this.targetProduct.getBand("view_azimuth_mean").setSourceImage(null);
     }
@@ -102,9 +99,9 @@ public class S2ResamplingOp extends Operator {
      * <p>The default implementation throws a runtime exception with the message "not implemented".
      * <p>This method shall never be called directly.
      *
-     * @param targetTiles     The current tiles to be computed for each target band.
-     * @param targetRectangle The area in pixel coordinates to be computed (same for all rasters in {@code targetRasters}).
-     * @param pm              A progress monitor which should be used to determine computation cancellation requests.
+     * @param targetTiles  The current tiles to be computed for each target band.
+     * @param rectangle    The area in pixel coordinates to be computed (same for all rasters in {@code targetRasters}).
+     * @param pm           A progress monitor which should be used to determine computation cancellation requests.
      * @throws OperatorException If an error occurs during computation of the target rasters.
      */
     @Override
@@ -117,24 +114,26 @@ public class S2ResamplingOp extends Operator {
                 Tile targetTile = entry.getValue();
                 int length = targetBand.getName().length();
                 String bandName = targetBand.getName().substring(5, length-5);
-                int count = s2Resampler.getListUpdatedBands().size();
-                float[] data = new float[rectangle.width * rectangle.height];
-                for(S2BandConstants bandConstant : s2Resampler.getListUpdatedBands()) {
-                    String name = String.format("view_%s_%s", bandName, bandConstant.getPhysicalName());
+                
+                Tile[] sourceTiles = new Tile[s2Resampler.getListUpdatedBands().size()];
+
+                for(int i = 0; i < sourceTiles.length; i++) {
+                    String name = "view_"+ bandName + "_" + s2Resampler.getListUpdatedBands().get(i).getPhysicalName();
                     Band sourceBand = this.targetProduct.getBand(name);
-                    Tile sourceTile = getSourceTile(sourceBand, rectangle);
-                    for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
-                        for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
-                            float value = sourceTile.getSampleFloat(x, y);
-                            data[y * rectangle.width + x] += value / count;
-                        }
-                    }
+                    sourceTiles[i] = getSourceTile(sourceBand, rectangle);
                 }
+
                 for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                     for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
-                        targetTile.setSample(x, y, data[y * rectangle.width + x]);
+                        float value = sourceTiles[0].getSampleFloat(x, y);
+                        for (int i = 1; i < sourceTiles.length; i++){
+                            value += sourceTiles[i].getSampleFloat(x, y);
+                        }
+
+                        targetTile.setSample(x, y, value / sourceTiles.length);
                     }
                 }
+                
             }
         } finally {
             pm.done();
@@ -157,28 +156,3 @@ public class S2ResamplingOp extends Operator {
         }
     }
 }
-
-/**
-Basically is a resample + extras bands: 
-    view_zenith_mean = ((view_zenith_B1 +view_zenith_B2 +view_zenith_B3 +view_zenith_B4 +view_zenith_B5 +view_zenith_B6 +view_zenith_B7 +view_zenith_B8 +view_zenith_B8A +view_zenith_B9 +view_zenith_B11)/12
-    updated solar angles
-
-SNAP 8 (last week build):
-./gpt ~/test_graph.xml  189.11s user 4.21s system 314% cpu 1:01.48 total
-./gpt ~/test_graph.xml  236.61s user 6.47s system 270% cpu 1:29.80 total
-./gpt ~/test_graph.xml  213.36s user 4.27s system 282% cpu 1:17.15 total
-./gpt ~/test_graph.xml  205.21s user 3.93s system 326% cpu 1:04.10 total
-
-
-Branch build:
-sh gpt.sh ~/test_graph.xml  157.37s user 2.98s system 172% cpu 1:33.14 total
-sh gpt.sh ~/test_graph.xml  146.46s user 3.03s system 181% cpu 1:22.50 total
-sh gpt.sh ~/test_graph.xml  154.04s user 3.11s system 176% cpu 1:28.79 total
-sh gpt.sh ~/test_graph.xml  154.54s user 2.99s system 179% cpu 1:27.86 total
-
-New ComputeTile method
-sh gpt.sh ~/test_graph.xml  222.17s user 3.68s system 322% cpu 1:10.07 total
-
-New new ComputeTile method (with buffer)
-
-**/
