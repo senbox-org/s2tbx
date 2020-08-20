@@ -2,26 +2,26 @@
   "id": "WorldView2ESA_product",
   "decodeQualification": "INTENDED",
   "expectedContent": {
-    "sceneWidth": 47563,
-    "sceneHeight": 92201,
+    "sceneWidth": 32768,
+    "sceneHeight": 16384,
     "startTime": "25-MAY-2011 09:53:46.000000",
     "endTime": "25-MAY-2011 09:53:51.000000",
     "geoCoding": {
       "coordinates": [
         {
-          "x": 7066.0,
+          "x": 14133.0,
           "y": 8807.0,
-          "lat": 44.47070350663709,
-          "lon": 23.802809969935122
+          "lat": 44.46982435954498,
+          "lon": 23.838309444011156
         },
         {
-          "x": 12164.0,
+          "x": 24328.0,
           "y": 10631.0,
-          "lat": 44.46351134920408,
-          "lon": 23.82809999518659
+          "lat": 44.46197929686709,
+          "lon": 23.889191483909325
         }
       ],
-      "reverseAccuracy": 1.1721625924110413E-5
+      "reverseAccuracy": 1.3325363397598267E-5
     },
     "bands": [
       {

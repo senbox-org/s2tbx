@@ -1,8 +1,8 @@
 package org.esa.s2tbx.dataio.pleiades.dimap;
 
 import com.bc.ceres.core.Assert;
-import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.RationalFunctionModel;
 import org.xml.sax.SAXException;

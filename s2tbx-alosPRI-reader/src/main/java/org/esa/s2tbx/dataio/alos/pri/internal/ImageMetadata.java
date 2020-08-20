@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.alos.pri.internal;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
@@ -11,6 +11,8 @@ import org.esa.snap.utils.DateHelper;
  * @author Denisa Stefanescu
  */
 public class ImageMetadata extends XmlMetadata {
+
+    private String imageRelativeFilePath;
 
     public static class ImageMetadataParser extends XmlMetadataParser<ImageMetadata> {
 
@@ -31,6 +33,14 @@ public class ImageMetadata extends XmlMetadata {
 
     public ImageMetadata(String name) {
         super(name);
+    }
+
+    public void setImageRelativeFilePath(String imageRelativeFilePath) {
+        this.imageRelativeFilePath = imageRelativeFilePath;
+    }
+
+    public String getImageRelativeFilePath() {
+        return imageRelativeFilePath;
     }
 
     @Override

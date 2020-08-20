@@ -171,7 +171,7 @@ In order to exclude pixels below this value from the classification it is possib
             <h5>Spectrum Classes Input Thresholds</h5>
 
             <p class="i1">
-                Specify a threshold value for each spectrum class selected from the SAM parameters panel.The smaller the value the less likelihood that evaluated pixels
+                Specify a threshold value for each spectrum class selected from the SAM parameters panel. The smaller the value the less likelihood that evaluated pixels
                 can make part of the specific class but the resulting pixels will be more appropriate as resemblance to the pixels defined class <br><br>
                 Pixels that have the spectral angle smaller than more than one threshold set, will be integrated in the class with the smallest threshold value.<br>
             </p>
@@ -191,7 +191,7 @@ In order to exclude pixels below this value from the classification it is possib
     4 values are introduced it means that the spectral angle will define a class and use as reference a mean value of the 2 pixels locations introduced. If 6 or
     more values are introduced those will represent the corners of a polygon shape and the spectral angle will define a class and use as reference
     a mean value of the pixels that are situated within the polygon shape defined by the input location pixels introduced.  <br><br>
-    It should be taken into consideration that the pixels locations must be within the image size. When working with multisize products the pixel values introduced
+    It should be taken into consideration that the pixels locations must be within the image size. When working with multi-size products the pixel values introduced
     by the user must be defined in the range of the size the target product will have meaning that if the user wants the target product to be resampled to the smallest
     size, the pixel values must be taken from the band that has the smallest size and vice versa. In case of shapes drawn there is no problem as the algorithm automatically
     transpose the shape accordingly with the target product size.<br><br>

@@ -101,9 +101,11 @@ public class Kompsat2Constants {
 
         public static float getWavelengthCentral(String physicalName) {
             for (BandWaveLengthConstants band : BandWaveLengthConstants.values()) {
-                if (band.getPhysicalName().equalsIgnoreCase(physicalName)) return band.getWavelengthCentral();
+                if (band.getPhysicalName().equalsIgnoreCase(physicalName)) {
+                    return band.getWavelengthCentral();
+                }
             }
-            return 0;
+            return 0.0f;
         }
     }
 }

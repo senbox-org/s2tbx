@@ -1,9 +1,9 @@
 package org.esa.s2tbx.dataio.jp2.internal;
 
-import org.esa.s2tbx.dataio.jp2.Box;
-import org.esa.s2tbx.dataio.jp2.BoxReader;
 import org.esa.s2tbx.dataio.jp2.metadata.JP2Metadata;
-import org.esa.s2tbx.dataio.openjp2.OpenJP2Encoder;
+import org.esa.snap.lib.openjpeg.dataio.OpenJP2Encoder;
+import org.esa.snap.lib.openjpeg.jp2.Box;
+import org.esa.snap.lib.openjpeg.jp2.BoxReader;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageTypeSpecifier;

@@ -80,12 +80,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-land-cover</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-annotations-common</artifactId>
             <version>${netbeans.version}</version>
@@ -155,18 +149,6 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-s2msi-reader-ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-openjpeg</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-jp2-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -262,13 +244,25 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>lib-gdal-preferences-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-gdal-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-gdal-reader-ui</artifactId>
+            <artifactId>s2tbx-gdal-writer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-gdal-writer-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -386,12 +380,6 @@
             <artifactId>snap-engine-utilities</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-engine-utilities</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
@@ -409,12 +397,6 @@
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-alosPRI-reader</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-modules</artifactId>
         </dependency>
 
         <dependency>

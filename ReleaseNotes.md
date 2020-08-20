@@ -1,6 +1,115 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 8.0
+--------------------
+
+### Main features
+
+#### Windowed Reading of Products
+
+Allows specifying a window (spatial subset) of either pixel coordinates or geographical coordinates, so that,
+instead of first opening a full product and then subsetting it to a region of interest,
+the reader will open directly the region of interest as a full-fledged product.
+
+#### Product Library GUI Enhancements
+
+This module is upgraded so that it can accommodate in a flexible way any type of sensor (radar, optical, atmospheric, etc.).
+In addition, the display / interaction of / with product frames or quicklooks can be done on a 3D visualisation of Earth (NASA WorldWind).
+
+#### SciHub Search UI Enhancements in Product Library
+
+The possibility to access (and search for) remote data was introduced by regarding remote data sources as independent SNAP plugins.
+This allows building a flexible GUI for searching products on the remote sources.
+Besides the parametrized search (with parameters in the form of values), it also handles the selection of the area of interest on the 3D visualisation of Earth.
+
+#### Support for New External Data Access Sources via Product Library
+
+New remote data source modules are added to SNAP as plugins addressing the following remote repositories:
+    * Copernicus Scientific Data Hub (SciHub): for Sentinel-1, Sentinel-2 and Sentinel-3 data
+    * Amazon Web Services (AWS): for Sentinel-2 and Landsat-8 data
+    * Alaska Satellite Facility (ASF): for Sentinel-1 and ALOS data
+    * US Geological Survey (USGS): for Landsat-8 data
+The searched products can be downloaded in parallel from several remote repositories (but parallel search is not allowed).
+
+#### Update the GDAL version to 3.0.0
+
+The GDAL version is updated to 3.0.0 in order to be able to write COG GeoTiff through the GDAL writer.
+Also, GDAL binaries for MacOSX are added. (they were missing in the past)
+Allow usage of installed GDAL distribution on OS (supported versions from 2.0.X to 3.0.X).
+Allow setting which GDAL distribution is used by SNAP (installed or internal distribution).
+
+
+### List of solved issues
+#### Bug
+    * [SIITBX-290] - Radiometric Index Operators do not handle GeoCoding correctly
+    * [SIITBX-297] - Unit not correct after Reflectance-to-radiance conversion
+    * [SIITBX-335] - Jaxa Forest Land Cover download fails
+    * [SIITBX-374] - Kompsat2 data is missing wavelength information
+    * [SIITBX-375] - GeoLocation of WorldView2 products not correct
+    * [SIITBX-376] - WorldView2 products are missing wavelength information
+    * [SIITBX-406] - JP2 reader: color model is not set on bands source images
+    * [SIITBX-416] - Generic Region Merging Operator tests have different behavior on Linux and Windows
+    * [SIITBX-418] - GDAL reader - windowed reading issues
+    * [SIITBX-419] - Geometry bands in Reflectance to Radiance operator cause NullPointerException
+    * [SIITBX-420] - Casting Error when opening the B1 and B9 of a Sentinel 2 products on SNAP-Desktop
+    * [SIITBX-421] - Export S2 product to GDAL generates an error
+    * [SIITBX-422] - Masks are not correctly extracted in certain cases
+    * [SIITBX-424] - [GPT] Casting Error with Sentinel 2 products
+    * [SIITBX-425] - Unable to view S2 bands
+    * [SNAP-1285]  - ConversionException generated when opening a Beam Dimap product (Unknown type in attribute descriptor 'geometry:Point')
+    * [SNAP-1289]  - GeoTiff reader fails to read Float32 bands
+    * [SNAP-1298]  - "Advanced" button (from file chooser dialog) should not be visibile for File -> Export GDAL option
+    * [SNAP-1195]  - Fix operators order in the menu of the Graph Builder
+    * [SNAP-1168]  - Fix SubsetUI reference band issue
+    * [SNAP-1169]  - Fix Subset operator for multi-resolution products
+    * [SNAP-1152]  - Subset operator uses tie-point grids correctly  
+    
+#### New Feature
+    * [STEP-12, SIITBX-373] - Parameters for Reader Plugins
+    * [STEP-5,  SIITBX-373] - Windowed Reading of Products
+    * [STEP-13, SNAP-1161]  - Product Library GUI Enhancements
+    * [STEP-14, SNAP-1162]  - SciHub Search UI Enhancement in Product Library
+    * [STEP-15, SNAP-1163]  - Support for New External Data Access Sources via Product Library
+    * [SNAP-1225]  - Implement change detection validation trigger for Graph Builder
+    * [SNAP-1109]  - Possibility to fix random seed value to reproduce results based on aleatory processing
+	* [SNAP-1166]  - Subset operator updates scenegeocoding for single size products
+	* [SIITBX-413] - Allow GPT tests to fail graciously in a controlled way
+	* [SNAP-1013]  - Implement automated reports web service
+
+
+#### Improvement
+    * [SNAP-1160]  - Allow custom S3 VFS parameters for AWS headers
+    * [SIITBX-283] - Remove UI dependencies from jp2-reader and s2tbx-commons
+    * [SIITBX-383] - Update the GDAL version
+    * [SIITBX-379] - Adapt Operators to use doExecute correctly (part 1)
+    * [SIITBX-380, SIITBX-384] - Adapt Operators to use doExecute correctly (part 2)
+    * [SIITBX-407] - Revise help material
+    * [SIITBX-409] - Clean up dependencies on 3rd-party libraries (CSRO)
+    * [SIITBX-431] - Improve reading time of a product/bands within a product for readers using JP2
+    * [SIITBX-432] - Improve reading time of a product/bands within a product for readers using GeoTiff
+    * [STEP-30, SIITBX-315] - Revise initialise method in operator implementations
+    * Moving SNAP development and deployment chain to Zulu OpenJDK 8
+    * Moving SNAP installer to install4j 8 
+
+#### Task
+    * [STEP-38]    - Wiki shall be used to provide MPR to ESA
+    * [STEP-39]    - Unassigned issues in JIRA shall be checked
+    * [STEP-40]    - Update JIRA tickets to create proper roadmap
+    * [STEP-41]    - List of GUI tests should be established
+    * [STEP-43]    - STEP website - SEOM link and logo to be replaced with EO Science for Society
+    * [SIITBX-387] - Ignored tests shall be properly annotated
+    * [SIITBX-388] - Tests need to be defined well in advance of releases
+    * [SIITBX-389] - Graphical test coverage for release 8 needs to agree on early
+    * [SIITBX-390] - Check skipped tests because of missing data (wrong path)
+    * [SIITBX-428] - Update S2TBX about dialog with new ESA images
+    * [SNAP-1262]  - Create wiki on test syntax and functionality
+    * [SIITBX-401] - Clean up dependencies on 3rd-party libraries
+    * [SIITBX-402] - Check separation between UI and Engine components
+    * [SIITBX-322] - Integrate S2TBX tests
+
+
+
 Changes in S2TBX 7.0
 --------------------
 

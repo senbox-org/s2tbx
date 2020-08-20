@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
-import org.esa.s2tbx.dataio.gdal.activator.GDALDistributionInstaller;
-import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
+import org.esa.lib.gdal.activator.GDALInstallInfo;
+import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
@@ -32,7 +32,7 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
     protected AbstractTestDriverProductReaderPlugIn(String driverName, AbstractDriverProductReaderPlugIn readerPlugIn) {
         this.driverName = driverName;
         this.readerPlugIn = readerPlugIn;
-        this.extensions = new HashSet<String>();
+        this.extensions = new HashSet<>();
     }
 
     protected AbstractTestDriverProductReaderPlugIn(String extension, String driverName, AbstractDriverProductReaderPlugIn readerPlugIn) {
@@ -44,7 +44,7 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
     @Before
     public final void setUp() throws Exception {
         if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            GDALDistributionInstaller.install();
+            GDALLoader.getInstance().initGDAL();
         }
     }
 
@@ -84,8 +84,8 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
             assertEquals(2, classes.length);
 
             List<Class> list = Arrays.asList(classes);
-            assertEquals(true, list.contains(File.class));
-            assertEquals(true, list.contains(String.class));
+            assertTrue(list.contains(File.class));
+            assertTrue(list.contains(String.class));
         }
     }
 
@@ -102,11 +102,11 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
             String formatName = getFormatNameToCheck();
             assertEquals(formatName, snapFileFilter.getFormatName());
 
-            assertEquals(true, snapFileFilter.getDescription().contains(this.readerPlugIn.getDescription(Locale.getDefault())));
+            assertTrue(snapFileFilter.getDescription().contains(this.readerPlugIn.getDescription(Locale.getDefault())));
         }
     }
 
-    protected final void addExtensin(String extension) {
+    final void addExtensin(String extension) {
         this.extensions.add(extension);
     }
 

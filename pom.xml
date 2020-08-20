@@ -35,8 +35,6 @@
         <module>s2tbx-cache-ui</module>
         <module>s2tbx-s2msi-reader</module>
         <module>s2tbx-s2msi-reader-ui</module>
-        <module>lib-openjpeg</module>
-        <module>s2tbx-jp2-reader</module>
         <module>s2tbx-jp2-writer</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
@@ -54,8 +52,10 @@
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
         <module>lib-gdal</module>
+        <module>lib-gdal-preferences-ui</module>
         <module>s2tbx-gdal-reader</module>
-        <module>s2tbx-gdal-reader-ui</module>
+        <module>s2tbx-gdal-writer</module>
+        <module>s2tbx-gdal-writer-ui</module>
         <module>s2tbx-grm</module>
         <module>s2tbx-grm-ui</module>
         <module>s2tbx-land-cover</module>
@@ -82,7 +82,7 @@
     <properties>
         <snap.version>8.0.0-SNAPSHOT</snap.version>
         <s2tbx.version>8.0.0-SNAPSHOT</s2tbx.version>
-        <geotools.version>17.1</geotools.version>
+        <geotools.version>20.0</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE82</netbeans.version>
@@ -146,7 +146,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-	
+
     <dependencyManagement>
         <dependencies>
 
@@ -290,12 +290,12 @@
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
                 <artifactId>jna</artifactId>
-                <version>4.2.1</version>
+                <version>5.5.0</version>
             </dependency>
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
                 <artifactId>jna-platform</artifactId>
-                <version>4.2.1</version>
+                <version>5.5.0</version>
             </dependency>
 
             <dependency>
@@ -357,12 +357,6 @@
                 <groupId>com.github.relaxng</groupId>
                 <artifactId>relaxngDatatype</artifactId>
                 <version>2011.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.s2tbx.gdal</groupId>
-                <artifactId>gdal</artifactId>
-                <version>2.1.0</version>
             </dependency>
 
             <dependency>

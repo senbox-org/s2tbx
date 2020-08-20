@@ -11,3 +11,5 @@ generated-sources/
 *.java.orig
 #generated sources
 s2tbx-reader-cs/src/main/generated-sources/
+#maven temp output
+dependencies.txt

@@ -6,7 +6,7 @@
 @OptionsPanelController.ContainerRegistration(
         id = "S2TBX",
         categoryName = "#LBL_S2TBXOptionsCategory_Name",
-        iconBase = "org/esa/s2tbx/dataio/s2/preferences/s2tbx-icon-32.png",
+        iconBase = "org/esa/s2tbx/dataio/s2/preferences/s2tbx-icon-32.jpg",
         keywords = "#LBL_S2TBXOptionsCategory_Keywords",
         keywordsCategory = "S2TBX",
         position = 1100

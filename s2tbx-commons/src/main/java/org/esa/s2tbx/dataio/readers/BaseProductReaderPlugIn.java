@@ -18,32 +18,21 @@
 package org.esa.s2tbx.dataio.readers;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
-import org.esa.snap.utils.FileHelper;
+import org.esa.snap.engine_utilities.file.FileHelper;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -105,17 +94,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     }
 
     public static Path convertInputToPath(Object input) {
-        if (input == null) {
-            throw new NullPointerException();
-        } else if (input instanceof File) {
-            return ((File)input).toPath();
-        } else if (input instanceof Path) {
-            return (Path) input;
-        } else if (input instanceof String) {
-            return Paths.get((String) input);
-        } else {
-            throw new IllegalArgumentException("Unknown input '"+input+"'.");
-        }
+        return AbstractProductReader.convertInputToPath(input);
     }
 
     @Override

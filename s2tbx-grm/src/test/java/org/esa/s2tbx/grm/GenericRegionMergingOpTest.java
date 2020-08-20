@@ -49,7 +49,7 @@ public class GenericRegionMergingOpTest {
             Float shapeWeight = null;
 
             GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
-                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+                                                              totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
             AbstractSegmenter segmenter = operator.getSegmenter();
             assertNotNull(segmenter);
@@ -89,7 +89,7 @@ public class GenericRegionMergingOpTest {
             checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 58, 145, 243, 29, 1156, 4);
 
             Product targetProduct = operator.getTargetProduct();
-            checkTargetBandForFullLamdaScheduleSegmenter(targetProduct);
+            checkTargetBandForFullLamdaScheduleSegmenter(targetProduct, 1, 12);
         } finally {
             sourceProduct.dispose();
         }
@@ -107,7 +107,7 @@ public class GenericRegionMergingOpTest {
             Float shapeWeight = null;
 
             GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
-                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+                                                              totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
             AbstractSegmenter segmenter = operator.getSegmenter();
             assertNotNull(segmenter);
@@ -148,7 +148,7 @@ public class GenericRegionMergingOpTest {
             checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 40, 203, 4, 9, 52, 2);
 
             Product targetProduct = operator.getTargetProduct();
-            checkTargetBandForSpringSegmenter(targetProduct);
+            checkTargetBandForSpringSegmenter(targetProduct, 1, 81);
         } finally {
             sourceProduct.dispose();
         }
@@ -166,7 +166,7 @@ public class GenericRegionMergingOpTest {
             float shapeWeight = 0.3f;
 
             GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
-                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+                                                              totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
             AbstractSegmenter segmenter = operator.getSegmenter();
             assertNotNull(segmenter);
@@ -196,7 +196,7 @@ public class GenericRegionMergingOpTest {
             checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 36, 192, 268, 189, 2292, 1);
 
             Product targetProduct = operator.getTargetProduct();
-            checkTargetBandForBaatzSchapeSmallSegmenter(targetProduct);
+            checkTargetBandForBaatzSchapeSmallSegmenter(targetProduct, 1, 4);
         } finally {
             sourceProduct.dispose();
         }
@@ -214,7 +214,7 @@ public class GenericRegionMergingOpTest {
             float shapeWeight = 0.3f;
 
             GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
-                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+                                                              totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
             AbstractSegmenter segmenter = operator.getSegmenter();
             assertNotNull(segmenter);
@@ -244,7 +244,7 @@ public class GenericRegionMergingOpTest {
             checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 72, 45, 570, 303, 5428, 1);
 
             Product targetProduct = operator.getTargetProduct();
-            checkTargetBandForBaatzSchapeSegmenter(targetProduct);
+            checkTargetBandForBaatzSchapeSegmenter(targetProduct, 1, 4);
         } finally {
             sourceProduct.dispose();
         }
@@ -262,7 +262,7 @@ public class GenericRegionMergingOpTest {
             float shapeWeight = 0.3f;
 
             GenericRegionMergingOp operator = executeOperator(sourceProduct, mergingCostCriterion, regionMergingCriterion,
-                    totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
+                                                              totalIterationsForSecondSegmentation, threshold, spectralWeight, shapeWeight);
 
             AbstractSegmenter segmenter = operator.getSegmenter();
             assertNotNull(segmenter);
@@ -292,7 +292,7 @@ public class GenericRegionMergingOpTest {
             checkGraphNode(nodes.get(0), nodeExpectedMeansValues, 81, 353, 586, 70, 2860, 1);
 
             Product targetProduct = operator.getTargetProduct();
-            checkTargetBandForFastBaatzSchapeSegmenter(targetProduct);
+            checkTargetBandForFastBaatzSchapeSegmenter(targetProduct, 1, 4);
         } finally {
             sourceProduct.dispose();
         }
@@ -388,150 +388,66 @@ public class GenericRegionMergingOpTest {
         assertEquals(nodeEdgeCount, node.getEdgeCount());
     }
 
-    private static void checkTargetBandForSpringSegmenter(Product targetProduct) {
+    private static void checkTargetBandForSpringSegmenter(Product targetProduct, int minimumExpectedValue, int maximumExpectedValue) {
         Band band = checkTargetBand(targetProduct);
-
-        int bandValue = band.getSampleInt(64, 84);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(164, 184);
-        assertEquals(17, bandValue);
-
-        bandValue = band.getSampleInt(264, 114);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(14, 18);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(123, 321);
-        assertEquals(21, bandValue);
-
-        bandValue = band.getSampleInt(200, 100);
-        assertEquals(2, bandValue);
+        assertValueInsideInterval(band.getSampleInt(64, 84), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(164, 184), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(264, 114), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(14, 18), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(123, 321), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(200, 100), minimumExpectedValue, maximumExpectedValue);
     }
 
-    private static void checkTargetBandForFullLamdaScheduleSegmenter(Product targetProduct) {
+    private static void checkTargetBandForFullLamdaScheduleSegmenter(Product targetProduct, int minimumExpectedValue, int maximumExpectedValue) {
         Band band = checkTargetBand(targetProduct);
-
-        int bandValue = band.getSampleInt(64, 84);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(164, 184);
-        assertEquals(8, bandValue);
-
-        bandValue = band.getSampleInt(264, 114);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(14, 18);
-        assertEquals(3, bandValue);
-
-        bandValue = band.getSampleInt(123, 321);
-        assertEquals(10, bandValue);
-
-        bandValue = band.getSampleInt(200, 100);
-        assertEquals(4, bandValue);
+        assertValueInsideInterval(band.getSampleInt(64, 84), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(164, 184), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(264, 114), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(14, 18), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(123, 321), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(200, 100), minimumExpectedValue, maximumExpectedValue);
     }
 
-    private static void checkTargetBandForBaatzSchapeSmallSegmenter(Product targetProduct) {
+    private static void checkTargetBandForBaatzSchapeSmallSegmenter(Product targetProduct, int minimumExpectedValue, int maximumExpectedValue) {
         Band band = checkTargetBand(targetProduct);
-
-        int bandValue = band.getSampleInt(64, 84);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(164, 184);
-        assertEquals(3, bandValue);
-
-        bandValue = band.getSampleInt(264, 114);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(14, 18);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(123, 321);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(200, 100);
-        assertEquals(2, bandValue);
+        assertValueInsideInterval(band.getSampleInt(64, 84), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(164, 184), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(264, 114), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(14, 18), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(123, 321), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(200, 100), minimumExpectedValue, maximumExpectedValue);
     }
 
-    private static void checkTargetBandForBaatzSchapeSegmenter(Product targetProduct) {
+    private static void checkTargetBandForBaatzSchapeSegmenter(Product targetProduct, int minimumExpectedValue, int maximumExpectedValue) {
         Band band = checkTargetBand(targetProduct);
-
-        int bandValue = band.getSampleInt(64, 84);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(164, 184);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(264, 114);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(14, 18);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(123, 321);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(200, 100);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(332, 178);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(614, 400);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(240, 510);
-        assertEquals(3, bandValue);
-
-        bandValue = band.getSampleInt(340, 410);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(164, 121);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(700, 868);
-        assertEquals(1, bandValue);
+        assertValueInsideInterval(band.getSampleInt(64, 84), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(164, 184), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(264, 114), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(14, 18), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(123, 321), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(200, 100), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(332, 178), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(614, 400), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(240, 510), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(340, 410), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(164, 121), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(700, 868), minimumExpectedValue, maximumExpectedValue);
     }
 
-    private static void checkTargetBandForFastBaatzSchapeSegmenter(Product targetProduct) {
+    private static void checkTargetBandForFastBaatzSchapeSegmenter(Product targetProduct, int minimumExpectedValue, int maximumExpectedValue) {
         Band band = checkTargetBand(targetProduct);
-
-        int bandValue = band.getSampleInt(64, 84);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(164, 184);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(264, 114);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(14, 18);
-        assertEquals(1, bandValue);
-
-        bandValue = band.getSampleInt(123, 321);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(200, 100);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(332, 178);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(614, 400);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(240, 510);
-        assertEquals(3, bandValue);
-
-        bandValue = band.getSampleInt(340, 410);
-        assertEquals(4, bandValue);
-
-        bandValue = band.getSampleInt(164, 121);
-        assertEquals(2, bandValue);
-
-        bandValue = band.getSampleInt(700, 868);
-        assertEquals(1, bandValue);
+        assertValueInsideInterval(band.getSampleInt(64, 84), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(164, 184), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(264, 114), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(14, 18), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(123, 321), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(200, 100), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(332, 178), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(614, 400), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(240, 510), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(340, 410), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(164, 121), minimumExpectedValue, maximumExpectedValue);
+        assertValueInsideInterval(band.getSampleInt(700, 868), minimumExpectedValue, maximumExpectedValue);
     }
 
     private static Band checkTargetBand(Product targetProduct) {
@@ -546,5 +462,11 @@ public class GenericRegionMergingOpTest {
         assertEquals(size, targetBand.getNumDataElems());
 
         return targetBand;
+    }
+
+    private static void assertValueInsideInterval(int actualValue, int minimumExpectedValue, int maximumExpectedValue) {
+        if (actualValue < minimumExpectedValue || actualValue > maximumExpectedValue) {
+            fail("The actual value " + actualValue + " is outside interval " + minimumExpectedValue+" - " + maximumExpectedValue + ".");
+        }
     }
 }

@@ -23,13 +23,9 @@ public class WorldView2Constants {
     public static final String PRODUCT_GENERIC_NAME = "WorldView-2 Product";
     public static final String PRODUCT_TYPE = "WorldView-2 Product";
     public static final String METADATA_EXTENSION = ".XML";
-        public static final String METADATA_FILE_SUFFIX = "_readme.xml";
-    public static final String[] NATURAL_COLORS =
-            new String[]{"Red", "Green", "Blue"};
-    public static final String[] BAND_NAMES_MULTISPECTRAL_4_BANDS =
-            new String[]{"Blue", "Green", "Red", "NIR1", "Pan"};
-    public static final String[] BAND_NAMES_MULTISPECTRAL_8_BANDS =
-            new String[]{"Coastal", "Blue", "Green", "Yellow", "Red", "Red Edge", "NIR1", "NIR2", "Pan"};
+    public static final String METADATA_FILE_SUFFIX = "_readme.xml";
+    public static final String[] BAND_NAMES_MULTISPECTRAL_4_BANDS = new String[]{"Blue", "Green", "Red", "NIR1", "Pan"};
+    public static final String[] BAND_NAMES_MULTISPECTRAL_8_BANDS = new String[]{"Coastal", "Blue", "Green", "Yellow", "Red", "Red Edge", "NIR1", "NIR2", "Pan"};
 
     public static final Map<String, Integer> BAND_WAVELENGTH = new HashMap<String, Integer>() {{
         put("Coastal", 427);
@@ -75,6 +71,7 @@ public class WorldView2Constants {
     public static final String PATH_FILE_LIST = "/README/FILELIST/FILE";
     public static final String PATH_START_TIME = "/README/COLLECTIONSTART";
     public static final String PATH_END_TIME = "/README/COLLECTIONSTOP";
+    public static final String PATH_ORDER_NUMBER = "/README/ORDERNO";
 
     /*
      * Raster metadata element paths

@@ -1,129 +1,86 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
-import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
-import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import org.esa.s2tbx.dataio.TileImageDisposer;
-import org.esa.s2tbx.dataio.readers.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.image.AbstractMosaicSubsetMultiLevelSource;
+import org.esa.snap.core.image.ImageReadBoundsSupport;
+import org.esa.snap.core.image.UncompressedTileOpImageCallback;
+import org.esa.snap.core.util.ImageUtils;
 
-import javax.media.jai.*;
-import javax.media.jai.operator.BorderDescriptor;
-import javax.media.jai.operator.ConstantDescriptor;
-import javax.media.jai.operator.MosaicDescriptor;
-import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.PlanarImage;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Logger;
 
 /**
- *  A single banded multi-level image source for products imported with the GDAL library.
+ * A single banded multi-level image source for products imported with the GDAL library.
  *
  * @author Jean Coravu
+ * @author Adrian Draghici
  */
-class GDALMultiLevelSource extends AbstractMultiLevelSource {
-    private static final Logger logger = Logger.getLogger(GDALMultiLevelSource.class.getName());
+class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implements UncompressedTileOpImageCallback<Void>, GDALBandSource {
 
-    private final TileLayout tileLayout;
-    private final Path sourceFile;
+    private final Path sourceLocalFile;
     private final int dataBufferType;
     private final int bandIndex;
-    private final TileImageDisposer tileManager;
+    private final Double noDataValue;
+    private final Dimension defaultJAIReadTileSize;
 
-    GDALMultiLevelSource(Path sourceFile, int bandIndex, int numBands, int imageWidth, int imageHeight,
-                                int tileWidth, int tileHeight, int levels, int dataBufferType, GeoCoding geoCoding) {
+    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, int bandIndex,
+                         int levelCount, GeoCoding geoCoding, Double noDataValue, Dimension defaultJAIReadTileSize) {
 
-        super(new DefaultMultiLevelModel(levels, Product.findImageToModelTransform(geoCoding), imageWidth, imageHeight));
+        super(levelCount, imageReadBounds, tileSize, geoCoding);
 
-        this.sourceFile = sourceFile;
+        this.sourceLocalFile = sourceLocalFile;
         this.dataBufferType = dataBufferType;
         this.bandIndex = bandIndex;
+        this.noDataValue = noDataValue;
+        this.defaultJAIReadTileSize = defaultJAIReadTileSize;
+    }
 
-        int numTilesX = imageWidth / tileWidth;
-        if (imageWidth % tileWidth != 0) {
-            numTilesX++;
-        }
-        int numTilesY = imageHeight / tileHeight;
-        if (imageHeight % tileHeight != 0) {
-            numTilesY++;
-        }
-        this.tileLayout = new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, numTilesX, numTilesY, levels);
-        this.tileLayout.numBands = numBands;
+    @Override
+    protected ImageLayout buildMosaicImageLayout(int level) {
+        return null; // no image layout to configure the mosaic image since the tile images are configured
+    }
 
-        this.tileManager = new TileImageDisposer();
+    @Override
+    public PlanarImage buildTileOpImage(ImageReadBoundsSupport imageReadBoundsSupport, int tileWidth, int tileHeight,
+                                        int tileOffsetFromReadBoundsX, int tileOffsetFromReadBoundsY, Void tileData) {
+
+        return new GDALTileOpImage(this, this.dataBufferType, tileWidth, tileHeight, tileOffsetFromReadBoundsX, tileOffsetFromReadBoundsY, imageReadBoundsSupport, this.defaultJAIReadTileSize);
     }
 
     @Override
     protected RenderedImage createImage(int level) {
-        int tileCount = this.tileLayout.numXTiles * this.tileLayout.numYTiles;
-        List<RenderedImage> tileImages = Collections.synchronizedList(new ArrayList<>(tileCount));
-        double factorX = 1.0 / Math.pow(2, level);
-        double factorY = 1.0 / Math.pow(2, level);
-        for (int x = 0; x < tileLayout.numYTiles; x++) {
-            for (int y = 0; y < tileLayout.numXTiles; y++) {
-                PlanarImage opImage;
-                opImage = createTileImage(x, y, level);
-                if (opImage != null) {
-                    this.tileManager.registerForDisposal(opImage);
-
-                    float xTrans = (float) (y * this.tileLayout.tileWidth * factorX);
-                    float yTrans = (float) (x * this.tileLayout.tileHeight * factorY);
-                    opImage = TranslateDescriptor.create(opImage, xTrans, yTrans, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
-                } else {
-                    opImage = ConstantDescriptor.create((float) tileLayout.tileWidth, (float) tileLayout.tileHeight, new Number[]{0}, null);
-                }
-                tileImages.add(opImage);
-            }
+        java.util.List<RenderedImage> tileImages = buildUncompressedTileImages(level, this.imageReadBounds, this.tileSize.width, this.tileSize.height, 0.0f, 0.0f, this, null);
+        if (!tileImages.isEmpty()) {
+            return buildMosaicOp(level, tileImages, false);
         }
-        if (tileImages.isEmpty()) {
-            logger.warning("No tile images for mosaic.");
-            return null;
-        }
-
-        Dimension defaultTileSize = JAI.getDefaultTileSize();
-        ImageLayout imageLayout = new ImageLayout();
-        imageLayout.setMinX(0);
-        imageLayout.setMinY(0);
-        imageLayout.setTileWidth(defaultTileSize.width);
-        imageLayout.setTileHeight(defaultTileSize.height);
-        imageLayout.setTileGridXOffset(0);
-        imageLayout.setTileGridYOffset(0);
-
-        RenderedImage[] sources = tileImages.toArray(new RenderedImage[tileImages.size()]);
-        RenderedOp mosaicOp = MosaicDescriptor.create(sources, MosaicDescriptor.MOSAIC_TYPE_OVERLAY, null, null, null, null,
-                                                      new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-
-        int fittingRectWidth = GDALTileOpImage.scaleValue(this.tileLayout.width, level);
-        int fittingRectHeight = GDALTileOpImage.scaleValue(this.tileLayout.height, level);
-
-        Rectangle fitRect = new Rectangle(0, 0, fittingRectWidth, fittingRectHeight);
-        Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
-
-        BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
-
-        if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
-            int rightPad = destBounds.width - mosaicOp.getWidth();
-            int bottomPad = destBounds.height - mosaicOp.getHeight();
-
-            mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
-        }
-        return mosaicOp;
+        return null;
     }
 
     @Override
-    public synchronized void reset() {
-        super.reset();
-
-        this.tileManager.disposeAll();
-        System.gc();
+    protected double[] getMosaicOpBackgroundValues() {
+        if (this.noDataValue == null) {
+            return super.getMosaicOpBackgroundValues();
+        }
+        return new double[]{this.noDataValue};
     }
 
-    private PlanarImage createTileImage(int row, int col, int level) {
-        return GDALTileOpImage.create(this.sourceFile, this.bandIndex, row, col, tileLayout, getModel(), this.dataBufferType, level);
+    @Override
+    public Path getSourceLocalFile() {
+        return this.sourceLocalFile;
+    }
+
+    @Override
+    public int getBandIndex() {
+        return this.bandIndex;
+    }
+
+    public ImageLayout buildMultiLevelImageLayout() {
+        int topLeftTileWidth = computeTopLeftUncompressedTileWidth(this.imageReadBounds, this.tileSize.width);
+        int topLeftTileHeight = computeTopLeftUncompressedTileHeight(this.imageReadBounds, this.tileSize.height);
+        return ImageUtils.buildImageLayout(this.dataBufferType, this.imageReadBounds.width, this.imageReadBounds.height, 0, this.defaultJAIReadTileSize, topLeftTileWidth, topLeftTileHeight);
     }
 }

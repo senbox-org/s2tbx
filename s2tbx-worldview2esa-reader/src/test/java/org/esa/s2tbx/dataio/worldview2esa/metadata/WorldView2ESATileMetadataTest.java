@@ -1,13 +1,18 @@
 package org.esa.s2tbx.dataio.worldview2esa.metadata;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.commons.FilePathInputStream;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -22,8 +27,8 @@ public class WorldView2ESATileMetadataTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         XmlMetadataParserFactory.registerParser(TileMetadata.class, new XmlMetadataParser<>(TileMetadata.class));
-        metadata = TileMetadata.create(TileMetadata.class, TestUtil.getTestFile(productsFolder +
-                "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+File.separator+"WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061"+File.separator+"053963700060_01_P001_MUL"+File.separator+"11MAY25095346-M2AS-053963700060_01_P001.XML"));
+        metadata = GenericXmlMetadata.create(TileMetadata.class, TestUtil.getTestFile(productsFolder +
+                "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+ File.separator+ "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061"+File.separator+"053963700060_01_P001_MUL"+File.separator+"11MAY25095346-M2AS-053963700060_01_P001.XML"));
     }
 
     @After
@@ -48,17 +53,20 @@ public class WorldView2ESATileMetadataTest {
 
     @Test
     public void testGetRasterHeight() throws Exception {
-        assertEquals(23051, metadata.getRasterHeight());
+        assertEquals(4096, metadata.getRasterHeight());
     }
 
     @Test
     public void testGetRasterWidth() throws Exception {
-        assertEquals(11891, metadata.getRasterWidth());
+        assertEquals(8192, metadata.getRasterWidth());
     }
     @Test
     public void testWorldView2TileComponent() throws Exception {
-        metadata =  TileMetadata.create(TestUtil.getTestFile(productsFolder +
-                "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+File.separator+"WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061"+File.separator+"053963700060_01_P001_MUL"+File.separator+"11MAY25095346-M2AS-053963700060_01_P001.XML").toPath());
+        Path path = TestUtil.getTestFile(productsFolder +
+                "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061.SIP"+ File.separator+ "WV2_OPER_WV-110__2A_20110525T095346_N44-248_E023-873_4061"+File.separator+"053963700060_01_P001_MUL"+File.separator+"11MAY25095346-M2AS-053963700060_01_P001.XML").toPath();
+        try (InputStream inputStream = Files.newInputStream(path)) {
+            metadata =  TileMetadata.create(new FilePathInputStream(path, inputStream, null));
+        }
         assertNotNull(metadata.getTileComponent());
         assertEquals("Multi", metadata.getTileComponent().getBandID());
         assertEquals("N", metadata.getTileComponent().getMapHemisphere());

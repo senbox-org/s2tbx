@@ -20,15 +20,11 @@ package org.esa.s2tbx.dataio.rapideye;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
-import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.utils.FileHelper;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.Locale;
 
 /**
@@ -40,6 +36,11 @@ public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
 
     public RapidEyeL3ReaderPlugin() {
         super("org/esa/s2tbx/dataio/rapideye/" + RapidEyeL3ReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new RapidEyeL3MetadataInspector();
     }
 
     @Override

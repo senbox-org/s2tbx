@@ -10,7 +10,7 @@ public class JP2OpenJPEGDriverProductReaderPlugIn extends AbstractDriverProductR
     public JP2OpenJPEGDriverProductReaderPlugIn() {
         super("JP2OpenJPEG", "JPEG-2000 driver based on OpenJPEG library");
 
-        addExtensin(".jp2");
-        addExtensin(".j2k");
+        addExtension(".jp2");
+        addExtension(".j2k");
     }
 }

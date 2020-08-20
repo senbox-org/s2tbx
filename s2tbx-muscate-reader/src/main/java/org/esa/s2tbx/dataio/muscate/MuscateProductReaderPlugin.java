@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.muscate;
 
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -19,6 +20,11 @@ public class MuscateProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     public Class[] getInputTypes() {
         return MuscateConstants.MUSCATE_READER_INPUT_TYPES;
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new MuscateMetadataInspector();
     }
 
     @Override
@@ -41,8 +47,6 @@ public class MuscateProductReaderPlugin extends BaseProductReaderPlugIn {
         return MuscateConstants.MUSCATE_DESCRIPTION;
     }
 
-
-
     @Override
     protected String[] getMinimalPatternList() { return MuscateConstants.MINIMAL_PRODUCT_PATTERNS; }
 
@@ -57,5 +61,4 @@ public class MuscateProductReaderPlugin extends BaseProductReaderPlugIn {
         manager.addProfile(new RGBImageProfile("MUSCATE Surface False-color Infrared", new String[]{"Surface_Reflectance_B8", "Surface_Reflectance_B4", "Surface_Reflectance_B3"}));
         manager.addProfile(new RGBImageProfile("MUSCATE Flat False-color Infrared", new String[]{"Flat_Reflectance_B8", "Flat_Reflectance_B4", "Flat_Reflectance_B3"}));
     }
-
 }

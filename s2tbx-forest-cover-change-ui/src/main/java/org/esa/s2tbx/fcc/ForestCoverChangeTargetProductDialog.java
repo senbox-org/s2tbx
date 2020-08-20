@@ -17,6 +17,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductManager;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
+import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.SourceProducts;
@@ -36,6 +37,7 @@ import org.esa.snap.core.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelectorModel;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.landcover.dataio.LandCoverFactory;
 import org.esa.snap.rcp.SnapApp;
@@ -104,14 +106,28 @@ public class ForestCoverChangeTargetProductDialog extends SingleTargetProductDia
     public ForestCoverChangeTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         super(appContext, title, ID_APPLY_CLOSE, helpID);
 
+        if (StringUtils.isNullOrEmpty(operatorName)) {
+            throw new NullPointerException("The operator name is null or empty.");
+        }
+        OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operatorName);
+        if (operatorSpi == null) {
+            throw new IllegalArgumentException("No SPI found for operator name '" + operatorName + "'");
+        }
+
         this.operatorName = operatorName;
         this.targetProductNameSuffix = "";
-        final TargetProductSelector selector = getTargetProductSelector();
+
+        TargetProductSelector selector = getTargetProductSelector();
         selector.getModel().setSaveToFileSelected(false);
         selector.getSaveToFileCheckBox().setEnabled(true);
+
         processAnnotationsRec(ForestCoverChangeOp.class);
-        this.operatorDescriptor = new OperatorDescriptorClass( this.parameterDescriptors.toArray(new ParameterDescriptor[0]),
-                this.sourceProductDescriptors.toArray(new SourceProductDescriptor[0]));
+
+        OperatorDescriptor baseOperatorDescriptor = operatorSpi.getOperatorDescriptor();
+        ParameterDescriptor[] params = this.parameterDescriptors.toArray(new ParameterDescriptor[0]);
+        SourceProductDescriptor[] sourceProducts = this.sourceProductDescriptors.toArray(new SourceProductDescriptor[0]);
+        this.operatorDescriptor = new OperatorDescriptorClass(baseOperatorDescriptor, params, sourceProducts);
+
         this.ioParametersPanel = new DefaultIOParametersPanel(getAppContext(), this.operatorDescriptor, getTargetProductSelector(), true);
 
         this.parameterSupport = new OperatorParameterSupport(this.operatorDescriptor);

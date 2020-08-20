@@ -1,10 +1,14 @@
 package org.esa.s2tbx.jni;
 
 /**
+ * Environment Variables JNI class for control OS environment variables during runtime
+ *
  * @author Jean Coravu
  */
 public class EnvironmentVariablesNative {
+
     static {
+        //Loads the native library used by this JNI
         System.loadLibrary("environment-variables");
     }
 
@@ -15,6 +19,10 @@ public class EnvironmentVariablesNative {
     public static native String getenv(String key);
 
     public static native int putenv(String keyEqualValue);
+
+    private EnvironmentVariablesNative(){
+        //noting to init
+    }
 }
 
 /*

@@ -1,12 +1,8 @@
 package org.esa.s2tbx.fcc.common;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -16,18 +12,6 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.ProductHelper;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
-import org.geotools.referencing.operation.transform.AffineTransform2D;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.operation.TransformException;
-
-import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 
 /**
  * @author Razvan Dumitrascu
@@ -72,7 +56,11 @@ public class BandsExtractorOp extends Operator {
         ProductUtils.copyGeoCoding(sourceProduct, product);
         ProductUtils.copyTiePointGrids(sourceProduct, product);
         ProductUtils.copyVectorData(sourceProduct, product);
+
         if (sourceMaskNames != null && sourceMaskNames.length > 0) {
+            // first the bands have to be copied and then the masks, otherwise the referenced bands, e.g. flag band,
+            // is not contained in the target product and the mask is not copied
+            ProductHelper.copyFlagBands(sourceProduct, product, true);
             ProductHelper.copyMasks(sourceProduct, product, sourceMaskNames);
         }
 

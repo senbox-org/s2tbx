@@ -1,30 +1,13 @@
 package org.esa.s2tbx.dataio.worldview2esa.metadata;
 
-import org.esa.s2tbx.commons.FilePathInputStream;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.worldview2esa.common.WorldView2ESAConstants;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.nio.file.Path;
+import java.awt.*;
 
 public class WorldView2ESAMetadata extends XmlMetadata {
-
-    private static class WorldView2ESAMetadataParser extends XmlMetadataParser<WorldView2ESAMetadata> {
-
-        public WorldView2ESAMetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return false;
-        }
-    }
 
     public WorldView2ESAMetadata(String name) {
         super(name);
@@ -114,19 +97,5 @@ public class WorldView2ESAMetadata extends XmlMetadata {
     @Override
     public String getMetadataProfile() {
         return null;
-    }
-
-    public static WorldView2ESAMetadata create(FilePathInputStream filePathInputStream) throws IOException {
-        WorldView2ESAMetadata result;
-        try {
-            WorldView2ESAMetadataParser parser = new WorldView2ESAMetadataParser(WorldView2ESAMetadata.class);
-            result = parser.parse(filePathInputStream);
-        } catch (ParserConfigurationException | SAXException e) {
-            throw new IllegalStateException(e);
-        }
-        Path path = filePathInputStream.getPath();
-        result.setPath(path);
-        result.setFileName(path.getFileName().toString());
-        return result;
     }
 }
