@@ -36,35 +36,42 @@ public class BiophysicalAlgoTest {
         Engine.start(false);
     }
 
+    //S2B_tests
     @Test
-    public void testLAI() throws IOException {
-        testVariable(BiophysicalVariable.LAI);
+    public void testLAI_S2B() throws IOException {
+        testVariable(BiophysicalVariable.LAI, BiophysicalModel.S2B);
+    }
+    @Test
+    public void testCAB_S2B() throws IOException {
+        testVariable(BiophysicalVariable.LAI_Cab, BiophysicalModel.S2B);
+    }
+    @Test
+    public void testFAPAR_S2B() throws IOException {
+        testVariable(BiophysicalVariable.FAPAR, BiophysicalModel.S2B);
+    }
+    @Test
+    public void testFCOVER_S2B() throws IOException {
+        testVariable(BiophysicalVariable.FCOVER, BiophysicalModel.S2B);
     }
 
+    //S2A_10m_tests
     @Test
-    public void testCW() throws IOException {
-        // No test case for Cw
-        //testVariable(BiophysicalVariable.LAI_Cw);
+    public void testLAI_S2A_10m() throws IOException {
+        testVariable(BiophysicalVariable.LAI, BiophysicalModel.S2A_10m);
+    }
+    @Test
+    public void testFAPAR_S2A_10m() throws IOException {
+        testVariable(BiophysicalVariable.FAPAR, BiophysicalModel.S2A_10m);
+    }
+    @Test
+    public void testFCOVER_S2A_10m() throws IOException {
+        testVariable(BiophysicalVariable.FCOVER, BiophysicalModel.S2A_10m);
     }
 
-    @Test
-    public void testCAB() throws IOException {
-        testVariable(BiophysicalVariable.LAI_Cab);
-    }
 
-    @Test
-    public void testFAPAR() throws IOException {
-        testVariable(BiophysicalVariable.FAPAR);
-    }
 
-    @Test
-    public void testFCOVER() throws IOException {
-        // No test case for FCOVER
-        //testVariable(BiophysicalVariable.FCOVER);
-    }
-
-    private void testVariable(BiophysicalVariable biophysicalVariable) throws IOException {
-        BiophysicalAuxdata biophysicalVariableData = BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable);
+    private void testVariable(BiophysicalVariable biophysicalVariable, BiophysicalModel biophysicalModel) throws IOException {
+        BiophysicalAuxdata biophysicalVariableData = BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable, biophysicalModel);
         BiophysicalAlgo biophysicalAlgo = new BiophysicalAlgo(biophysicalVariableData);
 
         double [][] testData = biophysicalVariableData.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.TEST_CASES);
@@ -101,7 +108,12 @@ public class BiophysicalAlgoTest {
                 try {
                     if (!Double.isNaN(expectedIndicator))
                     {
-                        assertEquals(expectedIndicator, computedIndicator, 1E-2);
+                        double threshold = 1E-2;
+                        //If expected value is big, then accept a bigger error
+                        if(expectedIndicator * 0.001 > threshold) {
+                            threshold = expectedIndicator * 0.001;
+                        }
+                        assertEquals(expectedIndicator, computedIndicator, threshold);
                     }
                 } catch (AssertionError e) {
                     System.err.println("Error detected during validation. Input was : " + Arrays.toString(input));

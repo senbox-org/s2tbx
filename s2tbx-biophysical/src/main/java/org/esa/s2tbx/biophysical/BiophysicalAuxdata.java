@@ -40,23 +40,26 @@ public class BiophysicalAuxdata {
     }
 
     private final BiophysicalVariable biophysicalVariable;
+    private final BiophysicalModel biophysicalModel;
     private final HashMap<BiophysicalVariableCoeffs, double [][]> coeffsMap = new HashMap<>();
 
-    private BiophysicalAuxdata(BiophysicalVariable biophysicalVariable) throws IOException {
+    private BiophysicalAuxdata(BiophysicalVariable biophysicalVariable, BiophysicalModel biophysicalModel) throws IOException {
         this.biophysicalVariable = biophysicalVariable;
-        readBiophysicalVariableData(this.biophysicalVariable);
+        this.biophysicalModel = biophysicalModel;
+        readBiophysicalVariableData(this.biophysicalVariable, this.biophysicalModel);
     }
 
-    public static BiophysicalAuxdata makeBiophysicalAuxdata(BiophysicalVariable biophysicalVariable) throws IOException {
-        return new BiophysicalAuxdata(biophysicalVariable);
+    public static BiophysicalAuxdata makeBiophysicalAuxdata(BiophysicalVariable biophysicalVariable, BiophysicalModel biophysicalModel) throws IOException {
+        if(!biophysicalModel.computesVariable(biophysicalVariable)) return null;
+        return new BiophysicalAuxdata(biophysicalVariable, biophysicalModel);
     }
 
     public double [][] getCoeffs(BiophysicalVariableCoeffs coeff) {
         return this.coeffsMap.get(coeff);
     }
 
-    void readBiophysicalVariableData(BiophysicalVariable variable) throws IOException {
-        Path biophysicalVariableDataDir = BiophysicalActivator.getAuxDataDir().resolve("2_1").resolve(variable.name());
+    void readBiophysicalVariableData(BiophysicalVariable variable, BiophysicalModel model) throws IOException {
+        Path biophysicalVariableDataDir = BiophysicalActivator.getAuxDataDir().resolve("3_0").resolve(model.name()).resolve(variable.name());
         for (BiophysicalVariableCoeffs coeffs : BiophysicalVariableCoeffs.values()) {
             Path biophysicalVariableDataFilename = biophysicalVariableDataDir.resolve(variable.name() + "_" + coeffs.getId());
             double [][]  csvTable = null;
@@ -65,7 +68,7 @@ public class BiophysicalAuxdata {
             } catch (IOException e) {
                 // Some coefficients are not yet available (TestCases for Cw and FCover for example).
                 // They won't be available for further processing
-                SystemUtils.LOG.warning(String.format("Error when loading coefficients %s for variable %s. They won't be available.", coeffs.toString(), variable.toString()));
+                SystemUtils.LOG.warning(String.format("Error when loading coefficients %s for variable %s model %s. They won't be available.", coeffs.toString(), variable.toString(), model.toString()));
             }
             this.coeffsMap.put(coeffs, csvTable);
         }

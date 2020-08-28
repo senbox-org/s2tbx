@@ -3,18 +3,50 @@
     <folder name="Actions">
         <folder name="Operators">
             <file name="org-esa-s2tbx-biophysical-Action.instance">
+            <attr name="instanceCreate"
+                  methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+            <attr name="delegate"
+                  methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+            <attr name="displayName"
+                  stringvalue="Biophysical Processor S2"/>
+            <attr name="dialogTitle"
+                  stringvalue="Biophysical Processor S2"/>
+            <attr name="operatorName"
+                  stringvalue="BiophysicalOp"/>
+            <attr name="targetProductNameSuffix"
+                  stringvalue="_biophysical"/>
+            <attr name="helpId"
+                  stringvalue="biophysicalOpOverview"/>
+        </file>
+            <file name="org-esa-s2tbx-biophysical-Op10mAction.instance">
                 <attr name="instanceCreate"
                       methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate"
                       methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName"
-                      stringvalue="Biophysical Processor (LAI, fAPAR...)"/>
+                      stringvalue="Biophysical Processor S2_10m"/>
                 <attr name="dialogTitle"
-                      stringvalue="Biophysical Processor (LAI, fAPAR...)"/>
+                      stringvalue="Biophysical Processor S2_10m"/>
                 <attr name="operatorName"
-                      stringvalue="BiophysicalOp"/>
+                      stringvalue="Biophysical10mOp"/>
                 <attr name="targetProductNameSuffix"
-                      stringvalue="_biophysical"/>
+                      stringvalue="_biophysical10m"/>
+                <attr name="helpId"
+                      stringvalue="biophysicalOpOverview"/>
+            </file>
+            <file name="org-esa-s2tbx-biophysical-OpLandsat8Action.instance">
+                <attr name="instanceCreate"
+                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate"
+                      methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName"
+                      stringvalue="Biophysical Processor LANDSAT8"/>
+                <attr name="dialogTitle"
+                      stringvalue="Biophysical Processor LANDSAT8"/>
+                <attr name="operatorName"
+                      stringvalue="BiophysicalLandsat8Op"/>
+                <attr name="targetProductNameSuffix"
+                      stringvalue="_biophysicalLandsat"/>
                 <attr name="helpId"
                       stringvalue="biophysicalOpOverview"/>
             </file>
@@ -24,12 +56,26 @@
     <folder name="Menu">
         <folder name="Optical">
             <folder name="Thematic Land Processing">
+                <folder name="Biophysical Processor (LAI, fAPAR...)">
                 <file name="org-esa-s2tbx-biophysical-Action.shadow">
                     <attr name="originalFile"
                           stringvalue="Actions/Operators/org-esa-s2tbx-biophysical-Action.instance"/>
                     <attr name="position"
-                          intvalue="10000"/>
+                          intvalue="1"/>
                 </file>
+                    <file name="org-esa-s2tbx-biophysical-Op10mAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-biophysical-Op10mAction.instance"/>
+                        <attr name="position"
+                              intvalue="2"/>
+                    </file>
+                    <file name="org-esa-s2tbx-biophysical-OpLandsat8Action.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-biophysical-OpLandsat8Action.instance"/>
+                        <attr name="position"
+                              intvalue="3"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>
