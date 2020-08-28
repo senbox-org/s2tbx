@@ -1,15 +1,19 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
+import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.MFFDriverProductReaderPlugIn;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -34,7 +38,7 @@ public class MFFDriverProductReaderTest extends AbstractTestDriverProductReader 
             assertEquals(64, finalProduct.getSceneRasterWidth());
             assertEquals(64, finalProduct.getSceneRasterHeight());
 
-            Band band = finalProduct.getBandAt(0);
+            Band band = finalProduct.getBand("band_1");
             assertEquals(20, band.getDataType());
             assertEquals(4096, band.getNumDataElems());
 
@@ -52,6 +56,51 @@ public class MFFDriverProductReaderTest extends AbstractTestDriverProductReader 
 
             bandValue = band.getSampleFloat(15, 33);
             assertEquals(133.0f, bandValue, 0);
+        }
+    }
+
+    @Test
+    public void testMFFReadProductSubset() throws IOException {
+        if (GDALInstallInfo.INSTANCE.isPresent()) {
+            File file = this.gdalTestsFolderPath.resolve("MFF-driver.hdr").toFile();
+
+            Rectangle subsetRegion = new Rectangle(10, 20, 50, 40);
+            ProductSubsetDef subsetDef = new ProductSubsetDef();
+            subsetDef.setNodeNames(new String[] { "band_1"} );
+            subsetDef.setSubsetRegion(new PixelSubsetRegion(subsetRegion, 0));
+            subsetDef.setSubSampling(1, 1);
+
+            MFFDriverProductReaderPlugIn readerPlugin = new MFFDriverProductReaderPlugIn();
+            GDALProductReader reader = (GDALProductReader)readerPlugin.createReaderInstance();
+            Product finalProduct = reader.readProductNodes(file, subsetDef);
+
+            assertNull(finalProduct.getSceneGeoCoding());
+
+            assertNotNull(finalProduct.getMaskGroup());
+            assertEquals(0,finalProduct.getMaskGroup().getNodeNames().length);
+            assertEquals(1, finalProduct.getBands().length);
+            assertEquals("GDAL", finalProduct.getProductType());
+            assertEquals(50, finalProduct.getSceneRasterWidth());
+            assertEquals(40, finalProduct.getSceneRasterHeight());
+
+            Band band = finalProduct.getBand("band_1");
+            assertEquals(20, band.getDataType());
+            assertEquals(2000, band.getNumDataElems());
+
+            float bandValue = band.getSampleFloat(12, 24);
+            assertEquals(168.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(17, 18);
+            assertEquals(117.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(33, 20);
+            assertEquals(212.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(33, 33);
+            assertEquals(83.0f, bandValue, 0);
+
+            bandValue = band.getSampleFloat(44, 37);
+            assertEquals(159.0f, bandValue, 0);
         }
     }
 }

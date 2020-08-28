@@ -77,7 +77,7 @@ import java.util.logging.Logger;
         alias = "ForestCoverChangeOp",
         version="1.0",
         category = "Optical/Thematic Land Processing",
-        description = "Creates forrest change masks out of two source products",
+        description = "Creates forest change masks out of two source products",
         authors = "Jean Coravu, Razvan Dumitrascu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class ForestCoverChangeOp extends Operator {
@@ -186,15 +186,10 @@ public class ForestCoverChangeOp extends Operator {
 
         this.threadCount = Runtime.getRuntime().availableProcessors() - 1;
         this.threadPool = Executors.newCachedThreadPool();
-
-        //20190325 workaround for using the operator in gpt, call directly in initialize the doExecute until GraphBuilder corrections
-        doExecute();
     }
 
-    //20190325 workaround for using the operator in gpt, do not override doExecute (until GraphBuilder corrections)
-    //@Override
-    //public void doExecute(ProgressMonitor pm) throws OperatorException {
-    public void doExecute() {
+    @Override
+    public void doExecute(ProgressMonitor pm) throws OperatorException {
         long startTime = System.currentTimeMillis();
 
         String folderPath = System.getProperty("fcc.temp.folder.path");

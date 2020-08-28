@@ -31,6 +31,9 @@ import org.openide.modules.Modules;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * @author Norman
@@ -50,18 +53,25 @@ public class S2tbxAboutBox extends JPanel {
     }
 
     private JPanel createVersionPanel() {
-        final JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+        Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.ENGLISH);
+        int year = utc.get(Calendar.YEAR);
+        JLabel copyRightLabel = new JLabel("<html><b>© 2014-" + year + " CS GROUP FRANCE, CS ROMANIA and contributors</b>", SwingConstants.CENTER);
+
         final ModuleInfo moduleInfo = Modules.getDefault().ownerOf(S2tbxAboutBox.class);
-        panel.add(new JLabel("<html><b>Sentinel-2 Toolbox (S2TBX) version " + moduleInfo.getImplementationVersion() + "</b>",
-                SwingConstants.RIGHT));
+        JLabel versionLabel = new JLabel("<html><b>Sentinel-2 Toolbox (S2TBX) version " + moduleInfo.getImplementationVersion() + "</b>", SwingConstants.CENTER);
+
         Version specVersion = Version.parseVersion(moduleInfo.getSpecificationVersion().toString());
         String versionString = String.format("%s.%s.%s", specVersion.getMajor(), specVersion.getMinor(), specVersion.getMicro());
         String changelogUrl = releaseNotesUrlString + versionString;
-        final JLabel releaseNoteLabel = new JLabel("<html><a href=\"" + changelogUrl + "\">Release Notes</a>", SwingConstants.RIGHT);
+        final JLabel releaseNoteLabel = new JLabel("<html><a href=\"" + changelogUrl + "\">Release Notes</a>", SwingConstants.CENTER);
         releaseNoteLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         releaseNoteLabel.addMouseListener(new BrowserUtils.URLClickAdaptor(changelogUrl));
-        panel.add(releaseNoteLabel);
-        return panel;
+
+        final JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(copyRightLabel);
+        mainPanel.add(versionLabel);
+        mainPanel.add(releaseNoteLabel);
+        return mainPanel;
     }
 }

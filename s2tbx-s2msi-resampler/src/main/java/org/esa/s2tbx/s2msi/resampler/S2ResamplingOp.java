@@ -1,13 +1,23 @@
 package org.esa.s2tbx.s2msi.resampler;
 
+import com.bc.ceres.core.ProgressMonitor;
+import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
+import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+
+import org.esa.s2tbx.dataio.s2.S2BandConstants;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by obarrile on 05/07/2017.
@@ -64,9 +74,11 @@ public class S2ResamplingOp extends Operator {
                     "are only retrieved when zooming in on a pixel.")
     private boolean resampleOnPyramidLevels;
 
+    private S2Resampler s2Resampler;
+
     @Override
     public void initialize() throws OperatorException {
-        S2Resampler s2Resampler = new S2Resampler(Integer.parseInt(targetResolution));
+        s2Resampler = new S2Resampler(Integer.parseInt(targetResolution));
         s2Resampler.setDownsamplingMethod(downsamplingMethod);
         s2Resampler.setFlagDownsamplingMethod(flagDownsamplingMethod);
         s2Resampler.setResampleOnPyramidLevels(resampleOnPyramidLevels);
@@ -77,8 +89,56 @@ public class S2ResamplingOp extends Operator {
         }
 
         targetProduct = s2Resampler.resample(sourceProduct);
+        this.targetProduct.getBand("view_zenith_mean").setSourceImage(null);
+        this.targetProduct.getBand("view_azimuth_mean").setSourceImage(null);
     }
 
+
+    /**
+     * Called by the framework in order to compute the stack of tiles for the given target bands.
+     * <p>The default implementation throws a runtime exception with the message "not implemented".
+     * <p>This method shall never be called directly.
+     *
+     * @param targetTiles  The current tiles to be computed for each target band.
+     * @param rectangle    The area in pixel coordinates to be computed (same for all rasters in {@code targetRasters}).
+     * @param pm           A progress monitor which should be used to determine computation cancellation requests.
+     * @throws OperatorException If an error occurs during computation of the target rasters.
+     */
+    @Override
+    public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
+        try {
+            Iterator<Map.Entry<Band, Tile>> it = targetTiles.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<Band, Tile> entry = it.next();
+                Band targetBand = entry.getKey();
+                Tile targetTile = entry.getValue();
+                int length = targetBand.getName().length();
+                String bandName = targetBand.getName().substring(5, length-5);
+                
+                Tile[] sourceTiles = new Tile[s2Resampler.getListUpdatedBands().size()];
+
+                for(int i = 0; i < sourceTiles.length; i++) {
+                    String name = "view_"+ bandName + "_" + s2Resampler.getListUpdatedBands().get(i).getPhysicalName();
+                    Band sourceBand = this.targetProduct.getBand(name);
+                    sourceTiles[i] = getSourceTile(sourceBand, rectangle);
+                }
+
+                for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
+                    for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
+                        float value = sourceTiles[0].getSampleFloat(x, y);
+                        for (int i = 1; i < sourceTiles.length; i++){
+                            value += sourceTiles[i].getSampleFloat(x, y);
+                        }
+
+                        targetTile.setSample(x, y, value / sourceTiles.length);
+                    }
+                }
+                
+            }
+        } finally {
+            pm.done();
+        }
+    }
 
 
     /**

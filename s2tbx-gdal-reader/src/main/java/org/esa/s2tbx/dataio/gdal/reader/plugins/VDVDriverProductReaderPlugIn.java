@@ -10,7 +10,7 @@ public class VDVDriverProductReaderPlugIn extends AbstractDriverProductReaderPlu
     public VDVDriverProductReaderPlugIn() {
         super("VDV", "VDV-451/VDV-452/INTREST Data Format");
 
-        addExtensin(".txt");
-        addExtensin(".x10");
+        addExtension(".txt");
+        addExtension(".x10");
     }
 }

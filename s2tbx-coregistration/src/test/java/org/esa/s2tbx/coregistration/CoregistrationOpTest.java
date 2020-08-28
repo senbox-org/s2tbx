@@ -6,6 +6,7 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.VirtualBand;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReaderPlugIn;
@@ -29,10 +30,10 @@ import static org.junit.Assume.assumeTrue;
  * @author Denisa Stefanescu
  */
 public class CoregistrationOpTest {
+
     private Path coregistrationTestsFolderPath;
     private Product masterSourceProduct;
     private Product slaveSourceProduct;
-    private ProductReaderPlugIn a;
 
     @Before
     public final void setUp() throws Exception {
@@ -45,9 +46,69 @@ public class CoregistrationOpTest {
         File masterProductFile = this.coregistrationTestsFolderPath.resolve("subset_1_of_lidar_georef.tif").toFile();
         this.masterSourceProduct = reader.readProductNodes(masterProductFile, null);
 
+        reader = readerPlugIn.createReaderInstance(); // create new reader object
         File slaveProductFile = this.coregistrationTestsFolderPath.resolve("subset_0_of_radar_bandep.tif").toFile();
         this.slaveSourceProduct = reader.readProductNodes(slaveProductFile, null);
+    }
 
+    @Test
+    public void testSlaveProductVirtualBand() {
+        Product product = this.slaveSourceProduct;
+        assertNotNull(product.getProductReader());
+        assertEquals(402, product.getSceneRasterWidth());
+        assertEquals(271, product.getSceneRasterHeight());
+        assertEquals("IMAGE", product.getProductType());
+
+        assertEquals(4, product.getNumBands());
+
+        Band band = product.getBandAt(0);
+        assertNotNull(band);
+        assertEquals(20, band.getDataType());
+        assertEquals(108942, band.getNumDataElems());
+        assertEquals("red", band.getName());
+        assertEquals(402, band.getRasterWidth());
+        assertEquals(271, band.getRasterHeight());
+
+        assertEquals(108, band.getSampleInt(64, 84));
+        assertEquals(121, band.getSampleInt(164, 184));
+        assertEquals(86, band.getSampleInt(264, 114));
+        assertEquals(124, band.getSampleInt(14, 18));
+        assertEquals(155, band.getSampleInt(123, 230));
+        assertEquals(91, band.getSampleInt(200, 100));
+        assertEquals(145, band.getSampleInt(401, 270));
+
+        band = product.getBandAt(2);
+        assertNotNull(band);
+        assertEquals(20, band.getDataType());
+        assertEquals(108942, band.getNumDataElems());
+        assertEquals("blue", band.getName());
+        assertEquals(402, band.getRasterWidth());
+        assertEquals(271, band.getRasterHeight());
+
+        assertEquals(119, band.getSampleInt(64, 84));
+        assertEquals(116, band.getSampleInt(164, 184));
+        assertEquals(98, band.getSampleInt(264, 114));
+        assertEquals(150, band.getSampleInt(14, 18));
+        assertEquals(189, band.getSampleInt(123, 230));
+        assertEquals(95, band.getSampleInt(200, 100));
+        assertEquals(170, band.getSampleInt(401, 270));
+
+        band = product.getBandAt(3);
+        assertNotNull(band);
+        assertTrue(band instanceof VirtualBand);
+        assertEquals(30, band.getDataType());
+        assertEquals(108942, band.getNumDataElems());
+        assertEquals("gray", band.getName());
+        assertEquals(402, band.getRasterWidth());
+        assertEquals(271, band.getRasterHeight());
+
+        assertEquals(110.98f, band.getSampleFloat(64, 84), 0.0f);
+        assertEquals(101.57f, band.getSampleFloat(164, 184), 0.0f);
+        assertEquals(90.86f, band.getSampleFloat(264, 114), 0.0f);
+        assertEquals(111.52f, band.getSampleFloat(14, 18), 0.0f);
+        assertEquals(161.69f, band.getSampleFloat(123, 230), 0.0f);
+        assertEquals(93.21f, band.getSampleFloat(200, 100), 0.0f);
+        assertEquals(161.32f, band.getSampleFloat(401, 270), 0.0f);
     }
 
     private void checkTestDirectoryExists() {
@@ -160,22 +221,22 @@ public class CoregistrationOpTest {
 
     private static void checkGrayBand(Band band) {
         int bandValue = band.getSampleInt(64, 84);
-        assertEquals(110, bandValue);
+        assertEquals(115, bandValue);
 
         bandValue = band.getSampleInt(164, 184);
-        assertEquals(100, bandValue);
+        assertEquals(93, bandValue);
 
         bandValue = band.getSampleInt(264, 114);
-        assertEquals(90, bandValue);
+        assertEquals(105, bandValue);
 
         bandValue = band.getSampleInt(14, 18);
-        assertEquals(108, bandValue);
+        assertEquals(92, bandValue);
 
         bandValue = band.getSampleInt(123, 230);
-        assertEquals(162, bandValue);
+        assertEquals(111, bandValue);
 
         bandValue = band.getSampleInt(200, 100);
-        assertEquals(93, bandValue);
+        assertEquals(88, bandValue);
     }
 
 

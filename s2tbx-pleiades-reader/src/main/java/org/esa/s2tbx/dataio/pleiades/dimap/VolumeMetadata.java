@@ -19,8 +19,8 @@ package org.esa.s2tbx.dataio.pleiades.dimap;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.commons.FilePathInputStream;
-import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 import org.xml.sax.SAXException;
@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

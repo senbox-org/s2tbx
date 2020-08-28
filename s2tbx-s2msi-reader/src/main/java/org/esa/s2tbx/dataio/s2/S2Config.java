@@ -17,11 +17,12 @@
 
 package org.esa.s2tbx.dataio.s2;
 
-import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.lib.openjpeg.jp2.TileLayout;
+import org.esa.snap.lib.openjpeg.utils.OpenJpegExecRetriever;
 
 import java.awt.image.DataBuffer;
+import java.util.logging.Logger;
 
 /**
  * Class to store S2 readers paramteters: static const, openjpeg executables path, tile layouts, ...
@@ -104,7 +105,6 @@ public class S2Config {
                 }
 
                 if (nonNullTileLayout != null) {
-                    // resolutionForNonNullTileLayout is either R20M, either R60M
                     int factor = resolutionForNonNullTileLayout / S2SpatialResolution.R10M.resolution;
                     int width = nonNullTileLayout.width * factor;
                     int height = nonNullTileLayout.height * factor;

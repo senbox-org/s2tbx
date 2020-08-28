@@ -19,8 +19,8 @@ package org.esa.s2tbx.dataio.spot6.dimap;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.commons.FilePathInputStream;
-import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 import org.xml.sax.SAXException;

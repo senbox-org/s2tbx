@@ -48,10 +48,11 @@ import java.util.Map;
  */
 @OperatorMetadata(
         alias = "BiophysicalOp",
-        category = "Optical/Thematic Land Processing/Biophysical Processor (LAI, fAPAR...)",
+        category = "Optical/Thematic Land Processing",
+        version = "1.0",
         description = "The 'Biophysical Processor' operator retrieves LAI from atmospherically corrected Sentinel-2 products",
         authors = "Julien Malik",
-        copyright = "CS SI (foss-contact@c-s.fr)")
+        copyright = "CS Group (foss-contact@c-s.fr)")
 public class BiophysicalOp extends PixelOperator {
 
     private Map<BiophysicalVariable, BiophysicalAlgo> algos = new HashMap<>();

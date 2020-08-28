@@ -25,7 +25,8 @@ import java.io.IOException;
 /**
  * @author Norman Fomferra
  */
-@Ignore
+@Ignore("Old code")
+
 public class Sentinel2ProductReaderMockUpTest {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {

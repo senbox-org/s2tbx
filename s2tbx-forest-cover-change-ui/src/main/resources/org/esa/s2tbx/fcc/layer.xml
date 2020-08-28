@@ -19,6 +19,7 @@
                 <attr name="dialogTitle" stringvalue="Bands extractor"/>
                 <attr name="operatorName" stringvalue="BandsExtractorOp"/>
                 <attr name="targetProductNameSuffix" stringvalue="_extractor"/>
+                <attr name="helpId" stringvalue="bandsExtractorProcessor"/>
             </file>
         </folder>
     </folder>
@@ -31,12 +32,16 @@
                     <attr name="position" intvalue="10010"/>
                 </file>
             </folder>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="Raster">
             <file name="org-esa-s2tbx-extractor-Action.shadow">
                 <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-extractor-Action.instance"/>
                 <attr name="position" intvalue="10011"/>
             </file>
         </folder>
     </folder>
-
 
 </filesystem>

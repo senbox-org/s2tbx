@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.kompsat2;
 
 import org.esa.s2tbx.dataio.kompsat2.internal.Kompsat2Constants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
@@ -17,6 +18,7 @@ import java.util.Locale;
 public class Kompsat2ProductReaderPlugin extends BaseProductReaderPlugIn {
 
     private static final String COLOR_PALETTE_FILE_NAME = "Kompsat_color_palette.cpd";
+
     public Kompsat2ProductReaderPlugin() {
         super("org/esa/s2tbx/dataio/kompsat2/" + Kompsat2ProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
         this.folderDepth = 1;
@@ -25,6 +27,11 @@ public class Kompsat2ProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     public Class[] getInputTypes() {
         return Kompsat2Constants.READER_INPUT_TYPES;
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new Kompsat2MetadataInspector();
     }
 
     @Override

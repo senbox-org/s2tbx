@@ -32,14 +32,8 @@ public class WorldView2ESAConstants {
             "WV2_\\w{4}_WV-\\d{3}_.*_\\d{8}T\\d{6}_\\w\\d{2}-\\d{3}_\\w\\d{3}-\\d{3}_\\d{4}\\.MD\\.XML",
             "WV2_\\w{4}_WV-\\d{3}_.*_\\d{8}T\\d{6}_\\w\\d{2}-\\d{3}_\\w\\d{3}-\\d{3}_\\d{4}.*\\.ZIP"};
 
-    public static final String PATH_ZIP_FILE_NAME_PATTERN = "\\d{12}_\\d{2}_[A-Z]\\d{3}_[A-Z]{3}";
-
-    public static final String[] NATURAL_COLORS =
-            new String[]{"Red", "Green", "Blue"};
-    public static final String[] BAND_NAMES_MULTISPECTRAL_4_BANDS =
-            new String[]{"Blue", "Green", "Red", "NIR1", "Pan"};
-    public static final String[] BAND_NAMES_MULTISPECTRAL_8_BANDS =
-            new String[]{"Coastal", "Blue", "Green", "Yellow", "Red", "Red Edge", "NIR1", "NIR2", "Pan"};
+    public static final String[] BAND_NAMES_MULTISPECTRAL_4_BANDS = new String[]{"Blue", "Green", "Red", "NIR1", "Pan"};
+    public static final String[] BAND_NAMES_MULTISPECTRAL_8_BANDS = new String[]{"Coastal", "Blue", "Green", "Yellow", "Red", "Red Edge", "NIR1", "NIR2", "Pan"};
 
     public static final Map<String, Integer> BAND_WAVELENGTH = new HashMap<String, Integer>() {{
         put("Coastal", 427);

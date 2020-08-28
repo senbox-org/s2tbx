@@ -1,7 +1,8 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -12,6 +13,7 @@
 
     <artifactId>lib-gdal</artifactId>
     <packaging>nbm</packaging>
+
     <name>Sentinel-2 Toolbox GDAL Libraries</name>
     <description>This modules provides some GDAL binaries for use with GDAL readers and writers.</description>
 
@@ -36,6 +38,10 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-rcp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-engine-utilities</artifactId>
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
@@ -87,7 +93,7 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <configuration>
                     <publicPackages>
-                        <publicPackage>org.esa.s2tbx.dataio.*</publicPackage>
+                        <publicPackage>org.esa.lib.gdal.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.gdal.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.jni.*</publicPackage>
                     </publicPackages>

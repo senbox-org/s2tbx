@@ -1,9 +1,9 @@
 package org.esa.s2tbx.dataio.muscate;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.snap.utils.TestUtil;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ public class MuscateMetadataTest {
     public void setup() {
 
         XmlMetadataParserFactory.registerParser(MuscateMetadata.class, new XmlMetadataParser<>(MuscateMetadata.class));
-        metadata = XmlMetadata.create(MuscateMetadata.class, new File("D:/Users/obarrile/Documents/borrar/SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0_MTD_ALL.xml"));
+        metadata = GenericXmlMetadata.create(MuscateMetadata.class, new File("D:/Users/obarrile/Documents/borrar/SENTINEL2A_20160205-103556-319_L2A_T31TFK_D_V1-0_MTD_ALL.xml"));
     }
 
     @After

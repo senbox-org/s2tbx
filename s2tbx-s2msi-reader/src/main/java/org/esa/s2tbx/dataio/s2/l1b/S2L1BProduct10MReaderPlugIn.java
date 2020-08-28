@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.util.SystemUtils;
 
@@ -27,11 +28,19 @@ import java.util.Locale;
  */
 public class S2L1BProduct10MReaderPlugIn extends S2L1BProductReaderPlugIn {
 
+    public S2L1BProduct10MReaderPlugIn() {
+    }
+
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader L1B 10M");
 
         return new Sentinel2L1BProductReader(this, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_10M);
+    }
+
+    @Override
+    public MetadataInspector getMetadataInspector() {
+        return new Sentinel2L1BMetadataInspector(Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_10M);
     }
 
     @Override

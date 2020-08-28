@@ -19,6 +19,10 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
+import org.esa.s2tbx.dataio.s2.l1b.metadata.IL1bDatastripMetadata;
+import org.esa.s2tbx.dataio.s2.l1b.metadata.IL1bGranuleMetadata;
+import org.esa.s2tbx.dataio.s2.l1b.metadata.IL1bProductMetadata;
+import org.esa.s2tbx.dataio.s2.l1b.metadata.L1bMetadataFactory;
 import org.junit.Test;
 
 import java.io.File;

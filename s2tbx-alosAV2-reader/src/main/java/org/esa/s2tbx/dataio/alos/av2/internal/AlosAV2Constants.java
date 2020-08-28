@@ -30,13 +30,13 @@ public class AlosAV2Constants {
     };
     public static final String[] ALOSAV2_RGB_PROFILE = new String[]{"red", "green", "blue"};
 
-    public static final String METADATA_FILE_SUFFIX = ".MD.XML";
+    public static final String PRODUCT_ARCHIVE_FILE_SUFFIX = ".SIP.ZIP";
+    public static final String PRODUCT_FOLDER_SUFFIX = ".SIP";
     public static final String IMAGE_METADATA_EXTENSION = ".DIMA";
-    public static final String METADATA_EXTENSION = ".dima";
+    public static final String IMAGE_FILE_EXTENSION = ".GTIF";
+    public static final String IMAGE_ARCHIVE_FILE_EXTENSION = ".ZIP";
 
     public static final String ALOSAV2_UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
-    public static final String LAT_DS_NAME = "latitude";
-    public static final String LON_DS_NAME = "longitude";
 
     /*
      * Raster metadata element paths

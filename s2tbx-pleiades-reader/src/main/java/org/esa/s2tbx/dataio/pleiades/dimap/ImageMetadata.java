@@ -1,8 +1,8 @@
 package org.esa.s2tbx.dataio.pleiades.dimap;
 
 import com.bc.ceres.core.Assert;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.Stx;
 import org.esa.snap.core.datamodel.StxFactory;
@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

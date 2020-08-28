@@ -2,7 +2,14 @@ package org.esa.s2tbx.reflectance2radiance;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.MetadataAttribute;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -14,7 +21,8 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.utils.StringHelper;
 
-import java.awt.*;
+import java.awt.Rectangle;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,7 +38,7 @@ import java.util.Set;
  */
 @OperatorMetadata(
         alias = "ReflectanceToRadianceOp",
-        version="1.0",
+        version = "1.0",
         category = "Optical/Thematic Land Processing",
         description = "The 'Reflectance To Radiance Processor' operator retrieves the radiance from reflectance using Sentinel-2 products",
         authors = "Dragos Mihailescu",
@@ -198,6 +206,7 @@ public class ReflectanceToRadianceOp extends Operator {
         /*targetProduct.setNumResolutionsMax(this.sourceProduct.getNumResolutionsMax());*/
         targetProduct.setNumResolutionsMax(distictWidths.size());
 
+        copyStartAndEndTime();
         ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
         ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
@@ -257,7 +266,7 @@ public class ReflectanceToRadianceOp extends Operator {
         try {
             Tile sourceTile = getSourceTile(this.sourceProduct.getBand(targetBand.getName()), rectangle);
             TiePointGrid tiePointGrid = this.tiePointGrids.get(targetBand.getName());
-            float slrIrr = this.solarIrradiances != null ?
+            float slrIrr = (this.solarIrradiances != null && this.solarIrradiances.get(targetBand.getName()) != null) ?
                     this.solarIrradiances.get(targetBand.getName()) :
                     this.solarIrradiance;
             double factor = slrIrr * this.scale / (Math.PI * this.d2);
@@ -285,7 +294,20 @@ public class ReflectanceToRadianceOp extends Operator {
         return StringHelper.startsWithIgnoreCase(product.getProductType(), "SPOTSCENE");
     }
 
-    private void copyMasks(Product sourceProduct, Product targetProduct, String...bandNames) {
+    private void copyStartAndEndTime() {
+        targetProduct.setStartTime(cloneUtc(sourceProduct.getStartTime()));
+        targetProduct.setEndTime(cloneUtc(sourceProduct.getEndTime()));
+    }
+
+    private ProductData.UTC cloneUtc(ProductData.UTC time) {
+        if (time == null) {
+            return null;
+        }
+        int[] ints = time.getArray();
+        return new ProductData.UTC(Arrays.copyOf(ints, ints.length));
+    }
+
+    private void copyMasks(Product sourceProduct, Product targetProduct, String... bandNames) {
         if (isSentinelProduct(sourceProduct)) {
             final ProductNodeGroup<Mask> sourceMaskGroup = sourceProduct.getMaskGroup();
             int nodeCount = sourceMaskGroup.getNodeCount();
@@ -293,7 +315,7 @@ public class ReflectanceToRadianceOp extends Operator {
                 final Mask mask = sourceMaskGroup.get(i);
                 String maskName = mask.getName();
                 if (!targetProduct.getMaskGroup().contains(maskName)
-                        && StringHelper.endsWithIgnoreCase(maskName, bandNames)) {
+                    && StringHelper.endsWithIgnoreCase(maskName, bandNames)) {
                     if (mask.getImageType().transferMask(mask, targetProduct) == null) {
                         Mask targetMask = new Mask(maskName, mask.getRasterWidth(), mask.getRasterHeight(), mask.getImageType());
                         ProductUtils.copyRasterDataNodeProperties(mask, targetMask);
@@ -316,7 +338,7 @@ public class ReflectanceToRadianceOp extends Operator {
     /**
      * Find the solar irradiance for a certain band name of the Sentinel product.
      *
-     * @param product the Sentinel product
+     * @param product         the Sentinel product
      * @param sourceBandNames the band names to find their solar irradiance
      * @return the solar irradiance for a certain band name of the Sentinel product
      */
@@ -374,7 +396,7 @@ public class ReflectanceToRadianceOp extends Operator {
                     String name = elements[i].getName();
                     if (name.equals("Spectral_Band_Info")) {
                         MetadataAttribute metadataAttribute = elements[i].getAttribute("BAND_DESCRIPTION");
-                        if (metadataAttribute !=  null) {
+                        if (metadataAttribute != null) {
                             if (sourceBandName.equals(metadataAttribute.getData().getElemString())) {
                                 bandIndices.put(i, sourceBandName);
                                 break;
@@ -429,7 +451,7 @@ public class ReflectanceToRadianceOp extends Operator {
             }
         } else {
             S2BandConstants s2BandConstant = S2BandConstants.getBandFromPhysicalName(sourceBandName);
-            if(s2BandConstant != null) {
+            if (s2BandConstant != null) {
                 return s2BandConstant.getBandIndex();
             }
         }

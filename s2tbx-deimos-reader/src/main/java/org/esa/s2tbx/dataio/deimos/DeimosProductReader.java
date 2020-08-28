@@ -17,18 +17,25 @@
 
 package org.esa.s2tbx.dataio.deimos;
 
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.deimos.dimap.DeimosConstants;
 import org.esa.s2tbx.dataio.deimos.dimap.DeimosMetadata;
-import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
+import org.esa.s2tbx.dataio.readers.MetadataList;
+import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This product reader is intended for reading DEIMOS-1 files
@@ -36,118 +43,104 @@ import java.nio.file.Path;
  *
  * @author Cosmin Cara
  */
-public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
+public class DeimosProductReader extends MultipleMetadataGeoTiffBasedReader<DeimosMetadata> {
 
-    protected DeimosProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
-        super(readerPlugIn, colorPaletteFilePath);
+    static {
+        XmlMetadataParserFactory.registerParser(DeimosMetadata.class, new XmlMetadataParser<>(DeimosMetadata.class));
+    }
+
+    public DeimosProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+        super(readerPlugIn);
     }
 
     @Override
-    protected String getMetadataExtension() {
-        return DeimosConstants.METADATA_EXTENSION;
+    protected DeimosMetadata findFirstMetadataItem(MetadataList<DeimosMetadata> metadataList) {
+        return (metadataList.getCount() > 0) ? metadataList.getMetadataAt(0) : null;
     }
 
     @Override
-    protected String getMetadataProfile() {
-        if (metadata != null && metadata.size() > 0) {
-            return metadata.get(0).getMetadataProfile();
-        } else {
-            return DeimosConstants.VALUE_NOT_AVAILABLE;
+    protected TiePointGeoCoding buildTiePointGridGeoCoding(DeimosMetadata firstMetadata, MetadataList<DeimosMetadata> metadataList, ProductSubsetDef productSubsetDef) {
+        return buildProductTiePointGridGeoCoding(firstMetadata, metadataList, productSubsetDef);
+    }
+
+    @Override
+    protected String getGenericProductName() {
+        return "Deimos";
+    }
+
+    @Override
+    protected String[] getBandNames(DeimosMetadata metadata) {
+        return metadata.getBandNames();
+    }
+
+    @Override
+    protected List<Mask> buildMasks(int productWith, int productHeight, DeimosMetadata firstMetadata, ProductSubsetDef subsetDef) {
+        List<Mask> availableMasks = new ArrayList<>();
+        if (subsetDef == null || subsetDef.isNodeAccepted(DeimosConstants.NODATA_VALUE)) {
+            int noDataValue = firstMetadata.getNoDataValue();
+            if (noDataValue >= 0) {
+                Mask mask = Mask.BandMathsType.create(DeimosConstants.NODATA_VALUE, DeimosConstants.NODATA_VALUE, productWith, productHeight, String.valueOf(noDataValue), firstMetadata.getNoDataColor(), 0.5);
+                availableMasks.add(mask);
+            }
         }
+        if (subsetDef == null || subsetDef.isNodeAccepted(DeimosConstants.SATURATED_VALUE)) {
+            int saturatedValue = firstMetadata.getSaturatedPixelValue();
+            if (saturatedValue >= 0) {
+                Mask mask = Mask.BandMathsType.create(DeimosConstants.SATURATED_VALUE, DeimosConstants.SATURATED_VALUE, productWith, productHeight, String.valueOf(saturatedValue), firstMetadata.getSaturatedColor(), 0.5);
+                availableMasks.add(mask);
+            }
+        }
+        return availableMasks;
     }
 
     @Override
-    protected String getProductGenericName() {
-        if (metadata != null && metadata.size() > 0) {
-            return metadata.get(0).getProductName();
-        } else {
-            return DeimosConstants.VALUE_NOT_AVAILABLE;
-        }
+    protected String getProductType() {
+        return DeimosConstants.DIMAP_FORMAT_NAMES[0];
     }
 
     @Override
-    protected String getMetadataFileSuffix() {
-        return DeimosConstants.METADATA_EXTENSION;
+    protected MetadataList<DeimosMetadata> readMetadataList(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+        return readMetadata(productDirectory);
     }
 
-    @Override
-    protected String[] getBandNames() {
-        if (metadata != null && metadata.size() > 0) {
-            return metadata.get(0).getBandNames();
-        } else {
-            return new String[]{};
+    public static TiePointGeoCoding buildProductTiePointGridGeoCoding(DeimosMetadata firstMetadata, MetadataList<DeimosMetadata> metadataList, ProductSubsetDef productSubsetDef) {
+        for (int i = 0; i < metadataList.getCount(); i++) {
+            DeimosMetadata currentMetadata = metadataList.getMetadataAt(i);
+            if (DeimosConstants.PROCESSING_1R.equals(currentMetadata.getProcessingLevel())) {
+                return buildProductTiePointGridGeoCoding(firstMetadata, productSubsetDef);
+            }
         }
+        return null;
     }
 
-    @Override
-    protected void addMetadataMasks(DeimosMetadata componentMetadata) {
-        logger.info("Create masks");
-        int noDataValue,saturatedValue;
-        if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {
-            product.getMaskGroup().add(Mask.BandMathsType.create(DeimosConstants.NODATA_VALUE,
-                    DeimosConstants.NODATA_VALUE,
-                    product.getSceneRasterWidth(),
-                    product.getSceneRasterHeight(),
-                    String.valueOf(noDataValue),
-                    componentMetadata.getNoDataColor(),
-                    0.5));
-        }
-        if ((saturatedValue = componentMetadata.getSaturatedPixelValue()) >= 0) {
-            product.getMaskGroup().add(Mask.BandMathsType.create(DeimosConstants.SATURATED_VALUE,
-                    DeimosConstants.SATURATED_VALUE,
-                    product.getSceneRasterWidth(),
-                    product.getSceneRasterHeight(),
-                    String.valueOf(saturatedValue),
-                    componentMetadata.getSaturatedColor(),
-                    0.5));
-        }
+    public static MetadataList<DeimosMetadata> readMetadata(VirtualDirEx productDirectory) throws IOException, InstantiationException, ParserConfigurationException, SAXException {
+        return readMetadata(productDirectory, DeimosConstants.METADATA_EXTENSION, DeimosMetadata.class);
     }
 
-    @Override
-    protected void addBands(DeimosMetadata componentMetadata, int componentIndex) {
-        super.addBands(componentMetadata, componentIndex);
-
-        if (DeimosConstants.PROCESSING_1R.equals(componentMetadata.getProcessingLevel())) {
-            initGeoCoding(product);
-        }
-    }
-
-    private void initGeoCoding(Product product) {
-        DeimosMetadata deimosMetadata = metadata.get(0);
-        DeimosMetadata.InsertionPoint[] geopositionPoints = deimosMetadata.getGeopositionPoints();
-        if (geopositionPoints != null) {
-            int numPoints = geopositionPoints.length;
+    private static TiePointGeoCoding buildProductTiePointGridGeoCoding(DeimosMetadata deimosMetadata, ProductSubsetDef productSubsetDef) {
+        DeimosMetadata.InsertionPoint[] geoPositionPoints = deimosMetadata.getGeopositionPoints();
+        if (geoPositionPoints != null) {
+            int numPoints = geoPositionPoints.length;
             if (numPoints > 1 && (int)(numPoints / Math.sqrt((double)numPoints)) == numPoints) {
-                float stepX = geopositionPoints[1].stepX - geopositionPoints[0].stepX;
-                float stepY = geopositionPoints[1].stepY - geopositionPoints[0].stepY;
+                float stepX = geoPositionPoints[1].stepX - geoPositionPoints[0].stepX;
+                float stepY = geoPositionPoints[1].stepY - geoPositionPoints[0].stepY;
                 float[] latitudes = new float[numPoints];
                 float[] longitudes = new float[numPoints];
                 for (int i = 0; i < numPoints; i++) {
-                    latitudes[i] = geopositionPoints[i].y;
-                    longitudes[i] = geopositionPoints[i].x;
+                    latitudes[i] = geoPositionPoints[i].y;
+                    longitudes[i] = geoPositionPoints[i].x;
                 }
-                TiePointGrid latGrid = addTiePointGrid(stepX, stepY, product, DeimosConstants.LATITUDE_BAND_NAME, latitudes);
-                TiePointGrid lonGrid = addTiePointGrid(stepX, stepY, product, DeimosConstants.LONGITUDE_BAND_NAME, longitudes);
-                GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-                product.setSceneGeoCoding(geoCoding);
+                int latitudeGridSize = (int) Math.sqrt(latitudes.length);
+                TiePointGrid latGrid = buildTiePointGrid("latitude", latitudeGridSize, latitudeGridSize, 0, 0, stepX, stepY, latitudes, TiePointGrid.DISCONT_NONE);
+                int longitudeGridSize = (int) Math.sqrt(longitudes.length);
+                TiePointGrid lonGrid = buildTiePointGrid("longitude", longitudeGridSize, longitudeGridSize, 0, 0, stepX, stepY, longitudes, TiePointGrid.DISCONT_AT_180);
+                if (productSubsetDef != null) {
+                    latGrid = TiePointGrid.createSubset(latGrid, productSubsetDef);
+                    lonGrid = TiePointGrid.createSubset(lonGrid, productSubsetDef);
+                }
+                return new TiePointGeoCoding(latGrid, lonGrid);
             }
         }
-    }
-
-    private TiePointGrid addTiePointGrid(float subSamplingX, float subSamplingY, Product product, String gridName, float[] tiePoints) {
-        int gridDim = (int) Math.sqrt(tiePoints.length);
-        final TiePointGrid tiePointGrid = createTiePointGrid(gridName, gridDim, gridDim, 0, 0, subSamplingX, subSamplingY, tiePoints);
-        product.addTiePointGrid(tiePointGrid);
-        return tiePointGrid;
-    }
-
-  
-    protected String[] getMetadataFiles() throws IOException {
-        String[] metadataFiles = this.productDirectory.findAll(getMetadataExtension());
-        //If the input is archive, the list should contain the full item path(needed for some Deimos products opened on linux)
-        if (productDirectory.isCompressed() && metadataFiles[0].contains("/")) {
-            this.productDirectory.listAllFilesWithPath();
-        }
-        return metadataFiles;
+        return null;
     }
 }

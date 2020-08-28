@@ -28,5 +28,8 @@
                 <tocitem text="Forest Cover Change processor" target="forestCoverChangeProcessor"/>
             </tocitem>
         </tocitem>
+        <tocitem text="Raster">
+            <tocitem text="Bands extractor processor" target="bandsExtractorProcessor"/>
+        </tocitem>
     </tocitem>
 </toc>

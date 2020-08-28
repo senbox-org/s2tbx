@@ -17,166 +17,307 @@
 
 package org.esa.s2tbx.dataio.rapideye;
 
-import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.apache.commons.lang.StringUtils;
+import org.esa.s2tbx.dataio.readers.MultipleMetadataGeoTiffBasedReader;
+import org.esa.snap.engine_utilities.file.AbstractFile;
+import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
-import org.esa.snap.core.dataio.ProductIO;
-import org.esa.snap.core.dataio.ProductReader;
-import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.dataio.*;
+import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.dataio.ImageRegistryUtils;
+import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
+import org.xml.sax.SAXException;
 
-import javax.imageio.IIOException;
+import javax.imageio.spi.ImageInputStreamSpi;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.ScaleDescriptor;
+import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Reader for RapidEye L1 (NITF) products.
  *
  * @author Cosmin Cara
  */
-public class RapidEyeL1Reader extends RapidEyeReader {
+public class RapidEyeL1Reader extends AbstractProductReader {
 
-    private final Map<Band, NITFReaderWrapper> readerMap;
+    private static final Logger logger = Logger.getLogger(RapidEyeL1Reader.class.getName());
+
+    static {
+        XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<>(RapidEyeMetadata.class));
+    }
+
+    public static final String UNUSABLE_DATA_BAND_NAME = "unusable_data";
+
     private final Path colorPaletteFilePath;
-    private final ProductReader gdalReader;
-    private String[] nitfFiles;
+
+    private VirtualDirEx productDirectory;
+    private ImageInputStreamSpi imageInputStreamSpi;
+    private List<NITFReaderWrapper> bandImageReaders;
+    private GeoTiffImageReader geoTiffImageReader;
 
     RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-        if(GDALInstallInfo.INSTANCE.isPresent()) {
-            this.gdalReader =ProductIO.getProductReader("GDAL-NITF-READER");
-        }else{
-            this.gdalReader = null;
-        }
+
         this.colorPaletteFilePath = colorPaletteFilePath;
-        this.readerMap = new HashMap<>();
+        this.imageInputStreamSpi = ImageRegistryUtils.registerImageInputStreamSpi();
     }
 
     @Override
-    protected Product readProductNodesImpl() throws IOException {
-        Path inputPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Reading Muscate product from the file '" + inputPath.toString() + "'.");
-        }
-
-        productDirectory = VirtualDirEx.build(inputPath, true, true);
-
-        if (productDirectory == null) {
-            throw new NullPointerException("The virtual dir is null for input path '" + inputPath.toString() + "'.");
-        }
-
-        String metadataFileName = productDirectory.findFirst(RapidEyeConstants.METADATA_FILE_SUFFIX);
-        Path metadataFile = productDirectory.getFilePath(metadataFileName).getPath();
-        // First parse *_metadata.xml
-        if (Files.exists(metadataFile)) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Reading RapidEye L1 product metadata.");
-            }
-            metadata = XmlMetadata.create(RapidEyeMetadata.class, metadataFile);
-            if (metadata == null) {
-                logger.warning(String.format("Error while reading metadata file %s", metadataFile.getFileName().toString()));
-            } else {
-                metadata.setFileName(metadataFile.getFileName().toString());
-                String metadataProfile = metadata.getMetadataProfile();
-                if (metadataProfile == null || !metadataProfile.startsWith(RapidEyeConstants.PROFILE_L1)) {
-                    IOException ex = new IOException("The selected product is not a RapidEye L1 product. Please use the appropriate filter");
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
-                    throw ex;
-                }
-            }
-        } else {
-            logger.info("No metadata file found");
-        }
-        // Second, parse other *.xml if exist
-        parseAdditionalMetadataFiles();
-
-        try {
-            this.nitfFiles = getRasterFileNames();
-            for (int i = 0; i < nitfFiles.length; i++) {
-                NITFReaderWrapper reader = new NITFReaderWrapper(productDirectory.getFile(nitfFiles[i]));
-                if (product == null) {
-                    product = new Product(metadata != null ? metadata.getProductName() : RapidEyeConstants.PRODUCT_GENERIC_NAME,
-                            RapidEyeConstants.L1_FORMAT_NAMES[0],
-                            metadata != null ? metadata.getRasterWidth() : reader.getWidth(),
-                            metadata != null ? metadata.getRasterHeight() : reader.getHeight(),
-                            this);
-                    if (metadata != null) {
-                        product.setProductType(metadata.getMetadataProfile());
-                        product.setStartTime(metadata.getProductStartTime());
-                        product.setEndTime(metadata.getProductEndTime());
-                        product.getMetadataRoot().addElement(metadata.getRootElement());
-                        NITFMetadata nitfMetadata = reader.getMetadata();
-                        if (nitfMetadata != null)
-                            product.getMetadataRoot().addElement(nitfMetadata.getMetadataRoot());
-                    }
-                    product.setPreferredTileSize(getPreferredTileSize());
-                }
-                addBandToProduct(product, reader, i);
-            }
-            if (product != null) {
-                readMasks();
-                initGeoCoding(product);
-                product.setModified(false);
-            }
-        } catch (IIOException e) {
-            logger.severe("Product is not a valid RapidEye L1 data product!");
-        }
-        if (product != null) {
-            product.setFileLocation(productDirectory.getBaseFile());
-        }
-        return product;
-    }
-
-    @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        if (this.gdalReader == null) {
-            pm.beginTask("Reading band data...", 3);
-            NITFReaderWrapper reader = this.readerMap.get(destBand);
-
-            try {
-                reader.readBandData(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, destBuffer, pm);
-            } finally {
-                pm.done();
-            }
-        }
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
+                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
+                                          throws IOException {
+        // do nothing
     }
 
     @Override
     public void close() throws IOException {
-        if (this.readerMap != null) {
-            this.readerMap.values().forEach(NITFReaderWrapper::close);
-            this.readerMap.clear();
-        }
-        if (this.gdalReader != null) {
-            this.gdalReader.close();
-        }
         super.close();
+
+        closeResources();
     }
 
-    private String[] getRasterFileNames() {
+    @Override
+    protected Product readProductNodesImpl() throws IOException {
+        boolean success = false;
+        try {
+            Path productPath = BaseProductReaderPlugIn.convertInputToPath(super.getInput());
+            this.productDirectory = VirtualDirEx.build(productPath, !AbstractFile.isLocalPath(productPath), true);
+
+            RapidEyeMetadata metadata = readMetadata(this.productDirectory);
+
+            String productName = metadata.getProductName();
+            if (StringUtils.isBlank(productName)) {
+                productName = RapidEyeConstants.PRODUCT_GENERIC_NAME;
+            }
+            int defaultProductWidth = metadata.getRasterWidth();
+            int defaultProductHeight = metadata.getRasterHeight();
+            ProductSubsetDef subsetDef = getSubsetDef();
+            Rectangle productBounds;
+            if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                productBounds = new Rectangle(0, 0, defaultProductWidth, defaultProductHeight);
+            } else {
+                GeoCoding productDefaultGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, null);
+                productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductWidth, defaultProductHeight, false);
+            }
+            if (productBounds.isEmpty()) {
+                throw new IllegalStateException("Empty product bounds.");
+            }
+
+            Product product = new Product(productName, RapidEyeConstants.L1_FORMAT_NAMES[0], productBounds.width, productBounds.height, this);
+            product.setProductType(metadata.getMetadataProfile());
+            product.setStartTime(metadata.getProductStartTime());
+            product.setEndTime(metadata.getProductEndTime());
+            product.setFileLocation(productPath.toFile());
+
+            Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
+            //Dimension preferredTileSize = defaultJAIReadTileSize; // new Dimension(defaultJAIReadTileSize.width * 2, defaultJAIReadTileSize.height *2); // multiple mosaic tile size
+            Dimension preferredTileSize = new Dimension(defaultProductWidth, defaultProductHeight);
+
+            product.setPreferredTileSize(preferredTileSize);
+
+            if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                product.getMetadataRoot().addElement(metadata.getRootElement());
+            }
+
+            if (logger.isLoggable(Level.FINE)) {
+                String logMessage = "Use the NITF API to read the RapidEye L1 product from input '" + productPath.toString() + "'.";
+                logger.log(Level.FINE, logMessage);
+            }
+
+            this.bandImageReaders = new ArrayList<>();
+            String[] nitfFiles = metadata.getRasterFileNames();
+            if (nitfFiles != null && nitfFiles.length > 0) {
+                GeoCoding bandGeoCoding = product.getSceneGeoCoding();
+                boolean addMetadataFromNitfAPI = false;
+                for (int i = 0; i < nitfFiles.length; i++) {
+                    String bandName = getBandName(i);
+                    if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
+                        File localFile = this.productDirectory.getFile(nitfFiles[i]);
+                        Band targetBand;
+                        NITFReaderWrapper nitfReader = new NITFReaderWrapper(localFile);
+                        this.bandImageReaders.add(nitfReader);
+
+                        if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
+                            NITFMetadata nitfMetadata = nitfReader.getMetadata();
+                            if (nitfMetadata != null && !addMetadataFromNitfAPI) {
+                                product.getMetadataRoot().addElement(nitfMetadata.getMetadataRoot());
+                                addMetadataFromNitfAPI = true;
+                            }
+                        }
+                        targetBand = new ColorPaletteBand(bandName, metadata.getPixelFormat(), productBounds.width, productBounds.height, this.colorPaletteFilePath);
+                        if (bandGeoCoding != null) {
+                            targetBand.setGeoCoding(bandGeoCoding);
+                        }
+                        int dataBufferType = ImageManager.getDataBufferType(targetBand.getDataType());
+                        RapidEyeL1MultiLevelSource multiLevelSource = new RapidEyeL1MultiLevelSource(nitfReader, dataBufferType, productBounds, preferredTileSize,
+                                                                                                     targetBand.getGeoCoding(), defaultJAIReadTileSize);
+                        // compute the tile size of the image layout object based on the tile size from the tileOpImage used to read the data
+                        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
+                        targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+                        targetBand.setSpectralWavelength(RapidEyeConstants.WAVELENGTHS[i]);
+                        targetBand.setUnit("cW/m\u00B2 sr μm");
+                        targetBand.setSpectralBandwidth(RapidEyeConstants.BANDWIDTHS[i]);
+                        targetBand.setSpectralBandIndex(i);
+                        targetBand.setScalingFactor(metadata.getScaleFactor(i));
+
+                        product.addBand(targetBand);
+                    }
+                }
+            }
+
+            // add masks
+            String maskFileName = metadata.getMaskFileName();
+            if (maskFileName != null) {
+                FlagCoding flagCoding = createFlagCoding();
+
+                if (subsetDef == null || subsetDef.isNodeAccepted(UNUSABLE_DATA_BAND_NAME)) {
+                    File file = this.productDirectory.getFile(maskFileName);
+                    this.geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(file.toPath());
+
+                    GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(getReaderPlugIn());
+                    Product udmGeoTiffProduct = geoTiffProductReader.readProduct(this.geoTiffImageReader, null);
+                    Band geoTiffBand = udmGeoTiffProduct.getBandAt(0);
+                    float scaleX = (float) metadata.getRasterWidth() / (float) udmGeoTiffProduct.getSceneRasterWidth();
+                    float scaleY = (float) metadata.getRasterHeight() / (float) udmGeoTiffProduct.getSceneRasterHeight();
+                    RenderedOp renderedOp = ScaleDescriptor.create(geoTiffBand.getSourceImage(), scaleX, scaleY, 0.0f, 0.0f, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                    Band unusableDataBand = product.addBand(UNUSABLE_DATA_BAND_NAME, geoTiffBand.getDataType());
+                    unusableDataBand.setSourceImage(renderedOp);
+                    unusableDataBand.setSampleCoding(flagCoding);
+
+                    product.getFlagCodingGroup().add(flagCoding);
+                }
+
+                String flagCodingName = flagCoding.getName();
+                for (String flagName : flagCoding.getFlagNames()) {
+                    if (subsetDef == null || subsetDef.isNodeAccepted(flagName)) {
+                        MetadataAttribute flag = flagCoding.getFlag(flagName);
+                        Mask mask = Mask.BandMathsType.create(flagName, flag.getDescription(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), flagCodingName + "." + flagName, ColorIterator.next(), 0.5);
+                        product.getMaskGroup().add(mask);
+                    }
+                }
+            }
+            if (product != null) {
+                TiePointGeoCoding productGeoCoding = buildTiePointGridGeoCoding(metadata, defaultProductWidth, defaultProductHeight, subsetDef);
+                product.addTiePointGrid(productGeoCoding.getLatGrid());
+                product.addTiePointGrid(productGeoCoding.getLonGrid());
+                product.setSceneGeoCoding(productGeoCoding);
+            }
+
+            success = true;
+
+            return product;
+        } catch (RuntimeException | IOException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IOException(exception);
+        } finally {
+            if (!success) {
+                closeResources();
+            }
+        }
+    }
+
+    private void closeResources() {
+        try {
+            if (this.bandImageReaders != null) {
+                for (NITFReaderWrapper nitfReader : this.bandImageReaders) {
+                    try {
+                        nitfReader.close();
+                    } catch (Exception ignore) {
+                        // ignore
+                    }
+                }
+                this.bandImageReaders.clear();
+                this.bandImageReaders = null;
+            }
+            if (this.geoTiffImageReader != null) {
+                this.geoTiffImageReader.close();
+                this.geoTiffImageReader = null;
+            }
+        } finally {
+            try {
+                if (this.imageInputStreamSpi != null) {
+                    ImageRegistryUtils.deregisterImageInputStreamSpi(this.imageInputStreamSpi);
+                    this.imageInputStreamSpi = null;
+                }
+            } finally {
+                if (this.productDirectory != null) {
+                    this.productDirectory.close();
+                    this.productDirectory = null;
+                }
+            }
+        }
+        System.gc();
+    }
+
+    @Override
+    public TreeNode<File> getProductComponents() {
+        if (productDirectory.isCompressed()) {
+            return super.getProductComponents();
+        } else {
+            RapidEyeMetadata metadata = null;
+            try {
+                metadata = readMetadata(this.productDirectory);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+
+            TreeNode<File> result = super.getProductComponents();
+            String[] fileNames = getMetadataFileNames(RapidEyeConstants.METADATA_FILE_SUFFIX);
+            for (String fileName : fileNames) {
+                try {
+                    addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", fileName));
+                }
+            }
+            String[] nitfFiles = getRasterFileNames(metadata);
+            for(String fileName : nitfFiles){
+                try{
+                    addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", fileName));
+                }
+            }
+            String maskFileName = metadata.getMaskFileName();
+            if (maskFileName != null) {
+                try {
+                    addProductComponentIfNotPresent(maskFileName, productDirectory.getFile(maskFileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", maskFileName));
+                }
+            }
+            return result;
+        }
+    }
+
+    private String[] getRasterFileNames(RapidEyeMetadata metadata) {
         String[] fileNames;
         if (metadata != null) {
             fileNames = metadata.getRasterFileNames();
@@ -185,8 +326,9 @@ public class RapidEyeL1Reader extends RapidEyeReader {
                 List<String> files = new ArrayList<>();
                 String[] productFiles = productDirectory.list(".");
                 for (String file : productFiles) {
-                    if (file.toLowerCase().endsWith(RapidEyeConstants.NTF_EXTENSION))
+                    if (file.toLowerCase().endsWith(RapidEyeConstants.NTF_EXTENSION)) {
                         files.add(file);
+                    }
                 }
                 fileNames = new String[files.size()];
                 fileNames = files.toArray(fileNames);
@@ -216,121 +358,132 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         return fileNames;
     }
 
-    private void parseAdditionalMetadataFiles() {
-        String[] fileNames = getMetadataFileNames(RapidEyeConstants.METADATA_FILE_SUFFIX);
-        if (fileNames != null && fileNames.length > 0) {
-            for (String fileName : fileNames) {
-                try {
-                    logger.info(String.format("Reading metadata file %s", fileName));
-                    RapidEyeMetadata metadataFile = XmlMetadata.create(RapidEyeMetadata.class, productDirectory.getFile(fileName));
-                    if (metadataFile == null) {
-                        logger.warning(String.format("Error while reading metadata file %s", fileName));
-                    } else {
-                        metadataFile.setFileName(fileName);
-                        MetadataElement newNode = null;
-                        if (fileName.endsWith("_rpc.xml")) {
-                            newNode = new MetadataElement("Rational Polynomial Coefficients");
-                            XmlMetadata.CopyChildElements(metadataFile.getRootElement(), newNode);
-                        } else if (fileName.endsWith("_sci.xml")) {
-                            newNode = new MetadataElement("Spacecraft Information");
-                            XmlMetadata.CopyChildElements(metadataFile.getRootElement(), newNode);
-                        }
-                        if (newNode != null)
-                            metadata.getRootElement().addElement(newNode);
-                    }
-                } catch (IOException e) {
-                    logger.warning(String.format("Error encountered while opening file %s", fileName));
-                }
+    private void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
+        TreeNode<File> resultComponent = null;
+        for (TreeNode node : currentComponents.getChildren()) {
+            if (node.getId().equalsIgnoreCase(componentId.toLowerCase())) {
+                //noinspection unchecked
+                resultComponent = node;
+                break;
             }
+        }
+        if (resultComponent == null) {
+            resultComponent = new TreeNode<>(componentId, componentFile);
+            currentComponents.addChild(resultComponent);
         }
     }
 
-    private void addBandToProduct(Product product, NITFReaderWrapper reader, int bandIndex) {
-        Assert.notNull(product);
-        Assert.notNull(reader);
-        Band targetBand = null;
-        String bandName = RapidEyeConstants.BAND_NAMES[bandIndex];
-        if (this.gdalReader != null) {
+    public static String getBandName(int bandIndex) {
+        return (bandIndex < RapidEyeConstants.BAND_NAMES.length) ? RapidEyeConstants.BAND_NAMES[bandIndex] : ("band_" + bandIndex);
+    }
+
+    public static FlagCoding createFlagCoding() {
+        FlagCoding flagCoding = new FlagCoding("unusable_data");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_BLACK_FILL, 1, "area was not imaged by spacecraft");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_CLOUDS, 2, "cloud covered");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_BLUE_DATA, 4, "missing/suspect data in blue band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_GREEN_DATA, 8, "missing/suspect data in green band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_RED_DATA, 16, "missing/suspect data in red band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_RED_EDGE_DATA, 32, "missing/suspect data in red edge band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_NIR_DATA, 64, "missing/suspect data in nir band");
+        return flagCoding;
+    }
+
+    public static RapidEyeMetadata readMetadata(VirtualDirEx productDirectory) throws InstantiationException, ParserConfigurationException, SAXException, IOException {
+        String[] filePaths = productDirectory.listAllFiles();
+        String productMetadataRelativeFilePath = null;
+        List<String> metadataRelativeFilePaths = new ArrayList<>();
+        for (String relativeFilePath : filePaths) {
+            if (StringUtils.endsWithIgnoreCase(relativeFilePath, RapidEyeConstants.METADATA_FILE_SUFFIX)) {
+                productMetadataRelativeFilePath = relativeFilePath;
+            } else if (StringUtils.endsWithIgnoreCase(relativeFilePath, RapidEyeConstants.METADATA_EXTENSION)) {
+                metadataRelativeFilePaths.add(relativeFilePath);
+            }
+        }
+        if (productMetadataRelativeFilePath == null) {
+            throw new NullPointerException("The metadata file is null.");
+        }
+        RapidEyeMetadata productMetadata = MultipleMetadataGeoTiffBasedReader.readProductMetadata(productDirectory, productMetadataRelativeFilePath, RapidEyeMetadata.class);
+        String metadataProfile = productMetadata.getMetadataProfile();
+        if (metadataProfile == null || !metadataProfile.startsWith(RapidEyeConstants.PROFILE_L1)) {
+            throw new IllegalStateException("The selected product is not a RapidEye L1 product. Please use the appropriate filter");
+        }
+
+        for (String fileName : metadataRelativeFilePaths) {
             try {
-                Product nitfProduct = gdalReader.readProductNodes(productDirectory.getFile(this.nitfFiles[bandIndex]), null);
-                if (nitfProduct != null) {
-                    product.setNumResolutionsMax(nitfProduct.getNumResolutionsMax());
-                    nitfProduct.transferGeoCodingTo(product, null);
-                    int numBands = nitfProduct.getNumBands();
-                    for (int idx = 0; idx < numBands; idx++) {
-                        Band srcBand = nitfProduct.getBandAt(idx);
-                        targetBand = new ColorPaletteBand(bandName, srcBand.getDataType(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
-                        targetBand.setNoDataValue(srcBand.getNoDataValue());
-                        targetBand.setNoDataValueUsed(srcBand.isNoDataValueUsed());
-                        targetBand.setScalingOffset(srcBand.getScalingOffset());
-                        targetBand.setSolarFlux(srcBand.getSolarFlux());
-                        targetBand.setSampleCoding(srcBand.getSampleCoding());
-                        targetBand.setSpectralBandIndex(bandIndex);
-                        targetBand.setDescription(srcBand.getDescription());
-                        targetBand.setSourceImage(srcBand.getSourceImage());
-                    }
+                logger.info(String.format("Reading metadata file %s", fileName));
+                RapidEyeMetadata slaveMetadata;
+                try (FilePathInputStream metadataInputStream = productDirectory.getInputStream(fileName)) {
+                    slaveMetadata = (RapidEyeMetadata) XmlMetadataParserFactory.getParser(RapidEyeMetadata.class).parse(metadataInputStream);
+                    slaveMetadata.setPath(metadataInputStream.getPath());
+                    slaveMetadata.setFileName(metadataInputStream.getPath().getFileName().toString());
                 }
-            } catch (IOException ex) {
-                logger.severe(ex.getMessage());
+                MetadataElement newNode = null;
+                if (fileName.endsWith("_rpc.xml")) {
+                    newNode = new MetadataElement("Rational Polynomial Coefficients");
+                    XmlMetadata.CopyChildElements(slaveMetadata.getRootElement(), newNode);
+                } else if (fileName.endsWith("_sci.xml")) {
+                    newNode = new MetadataElement("Spacecraft Information");
+                    XmlMetadata.CopyChildElements(slaveMetadata.getRootElement(), newNode);
+                }
+                if (newNode != null) {
+                    productMetadata.getRootElement().addElement(newNode);
+                }
+            } catch (IOException e) {
+                logger.warning(String.format("Error encountered while opening file %s", fileName));
             }
-        } else {
-            targetBand = new ColorPaletteBand(bandName, metadata.getPixelFormat(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
-            this.readerMap.put(targetBand, reader);
         }
-        if (targetBand != null) {
-            targetBand.setSpectralWavelength(RapidEyeConstants.WAVELENGTHS[bandIndex]);
-            targetBand.setUnit("cW/m\u00B2 sr μm");
-            targetBand.setSpectralBandwidth(RapidEyeConstants.BANDWIDTHS[bandIndex]);
-            targetBand.setSpectralBandIndex(bandIndex);
-            targetBand.setScalingFactor(metadata.getScaleFactor(bandIndex));
-            product.addBand(targetBand);
+        return productMetadata;
+    }
+
+    public static TiePointGeoCoding buildTiePointGridGeoCoding(RapidEyeMetadata metadata, int width, int height, ProductSubsetDef subsetDef) {
+        TiePointGrid latGrid = buildTiePointGrid("latitude", 2, 2, 0, 0, width, height, metadata.getCornersLatitudes(), TiePointGrid.DISCONT_NONE);
+        TiePointGrid lonGrid = buildTiePointGrid("longitude", 2, 2, 0, 0, width, height, metadata.getCornersLongitudes(), TiePointGrid.DISCONT_AT_180);
+        if (subsetDef != null && subsetDef.getRegion() != null) {
+            lonGrid = TiePointGrid.createSubset(lonGrid, subsetDef);
+            latGrid = TiePointGrid.createSubset(latGrid, subsetDef);
         }
+        return new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private TiePointGrid addTiePointGrid(int width, int height, Product product, String gridName, float[] tiePoints) {
-        final TiePointGrid tiePointGrid = createTiePointGrid(gridName, 2, 2, 0, 0, width, height, tiePoints);
-        product.addTiePointGrid(tiePointGrid);
-        return tiePointGrid;
-    }
+    protected static class ColorIterator {
+        static final ArrayList<Color> colors;
+        static Iterator<Color> colorIterator;
 
-    private void initGeoCoding(Product product) {
-        TiePointGrid latGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "latitude", metadata.getCornersLatitudes());
-        TiePointGrid lonGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "longitude", metadata.getCornersLongitudes());
-        GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-        product.setSceneGeoCoding(geoCoding);
-    }
+        static {
+            colors = new ArrayList<>();
+            colors.add(Color.red);
+            colors.add(Color.red.darker());
+            colors.add(Color.blue);
+            colors.add(Color.blue.darker());
+            colors.add(Color.green);
+            colors.add(Color.green.darker());
+            colors.add(Color.yellow);
+            colors.add(Color.yellow.darker());
+            colors.add(Color.magenta);
+            colors.add(Color.magenta.darker());
+            colors.add(Color.pink);
+            colors.add(Color.pink.darker());
+            colors.add(Color.cyan);
+            colors.add(Color.cyan.darker());
+            colors.add(Color.orange);
+            colors.add(Color.orange.darker());
+            colors.add(Color.blue.darker().darker());
+            colors.add(Color.green.darker().darker());
+            colors.add(Color.yellow.darker().darker());
+            colors.add(Color.magenta.darker().darker());
+            colors.add(Color.pink.darker().darker());
+            colorIterator = colors.iterator();
+        }
 
-    @Override
-    public TreeNode<File> getProductComponents() {
-        if (productDirectory.isCompressed()) {
-            return super.getProductComponents();
-        } else {
-            TreeNode<File> result = super.getProductComponents();
-            String[] fileNames = getMetadataFileNames(RapidEyeConstants.METADATA_FILE_SUFFIX);
-            for (String fileName : fileNames) {
-                try {
-                    addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
-                } catch (IOException e) {
-                    logger.warning(String.format("Error encountered while searching file %s", fileName));
-                }
+        private ColorIterator() {
+        }
+
+        static Color next() {
+            if (!colorIterator.hasNext()) {
+                colorIterator = colors.iterator();
             }
-            String[] nitfFiles = getRasterFileNames();
-            for(String fileName : nitfFiles){
-                try{
-                    addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
-                } catch (IOException e) {
-                    logger.warning(String.format("Error encountered while searching file %s", fileName));
-                }
-            }
-            String maskFileName = metadata.getMaskFileName();
-            if (maskFileName != null) {
-                try {
-                    addProductComponentIfNotPresent(maskFileName, productDirectory.getFile(maskFileName), result);
-                } catch (IOException e) {
-                    logger.warning(String.format("Error encountered while searching file %s", maskFileName));
-                }
-            }
-            return result;
+            return colorIterator.next();
         }
     }
 }

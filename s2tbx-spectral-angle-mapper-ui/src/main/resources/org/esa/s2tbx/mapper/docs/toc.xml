@@ -10,7 +10,9 @@
     <tocitem text="Sentinel Toolbox Application">
         <tocitem text="Raster">
             <tocitem text="Classification">
+                <tocitem text="Supervised Classification" target="SupervisedClassifiers" mergetype="javax.help.SortMerge">
                     <tocitem text="Spectral Angle Mapper Classifier" target="SAMProcessor"/>
+                </tocitem>
             </tocitem>
         </tocitem>
     </tocitem>

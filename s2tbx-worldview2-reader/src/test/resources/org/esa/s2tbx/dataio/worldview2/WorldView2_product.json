@@ -186,11 +186,11 @@
     "metadata": [
       {
         "path": "Metadata[1]/imd/numrows",
-        "value": "20079"
+        "value": "5020"
       },
       {
         "path": "Metadata[1]/imd/numcolumns",
-        "value": "9846"
+        "value": "2462"
       },
       {
         "path": "Metadata[1]/imd/bitsperpixel",
@@ -206,27 +206,27 @@
       },
       {
         "path": "Metadata[1]/imd/map_projected_product/originx",
-        "value": "3.972042499947900e+05"
+        "value": "3.972049999947900e+05"
       },
       {
         "path": "Metadata[1]/imd/map_projected_product/originy",
-        "value": "6.162999749999220e+06"
+        "value": "6.162998999999220e+06"
       },
       {
         "path": "Metadata[1]/imd/map_projected_product/productgsd",
-        "value": "5.000000000000000e-01"
+        "value": "2.000000000000000e+00"
       },
       {
         "path": "Metadata[1]/til/tile/filename",
-        "value": "17MAY02091354-P2AS-ZON24.TIF"
+        "value": "17MAY02091354-M2AS-ZON24.TIF"
       },
       {
         "path": "Metadata[2]/imd/numrows",
-        "value": "5020"
+        "value": "20079"
       },
       {
         "path": "Metadata[2]/imd/numcolumns",
-        "value": "2462"
+        "value": "9846"
       },
       {
         "path": "Metadata[2]/imd/bitsperpixel",
@@ -242,19 +242,19 @@
       },
       {
         "path": "Metadata[2]/imd/map_projected_product/originx",
-        "value": "3.972049999947900e+05"
+        "value": "3.972042499947900e+05"
       },
       {
         "path": "Metadata[2]/imd/map_projected_product/originy",
-        "value": "6.162998999999220e+06"
+        "value": "6.162999749999220e+06"
       },
       {
         "path": "Metadata[2]/imd/map_projected_product/productgsd",
-        "value": "2.000000000000000e+00"
+        "value": "5.000000000000000e-01"
       },
       {
         "path": "Metadata[2]/til/tile/filename",
-        "value": "17MAY02091354-M2AS-ZON24.TIF"
+        "value": "17MAY02091354-P2AS-ZON24.TIF"
       }
     ]
   }

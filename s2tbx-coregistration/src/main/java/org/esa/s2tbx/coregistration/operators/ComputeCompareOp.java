@@ -17,7 +17,7 @@ import java.awt.image.WritableRaster;
 import java.util.Map;
 
 /**
- * JAI operator for exctracting pixels from 2 rasters as follows: the input consists in 4 raster and the results'pixel value is as follows:
+ * JAI operator for extracting pixels from 2 rasters as follows: the input consists in 4 raster and the results'pixel value is as follows:
  * <br>- pixel value from raster 1 if the same pixel value of raster 4 is bigger then the pixel value from raster 3.
  * <br>- pixel value from raster 2 if the same pixel value of raster 3 is bigger or equal with the pixel value from raster 4.
  */

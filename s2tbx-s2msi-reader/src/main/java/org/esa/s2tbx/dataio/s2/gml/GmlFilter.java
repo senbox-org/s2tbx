@@ -18,7 +18,7 @@
 package org.esa.s2tbx.dataio.s2.gml;
 
 
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygon;
 import org.apache.commons.math3.util.Pair;
 import org.geotools.gml3.GMLConfiguration;
 import org.geotools.xml.StreamingParser;

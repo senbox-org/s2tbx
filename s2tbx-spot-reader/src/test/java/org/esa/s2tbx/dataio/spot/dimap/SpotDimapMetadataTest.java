@@ -17,9 +17,10 @@
 
 package org.esa.s2tbx.dataio.spot.dimap;
 
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
+import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.snap.core.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class SpotDimapMetadataTest {
     public void setUp() throws Exception {
         assumeTrue(TestUtil.testdataAvailable());
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
-        metadata = XmlMetadata.create(SpotDimapMetadata.class, TestUtil.getTestFile(productsFolder + "metadata.dim"));
+        metadata = GenericXmlMetadata.create(SpotDimapMetadata.class, TestUtil.getTestFile(productsFolder + "metadata.dim"));
     }
 
     @Test

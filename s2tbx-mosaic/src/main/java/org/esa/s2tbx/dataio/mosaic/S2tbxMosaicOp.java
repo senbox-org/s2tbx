@@ -2,9 +2,10 @@ package org.esa.s2tbx.dataio.mosaic;
 
 import com.bc.ceres.binding.Converter;
 import com.bc.ceres.binding.ConverterRegistry;
+import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.esa.s2tbx.dataio.mosaic.internal.S2MosaicMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
@@ -179,7 +180,10 @@ public final class S2tbxMosaicOp extends Operator {
             this.targetProduct = createTargetProduct();
         }
         addTargetBands(this.targetProduct);
+    }
 
+    @Override
+    public void doExecute(ProgressMonitor pm) throws OperatorException {
         // STEP 5: create target band images
         try {
             createBandImages();

@@ -86,7 +86,6 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
 
         // Lay out each tile in the scene
         Map<String, TileInfo> tileInfos = new HashMap<>();
-        Point lowerRightTileGridPosition = null;
         for (S2Metadata.Tile tile : metadata.getTileList()) {
             Map<S2SpatialResolution, Rectangle> tilePositionInScene = new HashMap<>();
             for (S2SpatialResolution resolution : S2SpatialResolution.values()) {
@@ -130,7 +129,7 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
         this.sceneOrigin = sceneOrigin;
     }
 
-    Dimension getSceneDimension(S2SpatialResolution resolution) {
+    public Dimension getSceneDimension(S2SpatialResolution resolution) {
         return sceneDimensions.get(resolution);
     }
 
@@ -144,8 +143,12 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
 
     public java.util.List<String> getOrderedTileIds() {
         Set<String> tileIds = this.getTileIds();
-        java.util.List<String> tileIdsOrder = asSortedList(tileIds);
-        return tileIdsOrder;
+        return asSortedList(tileIds);
+    }
+
+    @Override
+    public Rectangle getMatrixTileRectangle(String tileId, S2SpatialResolution resolution) {
+        return getTilePositionInScene(tileId, resolution);
     }
 
     public Rectangle getTilePositionInScene(String tileId, S2SpatialResolution resolution) {
@@ -156,8 +159,7 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
     }
 
-    public static
-    <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
+    public static <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
         java.util.List<T> list = new ArrayList<T>(c);
         java.util.Collections.sort(list);
         return list;
