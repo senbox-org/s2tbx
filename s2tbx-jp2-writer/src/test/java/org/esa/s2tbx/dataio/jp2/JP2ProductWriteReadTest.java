@@ -61,7 +61,8 @@ public class JP2ProductWriteReadTest {
     public void setup() {
         final int width = 14;
         final int height = 14;
-        OpenJPEGActivator.start();
+        OpenJPEGActivator openJPEGActivator = new OpenJPEGActivator();
+        openJPEGActivator.start();
         outProduct = new Product("JP2Product", "JPEG-2000", width, height);
         final Band bandInt16 = outProduct.addBand("band_1", ProductData.TYPE_INT16);
         bandInt16.setDataElems(createShortData(getProductSize(), 23));
