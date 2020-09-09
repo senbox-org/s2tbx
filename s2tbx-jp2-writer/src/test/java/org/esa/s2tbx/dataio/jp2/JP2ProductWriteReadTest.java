@@ -14,6 +14,7 @@ import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VirtualBand;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.lib.openjpeg.activator.OpenJPEGActivator;
 import org.geotools.referencing.CRS;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -60,6 +61,7 @@ public class JP2ProductWriteReadTest {
     public void setup() {
         final int width = 14;
         final int height = 14;
+        OpenJPEGActivator.start();
         outProduct = new Product("JP2Product", "JPEG-2000", width, height);
         final Band bandInt16 = outProduct.addBand("band_1", ProductData.TYPE_INT16);
         bandInt16.setDataElems(createShortData(getProductSize(), 23));
