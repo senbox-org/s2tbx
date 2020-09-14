@@ -685,7 +685,7 @@ Manifest-Version: 1.0
 OpenIDE-Module-Specification-Version: {version}
 OpenIDE-Module-Implementation-Version: {version}
 OpenIDE-Module-Name: {appKeySplitted}
-OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
+OpenIDE-Module-Display-Category: SNAP Supported Plugins
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Type: STA
 OpenIDE-Module-Short-Description: {longName}

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
 AutoUpdate-Essential-Module: false
 OpenIDE-Module-Java-Dependencies: Java > 1.8
-OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
+OpenIDE-Module-Display-Category: SNAP Toolboxes
 OpenIDE-Module-Specification-Version: ${project.nbmSpecVersion}
 OpenIDE-Module-Implementation-Version: ${project.nbmImplVersion}
 OpenIDE-Module-Long-Description: <p>The Spectral Angle Mapper Processor is a physically-based spectral classification that uses an n-D angle to match pixels to reference spectra</p>
