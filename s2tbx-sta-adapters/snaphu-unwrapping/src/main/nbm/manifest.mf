@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module-Specification-Version: 7.0.0
 OpenIDE-Module-Implementation-Version: 7.0.0
 OpenIDE-Module-Name: SNAPHU Unwrapping
-OpenIDE-Module-Display-Category: Sentinel-1 Toolbox
+OpenIDE-Module-Display-Category: SNAP Supported Plugins
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Type: STA
 OpenIDE-Module-Short-Description: SNAPHU Phase Unwrapping

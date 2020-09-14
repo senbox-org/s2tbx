@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Specification-Version: 7.0.0
 OpenIDE-Module-Implementation-Version: 7.0.0
-OpenIDE-Module-Display-Category: Sentinel-2 Toolbox Adapters
+OpenIDE-Module-Display-Category: SNAP Supported Plugins
 AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: false
 

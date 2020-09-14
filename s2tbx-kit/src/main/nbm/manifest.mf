@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Specification-Version: ${project.nbmSpecVersion}
 OpenIDE-Module-Implementation-Version: ${project.nbmImplVersion}
-OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
+OpenIDE-Module-Display-Category: SNAP Toolboxes
 AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: false
 OpenIDE-Module-Long-Description: The Sentinel-2 Toolbox is a SNAP extension dedicated to the exploitation of Sentinel-2 MSI data and
