@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Snaphu-unwrapping</alias>
   <label>Snaphu-unwrapping</label>
-  <version>1.0</version>
+  <version>2.0.4</version>
   <description>SNAPHU Phase Unwrapping</description>
   <authors>CS Romania</authors>
   <copyright/>
@@ -121,7 +121,7 @@
   <windowsBundle>
     <bundleType>ZIP</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/snaphu/1.4.2-2/snaphu-v1.4.2_win64.zip</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/snaphu/2.0.4/snaphu-v2.0.4_win64.zip</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
@@ -140,13 +140,13 @@
       <outputFile>Command Template</outputFile>
     </templateparameter>
     <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint>snaphu-v1.4.2_win64.zip</entryPoint>
+    <entryPoint>snaphu-v2.0.4_win64.zip</entryPoint>
     <updateVariable>SNAPHU_TOOL_EXE</updateVariable>
   </windowsBundle>
   <linuxBundle>
     <bundleType>ZIP</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/snaphu/1.4.2-2/snaphu-v1.4.2_linux.zip</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/snaphu/2.0.4/snaphu-v2.0.4_linux.zip</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
@@ -165,7 +165,7 @@
       <outputFile>Command Template</outputFile>
     </templateparameter>
     <targetLocation>$HOME/.snap/auxdata</targetLocation>
-    <entryPoint>snaphu-v1.4.2_linux.zip</entryPoint>
+    <entryPoint>snaphu-v2.0.4_linux.zip</entryPoint>
     <updateVariable>SNAPHU_TOOL_EXE</updateVariable>
   </linuxBundle>
   <macosxBundle>
