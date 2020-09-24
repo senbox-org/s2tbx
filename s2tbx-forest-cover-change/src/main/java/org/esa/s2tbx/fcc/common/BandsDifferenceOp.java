@@ -22,7 +22,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "BandsDifferenceOp",
         version="1.0",
-        category = "",
+        category = "Optical/Thematic Land Processing",
         description = "",
         authors = "Jean Coravu",
         copyright = "Copyright (C) 2017 by CS ROMANIA")
