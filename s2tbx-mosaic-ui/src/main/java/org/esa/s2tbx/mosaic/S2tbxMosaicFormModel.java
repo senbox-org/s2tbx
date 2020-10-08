@@ -82,7 +82,12 @@ class S2tbxMosaicFormModel {
     private S2tbxMosaicForm parentForm;
     private BindingContext bindingContext;
     S2tbxMosaicFormModel(S2tbxMosaicForm parentForm) {
+        this(parentForm, new HashMap<>());
+    }
+
+    S2tbxMosaicFormModel(S2tbxMosaicForm parentForm, Map<String, Object> parameterMap) {
         this.parentForm = parentForm;
+        this.parameterMap = parameterMap;
 
         container = ParameterDescriptorFactory.createMapBackedOperatorPropertyContainer("Multi-size Mosaic", parameterMap);
         addTransientProperty(PROPERTY_UPDATE_PRODUCT, Product.class);
@@ -96,14 +101,14 @@ class S2tbxMosaicFormModel {
         container.setValue(PROPERTY_NATIVE_RESOLUTION, true);
 
         container.addPropertyChangeListener(PROPERTY_SHOW_SOURCE_PRODUCTS,
-          (PropertyChangeEvent evt)->{
-                if (Boolean.TRUE.equals(evt.getNewValue())) {
-                    final Collection<Product> products = sourceProductMap.values();
-                    worldMapModel.setProducts(products.toArray(new Product[products.size()]));
-                } else {
-                    worldMapModel.setProducts(null);
-                }
-        });
+                                            (PropertyChangeEvent evt)->{
+                                                if (Boolean.TRUE.equals(evt.getNewValue())) {
+                                                    final Collection<Product> products = sourceProductMap.values();
+                                                    worldMapModel.setProducts(products.toArray(new Product[products.size()]));
+                                                } else {
+                                                    worldMapModel.setProducts(null);
+                                                }
+                                            });
 
     }
 

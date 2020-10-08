@@ -40,11 +40,19 @@ public class S2tbxMosaicForm extends JTabbedPane {
         createUI(targetProductSelector);
     }
 
+    public S2tbxMosaicForm(TargetProductSelector targetProductSelector, AppContext appContext, Map<String, Object> parameterMap) {
+        this.appContext = appContext;
+        mosaicModel = new S2tbxMosaicFormModel(this, parameterMap);
+        createUI(targetProductSelector);
+    }
     private void createUI(TargetProductSelector selector) {
-        ioPanel = new S2tbxMosaicIOPanel(appContext, mosaicModel, selector);
+        ioPanel = null;
         mapProjectionPanel = new S2tbxMosaicMapProjectionPanel(appContext, mosaicModel);
         S2tbxMosaicExpressionsPanel expressionsPanel = new S2tbxMosaicExpressionsPanel(appContext, mosaicModel);
-        addTab("I/O Parameters", ioPanel); /*I18N*/
+        if (selector != null) {
+            ioPanel = new S2tbxMosaicIOPanel(appContext, mosaicModel, selector);
+            addTab("I/O Parameters", ioPanel); /*I18N*/
+        }
         addTab("Map Projection Definition", mapProjectionPanel); /*I18N*/
         addTab("Variables", expressionsPanel);  /*I18N*/
     }
@@ -59,16 +67,20 @@ public class S2tbxMosaicForm extends JTabbedPane {
     }
 
     void prepareShow() {
-        ioPanel.prepareShow();
+        if (ioPanel != null) {
+            ioPanel.prepareShow();
+        }
         mapProjectionPanel.prepareShow();
     }
 
     void prepareHide() {
         mapProjectionPanel.prepareHide();
-        ioPanel.prepareHide();
+        if (ioPanel != null) {
+            ioPanel.prepareHide();
+        }
     }
 
-    void setCardinalBounds(double southBoundValue, double northBoundValue, double westBoundValue, double eastBoundValue){
+    void setCardinalBounds(double southBoundValue, double northBoundValue, double westBoundValue, double eastBoundValue) {
         mapProjectionPanel.getBindingContext().getPropertySet().setValue(S2tbxMosaicFormModel.PROPERTY_SOUTH_BOUND, southBoundValue);
         mapProjectionPanel.getBindingContext().getPropertySet().setValue(S2tbxMosaicFormModel.PROPERTY_NORTH_BOUND, northBoundValue);
         mapProjectionPanel.getBindingContext().getPropertySet().setValue(S2tbxMosaicFormModel.PROPERTY_WEST_BOUND, westBoundValue);

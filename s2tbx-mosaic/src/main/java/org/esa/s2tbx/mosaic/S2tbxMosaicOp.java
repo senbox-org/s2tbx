@@ -155,8 +155,10 @@ public final class S2tbxMosaicOp extends Operator {
         }
 
         // STEP 1: extract only needed bands
-        for (int i = 0; i < this.sourceProducts.length; i++) {
-            this.sourceProducts[i] = generateSelectedBandsProduct(this.sourceProducts[i]);
+        if(this.variables!=null && this.variables.length>0) {
+            for (int i = 0; i < this.sourceProducts.length; i++) {
+                this.sourceProducts[i] = generateSelectedBandsProduct(this.sourceProducts[i]);
+            }
         }
 
         // STEP 2: reproject the source products
