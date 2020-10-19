@@ -12,7 +12,9 @@
             <tocitem text="Thematic Land Processing">
                 <tocitem text="Biophysical Variables Processor" target="biophysicalOpOverview">
                     <tocitem text="Overview" target="biophysicalOpOverview"/>
-                    <tocitem text="Processor Description" target="biophysicalOpProcessorDescription"/>
+                    <tocitem text="Sentinel-2 Processor Description" target="biophysicalOpProcessorDescription"/>
+                    <tocitem text="Sentinel-2 10m Processor Description" target="biophysicalOpProcessorDescription10m"/>
+                    <tocitem text="LANDSAT8 Processor Description" target="biophysicalOpProcessorDescriptionLandsat"/>
                     <tocitem text="Algorithm Specification" target="biophysicalOpAlgorithmSpecification"/>
                 </tocitem>
             </tocitem>

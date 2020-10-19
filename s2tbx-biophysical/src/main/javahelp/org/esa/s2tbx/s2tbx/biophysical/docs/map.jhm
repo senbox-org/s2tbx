@@ -7,6 +7,8 @@
 
     <mapID target="biophysicalOpOverview" url="BiophysicalOpOverview.html"/>
     <mapID target="biophysicalOpProcessorDescription" url="BiophysicalOpProcessorDescription.html"/>
+    <mapID target="biophysicalOpProcessorDescription10m" url="BiophysicalOpProcessorDescription10m.html"/>
+    <mapID target="biophysicalOpProcessorDescriptionLandsat" url="BiophysicalOpProcessorDescriptionLandsat.html"/>
     <mapID target="biophysicalOpAlgorithmSpecification" url="BiophysicalOpAlgorithmSpecification.html"/>
 
 </map>

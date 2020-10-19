@@ -35,18 +35,141 @@
 <p>
     They have been implemented to generate biophysical products from VEGETATION, MERIS, SPOT, and LANDSAT sensors.
     It mainly consists in generating a comprehensive database of vegetation characteristics
-    and the associated SENTINEL2 top of canopy (TOC) reflectances.
+    and the associated SENTINEL2 or LANDSAT8 top of canopy (TOC) reflectances.
     Neural networks are then trained to estimate the canopy characteristics from the
     TOC reflectances along with set corresponding angles defining the observational configuration.
 </p>
+
 <p>
-    For each biophysical variable, one particular neural network is calibrated.
-    Each neural network is composed of :
+    For the Sentinel 2 Products 2 different neural network architecture have been implemeneted, the <i>NNET 20m</i> and the <i>NNET 10m</i>. 
+    The two use a different combination of input bands as shown in the table below as input for the neural network in addtition to the auxiliary bands
+    <i>cos(viewing_zenith)</i>, <i>cos(sun_zenith)</i>, <i>cos(relative_azimuth_angle)</i>.
+</p>
+
+<p>
+    <table>
+        <tr>
+            <th>Band</th>
+            <th>Central Wavelength (nm)</th>
+            <th>Resolution (m)</th>
+            <th>NNET 20m</th>
+            <th>NNET 10m</th>
+        </tr>
+        <tr>
+            <td>B1</td>
+            <td>443</td>
+            <td>60</td>
+            <td></td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td>B2</td>
+            <td>490</td>
+            <td>10</td>
+            <td></td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td>B3</td>
+            <td>560</td>
+            <td>10</td>
+            <td>x</td>
+            <td>x</td>
+        </tr>
+        
+        <tr>
+            <td>B4</td>
+            <td>665</td>
+            <td>10</td>
+            <td>x</td>
+            <td>x</td>
+        </tr>
+        <tr>
+            <td>B5</td>
+            <td>665</td>
+            <td>10</td>
+            <td>x</td>
+            <td>x</td>
+        </tr>
+        <tr>
+            <td>B6</td>
+            <td>740</td>
+            <td>20</td>
+            <td>x</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>B7</td>
+            <td>783</td>
+            <td>20</td>
+            <td>x</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>B8</td>
+            <td>842</td>
+            <td>10</td>
+            <td>x</td>
+            <td>x</td>
+        </tr>
+        
+        <tr>
+            <td>B8a</td>
+            <td>865</td>
+            <td>20</td>
+            <td>x</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td>B9</td>
+            <td>945</td>
+            <td>60</td>
+            <td></td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td>B10</td>
+            <td>1375</td>
+            <td>60</td>
+            <td></td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td>B11</td>
+            <td>1610</td>
+            <td>20</td>
+            <td>x</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>B12</td>
+            <td>2190</td>
+            <td>20</td>
+            <td>x</td>
+            <td></td>
+        </tr>
+    </table>
+</p>
+
+<p>
+    The <i>NNET 10m</i> uses only 10m bands and so it produce a 10m resolution output product, however it is capable of computing only the <i>LAI</i>, <i>FAPAR</i> and <i>FVC</i> indexes.
+</p>
+
+<p>
+    For the LANDSAT8 the same approach is used, but in this case the bands used as inputs are the <i>blue</i>, <i>red</i>, <i>near_infrared</i>, <i>swir_1</i> and <i>swir_2</i> in addition to the auxiliary bands (zenith and azimuth both for sun and view).<br>
+    In this case, as for the <i>NNET 10m</i> the algorithm is capable of computing only the  <i>LAI</i>, <i>FAPAR</i> and <i>FVC</i> indexes.<br>
+</p>  
+
+<p>    
+    Both <i>NNET 10m</i>, <i>NNET 20m</i> and <i>LANDSAT8</i> neural networks are composed by three layers:
     <ul>
         <li>
-            one input layer, made of 11 normalized input data :
-            B3, B4, B5, B6, B7, B8a, B11, B12,
-            cos(viewing_zenith), cos(sun_zenith), cos(relative_azimuth_angle)
+            one input layer: made of 11 normalized input data for the <i>NNET 20m</i>, 6 for the <i>NNET 10m</i> and 7 for the <i>LANDSAT8</i> one.
         </li>
         <li>
             one hidden layer with 5 neurons with tangent sigmoid transfer functions
@@ -55,7 +178,12 @@
             one output layer with a linear transfer function
         </li>
     </ul>
+    
+    In the final implementation there are two <i>NNET 20m</i>, one trained with S2A data and one with S2B data, and two <i>NNET 10m</i>, again trained for S2A and S2B respectively. 
+    This results in output more relaible and with better accuracy and take in accound the small differences in the reflectance response of the different sensors.
+      
 </p>
+
 <p>
     The actual algorithm running in SNAP runs the prediction step of the neural network, from the set
     of precomputed coefficients computed during the training phase.
