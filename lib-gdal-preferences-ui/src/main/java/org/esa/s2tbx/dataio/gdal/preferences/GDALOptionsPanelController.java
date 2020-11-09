@@ -93,7 +93,7 @@ public class GDALOptionsPanelController extends OptionsPanelController {
      */
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx("s2tbxoptionshelp"); // new HelpCtx("...ID") if you have a help set
     }
 
     /**
