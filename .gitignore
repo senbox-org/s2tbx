@@ -13,3 +13,15 @@ generated-sources/
 s2tbx-reader-cs/src/main/generated-sources/
 #maven temp output
 dependencies.txt
+
+
+# vscode
+.project
+.settings
+.classpath
+.factorypath
+.vscode
+launch.sh
+snap-desktop.sh
+gpt.sh
+*~
