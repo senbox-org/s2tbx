@@ -91,6 +91,10 @@ public class S2ProductNamingUtils {
             return false;
         }
 
+        if (!xmlPath.resolveSibling("AUX_DATA").exists()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -368,6 +372,7 @@ public class S2ProductNamingUtils {
     public static Path processInputPath(Path inputPath) {
         if (inputPath.getFileSystem() == FileSystems.getDefault()) {
             // the local file system
+            System.out.println("processInputPath: "+inputPath.toAbsolutePath().toString());
             if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
                 String longInput = Utils.GetLongPathNameW(inputPath.toString());
                 if (longInput.length() > 0) {
