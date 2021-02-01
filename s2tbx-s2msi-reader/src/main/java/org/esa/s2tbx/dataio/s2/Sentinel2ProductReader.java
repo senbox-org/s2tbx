@@ -124,6 +124,13 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
     }
 
+    /**
+     * @return the cacheDir
+     */
+    public Path getCacheDir() {
+        return cacheDir;
+    }
+    
     @Override
     protected final Product readProductNodesImpl() throws IOException {
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {

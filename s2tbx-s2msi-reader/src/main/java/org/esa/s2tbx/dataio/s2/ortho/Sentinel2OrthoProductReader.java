@@ -112,7 +112,7 @@ import java.util.stream.Collectors;
 import static java.awt.image.DataBuffer.TYPE_FLOAT;
 import static org.esa.s2tbx.dataio.s2.ortho.metadata.S2OrthoMetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
-
+import org.esa.s2tbx.dataio.s2.ECMWFTReader;
 /**
  * <p>
  * Base class for Sentinel-2 readers of orthorectified products
@@ -164,7 +164,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     @Override
     protected final Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention, ProductSubsetDef subsetDef)
                                         throws Exception {
-
         this.orthoMetadataHeader = (S2OrthoMetadata) metadataHeader;
 
         VirtualPath rootMetadataPath = this.orthoMetadataHeader.getPath();
@@ -200,6 +199,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         String productType = "S2_MSI_" + productCharacteristics.getProcessingLevel();
 
+
         CoordinateReferenceSystem mapCRS = CRS.decode(this.epsgCode);
         GeoCoding productDefaultGeoCoding = null;
         Rectangle productBounds;
@@ -231,9 +231,37 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         List<S2Metadata.Tile> tileList = orthoMetadataHeader.getTileList();
-
+        for(S2Metadata.Tile tile:tileList)
+        {
+            VirtualPath tileFolder = namingConvention.findGranuleFolderFromTileId(tile.getId());
+            S2Metadata.ProductCharacteristics characteristicsECMWF = new S2Metadata.ProductCharacteristics();
+            VirtualPath folderECMWF = tileFolder.resolve("AUX_DATA");
+            characteristicsECMWF.setPsd(S2Metadata.getPSD(folderECMWF));
+            characteristicsECMWF.setDatatakeSensingStartTime("Unknown");
+            if (folderECMWF.existsAndHasChildren()) {
+                try {
+                    characteristicsECMWF.setSpacecraft("Sentinel-2");
+                    characteristicsECMWF.setProcessingLevel("Level-2A");
+                    characteristicsECMWF.setMetaDataLevel("Standard");
+                    VirtualPath[] gribFile = folderECMWF.listPaths();
+                    ECMWFTReader readerPlugin = new ECMWFTReader(gribFile[0].getFilePath().getPath(),getCacheDir());
+                    List<Band> ecmwfBands = readerPlugin.getECMWFBands();
+                    for(Band band:ecmwfBands)
+                        product.addBand(band);
+                    
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }catch (Exception e2) {
+                    e2.printStackTrace();
+                }
+            }
+        
+        }
         List<BandInfo> bandInfoList = orthoMetadataHeader.computeBandInfoByKey(tileList);
-
+        for(BandInfo val:bandInfoList)
+        {
+            System.out.println("bandInfoList : "+val.getBandName());
+        }
         if (!bandInfoList.isEmpty()) {
             int productMaximumResolutionCount = addBands(product, bandInfoList, sceneDescription, productResolution, productDefaultGeoCoding, mapCRS, subsetDef, defaultJAIReadTileSize);
             product.setNumResolutionsMax(productMaximumResolutionCount);
@@ -760,7 +788,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private void addTileIndexes(Product product, CoordinateReferenceSystem mapCRS, List<S2SpatialResolution> resolutions, List<S2Metadata.Tile> tileList,
                                 S2OrthoSceneLayout sceneDescription, S2SpatialResolution productResolution, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef)
                                 throws IOException, FactoryException {
-
+        System.out.println("addTileIndexes : "+product.getName());
         if (resolutions.isEmpty()) {
             throw new IllegalArgumentException("The resolution list is empty.");
         }
@@ -769,7 +797,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         List<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
-
+        for(S2IndexBandInformation val:listTileIndexBandInformation)
+        {
+            System.out.println("S2IndexBandInformation : "+val.getDescription());
+        }
         //for each resolution, add the tile information
         for (S2SpatialResolution res : S2SpatialResolution.values()) {
             if (resolutions.contains(res)) {
@@ -863,6 +894,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             product.addBand(band);
         }
     }
+
+    private void addECMWFBand() {
+
+    }
+
 
     private static MosaicMatrix buildOrthoIndexBandMatrix(List<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
         MosaicMatrixCellCallback mosaicMatrixCellCallback = new MosaicMatrixCellCallback() {
