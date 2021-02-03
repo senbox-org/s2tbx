@@ -26,6 +26,16 @@ public class Dataset {
         this.jniDatasetInstance = jniDatasetInstance;
     }
 
+    public Object getJniDatasetInstance(){
+        return jniDatasetInstance;
+    }
+
+    /**
+     * Calls the JNI GDAL gdal class GetFileList() method
+     */
+    public Vector getFileList(){
+        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "GetFileList", Vector.class, this.jniDatasetInstance, new Class[]{}, new Object[]{});
+    }
     /**
      * Calls the JNI GDAL Dataset class GetRasterXSize() method
      *

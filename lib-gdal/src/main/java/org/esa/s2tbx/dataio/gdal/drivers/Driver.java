@@ -77,4 +77,22 @@ public class Driver {
         }
         return null;
     }
+
+    public Dataset createCopy(String name, Dataset src, String[] options) {
+        Object jniDatasetInstance = GDALReflection.callGDALLibraryMethod(CLASS_NAME, "CreateCopy", Object.class, this.jniDriverInstance, new Class[]{String.class, src.getJniDatasetInstance().getClass(), String[].class}, new Object[]{name, src.getJniDatasetInstance(), options});
+        if (jniDatasetInstance != null) {
+            return new Dataset(jniDatasetInstance);
+        }
+        return null;
+    }
+
+    /**
+     * Calls the JNI GDAL Dataset class Delete(String utf8_path) method
+     *
+     * @param utf8_path the JNI GDAL Dataset class Delete(String utf8_path) method 'utf8_path' argument
+     * @return the JNI GDAL Dataset class Delete(String utf8_path) method result
+     */
+    public Integer delete(String utf8_path){
+        return GDALReflection.callGDALLibraryMethod(CLASS_NAME, "Delete", Integer.class, this.jniDriverInstance, new Class[]{String.class}, new Object[]{utf8_path});
+    }
 }

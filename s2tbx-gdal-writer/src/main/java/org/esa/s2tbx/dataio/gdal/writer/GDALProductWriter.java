@@ -24,8 +24,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,7 +119,12 @@ public class GDALProductWriter extends AbstractProductWriter {
             throw new IllegalArgumentException(message);
         }
 
-        this.gdalDriver = GDAL.getDriverByName(this.writerDriver.getDriverName());
+        if (this.writerDriver.getDriverName().contentEquals("COG")) {//when the writer attempts to write COG
+            this.gdalDriver = GDAL.getDriverByName("GTiff");//use 'GTiff' driver to write the temporary outputFile because the COG driver not allows creating datasets using 'driver.create()' as 'https://gdal.org/drivers/raster/cog.html' says
+            outputFile = outputFile.getParent().resolve("temp_" + new Date().getTime() + ".tif");// use random file name for temporary file
+        } else {
+            this.gdalDriver = GDAL.getDriverByName(this.writerDriver.getDriverName());
+        }
         if (this.gdalDriver == null) {
             throw new NullPointerException("The GDAL driver '" + this.writerDriver.getDriverDisplayName() + "' (" + this.writerDriver.getDriverName() + ") used to write the product does not exist.");
         }
@@ -216,6 +223,23 @@ public class GDALProductWriter extends AbstractProductWriter {
     @Override
     public void close() {
         if (this.gdalDataset != null) {
+            if (this.writerDriver.getDriverName().contentEquals("COG")) {//when the writer attempts to write COG
+                Driver cogDriver = GDAL.getDriverByName(this.writerDriver.getDriverName());//use the COG driver
+                String outputFile = getFileInput(getOutput()).toString();//use the real output file name
+                final String gdalWriteOptions = Config.instance().preferences().get("snap.dataio.gdal.creationoptions", "");
+                Dataset tempDataset = this.gdalDataset;
+                if (gdalWriteOptions.isEmpty()) {
+                    this.gdalDataset = cogDriver.createCopy(outputFile, this.gdalDataset, new String[0]);//create the final output dataset file (the COG product) from temporary dataset file without options for write
+                }else{
+                    this.gdalDataset = cogDriver.createCopy(outputFile, this.gdalDataset, StringUtils.stringToArray(gdalWriteOptions, ";"));//create the final output dataset file (the COG product) from temporary dataset file with options for write
+                }
+                Vector fileList=tempDataset.getFileList();//fetch the temporary dataset file path
+                tempDataset.delete();//close the temporary dataset file
+                for (Object datasetFileO : fileList) {
+                    String datasetFile = (String) datasetFileO;
+                    cogDriver.delete(datasetFile);//physically delete the temporary dataset file
+                }
+            }
             this.gdalDataset.delete();
         }
     }

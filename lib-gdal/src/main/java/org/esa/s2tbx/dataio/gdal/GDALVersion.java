@@ -22,15 +22,15 @@ import java.util.logging.Logger;
  */
 public enum GDALVersion {
 
-    GDAL_321_FULL("3.2.1", "3-2-1", false),
-    GDAL_32X_JNI("3.2.x", "3-2-X", true),
-    GDAL_31X_JNI("3.1.x", "3-1-X", true),
-    GDAL_30X_JNI("3.0.x", "3-0-X", true),
-    GDAL_24X_JNI("2.4.x", "2-4-X", true),
-    GDAL_23X_JNI("2.3.x", "2-3-X", true),
-    GDAL_22X_JNI("2.2.x", "2-2-X", true),
-    GDAL_21X_JNI("2.1.x", "2-1-X", true),
-    GDAL_20X_JNI("2.0.x", "2-0-X", true);
+    GDAL_321_FULL("3.2.1", "3-2-1", false, true),
+    GDAL_32X_JNI("3.2.x", "3-2-X", true, true),
+    GDAL_31X_JNI("3.1.x", "3-1-X", true, true),
+    GDAL_30X_JNI("3.0.x", "3-0-X", true, false),
+    GDAL_24X_JNI("2.4.x", "2-4-X", true, false),
+    GDAL_23X_JNI("2.3.x", "2-3-X", true, false),
+    GDAL_22X_JNI("2.2.x", "2-2-X", true, false),
+    GDAL_21X_JNI("2.1.x", "2-1-X", true, false),
+    GDAL_20X_JNI("2.0.x", "2-0-X", true, false);
 
     private static final String VERSION_NAME = "{version}";
     private static final String JNI_NAME = "{jni}";
@@ -53,6 +53,7 @@ public enum GDALVersion {
     String name;
     String location;
     boolean jni;
+    boolean cogCapable;
     OSCategory osCategory;
 
     /**
@@ -62,10 +63,11 @@ public enum GDALVersion {
      * @param name the name of version
      * @param jni  the type of version: {@code true} if version is JNI driver
      */
-    GDALVersion(String id, String name, boolean jni) {
+    GDALVersion(String id, String name, boolean jni, boolean cogCapable) {
         this.id = id;
         this.name = name;
         this.jni = jni;
+        this.cogCapable = cogCapable;
     }
     /**
      * Creates the Map with JNI GDAL versions.
@@ -253,6 +255,15 @@ public enum GDALVersion {
      */
     public boolean isJni() {
         return this.jni;
+    }
+
+    /**
+     * Gets whether this version is COG capable (writes COG GeoTIFF).
+     *
+     * @return {@code true} if this version is COG capable
+     */
+    public boolean isCOGCapable() {
+        return this.cogCapable;
     }
 
     /**
