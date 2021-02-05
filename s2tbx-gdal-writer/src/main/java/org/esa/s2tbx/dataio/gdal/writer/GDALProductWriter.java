@@ -41,10 +41,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,15 +57,6 @@ public class GDALProductWriter extends AbstractProductWriter {
 
     private Dataset gdalDataset;
 
-    /*
-    Add concurrent map for accessing GDAL bands from dataset in separated threads.
-     The key for ConcurrentMap is the ID of thread
-     The value for ConcurrentMap is the map with bands processed by specific thread
-     The key for map with bands processed by specific thread is the bandIndex from product
-     The value for map with bands processed by specific thread is the org.esa.s2tbx.dataio.gdal.drivers.Band object
-     (SIITBX-435)
-     */
-    private ConcurrentMap<Long, Map<Integer, org.esa.s2tbx.dataio.gdal.drivers.Band>> gdalBands = new ConcurrentHashMap<>();
     private int gdalDataType;
     private Driver gdalDriver;
 
@@ -158,7 +145,7 @@ public class GDALProductWriter extends AbstractProductWriter {
         if (!gdalWriteOptions.isEmpty()) {
             String[] options = StringUtils.stringToArray(gdalWriteOptions, ";");
             this.gdalDataset = this.gdalDriver.create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType, options);
-        }else{
+        } else {
             this.gdalDataset = this.gdalDriver.create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
         }
         if (this.gdalDataset == null) {
@@ -184,25 +171,11 @@ public class GDALProductWriter extends AbstractProductWriter {
     }
 
     /**
-     * Gets the org.esa.s2tbx.dataio.gdal.drivers.Band object from concurrent map for accessing GDAL bands from dataset in separated threads.
-     *
-     * @param bandIndex the bandIndex from product
-     * @return the org.esa.s2tbx.dataio.gdal.drivers.Band object
-     * (SIITBX-435)
+     * SIITBX-435: GDAL doesn't support concurrent writing to the same file (or Dataset), so this must be synchronized.
+     * Make this method synchronized for fixing artifacts noticed on products created with GDAL Export (GeoTiff) from SNAP menu, due to fact that GDAL Dataset does not allow concurrent write.
      */
-    private org.esa.s2tbx.dataio.gdal.drivers.Band getGDALBand(int bandIndex) {
-        Long threadId = Thread.currentThread().getId();
-        if (!this.gdalBands.containsKey(threadId)) {
-            this.gdalBands.put(threadId, new HashMap<>());
-        }
-        if (!this.gdalBands.get(threadId).containsKey(bandIndex)) {
-            this.gdalBands.get(threadId).put(bandIndex, this.gdalDataset.getRasterBand(bandIndex + 1));
-        }
-        return this.gdalBands.get(threadId).get(bandIndex);
-    }
-
     @Override
-    public void writeBandRasterData(Band sourceBand, int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, ProductData sourceBuffer, ProgressMonitor pm) {
+    public synchronized void writeBandRasterData(Band sourceBand, int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, ProductData sourceBuffer, ProgressMonitor pm) {
         Guardian.assertNotNull("sourceBand", sourceBand);
         Guardian.assertNotNull("sourceBuffer", sourceBuffer);
         checkBufferSize(sourceWidth, sourceHeight, sourceBuffer);
@@ -212,8 +185,8 @@ public class GDALProductWriter extends AbstractProductWriter {
         checkSourceRegionInsideBandRegion(sourceWidth, sourceBandWidth, sourceHeight, sourceBandHeight, sourceOffsetX, sourceOffsetY);
 
         Product sourceProduct = getSourceProduct();
-        int bandIndex = sourceProduct.getBandIndex(sourceBand.getName());// use bandIndex as key instead of Band object for getting org.esa.s2tbx.dataio.gdal.drivers.Band object from the map (SIITBX-435)
-        org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = getGDALBand(bandIndex);// Gets the org.esa.s2tbx.dataio.gdal.drivers.Band object from concurrent map for accessing GDAL bands from dataset in separated threads by threadId and bandIndex (SIITBX-435)
+        int bandIndex = sourceProduct.getBandIndex(sourceBand.getName());
+        org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = this.gdalDataset.getRasterBand(bandIndex + 1);
         if (gdalBand == null) {
             throw new NullPointerException("Failed creating the band with index " + bandIndex + " to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
         }
@@ -259,8 +232,6 @@ public class GDALProductWriter extends AbstractProductWriter {
         if (this.gdalDataset != null) {
             this.gdalDataset.delete();
         }
-        this.gdalBands.forEach((threadId, gdalBands) -> gdalBands.clear());
-        this.gdalBands.clear();
     }
 
     @Override
