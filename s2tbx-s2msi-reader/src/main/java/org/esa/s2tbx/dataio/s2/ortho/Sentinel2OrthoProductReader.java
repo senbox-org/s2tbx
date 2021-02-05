@@ -46,12 +46,15 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Placemark;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
@@ -65,6 +68,7 @@ import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
@@ -113,21 +117,25 @@ import static java.awt.image.DataBuffer.TYPE_FLOAT;
 import static org.esa.s2tbx.dataio.s2.ortho.metadata.S2OrthoMetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
 import org.esa.s2tbx.dataio.s2.ECMWFTReader;
+
 /**
  * <p>
  * Base class for Sentinel-2 readers of orthorectified products
  * </p>
  * <p>
- * To read single tiles, select any tile image file (IMG_*.jp2) within a product package. The reader will then
- * collect other band images for the selected tile and will also try to read the metadata file (MTD_*.xml).
+ * To read single tiles, select any tile image file (IMG_*.jp2) within a product
+ * package. The reader will then collect other band images for the selected tile
+ * and will also try to read the metadata file (MTD_*.xml).
  * </p>
- * <p>To read an entire scene, select the metadata file (MTD_*.xml) within a product package. The reader will then
- * collect other tile/band images and create a mosaic on the fly.
+ * <p>
+ * To read an entire scene, select the metadata file (MTD_*.xml) within a
+ * product package. The reader will then collect other tile/band images and
+ * create a mosaic on the fly.
  * </p>
  *
  * @author Norman Fomferra
- * @author Nicolas Ducoin
- * modified 20200113 to support the advanced dialog for readers by Denisa Stefanescu
+ * @author Nicolas Ducoin modified 20200113 to support the advanced dialog for
+ *         readers by Denisa Stefanescu
  */
 public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader implements S2AnglesGeometry {
 
@@ -155,15 +163,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     @Override
-    protected final void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY,
-                                          Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm)
-                                          throws IOException {
+    protected final void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight,
+            int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth,
+            int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
         // Should never not come here, since we have an OpImage that reads data
     }
 
     @Override
-    protected final Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention, ProductSubsetDef subsetDef)
-                                        throws Exception {
+    protected final Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader,
+            INamingConvention namingConvention, ProductSubsetDef subsetDef) throws Exception {
         this.orthoMetadataHeader = (S2OrthoMetadata) metadataHeader;
 
         VirtualPath rootMetadataPath = this.orthoMetadataHeader.getPath();
@@ -175,21 +183,28 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         if (logger.isLoggable(Level.FINE)) {
             double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
-            logger.log(Level.FINE, "Finish reading the scene description, elapsed time: " + elapsedTimeInSeconds + " seconds.");
+            logger.log(Level.FINE,
+                    "Finish reading the scene description, elapsed time: " + elapsedTimeInSeconds + " seconds.");
         }
 
         // Check sceneDescription because a NullPointerException can be launched:
-        // An error can be reproduced with a L2A product with 2 tiles in zone UTM30 and 2 other tiles in zone UTM31.
+        // An error can be reproduced with a L2A product with 2 tiles in zone UTM30 and
+        // 2 other tiles in zone UTM31.
         // The process is stopped and the tiles in zone UTM 31 are empty
-        // The execution does not finish when updating tileLayout at the beginning of this method
+        // The execution does not finish when updating tileLayout at the beginning of
+        // this method
         // because the tile layout is obtained with the tile in zone UTM 30.
-        // But the sceneLayout is computed with the tiles that are in the zone UTM 31 if we select this PlugIn
+        // But the sceneLayout is computed with the tiles that are in the zone UTM 31 if
+        // we select this PlugIn
         if (sceneDescription.getTileIds().size() == 0) {
-            throw new IOException(String.format("No valid tiles associated to product [%s]", rootMetadataPath.getFileName().toString()));
+            throw new IOException(String.format("No valid tiles associated to product [%s]",
+                    rootMetadataPath.getFileName().toString()));
         }
         Dimension defaultProductSize = sceneDescription.getSceneDimension(productResolution);
         if (defaultProductSize == null) {
-            throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", rootMetadataPath.getFileName().toString()));
+            throw new IOException(
+                    String.format("Unable to retrieve the product associated to granule metadata file [%s]",
+                            rootMetadataPath.getFileName().toString()));
         }
 
         VirtualPath productPath = getProductDir(rootMetadataPath);
@@ -199,16 +214,17 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         String productType = "S2_MSI_" + productCharacteristics.getProcessingLevel();
 
-
         CoordinateReferenceSystem mapCRS = CRS.decode(this.epsgCode);
         GeoCoding productDefaultGeoCoding = null;
         Rectangle productBounds;
         if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
             productBounds = new Rectangle(0, 0, defaultProductSize.width, defaultProductSize.height);
         } else {
-            productDefaultGeoCoding = buildGeoCoding(sceneDescription, mapCRS, productResolution.resolution, productResolution.resolution, defaultProductSize, null);
+            productDefaultGeoCoding = buildGeoCoding(sceneDescription, mapCRS, productResolution.resolution,
+                    productResolution.resolution, defaultProductSize, null);
             boolean isMultiSize = isMultiResolution();
-            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, isMultiSize);
+            productBounds = subsetDef.getSubsetRegion().computeProductPixelRegion(productDefaultGeoCoding,
+                    defaultProductSize.width, defaultProductSize.height, isMultiSize);
         }
         if (productBounds.isEmpty()) {
             throw new IllegalStateException("Empty product bounds.");
@@ -220,7 +236,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 product.getMetadataRoot().addElement(metadataElement);
             }
         }
-        GeoCoding productGeoCoding = buildGeoCoding(sceneDescription, mapCRS, productResolution.resolution, productResolution.resolution, defaultProductSize, productBounds);
+        GeoCoding productGeoCoding = buildGeoCoding(sceneDescription, mapCRS, productResolution.resolution,
+                productResolution.resolution, defaultProductSize, productBounds);
         product.setSceneGeoCoding(productGeoCoding);
 
         Dimension defaultJAIReadTileSize = JAI.getDefaultTileSize();
@@ -231,39 +248,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         List<S2Metadata.Tile> tileList = orthoMetadataHeader.getTileList();
-        for(S2Metadata.Tile tile:tileList)
-        {
-            VirtualPath tileFolder = namingConvention.findGranuleFolderFromTileId(tile.getId());
-            S2Metadata.ProductCharacteristics characteristicsECMWF = new S2Metadata.ProductCharacteristics();
-            VirtualPath folderECMWF = tileFolder.resolve("AUX_DATA");
-            characteristicsECMWF.setPsd(S2Metadata.getPSD(folderECMWF));
-            characteristicsECMWF.setDatatakeSensingStartTime("Unknown");
-            if (folderECMWF.existsAndHasChildren()) {
-                try {
-                    characteristicsECMWF.setSpacecraft("Sentinel-2");
-                    characteristicsECMWF.setProcessingLevel("Level-2A");
-                    characteristicsECMWF.setMetaDataLevel("Standard");
-                    VirtualPath[] gribFile = folderECMWF.listPaths();
-                    ECMWFTReader readerPlugin = new ECMWFTReader(gribFile[0].getFilePath().getPath(),getCacheDir());
-                    List<Band> ecmwfBands = readerPlugin.getECMWFBands();
-                    for(Band band:ecmwfBands)
-                        product.addBand(band);
-                    
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }catch (Exception e2) {
-                    e2.printStackTrace();
-                }
-            }
-        
-        }
+
         List<BandInfo> bandInfoList = orthoMetadataHeader.computeBandInfoByKey(tileList);
-        for(BandInfo val:bandInfoList)
-        {
-            System.out.println("bandInfoList : "+val.getBandName());
-        }
         if (!bandInfoList.isEmpty()) {
-            int productMaximumResolutionCount = addBands(product, bandInfoList, sceneDescription, productResolution, productDefaultGeoCoding, mapCRS, subsetDef, defaultJAIReadTileSize);
+            int productMaximumResolutionCount = addBands(product, bandInfoList, sceneDescription, productResolution,
+                    productDefaultGeoCoding, mapCRS, subsetDef, defaultJAIReadTileSize);
             product.setNumResolutionsMax(productMaximumResolutionCount);
 
             // In MultiResolution mode, all bands are kept at their native resolution
@@ -273,20 +262,23 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             addVectorMasks(product, tileList, bandInfoList, subsetDef);
 
-            addIndexMasks(product, mapCRS, bandInfoList, sceneDescription, productResolution, productDefaultGeoCoding, subsetDef);
+            addIndexMasks(product, mapCRS, bandInfoList, sceneDescription, productResolution, productDefaultGeoCoding,
+                    subsetDef);
         }
 
         // add TileIndex if there are more than 1 tile
         if (sceneDescription.getOrderedTileIds().size() > 1 && !bandInfoList.isEmpty()) {
             List<S2SpatialResolution> resolutions = new ArrayList<>();
-            //look for the resolutions used in bandInfoList for generating the tile index only for them
+            // look for the resolutions used in bandInfoList for generating the tile index
+            // only for them
             for (BandInfo bandInfo : bandInfoList) {
                 if (!resolutions.contains(bandInfo.getBandInformation().getResolution())) {
                     resolutions.add(bandInfo.getBandInformation().getResolution());
                 }
             }
             if (resolutions.size() > 0 && tileList.size() > 0) {
-                addTileIndexes(product, mapCRS, resolutions, tileList, sceneDescription, productResolution, productDefaultGeoCoding, subsetDef);
+                addTileIndexes(product, mapCRS, resolutions, tileList, sceneDescription, productResolution,
+                        productDefaultGeoCoding, subsetDef);
             }
         }
 
@@ -298,10 +290,39 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     anglesGridsMap.put(tile.getId(), bandAnglesGrids);
                 }
             }
-            addAnglesBands(mapCRS, defaultProductSize, product, sceneDescription, anglesGridsMap, productDefaultGeoCoding, subsetDef);
+            addAnglesBands(mapCRS, defaultProductSize, product, sceneDescription, anglesGridsMap,
+                    productDefaultGeoCoding, subsetDef);
+        }
+        for (S2Metadata.Tile tile : tileList) {
+            addECMWFBand(product, tile, sceneDescription, mapCRS, namingConvention);
         }
 
         return product;
+    }
+
+    private void addECMWFBand(Product product, S2Metadata.Tile tile, S2OrthoSceneLayout sceneDescription,
+            CoordinateReferenceSystem mapCRS, INamingConvention namingConvention)
+            throws IOException, NoSuchAuthorityCodeException, FactoryException {
+
+        VirtualPath tileFolder = namingConvention.findGranuleFolderFromTileId(tile.getId());
+        S2Metadata.ProductCharacteristics characteristicsECMWF = new S2Metadata.ProductCharacteristics();
+        VirtualPath folderECMWF = tileFolder.resolve("AUX_DATA");
+        characteristicsECMWF.setPsd(S2Metadata.getPSD(folderECMWF));
+        characteristicsECMWF.setDatatakeSensingStartTime("Unknown");
+        if (folderECMWF.existsAndHasChildren()) {
+           
+            characteristicsECMWF.setSpacecraft("Sentinel-2");
+            characteristicsECMWF.setProcessingLevel("Level-2A");
+            characteristicsECMWF.setMetaDataLevel("Standard");
+            VirtualPath[] gribFile = folderECMWF.listPaths();
+            ECMWFTReader readerPlugin = new ECMWFTReader(gribFile[0].getFilePath().getPath(), getCacheDir());
+            List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
+            for(TiePointGrid tiePointGrid:ecmwfGrids)
+            {
+                product.addTiePointGrid(tiePointGrid);
+            }   
+        }
+
     }
 
     private void addAnglesBands(CoordinateReferenceSystem mapCRS, Dimension defaultProductSize, Product product, S2OrthoSceneLayout sceneDescription,
@@ -788,7 +809,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private void addTileIndexes(Product product, CoordinateReferenceSystem mapCRS, List<S2SpatialResolution> resolutions, List<S2Metadata.Tile> tileList,
                                 S2OrthoSceneLayout sceneDescription, S2SpatialResolution productResolution, GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef)
                                 throws IOException, FactoryException {
-        System.out.println("addTileIndexes : "+product.getName());
         if (resolutions.isEmpty()) {
             throw new IllegalArgumentException("The resolution list is empty.");
         }
@@ -797,10 +817,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         List<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
-        for(S2IndexBandInformation val:listTileIndexBandInformation)
-        {
-            System.out.println("S2IndexBandInformation : "+val.getDescription());
-        }
+
         //for each resolution, add the tile information
         for (S2SpatialResolution res : S2SpatialResolution.values()) {
             if (resolutions.contains(res)) {
@@ -893,10 +910,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             product.addBand(band);
         }
-    }
-
-    private void addECMWFBand() {
-
     }
 
 
@@ -1324,7 +1337,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     private static String buildAutoGroupingPattern() {
-        return "sun:view:quality:tile:detector_footprint:nodata:partially_corrected_crosstalk:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile:" +
+        return "sun:view:quality:ECMWF:tile:detector_footprint:nodata:partially_corrected_crosstalk:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile:" +
                 "detector_footprint-B01:" +
                 "detector_footprint-B02:" +
                 "detector_footprint-B03:" +
