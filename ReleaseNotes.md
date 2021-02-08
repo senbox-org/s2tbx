@@ -1,6 +1,16 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 8.0.1
+----------------------
+
+### List of solved issues (https://senbox.atlassian.net/browse/SIITBX-436?jql=project%20%3D%20SIITBX%20AND%20fixVersion%20%3D%208.0.1)
+#### Bug
+    * [SIITBX-435] - GDAL - error writing bands having data type int16 and int8
+    * [SIITBX-436] - GDAL writer - visual artifacts in produced images when writing in parallel, from multiple threads
+
+
+
 Changes in S2TBX 8.0
 --------------------
 
