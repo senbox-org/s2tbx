@@ -28,7 +28,9 @@ public class ECMWFTReader {
         Path cacheFolderPath = cachedir;
         cacheFolderPath = cacheFolderPath.resolve("aux_ecmfwt");
         try {
+            System.out.println("create the cacheFolderPath: "+cacheFolderPath.toAbsolutePath());
             Files.createDirectory(cacheFolderPath);
+            System.out.println("create OK sub cacheFolderPath: "+cacheFolderPath.toAbsolutePath());
         } catch (FileAlreadyExistsException exc) {
         }
         Path copyPath = cacheFolderPath.resolve(path.getFileName());
