@@ -107,7 +107,96 @@
           }
         ]
       }
-    ],
+      ],
+      "tiePointGrids": [
+        {
+            "name": "ECMWF_total_column_water_vapour_surface",
+            "offsetX": "0.5",
+            "offsetY": "0.5",
+            "subSamplingX": "1220.0",
+            "subSamplingY": "1220.0",
+            "expectedPixels": [
+                {
+                  "x": 700,
+                  "y": 772,
+                  "value": 16.447952
+                },
+                {
+                "x": 3668,
+                "y": 6460,
+                "value": 13.796392
+                },
+                {
+                "x": 9300,
+                "y": 3492,
+                "value": 18.236917
+                },
+                {
+                "x": 10276,
+                "y": 10540,
+                "value": 21.797274
+                }
+              ]
+          },
+          {
+            "name": "ECMWF_total_column_ozone_surface",
+            "offsetX": "0.5",
+            "offsetY": "0.5",
+            "subSamplingX": "1220.0",
+            "subSamplingY": "1220.0",
+            "expectedPixels": [
+              {
+              "x": 700,
+              "y": 772,
+              "value": 0.00606263
+              },
+              {
+              "x": 3668,
+              "y": 6460,
+              "value": 0.0060573244
+              },
+              {
+              "x": 9300,
+              "y": 3492,
+              "value": 0.006081252
+              },
+              {
+              "x": 10276,
+              "y": 10540,
+              "value": 0.0061386167
+              }
+            ]
+          },
+          {
+            "name": "ECMWF_mean_sea_level_pressure_surface",
+            "offsetX": "0.5",
+            "offsetY": "0.5",
+            "subSamplingX": "1220.0",
+            "subSamplingY": "1220.0",
+            "expectedPixels": [
+              {
+              "x": 700,
+              "y": 772,
+              "value": 102536.4
+              },
+              {
+              "x": 3668,
+              "y": 6460,
+              "value": 102557.85
+              },
+              {
+              "x": 9300,
+              "y": 3492,
+              "value": 102636.5
+              },
+              {
+              "x": 10276,
+              "y": 10540,
+              "value": 102626.0
+              }
+            ]
+          }
+      ],
     "bands": [
       {
         "name": "B2",
