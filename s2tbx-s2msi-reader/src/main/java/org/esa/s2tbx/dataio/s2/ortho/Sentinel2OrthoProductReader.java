@@ -310,17 +310,20 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         characteristicsECMWF.setPsd(S2Metadata.getPSD(folderECMWF));
         characteristicsECMWF.setDatatakeSensingStartTime("Unknown");
         if (folderECMWF.existsAndHasChildren()) {
-           
             characteristicsECMWF.setSpacecraft("Sentinel-2");
             characteristicsECMWF.setProcessingLevel("Level-2A");
             characteristicsECMWF.setMetaDataLevel("Standard");
-            VirtualPath[] gribFile = folderECMWF.listPaths();
-            ECMWFTReader readerPlugin = new ECMWFTReader(gribFile[0].getFilePath().getPath(), getCacheDir());
-            List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
-            for(TiePointGrid tiePointGrid:ecmwfGrids)
-            {
-                product.addTiePointGrid(tiePointGrid);
-            }   
+            VirtualPath[] gribFiles = folderECMWF.listPaths();
+            for(VirtualPath gribFile:gribFiles){
+                if(gribFile.getFileName().toString().matches("AUX_ECMWFT")){
+                    ECMWFTReader readerPlugin = new ECMWFTReader(gribFile.getFilePath().getPath(), getCacheDir());
+                    List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
+                    for(TiePointGrid tiePointGrid:ecmwfGrids)
+                    {
+                        product.addTiePointGrid(tiePointGrid);
+                    }
+                }
+            }
         }
 
     }
