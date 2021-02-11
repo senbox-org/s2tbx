@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-binding</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -85,7 +85,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-graph-builder</artifactId>
-            <version>${snap.version}</version>
+            <version>${desktop.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>

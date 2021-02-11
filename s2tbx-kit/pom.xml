@@ -372,13 +372,12 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-rcp</artifactId>
-            <version>${project.version}</version>
+            <version>${desktop.version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-engine-utilities</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
