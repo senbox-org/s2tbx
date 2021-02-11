@@ -57,7 +57,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>lib-openjpeg</artifactId>
-            <version>${nsap.version}</version>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.parsers</groupId>
