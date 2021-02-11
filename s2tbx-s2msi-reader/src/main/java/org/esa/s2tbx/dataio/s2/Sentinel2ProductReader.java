@@ -127,7 +127,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     @Override
     protected final Product readProductNodesImpl() throws IOException {
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
-            throw new IllegalStateException("Invalid OpenJpeg executables.");
+            throw new IllegalStateException("Invalid OpenJpeg executables %s, %s.".format(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE));
         }
 
         boolean success = false;
