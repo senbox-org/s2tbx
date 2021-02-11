@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-jp2-reader</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.parsers</groupId>
