@@ -62,17 +62,16 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>lib-openjpeg</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-jp2-reader</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-geotiff</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -114,7 +113,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-runtime</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
