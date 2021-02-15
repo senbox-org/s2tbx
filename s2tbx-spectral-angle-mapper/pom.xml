@@ -43,6 +43,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-ui</artifactId>
+            <version>${desktop.version}</version>
         </dependency>
         <dependency>
             <groupId>it.unimi.dsi</groupId>

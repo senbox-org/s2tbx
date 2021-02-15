@@ -171,7 +171,7 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-desktop</artifactId>
-                <version>${snap.version}</version>
+                <version>${desktop.version}</version>
             </dependency>
 
             <dependency>
