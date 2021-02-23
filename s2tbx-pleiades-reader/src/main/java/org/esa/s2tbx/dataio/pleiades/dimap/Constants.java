@@ -16,11 +16,12 @@ public class Constants {
     public static final String[] DEFAULT_EXTENSIONS = new String[]{".xml", ".zip"};
     public static final String[] FORMAT_NAMES = new String[]{"PleiadesDimap"};
     public static final String ROOT_METADATA = "VOL_PHR.XML";
+    // https://senbox.atlassian.net/browse/SIITBX-441 : update regex for dim_phr1*.xml and img_phr1*.xml
     public static final String[] MINIMAL_PATTERN_LIST = new String[] {
             "vol_phr\\.xml",
             "img_phr1[ab]_\\w{1,3}_\\d{3}",
-            "img_phr1[ab]_\\w{1,3}_\\d{3}[/\\\\]dim_phr1[ab]_\\w{1,3}_\\d{15}_(sen|ort)_\\d{9,10}-\\d{3}\\.xml",
-            "img_phr1[ab]_\\w{1,3}_\\d{3}[/\\\\]img_phr1[ab]_\\w{1,3}_\\d{15}_(sen|ort)_\\d{9,10}-\\d{3}_r\\d{1}c\\d{1}\\.(jp2|tif)"};
+            "img_phr1[ab]_\\w{1,3}_\\d{3}[/\\\\]dim_phr1[ab]_\\w{1,3}_\\d{15}_(sen|ort|prj)_\\d{9,10}(-\\d{1,3})?\\.xml",
+            "img_phr1[ab]_\\w{1,3}_\\d{3}[/\\\\]img_phr1[ab]_\\w{1,3}_\\d{15}_(sen|ort|prj)_\\d{9,10}(-\\d{1,3})?_r\\d{1}c\\d{1}\\.(jp2|tif)"};
     public static final String[] RGB_PROFILE = new String[] { "B2", "B1", "B0" };
     public static final String ROOT_METADATA_FILE = "VOL_PHR.XML";
 
