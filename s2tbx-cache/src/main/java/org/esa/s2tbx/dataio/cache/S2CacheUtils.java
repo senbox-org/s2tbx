@@ -11,6 +11,10 @@ import java.util.ArrayList;
 public class S2CacheUtils {
 
     public final static String SENTINEL_2_CACHE_MAX_TIME = "s2tbx.dataio.maxTime";
+    public final static String SENTINEL_2_CACHE_MAX_SIZE_OPTION = "s2tbx.dataio.maxSizeActive";
+    public final static String SENTINEL_2_CACHE_MAX_SIZE = "s2tbx.dataio.maxSize";
+    public final static boolean SENTINEL_2_CACHE_MAX_SIZE_OPTION_DEFAULT = false;
+    public final static double SENTINEL_2_CACHE_MAX_SIZE_DEFAULT = 50.0;
 
     public final static long ONE_DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
     public final static long ONE_WEEK_MILLISECONDS = 7 * 24 * 60 * 60 * 1000;
