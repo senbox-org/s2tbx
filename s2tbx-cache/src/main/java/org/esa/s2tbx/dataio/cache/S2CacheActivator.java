@@ -16,12 +16,13 @@ public class S2CacheActivator implements Activator {
     @Override
     public void start() {
         final Preferences preferences = Config.instance("s2tbx").load().preferences();
-        if(preferences.getBoolean(S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE_OPTION,S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE_OPTION_DEFAULT)){
-            if(S2CacheUtils.getCacheSize()>1e9*preferences.getDouble(S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE,S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE_DEFAULT)){
-                S2CacheUtils.deleteCache();
-                return;
-            }
-        }
+        // control of the S2cache size over time
+        S2CacheSizeChecking sizeCacheCheckingLoop = S2CacheSizeChecking.getInstance();
+        sizeCacheCheckingLoop.setParameters(preferences.getBoolean(S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE_OPTION,
+                        S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE_OPTION_DEFAULT), preferences.getDouble(S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE,
+                        S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE_DEFAULT));
+        sizeCacheCheckingLoop.launchCacheSizeChecking(0.25, 1);
+
         String cachePolicy = preferences.get(S2CacheUtils.SENTINEL_2_CACHE_MAX_TIME, null);
         if(cachePolicy == null) {
             cachePolicy = S2CacheUtils.SENTINEL_2_CACHE_OPTION_WEEK;
