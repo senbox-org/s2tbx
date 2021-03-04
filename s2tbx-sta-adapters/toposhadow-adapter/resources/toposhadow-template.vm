@@ -1,0 +1,21 @@
+#set($SEOM_TOPO_PYTHON = $SEOM_TOPO_PYTHON.replace("\$HOME","$HOME"))
+$SEOM_TOPO_PYTHON/create_topo_mask.py
+#if($verbose)
+-v
+#end
+#if($useFootprint)
+--ULLR
+$footprint
+--EPSG
+$EPSG
+#end
+--threshold
+$threshold
+$ruggedConfFile
+#if($sourceProduct.FileLocation.Name.endsWith(".xml"))
+$sourceProduct.FileLocation.ParentFile
+#else
+$sourceProduct.FileLocation
+#end
+$outputFile
+$outputFile.ParentFile

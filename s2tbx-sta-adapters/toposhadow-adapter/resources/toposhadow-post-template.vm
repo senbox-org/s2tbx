@@ -1,0 +1,10 @@
+#set($fileClass=$outputFile.Class.forName("java.io.File"))
+#set($outputFileTif=($outputFile.AbsolutePath + ".tif"))
+#set($paramList = [$outputFileTif])
+#set($paramArray = $paramList.toArray())
+#set($ctors = $fileClass.Constructors)
+#foreach ($ctor in $ctors)
+	#if ($ctor.toString() == "public java.io.File(java.lang.String)")
+		#set($targetProductFile = $ctor.newInstance($paramArray))
+	#end
+#end
