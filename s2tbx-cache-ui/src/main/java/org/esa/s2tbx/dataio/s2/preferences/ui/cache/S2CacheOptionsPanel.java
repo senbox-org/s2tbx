@@ -73,7 +73,7 @@ final class S2CacheOptionsPanel extends javax.swing.JPanel {
         comboPanel.add(box);
         comboPanel.add(tableLayout.createHorizontalSpacer());
         comboPanel.add(informationLabel);
-        limitedSizeCacheField = new DoubleTextField("50");
+        limitedSizeCacheField = new DoubleTextField(String.valueOf(S2CacheUtils.SENTINEL_2_CACHE_MAX_SIZE_DEFAULT));
         activeLImitedSizeCache = new JCheckBox("Maximum size in cache (Go)"); 
         activeLImitedSizeCache.setSelected(false);
         activeLImitedSizeCache.addChangeListener(new ChangeListener() {
