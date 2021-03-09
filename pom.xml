@@ -80,8 +80,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>8.0.3cv</snap.version>
-        <desktop.version>8.0.0</desktop.version>
+        <snap.version>8.0.3</snap.version>
         <s2tbx.version>8.0.1cv</s2tbx.version>
         <geotools.version>20.0</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -171,13 +170,13 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-desktop</artifactId>
-                <version>${desktop.version}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-ui</artifactId>
-                <version>${desktop.version}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
@@ -225,19 +224,19 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-gpf-ui</artifactId>
-                <version>${desktop.version}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-rcp</artifactId>
-                <version>${desktop.version}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-tango</artifactId>
-                <version>${desktop.version}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
