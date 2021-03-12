@@ -8,7 +8,6 @@ AutoUpdate-Essential-Module: false
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Type: STA
 OpenIDE-Module-Short-Description: TopoShadow
-OpenIDE-Module: org.esa.s2tbx.s24scilws.toposhadow
-OpenIDE-Module-Alias: toposhadow
+OpenIDE-Module: org.esa.s2tbx.toposhadow
+OpenIDE-Module-Alias: TopoShadow
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
-

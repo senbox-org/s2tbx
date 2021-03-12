@@ -18,4 +18,4 @@ $sourceProduct.FileLocation.ParentFile
 $sourceProduct.FileLocation
 #end
 $outputFile
-$outputFile.ParentFile
+$workingDirectory
