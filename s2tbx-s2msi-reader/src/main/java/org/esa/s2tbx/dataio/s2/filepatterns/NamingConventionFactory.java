@@ -27,6 +27,7 @@ public class NamingConventionFactory {
         if (safe.getInputType() != null) {
             return safe;
         }
+
         SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(virtualPath);
         if (safeCompact.getInputType() != null) {
             return safeCompact;
@@ -80,6 +81,18 @@ public class NamingConventionFactory {
         }
         return null;
     }
+
+    public static String getSpectralBandImageTemplate_L2h(String format, String bandFileId) {
+        if (format.equals("SAFE")) {
+            return SAFENamingConvention.SPECTRAL_BAND_TEMPLATE_L2HF_PSD14.replace("{{BANDFILEID}}", bandFileId);
+        } else if (format.equals("SAFE_COMPACT")) {
+            return SAFECOMPACTNamingConvention.SPECTRAL_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
+        }
+        return null;
+    }
+
+
+    
 
     public static String getAOTTemplate_L2a(String format) {
         if (format.equals("SAFE")) {

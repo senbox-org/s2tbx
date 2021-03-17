@@ -57,6 +57,7 @@ public class S2ProductCRSCache {
                 VirtualPath virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(path);
                 namingConvention = NamingConventionFactory.createOrthoNamingConvention(virtualPath);
             } catch (IOException e) {
+                e.printStackTrace();
                 return;
             }
             if(namingConvention != null) {

@@ -75,6 +75,9 @@ public class SAFENamingConvention implements INamingConvention{
     public static String SNW_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{MISSION_ID}}_USER_SNW_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2";
     public static String DDV_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{MISSION_ID}}_USER_DDV_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2";
 
+    //Templates leval l2h et l2f
+    public static String SPECTRAL_BAND_TEMPLATE_L2HF_PSD14 = "IMG_DATA"+ File.separator +"{{MISSION_ID}}_USER_MSI_L2H_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIFF";
+    
     //Templates L3
     public static String SPECTRAL_BAND_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator +"{{MISSION_ID}}_USER_MSI_L03_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";
     public static String SCL_FILE_TEMPLATE_L3 = "QI_DATA" + File.separator + "{{MISSION_ID}}_USER_SCL_L03_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2";
@@ -197,7 +200,6 @@ public class SAFENamingConvention implements INamingConvention{
 
     public SAFENamingConvention(VirtualPath input){
         String inputName = input.getFileName().toString();
-
         if(input.existsAndHasChildren()) {
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
@@ -242,7 +244,7 @@ public class SAFENamingConvention implements INamingConvention{
         //TODO implement an specific methd for each namingConvention
         level = S2ProductNamingUtils.getLevel(inputXmlPath, inputType);
 
-        if(level == S2Config.Sentinel2ProductLevel.L1C || level == S2Config.Sentinel2ProductLevel.L2A || level == S2Config.Sentinel2ProductLevel.L3) {
+        if(level == S2Config.Sentinel2ProductLevel.L1C || level == S2Config.Sentinel2ProductLevel.L2A || level == S2Config.Sentinel2ProductLevel.L2H || level == S2Config.Sentinel2ProductLevel.L3) {
             epsgCodeList = S2ProductNamingUtils.getEpsgCodeList(inputXmlPath, inputType);
         }
 

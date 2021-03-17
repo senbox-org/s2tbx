@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2.tiles;
 
-import org.esa.snap.jp2.reader.internal.BandMatrixCell;
+import org.esa.snap.core.image.BandMatrixCell;
 
 import java.awt.image.DataBuffer;
 

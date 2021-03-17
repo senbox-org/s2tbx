@@ -108,7 +108,8 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
 
-        if ((this.level != S2Config.Sentinel2ProductLevel.L1C) && (this.level != S2Config.Sentinel2ProductLevel.L2A) && (this.level != S2Config.Sentinel2ProductLevel.L3)) {
+        if ((this.level != S2Config.Sentinel2ProductLevel.L1C) && (this.level != S2Config.Sentinel2ProductLevel.L2A) 
+                && (this.level != S2Config.Sentinel2ProductLevel.L2H) && (this.level != S2Config.Sentinel2ProductLevel.L3)) {
             return DecodeQualification.UNABLE;
         }
 
@@ -116,7 +117,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
 
-        if (this.level != S2Config.Sentinel2ProductLevel.L2A && this.level != S2Config.Sentinel2ProductLevel.L3) {
+        if (this.level != S2Config.Sentinel2ProductLevel.L2A && this.level != S2Config.Sentinel2ProductLevel.L2H && this.level != S2Config.Sentinel2ProductLevel.L3) {
             return DecodeQualification.INTENDED;
         }
 
