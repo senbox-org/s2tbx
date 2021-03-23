@@ -43,6 +43,13 @@ public class S2Config {
         UNKNOWN
     }
 
+    public enum Sentinel2ProductMission {
+        S2A,
+        S2B,
+        LS8,
+        UNKNOWN
+    }
+
     public enum Sentinel2InputType {
         INPUT_TYPE_PRODUCT_METADATA,
         INPUT_TYPE_GRANULE_METADATA

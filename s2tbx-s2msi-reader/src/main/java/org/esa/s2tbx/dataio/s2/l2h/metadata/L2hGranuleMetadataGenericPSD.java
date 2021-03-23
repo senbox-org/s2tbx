@@ -3,9 +3,11 @@ package org.esa.s2tbx.dataio.s2.l2h.metadata;
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
+import org.esa.s2tbx.dataio.s2.l2h.L2hUtils;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
@@ -140,8 +142,8 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
         characteristics.setQuantificationValue(boaQuantification);
         double aotQuantification = metadataPathProvider.DEFAULT_AOT_QUANTIFICATION;
         double wvpQuantification = metadataPathProvider.DEFAULT_WVP_QUANTIFICATION;
-
-        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification);
+        S2Config.Sentinel2ProductMission missionID = L2hUtils.getMissionID(path);
+        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification, missionID);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
@@ -263,10 +265,10 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
     private void updateName() {
         String tileId = getAttributeValue(metadataPathProvider.getPATH_GRANULE_METADATA_TILE_ID(), null);
         if(tileId == null || tileId.length()<56) {
-            setName("Level-2H_Tile_ID");
+            setName("Level-2HF_Tile_ID");
             return;
         }
-        setName("Level-2H_Tile_" + tileId.substring(50, 55));
+        setName("Level-2HF_Tile_" + tileId.substring(50, 55));
     }
 }
 

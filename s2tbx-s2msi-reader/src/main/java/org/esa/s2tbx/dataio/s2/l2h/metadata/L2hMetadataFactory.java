@@ -34,18 +34,4 @@ public class L2hMetadataFactory {
         }
     }
 
-
-    public static IL2hDatastripMetadata createL2hDatastripMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
-        int psd = L2hMetadata.getDeepPSD(metadataPath);
-        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 )  {
-            return L2hDatastripMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD13());
-        } else if (psd == 143) {
-            return L2hDatastripMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD143());
-        } else {
-            //TODO
-            return null;
-        }
-    }
-
-
 }

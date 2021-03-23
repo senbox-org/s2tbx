@@ -23,6 +23,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.ortho.metadata.S2OrthoMetadata;
+import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
@@ -127,17 +128,14 @@ public class L2hMetadata extends S2OrthoMetadata {
         //add product metadata
         getMetadataElements().add(metadataProduct.getMetadataElement());
 
-        //add datastrip metadatas
-        for(VirtualPath datastripPath : namingConvention.getDatastripXmlPaths()) {
-            IL2hDatastripMetadata metadataDatastrip = L2hMetadataFactory.createL2hDatastripMetadata(datastripPath);
-            getMetadataElements().add(metadataDatastrip.getMetadataElement());
-        }
 
+        String[] granuleList = metadataProduct.getGranules();
         //Check if the tiles found in metadata exist and add them to granuleMetadataPathList
         ArrayList<VirtualPath> granuleMetadataPathList = new ArrayList<>();
         for (String tileName : tileNames) {
             VirtualPath folder = namingConvention.findGranuleFolderFromTileId(tileName);
             VirtualPath xml = namingConvention.findXmlFromTileId(tileName);
+
             if(folder == null || xml == null) {
                 String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
                 logger.log(Level.WARNING, errorMessage);
@@ -156,6 +154,7 @@ public class L2hMetadata extends S2OrthoMetadata {
     private void initTile(VirtualPath path, String epsg, S2SpatialResolution resolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
         IL2hGranuleMetadata granuleMetadata = L2hMetadataFactory.createL2hGranuleMetadata(path);
+
         if(granuleMetadata == null) {
             throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
         }

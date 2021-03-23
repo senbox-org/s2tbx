@@ -496,6 +496,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 }
                 S2Metadata.ProductCharacteristics productCharacteristics = this.orthoMetadataHeader.getProductCharacteristics();
                 String productLevel = productCharacteristics.getProcessingLevel();
+
                 boolean geotiffOption = false;
                 if(productLevel.matches("Level-2H") || productLevel.matches("Level-2F"))
                     geotiffOption = true;
@@ -522,6 +523,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     if(geotiffOption){
                         GeoTiffMatrixMultiLevelSource  multiLevelSource = new GeoTiffMatrixMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, bandIndexNumber, geoCoding, Double.NaN, defaultJAIReadTileSize);
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
+
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         product.addBand(band);
                     }
@@ -975,6 +977,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         ArrayList<S2BandAnglesGrid> listBandAnglesGrid = new ArrayList<>();
         S2Metadata.Tile tile = metadataHeader.getTile(tileId);
         S2Metadata.AnglesGrid anglesGrid = tile.getSunAnglesGrid();
+
         int resolution = tile.getAnglesResolution();
 
         if (anglesGrid == null) {

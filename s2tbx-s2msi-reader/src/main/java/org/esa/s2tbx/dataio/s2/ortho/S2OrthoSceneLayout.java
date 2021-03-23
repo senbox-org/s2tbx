@@ -90,12 +90,14 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
             Map<S2SpatialResolution, Rectangle> tilePositionInScene = new HashMap<>();
             for (S2SpatialResolution resolution : S2SpatialResolution.values()) {
                 S2Metadata.TileGeometry tileGeom = tile.getTileGeometry(resolution);
-                Rectangle tilePosition = new Rectangle();
-                tilePosition.x = (int)((tileGeom.getUpperLeftX() - sceneUpperLeftX) / resolution.resolution);
-                tilePosition.y = (int)((sceneUpperLeftY - tileGeom.getUpperLeftY()) / resolution.resolution);
-                tilePosition.width = tileGeom.getNumCols();
-                tilePosition.height = tileGeom.getNumRows();
-                tilePositionInScene.put(resolution, tilePosition);
+                if(tileGeom!=null) {
+                    Rectangle tilePosition = new Rectangle();
+                    tilePosition.x = (int)((tileGeom.getUpperLeftX() - sceneUpperLeftX) / resolution.resolution);
+                    tilePosition.y = (int)((sceneUpperLeftY - tileGeom.getUpperLeftY()) / resolution.resolution);
+                    tilePosition.width = tileGeom.getNumCols();
+                    tilePosition.height = tileGeom.getNumRows();
+                    tilePositionInScene.put(resolution, tilePosition);
+                }
             }
             tileInfos.put(tile.getId(), new TileInfo(tile.getId(), tilePositionInScene));
         }

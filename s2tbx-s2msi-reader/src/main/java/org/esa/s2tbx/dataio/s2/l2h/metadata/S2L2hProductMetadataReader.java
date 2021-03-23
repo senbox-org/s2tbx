@@ -10,7 +10,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Created by jcoravu on 10/1/2020.
@@ -26,7 +28,7 @@ public class S2L2hProductMetadataReader extends AbstractS2OrthoMetadataReader {
         try {
             return L2hMetadata.parseHeader(path, granuleName, config, epsg, this.namingConvention.getResolution(), isAGranule, this.namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
-            throw new IOException("Failed to parse metadata fiel '" + path.getFileName().toString() + "'.", e);
+            throw new IOException("Failed to parse metadata field '" + path.getFileName().toString() + "'.", e);
         }
     }
 
@@ -43,9 +45,18 @@ public class S2L2hProductMetadataReader extends AbstractS2OrthoMetadataReader {
         List<VirtualPath> imageDirectories = new ArrayList<>();
         if (pathToImages.exists()) {
             VirtualPath[] imagePaths = pathToImages.listPaths();
+            List<VirtualPath> imagePathsList1 = Arrays.asList(imagePaths);
+            VirtualPath pathToImages2 = pathToImages.resolve("NATIVE");
+            List<VirtualPath> imagePathsList = new ArrayList<>();
+            List<VirtualPath> imagePathsList2 = new ArrayList<>();
+            if(pathToImages2!=null)
+            {
+                VirtualPath[] imagePaths2 = pathToImages2.listPaths();
+                imagePathsList2 = Arrays.asList(imagePaths2);
+            }
+            Stream.of(imagePathsList1, imagePathsList2).forEach(imagePathsList::addAll);
             if (imagePaths != null && imagePaths.length > 0) {
-                for (VirtualPath imagePath : imagePaths) {
-                    
+                for (VirtualPath imagePath : imagePathsList) {
                     if (imagePath.getFileName().toString().endsWith("_" + spatialResolution.resolution + "m.TIF")) {
                         imageDirectories.add(imagePath);
                     }

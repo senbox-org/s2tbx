@@ -6,11 +6,13 @@ import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.SAFECOMPACTNamingConvention;
 import org.esa.s2tbx.dataio.s2.l2h.L2hPSD13Constants;
+import org.esa.s2tbx.dataio.s2.l2h.L2hUtils;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
@@ -131,8 +133,8 @@ public class L2hGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2hG
         characteristics.setQuantificationValue(boaQuantification);
         double aotQuantification = L2hPSD13Constants.DEFAULT_AOT_QUANTIFICATION;
         double wvpQuantification = L2hPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
-
-        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification);
+        S2Config.Sentinel2ProductMission missionID = L2hUtils.getMissionID(path);
+        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification, missionID);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 

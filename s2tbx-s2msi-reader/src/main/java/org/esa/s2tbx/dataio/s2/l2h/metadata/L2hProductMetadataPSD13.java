@@ -5,7 +5,9 @@ import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
+import org.esa.s2tbx.dataio.s2.l2h.L2hUtils;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
@@ -121,8 +123,8 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
             logger.warning("Invalid WVP quantification value, the default value will be used.");
             wvpQuantification = L2hPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
         }
-
-        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification);
+        S2Config.Sentinel2ProductMission missionID = L2hUtils.getMissionID(path);
+        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification, missionID);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
@@ -153,6 +155,10 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
         }
 
         return granuleListReduced;
+    }
+
+    @Override public String[] getGranules() {
+        return getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_FILE_LIST);
     }
 
     @Override

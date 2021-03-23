@@ -6,10 +6,12 @@ import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.l2h.L2hUtils;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -131,7 +133,8 @@ public class L2hProductMetadataGenericPSD extends GenericXmlMetadata implements 
             wvpQuantification = metadataPathProvider.DEFAULT_WVP_QUANTIFICATION;
         }
 
-        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification);
+        S2Config.Sentinel2ProductMission missionID = L2hUtils.getMissionID(path);
+        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification,missionID);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
@@ -142,6 +145,7 @@ public class L2hProductMetadataGenericPSD extends GenericXmlMetadata implements 
     public Collection<String> getTiles() {
 
         String[] granuleList = getAttributeValues(metadataPathProvider.getPATH_PRODUCT_METADATA_GRANULE_LIST());
+
         if(granuleList == null) {
             granuleList = getAttributeValues(metadataPathProvider.getPATH_PRODUCT_METADATA_GRANULE_LIST_ALT());
             if(granuleList == null) {
@@ -163,6 +167,10 @@ public class L2hProductMetadataGenericPSD extends GenericXmlMetadata implements 
         }
 
         return granuleListReduced;
+    }
+
+    @Override public String[] getGranules() {
+        return getAttributeValues(metadataPathProvider.getPATH_PRODUCT_METADATA_GRANULE_FILE_LIST());
     }
 
     @Override

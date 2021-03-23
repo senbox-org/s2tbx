@@ -80,6 +80,7 @@ public class L2hPSD13Constants {
     public static final String PATH_PRODUCT_METADATA_METADATA_LEVEL = "/Level-2H_User_Product/General_Info/L2H_Product_Info/Query_Options/METADATA_LEVEL";
     public static final String PATH_PRODUCT_METADATA_GRANULE_LIST = "/Level-2H_User_Product/General_Info/L2H_Product_Info/L2H_Product_Organisation/Granule_List/Granules/granuleIdentifier";
     public static final String PATH_PRODUCT_METADATA_GRANULE_LIST_ALT = "/Level-2H_User_Product/General_Info/L2H_Product_Info/L2H_Product_Organisation/Granule_List/Granule/granuleIdentifier";
+    public static final String PATH_PRODUCT_METADATA_GRANULE_FILE_LIST= "/Level-2H_User_Product/General_Info/L2H_Product_Info/L2H_Product_Organisation/Granule_List/Granule/IMAGE_FILE";
     public static final String PATH_PRODUCT_METADATA_DATASTRIP_LIST = "/Level-2H_User_Product/General_Info/L2H_Product_Info/L2H_Product_Organisation/Granule_List/Granules/datastripIdentifier";
     public static final String PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT = "/Level-2H_User_Product/General_Info/L2H_Product_Info/L2H_Product_Organisation/Granule_List/Granule/datastripIdentifier";
     public static final String PATH_PRODUCT_METADATA_IMAGE_ID = "/Level-2H_User_Product/General_Info/L2H_Product_Info/L2H_Product_Organisation/Granule_List/Granules/IMAGE_ID_2A";

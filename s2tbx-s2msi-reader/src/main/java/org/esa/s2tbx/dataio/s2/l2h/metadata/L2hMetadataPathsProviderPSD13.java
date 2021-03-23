@@ -130,6 +130,11 @@ public class L2hMetadataPathsProviderPSD13 implements IL2hMetadataPathsProvider{
     }
 
     @Override
+    public String getPATH_PRODUCT_METADATA_GRANULE_FILE_LIST() {
+        return L2hPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_FILE_LIST;
+    }
+
+    @Override
     public String getPATH_PRODUCT_METADATA_DATASTRIP_LIST() {
         return L2hPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST;
     }

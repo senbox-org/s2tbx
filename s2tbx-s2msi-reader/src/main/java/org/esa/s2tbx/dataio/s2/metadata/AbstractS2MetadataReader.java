@@ -156,7 +156,8 @@ public abstract class AbstractS2MetadataReader {
             if (imagePaths != null && imagePaths.length > 0) {
                 for (String bandName : bandNames) {
                     for (VirtualPath imagePath : imagePaths) {
-                        if (imagePath.getFileName().toString().endsWith(bandName + ".jp2")) {
+                        String fileNameStr= imagePath.getFileName().toString();
+                        if (fileNameStr.endsWith(bandName + ".jp2")||fileNameStr.endsWith(bandName + ".TIF")) {
                             imageDirectories.add(imagePath);
                         }
                     }

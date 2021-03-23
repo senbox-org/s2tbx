@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.s2.l2h;
 
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class L2hUtils {
         if (paths != null) {
             for (VirtualPath imgData : paths) {
                 if (imgData.existsAndHasChildren()) {
-                    if (imgData.getFileName().toString().equals("R" + specificFolder)) {
+                    if (imgData.getFileName().toString().equals("NATIVE")) {
                         return true;
                     }
                 }
@@ -61,7 +62,7 @@ public class L2hUtils {
                     if (files2 != null) {
                         for (VirtualPath imgData : files2) {
                             if (imgData.existsAndHasChildren()) {
-                                if (imgData.getFileName().toString().equals("R" + specificFolder)) {
+                                if (imgData.getFileName().toString().equals("NATIVE")) {
                                     return true;
                                 }
                             }
@@ -71,5 +72,16 @@ public class L2hUtils {
             }
         }
         return false;
+    }
+
+    public static S2Config.Sentinel2ProductMission getMissionID(VirtualPath path) {
+        if(path.getFullPathString().contains("S2A"))
+            return S2Config.Sentinel2ProductMission.S2A;
+        else if(path.getFullPathString().contains("S2B"))
+            return S2Config.Sentinel2ProductMission.S2B;
+        else if(path.getFullPathString().contains("LS8"))
+            return S2Config.Sentinel2ProductMission.LS8;
+        else
+            return S2Config.Sentinel2ProductMission.UNKNOWN;
     }
 }

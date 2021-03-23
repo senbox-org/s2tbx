@@ -14,6 +14,7 @@ import java.util.Collection;
 public interface IL2hProductMetadata {
     L2hMetadata.ProductCharacteristics getProductOrganization(VirtualPath path, S2SpatialResolution resolution);
     Collection<String> getTiles();
+    String[] getGranules();
     S2DatastripFilename getDatastrip();
     S2DatastripDirFilename getDatastripDir();
     MetadataElement getMetadataElement();
