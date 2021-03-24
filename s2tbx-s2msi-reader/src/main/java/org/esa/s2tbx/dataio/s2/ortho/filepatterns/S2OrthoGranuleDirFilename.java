@@ -31,8 +31,9 @@ import java.util.regex.Pattern;
 public class S2OrthoGranuleDirFilename extends S2GranuleDirFilename {
 
     // example :                 S2A          _OPER          _MSI_            L1C_TL          _MTI_            _20150627T180307    _A000062    _T32SMH         _N01.00
-    final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{3,6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(A[0-9]{6})_(T[A-Z|0-9]{5})(_N[0-9]{2}\\.[0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
-    //                           S2A_          OPER_         MSI_             L2H_             EPA__            20200505T100915_    A025430_    T33TTG_N99.99
+    final static String REGEX = "(S2A|S2B|S2_|LS8)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{3,6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(A[0-9]{6})_(T[A-Z|0-9]{5})(_N[0-9]{2}\\.[0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
+    //                           S2A_          OPER          _MSI_            L2H_ ou L2F         EPA__            20200505T100915_    A025430_    T33TTG_N99.99
+        //                       LS8          _OPER          _OLI_            L2F_ZZZ_                        _20200214T094714     _A000000    _T33TTG         _N99.99
     // final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{3})_([A-Z|0-9|_]{3})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(A[0-9]{6})_(T[A-Z|0-9]{5})(_N[0-9]{2}\\.[0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
     
     final static Pattern PATTERN = Pattern.compile(REGEX);

@@ -5,7 +5,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductNamingUtils;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
-import org.esa.s2tbx.dataio.s2.l2h.L2hUtils;
+import org.esa.s2tbx.dataio.s2.l2hf.L2hfUtils;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
@@ -22,7 +22,8 @@ import java.util.regex.Pattern;
 public class SAFECOMPACTNamingConvention implements INamingConvention {
     //REGEXs and getters
     public static String PRODUCT_REGEX = "(S2A|S2B|S2_|LS8)_([A-Z|0-9|_]{6})_([0-9]{8}T[0-9]{6})_N([0-9]{4})_R([0-9]{3})_.*";
-    public static String PRODUCT_XML_REGEX = "MTD_MSIL(1C|2A|2H|2F|03)\\.xml";
+    // MTD_OLIL2F
+    public static String PRODUCT_XML_REGEX = "MTD_(MSIL(1C|2A|2H|2F|03)|OLIL2(H|F))\\.xml";
     public static String GRANULE_REGEX = "(L1C|L2A|L2H|L2F|L03)_T([A-Z|0-9|_]{5})_A([0-9]{6})_([0-9]{8}T[0-9]{6})(|_(S2A|S2B|S2_|LS8)_R([0-9]{3}))";
     public static String GRANULE_XML_REGEX = "MTD_TL(|_L2H|_L2F)\\.xml";
     public static String DATASTRIP_REGEX = "DS_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_S([0-9]{8}T[0-9]{6})";
@@ -78,13 +79,20 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     public static String SNW_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SNW_{{RESOLUTION}}m.jp2";
     public static String DDV_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_DDV_{{RESOLUTION}}m.jp2";
 
-    //Templates L2h et L2f
+    //Templates L2h
     public static String SPECTRAL_BAND_TEMPLATE_L2H_PSD14 = "IMG_DATA"+ File.separator + "L2H_{{TILENUMBER}}_{{DATATAKE_START}}_{{MISSION_ID}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIF";
-    public static String SPECTRAL_NATIVE_BAND_TEMPLATE_L2HF_PSD14 = "IMG_DATA"+ File.separator + "NATIVE" + File.separator +"{{MISSION_ID}}_USER_MSI_L2H_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIF";
+    public static String SPECTRAL_NATIVE_BAND_TEMPLATE_L2H_PSD14 = "IMG_DATA"+ File.separator + "NATIVE" + File.separator +"{{MISSION_ID}}_USER_MSI_L2H_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIF";
     public static String CLD_FILE_TEMPLATE_L2H = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_CLD_{{RESOLUTION}}m.TIF";
     public static String SNW_FILE_TEMPLATE_L2H = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SNW_{{RESOLUTION}}m.TIF";
     public static String DDV_FILE_TEMPLATE_L2H = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_DDV_{{RESOLUTION}}m.TIF";
  
+    //Templates L2f
+    public static String SPECTRAL_BAND_TEMPLATE_L2F_PSD14 = "IMG_DATA"+ File.separator + "L2F_{{TILENUMBER}}_{{DATATAKE_START}}_{{MISSION_ID}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIF";
+    public static String SPECTRAL_NATIVE_BAND_TEMPLATE_L2F_PSD14 = "IMG_DATA"+ File.separator + "NATIVE" + File.separator +"{{MISSION_ID}}_USER_MSI_L2F_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIF";
+    public static String CLD_FILE_TEMPLATE_L2F = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_CLD_{{RESOLUTION}}m.TIF";
+    public static String SNW_FILE_TEMPLATE_L2F = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SNW_{{RESOLUTION}}m.TIF";
+    public static String DDV_FILE_TEMPLATE_L2F = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_DDV_{{RESOLUTION}}m.TIF";
+
     //Templates L3
     public static String SPECTRAL_BAND_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator +"L03_{{TILENUMBER}}_{{DATATAKE_START}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";
     public static String SCL_FILE_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m"  + File.separator + "L03_{{TILENUMBER}}_{{DATATAKE_START}}_SCL_{{RESOLUTION}}m.jp2";

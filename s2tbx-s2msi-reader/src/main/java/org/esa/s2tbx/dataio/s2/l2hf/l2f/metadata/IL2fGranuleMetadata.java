@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l2h.metadata;
+package org.esa.s2tbx.dataio.s2.l2hf.l2f.metadata;
 
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -8,9 +8,9 @@ import org.esa.snap.core.datamodel.MetadataElement;
 import java.util.Map;
 
 /**
- * Created by obarrile on 04/10/2016.
+ * Created by fdouziech
  */
-public interface IL2hGranuleMetadata {
+public interface IL2fGranuleMetadata {
     //To use only if the associated user product metadata is not available
     S2Metadata.ProductCharacteristics getTileProductOrganization(VirtualPath path, S2SpatialResolution resolution);
 

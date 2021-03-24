@@ -1,7 +1,7 @@
-package org.esa.s2tbx.dataio.s2.l2h.metadata;
+package org.esa.s2tbx.dataio.s2.l2hf.l2h.metadata;
 
 /**
- * Created by obarrile on 06/02/2018.
+ * Created by fdouziech
  */
 public interface IL2hMetadataPathsProvider {
 

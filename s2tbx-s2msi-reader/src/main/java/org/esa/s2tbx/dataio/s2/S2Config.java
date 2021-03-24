@@ -85,7 +85,7 @@ public class S2Config {
 
     public static final String MTD_EXT = ".xml";
 
-    private TileLayout[] tileLayouts = new TileLayout[3];
+    private TileLayout[] tileLayouts = new TileLayout[5];
 
 
     /**

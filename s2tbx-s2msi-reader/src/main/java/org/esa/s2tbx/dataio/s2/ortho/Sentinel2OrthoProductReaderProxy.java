@@ -8,7 +8,8 @@ import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
-import org.esa.s2tbx.dataio.s2.l2h.Sentinel2L2HProductReader;
+import org.esa.s2tbx.dataio.s2.l2hf.l2h.Sentinel2L2HProductReader;
+import org.esa.s2tbx.dataio.s2.l2hf.l2f.Sentinel2L2FProductReader;
 import org.esa.s2tbx.dataio.s2.l3.Sentinel2L3ProductReader;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -76,7 +77,7 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
             }else if (level == S2Config.Sentinel2ProductLevel.L2H) {
                 this.reader = new Sentinel2L2HProductReader(this.readerPlugIn, this.epsgCode);
             }else if (level == S2Config.Sentinel2ProductLevel.L2F) {
-                throw new IOException("Invalid level not yet implemented");
+                this.reader = new Sentinel2L2FProductReader(this.readerPlugIn, this.epsgCode);
             } else if (level == S2Config.Sentinel2ProductLevel.L1C) {
                 this.reader = new Sentinel2L1CProductReader(this.readerPlugIn, this.epsgCode);
             } else if (level == S2Config.Sentinel2ProductLevel.L3) {

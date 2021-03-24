@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l2h;
+package org.esa.s2tbx.dataio.s2.l2hf;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * Created by obarrile on 14/06/2016.
  */
-public class L2hUtils {
+public class L2hfUtils {
 
     public static boolean checkGranuleSpecificFolder(VirtualPath pathGranule, String specificFolder) {
 

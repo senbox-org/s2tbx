@@ -192,7 +192,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                             "Finish reading the header using the metadata file '" + inputVirtualPath.getFullPathString()
                                     + "', elapsed time: " + elapsedTimeInSeconds + " seconds.");
                 }
-
                 String defaultProductName = metadataReader.getNamingConvention().getProductName();
                 product = readProduct(defaultProductName, metadataReader.isGranule(), metadataHeader,
                         metadataReader.getNamingConvention(), subsetDef);

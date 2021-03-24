@@ -21,7 +21,7 @@ package org.esa.s2tbx.dataio.s2;
  * @author Norman Fomferra
  */
 public enum S2SpatialResolution {
-    R10M(0, 10), R20M(1, 20), R60M(2, 60);// R15M(3, 15), R30M(4, 30);
+    R10M(0, 10), R20M(1, 20), R60M(2, 60), R15M(3, 15), R30M(4, 30);
 
     public final int id;
     public final int resolution;

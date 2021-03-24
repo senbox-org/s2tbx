@@ -110,6 +110,8 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
             Dimension dimension = null;
             for (TileInfo tileInfo : tileInfos.values()) {
                 Rectangle position = tileInfo.getPositionInScene(resolution);
+                if(position==null)
+                    break;
                 if (dimension == null) {
                     dimension = new Dimension(position.x+position.width, position.y+position.height);
                 }
@@ -118,7 +120,8 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
                     dimension.height = Math.max(position.y+position.height, dimension.height);
                 }
             }
-            sceneDimensions.put(resolution, dimension);
+            if(dimension!=null)
+                sceneDimensions.put(resolution, dimension);
         }
 
         return new S2OrthoSceneLayout(tileInfos, sceneDimensions, sceneOrigin);

@@ -1,9 +1,8 @@
-package org.esa.s2tbx.dataio.s2.l2h.metadata;
+package org.esa.s2tbx.dataio.s2.l2hf.l2f.metadata;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.s2.l2h.L2hUtils;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -12,6 +11,8 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.SAFECOMPACTNamingConvention;
+import org.esa.s2tbx.dataio.s2.l2hf.l2f.L2fPSD13Constants;
+import org.esa.s2tbx.dataio.s2.l2hf.L2hfUtils;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
@@ -27,18 +28,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by obarrile on 06/02/2018.
+ * Created by fdouziech
  */
-public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements IL2hGranuleMetadata {
+
+public class L2fGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2fGranuleMetadata {
 
     String format = "";
 
-    private static class L2hGranuleMetadataGenericPSDParser extends XmlMetadataParser<L2hGranuleMetadataGenericPSD> {
+    private static class L2fGranuleMetadataPSD13Parser extends XmlMetadataParser<L2fGranuleMetadataPSD13> {
 
-        public L2hGranuleMetadataGenericPSDParser(Class metadataFileClass, IL2hMetadataPathsProvider metadataPathProvider) {
+        public L2fGranuleMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(metadataPathProvider.getGranuleSchemaLocations());
-            setSchemaBasePath(metadataPathProvider.getGranuleSchemaBasePath());
+            setSchemaLocations(L2fPSD13Constants.getGranuleSchemaLocations());
+            setSchemaBasePath(L2fPSD13Constants.getGranuleSchemaBasePath());
         }
 
         @Override
@@ -47,16 +49,15 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
         }
     }
 
-    public static L2hGranuleMetadataGenericPSD create(VirtualPath path, IL2hMetadataPathsProvider metadataPathProvider) throws IOException, ParserConfigurationException, SAXException {
+    public static L2fGranuleMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
-        L2hGranuleMetadataGenericPSD result = null;
+        L2fGranuleMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (path.exists()) {
                 stream = path.getInputStream();
-                L2hGranuleMetadataGenericPSDParser parser = new L2hGranuleMetadataGenericPSDParser(L2hGranuleMetadataGenericPSD.class, metadataPathProvider);
+                L2fGranuleMetadataPSD13Parser parser = new L2fGranuleMetadataPSD13Parser(L2fGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
-                result.setMetadataPathsProvider(metadataPathProvider);
                 result.updateName();
                 result.format = NamingConventionFactory.getGranuleFormat(path);
             }
@@ -66,18 +67,8 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
         return result;
     }
 
-    private IL2hMetadataPathsProvider metadataPathProvider = null;
-
-    private void setMetadataPathsProvider(IL2hMetadataPathsProvider metadataPathProvider) {
-        this.metadataPathProvider = metadataPathProvider;
-    }
-    public L2hGranuleMetadataGenericPSD(String name) {
+    public L2fGranuleMetadataPSD13(String name) {
         super(name);
-    }
-
-    public L2hGranuleMetadataGenericPSD(String name, IL2hMetadataPathsProvider metadataPathProvider) {
-        super(name);
-        setMetadataPathsProvider(metadataPathProvider);
     }
 
     @Override
@@ -91,7 +82,7 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getTileProductOrganization(VirtualPath path, S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getTileProductOrganization(VirtualPath path,S2SpatialResolution resolution) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(path));
@@ -135,15 +126,15 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
             }
         }
         characteristics.setSpacecraft("Sentinel-2");
-        characteristics.setProcessingLevel("Level-2H");
+        characteristics.setProcessingLevel("Level-2F");
         characteristics.setMetaDataLevel("Standard");
 
-        double boaQuantification = metadataPathProvider.DEFAULT_BOA_QUANTIFICATION;
+        double boaQuantification = L2fPSD13Constants.DEFAULT_BOA_QUANTIFICATION;
         characteristics.setQuantificationValue(boaQuantification);
-        double aotQuantification = metadataPathProvider.DEFAULT_AOT_QUANTIFICATION;
-        double wvpQuantification = metadataPathProvider.DEFAULT_WVP_QUANTIFICATION;
-        S2Config.Sentinel2ProductMission missionID = L2hUtils.getMissionID(path);
-        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification, missionID);
+        double aotQuantification = L2fPSD13Constants.DEFAULT_AOT_QUANTIFICATION;
+        double wvpQuantification = L2fPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
+        S2Config.Sentinel2ProductMission missionID = L2hfUtils.getMissionID(path);
+        List<S2BandInformation> aInfo = L2fMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification, missionID);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
@@ -153,7 +144,7 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
     @Override
     public Map<S2SpatialResolution, S2Metadata.TileGeometry> getTileGeometries() {
         Map<S2SpatialResolution, S2Metadata.TileGeometry> resolutions = new HashMap<>();
-        String[] resolutionsValues = getAttributeValues(metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION());
+        String[] resolutionsValues = getAttributeValues(L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION);
         if(resolutionsValues == null) {
             return resolutions;
         }
@@ -161,18 +152,18 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
             S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(Integer.parseInt(res));
             S2Metadata.TileGeometry tgeox = new S2Metadata.TileGeometry();
 
-            tgeox.setUpperLeftX(Double.parseDouble(getAttributeSiblingValue(metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION(), res,
-                                                                            metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_ULX(), "0")));
-            tgeox.setUpperLeftY(Double.parseDouble(getAttributeSiblingValue(metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION(), res,
-                                                                            metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_ULY(), "0")));
-            tgeox.setxDim(Double.parseDouble(getAttributeSiblingValue(metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION(), res,
-                                                                      metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_XDIM(), "0")));
-            tgeox.setyDim(Double.parseDouble(getAttributeSiblingValue(metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION(), res,
-                                                                      metadataPathProvider.getPATH_GRANULE_METADATA_GEOPOSITION_YDIM(), "0")));
-            tgeox.setNumCols(Integer.parseInt(getAttributeSiblingValue(metadataPathProvider.getPATH_GRANULE_METADATA_SIZE_RESOLUTION(), res,
-                                                                       metadataPathProvider.getPATH_GRANULE_METADATA_SIZE_NCOLS(), "0")));
-            tgeox.setNumRows(Integer.parseInt(getAttributeSiblingValue(metadataPathProvider.getPATH_GRANULE_METADATA_SIZE_RESOLUTION(), res,
-                                                                       metadataPathProvider.getPATH_GRANULE_METADATA_SIZE_NROWS(), "0")));
+            tgeox.setUpperLeftX(Double.parseDouble(getAttributeSiblingValue(L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION, res,
+                                                                            L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_ULX, "0")));
+            tgeox.setUpperLeftY(Double.parseDouble(getAttributeSiblingValue(L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION, res,
+                                                                            L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_ULY, "0")));
+            tgeox.setxDim(Double.parseDouble(getAttributeSiblingValue(L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION, res,
+                                                                      L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_XDIM, "0")));
+            tgeox.setyDim(Double.parseDouble(getAttributeSiblingValue(L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION, res,
+                                                                      L2fPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_YDIM, "0")));
+            tgeox.setNumCols(Integer.parseInt(getAttributeSiblingValue(L2fPSD13Constants.PATH_GRANULE_METADATA_SIZE_RESOLUTION, res,
+                                                                       L2fPSD13Constants.PATH_GRANULE_METADATA_SIZE_NCOLS, "0")));
+            tgeox.setNumRows(Integer.parseInt(getAttributeSiblingValue(L2fPSD13Constants.PATH_GRANULE_METADATA_SIZE_RESOLUTION, res,
+                                                                       L2fPSD13Constants.PATH_GRANULE_METADATA_SIZE_NROWS, "0")));
             resolutions.put(resolution, tgeox);
         }
 
@@ -181,28 +172,28 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
 
     @Override
     public String getTileID() {
-        return getAttributeValue(metadataPathProvider.getPATH_GRANULE_METADATA_TILE_ID(), null);
+        return getAttributeValue(L2fPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
     }
 
     @Override
     public String getHORIZONTAL_CS_CODE() {
-        return getAttributeValue(metadataPathProvider.getPATH_GRANULE_METADATA_HORIZONTAL_CS_CODE(), null);
+        return getAttributeValue(L2fPSD13Constants.PATH_GRANULE_METADATA_HORIZONTAL_CS_CODE, null);
     }
 
     @Override
     public String getHORIZONTAL_CS_NAME() {
-        return getAttributeValue(metadataPathProvider.getPATH_GRANULE_METADATA_HORIZONTAL_CS_NAME(), null);
+        return getAttributeValue(L2fPSD13Constants.PATH_GRANULE_METADATA_HORIZONTAL_CS_NAME, null);
     }
 
     @Override
     public int getAnglesResolution() {
-        return Integer.parseInt(getAttributeValue(metadataPathProvider.getPATH_GRANULE_METADATA_ANGLE_RESOLUTION(), String.valueOf(metadataPathProvider.DEFAULT_ANGLES_RESOLUTION)));
+        return Integer.parseInt(getAttributeValue(L2fPSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, String.valueOf(L2fPSD13Constants.DEFAULT_ANGLES_RESOLUTION)));
     }
 
     @Override
     public S2Metadata.AnglesGrid getSunGrid() {
-        return S2Metadata.wrapAngles(getAttributeValues(metadataPathProvider.getPATH_GRANULE_METADATA_SUN_ZENITH_ANGLES()),
-                                     getAttributeValues(metadataPathProvider.getPATH_GRANULE_METADATA_SUN_AZIMUTH_ANGLES()));
+        return S2Metadata.wrapAngles(getAttributeValues(L2fPSD13Constants.PATH_GRANULE_METADATA_SUN_ZENITH_ANGLES),
+                                     getAttributeValues(L2fPSD13Constants.PATH_GRANULE_METADATA_SUN_AZIMUTH_ANGLES));
     }
 
     @Override
@@ -222,7 +213,7 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
     public S2Metadata.MaskFilename[] getMasks(VirtualPath path) {
         S2Metadata.MaskFilename[] maskFileNamesArray;
         List<S2Metadata.MaskFilename> aMaskList = new ArrayList<>();
-        String[] maskFilenames = getAttributeValues(metadataPathProvider.getPATH_GRANULE_METADATA_MASK_FILENAME());
+        String[] maskFilenames = getAttributeValues(L2fPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME);
         if(maskFilenames == null) {
             return null;
         }
@@ -236,11 +227,11 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
             VirtualPath QIData = path.resolveSibling("QI_DATA");
             VirtualPath GmlData = QIData.resolve(filenameProcessed);
 
-            aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(metadataPathProvider.getPATH_GRANULE_METADATA_MASK_FILENAME(), maskFilename,
-                                                                               metadataPathProvider.getPATH_GRANULE_METADATA_MASK_BAND(), null),
-                                                      getAttributeSiblingValue(metadataPathProvider.getPATH_GRANULE_METADATA_MASK_FILENAME(), maskFilename,
-                                                                               metadataPathProvider.getPATH_GRANULE_METADATA_MASK_TYPE(), null),
-                                                      GmlData));
+            aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(L2fPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
+                                                                                L2fPSD13Constants.PATH_GRANULE_METADATA_MASK_BAND, null),
+                                                       getAttributeSiblingValue(L2fPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
+                                                                                L2fPSD13Constants.PATH_GRANULE_METADATA_MASK_TYPE, null),
+                                                       GmlData));
         }
         maskFileNamesArray = aMaskList.toArray(new S2Metadata.MaskFilename[aMaskList.size()]);
         return maskFileNamesArray;
@@ -263,12 +254,11 @@ public class L2hGranuleMetadataGenericPSD extends GenericXmlMetadata implements 
     }
 
     private void updateName() {
-        String tileId = getAttributeValue(metadataPathProvider.getPATH_GRANULE_METADATA_TILE_ID(), null);
+        String tileId = getAttributeValue(L2fPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
         if(tileId == null || tileId.length()<56) {
-            setName("Level-2HF_Tile_ID");
+            setName("Level-2F_Tile_ID");
             return;
         }
-        setName("Level-2HF_Tile_" + tileId.substring(50, 55));
+        setName("Level-2F_Tile_" + tileId.substring(50, 55));
     }
 }
-

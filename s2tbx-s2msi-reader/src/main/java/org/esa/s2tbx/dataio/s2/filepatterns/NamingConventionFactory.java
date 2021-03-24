@@ -85,14 +85,29 @@ public class NamingConventionFactory {
     public static String getSpectralBandImageTemplate_L2h(String format, String bandFileId, boolean isInNativeSubFolder) {
         if (format.equals("SAFE")) {
             if(isInNativeSubFolder)
-                return SAFENamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2HF_PSD14.replace("{{BANDFILEID}}", bandFileId);
+                return SAFENamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
             else
-                return SAFENamingConvention.SPECTRAL_BAND_TEMPLATE_L2HF_PSD14.replace("{{BANDFILEID}}", bandFileId);
+                return SAFENamingConvention.SPECTRAL_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
         } else if (format.equals("SAFE_COMPACT")) {
             if(isInNativeSubFolder)
-                return SAFECOMPACTNamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2HF_PSD14.replace("{{BANDFILEID}}", bandFileId);
+                return SAFECOMPACTNamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
             else
                 return SAFECOMPACTNamingConvention.SPECTRAL_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
+        }
+        return null;
+    }
+
+    public static String getSpectralBandImageTemplate_L2f(String format, String bandFileId, boolean isInNativeSubFolder) {
+        if (format.equals("SAFE")) {
+            if(isInNativeSubFolder)
+                return SAFENamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2F_PSD14.replace("{{BANDFILEID}}", bandFileId);
+            else
+                return SAFENamingConvention.SPECTRAL_BAND_TEMPLATE_L2F_PSD14.replace("{{BANDFILEID}}", bandFileId);
+        } else if (format.equals("SAFE_COMPACT")) {
+            if(isInNativeSubFolder)
+                return SAFECOMPACTNamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2F_PSD14.replace("{{BANDFILEID}}", bandFileId);
+            else
+                return SAFECOMPACTNamingConvention.SPECTRAL_BAND_TEMPLATE_L2F_PSD14.replace("{{BANDFILEID}}", bandFileId);
         }
         return null;
     }

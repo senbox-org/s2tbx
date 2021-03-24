@@ -15,7 +15,7 @@
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.s2tbx.dataio.s2.l2h.metadata;
+package org.esa.s2tbx.dataio.s2.l2hf.l2h.metadata;
 
 import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.s2.VirtualPath;

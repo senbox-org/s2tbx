@@ -15,10 +15,10 @@
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.s2tbx.dataio.s2.l2h;
+package org.esa.s2tbx.dataio.s2.l2hf.l2f;
 
 import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.s2.l2h.metadata.S2L2hProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l2hf.l2f.metadata.S2L2fProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -38,25 +38,24 @@ import java.io.IOException;
  * collect other tile/band images and create a mosaic on the fly.
  * </p>
  *
- * @author Norman Fomferra
- * @author Oscar Picas-Puig
+ * @author Florian Douziech
  */
-public class Sentinel2L2HProductReader extends Sentinel2OrthoProductReader {
+public class Sentinel2L2FProductReader extends Sentinel2OrthoProductReader {
 
-    static final String L2H_CACHE_DIR = "l2h-reader";
+    static final String L2F_CACHE_DIR = "l2f-reader";
 
-    public Sentinel2L2HProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
+    public Sentinel2L2FProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
         super(readerPlugIn, epsgCode);
     }
 
     @Override
-    protected S2L2hProductMetadataReader buildMetadataReader(VirtualPath virtualPath) throws IOException {
-        return new S2L2hProductMetadataReader(virtualPath, this.epsgCode);
+    protected S2L2fProductMetadataReader buildMetadataReader(VirtualPath virtualPath) throws IOException {
+        return new S2L2fProductMetadataReader(virtualPath, this.epsgCode);
     }
 
     @Override
     protected String getReaderCacheDir() {
-        return L2H_CACHE_DIR;
+        return L2F_CACHE_DIR;
     }
 
     @Override

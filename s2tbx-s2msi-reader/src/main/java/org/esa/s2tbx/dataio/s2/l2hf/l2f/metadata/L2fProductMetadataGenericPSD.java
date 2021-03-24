@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l2h.metadata;
+package org.esa.s2tbx.dataio.s2.l2hf.l2f.metadata;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
@@ -11,7 +11,7 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.l2h.L2hUtils;
+import org.esa.s2tbx.dataio.s2.l2hf.L2hfUtils;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -30,11 +30,11 @@ import java.util.Map;
  * Created by obarrile on 04/10/2016.
  */
 
-public class L2hProductMetadataGenericPSD extends GenericXmlMetadata implements IL2hProductMetadata {
+public class L2fProductMetadataGenericPSD extends GenericXmlMetadata implements IL2fProductMetadata {
 
-    private static class L2hProductMetadataGenericPSDParser extends XmlMetadataParser<L2hProductMetadataGenericPSD> {
+    private static class L2fProductMetadataGenericPSDParser extends XmlMetadataParser<L2fProductMetadataGenericPSD> {
 
-        public L2hProductMetadataGenericPSDParser(Class metadataFileClass, IL2hMetadataPathsProvider metadataPathProvider) {
+        public L2fProductMetadataGenericPSDParser(Class metadataFileClass, IL2fMetadataPathsProvider metadataPathProvider) {
             super(metadataFileClass);
             setSchemaLocations(metadataPathProvider.getProductSchemaLocations());
             setSchemaBasePath(metadataPathProvider.getProductSchemaBasePath());
@@ -48,16 +48,16 @@ public class L2hProductMetadataGenericPSD extends GenericXmlMetadata implements 
 
 
 
-    public static L2hProductMetadataGenericPSD create(VirtualPath path, IL2hMetadataPathsProvider metadataPathProvider) throws IOException, ParserConfigurationException, SAXException {
+    public static L2fProductMetadataGenericPSD create(VirtualPath path, IL2fMetadataPathsProvider metadataPathProvider) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
-        L2hProductMetadataGenericPSD result = null;
+        L2fProductMetadataGenericPSD result = null;
         InputStream stream = null;
         try {
             if (path.exists()) {
                 stream = path.getInputStream();
-                L2hProductMetadataGenericPSDParser parser = new L2hProductMetadataGenericPSDParser(L2hProductMetadataGenericPSD.class, metadataPathProvider);
+                L2fProductMetadataGenericPSDParser parser = new L2fProductMetadataGenericPSDParser(L2fProductMetadataGenericPSD.class, metadataPathProvider);
                 result = parser.parse(stream);
-                result.setName("Level-2H_User_Product");
+                result.setName("Level-2F_User_Product");
                 result.setMetadataPathsProvider(metadataPathProvider);
             }
         } finally {
@@ -66,16 +66,16 @@ public class L2hProductMetadataGenericPSD extends GenericXmlMetadata implements 
         return result;
     }
 
-    private IL2hMetadataPathsProvider metadataPathProvider = null;
+    private IL2fMetadataPathsProvider metadataPathProvider = null;
 
-    private void setMetadataPathsProvider(IL2hMetadataPathsProvider metadataPathProvider) {
+    private void setMetadataPathsProvider(IL2fMetadataPathsProvider metadataPathProvider) {
         this.metadataPathProvider = metadataPathProvider;
     }
 
-    public L2hProductMetadataGenericPSD(String name) {
+    public L2fProductMetadataGenericPSD(String name) {
         super(name);;
     }
-    public L2hProductMetadataGenericPSD(String name, IL2hMetadataPathsProvider metadataPathProvider) {
+    public L2fProductMetadataGenericPSD(String name, IL2fMetadataPathsProvider metadataPathProvider) {
         super(name);
         setMetadataPathsProvider(metadataPathProvider);
     }
@@ -112,29 +112,29 @@ public class L2hProductMetadataGenericPSD extends GenericXmlMetadata implements 
         characteristics.setProductStartTime(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PRODUCT_START_TIME(), "Unknown"));
         characteristics.setProductStopTime(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PRODUCT_STOP_TIME(), "Unknown"));
 
-        characteristics.setProcessingLevel(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PROCESSING_LEVEL(), "Level-2H"));
+        characteristics.setProcessingLevel(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PROCESSING_LEVEL(), "Level-2F"));
         characteristics.setMetaDataLevel(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_METADATA_LEVEL(), "Standard"));
 
-        double boaQuantification = Double.valueOf(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_L2H_BOA_QUANTIFICATION_VALUE(), String.valueOf(metadataPathProvider.DEFAULT_BOA_QUANTIFICATION)));
+        double boaQuantification = Double.valueOf(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_L2F_BOA_QUANTIFICATION_VALUE(), String.valueOf(metadataPathProvider.DEFAULT_BOA_QUANTIFICATION)));
         if(boaQuantification == 0d) {
             logger.warning("Invalid BOA quantification value, the default value will be used.");
             boaQuantification = metadataPathProvider.DEFAULT_BOA_QUANTIFICATION;
         }
         characteristics.setQuantificationValue(boaQuantification);
 
-        double aotQuantification = Double.valueOf(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_L2H_AOT_QUANTIFICATION_VALUE(), String.valueOf(metadataPathProvider.DEFAULT_AOT_QUANTIFICATION)));
+        double aotQuantification = Double.valueOf(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_L2F_AOT_QUANTIFICATION_VALUE(), String.valueOf(metadataPathProvider.DEFAULT_AOT_QUANTIFICATION)));
         if(aotQuantification == 0d) {
             logger.warning("Invalid AOT quantification value, the default value will be used.");
             aotQuantification = metadataPathProvider.DEFAULT_AOT_QUANTIFICATION;
         }
-        double wvpQuantification = Double.valueOf(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_L2H_WVP_QUANTIFICATION_VALUE(), String.valueOf(metadataPathProvider.DEFAULT_WVP_QUANTIFICATION)));
+        double wvpQuantification = Double.valueOf(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_L2F_WVP_QUANTIFICATION_VALUE(), String.valueOf(metadataPathProvider.DEFAULT_WVP_QUANTIFICATION)));
         if(wvpQuantification == 0d) {
             logger.warning("Invalid WVP quantification value, the default value will be used.");
             wvpQuantification = metadataPathProvider.DEFAULT_WVP_QUANTIFICATION;
         }
 
-        S2Config.Sentinel2ProductMission missionID = L2hUtils.getMissionID(path);
-        List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification,missionID);
+        S2Config.Sentinel2ProductMission missionID = L2hfUtils.getMissionID(path);
+        List<S2BandInformation> aInfo = L2fMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification,missionID);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 

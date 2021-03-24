@@ -1,18 +1,18 @@
-package org.esa.s2tbx.dataio.s2.l2h.metadata;
+package org.esa.s2tbx.dataio.s2.l2hf.l2h.metadata;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.s2.l2h.L2hUtils;
+import org.esa.s2tbx.dataio.s2.l2hf.L2hfUtils;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.l2h.L2hPSD13Constants;
+import org.esa.s2tbx.dataio.s2.l2hf.l2h.L2hPSD13Constants;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -123,7 +123,7 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
             logger.warning("Invalid WVP quantification value, the default value will be used.");
             wvpQuantification = L2hPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
         }
-        S2Config.Sentinel2ProductMission missionID = L2hUtils.getMissionID(path);
+        S2Config.Sentinel2ProductMission missionID = L2hfUtils.getMissionID(path);
         List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification, missionID);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));

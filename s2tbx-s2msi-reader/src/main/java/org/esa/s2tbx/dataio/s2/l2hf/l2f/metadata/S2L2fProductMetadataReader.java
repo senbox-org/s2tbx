@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l2h.metadata;
+package org.esa.s2tbx.dataio.s2.l2hf.l2f.metadata;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -17,16 +17,16 @@ import java.util.stream.Stream;
 /**
  * Created by jcoravu on 10/1/2020.
  */
-public class S2L2hProductMetadataReader extends AbstractS2OrthoMetadataReader {
+public class S2L2fProductMetadataReader extends AbstractS2OrthoMetadataReader {
 
-    public S2L2hProductMetadataReader(VirtualPath virtualPath, String epsgCode) throws IOException {
+    public S2L2fProductMetadataReader(VirtualPath virtualPath, String epsgCode) throws IOException {
         super(virtualPath, epsgCode);
     }
 
     @Override
     protected S2OrthoMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
         try {
-            return L2hMetadata.parseHeader(path, granuleName, config, epsg, this.namingConvention.getResolution(), isAGranule, this.namingConvention);
+            return L2fMetadata.parseHeader(path, granuleName, config, epsg, this.namingConvention.getResolution(), isAGranule, this.namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse metadata field '" + path.getFileName().toString() + "'.", e);
         }
