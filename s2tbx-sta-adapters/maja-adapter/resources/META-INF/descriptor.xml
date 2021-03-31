@@ -1,0 +1,205 @@
+<operator>
+  <name>org.esa.s2tbx.maja</name>
+  <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
+  <alias>Maja</alias>
+  <label>maja</label>
+  <version>1.0.0</version>
+  <description>Tool adapter for Maja using startmaja command line</description>
+  <authors>Florian Douziech</authors>
+  <copyright></copyright>
+  <internal>false</internal>
+  <autoWriteSuppressed>false</autoWriteSuppressed>
+  <menuLocation>Menu/Optical/Thematic Land Processing</menuLocation>
+  <preprocessTool>false</preprocessTool>
+  <writeForProcessing>false</writeForProcessing>
+  <mainToolFileLocation>$MAJA_BIN</mainToolFileLocation>
+  <workingDir>/home/florian/maja/workspace</workingDir>
+  <template type="file">
+    <file>Maja-template.vm</file>
+  </template>
+  <progressPattern></progressPattern>
+  <errorPattern>[\s\S]+(?:WARNI|ERROR): (.+)</errorPattern>
+  <stepPattern>workplan #(.+)</stepPattern>
+  <variables>
+    <osvariable>
+      <key>MAJA_BIN</key>
+      <value/>
+      <isShared>false</isShared>
+      <windows>$MAJA_BIN</windows>
+      <linux></linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+  </variables>
+  <parameters>
+    <parameter>
+      <name>verbose</name>
+      <dataType>java.lang.Boolean</dataType>
+      <description>Provides detailed (DEBUG) logging for Maja. Default is false</description>
+      <label></label>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>TILE</name>
+      <dataType>java.lang.String</dataType>
+      <defaultValue>30TYN</defaultValue>
+      <description>Tile number</description>
+      <label>TILENUMBER</label>
+      <valueSet/>
+      <notNull>true</notNull>
+      <notEmpty>true</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>FOLDER</name>
+      <dataType>java.io.File</dataType>
+      <defaultValue>/home/florian/maja/folder.txt</defaultValue>
+      <description>Config/Folder-definition file used for all permanent paths.</description>
+      <label>FOLDER</label>
+      <notNull>true</notNull>
+      <notEmpty>true</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>SITE</name>
+      <dataType>java.lang.String</dataType>
+      <description>Site name. If not specified,the tile number is used directly for finding the L1/L2 product directory</description>
+      <label>SITENAME</label>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>START</name>
+      <dataType>java.lang.String</dataType>
+      <description>Start date for processing in format YYYY-MM-DD. If none is provided,all products until the end date will be processed</description>
+      <label>STARTDATE</label>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>END</name>
+      <dataType>java.lang.String</dataType>
+      <description>Error: Exception on getting the value of the attribute &apos;description&apos; message: null</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>NBACKWARD</name>
+      <dataType>java.lang.Integer</dataType>
+      <description>Number of products used to run in backward mode. Default is 8.</description>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>overwrite</name>
+      <dataType>java.lang.Boolean</dataType>
+      <defaultValue>false</defaultValue>
+      <description>Overwrite existing L2 products. Default is false.</description>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>skipErrors</name>
+      <dataType>java.lang.Boolean</dataType>
+      <description>Skip erroneous products without stopping.</description>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>CAMS</name>
+      <dataType>java.lang.String</dataType>
+      <description>Number of products used to run in backward mode.Use CAMS during processing.The CAMS files have to be available in the repCAMS dir. Default is False.Default is 8.</description>
+      <label>CAMS</label>
+      <valueSet/>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>TYPEDEM</name>
+      <dataType>[Ljava.lang.String;</dataType>
+      <defaultValue></defaultValue>
+      <description>DEM type. If none is given, any will be used</description>
+      <interval></interval>
+      <valueSet>
+        <string>srtm</string>
+        <string>eudem</string>
+        <string>any</string>
+      </valueSet>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>PLATFORM</name>
+      <dataType>[Ljava.lang.String;</dataType>
+      <defaultValue></defaultValue>
+      <description> Manually override which platform to use.By default this is deducted by the available input product(s)</description>
+      <valueSet>
+        <string>sentinel2</string>
+        <string>landsat8</string>
+        <string>venus</string>
+      </valueSet>
+      <condition></condition>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>targetProductFile</name>
+      <defaultValue>/home/florian/maja/workspace/test</defaultValue>
+      <dataType>java.io.File</dataType>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+  </parameters>
+  <source>package</source>
+  <isSystem>false</isSystem>
+  <isHandlingOutputName>false</isHandlingOutputName>
+  <windowsBundle>
+    <bundleType>NONE</bundleType>
+    <bundleLocation>REMOTE</bundleLocation>
+  </windowsBundle>
+  <linuxBundle>
+    <bundleType>NONE</bundleType>
+    <bundleLocation>REMOTE</bundleLocation>
+    <templateparameter>
+      <name>arguments</name>
+      <dataType>java.io.File</dataType>
+      <valueSet/>
+      <parameterType>TemplateParameter</parameterType>
+      <parameters>
+        <parameter>
+          <name>targetLocation</name>
+          <dataType>java.io.File</dataType>
+          <defaultValue>test</defaultValue>
+          <valueSet/>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+      </parameters>
+      <template type="simple"/>
+      <outputFile>Command Template</outputFile>
+    </templateparameter>
+  </linuxBundle>
+  <macosxBundle>
+    <bundleType>NONE</bundleType>
+    <bundleLocation>REMOTE</bundleLocation>
+  </macosxBundle>
+  <sourceProductDescriptors/>
+  <targetPropertyDescriptors/>
+  <numSourceProducts>0</numSourceProducts>
+  <templateType>VELOCITY</templateType>
+</operator>
