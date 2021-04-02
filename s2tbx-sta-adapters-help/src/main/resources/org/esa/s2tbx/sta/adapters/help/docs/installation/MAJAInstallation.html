@@ -1,0 +1,92 @@
+<!--
+  ~ Copyright (C) 2021 CS SI
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+  <html>
+    <head>
+        <title>Sentinel Toolbox Help - MAJA Installation</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    
+    <body>
+    
+    <table class="header">
+        <tr class="header">
+            <td class="header">&nbsp;
+                MAJA Installation</td>
+            <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+        </tr>
+    </table>
+    
+    <h3>MAJA Overview</h3>
+    
+    <p>MAJA (for Maccs-Atcor Joint Algorithm), is an atmospheric correction and cloud screening software based on the MACCS processor, developped for CNES by CS GROUP - France, from a method and a prototype developped at CESBIO, 1 2 3.
+        In 2017, thanks to an agreement between CNES and DLR and to some funding from ESA, we started adding methods from DLR 's atmospheric correction software ATCOR into MACCS.
+        MACCS then became MAJA.
+        Currently, MAJA allows the following processing steps:
+        
+        Atmospheric correction
+        Cloud detection
+        Estimation of the Aerosol-Optical-Depth (AOT)
+        Correction of environmental- and slope-effects
+        
+        MAJA is based on a multi-temporal method - allowing to refine the outputs using the previous inputs.
+        Check the chapters 'Running MAJA' and 'Generating the documentation' in order to get more information about this. </p>
+    <p><a href="https://logiciels.cnes.fr/en/node/58?type=desc">MAJA source page</a></p>
+    
+    <p><br>
+        MAJA is only available on linux OS.
+    </p>
+    <p><br>
+        MAJA is an external tool that can be used directly in the command line,
+        but some of its application has been adapted in order to be able to execute them from SNAP.
+        For using from SNAP, it is needed to install the "Sentinel-2 Toolbox MAJA Adapters" plugin which establishes a "bridge" between SNAP and MAJA.
+        As the plugin is a "bridge", it is needed to install MAJA. The easiest way to install it is directly from SNAP.
+    </p>
+    
+    <h3>Installing MAJA</h3>
+    <ul>
+        <li>Download precompiled version of the MAJA (only version 4.x.x is supported)
+            The following instructions will set you up to get a working copy on your system.
+            <br>
+            Maja is available as a self-extracting archive via the following link:
+            <a href="https://logiciels.cnes.fr/en/node/58?type=tel">MAJA download page</a>
+        </li>
+        <li>You just have to unzip the provided package and use the following command :</li>
+        <code>./MAJA-4-x.run --target /path/to/install</code>
+    </ul>
+
+
+    <h3>MAJA installation from SNAP</h3>
+    <ul>
+        <li>Install the MAJA plugin in SNAP: Tools->Plugins</li>
+        <img src="../images/majaPlugin.jpg" border=0/>
+        <li>Check the installation in the menu</li>
+        <img src="../images/majaMenu.jpg" border=0/>
+        <li>Install MAJA from SNAP</li>
+        <ul>
+            <li>Tool->Manage External Tools</li>
+            <li>Select one of the MAJA applications and Edit</li>
+            <img src="../images/majaTool.jpg" border=0/>
+            <li>Go to Bundled binaries and click on "Download and Install Now"</li>
+            <img src="../images/majaBundle.jpg" border=0/>
+            <li>Check that it has been installed properly</li>
+            <img src="../images/majaToolInstalled.jpg" border=0/>
+        </ul>
+    </ul>
+    
+    
+    </body>
+    </html>

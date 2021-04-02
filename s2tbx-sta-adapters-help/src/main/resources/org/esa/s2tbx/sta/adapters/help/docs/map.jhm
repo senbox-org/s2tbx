@@ -7,5 +7,6 @@
 
     <mapID target="sen2corInstallation" url="installation/Sen2CorInstallation.html"/>
     <mapID target="otbInstallation" url="installation/OTBInstallation.html"/>
+    <mapID target="majaInstallation" url="installation/MAJAInstallation.html"/>
 
 </map>

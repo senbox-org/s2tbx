@@ -12,6 +12,7 @@
         </tocitem>
         <tocitem text="Optical">
             <tocitem text="Orfeo Toolbox" target="otbInstallation"/>
+            <tocitem text="MAJA" target="majaInstallation"/>
         </tocitem>
     </tocitem>
 
