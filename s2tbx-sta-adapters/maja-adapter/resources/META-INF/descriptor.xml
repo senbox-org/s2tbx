@@ -33,16 +33,6 @@
   </variables>
   <parameters>
     <parameter>
-      <name>verbose</name>
-      <dataType>java.lang.Boolean</dataType>
-      <description>Provides detailed (DEBUG) logging for Maja. Default is false</description>
-      <label></label>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <deprecated>false</deprecated>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
       <name>TILE</name>
       <dataType>java.lang.String</dataType>
       <defaultValue>30TYN</defaultValue>
@@ -101,6 +91,16 @@
       <name>NBACKWARD</name>
       <dataType>java.lang.Integer</dataType>
       <description>Number of products used to run in backward mode. Default is 8.</description>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>verbose</name>
+      <dataType>java.lang.Boolean</dataType>
+      <description>Provides detailed (DEBUG) logging for Maja. Default is false</description>
+      <label></label>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
@@ -168,7 +168,7 @@
   </parameters>
   <source>package</source>
   <isSystem>false</isSystem>
-  <isHandlingOutputName>false</isHandlingOutputName>
+  <isHandlingOutputName>true</isHandlingOutputName>
   <windowsBundle>
     <bundleType>NONE</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
