@@ -184,22 +184,22 @@ public class BiophysicalAlgo {
 
         double rawOutput = result.getOutputValue();
 
-        double tolerance = extremeCases[0][0]; // warning : tolerance is negative in our data !
+        double tolerance = extremeCases[0][0];
         double outputMin = extremeCases[0][1];
         double outputMax = extremeCases[0][2];
 
-        if (rawOutput < outputMin + tolerance) {
+        if (rawOutput < outputMin - tolerance) {
             result.setOutputTooLow(true);
         }
-        else if (outputMin + tolerance < rawOutput && rawOutput < outputMin ) {
+        else if (outputMin - tolerance < rawOutput && rawOutput < outputMin ) {
             result.setOutputValue(outputMin);
             result.setOutputThresholdedToMinOutput(true);
         }
-        else if (outputMax < rawOutput && rawOutput < outputMax - tolerance ) {
+        else if (outputMax < rawOutput && rawOutput < outputMax + tolerance ) {
             result.setOutputValue(outputMax);
             result.setOutputThresholdedToMaxOutput(true);
         }
-        else if (outputMax - tolerance < rawOutput) {
+        else if (outputMax + tolerance < rawOutput) {
             result.setOutputTooHigh(true);
         }
     }
