@@ -184,7 +184,7 @@ public class BiophysicalAlgo {
 
         double rawOutput = result.getOutputValue();
 
-        double tolerance = extremeCases[0][0];
+        double tolerance = Math.abs(extremeCases[0][0]);
         double outputMin = extremeCases[0][1];
         double outputMax = extremeCases[0][2];
 
