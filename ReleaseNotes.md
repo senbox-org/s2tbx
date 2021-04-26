@@ -1,6 +1,14 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 8.0.2
+----------------------
+### List of solved issues
+### Bug
+    * [SIITBX-444] - Missing resources Biophysical processing and update output tolerance
+### Feature
+    * [SIITBX-277] - Add maximum size option in S2TBX cache
+
 Changes in S2TBX 8.0.1
 ----------------------
 
