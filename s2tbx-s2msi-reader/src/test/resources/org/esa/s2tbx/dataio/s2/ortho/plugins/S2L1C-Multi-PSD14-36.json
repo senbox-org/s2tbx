@@ -43,7 +43,8 @@
     },
     "tiePointGrids": [
       {
-          "name": "ECMWF_total_column_water_vapour_surface",
+          "name": "total_column_water_vapour",
+          "description": "Total column water vapour at surface level provided by ECMWF",
           "offsetX": "0.5",
           "offsetY": "0.5",
           "subSamplingX": "1220.0",
@@ -72,7 +73,8 @@
             ]
         },
         {
-          "name": "ECMWF_total_column_ozone_surface",
+          "name": "total_column_ozone",
+          "description": "Total column ozone vapour at surface level provided by ECMWF",
           "offsetX": "0.5",
           "offsetY": "0.5",
           "subSamplingX": "1220.0",
@@ -101,7 +103,8 @@
           ]
         },
         {
-          "name": "ECMWF_mean_sea_level_pressure_surface",
+          "name": "mean_sea_level_pressure",
+          "description": "Mean sea level pressure at surface level provided by ECMWF",
           "offsetX": "0.5",
           "offsetY": "0.5",
           "subSamplingX": "1220.0",

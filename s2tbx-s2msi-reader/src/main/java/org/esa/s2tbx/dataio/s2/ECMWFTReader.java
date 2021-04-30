@@ -59,11 +59,11 @@ public class ECMWFTReader {
         Variable variable = ncfile.findVariable(null, name);
         String description = variable.getDescription();
         if( description.contains("@"))
-            description = description.split(" @")[0];
+            description = description.split(" @")[0]+" at surface level provided by ECMWF";
         String units = variable.getUnitsString();
         int[] shape = variable.getShape();
         float[] tiePoints = (float[])variable.read().get1DJavaArray(float.class);
-        TiePointGrid tiePointGrid = new TiePointGrid("ECMWF_"+name.toLowerCase(), shape[1],shape[2], 0.5, 0.5, 1220, 1220,tiePoints);
+        TiePointGrid tiePointGrid = new TiePointGrid(name.toLowerCase().replace("_surface",""), shape[1],shape[2], 0.5, 0.5, 1220, 1220,tiePoints);
         tiePointGrid.setUnit(units);
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
