@@ -127,7 +127,7 @@
     <parameter>
       <name>TYPEDEM</name>
       <dataType>[Ljava.lang.String;</dataType>
-      <defaultValue></defaultValue>
+      <defaultValue>any</defaultValue>
       <description>DEM type. If none is given, any will be used</description>
       <interval></interval>
       <valueSet>
@@ -135,6 +135,7 @@
         <string>eudem</string>
         <string>any</string>
       </valueSet>
+      <condition></condition>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <deprecated>false</deprecated>
@@ -143,12 +144,13 @@
     <parameter>
       <name>PLATFORM</name>
       <dataType>[Ljava.lang.String;</dataType>
-      <defaultValue></defaultValue>
+      <defaultValue>auto</defaultValue>
       <description> Manually override which platform to use.By default this is deducted by the available input product(s)</description>
       <valueSet>
         <string>sentinel2</string>
         <string>landsat8</string>
         <string>venus</string>
+        <string>auto</string>
       </valueSet>
       <condition></condition>
       <notNull>false</notNull>

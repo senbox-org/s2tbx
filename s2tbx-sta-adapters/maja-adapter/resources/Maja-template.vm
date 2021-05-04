@@ -1,7 +1,4 @@
 -y
-#if($verbose)
--v
-#end
 -t
 $TILE
 -f
@@ -17,6 +14,9 @@ $end
 #if($NBACKWARD)
 --nbackward
 $NBACKWARD
+#end
+#if($verbose)
+-v
 #end
 #if($overwrite)
 --overwrite
@@ -34,6 +34,8 @@ $TYPE_DEM
 --skip_errors
 #end
 #if($PLATFORM)
+#if($PLATFORM!="auto")
 --platform
 $PLATFORM
+#end
 #end
