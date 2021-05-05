@@ -44,7 +44,8 @@ public class CCILandCoverModelDescriptor extends AbstractLandCoverModelDescripto
     };
 
     public CCILandCoverModelDescriptor() {
-        remotePath = "https://storage.googleapis.com/cci-lc-v207/";
+        //remotePath = "https://storage.googleapis.com/cci-lc-v207/";
+        remotePath = "ftp://geo10.elie.ucl.ac.be/v207/";
         name = NAME;
         NO_DATA_VALUE = 0;
         installDir = INSTALL_DIR;
