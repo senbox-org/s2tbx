@@ -91,6 +91,10 @@ public class S2ProductNamingUtils {
             return false;
         }
 
+        if (!xmlPath.resolveSibling("AUX_DATA").exists()) {
+            return false;
+        }
+
         return true;
     }
 

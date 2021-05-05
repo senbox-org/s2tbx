@@ -23,7 +23,7 @@
     <version>9.0.0-SNAPSHOT</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
-    <url>https://github.com/senbox-org/s2tbx</url>
+    <url>https://sentinel.esa.int/web/sentinel/toolboxes/sentinel-2</url>
 
     <modules>
         <!--
@@ -326,7 +326,7 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.4</version>
+                <version>2.7</version>
             </dependency>
 
             <dependency>
@@ -496,6 +496,7 @@
                     <configuration>
                         <moduleType>normal</moduleType>
                         <licenseName>GPL 3</licenseName>
+                        <homePageUrl>https://sentinel.esa.int/web/sentinel/toolboxes/sentinel-2</homePageUrl>
                         <licenseFile>${project.basedir}/../LICENSE.html</licenseFile>
                         <cluster>${brandingToken}</cluster>
                         <brandingToken>${brandingToken}</brandingToken>
