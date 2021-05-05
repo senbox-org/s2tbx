@@ -12,30 +12,77 @@
   <menuLocation>Menu/Optical/Thematic Land Processing</menuLocation>
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
-  <mainToolFileLocation>$MAJA_BIN</mainToolFileLocation>
-  <workingDir>/home/florian/maja/workspace</workingDir>
+  <mainToolFileLocation>$MAJA_BIN_DIR/bin/$MAJA_EXEC</mainToolFileLocation>
+  <workingDir>$java.io.tmpdir</workingDir>
+  <!-- <workingDir>MAJA_WORKDIR</workingDir> -->
   <template type="file">
     <file>Maja-template.vm</file>
   </template>
   <progressPattern></progressPattern>
-  <errorPattern>[\s\S]+(?:WARNI|ERROR): (.+)</errorPattern>
+  <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
   <stepPattern>workplan #(.+)</stepPattern>
   <variables>
     <osvariable>
-      <key>MAJA_BIN</key>
+      <key>MAJA_BIN_DIR</key>
       <value/>
+      <windows></windows>
+      <linux>$HOME/.snap/auxdata/MAJA-4.2.1</linux>
+      <macosx></macosx>
+      <isTransient>true</isTransient>
       <isShared>false</isShared>
-      <windows>$MAJA_BIN</windows>
+    </osvariable>
+    <osvariable>
+      <key>MAJA_EXEC</key>
+      <value/>
+      <windows></windows>
+      <linux>startmaja</linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+      <isShared>false</isShared>
+    </osvariable>
+    <osvariable>
+      <key>USERPROFILE</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows></windows>
+      <linux>$HOME</linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <osvariable>
+      <key>HOME</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows>$USERPROFILE</windows>
       <linux></linux>
       <macosx></macosx>
       <isTransient>false</isTransient>
     </osvariable>
+    <osvariable>
+      <key>USER_HOME</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows></windows>
+      <linux>$HOME</linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <!-- <variable>
+      <key>MAJA_WORKDIR</key>
+      <value>$USER_HOME/.snap/auxdata/Maja-4.2.1/</value>
+      <isShared>false</isShared>
+    </variable> -->
+    <variable>
+      <key>java.io.tmpdir</key>
+      <value></value>
+      <isShared>false</isShared>
+    </variable>
   </variables>
   <parameters>
     <parameter>
       <name>TILE</name>
       <dataType>java.lang.String</dataType>
-      <defaultValue>30TYN</defaultValue>
+      <defaultValue>T30TYN</defaultValue>
       <description>Tile number</description>
       <label>TILENUMBER</label>
       <valueSet/>
@@ -47,7 +94,7 @@
     <parameter>
       <name>FOLDER</name>
       <dataType>java.io.File</dataType>
-      <defaultValue>/home/florian/maja/folder.txt</defaultValue>
+      <defaultValue>~/maja/folder.txt</defaultValue>
       <description>Config/Folder-definition file used for all permanent paths.</description>
       <label>FOLDER</label>
       <notNull>true</notNull>
@@ -160,7 +207,7 @@
     </parameter>
     <parameter>
       <name>targetProductFile</name>
-      <defaultValue>/home/florian/maja/workspace/test</defaultValue>
+      <defaultValue>java.io.File</defaultValue>
       <dataType>java.io.File</dataType>
       <valueSet/>
       <notNull>false</notNull>
@@ -168,7 +215,7 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
   </parameters>
-  <source>package</source>
+  <source>user</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>true</isHandlingOutputName>
   <windowsBundle>
@@ -176,25 +223,39 @@
     <bundleLocation>REMOTE</bundleLocation>
   </windowsBundle>
   <linuxBundle>
-    <bundleType>NONE</bundleType>
-    <bundleLocation>REMOTE</bundleLocation>
+    <bundleType>INSTALLER</bundleType>
+    <bundleLocation>LOCAL</bundleLocation>
+    <downloadURL>http://step.esa.int/thirdparties/maja/4.2.1/MAJA-4.2.1.run</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
+      <defaultValue>Command Template</defaultValue>
       <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
       <parameterType>TemplateParameter</parameterType>
       <parameters>
         <parameter>
           <name>targetLocation</name>
           <dataType>java.io.File</dataType>
-          <defaultValue>test</defaultValue>
+          <defaultValue>$USERPROFILE/.snap/auxdata</defaultValue>
           <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
           <parameterType>RegularParameter</parameterType>
         </parameter>
       </parameters>
-      <template type="simple"/>
+      <template type="simple">
+        <contents>--nox11
+          --target
+          $targetLocation/MAJA-4.2.1</contents>
+      </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
+    <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
+    <entryPoint>MAJA-4.2.1.run</entryPoint>
+    <updateVariable>MAJA_BIN_DIR</updateVariable>
   </linuxBundle>
   <macosxBundle>
     <bundleType>NONE</bundleType>
@@ -202,6 +263,6 @@
   </macosxBundle>
   <sourceProductDescriptors/>
   <targetPropertyDescriptors/>
-  <numSourceProducts>0</numSourceProducts>
   <templateType>VELOCITY</templateType>
+  <numSourceProducts>0</numSourceProducts>
 </operator>
