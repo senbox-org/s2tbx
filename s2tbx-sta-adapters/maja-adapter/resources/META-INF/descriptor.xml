@@ -14,12 +14,11 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$MAJA_BIN_DIR/bin/$MAJA_EXEC</mainToolFileLocation>
   <workingDir>$java.io.tmpdir</workingDir>
-  <!-- <workingDir>MAJA_WORKDIR</workingDir> -->
   <template type="file">
     <file>Maja-template.vm</file>
   </template>
   <progressPattern></progressPattern>
-  <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
+  <errorPattern>(^.*Error|^.*Exception)(.+)</errorPattern>
   <stepPattern>workplan #(.+)</stepPattern>
   <variables>
     <osvariable>
@@ -67,11 +66,6 @@
       <macosx></macosx>
       <isTransient>false</isTransient>
     </osvariable>
-    <!-- <variable>
-      <key>MAJA_WORKDIR</key>
-      <value>$USER_HOME/.snap/auxdata/Maja-4.2.1/</value>
-      <isShared>false</isShared>
-    </variable> -->
     <variable>
       <key>java.io.tmpdir</key>
       <value></value>
@@ -82,7 +76,7 @@
     <parameter>
       <name>TILE</name>
       <dataType>java.lang.String</dataType>
-      <defaultValue>T30TYN</defaultValue>
+      <defaultValue></defaultValue>
       <description>Tile number</description>
       <label>TILENUMBER</label>
       <valueSet/>
@@ -94,7 +88,7 @@
     <parameter>
       <name>FOLDER</name>
       <dataType>java.io.File</dataType>
-      <defaultValue>~/maja/folder.txt</defaultValue>
+      <defaultValue></defaultValue>
       <description>Config/Folder-definition file used for all permanent paths.</description>
       <label>FOLDER</label>
       <notNull>true</notNull>
