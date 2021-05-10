@@ -201,13 +201,38 @@
     </parameter>
     <parameter>
       <name>targetProductFile</name>
-      <defaultValue>java.io.File</defaultValue>
       <dataType>java.io.File</dataType>
+      <description>Output file</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
+    <templateparameter>
+      <name>postExecuteTemplate</name>
+      <dataType>java.io.File</dataType>
+      <defaultValue>Maja-post-template.vm</defaultValue>
+      <description></description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>TemplateAfterExecution</parameterType>
+      <parameters>
+        <parameter>
+          <name>targetFolder</name>
+          <defaultValue></defaultValue>
+          <description>The folder of the L2A data product</description>
+          <dataType>java.io.File</dataType>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+      </parameters>
+      <template type="file">
+        <file>Maja-post-template.vm</file>
+      </template>
+    </templateparameter>
   </parameters>
   <source>user</source>
   <isSystem>false</isSystem>
