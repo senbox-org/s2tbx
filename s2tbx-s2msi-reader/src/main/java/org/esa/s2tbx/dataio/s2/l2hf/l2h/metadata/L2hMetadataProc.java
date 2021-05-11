@@ -57,12 +57,12 @@ public class L2hMetadataProc extends S2OrthoMetadataProc {
         List<S2BandInformation> aInfo = new ArrayList<>();
         if(missionId == S2Config.Sentinel2ProductMission.LS8){
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R30M, boaQuantification, false));
-            aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R10M, boaQuantification, false));
-            aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R10M, boaQuantification, false));
-            aInfo.add(makeSpectralInformation(format, S2BandConstants.B4, S2SpatialResolution.R10M, boaQuantification, false));
-            aInfo.add(makeSpectralInformation(format, S2BandConstants.B8A, S2SpatialResolution.R20M, boaQuantification, false));
-            aInfo.add(makeSpectralInformation(format, S2BandConstants.B11, S2SpatialResolution.R20M, boaQuantification, false));
-            aInfo.add(makeSpectralInformation(format, S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification, false));
+            aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R30M, boaQuantification, false));
+            aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R30M, boaQuantification, false));
+            aInfo.add(makeSpectralInformation(format, S2BandConstants.B4, S2SpatialResolution.R30M, boaQuantification, false));
+            aInfo.add(makeSpectralInformation(format, S2BandConstants.B8A, S2SpatialResolution.R30M, boaQuantification, false));
+            aInfo.add(makeSpectralInformation(format, S2BandConstants.B11, S2SpatialResolution.R30M, boaQuantification, false));
+            aInfo.add(makeSpectralInformation(format, S2BandConstants.B12, S2SpatialResolution.R30M, boaQuantification, false));
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B8, S2SpatialResolution.R15M, boaQuantification, true));
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B10, S2SpatialResolution.R30M, boaQuantification, true));
             // aInfo.add(makeSpectralInformation(format, S2BandConstants.B11, S2SpatialResolution.R30M, boaQuantification, true));
