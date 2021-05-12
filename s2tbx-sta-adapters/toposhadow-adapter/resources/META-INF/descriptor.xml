@@ -128,8 +128,8 @@
       <name>outputFile</name>
       <dataType>java.io.File</dataType>
       <valueSet/>
-      <notNull>true</notNull>
-      <notEmpty>true</notEmpty>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
