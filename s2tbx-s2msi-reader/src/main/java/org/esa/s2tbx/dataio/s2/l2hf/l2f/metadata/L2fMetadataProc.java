@@ -65,7 +65,6 @@ public class L2fMetadataProc extends S2OrthoMetadataProc {
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification, false));
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B8, S2SpatialResolution.R15M, boaQuantification, true));
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B10, S2SpatialResolution.R30M, boaQuantification, true));
-            // aInfo.add(makeSpectralInformation(format, S2BandConstants.B11, S2SpatialResolution.R30M, boaQuantification, true));
         } else {
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification, false));
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R10M, boaQuantification, false));

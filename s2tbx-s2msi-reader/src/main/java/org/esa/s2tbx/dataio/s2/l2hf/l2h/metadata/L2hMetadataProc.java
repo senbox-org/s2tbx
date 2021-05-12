@@ -79,55 +79,7 @@ public class L2hMetadataProc extends S2OrthoMetadataProc {
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B7, S2SpatialResolution.R20M, boaQuantification, true));
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B8, S2SpatialResolution.R10M, boaQuantification, true));
         }
-        // boolean isInNativeSubFolder = false;
-        // switch (resolution) {
-        //     case R10M:
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R10M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R10M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B4, S2SpatialResolution.R10M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B5, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B6, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B7, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B8, S2SpatialResolution.R10M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B8A, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B9, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B11, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         break;
-        //     case R20M:
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B4, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B5, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B6, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B7, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         //aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B8A, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B9, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B11, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification, isInNativeSubFolder));
 
-        //         break;
-        //     case R60M:
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B4, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B5, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B6, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B7, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         //aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B8A, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B9, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B11, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         aInfo.add(makeSpectralInformation(format, S2BandConstants.B12, S2SpatialResolution.R60M, boaQuantification, isInNativeSubFolder));
-        //         break;
-        // }
         return aInfo;
     }
 }
