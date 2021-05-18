@@ -24,10 +24,12 @@ import org.esa.snap.engine_utilities.util.Settings;
 import org.esa.snap.landcover.dataio.AbstractLandCoverModelDescriptor;
 import org.esa.snap.landcover.dataio.FileLandCoverModel;
 import org.esa.snap.landcover.dataio.LandCoverModel;
+import org.esa.snap.runtime.Config;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.prefs.Preferences;
 
 /**
  * Model Descriptor for CCI LandCover 2015
@@ -43,9 +45,14 @@ public class CCILandCoverModelDescriptor extends AbstractLandCoverModelDescripto
             new File(INSTALL_DIR, "ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.zip")
     };
 
+    public final static String CCI_LAND_COVER_REMOTE_PATH = "cci.land.cover.remotePath";
+
     public CCILandCoverModelDescriptor() {
+        // SIITBX-448: CCI LandCover Data - location changed
         //remotePath = "https://storage.googleapis.com/cci-lc-v207/";
-        remotePath = "ftp://geo10.elie.ucl.ac.be/v207/";
+        final Preferences preferences = Config.instance("s2tbx").load().preferences();
+        remotePath = preferences.get(CCI_LAND_COVER_REMOTE_PATH, "ftp://geo10.elie.ucl.ac.be/v207/");
+
         name = NAME;
         NO_DATA_VALUE = 0;
         installDir = INSTALL_DIR;
