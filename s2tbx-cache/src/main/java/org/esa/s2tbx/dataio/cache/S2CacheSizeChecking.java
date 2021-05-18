@@ -13,6 +13,8 @@ public class S2CacheSizeChecking {
     private static final Logger logger = Logger.getLogger(S2CacheSizeChecking.class.getName());
     private boolean checkingEnable;
     private double limitSizeCache;
+    private ThreadExecutor executor;
+
     private S2CacheSizeChecking(){
         //nothing to init
     }
@@ -20,6 +22,7 @@ public class S2CacheSizeChecking {
     public static S2CacheSizeChecking getInstance() {
         return INSTANCE;
     }
+
     /**
      * set the parameters of the cache size checking
      *
@@ -37,7 +40,7 @@ public class S2CacheSizeChecking {
      * @param period The period between two size checking in minute
      */
     public synchronized void launchCacheSizeChecking(double releasedSpacePurcent, int period) {
-        final ThreadExecutor executor = new ThreadExecutor();
+        executor = new ThreadExecutor();
             try {
                 ThreadRunnable runnable = new ThreadRunnable() {
                     @Override
@@ -63,7 +66,16 @@ public class S2CacheSizeChecking {
                 };
                 executor.execute(runnable);
             } catch (Exception ex) {
-                logger.log(Level.SEVERE, "Failed to initialize S2Cache options."+ex.getMessage());
+                logger.log(Level.SEVERE, "Failed to initialize S2Cache options.",ex);
             }
     }
+
+    public void complete() {
+        try {
+            executor.complete();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to close the sizeCacheChecking: ",e);
+        }
+    }
+
 }

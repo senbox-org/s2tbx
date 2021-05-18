@@ -66,6 +66,8 @@ public class S2CacheActivator implements Activator {
         if (cachePolicy.equals(S2CacheUtils.SENTINEL_2_CACHE_OPTION_EACH_START_UP)) {
             S2CacheUtils.deleteCache();
         }
+        S2CacheSizeChecking sizeCacheCheckingLoop = S2CacheSizeChecking.getInstance();
+        sizeCacheCheckingLoop.complete();
     }
 
 }
