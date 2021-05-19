@@ -5,7 +5,7 @@
   <alias>LacS2</alias>
   <label>LacS2</label>
   <version>1.1.0</version>
-  <description>LAC S2 Processor</description>
+  <description>LAC Sentinel2 Processor</description>
   <authors/>
   <copyright/>
   <internal>false</internal>
@@ -14,13 +14,13 @@
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$PYTHON_BIN</mainToolFileLocation>
-  <workingDir>$LAC_FOLDER</workingDir>
+  <workingDir>$java.io.tmpdir</workingDir>
   <templateType>VELOCITY</templateType>
   <template type="file">
     <file>LacS2-template.vm</file>
   </template>
-  <progressPattern>Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
-  <errorPattern>[\s\S]+(?:UserWarning|Error): (.+)</errorPattern>
+  <progressPattern>.*:Progress\[%\]: (\d+(\.\d+)?)</progressPattern>
+  <errorPattern>(^ERROR:(.+)|[\s\S]+(?:UserWarning|Error): (.+))</errorPattern>
   <variables>
     <osvariable>
       <key>HOME</key>
@@ -36,12 +36,17 @@
       <value>$HOME/.snap/auxdata/s2tbx/s24scilws/lacs2</value>
       <isShared>false</isShared>
     </variable>
+    <variable>
+      <key>java.io.tmpdir</key>
+      <value></value>
+      <isShared>false</isShared>
+    </variable>
     <osvariable>
       <key>PYTHON_BIN</key>
       <value>python</value>
       <isShared>false</isShared>
       <windows>python</windows>
-      <linux>python</linux>
+      <linux>python3</linux>
       <macosx>python</macosx>
       <isTransient>false</isTransient>
     </osvariable>
