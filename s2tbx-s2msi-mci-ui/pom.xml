@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.esa.s2tbx</groupId>
         <artifactId>s2tbx</artifactId>
-        <version>8.0.3-SNAPSHOT</version>
+        <version>8.0.3</version>
     </parent>
 
     <artifactId>s2tbx-s2msi-mci-ui</artifactId>
