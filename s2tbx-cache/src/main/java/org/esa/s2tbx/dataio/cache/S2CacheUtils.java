@@ -40,10 +40,10 @@ public class S2CacheUtils {
         }
     }
 
-    public static void deleteFile(final File file) {
+    public static void deleteFiles(final File file) {
         if (file.isDirectory()) {
             for (String aChild : file.list()) {
-                deleteFile(new File(file, aChild));
+                deleteFiles(new File(file, aChild));
             }
         }
         try {
@@ -58,13 +58,13 @@ public class S2CacheUtils {
         for (int i = 0; i < files.size(); i++) {
             File file = files.get(i);
             if (file == null) continue;
-            deleteFile(file);
+            deleteFiles(file);
         }
     }
 
     public static void deleteCache() {
         try {
-            deleteFile(getSentinel2CacheFolder());
+            deleteFiles(getSentinel2CacheFolder());
         } catch (Exception e) {
             return;
         }
@@ -100,7 +100,7 @@ public class S2CacheUtils {
      * @param file
      * @return OL if it is not possible to compute, in other case size in bytes
      */
-    public static long getFileSize(File file) {
+    public static long getFilesSize(File file) {
         if (file == null) return 0L;
         if (file.isFile()) return file.length();
         if (!file.isDirectory()) return 0L;
@@ -114,14 +114,14 @@ public class S2CacheUtils {
             if (subFile.isFile())
                 size += subFile.length();
             else
-                size += getFileSize(subFile);
+                size += getFilesSize(subFile);
         }
 
         return size;
     }
 
     public static long getCacheSize() {
-        return getFileSize(getSentinel2CacheFolder());
+        return getFilesSize(getSentinel2CacheFolder());
     }
 
     /**
@@ -153,7 +153,7 @@ public class S2CacheUtils {
                 if (products == null) continue;
                 for (File product : products) {
                     if (product == null) continue;
-                    aux = getFileSize(product);
+                    aux = getFilesSize(product);
                     if (aux > size) {
                         size = aux;
                         largestFile = product;
@@ -194,7 +194,7 @@ public class S2CacheUtils {
                 if (products == null) continue;
                 for (File product : products) {
                     if (product == null) continue;
-                    if (getFileSize(product) > bytes) {
+                    if (getFilesSize(product) > bytes) {
                         largestFile.add(product);
                     }
                 }
