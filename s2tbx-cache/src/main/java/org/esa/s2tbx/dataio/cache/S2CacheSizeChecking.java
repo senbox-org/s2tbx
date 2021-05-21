@@ -50,7 +50,7 @@ public class S2CacheSizeChecking {
                     double circularLimitSizeCache = limitSizeCache * (1 - releasedSpacePercent);
                     if (currentCacheSize > limitSizeCache) {
                         while (currentCacheSize > circularLimitSizeCache) {
-                            File oldestFile = S2CacheUtils.getOldestFolder();
+                            File oldestFolder = S2CacheUtils.getOldestFolder();
                             if (oldestFile != null) {
                                 S2CacheUtils.deleteFile(oldestFile);
                             }
