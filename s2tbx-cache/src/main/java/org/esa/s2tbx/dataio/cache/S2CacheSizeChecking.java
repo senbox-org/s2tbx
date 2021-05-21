@@ -44,20 +44,18 @@ public class S2CacheSizeChecking {
      */
     public synchronized void launchCacheSizeChecking(double releasedSpacePercent, int period) {
         Runnable runnable = () -> {
-                if (checkingEnable) {  // would be better if the executor is stopped when the parameter changes
-                    double currentCacheSize = S2CacheUtils.getCacheSize() * BYTE_TO_GIGA_BYTE;
-                    //compute the limit of cache size should be keep after the checking
-                    double circularLimitSizeCache = limitSizeCache * (1 - releasedSpacePercent);
-                    if (currentCacheSize > limitSizeCache) {
-                        while (currentCacheSize > circularLimitSizeCache) {
-                            File oldestFolder = S2CacheUtils.getOldestFolder();
-                            if (oldestFile != null) {
-                                S2CacheUtils.deleteFile(oldestFile);
-                            }
-                            currentCacheSize = S2CacheUtils.getCacheSize() * BYTE_TO_GIGA_BYTE;
-                        }
+            if (checkingEnable) {  // would be better if the executor is stopped when the parameter changes
+                double currentCacheSize = S2CacheUtils.getCacheSize() * BYTE_TO_GIGA_BYTE;
+                //compute the limit of cache size should be keep after the checking
+                double circularLimitSizeCache = limitSizeCache * (1 - releasedSpacePercent);
+                while (currentCacheSize > circularLimitSizeCache) {
+                    File oldestFolder = S2CacheUtils.getOldestFolder();
+                    if (oldestFolder != null) {
+                        S2CacheUtils.deleteFile(oldestFolder);
                     }
+                    currentCacheSize = S2CacheUtils.getCacheSize() * BYTE_TO_GIGA_BYTE;
                 }
+            }
         };
         try {
             executor.scheduleAtFixedRate(runnable, 0, period, TimeUnit.MINUTES);
@@ -70,7 +68,7 @@ public class S2CacheSizeChecking {
     public void complete() {
         try {
             executor.shutdown();
-            if(!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
                 logger.log(Level.SEVERE, "Failed to stop observer of S2 Data Cache.");
             }
         } catch (Exception e) {
