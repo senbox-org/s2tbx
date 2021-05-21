@@ -31,7 +31,8 @@ public class S2CacheSizeChecking {
      */
     public synchronized void setParameters(boolean checkingEnable, double limitSizeCache) {
         this.checkingEnable = checkingEnable;
-        this.limitSizeCache = limitSizeCache;
+        this.limitSizeCache = limitSizeCache * BYTE_TO_GIGA_BYTE;
+        
     }
 
     /**
@@ -45,15 +46,18 @@ public class S2CacheSizeChecking {
     public synchronized void launchCacheSizeChecking(double releasedSpacePercent, int period) {
         Runnable runnable = () -> {
             if (checkingEnable) {  // would be better if the executor is stopped when the parameter changes
-                double currentCacheSize = S2CacheUtils.getCacheSize() * BYTE_TO_GIGA_BYTE;
+                double currentCacheSize = S2CacheUtils.getCacheSize();
                 //compute the limit of cache size should be keep after the checking
                 double circularLimitSizeCache = limitSizeCache * (1 - releasedSpacePercent);
                 while (currentCacheSize > circularLimitSizeCache) {
                     File oldestFolder = S2CacheUtils.getOldestFolder();
+                    long folderSize = S2CacheUtils.getFilesSize(oldestFolder);
                     if (oldestFolder != null) {
-                        S2CacheUtils.deleteFile(oldestFolder);
+                        S2CacheUtils.deleteFiles(oldestFolder); // nb. this might fail
                     }
-                    currentCacheSize = S2CacheUtils.getCacheSize() * BYTE_TO_GIGA_BYTE;
+
+                    currentCacheSize = Math.max(currentCacheSize - folderSize, 0) ;
+
                 }
             }
         };
