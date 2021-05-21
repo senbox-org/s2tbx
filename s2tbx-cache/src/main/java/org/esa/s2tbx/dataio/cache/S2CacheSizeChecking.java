@@ -13,9 +13,9 @@ public class S2CacheSizeChecking {
     public static final S2CacheSizeChecking INSTANCE = new S2CacheSizeChecking();
     private static final Logger logger = Logger.getLogger(S2CacheSizeChecking.class.getName());
     private boolean checkingEnable;
-    private double limitSizeCache;
+    private long limitSizeCache;
     private final ScheduledExecutorService executor;
-    private static final double BYTE_TO_GIGA_BYTE = 0.000000001;
+    private static final double GB_TO_BYTES = 100000000;
 
     private S2CacheSizeChecking() {
         executor = Executors.newSingleThreadScheduledExecutor();
@@ -31,8 +31,7 @@ public class S2CacheSizeChecking {
      */
     public synchronized void setParameters(boolean checkingEnable, double limitSizeCache) {
         this.checkingEnable = checkingEnable;
-        this.limitSizeCache = limitSizeCache * BYTE_TO_GIGA_BYTE;
-        
+        this.limitSizeCache = (long)(limitSizeCache * GB_TO_BYTES);
     }
 
     /**
@@ -46,18 +45,16 @@ public class S2CacheSizeChecking {
     public synchronized void launchCacheSizeChecking(double releasedSpacePercent, int period) {
         Runnable runnable = () -> {
             if (checkingEnable) {  // would be better if the executor is stopped when the parameter changes
-                double currentCacheSize = S2CacheUtils.getCacheSize();
+                long currentCacheSize = S2CacheUtils.getCacheSize();
                 //compute the limit of cache size should be keep after the checking
-                double circularLimitSizeCache = limitSizeCache * (1 - releasedSpacePercent);
+                long circularLimitSizeCache = (long)(limitSizeCache * (1 - releasedSpacePercent));
                 while (currentCacheSize > circularLimitSizeCache) {
                     File oldestFolder = S2CacheUtils.getOldestFolder();
                     long folderSize = S2CacheUtils.getFilesSize(oldestFolder);
                     if (oldestFolder != null) {
                         S2CacheUtils.deleteFiles(oldestFolder); // nb. this might fail
                     }
-
                     currentCacheSize = Math.max(currentCacheSize - folderSize, 0) ;
-
                 }
             }
         };
