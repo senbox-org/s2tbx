@@ -60,12 +60,10 @@ public class S2CacheActivator implements Activator {
     public void stop() {
         final Preferences preferences = Config.instance("s2tbx").load().preferences();
         String cachePolicy = preferences.get(S2CacheUtils.SENTINEL_2_CACHE_MAX_TIME, null);
-        if (cachePolicy == null) {
-            return;
-        }
-        if (cachePolicy.equals(S2CacheUtils.SENTINEL_2_CACHE_OPTION_EACH_START_UP)) {
+        if (S2CacheUtils.SENTINEL_2_CACHE_OPTION_EACH_START_UP.equals(cachePolicy)) {
             S2CacheUtils.deleteCache();
         }
+
         S2CacheSizeChecking sizeCacheCheckingLoop = S2CacheSizeChecking.getInstance();
         sizeCacheCheckingLoop.complete();
     }
