@@ -1,13 +1,27 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
-Changes in S2TBX 8.0.2
+Changes in S2TBX 8.0.3
 ----------------------
 ### List of solved issues
-### Bug
+#### Bug
+    * https://forum.step.esa.int/t/since-last-update-gpt-execution-never-finishes/30543
+
+
+
+Changes in S2TBX 8.0.2
+----------------------
+### List of solved issues (https://senbox.atlassian.net/browse/SIITBX-444?jql=project%20%3D%20SIITBX%20AND%20fixVersion%20%3D%208.0.2)
+#### Bug
     * [SIITBX-444] - Missing resources Biophysical processing and update output tolerance
-### Feature
+
+#### New Feature
     * [SIITBX-277] - Add maximum size option in S2TBX cache
+
+#### Improvement
+    * [SIITBX-448] - CCI LandCover Data - location changed
+
+
 
 Changes in S2TBX 8.0.1
 ----------------------
