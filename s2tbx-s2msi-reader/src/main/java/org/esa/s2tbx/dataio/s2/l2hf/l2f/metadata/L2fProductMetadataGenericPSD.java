@@ -7,6 +7,7 @@ import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2Constant;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
@@ -112,7 +113,7 @@ public class L2fProductMetadataGenericPSD extends GenericXmlMetadata implements 
         characteristics.setProductStartTime(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PRODUCT_START_TIME(), "Unknown"));
         characteristics.setProductStopTime(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PRODUCT_STOP_TIME(), "Unknown"));
 
-        characteristics.setProcessingLevel(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PROCESSING_LEVEL(), "Level-2F"));
+        characteristics.setProcessingLevel(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PROCESSING_LEVEL(), S2Constant.LevelL2F));
         characteristics.setMetaDataLevel(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_METADATA_LEVEL(), "Standard"));
 
         double boaQuantification = Double.valueOf(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_L2F_BOA_QUANTIFICATION_VALUE(), String.valueOf(metadataPathProvider.DEFAULT_BOA_QUANTIFICATION)));

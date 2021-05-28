@@ -7,6 +7,7 @@ import org.esa.snap.core.metadata.GenericXmlMetadata;
 import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2Constant;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
@@ -126,7 +127,7 @@ public class L2fGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2fG
             }
         }
         characteristics.setSpacecraft("Sentinel-2");
-        characteristics.setProcessingLevel("Level-2F");
+        characteristics.setProcessingLevel(S2Constant.LevelL2F);
         characteristics.setMetaDataLevel("Standard");
 
         double boaQuantification = L2fPSD13Constants.DEFAULT_BOA_QUANTIFICATION;

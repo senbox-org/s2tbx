@@ -8,6 +8,7 @@ import org.esa.snap.core.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.l2hf.L2hfUtils;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2Constant;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
@@ -103,7 +104,7 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
         characteristics.setProductStartTime(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, "Unknown"));
         characteristics.setProductStopTime(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, "Unknown"));
 
-        characteristics.setProcessingLevel(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, "Level-2H"));
+        characteristics.setProcessingLevel(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, S2Constant.LevelL2H));
         characteristics.setMetaDataLevel(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL, "Standard"));
 
         double boaQuantification = Double.valueOf(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_L2H_BOA_QUANTIFICATION_VALUE, String.valueOf(L2hPSD13Constants.DEFAULT_BOA_QUANTIFICATION)));

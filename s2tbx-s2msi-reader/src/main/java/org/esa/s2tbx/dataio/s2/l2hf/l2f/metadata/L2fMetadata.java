@@ -133,11 +133,8 @@ public class L2fMetadata extends S2OrthoMetadata {
         //Check if the tiles found in metadata exist and add them to granuleMetadataPathList
         ArrayList<VirtualPath> granuleMetadataPathList = new ArrayList<>();
         for (String tileName : tileNames) {
-            System.out.println("tileName : "+tileName);
             VirtualPath folder = namingConvention.findGranuleFolderFromTileId(tileName);
             VirtualPath xml = namingConvention.findXmlFromTileId(tileName);
-            System.out.println("folder : "+folder.getFullPathString());
-            System.out.println("xml : "+xml.getFullPathString());
             
             if(folder == null || xml == null) {
                 String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";

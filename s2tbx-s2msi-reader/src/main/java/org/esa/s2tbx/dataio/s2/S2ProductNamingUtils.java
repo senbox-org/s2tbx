@@ -13,6 +13,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by obarrilero on 26/10/2016.
@@ -32,6 +34,7 @@ public class S2ProductNamingUtils {
     //Pattern used to find the tile identifier in a string
     private static String SIMPLIFIED_TILE_ID_REGEX = "(.*)(T[0-9]{2}[A-Z]{3})(.*)";
 
+    protected static final Logger logger = Logger.getLogger(S2ProductNamingUtils.class.getName());
     /**
      * Checks whether the structure of folders is right:
      * checks if there is a not empty datastrip folder
@@ -49,22 +52,21 @@ public class S2ProductNamingUtils {
         if (!xmlPath.resolveSibling("GRANULE").exists()) {
             return false;
         }
-
-        // ArrayList<VirtualPath> datastripPaths = getDatastripsFromProductXml(xmlPath);
-        // if (datastripPaths.isEmpty()) {
-        //     return false;
-        // }
+        ArrayList<VirtualPath> datastripPaths = getDatastripsFromProductXml(xmlPath);
+        if (datastripPaths.isEmpty()) {
+            logger.warning("The datastrip folder is empty (ignore this warning for the L2H and L2F level products).");
+        }
 
         ArrayList<VirtualPath> tileDirs = getTilesFromProductXml(xmlPath);
         if (tileDirs.isEmpty()) {
             return false;
         }
 
-        // for (VirtualPath datastripPath : datastripPaths) {
-        //     if (getXmlFromDir(datastripPath) == null) {
-        //         return false;
-        //     }
-        // }
+        for (VirtualPath datastripPath : datastripPaths) {
+            if (getXmlFromDir(datastripPath) == null) {
+                logger.warning("The datastrip xml files don't exist (ignore this warning for the L2H and L2F level products).");
+            }
+        }
 
         for (VirtualPath tileDir : tileDirs) {
             if (getXmlFromDir(tileDir) == null) {
@@ -132,9 +134,11 @@ public class S2ProductNamingUtils {
         ArrayList<VirtualPath> datastripPaths = new ArrayList<>();
         VirtualPath datastripFolder = xmlPath.resolveSibling("DATASTRIP");
         VirtualPath[] datastripFiles = datastripFolder.listPaths();
-        for (VirtualPath datastrip : datastripFiles) {
-            if (datastrip.existsAndHasChildren()) {
-                datastripPaths.add(datastripFolder.resolve(datastrip.getFileName().toString()));
+        if(datastripFiles!=null){
+            for (VirtualPath datastrip : datastripFiles) {
+                if (datastrip.existsAndHasChildren()) {
+                    datastripPaths.add(datastripFolder.resolve(datastrip.getFileName().toString()));
+                }
             }
         }
         return datastripPaths;
