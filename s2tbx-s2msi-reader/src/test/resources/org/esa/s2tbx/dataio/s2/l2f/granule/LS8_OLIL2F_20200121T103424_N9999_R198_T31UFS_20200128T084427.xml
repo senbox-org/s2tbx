@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:Level-2F_Tile_ID xmlns:ns0="https://psd-14.sentinel2.eo.esa.int/PSD/PDI_Level-2F_Tile_Metadata.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://psd-14.sentinel2.eo.esa.int/PSD/PDI_Level-2F_Tile_Metadata.xsd /dpc/app/s2ipf/FORMAT_METADATA_TILE_L1C/02.11.01/scripts/../../../schemas/02.13.01/PSD/PDI_Level-2F_Tile_Metadata.xsd">
+	<ns0:General_Info>
+		<L1_TILE_ID metadataLevel="Brief">LC81980252020021LGN00</L1_TILE_ID>
+		<L2A_TILE_ID metadataLevel="Brief">NONE</L2A_TILE_ID>
+		<TILE_ID metadataLevel="Brief">LS8_OPER_OLI_L2F_ZZZ__20200121T103424_A000000_T31UFS_N99.99</TILE_ID>
+		<DATASTRIP_ID metadataLevel="Standard">NONE</DATASTRIP_ID>
+		<DOWNLINK_PRIORITY metadataLevel="Standard">NOMINAL</DOWNLINK_PRIORITY>
+		<SENSING_TIME metadataLevel="Standard">2020-01-21T10:34:24.090000Z</SENSING_TIME>
+		<Archiving_Info metadataLevel="Expertise">
+			<ARCHIVING_CENTRE>ZZZ_</ARCHIVING_CENTRE>
+			<ARCHIVING_TIME>0000-00-00T00:00:00.000Z</ARCHIVING_TIME>
+		</Archiving_Info>
+	</ns0:General_Info>
+	<ns0:Geometric_Info>
+		<Tile_Geocoding metadataLevel="Brief">
+			<HORIZONTAL_CS_NAME>WGS84 / UTM 31N</HORIZONTAL_CS_NAME>
+			<HORIZONTAL_CS_CODE>EPSG:32631</HORIZONTAL_CS_CODE>
+			<Size resolution="10">
+				<NROWS>10980</NROWS>
+				<NCOLS>10980</NCOLS>
+			</Size>
+			<Size resolution="15">
+				<NROWS>7320</NROWS>
+				<NCOLS>7320</NCOLS>
+			</Size>
+			<Size resolution="20">
+				<NROWS>5490</NROWS>
+				<NCOLS>5490</NCOLS>
+			</Size>
+			<Size resolution="30">
+				<NROWS>3660</NROWS>
+				<NCOLS>3660</NCOLS>
+			</Size>
+			<Geoposition resolution="10">
+				<ULX>600000</ULX>
+				<ULY>5590200</ULY>
+				<XDIM>10</XDIM>
+				<YDIM>-10</YDIM>
+			</Geoposition>
+			<Geoposition resolution="15">
+				<ULX>600000</ULX>
+				<ULY>5590200</ULY>
+				<XDIM>15</XDIM>
+				<YDIM>-15</YDIM>
+			</Geoposition>
+			<Geoposition resolution="20">
+				<ULX>600000</ULX>
+				<ULY>5590200</ULY>
+				<XDIM>20</XDIM>
+				<YDIM>-20</YDIM>
+			</Geoposition>
+			<Geoposition resolution="30">
+				<ULX>600000</ULX>
+				<ULY>5590200</ULY>
+				<XDIM>30</XDIM>
+				<YDIM>-30</YDIM>
+			</Geoposition>
+		</Tile_Geocoding>
+		<Tile_Angles metadataLevel="Standard">
+			<Acquisition_Angles_Filename>GRANULE/L2F_T31UFS_A000000_20200128T084427_LS8_R198/QI_DATA/L2F_T31UFS_20200121T103424_LS8_R198_ANG.TIF</Acquisition_Angles_Filename>
+			<Mean_Sun_Angle>
+				<ZENITH_ANGLE unit="deg">72.74955</ZENITH_ANGLE>
+				<AZIMUTH_ANGLE unit="deg">161.3771</AZIMUTH_ANGLE>
+			</Mean_Sun_Angle>
+			<Mean_Viewing_Incidence_Angle_List>
+				<Mean_Viewing_Incidence_Angle bandId="0">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="9">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="10">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="1">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="2">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="3">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="4">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="5">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="6">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="7">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="8">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="11">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+				<Mean_Viewing_Incidence_Angle bandId="12">
+					<ZENITH_ANGLE unit="deg">3.1722918</ZENITH_ANGLE>
+					<AZIMUTH_ANGLE unit="deg">-35.351242</AZIMUTH_ANGLE>
+				</Mean_Viewing_Incidence_Angle>
+			</Mean_Viewing_Incidence_Angle_List>
+		</Tile_Angles>
+	</ns0:Geometric_Info>
+	<ns0:Quality_Indicators_Info metadataLevel="Standard">
+		<Image_Content_QI>
+      </Image_Content_QI>
+		<Pixel_Level_QI geometry="FULL_RESOLUTION">
+			<MASK_FILENAME type="MSK_VALPIX">GRANULE/L2F_T31UFS_A000000_20200128T084427_LS8_R198/QI_DATA/L2F_T31UFS_20200121T103424_LS8_R198_L8_MSK.TIF</MASK_FILENAME>
+		</Pixel_Level_QI>
+		<QL_B432_FILENAME>GRANULE/L2F_T31UFS_A000000_20200128T084427_LS8_R198/QI_DATA/L2F_T31UFS_20200121T103424_LS8_R198_QL_B432.jpg</QL_B432_FILENAME>
+		<QL_B12118A_FILENAME>GRANULE/L2F_T31UFS_A000000_20200128T084427_LS8_R198/QI_DATA/L2F_T31UFS_20200121T103424_LS8_R198_QL_B12118A.jpg</QL_B12118A_FILENAME>
+		<PVI_FILENAME>GRANULE/L2F_T31UFS_A000000_20200128T084427_LS8_R198/QI_DATA/L2F_T31UFS_20200121T103424_LS8_R198_PVI.TIF</PVI_FILENAME>
+	</ns0:Quality_Indicators_Info>
+</ns0:Level-2F_Tile_ID>

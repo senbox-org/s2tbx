@@ -17,7 +17,6 @@ public class L2hMetadataFactory {
         } else if (psd == 143) {
             return L2hProductMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD143());
         } else {
-            //TODO
             return null;
         }
     }
@@ -29,7 +28,6 @@ public class L2hMetadataFactory {
         } else if (psd == 143) {
             return L2hGranuleMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD143());
         } else {
-            //TODO
             return null;
         }
     }
