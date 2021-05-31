@@ -315,7 +315,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 }
             }
         }
-        return firstMatrixCell.getResolutionCount();
+        int nbResolution=firstMatrixCell.getResolutionCount();
+        return (nbResolution>5) ? nbResolution : 5;
     }
 
     protected final MosaicMatrix buildBandMatrix(Collection<String> bandMatrixTileIds,
