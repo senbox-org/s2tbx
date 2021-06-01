@@ -4,7 +4,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>LacS2</alias>
   <label>LacS2</label>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <description>LAC Sentinel2 Processor</description>
   <authors/>
   <copyright/>

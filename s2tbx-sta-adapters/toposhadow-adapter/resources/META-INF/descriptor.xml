@@ -4,8 +4,8 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>TopoShadow</alias>
   <label>TopoShadow</label>
-  <version>1.1.0</version>
-  <description>Topographic Shadow Processor</description>
+  <version>1.2.0</version>
+  <description>Topographic Shadows Processor</description>
   <authors/>
   <copyright/>
   <internal>false</internal>
