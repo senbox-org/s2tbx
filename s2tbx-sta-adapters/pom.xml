@@ -22,6 +22,7 @@
         <module>sen2three</module>
         <module>orfeotoolbox</module>
         <module>snaphu-unwrapping</module>
+        <module>maja-adapter</module>
     </modules>
 
     <dependencies>
