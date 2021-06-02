@@ -31,7 +31,7 @@ public class ECMWFTReader {
             Files.createDirectory(cacheFolderPath);
         } catch (FileAlreadyExistsException exc) {
         }
-        Path copyPath = cacheFolderPath.resolve(path.getFileName());
+        Path copyPath = cacheFolderPath.resolve(path.getFileName().toString());
         try {
             Files.copy(path, copyPath, StandardCopyOption.REPLACE_EXISTING);
             ncfile = NetcdfFile.openInMemory(copyPath.toString());
