@@ -1,0 +1,55 @@
+#if($targetFolder.Directory)
+	#set($dateList = [])
+	#set($productFileNameList = [])
+    #set($fileList = $targetFolder.listFiles())
+    #foreach($file in $fileList)
+        #if($file.Name.contains($TILE))
+            #set($subFolder=$file)
+			#if($subFolder.Directory)
+                #set($subfileList = $subFolder.listFiles())
+                #foreach($file in $subfileList)
+                ## todo :condition pour prendre uniquement le derneri produit
+                    #if($file.Name.contains($TILE))
+                        #set($subFolder2=$file)
+                        #if($subFolder2.Directory)
+                            #set($fileList2 = $subFolder2.listFiles())
+                            #foreach($file2 in $fileList2)
+                                #if($file2.Name.contains("MTD_ALL"))
+                                    #set($targetName=$file2.AbsolutePath)
+									#set($fileDate=$file2.Name.split("_")[1].split("-")[0])
+									$dateList.add($fileDate)
+									$productFileNameList.add($file2)
+                                #end
+                            #end
+                        #end
+					#end
+				#end
+			#end
+        #end
+    #end
+	##search the last product
+	#set($lastDate=19000101)
+	#set($index=0)
+	#set($count=0)
+	#foreach($fileDate2 in $dateList)
+		#set($tmp = 0)
+		#set($tmpInt = $tmp.parseInt($fileDate2))
+		#if($lastDate<$tmpInt)
+			#set($lastDate = $tmpInt)
+			#set($index = $count)
+		#end
+		#set($count=$count+1)
+	#end
+	#set($lastProductFileName = $productFileNameList.get($index))
+	targetProductFileName : $lastProductFileName.AbsolutePath
+	#set( $targetSubFolder = $lastProductFileName.getParent())
+	#set($fileClass=$targetSubFolder.Class.forName("java.io.File"))
+	#set($paramList = [$lastProductFileName.AbsolutePath.toString()])
+	#set($paramArray = $paramList.toArray())
+	#set($ctors = $fileClass.Constructors)
+	#foreach ($ctor in $ctors)
+		#if ($ctor.toString() == "public java.io.File(java.lang.String)")
+			#set($targetProductFile = $ctor.newInstance($paramArray))
+		#end
+	#end
+#end
