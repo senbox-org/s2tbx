@@ -49,7 +49,6 @@ import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixMultiLevelSource;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
-import org.esa.snap.jp2.reader.internal.BandMatrixCell;
 import org.geotools.metadata.InvalidMetadataException;
 
 import javax.imageio.spi.ImageInputStreamSpi;
