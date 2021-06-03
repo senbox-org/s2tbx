@@ -1,5 +1,12 @@
 package org.esa.s2tbx.dataio.s2;
 
+import org.apache.commons.io.FileUtils;
+import org.esa.snap.core.datamodel.TiePointGrid;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.TransformException;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.Variable;
+
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -7,14 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.io.FileUtils;
-import org.esa.snap.core.datamodel.TiePointGrid;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.operation.TransformException;
-
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.Variable;
 
 public class ECMWFTReader {
 
@@ -26,7 +25,7 @@ public class ECMWFTReader {
         tiePointGrid = new ArrayList<>();
         NetcdfFile ncfile = null;
         Path cacheFolderPath = cachedir;
-        cacheFolderPath = cacheFolderPath.resolve("aux_ecmfwt");
+        cacheFolderPath = cacheFolderPath.resolve("aux_ecmwft");
         try {
             Files.createDirectory(cacheFolderPath);
         } catch (FileAlreadyExistsException exc) {
