@@ -1,0 +1,1501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:gs2="https://psd-14.sentinel2.eo.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:image="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/image/" xmlns:date_time="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/date_time/" xmlns:misc="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/misc/" xmlns:item="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/DataAccess/item/" xmlns:dimap="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/PDGS/dimap/" xmlns:ns1="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/PDGS/base/" xmlns:ns2="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/PDGS/center/" xmlns:ns3="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/orbital/" xmlns:ns4="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/platform/" xmlns:ns5="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/geographical/" xmlns:ns6="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/spatio/" xmlns:ns7="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/tile/" xmlns:ns8="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/representation/" targetNamespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/PDGS/dimap/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="14">
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/image/" schemaLocation="../../SY/image/image.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/date_time/" schemaLocation="../../SY/date_time/date_time.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/PDGS/base/" schemaLocation="../base/base.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/PDGS/center/" schemaLocation="../center/center.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/orbital/" schemaLocation="../../SY/orbital/orbital.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/platform/" schemaLocation="../../SY/platform/platform.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/misc/" schemaLocation="../../SY/misc/misc.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/geographical/" schemaLocation="../../SY/geographical/geographical.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/spatio/" schemaLocation="../../SY/spatio/spatio.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/tile/" schemaLocation="../../SY/tile/tile.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/SY/representation/" schemaLocation="../../SY/representation/representation.xsd"/>
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/EUP-V14/DataAccess/item/" schemaLocation="../../DataAccess/item/item2HF.xsd"/>
+	<xs:include schemaLocation="../dimap/dimap.xsd"/>
+	<xs:complexType name="A_GIPP_LIST_2HF">
+		<xs:sequence>
+			<xs:element name="GIPP_FILENAME" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>GIPP file name</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="item:GIPP_ID_2HF">
+							<xs:attribute name="version" type="xs:string"/>
+							<xs:attribute name="type" use="required">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="GIP_ATMIMA"/>
+										<xs:enumeration value="GIP_ATMSAD"/>
+										<xs:enumeration value="GIP_DATATI"/>
+										<xs:enumeration value="GIP_LREXTR"/>
+										<xs:enumeration value="GIP_INVLOC"/>
+										<xs:enumeration value="GIP_VIEDIR"/>
+										<xs:enumeration value="GIP_SPAMOD"/>
+										<xs:enumeration value="GIP_BLINDP"/>
+										<xs:enumeration value="GIP_CLOINV"/>
+										<xs:enumeration value="GIP_PRDLOC"/>
+										<xs:enumeration value="GIP_R2PARA"/>
+										<xs:enumeration value="GIP_R2SWIR"/>
+										<xs:enumeration value="GIP_R2EOB2"/>
+										<xs:enumeration value="GIP_R2EQOG"/>
+										<xs:enumeration value="GIP_R2DEPI"/>
+										<xs:enumeration value="GIP_R2DEFI"/>
+										<xs:enumeration value="GIP_R2WAFI"/>
+										<xs:enumeration value="GIP_R2L2NC"/>
+										<xs:enumeration value="GIP_R2DENT"/>
+										<xs:enumeration value="GIP_R2DECT"/>
+										<xs:enumeration value="GIP_R2NOMO"/>
+										<xs:enumeration value="GIP_R2ABCA"/>
+										<xs:enumeration value="GIP_R2BINN"/>
+										<xs:enumeration value="GIP_R2CRCO"/>
+										<xs:enumeration value="GIP_G2PARA"/>
+										<xs:enumeration value="GIP_G2PARE"/>
+										<xs:enumeration value="GIP_EARMOD"/>
+										<xs:enumeration value="GIP_GEOPAR"/>
+										<xs:enumeration value="GIP_INTDET"/>
+										<xs:enumeration value="GIP_TILPAR"/>
+										<xs:enumeration value="GIP_RESPAR"/>
+										<xs:enumeration value="GIP_MASPAR"/>
+										<xs:enumeration value="GIP_JP2KPA"/>
+										<xs:enumeration value="GIP_ECMWFP"/>
+										<xs:enumeration value="GIP_DECOMP"/>
+										<xs:enumeration value="GIP_OLQCPA"/>
+										<xs:enumeration value="GIP_PROBAS"/>
+										<xs:enumeration value="GIP_CONVER"/>
+										<xs:enumeration value="GIP_L2AUSR"/>
+										<xs:enumeration value="GIP_L2ACSC"/>
+										<xs:enumeration value="GIP_L2ACAC"/>
+										<xs:enumeration value="GIP_PROBA2"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:attribute>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_MASK_LIST_2HF">
+		<xs:annotation/>
+		<xs:sequence>
+			<xs:element name="MASK_FILENAME" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>File name of the masks. L1C, L2A, L2H, L2F: mask file types for each band and tile and mask file types band independent.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="type" use="required">
+								<xs:annotation>
+									<xs:documentation>Mask type</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="MSK_TECQUA"/>
+										<xs:enumeration value="MSK_DEFECT"/>
+										<xs:enumeration value="MSK_SATURA"/>
+										<xs:enumeration value="MSK_NODATA"/>
+										<xs:enumeration value="MSK_DETFOO"/>
+										<xs:enumeration value="MSK_CLOLOW"/>
+										<xs:enumeration value="MSK_CLOUDS"/>
+										<xs:enumeration value="MSK_LANWAT"/>
+										<xs:enumeration value="MSK_CLDPRB"/>
+										<xs:enumeration value="MSK_SNWPRB"/>
+										<xs:enumeration value="MSK_DDVPXL"/>
+										<xs:enumeration value="MSK_VALPXL"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:attribute>
+							<xs:attribute name="bandId" type="image:A_BAND_NUMBER">
+								<xs:annotation>
+									<xs:documentation>Identifier of the band</xs:documentation>
+								</xs:annotation>
+							</xs:attribute>
+							<xs:attribute name="detectorId" type="image:A_DETECTOR_NUMBER">
+								<xs:annotation>
+									<xs:documentation>Identifier of the detector</xs:documentation>
+								</xs:annotation>
+							</xs:attribute>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="geometry" type="image:AN_IMAGE_GEOMETRY" use="required">
+			<xs:annotation>
+				<xs:documentation>Mask is defined into quicklook geometry in the inventory process and is transformed into level1 full resolution geometry in production process.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="A_PRODUCT_ORGANIZATION_2HF">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information on Level 2H and Level 2F</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Granule" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="IMAGE_ID_2HF" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="item:IMAGE_ID_2HF"/>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="IMAGE_FILE_2HF" type="item:IMAGE_FILE_2HF" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+					<xs:attribute name="granuleIdentifier" type="item:GRANULE_TILE_ID_2HF"/>
+					<xs:attribute name="imageFormat">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="JPEG2000"/>
+								<xs:enumeration value="BINARY"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<!--xs:attribute name="datastripIdentifier" type="item:DATASTRIP_ID_2A"-->
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_L2HF_ANGLES">
+		<xs:sequence>
+			<xs:element name="Acquisition_Angles_Filename">
+				<xs:annotation>
+					<xs:documentation>Filename of the acquisition angles in raster format</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string"/>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Mean_Sun_Angle" type="dimap:A_ZENITH_AND_AZIMUTH_ANGLES">
+				<xs:annotation>
+					<xs:documentation>Mean value containing sun zenith and azimut angle average for all bands and detectors</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Mean_Viewing_Incidence_Angle_List">
+				<xs:annotation>
+					<xs:documentation>List of mean values containing viewing incidence zenith and azimut angle average for each band and for all detectors</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Mean_Viewing_Incidence_Angle" minOccurs="0" maxOccurs="13">
+							<xs:annotation>
+								<xs:documentation>mean value containing viewing incidence zenith and azimut angle average for all detectors</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="dimap:A_ZENITH_AND_AZIMUTH_ANGLES">
+										<xs:attribute name="bandId" use="required">
+											<xs:annotation>
+												<xs:documentation>Band index for which mean viewing icidence angle is requested</xs:documentation>
+											</xs:annotation>
+											<xs:simpleType>
+												<xs:restriction base="image:A_BAND_NUMBER">
+													<xs:enumeration value="0"/>
+													<xs:enumeration value="1"/>
+													<xs:enumeration value="2"/>
+													<xs:enumeration value="3"/>
+													<xs:enumeration value="4"/>
+													<xs:enumeration value="5"/>
+													<xs:enumeration value="6"/>
+													<xs:enumeration value="7"/>
+													<xs:enumeration value="8"/>
+													<xs:enumeration value="9"/>
+													<xs:enumeration value="10"/>
+													<xs:enumeration value="11"/>
+													<xs:enumeration value="12"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:attribute>
+									</xs:extension>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_GEOMETRIC_INFO_TILE_2HF">
+		<xs:sequence>
+			<xs:element name="Tile_Geocoding">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="dimap:A_TILE_DESCRIPTION">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Tile_Angles">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="dimap:A_L2HF_ANGLES">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_GEOMETRIC_INFO_TILE_2HF_Brief">
+		<xs:sequence>
+			<xs:element name="Tile_Geocoding">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="dimap:A_TILE_DESCRIPTION">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_L2HF_Product_Info">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information on Level 2H and Level 2F</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PRODUCT_START_TIME">
+				<xs:annotation>
+					<xs:documentation>Actual User Product start time defined as the Sensing Time of the first line of the first scene in the product</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PRODUCT_STOP_TIME">
+				<xs:annotation>
+					<xs:documentation>Actual User Product stop time defined as the Sensing Time of the first line of the last scene in the product</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PRODUCT_URI" type="xs:anyURI">
+				<xs:annotation>
+					<xs:documentation>User-Product URI. This is the User-Product URI resolved and provided by ngEO</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PROCESSING_LEVEL">
+				<xs:annotation>
+					<xs:documentation>Processing level of the product</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="image:A_PROCESSING_LEVEL"/>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PRODUCT_TYPE">
+				<xs:annotation>
+					<xs:documentation>Product type Identifier</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="S2MSI0"/>
+						<xs:enumeration value="S2MSI1A"/>
+						<xs:enumeration value="S2MSI1B"/>
+						<xs:enumeration value="S2MSI1C"/>
+						<xs:enumeration value="S2MSI2A"/>
+						<xs:enumeration value="S2MSI2H"/>
+						<xs:enumeration value="S2MSI2F"/>
+						<xs:enumeration value="L8OLI2H"/>
+						<xs:enumeration value="L8OLI2F"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="PROCESSING_BASELINE" type="dimap:A_PROCESSING_BASELINE_IDENTIFICATION"/>
+			<xs:element name="GENERATION_TIME" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>DAG Generation Time</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PREVIEW_IMAGE_URL">
+				<xs:annotation>
+					<xs:documentation>Link to the preview image URL</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:anyURI"/>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PREVIEW_GEO_INFO" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Preview georeferencing information. Coordinate system / datum used for specifying the georeferencing information supplied with the Browse Image.
+Examples: EPSG:4326, RAW</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Datatake" type="dimap:A_DATATAKE_IDENTIFICATION">
+				<xs:annotation>
+					<xs:documentation>General information about the MSI datatake</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Query_Options" type="dimap:A_PRODUCT_OPTIONS"/>
+			<xs:element name="Product_Organisation">
+				<xs:annotation>
+					<xs:documentation>Logical map of the elements compounding the Level 2HF User Product</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Granule_List" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="dimap:A_PRODUCT_ORGANIZATION_2HF"/>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_PRODUCT_INFO_USERL2HF">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Product_Info" type="dimap:A_L2HF_Product_Info">
+				<xs:annotation>
+					<xs:documentation>Common general Product Information</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Product_Image_Characteristics">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Special_Values" type="dimap:A_SPECIAL_VALUES" minOccurs="2" maxOccurs="2">
+							<xs:annotation>
+								<xs:documentation>Special values encoding (NO_DATA, SATURATION) for BOA reflectance image data</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+							<xs:annotation>
+								<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="QUANTIFICATION_VALUES_LIST" type="dimap:A_L2HF_QUANTIFICATION_VALUES_LIST">
+							<xs:annotation>
+								<xs:documentation>A list of L1C, L2A, L2H, L2F quantification values for digital counts on pixel level</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Reflectance_Conversion">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="U" type="xs:double">
+										<xs:annotation>
+											<xs:documentation>Correction to take into account the Sun-Earth distance variation (this correction is computed using the acquisition date)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Solar_Irradiance_List">
+										<xs:annotation>
+											<xs:documentation>Reflectance parameters for each band</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="SOLAR_IRRADIANCE" maxOccurs="13">
+													<xs:annotation>
+														<xs:documentation>Equivalent solar irradiance</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:simpleContent>
+															<xs:extension base="xs:double">
+																<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+																<xs:attribute name="unit" type="xs:string" use="required" fixed="W/m²/µm"/>
+															</xs:extension>
+														</xs:simpleContent>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="Spectral_Information_List" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Spectral_Information" maxOccurs="13">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+												<xs:element name="Wavelength">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="Spectral_Response">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+																<xs:annotation>
+																	<xs:documentation>List of measures</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME_AND_TCI" use="required"/>
+											<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="PHYSICAL_GAINS" maxOccurs="13">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:double">
+										<xs:attribute name="bandId" use="required">
+											<xs:simpleType>
+												<xs:restriction base="xs:int">
+													<xs:enumeration value="0"/>
+													<xs:enumeration value="1"/>
+													<xs:enumeration value="2"/>
+													<xs:enumeration value="3"/>
+													<xs:enumeration value="4"/>
+													<xs:enumeration value="5"/>
+													<xs:enumeration value="6"/>
+													<xs:enumeration value="7"/>
+													<xs:enumeration value="8"/>
+													<xs:enumeration value="9"/>
+													<xs:enumeration value="10"/>
+													<xs:enumeration value="11"/>
+													<xs:enumeration value="12"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:attribute>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="REFERENCE_BAND" type="xs:int" minOccurs="0"/>
+						<xs:element name="Scene_Classification_List" type="dimap:A_L2A_SCENE_CLASSIFICATION_LIST"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_L2A_SCENE_CLASSIFICATION_LIST">
+		<xs:annotation>
+			<xs:documentation>A list of L2A Scene Classification IDs</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Scene_Classification_ID" type="dimap:A_L2A_SCENE_CLASSIFICATION_ID" minOccurs="12" maxOccurs="12">
+				<xs:annotation>
+					<xs:documentation>L2A Scene Classification IDs encoding (SC_NODATA, SC_NODATA, SC_SATURATED_DEFECTIVE, SC_DARK_FEATURE_SHADOW, SC_CLOUD_SHADOW, SC_VEGETATION, SC_NOT_VEGETATED, SC_WATER, SC_UNCLASSIFIED, SC_CLOUD_MEDIUM_PROBA, SC_CLOUD_HIGH_PROBA, SC_THIN_CIRRUS, SC_SNOW_ICE)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_L2A_SCENE_CLASSIFICATION_ID">
+		<xs:annotation>
+			<xs:documentation>Pixel values assigned to L2A Scene Classification Image Data </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SCENE_CLASSIFICATION_TEXT">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="SC_NODATA"/>
+						<xs:enumeration value="SC_SATURATED_DEFECTIVE"/>
+						<xs:enumeration value="SC_DARK_FEATURE_SHADOW"/>
+						<xs:enumeration value="SC_CLOUD_SHADOW"/>
+						<xs:enumeration value="SC_VEGETATION"/>
+						<xs:enumeration value="SC_NOT_VEGETATED"/>
+						<xs:enumeration value="SC_WATER"/>
+						<xs:enumeration value="SC_UNCLASSIFIED"/>
+						<xs:enumeration value="SC_CLOUD_MEDIUM_PROBA"/>
+						<xs:enumeration value="SC_CLOUD_HIGH_PROBA"/>
+						<xs:enumeration value="SC_THIN_CIRRUS"/>
+						<xs:enumeration value="SC_SNOW_ICE"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="SCENE_CLASSIFICATION_INDEX" type="xs:int"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_QUALITY_INDICATORS_INFO_USER_PROD_L1C_L2A_L2HF">
+		<xs:annotation>
+			<xs:documentation>Quality Indicators information on product level (L2HF + L2A + L1C Technical assessment info)</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="dimap:A_QUALITY_INDICATORS_INFO_USER_PROD_L1B_L1C">
+				<xs:sequence>
+					<xs:element name="Image_Content_QI" type="dimap:A_L2HF_IMG_CONTENT_QI"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AN_IMAGE_DATA_INFO_DSL1C_DSL2A">
+		<xs:annotation>
+			<xs:documentation>List of L2A tiles + L1C Geometric and Radiometric info</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Tiles_Information">
+				<xs:annotation>
+					<xs:documentation>List of the tiles composing the whole datastrip.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Tile_List">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Tile" maxOccurs="unbounded">
+										<xs:complexType>
+											<xs:attribute name="tileId" type="item:TILE_ID_2A" use="required">
+												<xs:annotation>
+													<xs:documentation>Tile Identifier</xs:documentation>
+												</xs:annotation>
+											</xs:attribute>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+							<xs:unique name="tile_identifier_L2A_unique">
+								<xs:selector xpath="./Tile_Description/TILE_IDENTIFIER"/>
+								<xs:field xpath="@TILE_IDENTIFIER"/>
+							</xs:unique>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Sensor_Configuration" type="dimap:A_SENSOR_CONFIGURATION">
+				<xs:annotation>
+					<xs:documentation>MSI Sensor configuration (Information from MSI telemetry)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Radiometric_Info">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="dimap:A_RADIOMETRIC_DATA_L1C">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Geometric_Info">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="dimap:A_GEOMETRIC_DATA_DSL1C">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Product_Compression" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="COMPRESSION">
+							<xs:annotation>
+								<xs:documentation>Product Compression</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="NONE"/>
+									<xs:enumeration value="LOSSY"/>
+									<xs:enumeration value="LOSSLESS"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_QUALITY_INDICATORS_INFO_DSL1B_DSL1C_DSL2A">
+		<xs:annotation>
+			<xs:documentation>Quality Indicators information on datastrip level (L2A + L1C Geometric and Radiometric QI info)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Geometric_Info" type="dimap:A_DATASTRIP_L1B_L1C_GEOM_QI">
+				<xs:annotation>
+					<xs:documentation/>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Radiometric_Info" type="dimap:A_RADIOMETRIC_L1PRODUCT_QUALITY_ASSESSMENT">
+				<xs:annotation>
+					<xs:documentation/>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DEGRADED_ANC_DATA_PERCENTAGE" type="misc:A_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of degraded ancillary data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+	</xs:complexType>
+	<xs:complexType name="AN_AUXILIARY_DATA_INFO_USERL2HF">
+		<xs:sequence>
+			<xs:element name="GIPP_List" type="dimap:A_GIPP_LIST_2HF">
+				<xs:annotation>
+					<xs:documentation>Reference to the used GIPPs</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PRODUCTION_DEM_TYPE" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to used DEM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IERS_BULLETIN_FILENAME" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to IERS Bulletin</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GRI_List" type="dimap:A_GRI_LIST">
+				<xs:annotation>
+					<xs:documentation>Reference to used GRI</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ECMWF_DATA_REF" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Reference to ECMWF data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LUT_List">
+				<xs:annotation>
+					<xs:documentation>Reference to libRadtran Look Up Tables used for Atmospheric Correction</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="LUT_FILENAME" type="xs:string" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>LUT file name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SNOW_CLIMATOLOGY_MAP" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to Snow Climatology Map used for Scene Classification </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ESACCI_WaterBodies_Map" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to Water Bodies Map used for Scene Classification </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ESACCI_LandCover_Map" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to Land Cover Map used for Scene Classification </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ESACCI_SnowCondition_Map_Dir" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to Snow Condition Map Folder used for Scene Classification </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AN_AUXILIARY_DATA_INFO_DSL1C_DSL2A">
+		<xs:sequence>
+			<xs:element name="IERS_Bulletin" type="dimap:AN_IERS_BULLETIN">
+				<xs:annotation>
+					<xs:documentation>(From L0) IERS bulletin. These data are provided for the start acquisition date.</xs:documentation>
+					<xs:appinfo>
+						<xs:DOC>
+							<xs:DEFINITION/>
+							<xs:CREATED_BY>DATATION</xs:CREATED_BY>
+						</xs:DOC>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GIPP_List" type="dimap:A_GIPP_LIST_2HF">
+				<xs:annotation>
+					<xs:documentation>Reference to the used GIPPs</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ECMWF_DATA_REF" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to ECMWF data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PRODUCTION_DEM_TYPE" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to used DEM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IERS_BULLETIN_FILENAME" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to IERS Bulletin</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GRI_List" type="dimap:A_GRI_LIST">
+				<xs:annotation>
+					<xs:documentation>Reference to used GRI</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SNOW_CLIMATOLOGY_MAP" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to Snow Climatology Map used for Scene Classification </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ESACCI_WaterBodies_Map" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to Water Bodies Map used for Scene Classification </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ESACCI_LandCover_Map" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to Land Cover Map used for Scene Classification </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ESACCI_SnowCondition_Map_Dir" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to Snow Condition Map Folder used for Scene Classification </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+	</xs:complexType>
+	<xs:complexType name="A_RADIOMETRIC_DATA_DSL1C_DSL2A">
+		<xs:annotation>
+			<xs:documentation>Radiometric corrections applied to L1C and L2A</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SWIR_REARRANGEMENT_PROC" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>SWIR pixels re-arrangement. A 'true' value indicates that data extraction and SWIR pixels re-arrangement have been processed.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SATURATED_PIXELS_PROC" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Management of saturated pixels. A 'true' value indicates that saturated pixels has been processed.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Spectral_Information_List">
+				<xs:annotation>
+					<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Spectral_Information" maxOccurs="13">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+									<xs:element name="Wavelength">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="Spectral_Response">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+													<xs:annotation>
+														<xs:documentation>List of measures</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME_AND_TCI" use="required"/>
+								<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+				<xs:annotation>
+					<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="QUANTIFICATION_VALUES_LIST">
+				<xs:annotation>
+					<xs:documentation>A list of L1C, L2A quantification values for digital counts on pixel level</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="BOA_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+							<xs:annotation>
+								<xs:documentation>L2A BOA Reflectance quantification value (in order to convert digit count into Bottom-Of-Atmosphere reflectance)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AOT_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+							<xs:annotation>
+								<xs:documentation>Aeorosol Optical Thickness Map quantification value (in order to convert digit count into Aeorosol Opthical Thickness physical units)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="WVP_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+							<xs:annotation>
+								<xs:documentation>Water Vapor Map quantification value (in order to convert digit count into water vapor physical units)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Reflectance_Conversion">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="U" type="xs:double">
+							<xs:annotation>
+								<xs:documentation>Correction to take into account the Sun-Earth distance variation (this correction is computed using the acquisition date)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Solar_Irradiance_List">
+							<xs:annotation>
+								<xs:documentation>Reflectance parameters for each band</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="SOLAR_IRRADIANCE" maxOccurs="13">
+										<xs:annotation>
+											<xs:documentation>Equivalent solar irradiance</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:simpleContent>
+												<xs:extension base="xs:double">
+													<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+													<xs:attribute name="unit" type="xs:string" use="required" fixed="W/m²/µm"/>
+												</xs:extension>
+											</xs:simpleContent>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_GENERAL_INFO_2HF">
+		<xs:annotation>
+			<xs:documentation>General information on L2HF Tile</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="L1_TILE_ID">
+				<xs:annotation>
+					<xs:documentation>Unique Tile Identifier</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="item:TILE_ID_1">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="L2A_TILE_ID">
+				<xs:annotation>
+					<xs:documentation>Unique Tile Identifier</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="item:TILE_ID_2A">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="TILE_ID">
+				<xs:annotation>
+					<xs:documentation>Unique Tile Identifier</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="item:TILE_ID_2HF">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DATASTRIP_ID">
+				<xs:annotation>
+					<xs:documentation>Unique Identifier of a Sentinel2 datastrip</xs:documentation>
+					<xs:appinfo>
+						<xs:DOC>
+							<xs:DEFINITION/>
+						</xs:DOC>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DOWNLINK_PRIORITY">
+				<xs:annotation>
+					<xs:documentation>Downlink priority flag, can be set to NOMINAL, NRT or RT</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SENSING_TIME">
+				<xs:annotation>
+					<xs:documentation>Inherited from Level-0 metadata. This is the sensing start time of the Datatake (with precision in seconds)</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="date_time:AN_UTC_DATE_TIME">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Archiving_Info">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="dimap:AN_ARCHIVE_IDENTIFICATION">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Expertise"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_QUALITY_INDICATORS_INFO_TILE_2HF">
+		<xs:annotation>
+			<xs:documentation>Quality Indicators information on L2HF Tile and Pixel level</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Image_Content_QI" type="dimap:A_L2HF_GRANULE_IMG_CONTENT_QI"/>
+			<xs:element name="Pixel_Level_QI" type="dimap:A_MASK_LIST_2HF">
+				<xs:annotation>
+					<xs:documentation>Pointer to the L2HF Pixel Level QI files contained in the QI_DATA folder</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PVI_FILENAME" type="item:PVI_ID_2HF">
+				<xs:annotation>
+					<xs:documentation>Reference to PVI contained in the QI_DATA folder</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="QL_B432_FILENAME" type="item:QL_B432_ID_2HF">
+				<xs:annotation>
+					<xs:documentation>Reference to QL_B432 contained in the QI_DATA folder</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="QL_B12118A_FILENAME" type="item:QL_B12118A_ID_2HF">
+				<xs:annotation>
+					<xs:documentation>Reference to QL_B12118A contained in the QI_DATA folder</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+	</xs:complexType>
+	<xs:complexType name="A_L2HF_IMG_CONTENT_QI">
+		<xs:annotation>
+			<xs:documentation>Image content Quality Indicators (percentages of pixel type)
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="NODATA_PIXEL_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of No Data (Missing data on projected tiles) pixels</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="SATURATED_DEFECTIVE_PIXEL_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of saturated or defective pixels</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="DARK_FEATURES_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as dark features or shadows</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="CLOUD_SHADOW_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as cloud shadow</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="VEGETATION_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as vegetation</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="NOT_VEGETATED_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as not-vegetated</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="WATER_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as water</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="UNCLASSIFIED_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as unclassified</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="MEDIUM_PROBA_CLOUDS_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as medium probability clouds</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="HIGH_PROBA_CLOUDS_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as high probability clouds</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="THIN_CIRRUS_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as thin cirrus clouds</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="SNOW_ICE_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of pixels classified as snow or ice</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="CLOUDS_OVER_LAND_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>Percentage of cloud pixels over land (water excluded)</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RADIATIVE_TRANSFER_ACCURACY">
+				<xs:annotation>
+					<xs:documentation>Declared accuracy of the radiative transfer model. LibRadtran code achieves a relative accuracy of 5% - 10%. (B.Mayer)</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="WATER_VAPOUR_RETRIEVAL_ACCURACY">
+				<xs:annotation>
+					<xs:documentation>APDS (Atmospherically Precorrected Differential Absorption) method achieves a typical relative accuracy of 5% - 10% except over very dark surfaces. (Schlaepfer 1998, Chylel et al. 2003,	Richter and Schlaepfer 2008)</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="AOT_RETRIEVAL_ACCURACY">
+				<xs:annotation>
+					<xs:documentation>Declared accuracy of the Aerosol Optical Thickness</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="AOT_RETRIEVAL_METHOD" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Expected values are: SEN2COR_DDV, CAMS, DEFAULT</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GRANULE_MEAN_AOT">
+				<xs:annotation>
+					<xs:documentation>Mean value of Aerosol Optical Thickness [unitless]</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double"/>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="GRANULE_MEAN_WV">
+				<xs:annotation>
+					<xs:documentation>Mean value of Total Water Vapour Column in [g.cm-2]</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double"/>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="OZONE_SOURCE" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>DEFAULT value or extracted from AUX_ECMWFT or other source of auxiliary data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OZONE_VALUE">
+				<xs:annotation>
+					<xs:documentation>Value ot the Total Ozone Column in Dobson units</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double"/>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="LUT_List">
+				<xs:annotation>
+					<xs:documentation>Reference to libRadtran Look Up Tables used for Atmospheric Correction</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="LUT_FILENAME" type="xs:string" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>LUT file name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="resolution" type="image:A_BAND_RESOLUTION"/>
+	</xs:complexType>
+	<xs:complexType name="A_L2HF_GRANULE_IMG_CONTENT_QI">
+		<xs:annotation>
+			<xs:documentation>Image content Quality Indicators on Granule Level</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="dimap:A_GRANULE_COMMON_IMG_CONTENT_QI">
+				<xs:sequence>
+					<xs:element name="NODATA_PIXEL_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of No Data (Missing data on projected tiles) pixels</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="SATURATED_DEFECTIVE_PIXEL_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of saturated or defective pixels</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="DARK_FEATURES_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as dark features or shadows</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="CLOUD_SHADOW_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as cloud shadow</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="VEGETATION_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as vegetation</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="NOT_VEGETATED_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as not-vegetated</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="WATER_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as water</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="UNCLASSIFIED_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as unclassified</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MEDIUM_PROBA_CLOUDS_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as medium probability clouds</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="HIGH_PROBA_CLOUDS_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as high probability clouds</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="THIN_CIRRUS_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as thin cirrus clouds</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="SNOW_ICE_PERCENTAGE">
+						<xs:annotation>
+							<xs:documentation>Percentage of pixels classified as snow or ice</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="CLOUDS_OVER_LAND_PERCENTAGE" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Percentage of cloud pixels over land (water excluded)</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="RADIATIVE_TRANSFER_ACCURACY">
+						<xs:annotation>
+							<xs:documentation>Declared accuracy of the radiative transfer model. LibRadtran code achieves a relative accuracy of 5% - 10%. (B.Mayer)</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="WATER_VAPOUR_RETRIEVAL_ACCURACY">
+						<xs:annotation>
+							<xs:documentation>APDS (Atmospherically Precorrected Differential Absorption) method achieves a typical relative accuracy of 5% - 10% except over very dark surfaces. (Schlaepfer 1998, Chylel et al. 2003,	Richter and Schlaepfer 2008)</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="AOT_RETRIEVAL_ACCURACY">
+						<xs:annotation>
+							<xs:documentation>Declared accuracy of the Aerosol Optical Thickness</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="100"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="AOT_RETRIEVAL_METHOD" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>Expected values are: SEN2COR_DDV, CAMS, DEFAULT</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GRANULE_MEAN_AOT">
+						<xs:annotation>
+							<xs:documentation>Mean value of Aerosol Optical Thickness [unitless]</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double"/>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="GRANULE_MEAN_WV">
+						<xs:annotation>
+							<xs:documentation>Mean value of Total Water Vapour Column in [g.cm-2]</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double"/>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="OZONE_SOURCE" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>DEFAULT value or extracted from AUX_ECMWFT or other source of auxiliary data</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="OZONE_VALUE">
+						<xs:annotation>
+							<xs:documentation>Value ot the Total Ozone Column in Dobson units</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:double"/>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="LUT_List">
+						<xs:annotation>
+							<xs:documentation>Reference to libRadtran Look Up Tables used for Atmospheric Correction</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="LUT_FILENAME" type="xs:string" maxOccurs="unbounded">
+									<xs:annotation>
+										<xs:documentation>LUT file name</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+				<xs:attribute name="resolution" type="image:A_BAND_RESOLUTION"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="A_L2HF_PIXEL_LEVEL_QI_LIST">
+		<xs:annotation>
+			<xs:documentation>Filenames of QI Masks available in L2HF (Cloud confidence map, Snow/Ice confidence map)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CLOUD_CONFIDENCE_MASK" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Filename of the Cloud Confidence raster mask at 60m resolution stored in the QI_DATA folder</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SNOW_ICE_CONFIDENCE_MASK" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Filename of the Snow/Ice Confidence raster mask at 60m resolution stored in the QI_DATA folder</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_L2HF_QUANTIFICATION_VALUES_LIST">
+		<xs:annotation>
+			<xs:documentation>A list of L1C, L2A, L2H, L2F quantification values for digital counts on pixel level</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="BOA_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+				<xs:annotation>
+					<xs:documentation>L2A BOA Reflectance quantification value (in order to convert digit count into Bottom-Of-Atmosphere reflectance)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AOT_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+				<xs:annotation>
+					<xs:documentation>Aeorosol Optical Thickness Map quantification value (in order to convert digit count into Aeorosol Opthical Thickness physical units)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="WVP_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+				<xs:annotation>
+					<xs:documentation>Water Vapor Map quantification value (in order to convert digit count into water vapor physical units)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

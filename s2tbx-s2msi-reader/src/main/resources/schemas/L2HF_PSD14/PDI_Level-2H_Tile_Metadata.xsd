@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 rel. 2 sp1 (http://www.altova.com) by David Pattenden (Vega Technologies SAS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-14.sentinel2.eo.esa.int/PSD/PDI_Level-2H_Tile_Metadata.xsd" xmlns:dimap="https://psd-14.sentinel2.eo.esa.int/DICO/PDI-V14/PDGS/dimap/" targetNamespace="https://psd-14.sentinel2.eo.esa.int/PSD/PDI_Level-2H_Tile_Metadata.xsd" elementFormDefault="qualified" version="12">
+	<xs:import namespace="https://psd-14.sentinel2.eo.esa.int/DICO/PDI-V14/PDGS/dimap/" schemaLocation="DICO/PDI-V14/PDGS/dimap/dimap2HF.xsd"/>
+	<xs:element name="Level-2H_Tile_ID" type="Level-2HF_Tile"/>
+	<xs:complexType name="Level-2HF_Tile">
+		<xs:sequence>
+			<xs:element name="General_Info" type="dimap:A_GENERAL_INFO_2HF"/>
+			<xs:element name="Geometric_Info" type="dimap:A_GEOMETRIC_INFO_TILE_2HF"/>
+			<xs:element name="Quality_Indicators_Info" type="dimap:A_QUALITY_INDICATORS_INFO_TILE_2HF"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

@@ -27,6 +27,7 @@ import org.esa.s2tbx.dataio.s2.S2BandAnglesGridByDetector;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2Constant;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
@@ -60,6 +61,7 @@ import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.image.SourceImageScaler;
 import org.esa.snap.core.util.ImageUtils;
+import org.esa.snap.dataio.geotiff.GeoTiffMatrixMultiLevelSource;
 import org.esa.snap.jp2.reader.internal.JP2MatrixBandMultiLevelSource;
 import org.esa.snap.lib.openjpeg.utils.StackTraceUtils;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -173,7 +175,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     protected final Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader,
             INamingConvention namingConvention, ProductSubsetDef subsetDef) throws Exception {
         this.orthoMetadataHeader = (S2OrthoMetadata) metadataHeader;
-
         VirtualPath rootMetadataPath = this.orthoMetadataHeader.getPath();
         S2SpatialResolution productResolution = getProductResolution(namingConvention);
 
@@ -211,9 +212,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         initCacheDir(productPath);
 
         S2Metadata.ProductCharacteristics productCharacteristics = this.orthoMetadataHeader.getProductCharacteristics();
-
+        String productLevel = productCharacteristics.getProcessingLevel();
         String productType = "S2_MSI_" + productCharacteristics.getProcessingLevel();
-
         CoordinateReferenceSystem mapCRS = CRS.decode(this.epsgCode);
         GeoCoding productDefaultGeoCoding = null;
         Rectangle productBounds;
@@ -231,6 +231,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         Product product = new Product(defaultProductName, productType, productBounds.width, productBounds.height, this);
+
         if (subsetDef == null || !subsetDef.isIgnoreMetadata()) {
             for (MetadataElement metadataElement : this.orthoMetadataHeader.getMetadataElements()) {
                 product.getMetadataRoot().addElement(metadataElement);
@@ -290,12 +291,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     anglesGridsMap.put(tile.getId(), bandAnglesGrids);
                 }
             }
-            addAnglesBands(mapCRS, defaultProductSize, product, sceneDescription, anglesGridsMap,
-                    productDefaultGeoCoding, subsetDef);
+            if((!productLevel.matches(S2Constant.LevelL2H) && !productLevel.matches(S2Constant.LevelL2F)) || anglesGridsMap.size()>0){
+                addAnglesBands(mapCRS, defaultProductSize, product, sceneDescription, anglesGridsMap, productDefaultGeoCoding, subsetDef);
+            }else
+            {
+                //todo: add reader L2HF for the angle tif data
+            }
         }
-        for (S2Metadata.Tile tile : tileList) {
+        for (S2Metadata.Tile tile : tileList)
             addECMWFBand(product, tile, sceneDescription, mapCRS, namingConvention);
-        }
 
         return product;
     }
@@ -489,8 +493,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 if (defaultBandSize.height != defaultBandHeight) {
                     throw new IllegalStateException("Invalid band height: nativeBandHeight="+defaultBandSize.height+", defaultBandHeight="+defaultBandHeight);
                 }
+                S2Metadata.ProductCharacteristics productCharacteristics = this.orthoMetadataHeader.getProductCharacteristics();
+                String productLevel = productCharacteristics.getProcessingLevel();
+
+                boolean geotiffOption = false;
+                if(productLevel.matches(S2Constant.LevelL2H) || productLevel.matches(S2Constant.LevelL2F))
+                    geotiffOption = true;
                 int dataBufferType = computeMatrixCellsDataBufferType(mosaicMatrix);
-                int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix);
+                int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix, geotiffOption);
                 productMaximumResolutionCount = Math.max(productMaximumResolutionCount, resolutionCount);
 
                 Rectangle bandBounds;
@@ -508,15 +518,22 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                     GeoCoding geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize, defaultBandSize, bandBounds);
                     band.setGeoCoding(geoCoding);
+                    
+                    if(geotiffOption){
+                        GeoTiffMatrixMultiLevelSource  multiLevelSource = new GeoTiffMatrixMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, bandIndexNumber, geoCoding, Double.NaN, defaultJAIReadTileSize);
+                        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
 
-                    AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
-                    JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform,
-                                                                            bandIndexNumber, mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
-
-                    ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
-                    band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
-
-                    product.addBand(band);
+                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+                        product.addBand(band);
+                    }
+                    else{
+                        AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
+                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount, mosaicMatrix, 
+                                            bandBounds, imageToModelTransform, bandIndexNumber, mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
+                        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
+                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+                        product.addBand(band);
+                    }
                 }
             }
         }
@@ -959,12 +976,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         ArrayList<S2BandAnglesGrid> listBandAnglesGrid = new ArrayList<>();
         S2Metadata.Tile tile = metadataHeader.getTile(tileId);
         S2Metadata.AnglesGrid anglesGrid = tile.getSunAnglesGrid();
+
         int resolution = tile.getAnglesResolution();
 
         if (anglesGrid == null) {
             return bandAnglesGrid;
         }
-
         int gridHeight = tile.getSunAnglesGrid().getZenith().length;
         int gridWidth = tile.getSunAnglesGrid().getZenith()[0].length;
         float[] sunZeniths = new float[gridWidth * gridHeight];

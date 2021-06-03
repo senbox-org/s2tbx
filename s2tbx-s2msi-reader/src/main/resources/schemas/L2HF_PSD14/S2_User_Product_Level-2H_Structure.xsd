@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 rel. 2 sp1 (http://www.altova.com) by David Pattenden (Vega Technologies SAS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-14.sentinel2.eo.esa.int/PSD/user_product_Level-2A.xsd" targetNamespace="https://psd-14.sentinel2.eo.esa.int/PSD/user_product_Level-2A.xsd" elementFormDefault="qualified" version="14">
+	<xs:element name="Level-2H_User_Product" type="Level-2H_User_Product"/>
+	<xs:complexType name="Level-2H_User_Product">
+		<xs:sequence>
+			<xs:element name="AUX_DATA">
+				<xs:annotation>
+					<xs:documentation>empty</xs:documentation>
+				</xs:annotation>
+				<xs:complexType/>
+			</xs:element>
+			<xs:element name="DATASTRIP">
+				<xs:annotation>
+					<xs:documentation>empty</xs:documentation>
+				</xs:annotation>
+				<xs:complexType/>
+			</xs:element>
+			<xs:element name="GRANULE">
+				<xs:annotation>
+					<xs:documentation>Folder containing the Tiles composing the product</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Tiles" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Level-2H_Tile_Metadata_File"/>
+									<xs:element name="IMG_DATA"/>
+									<xs:element name="QI_DATA"/>
+									<xs:element name="AUX_DATA">
+										<xs:annotation>
+											<xs:documentation>empty</xs:documentation>
+										</xs:annotation>
+										<xs:complexType/>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="HTML">
+				<xs:annotation>
+					<xs:documentation>empty</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Product_Metadata_File">
+				<xs:annotation>
+					<xs:documentation>XML Main Metadata File </xs:documentation>
+				</xs:annotation>
+				<xs:complexType/>
+			</xs:element>
+			<xs:element name="rep_info">
+				<xs:annotation>
+					<xs:documentation>Folder (SAFE)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
