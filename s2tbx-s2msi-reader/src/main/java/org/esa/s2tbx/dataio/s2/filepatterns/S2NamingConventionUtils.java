@@ -194,6 +194,7 @@ public class S2NamingConventionUtils {
         String[] listFiles;
         try {
             listFiles = path.list();
+            
         } catch (IOException e) {
             return paths;
         }

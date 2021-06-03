@@ -559,6 +559,7 @@ public abstract class S2Metadata {
         private String productStopTime;
         private String datatakeSensingStartTime;
         private String processingLevel;
+        private String missionID;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
         private double quantificationValue;

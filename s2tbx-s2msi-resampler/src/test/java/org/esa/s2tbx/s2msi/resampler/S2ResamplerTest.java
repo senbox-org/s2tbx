@@ -1,16 +1,8 @@
 package org.esa.s2tbx.s2msi.resampler;
 
-import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
-import org.esa.s2tbx.dataio.s2.ortho.plugins.Sentinel2L1CProduct_Multi_UTM36S_ReaderPlugIn;
-import org.esa.snap.core.dataio.ProductIO;
-import org.esa.snap.core.datamodel.Product;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
 
 /**
  * Created by obarrile on 15/05/2017.

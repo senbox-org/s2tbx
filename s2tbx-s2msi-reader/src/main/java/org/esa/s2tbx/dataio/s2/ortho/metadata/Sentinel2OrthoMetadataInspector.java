@@ -16,6 +16,8 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.l1c.metadata.S2L1cProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.l2a.metadata.S2L2aProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l2hf.l2f.metadata.S2L2fProductMetadataReader;
+import org.esa.s2tbx.dataio.s2.l2hf.l2h.metadata.S2L2hProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.l3.metadata.S2L3ProductMetadataReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
@@ -69,6 +71,12 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
             S2SpatialResolution productResolution = namingConvention.getResolution();
             if (productLevel == S2Config.Sentinel2ProductLevel.L2A) {
                 productMetadataReader = new S2L2aProductMetadataReader(virtualPath, epsg);
+                this.maskLevel = MaskInfo.L2A;
+            }else if (productLevel == S2Config.Sentinel2ProductLevel.L2H) {
+                productMetadataReader = new S2L2hProductMetadataReader(virtualPath, epsg);
+                this.maskLevel = MaskInfo.L2A;
+            }else if (productLevel == S2Config.Sentinel2ProductLevel.L2F) {
+                productMetadataReader = new S2L2fProductMetadataReader(virtualPath, epsg);
                 this.maskLevel = MaskInfo.L2A;
             } else if (productLevel == S2Config.Sentinel2ProductLevel.L1C) {
                 productMetadataReader = new S2L1cProductMetadataReader(virtualPath, epsg);

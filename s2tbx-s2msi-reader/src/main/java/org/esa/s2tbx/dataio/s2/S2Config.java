@@ -37,7 +37,16 @@ public class S2Config {
         L1B,
         L1C,
         L2A,
+        L2H,
+        L2F,
         L3,
+        UNKNOWN
+    }
+
+    public enum Sentinel2ProductMission {
+        S2A,
+        S2B,
+        LS8,
         UNKNOWN
     }
 
@@ -76,7 +85,7 @@ public class S2Config {
 
     public static final String MTD_EXT = ".xml";
 
-    private TileLayout[] tileLayouts = new TileLayout[3];
+    private TileLayout[] tileLayouts = new TileLayout[5];
 
 
     /**
@@ -150,6 +159,8 @@ public class S2Config {
         if(level.equals("L1B")) { return Sentinel2ProductLevel.L1B;}
         if(level.equals("L1C")) { return Sentinel2ProductLevel.L1C;}
         if(level.equals("L2A")) { return Sentinel2ProductLevel.L2A;}
+        if(level.equals("L2H")) { return Sentinel2ProductLevel.L2H;}
+        if(level.equals("L2F")) { return Sentinel2ProductLevel.L2F;}
         if(level.equals("L03")) { return Sentinel2ProductLevel.L3;}
         return Sentinel2ProductLevel.UNKNOWN;
     }

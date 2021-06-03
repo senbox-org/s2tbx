@@ -24,6 +24,7 @@
         <module>snaphu-unwrapping</module>
         <module>lacs2-adapter</module>
         <module>toposhadow-adapter</module>
+        <module>maja-adapter</module>
     </modules>
 
     <dependencies>

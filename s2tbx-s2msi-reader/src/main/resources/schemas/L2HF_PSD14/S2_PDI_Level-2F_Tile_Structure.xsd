@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 rel. 2 sp1 (http://www.altova.com) by David Pattenden (Vega Technologies SAS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd" targetNamespace="https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd" elementFormDefault="qualified" version="14">
+	<xs:element name="Level-2F_Tile" type="Level-2F_Tile"/>
+	<xs:complexType name="Level-2F_Tile">
+		<xs:annotation>
+			<xs:documentation>Folder</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="AUX_DATA">
+				<xs:annotation>
+					<xs:documentation>empty</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IMG_DATA">
+				<xs:annotation>
+					<xs:documentation>Image Folder</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Fused_Surface_reflectance" maxOccurs="7">
+							<xs:annotation>
+								<xs:documentation>7 channels (B01, B02, B03, B04, B8A, B11, B12) at mission native resolution</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="NATIVE">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Mission_Specific_bands" maxOccurs="3">
+										<xs:annotation>
+											<xs:documentation>S2: Red Edge bands (B05, B06, B07) L8: Panchromatic B08 and thermal bands B10 and B11</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Level-2F_Tile_Metadata_File">
+				<xs:annotation>
+					<xs:documentation>XML Metadata File </xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="General_Info"/>
+						<xs:element name="Geometric_Info">
+							<xs:complexType/>
+						</xs:element>
+						<xs:element name="Quality_Indicators_Info">
+							<xs:complexType/>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="QI_DATA">
+				<xs:annotation>
+					<xs:documentation>Folder</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="L2F_QI_Report">
+							<xs:annotation>
+								<xs:documentation>L2F QI report  XML formatted</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Quality_Masks">
+							<xs:annotation>
+								<xs:documentation>GML Quality Mask files (S2 only)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Preview_Image">
+							<xs:annotation>
+								<xs:documentation>L2F PVI Preview Image file 343 x 343 pixels</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Validity_Mask">
+							<xs:annotation>
+								<xs:documentation>Invalid / Valid mask of land pixels</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Quicklook_images">
+							<xs:annotation>
+								<xs:documentation>True colour and SWIR-NIR RGB composites images at 30 m resolution</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
