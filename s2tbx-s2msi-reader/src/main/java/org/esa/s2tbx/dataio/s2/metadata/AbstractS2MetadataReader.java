@@ -1,14 +1,23 @@
 package org.esa.s2tbx.dataio.s2.metadata;
 
 import org.esa.s2tbx.commons.FilePath;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReaderPlugIn;
 import org.esa.snap.lib.openjpeg.jp2.TileLayout;
 import org.esa.snap.lib.openjpeg.utils.OpenJpegUtils;
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.xml.sax.SAXException;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.xml.parsers.ParserConfigurationException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
@@ -108,6 +117,7 @@ public abstract class AbstractS2MetadataReader {
         TileLayout tileLayoutForResolution = null;
         if (productMetadataFilePath.exists() && productMetadataFilePath.getFileName().toString().endsWith(".xml")) {
             VirtualPath granulesFolder = productMetadataFilePath.resolveSibling("GRANULE");
+
             try {
                 VirtualPath[] granulesFolderList = granulesFolder.listPaths();
                 if (granulesFolderList != null && granulesFolderList.length > 0) {
@@ -146,7 +156,8 @@ public abstract class AbstractS2MetadataReader {
             if (imagePaths != null && imagePaths.length > 0) {
                 for (String bandName : bandNames) {
                     for (VirtualPath imagePath : imagePaths) {
-                        if (imagePath.getFileName().toString().endsWith(bandName + ".jp2")) {
+                        String fileNameStr= imagePath.getFileName().toString();
+                        if (fileNameStr.endsWith(bandName + ".jp2")||fileNameStr.endsWith(bandName + ".TIF")) {
                             imageDirectories.add(imagePath);
                         }
                     }
@@ -177,7 +188,10 @@ public abstract class AbstractS2MetadataReader {
             List<VirtualPath> imageDirectories = getImageDirectories(pathToImages, resolution);
             for (VirtualPath imageFilePath : imageDirectories) {
                 try {
-                    tileLayoutForResolution = readTileLayoutFromJP2File(imageFilePath);
+                    if(imageFilePath.getFileName().toString().endsWith(".TIF"))
+                        tileLayoutForResolution = readTileLayoutFromTIFFile(imageFilePath);
+                    else
+                        tileLayoutForResolution = readTileLayoutFromJP2File(imageFilePath);
                     if (tileLayoutForResolution != null) {
                         break;
                     }
@@ -204,6 +218,43 @@ public abstract class AbstractS2MetadataReader {
                 tileLayout = OpenJpegUtils.getTileLayoutWithInputStream(filePath.getPath(), 5 * 1024, canSetFilePosition);
             }
         }
+        return tileLayout;
+    }
+
+    public static TileLayout readTileLayoutFromTIFFile(VirtualPath imageFilePath) throws IOException, InterruptedException {
+        TileLayout tileLayout=null;
+        ImageInputStream inputStream = null;
+        try {
+            inputStream = ImageIO.createImageInputStream(imageFilePath);
+            
+            File inputFile=imageFilePath.getFilePath().getPath().toFile();
+            VirtualDirEx virtualDir = VirtualDirEx.build(imageFilePath.getFilePath().getPath(), false, true);
+            if (virtualDir == null) {
+                throw new NullPointerException("The virtual dir is null for input path '" + imageFilePath.getFullPathString() + "'.");
+            }
+    
+            try {
+                inputFile = virtualDir.getFile(imageFilePath.getFullPathString());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            GeoTiffProductReaderPlugIn geoTiffReaderPlugIn = new GeoTiffProductReaderPlugIn();
+            GeoTiffProductReader geoTiffProductReader = new GeoTiffProductReader(geoTiffReaderPlugIn);
+            
+            Product tiffProduct = geoTiffProductReader.readProductNodes(inputFile, null);
+            int width = tiffProduct.getSceneRasterWidth();
+            int height = tiffProduct.getSceneRasterHeight();
+            int tileWidth = tiffProduct.getSceneRasterWidth();
+            int tileHeight = tiffProduct.getSceneRasterHeight();
+            int numXTiles = 1;
+            int numYTiles = 1;
+            int numResolutions = 1;
+            tileLayout = new TileLayout(width, height, tileWidth, tileHeight, numXTiles, numYTiles, numResolutions);
+        } catch (IOException e) {
+            logger.warning(String.format("Unable to get tile layout",imageFilePath.getFullPathString()));
+        }
+        
+        
         return tileLayout;
     }
 }

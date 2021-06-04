@@ -90,12 +90,14 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
             Map<S2SpatialResolution, Rectangle> tilePositionInScene = new HashMap<>();
             for (S2SpatialResolution resolution : S2SpatialResolution.values()) {
                 S2Metadata.TileGeometry tileGeom = tile.getTileGeometry(resolution);
-                Rectangle tilePosition = new Rectangle();
-                tilePosition.x = (int)((tileGeom.getUpperLeftX() - sceneUpperLeftX) / resolution.resolution);
-                tilePosition.y = (int)((sceneUpperLeftY - tileGeom.getUpperLeftY()) / resolution.resolution);
-                tilePosition.width = tileGeom.getNumCols();
-                tilePosition.height = tileGeom.getNumRows();
-                tilePositionInScene.put(resolution, tilePosition);
+                if(tileGeom!=null) {
+                    Rectangle tilePosition = new Rectangle();
+                    tilePosition.x = (int)((tileGeom.getUpperLeftX() - sceneUpperLeftX) / resolution.resolution);
+                    tilePosition.y = (int)((sceneUpperLeftY - tileGeom.getUpperLeftY()) / resolution.resolution);
+                    tilePosition.width = tileGeom.getNumCols();
+                    tilePosition.height = tileGeom.getNumRows();
+                    tilePositionInScene.put(resolution, tilePosition);
+                }
             }
             tileInfos.put(tile.getId(), new TileInfo(tile.getId(), tilePositionInScene));
         }
@@ -108,6 +110,8 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
             Dimension dimension = null;
             for (TileInfo tileInfo : tileInfos.values()) {
                 Rectangle position = tileInfo.getPositionInScene(resolution);
+                if(position==null)
+                    break;
                 if (dimension == null) {
                     dimension = new Dimension(position.x+position.width, position.y+position.height);
                 }
@@ -116,7 +120,8 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
                     dimension.height = Math.max(position.y+position.height, dimension.height);
                 }
             }
-            sceneDimensions.put(resolution, dimension);
+            if(dimension!=null)
+                sceneDimensions.put(resolution, dimension);
         }
 
         return new S2OrthoSceneLayout(tileInfos, sceneDimensions, sceneOrigin);

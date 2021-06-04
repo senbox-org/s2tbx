@@ -27,6 +27,7 @@ public class NamingConventionFactory {
         if (safe.getInputType() != null) {
             return safe;
         }
+
         SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(virtualPath);
         if (safeCompact.getInputType() != null) {
             return safeCompact;
@@ -80,6 +81,39 @@ public class NamingConventionFactory {
         }
         return null;
     }
+
+    public static String getSpectralBandImageTemplate_L2h(String format, String bandFileId, boolean isInNativeSubFolder) {
+        if (format.equals("SAFE")) {
+            if(isInNativeSubFolder)
+                return SAFENamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
+            else
+                return SAFENamingConvention.SPECTRAL_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
+        } else if (format.equals("SAFE_COMPACT")) {
+            if(isInNativeSubFolder)
+                return SAFECOMPACTNamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
+            else
+                return SAFECOMPACTNamingConvention.SPECTRAL_BAND_TEMPLATE_L2H_PSD14.replace("{{BANDFILEID}}", bandFileId);
+        }
+        return null;
+    }
+
+    public static String getSpectralBandImageTemplate_L2f(String format, String bandFileId, boolean isInNativeSubFolder) {
+        if (format.equals("SAFE")) {
+            if(isInNativeSubFolder)
+                return SAFENamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2F_PSD14.replace("{{BANDFILEID}}", bandFileId);
+            else
+                return SAFENamingConvention.SPECTRAL_BAND_TEMPLATE_L2F_PSD14.replace("{{BANDFILEID}}", bandFileId);
+        } else if (format.equals("SAFE_COMPACT")) {
+            if(isInNativeSubFolder)
+                return SAFECOMPACTNamingConvention.SPECTRAL_NATIVE_BAND_TEMPLATE_L2F_PSD14.replace("{{BANDFILEID}}", bandFileId);
+            else
+                return SAFECOMPACTNamingConvention.SPECTRAL_BAND_TEMPLATE_L2F_PSD14.replace("{{BANDFILEID}}", bandFileId);
+        }
+        return null;
+    }
+
+
+    
 
     public static String getAOTTemplate_L2a(String format) {
         if (format.equals("SAFE")) {

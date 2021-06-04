@@ -26,7 +26,7 @@ public class S2L2aProductMetadataReader extends AbstractS2OrthoMetadataReader {
         try {
             return L2aMetadata.parseHeader(path, granuleName, config, epsg, this.namingConvention.getResolution(), isAGranule, this.namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
-            throw new IOException("Failed to parse metadata fiel '" + path.getFileName().toString() + "'.", e);
+            throw new IOException("Failed to parse metadata field '" + path.getFileName().toString() + "'.", e);
         }
     }
 

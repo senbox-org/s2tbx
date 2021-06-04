@@ -22,10 +22,10 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
-import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.s2tbx.dataio.s2.tiles.MosaicMatrixCellCallback;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.quicklooks.Quicklook;
@@ -34,6 +34,8 @@ import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
 import org.esa.snap.engine_utilities.util.Pair;
 import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.snap.jp2.reader.internal.JP2MosaicBandMatrixCell;
@@ -74,8 +76,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return true;
     }
 
-    protected abstract Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader, INamingConvention namingConvention, ProductSubsetDef subsetDef)
-                                           throws Exception;
+    protected abstract Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader,
+            INamingConvention namingConvention, ProductSubsetDef subsetDef) throws Exception;
 
     protected abstract String getReaderCacheDir();
 
@@ -110,7 +112,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         cacheFolderPath = cacheFolderPath.resolve(readerDirName);
         cacheFolderPath = cacheFolderPath.resolve(version);
         cacheFolderPath = cacheFolderPath.resolve(md5sum);
-        cacheFolderPath = cacheFolderPath.resolve(productName);
+        //cacheFolderPath = cacheFolderPath.resolve(productName);
         this.cacheDir = cacheFolderPath;
         if (!Files.exists(this.cacheDir)) {
             Files.createDirectories(this.cacheDir);
@@ -120,7 +122,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST,"Successfully set up cache dir for product " + productName + " to " + this.cacheDir.toString());
+            logger.log(Level.FINEST,
+                    "Successfully set up cache dir for product " + productName + " to " + this.cacheDir.toString());
         }
     }
 
@@ -167,11 +170,16 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
                 if (logger.isLoggable(Level.FINE)) {
                     double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
-                    logger.log(Level.FINE, "Finish reading the tile layouts using the metadata file '" + inputVirtualPath.getFullPathString()+"', elapsed time: " + elapsedTimeInSeconds + " seconds.");
+                    logger.log(Level.FINE,
+                            "Finish reading the tile layouts using the metadata file '"
+                                    + inputVirtualPath.getFullPathString() + "', elapsed time: " + elapsedTimeInSeconds
+                                    + " seconds.");
                 }
 
                 if (config == null) {
-                    throw new NullPointerException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", inputVirtualPath.getFileName().toString()));
+                    throw new NullPointerException(
+                            String.format("Unable to retrieve the image tile layout associated to product [%s]",
+                                    inputVirtualPath.getFileName().toString()));
                 }
 
                 startTime = System.currentTimeMillis();
@@ -180,11 +188,13 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
                 if (logger.isLoggable(Level.FINE)) {
                     double elapsedTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000.d;
-                    logger.log(Level.FINE, "Finish reading the header using the metadata file '" + inputVirtualPath.getFullPathString()+"', elapsed time: " + elapsedTimeInSeconds + " seconds.");
+                    logger.log(Level.FINE,
+                            "Finish reading the header using the metadata file '" + inputVirtualPath.getFullPathString()
+                                    + "', elapsed time: " + elapsedTimeInSeconds + " seconds.");
                 }
-
                 String defaultProductName = metadataReader.getNamingConvention().getProductName();
-                product = readProduct(defaultProductName, metadataReader.isGranule(), metadataHeader, metadataReader.getNamingConvention(), subsetDef);
+                product = readProduct(defaultProductName, metadataReader.isGranule(), metadataHeader,
+                        metadataReader.getNamingConvention(), subsetDef);
 
                 File productFileLocation;
                 if (inputVirtualPath.getVirtualDir().isArchive()) {
@@ -196,7 +206,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
                 Path qlFile = getQuickLookFile(inputVirtualPath);
                 if (qlFile != null) {
-                    product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
+                    product.getQuicklookGroup()
+                            .add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile.toFile()));
                 }
             } else {
                 throw new FileNotFoundException(inputVirtualPath.getFullPathString());
@@ -230,7 +241,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             String[] files = parentPath.list();
             if (files != null && files.length > 0) {
                 for (String relativePath : files) {
-                    if (relativePath.endsWith(".png") && (relativePath.startsWith("S2") || relativePath.startsWith("BWI_"))) {
+                    if (relativePath.endsWith(".png")
+                            && (relativePath.startsWith("S2") || relativePath.startsWith("BWI_"))) {
                         return inputVirtualPath.resolveSibling(relativePath).getLocalFile();
                     }
                 }
@@ -241,55 +253,118 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     protected static int computeMatrixCellsDataBufferType(MosaicMatrix mosaicMatrix) {
         if (mosaicMatrix.getRowCount() > 0 && mosaicMatrix.getColumnCount() > 0) {
-            BandMatrixCell firstMatrixCell = (BandMatrixCell)mosaicMatrix.getCellAt(0, 0);
+            BandMatrixCell firstMatrixCell = (BandMatrixCell) mosaicMatrix.getCellAt(0, 0);
             for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
                 for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
-                    BandMatrixCell matrixCell = (BandMatrixCell)mosaicMatrix.getCellAt(rowIndex, columnIndex);
+                    BandMatrixCell matrixCell = (BandMatrixCell) mosaicMatrix.getCellAt(rowIndex, columnIndex);
                     if (firstMatrixCell.getDataBufferType() != matrixCell.getDataBufferType()) {
-                        throw new IllegalStateException("Different data buffer types: cell at "+rowIndex+", "+columnIndex+" has data type " + matrixCell.getDataBufferType()+" and cell at "+0+", "+0+" has data type " + firstMatrixCell.getDataBufferType()+".");
+                        throw new IllegalStateException("Different data buffer types: cell at " + rowIndex + ", "
+                                + columnIndex + " has data type " + matrixCell.getDataBufferType() + " and cell at " + 0
+                                + ", " + 0 + " has data type " + firstMatrixCell.getDataBufferType() + ".");
                     }
                 }
             }
             return firstMatrixCell.getDataBufferType();
         } else {
-            throw new IllegalArgumentException("The matrix is empty: rowCount="+mosaicMatrix.getRowCount()+", columnCount="+mosaicMatrix.getColumnCount()+".");
+            throw new IllegalArgumentException("The matrix is empty: rowCount=" + mosaicMatrix.getRowCount()
+                    + ", columnCount=" + mosaicMatrix.getColumnCount() + ".");
         }
     }
 
     protected static int computeMatrixCellsResolutionCount(MosaicMatrix mosaicMatrix) {
+        return computeMatrixCellsResolutionCount(mosaicMatrix, false);
+    }
+
+    protected static int computeMatrixCellsResolutionCount(MosaicMatrix mosaicMatrix, boolean geoTiffOption) {
         if (mosaicMatrix.getRowCount() > 0 && mosaicMatrix.getColumnCount() > 0) {
-            JP2MosaicBandMatrixCell firstMatrixCell = (JP2MosaicBandMatrixCell)mosaicMatrix.getCellAt(0, 0);
-            for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
-                for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
-                    JP2MosaicBandMatrixCell matrixCell = (JP2MosaicBandMatrixCell)mosaicMatrix.getCellAt(rowIndex, columnIndex);
-                    if (firstMatrixCell.getResolutionCount() != matrixCell.getResolutionCount()) {
-                        throw new IllegalStateException("Different resolution count: cell at "+rowIndex+", "+columnIndex+" has data type " + matrixCell.getResolutionCount()+" and cell at "+0+", "+0+" has resolution count " + firstMatrixCell.getResolutionCount()+".");
-                    }
-                }
-            }
-            return firstMatrixCell.getResolutionCount();
+            if (geoTiffOption)
+                return computeTiffMatrixCellsResolutionCount(mosaicMatrix);
+            else
+                return computeJP2MatrixCellsResolutionCount(mosaicMatrix);
         } else {
-            throw new IllegalArgumentException("The matrix is empty: rowCount="+mosaicMatrix.getRowCount()+", columnCount="+mosaicMatrix.getColumnCount()+".");
+            throw new IllegalArgumentException("The matrix is empty: rowCount=" + mosaicMatrix.getRowCount()
+                    + ", columnCount=" + mosaicMatrix.getColumnCount() + ".");
         }
     }
 
-    protected final MosaicMatrix buildBandMatrix(Collection<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
+    protected static int computeJP2MatrixCellsResolutionCount(MosaicMatrix mosaicMatrix) {
+        JP2MosaicBandMatrixCell firstMatrixCell = (JP2MosaicBandMatrixCell) mosaicMatrix.getCellAt(0, 0);
+        for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
+            for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
+                JP2MosaicBandMatrixCell matrixCell = (JP2MosaicBandMatrixCell) mosaicMatrix.getCellAt(rowIndex,
+                        columnIndex);
+                if (firstMatrixCell.getResolutionCount() != matrixCell.getResolutionCount()) {
+                    throw new IllegalStateException("Different resolution count: cell at " + rowIndex + ", "
+                            + columnIndex + " has data type " + matrixCell.getResolutionCount() + " and cell at " + 0
+                            + ", " + 0 + " has resolution count " + firstMatrixCell.getResolutionCount() + ".");
+                }
+            }
+        }
+        return firstMatrixCell.getResolutionCount();
+    }
+
+    protected static int computeTiffMatrixCellsResolutionCount(MosaicMatrix mosaicMatrix) {
+        GeoTiffMatrixCell firstMatrixCell = (GeoTiffMatrixCell) mosaicMatrix.getCellAt(0, 0);
+        for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
+            for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
+                GeoTiffMatrixCell matrixCell = (GeoTiffMatrixCell) mosaicMatrix.getCellAt(rowIndex, columnIndex);
+                if (firstMatrixCell.getResolutionCount() != matrixCell.getResolutionCount()) {
+                    throw new IllegalStateException("Different resolution count: cell at " + rowIndex + ", "
+                            + columnIndex + " has data type " + matrixCell.getResolutionCount() + " and cell at " + 0
+                            + ", " + 0 + " has resolution count " + firstMatrixCell.getResolutionCount() + ".");
+                }
+            }
+        }
+        int nbResolution=firstMatrixCell.getResolutionCount();
+        return (nbResolution>5) ? nbResolution : 5;
+    }
+
+    protected final MosaicMatrix buildBandMatrix(Collection<String> bandMatrixTileIds,
+            S2SceneDescription sceneDescription, BandInfo tileBandInfo) {
         MosaicMatrixCellCallback mosaicMatrixCellCallback = new MosaicMatrixCellCallback() {
             @Override
-            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo, int sceneCellWidth, int sceneCellHeight) {
+            public MosaicMatrix.MatrixCell buildMatrixCell(String tileId, BandInfo tileBandInfo, int sceneCellWidth,
+                    int sceneCellHeight) {
                 VirtualPath imageFilePath = tileBandInfo.getTileIdToPathMap().get(tileId);
                 TileLayout tileLayout;
                 try {
-                    tileLayout = AbstractS2MetadataReader.readTileLayoutFromJP2File(imageFilePath);
+                    if (imageFilePath.getFileName().toString().endsWith(".TIF"))
+                        tileLayout = AbstractS2MetadataReader.readTileLayoutFromTIFFile(imageFilePath);
+                    else
+                        tileLayout = AbstractS2MetadataReader.readTileLayoutFromJP2File(imageFilePath);
                 } catch (RuntimeException e) {
                     throw e;
                 } catch (Exception e) {
-                    throw new RuntimeException("Failed to read the tile layout for jp2 image file '"+imageFilePath.getFullPathString()+"'.", e);
+                    throw new RuntimeException("Failed to read the tile layout for image file '"
+                            + imageFilePath.getFullPathString() + "'.", e);
                 }
-                JP2ImageFile jp2ImageFile = new JP2ImageFile(imageFilePath);
-                int cellWidth = Math.min(sceneCellWidth, tileLayout.width);
-                int cellHeight = Math.min(sceneCellHeight, tileLayout.height);
-                return new JP2MosaicBandMatrixCell(jp2ImageFile, Sentinel2ProductReader.this.cacheDir, tileLayout, cellWidth, cellHeight);
+                if (imageFilePath.getFileName().toString().endsWith(".TIF")) {
+                    Path tiffImagePath = null;
+                    try {
+                        tiffImagePath = imageFilePath.getFilePath().getPath();
+                    } catch (Exception e2) {
+                        e2.printStackTrace();
+                    }
+                    int cellWidth = 0;
+                    int cellHeight = 0;
+                    int dataBufferType = -1;
+                    try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader
+                            .buildGeoTiffImageReader(tiffImagePath)) {
+                        cellWidth = geoTiffImageReader.getImageWidth();
+                        cellHeight = geoTiffImageReader.getImageHeight();
+                        dataBufferType = geoTiffImageReader.getSampleModel().getDataType();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, tiffImagePath, null,
+                            Sentinel2ProductReader.this.cacheDir, 1);
+                } else {
+                    JP2ImageFile jp2ImageFile = new JP2ImageFile(imageFilePath);
+                    int cellWidth = Math.min(sceneCellWidth, tileLayout.width);
+                    int cellHeight = Math.min(sceneCellHeight, tileLayout.height);
+                    return new JP2MosaicBandMatrixCell(jp2ImageFile, Sentinel2ProductReader.this.cacheDir, tileLayout,
+                            cellWidth, cellHeight);
+                }
             }
         };
         return buildBandMatrix(bandMatrixTileIds, sceneDescription, tileBandInfo, mosaicMatrixCellCallback);
@@ -309,7 +384,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             band.setSpectralBandIndex(spectralInfo.getBandId());
             band.setNoDataValueUsed(false);
             band.setNoDataValue(0);
-            band.setValidPixelExpression(String.format("%s.raw > %s", bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
+            band.setValidPixelExpression(
+                    String.format("%s.raw > %s", bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
         } else if (bandInformation instanceof S2IndexBandInformation) {
             S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInformation;
             band.setSpectralWavelength(0);
@@ -325,11 +401,13 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return band;
     }
 
-    protected static MosaicMatrix buildBandMatrix(Collection<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo, MosaicMatrixCellCallback mosaicMatrixCellCallback) {
+    protected static MosaicMatrix buildBandMatrix(Collection<String> bandMatrixTileIds,
+            S2SceneDescription sceneDescription, BandInfo tileBandInfo,
+            MosaicMatrixCellCallback mosaicMatrixCellCallback) {
         // find the top left rectangle of the matrix
         Pair<String, Rectangle> topLeftRectanglePair = null;
         S2SpatialResolution bandNativeResolution = tileBandInfo.getBandInformation().getResolution();
-        List<Pair<String, Rectangle>> remainingRectanglePairs = new ArrayList<>(bandMatrixTileIds.size()-1);
+        List<Pair<String, Rectangle>> remainingRectanglePairs = new ArrayList<>(bandMatrixTileIds.size() - 1);
         for (String tileId : bandMatrixTileIds) {
             Rectangle tileRectangle = sceneDescription.getMatrixTileRectangle(tileId, bandNativeResolution);
             Pair<String, Rectangle> pair = new Pair<>(tileId, tileRectangle);
@@ -349,7 +427,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         Set<BandRectangleCoordinates> matrixCellsSet = new HashSet<>();
         Stack<BandRectangleCoordinates> stack = new Stack<>();
-        stack.push(new BandRectangleCoordinates(topLeftRectanglePair.getFirst(), topLeftRectanglePair.getSecond(), 0, 0));
+        stack.push(
+                new BandRectangleCoordinates(topLeftRectanglePair.getFirst(), topLeftRectanglePair.getSecond(), 0, 0));
         while (!stack.isEmpty()) {
             BandRectangleCoordinates currentRectangleCoordinates = stack.pop();
             if (!matrixCellsSet.add(currentRectangleCoordinates)) {
@@ -368,14 +447,16 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                         // the next column
                         int rowIndex = currentRectangleCoordinates.rowIndex;
                         int columnIndex = currentRectangleCoordinates.columnIndex + 1;
-                        BandRectangleCoordinates rectangleCoordinates = new BandRectangleCoordinates(pair.getFirst(), pair.getSecond(), rowIndex, columnIndex);
+                        BandRectangleCoordinates rectangleCoordinates = new BandRectangleCoordinates(pair.getFirst(),
+                                pair.getSecond(), rowIndex, columnIndex);
                         stack.push(rectangleCoordinates);
                         remainingRectanglePairs.set(i, null); // reset the position
                     } else if (rectangle.y > topY && rectangle.y <= bottomY) {
                         // the next row
                         int rowIndex = currentRectangleCoordinates.rowIndex + 1;
                         int columnIndex = currentRectangleCoordinates.columnIndex;
-                        BandRectangleCoordinates rectangleCoordinates = new BandRectangleCoordinates(pair.getFirst(), pair.getSecond(), rowIndex, columnIndex);
+                        BandRectangleCoordinates rectangleCoordinates = new BandRectangleCoordinates(pair.getFirst(),
+                                pair.getSecond(), rowIndex, columnIndex);
                         stack.push(rectangleCoordinates);
                         remainingRectanglePairs.set(i, null); // reset the position
                     }
@@ -383,7 +464,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
         if (matrixCellsSet.size() != bandMatrixTileIds.size()) {
-            throw new IllegalStateException("Invalid matrix size: matrixCellsSet.size = " + matrixCellsSet.size()+", bandMatrixTileIds.size() = " + bandMatrixTileIds.size());
+            throw new IllegalStateException("Invalid matrix size: matrixCellsSet.size = " + matrixCellsSet.size()
+                    + ", bandMatrixTileIds.size() = " + bandMatrixTileIds.size());
         }
         int lastRowIndex = -1;
         int lastColumnIndex = -1;
@@ -394,7 +476,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         int rowCount = lastRowIndex + 1;
         int columnCount = lastColumnIndex + 1;
         if (rowCount * columnCount != bandMatrixTileIds.size()) {
-            throw new IllegalStateException("Invalid matrix size: row count = " + rowCount+", column count = " + columnCount+", bandMatrixTileIds.size()="+bandMatrixTileIds.size());
+            throw new IllegalStateException("Invalid matrix size: row count = " + rowCount + ", column count = "
+                    + columnCount + ", bandMatrixTileIds.size()=" + bandMatrixTileIds.size());
         }
         BandRectangleCoordinates[][] bandRectangleCoordinates = new BandRectangleCoordinates[rowCount][columnCount];
         for (BandRectangleCoordinates rectangleCoordinates : matrixCellsSet) {
@@ -405,16 +488,17 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
                 BandRectangleCoordinates rectangleCoordinates = bandRectangleCoordinates[rowIndex][columnIndex];
                 int sceneCellHeight = rectangleCoordinates.tileRectangle.height;
-                if (rowIndex < rowCount-1) {
-                    BandRectangleCoordinates nextRowRectangle = bandRectangleCoordinates[rowIndex+1][columnIndex];
+                if (rowIndex < rowCount - 1) {
+                    BandRectangleCoordinates nextRowRectangle = bandRectangleCoordinates[rowIndex + 1][columnIndex];
                     sceneCellHeight = nextRowRectangle.tileRectangle.y - rectangleCoordinates.tileRectangle.y;
                 }
                 int sceneCellWidth = rectangleCoordinates.tileRectangle.width;
-                if (columnIndex < columnCount-1) {
-                    BandRectangleCoordinates nextColumnRectangle = bandRectangleCoordinates[rowIndex][columnIndex+1];
+                if (columnIndex < columnCount - 1) {
+                    BandRectangleCoordinates nextColumnRectangle = bandRectangleCoordinates[rowIndex][columnIndex + 1];
                     sceneCellWidth = nextColumnRectangle.tileRectangle.x - rectangleCoordinates.tileRectangle.x;
                 }
-                MosaicMatrix.MatrixCell matrixCell = mosaicMatrixCellCallback.buildMatrixCell(rectangleCoordinates.tileId, tileBandInfo, sceneCellWidth, sceneCellHeight);
+                MosaicMatrix.MatrixCell matrixCell = mosaicMatrixCellCallback
+                        .buildMatrixCell(rectangleCoordinates.tileId, tileBandInfo, sceneCellWidth, sceneCellHeight);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, false, false);
             }
         }
@@ -426,7 +510,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         private final Map<String, VirtualPath> tileIdToPathMap;
         private final S2BandInformation bandInformation;
 
-        public BandInfo(Map<String, VirtualPath> tileIdToPathMap, S2BandInformation spectralInformation, TileLayout imageLayout) {
+        public BandInfo(Map<String, VirtualPath> tileIdToPathMap, S2BandInformation spectralInformation,
+                TileLayout imageLayout) {
             this.tileIdToPathMap = Collections.unmodifiableMap(tileIdToPathMap);
             this.bandInformation = spectralInformation;
         }
