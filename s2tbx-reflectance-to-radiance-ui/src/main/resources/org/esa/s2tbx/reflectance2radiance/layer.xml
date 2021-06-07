@@ -36,8 +36,8 @@
 
     <folder name="OperatorUIs">
         <file name="org.esa.s2tbx.reflectance2radiance">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.reflectance2radiance.ReflectanceToRadianceUI"/>
             <attr name="operatorName" stringvalue="ReflectanceToRadianceOp"/>
-            <attr name="disableFromGraphBuilder" stringvalue="true"/>
         </file>
     </folder>
     

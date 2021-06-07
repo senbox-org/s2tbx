@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 /**
@@ -58,6 +59,7 @@ class SAMSpectralFormModel {
     private final AppContext appContext;
     private final SpectralAngleMapperForm samForm;
     private PropertyChangeSupport propertyChangeSupport;
+    private static Callable<Product> productAccessor;
 
     private Action loadAction = new LoadAction();
     private Action addAction = new AddAction();
@@ -72,6 +74,11 @@ class SAMSpectralFormModel {
         spectrumListSelectionModel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         spectrumListSelectionModel.addListSelectionListener(new EndmemberListSelectionListener());
         propertyChangeSupport = new PropertyChangeSupport(this);
+    }
+
+    SAMSpectralFormModel(AppContext appContext, Callable<Product> productAccessor){
+        this(appContext, (SpectralAngleMapperForm) null);
+        SAMSpectralFormModel.productAccessor = productAccessor;
     }
 
     ListModel<SpectrumInput> getSpectrumListModel() {
@@ -216,8 +223,18 @@ class SAMSpectralFormModel {
                 }
             });
             content.add(yCoordinates);
-            final Map<String, Product> sourceProducts = samForm.getSourceProductMap();
-            Product product = sourceProducts.entrySet().stream().findFirst().get().getValue();
+            Product product = null;
+            if(samForm != null) {
+                final Map<String, Product> sourceProducts = samForm.getSourceProductMap();
+                product = sourceProducts.entrySet().stream().findFirst().get().getValue();
+            }else{
+                try {
+                    product = productAccessor.call();
+                } catch (Exception ignored) {
+                    //ignore
+                }
+            }
+
             if (product != null) {
                 Mask geometryMask = product.getMaskGroup().get("geometry");
                 if(geometryMask != null) {

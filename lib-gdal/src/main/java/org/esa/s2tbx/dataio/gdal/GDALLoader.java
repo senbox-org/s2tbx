@@ -147,6 +147,15 @@ public final class GDALLoader {
     }
 
     /**
+     * Gets the GDAL version of loaded driver.
+     *
+     * @return the GDAL version of loaded driver
+     */
+    public GDALVersion getGdalVersion() {
+        return gdalVersion;
+    }
+
+    /**
      * Init the drivers if the GDAL library is installed.
      */
     private void initDrivers() {

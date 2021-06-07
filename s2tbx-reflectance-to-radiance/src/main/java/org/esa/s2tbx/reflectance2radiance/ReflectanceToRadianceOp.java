@@ -66,7 +66,7 @@ public class ReflectanceToRadianceOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
+    @Parameter(alias = "sourceBands", label = "Source bands", description = "The source bands for the computation.", rasterDataNodeType = Band.class)
     private String[] sourceBandNames;
 
     @Parameter(label = "Copy masks", description = "Copy masks from the source product", defaultValue = "false")
@@ -170,7 +170,9 @@ public class ReflectanceToRadianceOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
-            throw new OperatorException("Please select at least one band.");
+            // SIITBX-410: do not throw exception for allowing Graph Builder to initialize the UI
+            //throw new OperatorException("Please select at least one band.");
+            this.sourceBandNames = this.sourceProduct.getBandNames();
         }
         Band sunZenithBand = this.sourceProduct.getBand("sun_zenith");
 
@@ -211,14 +213,14 @@ public class ReflectanceToRadianceOp extends Operator {
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
         ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
         if (this.copyMasks) {
-            copyMasks(sourceProduct, targetProduct, sourceBandNames);
+            copyMasks(sourceProduct, targetProduct, this.sourceBandNames);
         }
         ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
 
         Band[] sourceBands = new Band[this.sourceBandNames.length];
         this.tiePointGrids = new HashMap<>();
         for (int i = 0; i < this.sourceBandNames.length; i++) {
-            Band sourceBand = sourceProduct.getBand(this.sourceBandNames[i]);
+            Band sourceBand = this.sourceProduct.getBand(this.sourceBandNames[i]);
             sourceBands[i] = this.sourceProduct.getBand(this.sourceBandNames[i]);
             int sourceBandWidth = sourceBands[i].getRasterWidth();
             int sourceBandHeight = sourceBands[i].getRasterHeight();

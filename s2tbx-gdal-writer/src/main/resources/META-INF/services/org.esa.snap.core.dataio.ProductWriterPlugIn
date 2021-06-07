@@ -1,3 +1,4 @@
+org.esa.s2tbx.dataio.gdal.writer.plugins.COGDriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.BMPDriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.BTDriverProductWriterPlugIn
 org.esa.s2tbx.dataio.gdal.writer.plugins.GS7BGDriverProductWriterPlugIn
