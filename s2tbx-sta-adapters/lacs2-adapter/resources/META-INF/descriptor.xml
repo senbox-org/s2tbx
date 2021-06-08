@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<operator>
+  <name>org.esa.s2tbx.s24scilws.lacs2</name>
+  <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
+  <alias>LacS2</alias>
+  <label>LacS2</label>
+  <version>1.2.0</version>
+  <description>LAC Sentinel2 Processor</description>
+  <authors/>
+  <copyright/>
+  <internal>false</internal>
+  <autoWriteSuppressed>false</autoWriteSuppressed>
+  <menuLocation>Menu/Optical/Thematic Water Processing/S2-4Sci Land and Water Study</menuLocation>
+  <preprocessTool>false</preprocessTool>
+  <writeForProcessing>false</writeForProcessing>
+  <mainToolFileLocation>$PYTHON_BIN</mainToolFileLocation>
+  <workingDir>$java.io.tmpdir</workingDir>
+  <templateType>VELOCITY</templateType>
+  <template type="file">
+    <file>LacS2-template.vm</file>
+  </template>
+  <progressPattern>.*:Progress\[%\]: (\d+(\.\d+)?)</progressPattern>
+  <errorPattern>(^ERROR:(.+)|[\s\S]+(?:UserWarning|Error): (.+))</errorPattern>
+  <variables>
+    <osvariable>
+      <key>HOME</key>
+      <value></value>
+      <isShared>false</isShared>
+      <windows>$USERPROFILE</windows>
+      <linux></linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <variable>
+      <key>LAC_FOLDER</key>
+      <value>$HOME/.snap/auxdata/s2tbx/s24scilws/lacs2</value>
+      <isShared>false</isShared>
+    </variable>
+    <variable>
+      <key>java.io.tmpdir</key>
+      <value></value>
+      <isShared>false</isShared>
+    </variable>
+    <osvariable>
+      <key>PYTHON_BIN</key>
+      <value>python</value>
+      <isShared>false</isShared>
+      <windows>python</windows>
+      <linux>python3</linux>
+      <macosx>python</macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+  </variables>
+  <parameters>
+    <parameter>
+      <name>targetProductFile</name>
+      <dataType>java.io.File</dataType>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <templateparameter>
+      <name>postExecuteTemplate</name>
+      <dataType>java.io.File</dataType>
+      <defaultValue>LacS2-post-template.vm</defaultValue>
+      <description/>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>TemplateAfterExecution</parameterType>
+      <template type="file">
+        <file>LacS2-post-template.vm</file>
+      </template>
+      <parameters/>
+    </templateparameter>
+    <parameter>
+      <name>completeAtmosphericCorrection</name>
+      <dataType>java.lang.Boolean</dataType>
+      <description>If true, the complete atmospheric correction is applied</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>bands</name>
+      <dataType>java.lang.String</dataType>
+      <defaultValue>02_03_04_11</defaultValue>
+      <valueSet/>
+      <notNull>true</notNull>
+      <notEmpty>true</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>sourceFolder</name>
+      <description>Sentinel 2 product folder.</description>
+      <dataType>java.io.File</dataType>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>FolderParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>targetFolder</name>
+      <description>Root folder where the output product will be created.</description>
+      <dataType>java.io.File</dataType>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>FolderParameter</parameterType>
+    </parameter>
+  </parameters>
+  <source>user</source>
+  <isSystem>false</isSystem>
+  <isHandlingOutputName>true</isHandlingOutputName>
+  <sourceProductDescriptors/>
+  <targetPropertyDescriptors/>
+  <numSourceProducts>0</numSourceProducts>
+</operator>
