@@ -86,6 +86,7 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>TemplateAfterExecution</parameterType>
+      <parameters/>
       <template type="file">
         <file>Sen2Cor-post-template.vm</file>
       </template>
