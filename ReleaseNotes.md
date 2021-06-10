@@ -1,7 +1,7 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
-Changes in S2TBX 8.0.3
+Changes in S2TBX 8.0.4
 ----------------------
 ### List of solved issues
 #### Bug
