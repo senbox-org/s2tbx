@@ -83,6 +83,19 @@ public class S2ProductNamingUtils {
      * @return
      */
     public static boolean checkStructureFromGranuleXml(VirtualPath xmlPath) {
+        return checkStructureFromGranuleXml(xmlPath,true);
+    }
+
+    /**
+     * Checks whether the structure of a granule is right:
+     * checks if it contains "IMG_DATA"
+     * checks if it contains "QI_DATA"
+     *
+     * @param xmlPath path to granule metadata
+     * @param requiredAuxData to disable the AuxData checking folder (L1B product, there are no AuxData in the Granule folder)
+     * @return
+     */
+    public static boolean checkStructureFromGranuleXml(VirtualPath xmlPath, boolean hasAuxDataFolder) {
         if (!xmlPath.resolveSibling("IMG_DATA").exists()) {
             return false;
         }
@@ -91,9 +104,10 @@ public class S2ProductNamingUtils {
             return false;
         }
 
-        if (!xmlPath.resolveSibling("AUX_DATA").exists()) {
-            return false;
-        }
+        if(hasAuxDataFolder)
+            if (!xmlPath.resolveSibling("AUX_DATA").exists()) {
+                return false;
+            }
 
         return true;
     }
@@ -360,11 +374,15 @@ public class S2ProductNamingUtils {
     }
 
     public static boolean hasValidStructure(S2Config.Sentinel2InputType inputType, VirtualPath xmlPath) throws IOException {
+       return hasValidStructure(inputType, xmlPath, true);
+    }
+
+    public static boolean hasValidStructure(S2Config.Sentinel2InputType inputType, VirtualPath xmlPath, boolean hasAuxDataFolder) throws IOException {
         if (inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             return S2ProductNamingUtils.checkStructureFromProductXml(xmlPath);
         }
         if (inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) {
-            return S2ProductNamingUtils.checkStructureFromGranuleXml(xmlPath);
+            return S2ProductNamingUtils.checkStructureFromGranuleXml(xmlPath, hasAuxDataFolder);
         }
         return false;
     }
