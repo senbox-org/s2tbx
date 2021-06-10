@@ -22,11 +22,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
-import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.jp2.reader.internal.BandMatrixCell;
 import org.esa.s2tbx.dataio.s2.tiles.MosaicMatrixCellCallback;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.quicklooks.Quicklook;
@@ -110,7 +110,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         cacheFolderPath = cacheFolderPath.resolve(readerDirName);
         cacheFolderPath = cacheFolderPath.resolve(version);
         cacheFolderPath = cacheFolderPath.resolve(md5sum);
-        cacheFolderPath = cacheFolderPath.resolve(productName);
+        //cacheFolderPath = cacheFolderPath.resolve(productName);
         this.cacheDir = cacheFolderPath;
         if (!Files.exists(this.cacheDir)) {
             Files.createDirectories(this.cacheDir);
