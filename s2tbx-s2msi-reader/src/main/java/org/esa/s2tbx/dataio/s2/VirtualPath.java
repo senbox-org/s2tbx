@@ -165,14 +165,16 @@ public class VirtualPath implements JP2LocalFile {
         return null;
     }
 
-    public VirtualPath[] listPaths(String pattern, String suffix) throws IOException {
+    public VirtualPath[] listPaths(String pattern, String[] suffixList) throws IOException {
         String childRelativePath = isCurrentDirectory() ? null : this.relativePath.toString();
         String[] list = this.dir.list(childRelativePath);
         if (list != null && list.length > 0) {
             List<VirtualPath> listPaths = new ArrayList<>(list.length);
             for (int i=0; i<list.length; i++) {
-                if (list[i].contains(pattern) && list[i].toLowerCase().endsWith(suffix)) {
-                    listPaths.add(resolve(list[i]));
+                for (String suffix:suffixList){
+                    if (list[i].contains(pattern) && list[i].toLowerCase().endsWith(suffix)) {
+                        listPaths.add(resolve(list[i]));
+                    }
                 }
             }
             if (listPaths.size() > 0) {
