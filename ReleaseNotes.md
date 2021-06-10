@@ -5,6 +5,14 @@ Changes in S2TBX 8.0.3
 ----------------------
 ### List of solved issues
 #### Bug
+    * https://forum.step.esa.int/t/can-only-graphical-build-biophysical-parameters-s2-10-m-not-just-s2/30546
+
+
+
+Changes in S2TBX 8.0.3
+----------------------
+### List of solved issues
+#### Bug
     * https://forum.step.esa.int/t/since-last-update-gpt-execution-never-finishes/30543
 
 
