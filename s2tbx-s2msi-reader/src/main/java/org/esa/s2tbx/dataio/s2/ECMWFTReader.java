@@ -19,7 +19,7 @@ public class ECMWFTReader {
     public ECMWFTReader(Path path, Path cachedir) throws IOException {
         this.tiePointGrid = new ArrayList<>();
         NetcdfFile ncfile = null;
-        final Path cacheFolderPath = cachedir.resolve("aux_ecmfwt");
+        final Path cacheFolderPath = cachedir.resolve("aux_ecmwft");
         try {
             final Path copyPath = cacheFolderPath.resolve(path.getFileName().toString());
             Files.createDirectories(copyPath);
