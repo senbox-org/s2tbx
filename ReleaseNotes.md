@@ -5,7 +5,8 @@ Changes in S2TBX 8.0.4
 ----------------------
 ### List of solved issues
 #### Bug
-    * https://forum.step.esa.int/t/can-only-graphical-build-biophysical-parameters-s2-10-m-not-just-s2/30546
+    * [SIITBX-453] - Biophysical Processor S2 (not S2_10m) not accessible from the gpt builder
+      (https://forum.step.esa.int/t/can-only-graphical-build-biophysical-parameters-s2-10-m-not-just-s2/30546)
 
 
 
