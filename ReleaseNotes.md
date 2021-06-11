@@ -8,6 +8,9 @@ Changes in S2TBX 8.0.4
     * [SIITBX-453] - Biophysical Processor S2 (not S2_10m) not accessible from the gpt builder
       (https://forum.step.esa.int/t/can-only-graphical-build-biophysical-parameters-s2-10-m-not-just-s2/30546)
 
+#### Improvement
+    * Shorten cache paths wherever possible
+
 
 
 Changes in S2TBX 8.0.3
