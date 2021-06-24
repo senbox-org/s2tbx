@@ -17,6 +17,10 @@
 
 pipeline {
     agent { label 'snap-test' }
+    options {
+            buildDiscarder(logRotator(daysToKeepStr: '15', artifactDaysToKeepStr: '15'))
+            timeout(time: 20, unit: 'HOURS')
+    }
     parameters {
         booleanParam(name: 'launchTests', defaultValue: true, description: 'When true all stages are launched, When false only stages "Package", "Deploy" and "Save installer data" are launched.')
         booleanParam(name: 'runLongUnitTests', defaultValue: true, description: 'When true the option -Denable.long.tests=true is added to maven command so the long unit tests will be executed')
