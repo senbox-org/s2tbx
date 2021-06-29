@@ -14,10 +14,10 @@ import java.util.List;
 
 public class ECMWFTReader {
 
-    final List<TiePointGrid> tiePointGrid;
+    final List<TiePointGrid> tiePointGrids;
 
     public ECMWFTReader(Path path, Path cachedir) throws IOException {
-        this.tiePointGrid = new ArrayList<>();
+        this.tiePointGrids = new ArrayList<>();
         NetcdfFile ncfile = null;
         final Path cacheFolderPath = cachedir.resolve("aux_ecmwft");
         try {
@@ -27,15 +27,15 @@ public class ECMWFTReader {
             ncfile = NetcdfFile.openInMemory(copyPath.toString());
             TiePointGrid tpGrid = getGrid(ncfile, "Total_column_water_vapour_surface");
             if (tpGrid != null) {
-                this.tiePointGrid.add(tpGrid);
+                this.tiePointGrids.add(tpGrid);
             }
             tpGrid = getGrid(ncfile, "Total_column_ozone_surface");
             if (tpGrid != null) {
-                this.tiePointGrid.add(tpGrid);
+                this.tiePointGrids.add(tpGrid);
             }
             tpGrid = getGrid(ncfile, "Mean_sea_level_pressure_surface");
             if (tpGrid != null) {
-                this.tiePointGrid.add(tpGrid);
+                this.tiePointGrids.add(tpGrid);
             }
         } catch (Exception ioe) {
             // Handle less-cool exceptions here
@@ -49,7 +49,7 @@ public class ECMWFTReader {
     }
 
     public List<TiePointGrid> getECMWFGrids() {
-        return tiePointGrid;
+        return tiePointGrids;
     }
 
     public TiePointGrid getGrid(NetcdfFile ncfile, String name) throws IOException {
