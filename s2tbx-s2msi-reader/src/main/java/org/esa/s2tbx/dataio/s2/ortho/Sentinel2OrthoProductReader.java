@@ -22,6 +22,7 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.esa.s2tbx.dataio.s2.ColorIterator;
+import org.esa.s2tbx.dataio.s2.ECMWFTReader;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGridByDetector;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
@@ -47,11 +48,9 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Placemark;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -118,7 +117,6 @@ import java.util.stream.Collectors;
 import static java.awt.image.DataBuffer.TYPE_FLOAT;
 import static org.esa.s2tbx.dataio.s2.ortho.metadata.S2OrthoMetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
-import org.esa.s2tbx.dataio.s2.ECMWFTReader;
 
 /**
  * <p>
@@ -734,13 +732,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         String snapName = String.format("%s_%dm", maskInfo.getSnapName()[i], resolution.resolution);
                         if(subsetDef == null || subsetDef.isNodeAccepted(snapName)) {
                             VectorDataNode vdn = new VectorDataNode(snapName, collection);
-                            vdn.setOwner(product);
                             product.addMask(snapName,
                                             vdn,
                                             description,
                                             maskInfo.getColor()[i],
                                             maskInfo.getTransparency()[i],
                                             referenceBand);
+                            product.getVectorDataGroup().add(vdn);
                         }
                     } else {
                         //Currently there are no masks with this characteristics, the code should be tested if a new mask is added
@@ -760,9 +758,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             }
                             simpleFeatureIterator.close();
                             VectorDataNode vdnPolygon = new VectorDataNode(subId, subCollection);
-                            vdnPolygon.setOwner(product);
                             String snapName = String.format("%s_%dm", subId, resolution.resolution);
-
                             if(subsetDef == null || subsetDef.isNodeAccepted(snapName)) {
                                 product.addMask(snapName,
                                                 vdnPolygon,
@@ -770,6 +766,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                 ColorIterator.next(),
                                                 maskInfo.getTransparency()[i],
                                                 referenceBand);
+                                product.getVectorDataGroup().add(vdnPolygon);
                             }
                         }
                     }
@@ -786,13 +783,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     String snapName = maskInfo.getSnapNameForBand(bandName, i);
                     if(subsetDef == null || subsetDef.isNodeAccepted(snapName)) {
                         VectorDataNode vdn = new VectorDataNode(snapName, collection);
-                        vdn.setOwner(product);
                         product.addMask(snapName,
                                         vdn,
                                         description,
                                         maskInfo.getColor()[i],
                                         maskInfo.getTransparency()[i],
                                         referenceBand);
+                        product.getVectorDataGroup().add(vdn);
                     }
                 } else {
                     SimpleFeatureIterator simpleFeatureIterator = collection.features();
@@ -810,15 +807,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             }
                         }
                         simpleFeatureIterator.close();
-                        VectorDataNode vdnPolygon = new VectorDataNode(subId, subCollection);
-                        vdnPolygon.setOwner(product);
                         if(subsetDef == null || subsetDef.isNodeAccepted(subId)) {
+                            VectorDataNode vdnPolygon = new VectorDataNode(subId, subCollection);
                             product.addMask(subId,
                                             vdnPolygon,
                                             description,
                                             ColorIterator.next(),
                                             maskInfo.getTransparency()[i],
                                             referenceBand);
+                            product.getVectorDataGroup().add(vdnPolygon);
                         }
                     }
                 }
