@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>s2tbx-sta-adapters</artifactId>
+        <groupId>org.esa.s2tbx</groupId>
+        <version>9.0.0-SNAPSHOT</version>
+    </parent>
+    <version>9.0.0-SNAPSHOT</version>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>sen2cor290</artifactId>
+    <packaging>nbm</packaging>
+
+    <name>Sentinel-2 SEN2COR processor v02.09.00</name>
+    <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products using Sen2Cor v02.09.00</description>
+
+    <build>
+        <sourceDirectory>../src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/**</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.netbeans.utilities</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+                <configuration combine.self="override">
+                    <licenseFile>${project.basedir}/../../LICENSE.html</licenseFile>
+                    <keystore>${project.basedir}/../../keystore/s2tbx.ks</keystore>
+                    <keystorealias>snap</keystorealias>
+                    <keystorepassword>snap-123</keystorepassword>
+                    <requiresRestart>true</requiresRestart>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

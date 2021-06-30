@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: 9.0.0
+OpenIDE-Module-Implementation-Version: 9.0.0
+OpenIDE-Module-Name: Sentinel-2 SEN2COR290 Processor
+OpenIDE-Module-Display-Category: SNAP Supported Plugins
+OpenIDE-Module-Java-Dependencies: Java > 1.8
+OpenIDE-Module-Type: STA
+OpenIDE-Module-Short-Description: Sen2Cor v02.09.00
+OpenIDE-Module: org.esa.s2tbx.sen2cor290
+OpenIDE-Module-Alias: Sen2Cor290
+OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
