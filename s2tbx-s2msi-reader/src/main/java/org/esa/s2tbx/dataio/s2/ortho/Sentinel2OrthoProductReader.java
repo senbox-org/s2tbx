@@ -296,8 +296,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 //todo: add reader L2HF for the angle tif data
             }
         }
-        // for (S2Metadata.Tile tile : tileList)
-        //     addECMWFBand(product, tile, sceneDescription, mapCRS, namingConvention);
+        for (S2Metadata.Tile tile : tileList)
+            addECMWFBand(product, tile, sceneDescription, mapCRS, namingConvention);
 
         return product;
     }
