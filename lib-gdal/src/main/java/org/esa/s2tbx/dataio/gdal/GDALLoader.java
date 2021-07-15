@@ -76,8 +76,8 @@ public final class GDALLoader {
                 postGDALInit();
                 Path gdalDistributionBinFolderPath = Paths.get(this.gdalVersion.getLocation());
                 GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
-            } catch (Exception ex) {
-                logger.log(Level.SEVERE, "Failed to initialize GDAL native drivers. GDAL readers and writers were disabled."+ex.getMessage());
+            } catch (Throwable t) {
+                logger.log(Level.SEVERE, "Failed to initialize GDAL native drivers. GDAL readers and writers were disabled." + t.getMessage());
                 this.gdalIsInitialized = false;
             }
             this.gdalInitialisationExecuted = true;
