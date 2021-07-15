@@ -170,13 +170,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     @Override
-    public final void readTiePointGridRasterData(TiePointGrid tpg, int destOffsetX, int destOffsetY,
-                            int destWidth, int destHeight,
-                            ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        // Should never not come here, since we have an OpImage that reads data
-    }
-
-    @Override
     protected final Product readProduct(String defaultProductName, boolean isGranule, S2Metadata metadataHeader,
             INamingConvention namingConvention, ProductSubsetDef subsetDef) throws Exception {
         this.orthoMetadataHeader = (S2OrthoMetadata) metadataHeader;
