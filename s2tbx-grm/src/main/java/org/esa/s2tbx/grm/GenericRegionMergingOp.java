@@ -165,19 +165,8 @@ public class GenericRegionMergingOp extends Operator {
     }
 
     /**
-     * Executes the operator.
-     * <p>
-     * For operators that compute raster data tiles, the method is usually a no-op. Other operators might perform their
-     * main work in this method, e.g. perform some image analysis such as extracting statistics and other features from
-     * data products.
-     * <p>
-     * Don't call this method directly. The framework may call this method
-     * <ol>
-     * <li>once before the very first tile is computed, or</li>
-     * <li>as a result of a call to {@link #execute(ProgressMonitor)}.</li>
-     * </ol>
-     * <p>
-     * The default implementation only progresses the progress monitor.
+     * JIRA: SIITBX-434
+     * Processes the tiles and builds the GRM output.
      *
      * @param pm A progress monitor to be notified for long-running tasks.
      * @throws OperatorException If an error occurs during computation of the target raster.
@@ -246,6 +235,15 @@ public class GenericRegionMergingOp extends Operator {
         }
     }
 
+    /**
+     * JIRA: SIITBX-434
+     * Writes the GRM output on targetTile.
+     *
+     * @param targetBand The target band.
+     * @param targetTile The current tile associated with the target band to be computed.
+     * @param pm         A progress monitor which should be used to determine computation cancellation requests.
+     * @throws OperatorException When error occurs
+     */
     @Override
     public final void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         Rectangle targetRectangle = targetTile.getRectangle();
