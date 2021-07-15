@@ -50,8 +50,6 @@ public class S2L1cProductMetadataReader extends AbstractS2OrthoMetadataReader {
                 bandNames[1] = S2BandConstants.B9.getFilenameBandId();
                 bandNames[2] = S2BandConstants.B10.getFilenameBandId();
                 break;
-            case R15M:bandNames = null;break;
-            case R30M:bandNames = null;break;
             default:
                 SystemUtils.LOG.warning("Invalid resolution: " + resolution);
                 bandNames = null;
