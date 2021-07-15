@@ -7,7 +7,12 @@ import org.esa.s2tbx.grm.segmentation.OutputMarkerMatrixHelper;
 import org.esa.s2tbx.grm.segmentation.OutputMaskMatrixHelper;
 import org.esa.s2tbx.grm.segmentation.TileDataSource;
 import org.esa.s2tbx.grm.segmentation.TileDataSourceImpl;
-import org.esa.s2tbx.grm.segmentation.tiles.*;
+import org.esa.s2tbx.grm.segmentation.tiles.AbstractTileSegmenter;
+import org.esa.s2tbx.grm.segmentation.tiles.BaatzSchapeTileSegmenter;
+import org.esa.s2tbx.grm.segmentation.tiles.FullLambdaScheduleTileSegmenter;
+import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
+import org.esa.s2tbx.grm.segmentation.tiles.SegmentationSourceProductPair;
+import org.esa.s2tbx.grm.segmentation.tiles.SpringTileSegmenter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -96,14 +101,15 @@ public class GenericRegionMergingOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    private AtomicInteger processingTileCount;
-    private AtomicInteger processedTileCount;
+    private final AtomicInteger processingTileCount = new AtomicInteger(0);
+    private final AtomicInteger processedTileCount = new AtomicInteger(0);
     private int totalTileCount;
-    private Set<String> processedTiles;
+    private final Set<String> processedTiles = new HashSet<>();
 
     private AbstractTileSegmenter tileSegmenter;
     private long startTime;
     private AbstractSegmenter segmenter;
+    private ProductData grmData = null;
 
     public GenericRegionMergingOp() {
     }
@@ -158,52 +164,77 @@ public class GenericRegionMergingOp extends Operator {
         initTiles();
     }
 
+    /**
+     * Executes the operator.
+     * <p>
+     * For operators that compute raster data tiles, the method is usually a no-op. Other operators might perform their
+     * main work in this method, e.g. perform some image analysis such as extracting statistics and other features from
+     * data products.
+     * <p>
+     * Don't call this method directly. The framework may call this method
+     * <ol>
+     * <li>once before the very first tile is computed, or</li>
+     * <li>as a result of a call to {@link #execute(ProgressMonitor)}.</li>
+     * </ol>
+     * <p>
+     * The default implementation only progresses the progress monitor.
+     *
+     * @param pm A progress monitor to be notified for long-running tasks.
+     * @throws OperatorException If an error occurs during computation of the target raster.
+     */
     @Override
-    public final void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
-        Rectangle targetRectangle = targetTile.getRectangle();
+    public void doExecute(ProgressMonitor pm) throws OperatorException {
+        pm.beginTask("processing GRM", 1);
+        computeGRMTiles();
+        pm.worked(1);
+        pm.done();
+    }
+
+    private void computeGRMTiles() {
+        int sceneWidth = this.targetProduct.getSceneRasterWidth();
+        int sceneHeight = this.targetProduct.getSceneRasterHeight();
+        Dimension tileSize = this.targetProduct.getPreferredTileSize();
+        for (int y = 0; y < sceneHeight; y += tileSize.height) {
+            int h = y + tileSize.height < sceneHeight ? tileSize.height : sceneHeight - y;
+            for (int x = 0; x < sceneWidth; x += tileSize.width){
+                int w = x + tileSize.width < sceneWidth ? tileSize.width : sceneWidth - x;
+                Rectangle targetRectangle = new Rectangle(x, y, w, h);
+                computeGRMTile(targetRectangle);
+            }
+        }
+    }
+
+    private void computeGRMTile(Rectangle targetRectangle){
         Dimension tileSize = this.targetProduct.getPreferredTileSize();
         int tileRowIndex = targetRectangle.y / tileSize.height;
         int tileColumnIndex = targetRectangle.x / tileSize.width;
 
         String key = tileRowIndex+"|"+tileColumnIndex;
-        boolean canProcessTile = false;
+        boolean canProcessTile;
         synchronized (this.processedTiles) {
             canProcessTile = this.processedTiles.add(key);
         }
         if (canProcessTile) {
             int startProcessingTileCount = this.processingTileCount.incrementAndGet();
             if (startProcessingTileCount == 1) {
-                beforeProcessingFirstTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+                beforeProcessingFirstTile();
             }
 
             try {
-                processTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
+                processTile(targetRectangle, tileRowIndex, tileColumnIndex);
             } catch (Exception ex) {
                 throw new OperatorException(ex);
             } finally {
                 synchronized (this.processedTileCount) {
                     int finishProcessingTileCount = this.processedTileCount.incrementAndGet();
                     if (finishProcessingTileCount == this.totalTileCount) {
-                        this.processedTileCount.notifyAll();
-                    }
-                }
-            }
-
-            if (startProcessingTileCount == this.totalTileCount) {
-                synchronized (this.processedTileCount) {
-                    if (this.processedTileCount.get() < this.totalTileCount) {
                         try {
-                            this.processedTileCount.wait();
-                        } catch (InterruptedException e) {
+                            afterProcessedLastTile();
+                            this.processedTileCount.notifyAll();
+                        } catch (Exception e) {
                             throw new OperatorException(e);
                         }
                     }
-                }
-
-                try {
-                    afterProcessedLastTile(targetBand, targetTile, pm, tileRowIndex, tileColumnIndex);
-                } catch (Exception e) {
-                    throw new OperatorException(e);
                 }
             }
         } else {
@@ -212,6 +243,30 @@ public class GenericRegionMergingOp extends Operator {
                 logger.log(Level.FINE, ""); // add an empty line
                 logger.log(Level.FINE, "Tile already computed: row index: "+tileRowIndex+", column index: "+tileColumnIndex+", bounds [x=" + targetRectangle.x+", y="+targetRectangle.y+", width="+targetRectangle.width+", height="+targetRectangle.height+"]");
             }
+        }
+    }
+
+    @Override
+    public final void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+        Rectangle targetRectangle = targetTile.getRectangle();
+        if(grmData != null) {
+            Object grmDataElems = grmData.getElems();
+            ProductData tileData = targetTile.getDataBuffer();
+            Object tileDataElems = tileData.getElems();
+            final int ws = targetBand.getRasterWidth();
+            final int xs0 = targetRectangle.x;
+            final int ys0 = targetRectangle.y;
+            final int w = targetRectangle.width;
+            final int h = targetRectangle.height;
+            final int maxY = ys0 + h;
+            final int tileStride = targetTile.getScanlineStride();
+            for (int ys = ys0, yd = 0; ys < maxY; ++ys, ++yd) {
+                int srcPos = ys * ws + xs0;
+                int destPos = yd * tileStride;
+                System.arraycopy(grmDataElems, srcPos, tileDataElems, destPos, w);
+            }
+        } else {
+            throw new OperatorException("GRM compute failed.");
         }
     }
 
@@ -247,7 +302,7 @@ public class GenericRegionMergingOp extends Operator {
         return sourceBandNames;
     }
 
-    private void beforeProcessingFirstTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) {
+    private void beforeProcessingFirstTile() {
         this.startTime = System.currentTimeMillis();
         if (logger.isLoggable(Level.FINE)) {
             int imageWidth = this.tileSegmenter.getImageWidth();
@@ -261,7 +316,7 @@ public class GenericRegionMergingOp extends Operator {
         }
     }
 
-    private void afterProcessedLastTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
+    private void afterProcessedLastTile() throws Exception {
         this.segmenter = this.tileSegmenter.runSecondSegmentationsAndMergeGraphs();
 
         OutputMaskMatrixHelper outputMaskMatrixHelper = this.segmenter.buildOutputMaskMatrixHelper();
@@ -272,17 +327,12 @@ public class GenericRegionMergingOp extends Operator {
         WeakReference<OutputMaskMatrixHelper> referenceMaskMatrix = new WeakReference<OutputMaskMatrixHelper>(outputMaskMatrixHelper);
         referenceMaskMatrix.clear();
 
-        ProductData data = outputMarkerMatrix.buildOutputProductData();
+        grmData = outputMarkerMatrix.buildOutputProductData();
         int graphNodeCount = outputMarkerMatrix.getGraphNodeCount();
 
         outputMarkerMatrix.doClose();
         WeakReference<OutputMarkerMatrixHelper> referenceMarkerMatrix = new WeakReference<OutputMarkerMatrixHelper>(outputMarkerMatrix);
         referenceMarkerMatrix.clear();
-
-        Band productTargetBand = this.targetProduct.getBandAt(0);
-        productTargetBand.setSourceImage(null); // reset the source image
-        productTargetBand.setData(data);
-        productTargetBand.getSourceImage();
 
         if (logger.isLoggable(Level.FINE)) {
             int imageWidth = tileSegmenter.getImageWidth();
@@ -298,18 +348,13 @@ public class GenericRegionMergingOp extends Operator {
         }
     }
 
-    private void processTile(Band targetBand, Tile targetTile, ProgressMonitor pm, int tileRowIndex, int tileColumnIndex) throws Exception {
-        Rectangle targetRectangle = targetTile.getRectangle();
+    private void processTile(Rectangle targetRectangle, int tileRowIndex, int tileColumnIndex) throws Exception {
         ProcessingTile currentTile = this.tileSegmenter.buildTile(targetRectangle.x, targetRectangle.y, targetRectangle.width, targetRectangle.height);
         TileDataSource[] sourceTiles = getSourceTiles(currentTile.getRegion());
         this.tileSegmenter.runTileFirstSegmentation(sourceTiles, currentTile, tileRowIndex, tileColumnIndex);
     }
 
     private final void initTiles() {
-        this.processedTiles = new HashSet<String>();
-
-        this.processingTileCount = new AtomicInteger(0);
-        this.processedTileCount = new AtomicInteger(0);
 
         int sceneWidth = this.targetProduct.getSceneRasterWidth();
         int sceneHeight = this.targetProduct.getSceneRasterHeight();
