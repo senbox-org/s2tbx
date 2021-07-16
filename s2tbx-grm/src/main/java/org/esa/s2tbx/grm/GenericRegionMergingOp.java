@@ -165,8 +165,8 @@ public class GenericRegionMergingOp extends Operator {
     }
 
     /**
-     * JIRA: SIITBX-434
-     * Processes the tiles and builds the GRM output.
+     * [SIITBX-434] Use doExecute() instead of computeTile() for processing the tiles and building the GRM output.
+     * Reason: If JAI execution threads < nr of processing tiles then deadlock occurs.
      *
      * @param pm A progress monitor to be notified for long-running tasks.
      * @throws OperatorException If an error occurs during computation of the target raster.
@@ -236,8 +236,8 @@ public class GenericRegionMergingOp extends Operator {
     }
 
     /**
-     * JIRA: SIITBX-434
-     * Writes the GRM output on targetTile.
+     * [SIITBX-434] Use computeTile() for writing the GRM output on targetTile.
+     * Reason: If JAI execution threads < nr of processing tiles then deadlock occurs.
      *
      * @param targetBand The target band.
      * @param targetTile The current tile associated with the target band to be computed.
