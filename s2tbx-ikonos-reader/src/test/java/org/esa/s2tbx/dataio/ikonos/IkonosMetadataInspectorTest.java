@@ -41,8 +41,8 @@ public class IkonosMetadataInspectorTest {
         IkonosMetadataInspector metadataInspector = new IkonosMetadataInspector();
         MetadataInspector.Metadata metadata = metadataInspector.getMetadata(productFile.toPath());
         assertNotNull(metadata);
-        assertEquals(200, metadata.getProductWidth());
-        assertEquals(200, metadata.getProductHeight());
+        assertEquals(4101, metadata.getProductWidth());
+        assertEquals(3983, metadata.getProductHeight());
 
         GeoCoding geoCoding = metadata.getGeoCoding();
         assertNotNull(geoCoding);
