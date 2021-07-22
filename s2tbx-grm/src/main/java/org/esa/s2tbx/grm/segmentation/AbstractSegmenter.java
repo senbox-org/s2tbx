@@ -237,8 +237,10 @@ public abstract class AbstractSegmenter {
                     edge.setCostUpdated(true);
 
                     Edge edgeFromNeighborToR = neighborNode.findEdge(node);
-                    edgeFromNeighborToR.setCost(merginCost);
-                    edgeFromNeighborToR.setCostUpdated(true);
+                    if (edgeFromNeighborToR != null) {
+                        edgeFromNeighborToR.setCost(merginCost);
+                        edgeFromNeighborToR.setCostUpdated(true);
+                    }
                 }
 
                 // check if the cost of the edge is the minimum

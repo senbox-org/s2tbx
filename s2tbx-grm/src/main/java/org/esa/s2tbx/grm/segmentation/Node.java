@@ -189,7 +189,7 @@ public abstract class Node {
             Edge firstEdge = this.edges.get(0);
             if (firstEdge.getCost() < threshold) {
                 Node firstEdgeTarget = firstEdge.getTarget();
-                if (firstEdgeTarget.isValid()) {
+                if (firstEdgeTarget.isValid() && firstEdgeTarget.getEdgeCount() > 0) {
                     Node bestNode = firstEdgeTarget.getEdgeAt(0).getTarget();
                     if (this == bestNode) { // the same node
                         if (this.id < firstEdgeTarget.id) {
