@@ -51,7 +51,7 @@ public class CCILandCoverModelDescriptor extends AbstractLandCoverModelDescripto
         // SIITBX-448: CCI LandCover Data - location changed
         //remotePath = "https://storage.googleapis.com/cci-lc-v207/";
         final Preferences preferences = Config.instance("s2tbx").load().preferences();
-        remotePath = preferences.get(CCI_LAND_COVER_REMOTE_PATH, "ftp://geo10.elie.ucl.ac.be/v207/");
+        remotePath = preferences.get(CCI_LAND_COVER_REMOTE_PATH, "ftp://geo10.elie.ucl.ac.be/CCI/LandCover/");
 
         name = NAME;
         NO_DATA_VALUE = 0;
