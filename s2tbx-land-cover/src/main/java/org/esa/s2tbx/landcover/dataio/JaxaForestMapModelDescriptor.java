@@ -79,27 +79,4 @@ public class JaxaForestMapModelDescriptor extends AbstractLandCoverModelDescript
             }
         }
     }
-
-    @Override
-    public String createTileFilename(int tileX, int tileY) {
-        StringBuilder name = new StringBuilder();
-        int numTilesX = 180 / JaxaFileModel.DEGREES_PER_SUPERTILE;
-        int numTilesY = 90 / JaxaFileModel.DEGREES_PER_SUPERTILE;
-        if (tileY < numTilesY) {
-            name.append(String.format(JaxaFileModel.NORTH_LATITUDE, tileY * JaxaFileModel.DEGREES_PER_SUPERTILE));
-        } else {
-            name.append(String.format(JaxaFileModel.SOUTH_LATITUDE, (tileY - numTilesY) * JaxaFileModel.DEGREES_PER_SUPERTILE));
-        }
-        if (tileX < numTilesX) {
-            name.append(String.format(JaxaFileModel.EAST_LONGITUDE, tileX * JaxaFileModel.DEGREES_PER_SUPERTILE));
-        } else {
-            name.append(String.format(JaxaFileModel.WEST_LONGITUDE, (tileX - numTilesX) * JaxaFileModel.DEGREES_PER_SUPERTILE));
-        }
-        if (remotePath.endsWith("2016/")) {
-            remotePath += name.toString() + "/";
-        } else {
-            remotePath = remotePath.substring(0, remotePath.indexOf("2016/") + JaxaFileModel.DEGREES_PER_SUPERTILE) + name.toString();
-        }
-        return name.toString();
-    }
 }

@@ -52,10 +52,5 @@ public class FCCLandCoverModelDescriptor extends AbstractLandCoverModelDescripto
     }
 
     @Override
-    public String createTileFilename(int tileX, int tileY) {
-        return fileList[0].getName();
-    }
-
-    @Override
     public boolean isInstalled() { return true; }
 }
