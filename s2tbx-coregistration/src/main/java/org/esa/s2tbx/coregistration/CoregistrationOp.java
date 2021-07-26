@@ -40,10 +40,18 @@ import java.util.Map;
         copyright = "Copyright (C) 2017 by CS ROMANIA")
 public class CoregistrationOp extends Operator {
 
-    @SourceProduct(alias = "Master", description = "The source product which serves as master.")
+    /*
+    Change alias to expected value of GraphBuilder
+     */
+//    @SourceProduct(alias = "Master", description = "The source product which serves as master.")
+    @SourceProduct(alias = "sourceProduct", description = "The source product which serves as master.")
     private Product masterProduct;
 
-    @SourceProduct(alias = "Slave", description = "The source product which serves as slave.")
+    /*
+    Change alias to expected value of GraphBuilder
+     */
+//    @SourceProduct(alias = "Slave", description = "The source product which serves as slave.")
+    @SourceProduct(alias = "sourceProduct.1", description = "The source product which serves as slave.")
     private Product slaveProduct;
 
     @TargetProduct(description = "The target product which will use the master's location.")
