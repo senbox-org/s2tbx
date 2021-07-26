@@ -33,4 +33,11 @@
         </folder>
     </folder>
 
+    <folder name="OperatorUIs">
+        <file name="org.esa.s2tbx.coregistration">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.coregistration.CoregistrationUI"/>
+            <attr name="operatorName" stringvalue="CoregistrationOp"/>
+        </file>
+    </folder>
+
 </filesystem>
