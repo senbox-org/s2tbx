@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.logging.Level;
@@ -18,8 +19,8 @@ import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
 public enum OSCategory {
     WIN_32("Windows", "x86", "where"),
     WIN_64("Windows", "x64", "where"),
-    LINUX_64("Linux", "x64", "which"),
-    MAC_OS_X("MacOSX", "x64", "which"),
+    LINUX_64("Linux", "x64", "which -a"),
+    MAC_OS_X("MacOSX", "x64", "which -a"),
     UNSUPPORTED("", "", "");
 
     private static final Logger logger = Logger.getLogger(OSCategory.class.getName());
@@ -112,17 +113,21 @@ public enum OSCategory {
      * @param executableName the target executable name
      * @return the absolute location of executable
      */
-    public String getExecutableLocation(String executableName) {
+    public String[] getExecutableLocations(String executableName) {
         try (java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(this.findExecutableLocationCmd + " " + executableName).getInputStream()).useDelimiter("\\A")) {
             String executableFilePath = s.hasNext() ? s.next() : "";
-            executableFilePath = executableFilePath.replaceAll("\r\n", "");
+            executableFilePath = executableFilePath.replaceAll("\\r?\\n", File.pathSeparator);
             if (!executableFilePath.isEmpty()) {
-                return Paths.get(executableFilePath).getParent().toString();
+                String[] executableFilePaths = executableFilePath.split(File.pathSeparator);
+                String[] executableLocations = new String[executableFilePaths.length];
+                for (int i = 0; i < executableFilePaths.length; i++) {
+                    executableLocations[i] = Paths.get(executableFilePaths[i]).getParent().toString();
+                }
+                return executableLocations;
             }
-            return "";
         } catch (IOException ignored) {
             logger.log(Level.INFO, () -> executableName + " not found");
         }
-        return "";
+        return new String[0];
     }
 }

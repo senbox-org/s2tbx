@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,13 +42,14 @@ public enum GDALVersion {
     private static final String GDAL_JNI_LIBRARY_FILE = "java/gdal.jar";
 
     private static final String GDALINFIO_EXECUTABLE_NAME = "gdalinfo";
-    private static final String GDAL_INFO_CMD = GDALINFIO_EXECUTABLE_NAME + " --version";
+    private static final String GDALINFO_EXECUTABLE_ARGS = "--version";
     private static final Map<String, GDALVersion> JNI_VERSIONS = buildJNIVersionsMap();
 
     private static final Logger logger = Logger.getLogger(GDALVersion.class.getName());
 
     private static final GDALVersion INTERNAL_VERSION = retrieveInternalVersion();
-    private static final GDALVersion INSTALLED_VERSION = retrieveInstalledVersion();
+    private static final Map<String,GDALVersion> INSTALLED_VERSIONS = retrieveInstalledVersions();
+    private static final GDALVersion INSTALLED_VERSION = getSelectedInstalledVersion();
 
     String id;
     String name;
@@ -100,14 +102,29 @@ public enum GDALVersion {
         logger.log(Level.INFO, () -> "Internal GDAL " + INTERNAL_VERSION.getId() + " set to be used by SNAP.");
         return INTERNAL_VERSION;
     }
-
     /**
      * Gets installed GDAL version.
      *
      * @return the installed GDAL version or {@code null} if not found
      */
-    public static GDALVersion getInstalledVersion() {
-        return INSTALLED_VERSION;
+    public static GDALVersion getSelectedInstalledVersion() {
+        String selectedInstalledVersionKey = GDALLoaderConfig.getInstance().getSelectedInstalledGDALLibrary();
+        if (INSTALLED_VERSIONS != null) {
+            GDALVersion selectedInstalledVersion = INSTALLED_VERSIONS.get(selectedInstalledVersionKey);
+            if (selectedInstalledVersion == null && INSTALLED_VERSIONS.size() > 0) {
+                return INSTALLED_VERSIONS.values().iterator().next();
+            }
+            return selectedInstalledVersion;
+        }
+        return null;
+    }
+    /**
+     * Gets installed GDAL version.
+     *
+     * @return the installed GDAL version or {@code null} if not found
+     */
+    public static Map<String,GDALVersion> getInstalledVersions() {
+        return INSTALLED_VERSIONS;
     }
 
     private static String fetchProcessOutput(Process process) throws IOException {
@@ -141,35 +158,41 @@ public enum GDALVersion {
     }
 
     /**
-     * Retrieves the installed GDAl version on host OS by invoking 'gdalinfo --version' command and parsing the output.
+     * Retrieves the installed GDAl versions on host OS by invoking 'gdalinfo --version' on every 'gdalinfo' executable path command and parsing the output.
      *
-     * @return the installed GDAl version on host OS or {@code null} if not found
+     * @return the installed GDAl versions on host OS or {@code null} if not found
      */
-    private static GDALVersion retrieveInstalledVersion() {
-        GDALVersion gdalVersion = null;
-        try {
-            Process checkGDALVersionProcess = Runtime.getRuntime().exec(GDAL_INFO_CMD);
-            String result = fetchProcessOutput(checkGDALVersionProcess);
-            String versionId = result.replaceAll("[\\s\\S]*?(\\d*\\.\\d*\\.\\d*)[\\s\\S]*$", "$1");
-            String version = versionId.replaceAll("(\\d*\\.\\d*)[\\s\\S]*$", "$1.x");
-            gdalVersion = JNI_VERSIONS.get(version);
-            if (gdalVersion != null) {
-                gdalVersion.setId(versionId);
-                OSCategory osCategory = OSCategory.getOSCategory();
-                gdalVersion.setOsCategory(osCategory);
-                gdalVersion.setLocation(osCategory.getExecutableLocation(GDALINFIO_EXECUTABLE_NAME));
-                logger.log(Level.INFO, () -> "GDAL " + versionId + " found on system. JNI driver will be used.");
-            } else {
-                if (version.isEmpty()) {
-                    logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used. (f0)");
-                } else {
-                    logger.log(Level.INFO, () -> "Incompatible GDAL " + versionId + " found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used.");
-                }
-            }
-        } catch (IOException ignored) {
-            logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used. (f1)");
+    private static Map<String,GDALVersion> retrieveInstalledVersions() {
+        OSCategory osCategory = OSCategory.getOSCategory();
+        String[] installedVersionsPaths = osCategory.getExecutableLocations(GDALINFIO_EXECUTABLE_NAME);
+        if(installedVersionsPaths.length<1){
+            logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used. (f0)");
+            return null;
         }
-        return gdalVersion;
+        Map<String,GDALVersion> gdalVersions = new LinkedHashMap<>();
+        for (String installedVersionsPath : installedVersionsPaths) {
+            try {
+                Process checkGDALVersionProcess = Runtime.getRuntime().exec(new String[]{installedVersionsPath + File.separator + GDALINFIO_EXECUTABLE_NAME, GDALINFO_EXECUTABLE_ARGS});
+                String result = fetchProcessOutput(checkGDALVersionProcess);
+                String versionId = result.replaceAll("[\\s\\S]*?(\\d*\\.\\d*\\.\\d*)[\\s\\S]*$", "$1");
+                String version = versionId.replaceAll("(\\d*\\.\\d*)[\\s\\S]*$", "$1.x");
+                GDALVersion gdalVersion = JNI_VERSIONS.get(version);
+                if (gdalVersion != null) {
+                    gdalVersion.setId(versionId);
+                    gdalVersion.setOsCategory(osCategory);
+                    gdalVersion.setLocation(installedVersionsPath);
+                    logger.log(Level.INFO, () -> "GDAL " + versionId + " found on system. JNI driver will be used.");
+                    gdalVersions.putIfAbsent(version, gdalVersion);
+                } else {
+                    if (!version.isEmpty()) {
+                        logger.log(Level.INFO, () -> "Incompatible GDAL " + versionId + " found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used.");
+                    }
+                }
+            } catch (IOException ignored) {
+                logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used. (f1)");
+            }
+        }
+        return gdalVersions;
     }
 
     /**

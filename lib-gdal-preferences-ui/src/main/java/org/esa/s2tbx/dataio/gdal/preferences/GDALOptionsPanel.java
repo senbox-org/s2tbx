@@ -17,6 +17,7 @@ class GDALOptionsPanel extends JPanel {
 
     private JRadioButton useInternalGDALLibrary;
     private JRadioButton useInstalledGDALLibrary;
+    private JComboBox<String> installedGDALLibraryVersions;
 
     /**
      * Creates new instance for this class
@@ -28,6 +29,20 @@ class GDALOptionsPanel extends JPanel {
 
         useInternalGDALLibrary.addItemListener(e -> controller.changed());
         useInstalledGDALLibrary.addItemListener(e -> controller.changed());
+        installedGDALLibraryVersions.addItemListener(e -> controller.changed());
+    }
+
+    /**
+     * Updates the UI components when GDAL Library version selected
+     */
+    private void installedGDALLibraryVersionSelected(JTextField locationInstalledField) {
+        String versionName = installedGDALLibraryVersions.getItemAt(installedGDALLibraryVersions.getSelectedIndex());
+        String location = "not found";
+        if (GDALVersion.getInstalledVersions().get(versionName) != null) {
+            location = GDALVersion.getInstalledVersions().get(versionName).getLocation();
+        }
+        locationInstalledField.setText(location);
+        Mnemonics.setLocalizedText(useInstalledGDALLibrary, "Use installed GDAL version from Operating System (" + installedGDALLibraryVersions.getItemAt(installedGDALLibraryVersions.getSelectedIndex()) + ")");
     }
 
     /**
@@ -47,18 +62,21 @@ class GDALOptionsPanel extends JPanel {
         locationInternalField.setText(internalVersion.getLocation());
         locationInternalField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
+        installedGDALLibraryVersions = new JComboBox<>();
         JTextField locationInstalledField = new JTextField();
         locationInstalledField.setEditable(false);
-        GDALVersion installedVersion = GDALVersion.getInstalledVersion();
-        String versionName = "not installed";
-        String location = "not found";
-        if (installedVersion != null) {
-            versionName = installedVersion.getId();
-            location = installedVersion.getLocation();
+        if (GDALVersion.getInstalledVersions().size() > 0) {
+            for (String installedGDALLibraryVersion : GDALVersion.getInstalledVersions().keySet()) {
+                installedGDALLibraryVersions.addItem(installedGDALLibraryVersion);
+            }
+            installedGDALLibraryVersions.addItemListener(e -> installedGDALLibraryVersionSelected(locationInstalledField));
+        } else {
+            String versionName = "not installed";
+            installedGDALLibraryVersions.addItem(versionName);
         }
-        locationInstalledField.setText(location);
+        installedGDALLibraryVersionSelected(locationInstalledField);
+        installedGDALLibraryVersions.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
         locationInstalledField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        Mnemonics.setLocalizedText(useInstalledGDALLibrary, "Use installed GDAL version from Operating System (" + versionName + ")");
 
         JLabel label = new JLabel("NOTE: Restart SNAP to take changes effect.");
         JLabel locationInternalLabel = new JLabel("Location: ");
@@ -66,7 +84,12 @@ class GDALOptionsPanel extends JPanel {
         locationInternalPanel.add(locationInternalLabel);
         locationInternalPanel.add(locationInternalField);
         locationInternalPanel.setLayout(new BoxLayout(locationInternalPanel, BoxLayout.X_AXIS));
-        JLabel locationInstalledLabel = new JLabel("Found in: ");
+        JLabel versionInstalledLabel = new JLabel("Version: ");
+        JPanel versionInstalledPanel = new JPanel();
+        versionInstalledPanel.add(versionInstalledLabel);
+        versionInstalledPanel.add(installedGDALLibraryVersions);
+        versionInstalledPanel.setLayout(new BoxLayout(versionInstalledPanel, BoxLayout.X_AXIS));
+        JLabel locationInstalledLabel = new JLabel("Location: ");
         JPanel locationInstalledPanel = new JPanel();
         locationInstalledPanel.add(locationInstalledLabel);
         locationInstalledPanel.add(locationInstalledField);
@@ -83,6 +106,8 @@ class GDALOptionsPanel extends JPanel {
                                         .addGap(0, 512, Short.MAX_VALUE)
                                         .addComponent(useInstalledGDALLibrary)
                                         .addGap(0, 512, Short.MAX_VALUE)
+                                        .addComponent(versionInstalledPanel)
+                                        .addGap(0, 512, Short.MAX_VALUE)
                                         .addComponent(locationInstalledPanel)
                                         .addGap(0, 512, Short.MAX_VALUE)
                                         .addComponent(label))
@@ -93,9 +118,14 @@ class GDALOptionsPanel extends JPanel {
                         .addGroup(layout.createSequentialGroup()
                                 .addComponent(useInternalGDALLibrary)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(locationInternalPanel).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(useInstalledGDALLibrary).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(locationInstalledPanel).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(locationInternalPanel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(useInstalledGDALLibrary)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(versionInstalledPanel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(locationInstalledPanel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(label)
                                 .addContainerGap())
         );
@@ -110,6 +140,10 @@ class GDALOptionsPanel extends JPanel {
         } else {
             useInternalGDALLibrary.setSelected(true);
         }
+        String selectedInstalledGDALLibrary = GDALLoaderConfig.getInstance().getSelectedInstalledGDALLibrary();
+        if (!selectedInstalledGDALLibrary.contentEquals(GDALLoaderConfig.PREFERENCE_NONE_VALUE_SELECTED_INSTALLED_GDAL)) {
+            installedGDALLibraryVersions.setSelectedItem(selectedInstalledGDALLibrary);
+        }
     }
 
     /**
@@ -117,6 +151,7 @@ class GDALOptionsPanel extends JPanel {
      */
     void store() {
         GDALLoaderConfig.getInstance().setUseInstalledGDALLibrary(useInstalledGDALLibrary.isSelected());
+        GDALLoaderConfig.getInstance().setSelectedInstalledGDALLibrary(installedGDALLibraryVersions.getItemAt(installedGDALLibraryVersions.getSelectedIndex()));
     }
 
     /**
