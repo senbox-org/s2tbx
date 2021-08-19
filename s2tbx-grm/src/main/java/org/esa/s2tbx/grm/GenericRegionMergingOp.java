@@ -164,21 +164,6 @@ public class GenericRegionMergingOp extends Operator {
         initTiles();
     }
 
-    /**
-     * [SIITBX-434] Use doExecute() instead of computeTile() for processing the tiles and building the GRM output.
-     * Reason: If JAI execution threads < nr of processing tiles then deadlock occurs.
-     *
-     * @param pm A progress monitor to be notified for long-running tasks.
-     * @throws OperatorException If an error occurs during computation of the target raster.
-     */
-    @Override
-    public void doExecute(ProgressMonitor pm) throws OperatorException {
-        pm.beginTask("processing GRM", 1);
-        computeGRMTiles();
-        pm.worked(1);
-        pm.done();
-    }
-
     private void computeGRMTiles() {
         int sceneWidth = this.targetProduct.getSceneRasterWidth();
         int sceneHeight = this.targetProduct.getSceneRasterHeight();
@@ -246,6 +231,18 @@ public class GenericRegionMergingOp extends Operator {
      */
     @Override
     public final void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+        synchronized (this.processedTileCount) {
+            if (this.processedTileCount.get() < 1) {
+                computeGRMTiles();
+            }
+            if (this.processedTileCount.get() < this.totalTileCount) {
+                try {
+                    this.processedTileCount.wait();
+                } catch (Exception e) {
+                    throw new OperatorException(e);
+                }
+            }
+        }
         Rectangle targetRectangle = targetTile.getRectangle();
         if(grmData != null) {
             Object grmDataElems = grmData.getElems();
