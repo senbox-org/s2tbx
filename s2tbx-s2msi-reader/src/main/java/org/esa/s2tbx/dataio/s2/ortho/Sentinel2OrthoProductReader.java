@@ -578,10 +578,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             float[] scalings = new float[2];
             scalings[0] = product.getSceneRasterWidth() / (float) sourceImage.getWidth();
             scalings[1] = product.getSceneRasterHeight() / (float) sourceImage.getHeight();
-            PlanarImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetImage, sourceImage, scalings, null, renderingHints,
-                    band.getNoDataValue(),
-                    Interpolation.getInstance(Interpolation.INTERP_NEAREST));
-            band.setSourceImage(scaledImage);
+            Interpolation neareastInterpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
+            synchronized(neareastInterpolation){
+                PlanarImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetImage, sourceImage, scalings, null, renderingHints,
+                        band.getNoDataValue(),
+                        neareastInterpolation);
+                band.setSourceImage(scaledImage);
+            }
         }
     }
 
@@ -1339,12 +1342,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             float translateX = (bandAnglesGrids[0].originX - masterOrigin.x) / bandAnglesGrids[0].getResolutionX();
             float translateY = (bandAnglesGrids[0].originY - masterOrigin.y) / bandAnglesGrids[0].getResolutionY();
             RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE, null);
-            RenderedOp translateOpImage = TranslateDescriptor.create(opImage, translateX, -translateY, Interpolation.getInstance(Interpolation.INTERP_BILINEAR), hints);
+            Interpolation bilinear = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+            synchronized(bilinear){
+                RenderedOp translateOpImage = TranslateDescriptor.create(opImage, translateX, -translateY, Interpolation.getInstance(Interpolation.INTERP_BILINEAR), hints);
+                //Crop output image because with bilinear interpolation some pixels are 0.0
+                RenderedOp cropOpImage = cropBordersIfAreZero(translateOpImage);
+                // Feed the image list for mosaic
+                tileImages.add(cropOpImage);
+            }
 
-            //Crop output image because with bilinear interpolation some pixels are 0.0
-            RenderedOp cropOpImage = cropBordersIfAreZero(translateOpImage);
-            // Feed the image list for mosaic
-            tileImages.add(cropOpImage);
         }
         return tileImages;
     }
