@@ -65,7 +65,7 @@ class GDALOptionsPanel extends JPanel {
         installedGDALLibraryVersions = new JComboBox<>();
         JTextField locationInstalledField = new JTextField();
         locationInstalledField.setEditable(false);
-        if (GDALVersion.getInstalledVersions().size() > 0) {
+        if (GDALVersion.getInstalledVersions() !=null && GDALVersion.getInstalledVersions().size() > 0) {
             for (String installedGDALLibraryVersion : GDALVersion.getInstalledVersions().keySet()) {
                 installedGDALLibraryVersions.addItem(installedGDALLibraryVersion);
             }
