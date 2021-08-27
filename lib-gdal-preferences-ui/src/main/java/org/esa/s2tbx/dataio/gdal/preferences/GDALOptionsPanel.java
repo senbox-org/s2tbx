@@ -38,7 +38,7 @@ class GDALOptionsPanel extends JPanel {
     private void installedGDALLibraryVersionSelected(JTextField locationInstalledField) {
         String versionName = installedGDALLibraryVersions.getItemAt(installedGDALLibraryVersions.getSelectedIndex());
         String location = "not found";
-        if (GDALVersion.getInstalledVersions().get(versionName) != null) {
+        if (GDALVersion.getInstalledVersions() !=null && GDALVersion.getInstalledVersions().get(versionName) != null) {
             location = GDALVersion.getInstalledVersions().get(versionName).getLocation();
         }
         locationInstalledField.setText(location);
