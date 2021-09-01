@@ -1,6 +1,72 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 9.0
+--------------------
+
+### Main features
+
+#### Windowed Reading of Products - Generalizing Parameters for Reader Plugins in Graph Builder
+
+Allows specifying in Graph Builder, for read operation, a window (spatial subset) of either pixel coordinates or geographical coordinates, so that,
+the reader will read directly the region of interest as a full-fledged product.
+
+#### Support for New External Data Access Sources via Product Library
+
+New remote data source modules are added to SNAP as plugins addressing the following remote repositories:
+    * EOCAT ESA collections
+    * FEDEO ESA collections
+
+#### Update the GDAL version to 3.2.1
+
+The GDAL version is updated from 3.0.0 to 3.2.1.
+Also, a plugin for COG writer is added.
+Allow setting which installed GDAL distribution is used by SNAP (when the user desires to use and installed distribution instead of the internal one, and there are several GDAL versions installed).
+
+#### New plugin adapter for Sen2Cor 2.9
+
+New plugin adapter for Sen2Cor 2.9 is added in SNAP menu.
+
+
+### List of solved issues
+#### Bug
+    * [SIITBX-434] - GenericRegionMerging creates empty output in GB and GPT
+    * [SIITBX-435] - GDAL - error writing bands having data type int16
+    * [SIITBX-436] - GDAL writer - visual artifacts in produced images when writing in parallel, from multiple threads
+    * [SIITBX-438] - Some GeoTIFFs written with GDAL cannot be opened with SNAP GeoTIFF reader implementation
+    * [SNAP-1427]  - JP2 reader - inconsistency between Int16 and UInt16
+
+#### New Feature
+    * [STEP-18]     - Plugin Repository
+    * [STEP-36]     - Add cookies notice on STEP website
+    * [STEP-37]     - GDPR compliance for STEP forum
+    * [STEP-44]     - Generalizing Parameters for Reader Plugins - Graph Builder
+    * [STEP-47]     - STEP website new look and feel
+    * [SIITBX-446]  - SNAP adapter plugin for Sen2Cor 2.9
+    * [SNAP-1395]   - Product Library: support ESA collections
+
+#### Improvement
+    * [SIITBX-437] - Update GDAL version used in SNAP to 3.2.1
+    * [SIITBX-441] - Pleiades reader - ability to read pan-sharpened products (with 4 PMS bands)
+    * [SIITBX-448] - CCI LandCover Data - location changed
+    * [SIITBX-457] - Invalid path exception at loading native libraries from installed GDAL when multiple GDAL versions are installed
+    * [SNAP-1359]  - Product Library database should allow multiple connections
+    * [SNAP-1384]  - Product Library - Scientific Data Hub : add relative orbit number in search results for SAR sensors
+    * [SNAP-1385]  - Product Library - Alaska Satellite Facility : add relative orbit number in search results for SAR sensors
+    * [SNAP-1400]  - JP2 reader - GML metadata for EPSG:4326
+    * [SNAP-1405]  - Product Library - Amazon Web Services - S2 "requester pays" bucket
+    * [SNAP-1410]  - Product Library - USGS : response format changed
+    * [SNAP-1411]  - Product Library - Scientific Data Hub : Too Many Requests
+    * [SNAP-1435]  - Product Library - Scientific Data Hub : API URL changed
+    * [SNAP-1436]  - JP2 reader - use shorter file names for decompressed tiles
+
+#### Task
+    * [STEP-9]     - Support for plugin developers
+    * [STEP-46]    - STEP Forum - increase storage
+    * [SIITBX-410] - Check operators whose GUIs are not working in GraphBuilder
+
+
+
 Changes in S2TBX 8.0
 --------------------
 
