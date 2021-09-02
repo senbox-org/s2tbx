@@ -16,16 +16,24 @@ the reader will read directly the region of interest as a full-fledged product.
 New remote data source modules are added to SNAP as plugins addressing the following remote repositories:
     * EOCAT ESA collections
     * FEDEO ESA collections
+Also, several improvements added:
+    * download queue for offline products
+    * sequential download for query result pages (in order to improve the results waiting time)
+    * query authentication for remote data sources requiring authentication
 
 #### Update the GDAL version to 3.2.1
 
 The GDAL version is updated from 3.0.0 to 3.2.1.
-Also, a plugin for COG writer is added.
+Also, a plugin for COG writer is added. Corrections made for visual artifacts noticed in produced images when writing in parallel, from multiple threads.
 Allow setting which installed GDAL distribution is used by SNAP (when the user desires to use and installed distribution instead of the internal one, and there are several GDAL versions installed).
 
 #### New plugin adapter for Sen2Cor 2.9
 
 New plugin adapter for Sen2Cor 2.9 is added in SNAP menu.
+
+#### Solved operators whose UI was not well functioning in Graph Builder
+
+Updates made for operators: Reflectance to Radiance, Spectral Angle Mapper, Multi-size Mosaic, GeFolki Co-registration.
 
 
 ### List of solved issues
