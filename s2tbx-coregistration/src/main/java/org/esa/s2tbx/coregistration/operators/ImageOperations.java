@@ -121,6 +121,30 @@ public class ImageOperations {
                 }
                 break;
             }
+            case DataBuffer.TYPE_SHORT: {
+                DataBufferShort dataBufferShort = (DataBufferShort) dataBuffer;
+                short[] values = dataBufferShort.getData();
+
+                int p = 0;
+                for (int i = 0; i < imgHeight; i++) {
+                    for (int j = 0; j < imgWidth; j++) {
+                        imgData[i][j] =  values[p++];
+                    }
+                }
+                break;
+            }
+            case DataBuffer.TYPE_INT: {
+                DataBufferInt dataBufferInt = (DataBufferInt) dataBuffer;
+                int[] values = dataBufferInt.getData();
+
+                int p = 0;
+                for (int i = 0; i < imgHeight; i++) {
+                    for (int j = 0; j < imgWidth; j++) {
+                        imgData[i][j] = values[p++];
+                    }
+                }
+                break;
+            }
             case DataBuffer.TYPE_FLOAT: {
                 DataBufferFloat dataBufferFloat = (DataBufferFloat) dataBuffer;
                 float[] values = dataBufferFloat.getData();

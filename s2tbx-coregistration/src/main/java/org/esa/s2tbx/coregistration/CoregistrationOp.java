@@ -44,14 +44,14 @@ public class CoregistrationOp extends Operator {
     Change alias to expected value of GraphBuilder
      */
 //    @SourceProduct(alias = "Master", description = "The source product which serves as master.")
-    @SourceProduct(alias = "sourceProduct", description = "The source product which serves as master.")
+    @SourceProduct(alias = "sourceProduct", description = "The source product which serves as master.", label = "Master")
     private Product masterProduct;
 
     /*
     Change alias to expected value of GraphBuilder
      */
 //    @SourceProduct(alias = "Slave", description = "The source product which serves as slave.")
-    @SourceProduct(alias = "sourceProduct.1", description = "The source product which serves as slave.")
+    @SourceProduct(alias = "sourceProduct.1", description = "The source product which serves as slave.", label = "Slave")
     private Product slaveProduct;
 
     @TargetProduct(description = "The target product which will use the master's location.")
@@ -417,7 +417,7 @@ public class CoregistrationOp extends Operator {
         public Operator createOperator(Map<String, Object> parameters,
                                        Map<String, Product> sourceProducts,
                                        RenderingHints renderingHints) throws OperatorException {
-            String slaveBand = parameters.get("slaveSourceBand").toString();
+            String slaveBand = parameters.get("slaveSourceBand") != null ? parameters.get("slaveSourceBand").toString() : null;
             parameters.remove("slaveSourceBand");
             Operator op = super.createOperator(parameters, sourceProducts, renderingHints);
             if (op instanceof CoregistrationOp) {
