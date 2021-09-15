@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.metadata.AbstractS2MetadataReader;
+import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,7 +51,16 @@ public class L1bProductMetadataReader extends AbstractS2MetadataReader {
                 bandNames[1] = S2BandConstants.B9.getFilenameBandId();
                 bandNames[2] = S2BandConstants.B10.getFilenameBandId();
                 break;
+            case R15M:
+                SystemUtils.LOG.warning("None resolution " + resolution+" for this product.");
+                bandNames = null;
+                break;
+            case R30M:
+                SystemUtils.LOG.warning("None resolution " + resolution+" for this product.");
+                bandNames = null;
+                break;
             default:
+                SystemUtils.LOG.warning("Invalid resolution: " + resolution);
                 bandNames = null;
                 break;
         }
