@@ -31,6 +31,10 @@ Allow setting which installed GDAL distribution is used by SNAP (when the user d
 
 New plugin adapter for Sen2Cor 2.9 is added in SNAP menu.
 
+### Plugin adapter for MAJA
+
+New plugin adapter for MAJA 4.2.1 is added in SNAP menu.
+
 #### Solved operators whose UI was not well functioning in Graph Builder
 
 Updates made for operators: Reflectance to Radiance, Spectral Angle Mapper, Multi-size Mosaic, GeFolki Co-registration.
@@ -43,6 +47,8 @@ Updates made for operators: Reflectance to Radiance, Spectral Angle Mapper, Mult
     * [SIITBX-436] - GDAL writer - visual artifacts in produced images when writing in parallel, from multiple threads
     * [SIITBX-438] - Some GeoTIFFs written with GDAL cannot be opened with SNAP GeoTIFF reader implementation
     * [SNAP-1427]  - JP2 reader - inconsistency between Int16 and UInt16
+    * [SIITBX-444] - Missing resources Biophysical processing and update output tolerance
+    * [SIITBX-453] - Biophysical Processor S2 (not S2_10m) not accessible from the gpt builder
 
 #### New Feature
     * [STEP-18]     - Plugin Repository
@@ -52,6 +58,8 @@ Updates made for operators: Reflectance to Radiance, Spectral Angle Mapper, Mult
     * [STEP-47]     - STEP website new look and feel
     * [SIITBX-446]  - SNAP adapter plugin for Sen2Cor 2.9
     * [SNAP-1395]   - Product Library: support ESA collections
+    * [SIITBX-277]  - Add maximum size option in S2TBX cache
+    * [SIITBX-442]  - Third Party Sentinel-2 Products: Landsat processed by ESA, Landsat L2
 
 #### Improvement
     * [SIITBX-437] - Update GDAL version used in SNAP to 3.2.1
@@ -67,6 +75,7 @@ Updates made for operators: Reflectance to Radiance, Spectral Angle Mapper, Mult
     * [SNAP-1411]  - Product Library - Scientific Data Hub : Too Many Requests
     * [SNAP-1435]  - Product Library - Scientific Data Hub : API URL changed
     * [SNAP-1436]  - JP2 reader - use shorter file names for decompressed tiles
+    * [SIITBX-357] - Add Missing ECMWF data in Sentinel-2 MSI products
 
 #### Task
     * [STEP-9]     - Support for plugin developers
