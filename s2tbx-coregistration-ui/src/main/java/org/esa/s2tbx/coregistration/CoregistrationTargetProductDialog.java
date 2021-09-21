@@ -51,7 +51,7 @@ public class CoregistrationTargetProductDialog extends DefaultSingleTargetProduc
                 public void selectionContextChanged(SelectionChangeEvent event) {
                 }
             };
-            //sourceProductSelectorList.get(MASTER_PRODUCT_ID).addSelectionChangeListener(listener);
+            sourceProductSelectorList.get(MASTER_PRODUCT_ID).addSelectionChangeListener(listener);
             sourceProductSelectorList.get(SLAVE_PRODUCT_ID).addSelectionChangeListener(listener);
         }
     }
