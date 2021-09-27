@@ -3797,7 +3797,7 @@
                 "name": "nodata_B2",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B2"
+                "description": "Radiometric quality mask - Nodata pixels - B2"
             },
             {
                 "name": "partially_corrected_crosstalk_B2",
@@ -3809,7 +3809,7 @@
                 "name": "nodata_B3",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B3"
+                "description": "Radiometric quality mask - Nodata pixels - B3"
             },
             {
                 "name": "partially_corrected_crosstalk_B3",
@@ -3821,7 +3821,7 @@
                 "name": "nodata_B4",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B4"
+                "description": "Radiometric quality mask - Nodata pixels - B4"
             },
             {
                 "name": "partially_corrected_crosstalk_B4",
@@ -3833,7 +3833,7 @@
                 "name": "nodata_B5",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B5"
+                "description": "Radiometric quality mask - Nodata pixels - B5"
             },
             {
                 "name": "partially_corrected_crosstalk_B5",
@@ -3845,7 +3845,7 @@
                 "name": "nodata_B6",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B6"
+                "description": "Radiometric quality mask - Nodata pixels - B6"
             },
             {
                 "name": "partially_corrected_crosstalk_B6",
@@ -3857,7 +3857,7 @@
                 "name": "nodata_B7",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B7"
+                "description": "Radiometric quality mask - Nodata pixels - B7"
             },
             {
                 "name": "partially_corrected_crosstalk_B7",
@@ -3869,7 +3869,7 @@
                 "name": "nodata_B8",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B8"
+                "description": "Radiometric quality mask - Nodata pixels - B8"
             },
             {
                 "name": "partially_corrected_crosstalk_B8",
@@ -3881,7 +3881,7 @@
                 "name": "nodata_B8A",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B8A"
+                "description": "Radiometric quality mask - Nodata pixels - B8A"
             },
             {
                 "name": "partially_corrected_crosstalk_B8A",
@@ -3893,7 +3893,7 @@
                 "name": "nodata_B11",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B11"
+                "description": "Radiometric quality mask - Nodata pixels - B11"
             },
             {
                 "name": "partially_corrected_crosstalk_B11",
@@ -3905,7 +3905,7 @@
                 "name": "nodata_B12",
                 "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
                 "color": "0,255,255",
-                "description": "Radiometric quality mask - NoData pixels - B12"
+                "description": "Radiometric quality mask - Nodata pixels - B12"
             },
             {
                 "name": "partially_corrected_crosstalk_B12",

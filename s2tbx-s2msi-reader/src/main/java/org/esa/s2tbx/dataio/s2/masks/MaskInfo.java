@@ -46,7 +46,7 @@ public enum MaskInfo {
             "MSK_NODATA",
             new String[]{"QT_NODATA_PIXELS", "QT_PARTIALLY_CORRECTED_PIXELS"},
             "Radiometric quality mask",
-            new String[]{"NoData pixels", "Pixels partially corrected during cross-talk processing"},
+            new String[]{"Nodata pixels", "Pixels partially corrected during cross-talk processing"},
             new String[]{"nodata", "partially_corrected_crosstalk"},
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
