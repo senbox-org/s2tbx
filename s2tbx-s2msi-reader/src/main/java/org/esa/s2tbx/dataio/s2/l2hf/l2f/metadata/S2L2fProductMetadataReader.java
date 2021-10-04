@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Created by jcoravu on 10/1/2020.
+ * Created by fdouziech 04/2021
  */
 public class S2L2fProductMetadataReader extends AbstractS2OrthoMetadataReader {
 

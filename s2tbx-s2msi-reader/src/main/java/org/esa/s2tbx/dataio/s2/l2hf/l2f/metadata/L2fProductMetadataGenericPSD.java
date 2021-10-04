@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by obarrile on 04/10/2016.
+ * Created by fdouziech on 04/2021.
  */
 
 public class L2fProductMetadataGenericPSD extends GenericXmlMetadata implements IL2fProductMetadata {

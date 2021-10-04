@@ -7,7 +7,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 
 /**
- * Created by fdouziech
+ * Created by fdouziech 04/2021
  */
 public class L2fMetadataFactory {
     public static IL2fProductMetadata createL2fProductMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {

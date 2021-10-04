@@ -8,7 +8,7 @@ import org.esa.snap.core.datamodel.MetadataElement;
 import java.util.Map;
 
 /**
- * Created by fdouziech
+ * Created by fdouziech 04/2021
  */
 public interface IL2fGranuleMetadata {
     //To use only if the associated user product metadata is not available

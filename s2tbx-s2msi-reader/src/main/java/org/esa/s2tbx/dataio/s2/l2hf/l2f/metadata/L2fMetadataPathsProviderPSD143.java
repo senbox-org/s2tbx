@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.s2.l2hf.l2f.metadata;
 import org.esa.s2tbx.dataio.s2.l2hf.l2f.L2fPSD143Constants;
 
 /**
- * Created by fdouziech
+ * Created by fdouziech 04/2021
  */
 public class L2fMetadataPathsProviderPSD143 implements IL2fMetadataPathsProvider{
 
