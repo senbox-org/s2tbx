@@ -866,13 +866,14 @@ public abstract class S2Metadata {
         try {
             Tile tile = getTile(tileId);
             int resolution = tile.getAnglesResolution();
-            int gridHeight = tile.getSunAnglesGrid().getHeight();
-            int gridWidth = tile.getSunAnglesGrid().getWidth();
+
 
             S2Metadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
             if (sunAnglesGrid == null) {
                 return null;
             }
+            int gridHeight = tile.getSunAnglesGrid().getHeight();
+            int gridWidth = tile.getSunAnglesGrid().getWidth();
 
             float[] sunZeniths = sunAnglesGrid.getZenithArray();
             float[] sunAzimuths = sunAnglesGrid.getAzimuthArray();

@@ -6,14 +6,11 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.esa.s2tbx.dataio.s2.ECMWFTReader;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.runtime.LogUtils4Tests;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.fail;

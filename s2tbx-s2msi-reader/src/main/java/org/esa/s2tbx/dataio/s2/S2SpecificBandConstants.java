@@ -12,7 +12,7 @@ public enum S2SpecificBandConstants {
     CLD("quality_cloud_confidence", "CLD"),
     SNW("quality_snow_confidence", "SNW"),
     DDV("quality_dense_dark_vegetation", "DDV");
-
+    //TODO s2 EVOLUTION:  ADD NEW QUALITY INDICATOR
 
     private String physicalName;
     private String filenameBandId;

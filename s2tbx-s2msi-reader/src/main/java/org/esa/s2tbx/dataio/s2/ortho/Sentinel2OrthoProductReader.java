@@ -21,6 +21,8 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
+
+import org.esa.s2tbx.dataio.s2.CAMSReader;
 import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.s2tbx.dataio.s2.ECMWFTReader;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
@@ -304,30 +306,66 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
         }
         for (S2Metadata.Tile tile : tileList)
-            addECMWFBand(product, tile, sceneDescription, mapCRS, namingConvention);
+            addGRIBBand(product, tile, sceneDescription, mapCRS, namingConvention);
 
         return product;
     }
 
-    private void addECMWFBand(Product product, S2Metadata.Tile tile, S2OrthoSceneLayout sceneDescription,
+    private void addGRIBBand(Product product, S2Metadata.Tile tile, S2OrthoSceneLayout sceneDescription,
             CoordinateReferenceSystem mapCRS, INamingConvention namingConvention)
             throws IOException, NoSuchAuthorityCodeException, FactoryException {
 
         VirtualPath tileFolder = namingConvention.findGranuleFolderFromTileId(tile.getId());
-        S2Metadata.ProductCharacteristics characteristicsECMWF = new S2Metadata.ProductCharacteristics();
-        VirtualPath folderECMWF = tileFolder.resolve("AUX_DATA");
-        characteristicsECMWF.setPsd(S2Metadata.getPSD(folderECMWF));
-        characteristicsECMWF.setDatatakeSensingStartTime("Unknown");
-        if (folderECMWF.existsAndHasChildren()) {
-            characteristicsECMWF.setSpacecraft("Sentinel-2");
-            characteristicsECMWF.setProcessingLevel("Level-2A");
-            characteristicsECMWF.setMetaDataLevel("Standard");
-            VirtualPath[] gribFiles = folderECMWF.listPaths();
+        S2Metadata.ProductCharacteristics characteristicsAUXDATA = new S2Metadata.ProductCharacteristics();
+        VirtualPath folderAUXDATA = tileFolder.resolve("AUX_DATA");
+        characteristicsAUXDATA.setPsd(S2Metadata.getPSD(folderAUXDATA));
+        characteristicsAUXDATA.setDatatakeSensingStartTime("Unknown");
+        if (folderAUXDATA.existsAndHasChildren()) {
+            characteristicsAUXDATA.setSpacecraft("Sentinel-2");
+            characteristicsAUXDATA.setProcessingLevel("Level-2A");
+            characteristicsAUXDATA.setMetaDataLevel("Standard");
+            VirtualPath[] gribFiles = folderAUXDATA.listPaths();
             for(VirtualPath gribFile:gribFiles){
                 if(gribFile.getFileName().toString().matches("AUX_ECMWFT")){
                     ECMWFTReader readerPlugin = new ECMWFTReader(gribFile.getFilePath().getPath(), getCacheDir());
                     List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
                     for(TiePointGrid tiePointGrid:ecmwfGrids)
+                    {
+                        product.addTiePointGrid(tiePointGrid);
+                    }
+                }else if(gribFile.getFileName().toString().matches("AUX_CAMSFO")){
+                    CAMSReader readerPlugin = new CAMSReader(gribFile.getFilePath().getPath(), getCacheDir());
+                    List<TiePointGrid> camsGrids = readerPlugin.getCAMSGrids();
+                    for(TiePointGrid tiePointGrid:camsGrids)
+                    {
+                        product.addTiePointGrid(tiePointGrid);
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    private void addCAMSBand(Product product, S2Metadata.Tile tile, S2OrthoSceneLayout sceneDescription,
+            CoordinateReferenceSystem mapCRS, INamingConvention namingConvention)
+            throws IOException, NoSuchAuthorityCodeException, FactoryException {
+
+        VirtualPath tileFolder = namingConvention.findGranuleFolderFromTileId(tile.getId());
+        S2Metadata.ProductCharacteristics characteristicsCAMSFO = new S2Metadata.ProductCharacteristics();
+        VirtualPath folderCAMSFO = tileFolder.resolve("AUX_DATA");
+        characteristicsCAMSFO.setPsd(S2Metadata.getPSD(folderCAMSFO));
+        characteristicsCAMSFO.setDatatakeSensingStartTime("Unknown");
+        if (folderCAMSFO.existsAndHasChildren()) {
+            characteristicsCAMSFO.setSpacecraft("Sentinel-2");
+            characteristicsCAMSFO.setProcessingLevel("Level-2A");
+            characteristicsCAMSFO.setMetaDataLevel("Standard");
+            VirtualPath[] gribFiles = folderCAMSFO.listPaths();
+            for(VirtualPath gribFile:gribFiles){
+                if(gribFile.getFileName().toString().matches("AUX_CAMSFO")){
+                    CAMSReader readerPlugin = new CAMSReader(gribFile.getFilePath().getPath(), getCacheDir());
+                    List<TiePointGrid> camsGrids = readerPlugin.getCAMSGrids();
+                    for(TiePointGrid tiePointGrid:camsGrids)
                     {
                         product.addTiePointGrid(tiePointGrid);
                     }
