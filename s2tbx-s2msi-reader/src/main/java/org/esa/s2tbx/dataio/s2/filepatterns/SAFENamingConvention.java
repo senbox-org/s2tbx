@@ -74,6 +74,7 @@ public class SAFENamingConvention implements INamingConvention{
     public static String CLD_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{MISSION_ID}}_USER_CLD_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2";
     public static String SNW_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{MISSION_ID}}_USER_SNW_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2";
     public static String DDV_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{MISSION_ID}}_USER_DDV_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2";
+    public static String CLASSI_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{MISSION_ID}}_OPER_MASK_MTI__{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_B00_MSIL1C.jp2";
 
     //Templates L3
     public static String SPECTRAL_BAND_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator +"{{MISSION_ID}}_USER_MSI_L03_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";

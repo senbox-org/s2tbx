@@ -29,8 +29,6 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.quicklooks.Quicklook;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
