@@ -65,6 +65,15 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
         return new S2BandInformation("quality_snow_confidence", resolution, NamingConventionFactory.getSNWTemplate_L2a(format), "Snow Confidence", "%", 1.0);
     }
 
+    private static S2BandInformation makeCLASSIInformation(String format,S2SpatialResolution resolution) {
+        // not used because the mask MSK_CLASSI is multiband. The system index should be refactor to manage multiband.
+        List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
+        indexList.add(S2IndexBandInformation.makeIndex(1, Color.BLUE, "opaque_clouds", "Opaque clouds"));
+        indexList.add(S2IndexBandInformation.makeIndex(1, Color.ORANGE, "cirrus_clouds", "Cirrus clouds"));
+        indexList.add(S2IndexBandInformation.makeIndex(1, new Color(255, 150, 255), "snow_and_ice_areas", "Snow and Ice areas"));
+        return new S2IndexBandInformation("MASK_CLASSI", resolution, NamingConventionFactory.getCLASSITemplate_L2a(format), "Quality classification", "", indexList, "");
+    }
+
     private static S2BandInformation makeDDVInformation(String format,S2SpatialResolution resolution) {
         List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
         /* Using the same colors as in the L2A-PDD */
@@ -96,14 +105,17 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
         return new S2IndexBandInformation("quality_scene_classification", resolution, NamingConventionFactory.getSCLTemplate_L2a(format, psd), "Scene classification", "", indexList, "scl_");
     }
 
-    public static List<S2BandInformation> getBandInformationList(String format, S2SpatialResolution resolution, int psd,
+    public static List<S2BandInformation> getBandInformationList(String format, S2SpatialResolution resolution, int psd, double processingBaseline,
                                                                  double boaQuantification,
                                                                  double aotQuantification,
                                                                  double wvpQuantification) {
         List<S2BandInformation> aInfo = new ArrayList<>();
         switch (resolution) {
             case R10M:
-                aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
+                if(processingBaseline > 3.99)
+                    aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R20M, boaQuantification));
+                else
+                    aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R10M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R10M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B4, S2SpatialResolution.R10M, boaQuantification));
@@ -127,7 +139,10 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M, psd));
                 break;
             case R20M:
-                aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
+                if(processingBaseline > 3.99)
+                    aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R20M, boaQuantification));
+                else
+                    aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R20M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R20M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B4, S2SpatialResolution.R20M, boaQuantification));
@@ -150,7 +165,10 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M, psd));
                 break;
             case R60M:
-                aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
+                if(processingBaseline > 3.99)
+                    aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R20M, boaQuantification));
+                else
+                    aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R60M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R60M, boaQuantification));
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B4, S2SpatialResolution.R60M, boaQuantification));

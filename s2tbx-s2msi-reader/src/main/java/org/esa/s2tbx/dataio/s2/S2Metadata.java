@@ -559,6 +559,7 @@ public abstract class S2Metadata {
         private String productStopTime;
         private String datatakeSensingStartTime;
         private String processingLevel;
+        private Double processingBaseline;
         private String missionID;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
@@ -572,7 +573,6 @@ public abstract class S2Metadata {
         public void setPsd(int psd) {
             this.psd = psd;
         }
-
 
         public String getDatatakeSensingStartTime () {
             return datatakeSensingStartTime;
@@ -620,6 +620,14 @@ public abstract class S2Metadata {
 
         public void setProcessingLevel(String processingLevel) {
             this.processingLevel = processingLevel;
+        }
+
+        public void setProcessingBaseline(Double processingBaseline) {
+            this.processingBaseline = processingBaseline;
+        }
+
+        public Double getProcessingBaseline() {
+            return processingBaseline;
         }
 
         public S2BandInformation[] getBandInformations() {
@@ -790,9 +798,42 @@ public abstract class S2Metadata {
                     return Integer.parseInt(psdNumber);
                 }
             }
+
             return 0;
         } catch (Exception e) {
             return 0;
+        }
+    }
+
+    /**
+     * Read the content of 'path' searching the string "psd-XX.sentinel2.eo.esa.int" and return the XX parsed to an integer.
+     * @param path
+     * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
+     */
+    public static Double getProcessingBaseline(VirtualPath path) {
+        int bufferSizeInBytes = 5 * 1024;
+        try (InputStream inputStream = path.getInputStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSizeInBytes)) {
+
+            String regex = "<PROCESSING_BASELINE>([.|0-9]{5})</PROCESSING_BASELINE>";
+            Pattern p = Pattern.compile(regex);
+            StringBuilder str = new StringBuilder();
+            char[] buffer = new char[bufferSizeInBytes];
+            int characterReadNow;
+            while ((characterReadNow = bufferedReader.read(buffer)) >= 0) {
+                str.append(buffer, 0, characterReadNow);
+                Matcher m = p.matcher(str);
+                if (m.find()) {
+                    int position = m.start();
+                    String psdNumber = str.substring(position+21, position+26);
+                    return Double.parseDouble(psdNumber);
+                }
+            }
+
+            return 0.0;
+        } catch (Exception e) {
+            return 0.0;
         }
     }
 

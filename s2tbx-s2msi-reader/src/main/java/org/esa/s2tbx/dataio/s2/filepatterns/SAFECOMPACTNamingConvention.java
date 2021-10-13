@@ -78,6 +78,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     public static String CLD_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_CLD_{{RESOLUTION}}m.jp2";
     public static String SNW_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SNW_{{RESOLUTION}}m.jp2";
     public static String DDV_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_DDV_{{RESOLUTION}}m.jp2";
+    public static String CLASSI_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "MSK_CLASSI_B00.jp2";
 
     //Templates L2h
     public static String SPECTRAL_BAND_TEMPLATE_L2H_PSD14 = "IMG_DATA"+ File.separator + "L2H_{{TILENUMBER}}_{{DATATAKE_START}}_{{MISSION_ID}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIF";
@@ -85,7 +86,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     public static String CLD_FILE_TEMPLATE_L2H = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_CLD_{{RESOLUTION}}m.TIF";
     public static String SNW_FILE_TEMPLATE_L2H = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SNW_{{RESOLUTION}}m.TIF";
     public static String DDV_FILE_TEMPLATE_L2H = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_DDV_{{RESOLUTION}}m.TIF";
- 
+
     //Templates L2f
     public static String SPECTRAL_BAND_TEMPLATE_L2F_PSD14 = "IMG_DATA"+ File.separator + "L2F_{{TILENUMBER}}_{{DATATAKE_START}}_{{MISSION_ID}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIF";
     public static String SPECTRAL_NATIVE_BAND_TEMPLATE_L2F_PSD14 = "IMG_DATA"+ File.separator + "NATIVE" + File.separator +"{{MISSION_ID}}_USER_MSI_L2F_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{BANDFILEID}}_{{RESOLUTION}}m.TIF";
