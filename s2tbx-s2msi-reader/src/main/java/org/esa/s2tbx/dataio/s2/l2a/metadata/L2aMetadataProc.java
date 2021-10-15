@@ -87,12 +87,15 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
         return new S2IndexBandInformation("quality_dense_dark_vegetation", resolution, NamingConventionFactory.getDDVTemplate_L2a(format), "Dense Dark Vegetation", "", indexList, "ddv_");
     }
 
-    private static S2BandInformation makeSCLInformation(String format,S2SpatialResolution resolution, int psd) {
+    private static S2BandInformation makeSCLInformation(String format,S2SpatialResolution resolution, int psd, double processingBaseline) {
         List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
         /* Using the same colors as in the L2A-PDD */
         indexList.add(S2IndexBandInformation.makeIndex(0, new Color(0, 0, 0), "NODATA", "No data"));
         indexList.add(S2IndexBandInformation.makeIndex(1, new Color(255, 0, 0), "SATURATED_DEFECTIVE", "Saturated or defective"));
-        indexList.add(S2IndexBandInformation.makeIndex(2, new Color(46, 46, 46), "DARK_FEATURE_SHADOW", "Dark feature shadow"));
+        if(processingBaseline>3.99)
+            indexList.add(S2IndexBandInformation.makeIndex(2, new Color(46, 46, 46), "TOPOGRAPHIC_AND_CASTED_SHADOWS", "topographic and casted shadows"));
+        else
+            indexList.add(S2IndexBandInformation.makeIndex(2, new Color(46, 46, 46), "DARK_FEATURE_SHADOW", "Dark feature shadow"));
         indexList.add(S2IndexBandInformation.makeIndex(3, new Color(100, 50, 0), "CLOUD_SHADOW", "Cloud shadow"));
         indexList.add(S2IndexBandInformation.makeIndex(4, new Color(0, 128, 0), "VEGETATION", "Vegetation"));
         indexList.add(S2IndexBandInformation.makeIndex(5, new Color(255, 230, 90), "NOT_VEGETATED", "Not vegetated"));
@@ -136,7 +139,7 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeDDVInformation(format, S2SpatialResolution.R20M));
 
                 // SCL only generated at 20m and 60m. upsample the 20m version
-                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M, psd));
+                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M, psd, processingBaseline));
                 break;
             case R20M:
                 if(processingBaseline > 3.99)
@@ -162,7 +165,7 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSNWInformation(format, S2SpatialResolution.R20M));
                 aInfo.add(makeDDVInformation(format, S2SpatialResolution.R20M));
 
-                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M, psd));
+                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M, psd, processingBaseline));
                 break;
             case R60M:
                 if(processingBaseline > 3.99)
@@ -188,7 +191,7 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSNWInformation(format, S2SpatialResolution.R60M));
                 aInfo.add(makeDDVInformation(format, S2SpatialResolution.R60M));
 
-                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R60M, psd));
+                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R60M, psd, processingBaseline));
                 break;
         }
         return aInfo;
