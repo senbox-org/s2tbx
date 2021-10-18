@@ -278,4 +278,9 @@ public class L2aMetadataPathsProviderPSD13 implements IL2aMetadataPathsProvider{
     public String getPATH_GRANULE_METADATA_PVI_FILENAME() {
         return L2aPSD13Constants.PATH_GRANULE_METADATA_PVI_FILENAME;
     }
+
+    @Override
+    public String getPATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST() {
+        return null;
+    }
 }

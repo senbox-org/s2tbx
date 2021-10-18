@@ -133,7 +133,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         double aotQuantification = L2aPSD13Constants.DEFAULT_AOT_QUANTIFICATION;
         double wvpQuantification = L2aPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
 
-        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification);
+        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 

@@ -51,11 +51,11 @@ public class S2L1cProductMetadataReader extends AbstractS2OrthoMetadataReader {
                 bandNames[2] = S2BandConstants.B10.getFilenameBandId();
                 break;
             case R15M:
-                SystemUtils.LOG.warning("None resolution " + resolution+" for this product.");
+                // SystemUtils.LOG.warning("None resolution " + resolution+" for this product.");
                 bandNames = null;
                 break;
             case R30M:
-                SystemUtils.LOG.warning("None resolution " + resolution+" for this product.");
+                // SystemUtils.LOG.warning("None resolution " + resolution+" for this product.");
                 bandNames = null;
                 break;
             default:

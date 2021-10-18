@@ -91,8 +91,7 @@ public class L2aProductMetadataGenericPSD extends GenericXmlMetadata implements 
     @Override
     public S2Metadata.ProductCharacteristics getProductOrganization(VirtualPath path, S2SpatialResolution resolution) {
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
-        characteristics.setPsd(S2Metadata.getPSD(path));
-        characteristics.setProcessingBaseline(S2Metadata.getProcessingBaseline(path));
+        characteristics.setPsd(S2Metadata.getFullPSDversion(path));
         String datatakeSensingStart = getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_SENSING_START(), null);
         if(datatakeSensingStart!=null && datatakeSensingStart.length()>19) {
             String formattedDatatakeSensingStart = datatakeSensingStart.substring(0,4) +
@@ -111,7 +110,7 @@ public class L2aProductMetadataGenericPSD extends GenericXmlMetadata implements 
         characteristics.setProductStartTime(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PRODUCT_START_TIME(), "Unknown"));
         characteristics.setProductStopTime(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PRODUCT_STOP_TIME(), "Unknown"));
         characteristics.setProcessingLevel(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PROCESSING_LEVEL(), "Level-2A"));
-        characteristics.setProcessingBaseline(Double.parseDouble(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PROCESSING_BASELINE(), "00.00")));
+        characteristics.setProcessingBaseline(Integer.parseInt(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PROCESSING_BASELINE(), "0").replace(".","")));
 
         characteristics.setMetaDataLevel(getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_METADATA_LEVEL(), "Standard"));
 
@@ -133,7 +132,7 @@ public class L2aProductMetadataGenericPSD extends GenericXmlMetadata implements 
             wvpQuantification = metadataPathProvider.DEFAULT_WVP_QUANTIFICATION;
         }
 
-        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), characteristics.getProcessingBaseline(), boaQuantification,aotQuantification,wvpQuantification);
+        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification,aotQuantification,wvpQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
