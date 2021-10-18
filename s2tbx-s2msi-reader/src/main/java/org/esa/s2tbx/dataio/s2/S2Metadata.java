@@ -559,7 +559,7 @@ public abstract class S2Metadata {
         private String productStopTime;
         private String datatakeSensingStartTime;
         private String processingLevel;
-        private Double processingBaseline;
+        private Integer processingBaseline;
         private String missionID;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
@@ -622,11 +622,11 @@ public abstract class S2Metadata {
             this.processingLevel = processingLevel;
         }
 
-        public void setProcessingBaseline(Double processingBaseline) {
+        public void setProcessingBaseline(Integer processingBaseline) {
             this.processingBaseline = processingBaseline;
         }
 
-        public Double getProcessingBaseline() {
+        public Integer getProcessingBaseline() {
             return processingBaseline;
         }
 
@@ -806,11 +806,58 @@ public abstract class S2Metadata {
     }
 
     /**
-     * Read the content of 'path' searching the string "psd-XX.sentinel2.eo.esa.int" and return the XX parsed to an integer.
+     * Read the content of 'path' searching the string "psd-XX.sentinel2.eo.esa.int" and return an integer.
+     * Checks also some items in file to be able to distinguish PSD subversion 14.x and convert to an integer 14x
      * @param path
      * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
      */
-    public static Double getProcessingBaseline(VirtualPath path) {
+    public static int getFullPSDversion(VirtualPath path){
+        int psd=0;
+        int processingBaseline = getProcessingBaseline(path);
+        try (InputStream stream = path.getInputStream()){
+
+            String xmlStreamAsString = IOUtils.toString(stream);
+            String aux = xmlStreamAsString;
+            String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
+
+            Pattern p = Pattern.compile(regex);
+            Matcher m = p.matcher(xmlStreamAsString);
+            if (m.find()) {
+                int position = m.start();
+                String psdNumber = xmlStreamAsString.substring(position+4,position+6);
+
+                //Check specific 14.3 psd, not possible to distinguish in 'regex'
+                if(processingBaseline>1000) {
+                    SystemUtils.LOG.warning("WARNING: the processing baseline is inconsistent. Please, check your product if it is not a demonstration product.");
+                    
+                }
+
+                if(Integer.parseInt(psdNumber) == 14 && processingBaseline>399)
+                {
+                    psd = 148;
+                } else if(Integer.parseInt(psdNumber) == 14 && !aux.contains("L2A_Product_Info") && !aux.contains("TILE_ID_2A")) {
+                    psd = 143;
+                }else{
+                    psd = Integer.parseInt(psdNumber);
+                }
+
+                
+            } else {
+                psd = 0;
+            }
+
+        } catch (Exception e) {
+            psd = 0;
+        }
+        return psd;
+    }
+
+    /**
+     * Read the content of 'path' searching the processing baseline and return the XX parsed to an integer.
+     * @param path
+     * @return the processing baseline version number or 0 if an error
+     */
+    public static int getProcessingBaseline(VirtualPath path) {
         int bufferSizeInBytes = 5 * 1024;
         try (InputStream inputStream = path.getInputStream();
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
@@ -827,13 +874,13 @@ public abstract class S2Metadata {
                 if (m.find()) {
                     int position = m.start();
                     String psdNumber = str.substring(position+21, position+26);
-                    return Double.parseDouble(psdNumber);
+                    psdNumber=psdNumber.replace(".", "");
+                    return Integer.parseInt(psdNumber);
                 }
             }
-
-            return 0.0;
+            return 0;
         } catch (Exception e) {
-            return 0.0;
+            return 0;
         }
     }
 
