@@ -57,7 +57,7 @@ public class L2fMetadata extends S2OrthoMetadata {
      * @param path
      * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
      */
-    public static int getDeepPSD(VirtualPath path){
+    public static int getFullPSDversion(VirtualPath path){
         try (InputStream stream = path.getInputStream()){
 
             String xmlStreamAsString = IOUtils.toString(stream);
@@ -70,9 +70,8 @@ public class L2fMetadata extends S2OrthoMetadata {
                 int position = m.start();
                 String psdNumber = xmlStreamAsString.substring(position+4,position+6);
 
-                //Check specific 14.3 psd, not possible to distinguish in 'regex'
-                if(Integer.parseInt(psdNumber) == 14 && !aux.contains("L2H_Product_Info") && !aux.contains("TILE_ID_2A")) {
-                    return 143;
+                if(Integer.parseInt(psdNumber) == 14 && (aux.contains("Level-2F_User_Product") || aux.contains("Level-2F_Tile_ID"))) {
+                    return 146;
                 }
                 return Integer.parseInt(psdNumber);
             }

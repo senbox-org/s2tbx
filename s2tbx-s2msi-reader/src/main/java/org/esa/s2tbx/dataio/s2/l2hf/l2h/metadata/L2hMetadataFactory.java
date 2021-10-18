@@ -11,23 +11,19 @@ import java.io.IOException;
  */
 public class L2hMetadataFactory {
     public static IL2hProductMetadata createL2hProductMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
-        int psd = L2hMetadata.getDeepPSD(metadataPath);
-        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 )  {
-            return L2hProductMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD13());
-        } else if (psd == 143) {
-            return L2hProductMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD143());
-        } else {
+        int psd = L2hMetadata.getFullPSDversion(metadataPath);
+        if(psd > 145 )  {
+            return L2hProductMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD146());
+        }else{
             return null;
         }
     }
 
     public static IL2hGranuleMetadata createL2hGranuleMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
-        int psd = L2hMetadata.getDeepPSD(metadataPath);
-        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 )  {
-            return L2hGranuleMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD13());
-        } else if (psd == 143) {
-            return L2hGranuleMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD143());
-        } else {
+        int psd = L2hMetadata.getFullPSDversion(metadataPath);
+        if(psd > 145 )  {
+            return L2hGranuleMetadataGenericPSD.create(metadataPath, new L2hMetadataPathsProviderPSD146());
+        }else{
             return null;
         }
     }

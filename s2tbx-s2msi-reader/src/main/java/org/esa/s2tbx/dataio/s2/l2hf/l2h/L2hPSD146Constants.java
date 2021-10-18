@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.s2.l2hf.l2h;
 /**
  * Created by obarrile on 06/02/2018.
  */
-public class L2hPSD143Constants {
+public class L2hPSD146Constants {
 
     //TODO
     private final static String PRODUCT_SCHEMA_FILE_PATH = "schemas/L2HF_PSD14/S2_User_Product_Level-2H_Metadata.xsd";
@@ -62,7 +62,7 @@ public class L2hPSD143Constants {
    */
     public static final String PATH_PRODUCT_METADATA_GRANULE_LIST_ALT = "/Level-2H_User_Product/General_Info/Product_Info/Product_Organisation/Granule_List/Granule/granuleIdentifier";
     public static final String PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT = "/Level-2H_User_Product/General_Info/Product_Info/Product_Organisation/Granule_List/Granule/datastripIdentifier";
-    //PSD143
+    //PSD146
     public static final String PATH_PRODUCT_METADATA_DATATAKE = "/Level-2H_User_Product/General_Info/Product_Info/Datatake/datatakeIdentifier";
     public static final String PATH_PRODUCT_METADATA_SPACECRAFT = "/Level-2H_User_Product/General_Info/Product_Info/Datatake/SPACECRAFT_NAME";
     public static final String PATH_PRODUCT_METADATA_DATATAKE_TYPE = "/Level-2H_User_Product/General_Info/Product_Info/Datatake/DATATAKE_TYPE";

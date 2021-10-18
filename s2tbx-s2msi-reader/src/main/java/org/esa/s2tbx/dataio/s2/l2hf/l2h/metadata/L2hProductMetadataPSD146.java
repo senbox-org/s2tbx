@@ -13,7 +13,7 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.l2hf.l2h.L2hPSD13Constants;
+import org.esa.s2tbx.dataio.s2.l2hf.l2h.L2hPSD146Constants;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -28,18 +28,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by obarrile on 04/10/2016.
- */
 
-public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hProductMetadata {
+public class L2hProductMetadataPSD146 extends GenericXmlMetadata implements IL2hProductMetadata {
 
-    private static class L2hProductMetadataPSD13Parser extends XmlMetadataParser<L2hProductMetadataPSD13> {
+    private static class L2hProductMetadataPSD146Parser extends XmlMetadataParser<L2hProductMetadataPSD146> {
 
-        public L2hProductMetadataPSD13Parser(Class metadataFileClass) {
+        public L2hProductMetadataPSD146Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(L2hPSD13Constants.getProductSchemaLocations());
-            setSchemaBasePath(L2hPSD13Constants.getProductSchemaBasePath());
+            setSchemaLocations(L2hPSD146Constants.getProductSchemaLocations());
+            setSchemaBasePath(L2hPSD146Constants.getProductSchemaBasePath());
         }
 
         @Override
@@ -50,14 +47,14 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
 
 
 
-    public static L2hProductMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
+    public static L2hProductMetadataPSD146 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
-        L2hProductMetadataPSD13 result = null;
+        L2hProductMetadataPSD146 result = null;
         InputStream stream = null;
         try {
             if (path.exists()) {
                 stream = path.getInputStream();
-                L2hProductMetadataPSD13Parser parser = new L2hProductMetadataPSD13Parser(L2hProductMetadataPSD13.class);
+                L2hProductMetadataPSD146Parser parser = new L2hProductMetadataPSD146Parser(L2hProductMetadataPSD146.class);
                 result = parser.parse(stream);
                 result.setName("Level-2H_User_Product");
             }
@@ -68,7 +65,7 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
     }
 
 
-    public L2hProductMetadataPSD13(String name) {
+    public L2hProductMetadataPSD146(String name) {
         super(name);
     }
 
@@ -86,7 +83,7 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
     public S2Metadata.ProductCharacteristics getProductOrganization(VirtualPath path, S2SpatialResolution resolution) {
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(path));
-        String datatakeSensingStart = getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
+        String datatakeSensingStart = getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
         if(datatakeSensingStart!=null && datatakeSensingStart.length()>19) {
             String formattedDatatakeSensingStart = datatakeSensingStart.substring(0,4) +
                     datatakeSensingStart.substring(5,7) +
@@ -98,31 +95,31 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
             characteristics.setDatatakeSensingStartTime("Unknown");
         }
 
-        characteristics.setSpacecraft(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Sentinel-2"));
-        characteristics.setDatasetProductionDate(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
+        characteristics.setSpacecraft(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Sentinel-2"));
+        characteristics.setDatasetProductionDate(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
 
-        characteristics.setProductStartTime(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, "Unknown"));
-        characteristics.setProductStopTime(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, "Unknown"));
+        characteristics.setProductStartTime(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, "Unknown"));
+        characteristics.setProductStopTime(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, "Unknown"));
 
-        characteristics.setProcessingLevel(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, S2Constant.LevelL2H));
-        characteristics.setMetaDataLevel(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL, "Standard"));
+        characteristics.setProcessingLevel(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, S2Constant.LevelL2H));
+        characteristics.setMetaDataLevel(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL, "Standard"));
 
-        double boaQuantification = Double.valueOf(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_L2H_BOA_QUANTIFICATION_VALUE, String.valueOf(L2hPSD13Constants.DEFAULT_BOA_QUANTIFICATION)));
+        double boaQuantification = Double.valueOf(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_L2H_BOA_QUANTIFICATION_VALUE, String.valueOf(L2hPSD146Constants.DEFAULT_BOA_QUANTIFICATION)));
         if(boaQuantification == 0d) {
             logger.warning("Invalid BOA quantification value, the default value will be used.");
-            boaQuantification = L2hPSD13Constants.DEFAULT_BOA_QUANTIFICATION;
+            boaQuantification = L2hPSD146Constants.DEFAULT_BOA_QUANTIFICATION;
         }
         characteristics.setQuantificationValue(boaQuantification);
 
-        double aotQuantification = Double.valueOf(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_L2H_AOT_QUANTIFICATION_VALUE, String.valueOf(L2hPSD13Constants.DEFAULT_AOT_QUANTIFICATION)));
+        double aotQuantification = Double.valueOf(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_L2H_AOT_QUANTIFICATION_VALUE, String.valueOf(L2hPSD146Constants.DEFAULT_AOT_QUANTIFICATION)));
         if(aotQuantification == 0d) {
             logger.warning("Invalid AOT quantification value, the default value will be used.");
-            aotQuantification = L2hPSD13Constants.DEFAULT_AOT_QUANTIFICATION;
+            aotQuantification = L2hPSD146Constants.DEFAULT_AOT_QUANTIFICATION;
         }
-        double wvpQuantification = Double.valueOf(getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_L2H_WVP_QUANTIFICATION_VALUE, String.valueOf(L2hPSD13Constants.DEFAULT_WVP_QUANTIFICATION)));
+        double wvpQuantification = Double.valueOf(getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_L2H_WVP_QUANTIFICATION_VALUE, String.valueOf(L2hPSD146Constants.DEFAULT_WVP_QUANTIFICATION)));
         if(wvpQuantification == 0d) {
             logger.warning("Invalid WVP quantification value, the default value will be used.");
-            wvpQuantification = L2hPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
+            wvpQuantification = L2hPSD146Constants.DEFAULT_WVP_QUANTIFICATION;
         }
         S2Config.Sentinel2ProductMission missionID = L2hfUtils.getMissionID(path);
         List<S2BandInformation> aInfo = L2hMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification, aotQuantification, wvpQuantification, missionID);
@@ -135,9 +132,9 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
     @Override
     public Collection<String> getTiles() {
 
-        String[] granuleList = getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
+        String[] granuleList = getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
         if(granuleList == null) {
-            granuleList = getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
+            granuleList = getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
             if(granuleList == null) {
                 //return an empty arraylist
                 ArrayList<String> tiles = new ArrayList<>();
@@ -159,14 +156,14 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
     }
 
     @Override public String[] getGranules() {
-        return getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_FILE_LIST);
+        return getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_GRANULE_FILE_LIST);
     }
 
     @Override
     public S2DatastripFilename getDatastrip() {
-        String[] datastripList = getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
+        String[] datastripList = getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
         if(datastripList == null) {
-            datastripList = getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
+            datastripList = getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
             if(datastripList == null) {
                 return null;
             }
@@ -188,16 +185,16 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
 
     @Override
     public S2DatastripDirFilename getDatastripDir() {
-        String[] granuleList = getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
-        String[] datastripList = getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
+        String[] granuleList = getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
+        String[] datastripList = getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
         if(datastripList == null) {
-            datastripList = getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
+            datastripList = getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
             if(datastripList == null) {
                 return null;
             }
         }
         if(granuleList == null) {
-            granuleList = getAttributeValues(L2hPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
+            granuleList = getAttributeValues(L2hPSD146Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
             if(granuleList == null) {
                 return null;
             }
@@ -223,6 +220,6 @@ public class L2hProductMetadataPSD13 extends GenericXmlMetadata implements IL2hP
 
     @Override
     public String getFormat() {
-        return getAttributeValue(L2hPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE"); //SAFE by default
+        return getAttributeValue(L2hPSD146Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE"); //SAFE by default
     }
 }
