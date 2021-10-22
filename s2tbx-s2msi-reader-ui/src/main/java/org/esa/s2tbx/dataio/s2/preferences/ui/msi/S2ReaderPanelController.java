@@ -10,28 +10,29 @@ import java.beans.PropertyChangeSupport;
 
 /**
  * Created by obarrile on 27/06/2016.
+ * Updated by Florian Douziech on 20 10 2021
  */
 
 @OptionsPanelController.SubRegistration(
         location = "S2TBX",
-        displayName = "Sentinel-2 Reader Masks",
-        keywords = "S2TBX,masks",
+        displayName = "Sentinel-2 Reader",
+        keywords = "S2TBX,reader",
         keywordsCategory = "S2TBX"
 )
 
-public class S2ReaderMasksPanelController extends OptionsPanelController {
-    private S2ReaderMasksPanel panel;
+public class S2ReaderPanelController extends OptionsPanelController {
+    private S2ReaderPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
     public void update() {
-        getPanel().load();
+        getOptionPanel().load();
         changed = false;
     }
 
     public void applyChanges() {
         SwingUtilities.invokeLater(() -> {
-            getPanel().store();
+            getOptionPanel().store();
             changed = false;
         });
     }
@@ -41,7 +42,7 @@ public class S2ReaderMasksPanelController extends OptionsPanelController {
     }
 
     public boolean isValid() {
-        return getPanel().valid();
+        return getOptionPanel().valid();
     }
 
     public boolean isChanged() {
@@ -53,7 +54,7 @@ public class S2ReaderMasksPanelController extends OptionsPanelController {
     }
 
     public JComponent getComponent(Lookup masterLookup) {
-        return getPanel();
+        return getOptionPanel();
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -64,9 +65,9 @@ public class S2ReaderMasksPanelController extends OptionsPanelController {
         pcs.removePropertyChangeListener(l);
     }
 
-    private S2ReaderMasksPanel getPanel() {
+    private S2ReaderPanel getOptionPanel() {
         if (panel == null) {
-            panel = new S2ReaderMasksPanel(this);
+            panel = new S2ReaderPanel(this);
         }
         return panel;
     }
