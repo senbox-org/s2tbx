@@ -854,12 +854,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 // // This mask is specific to a band
                 String bandName = spectralInfo.getPhysicalBand();
                 String maskBandName =  maskInfo.getSnapNameForBand(bandName, i);
-                int maskIndexBand = 0;
-                if (maskInfo.isMultiBand())
-                    maskIndexBand = i;
-                else
+                if (!maskInfo.isMultiBand())
                     maskBandName = maskInfo.getSnapNameForOneBand(bandName);
-                    S2SpatialResolution res = bandInfo.getBandInformation().getResolution();
+
+                S2SpatialResolution res = bandInfo.getBandInformation().getResolution();
                 if(bandName.matches("B1")){
                     res=S2SpatialResolution.R60M;
                 }
@@ -909,18 +907,21 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
 
                         JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(
-                                resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, maskIndexBand,
+                                resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, i,
                                 mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         product.addBand(band);
 
                     }
-                    Mask mask = Mask.BandMathsType.create(maskInfo.getSnapNameForBand(bandName, i),
+                    String maskName = maskInfo.getSnapNameForBand(bandName, i);
+                    if(maskInfo.getMainType().contains("MSK_DETFOO"))
+                        maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
+
+                    Mask mask = Mask.BandMathsType.create(maskName,
                             maskInfo.getDescriptionForBand(bandName, i), band.getRasterWidth(), band.getRasterHeight(),
                             String.format("%s.raw==%d", maskBandName, maskInfo.getValue(i)),
                             maskInfo.getColor(i), maskInfo.getTransparency(i));
-
                     ProductUtils.copyGeoCoding(band, mask);
                     product.addMask(mask);
                 }

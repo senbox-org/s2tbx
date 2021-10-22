@@ -17,10 +17,10 @@
 
 package org.esa.s2tbx.dataio.s2.masks;
 
-import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.snap.runtime.Config;
 
 import java.awt.*;
+import java.text.DecimalFormat;
 import java.util.prefs.Preferences;
 
 /**
@@ -32,16 +32,18 @@ public enum MaskInfo148 {
 
     MSK_DETFOO(
             "MSK_DETFOO",
-            new String[]{"DETECTOR_FOOTPRINT-D01","DETECTOR_FOOTPRINT-D02","DETECTOR_FOOTPRINT-D03","DETECTOR_FOOTPRINT-D04",
-            "DETECTOR_FOOTPRINT-D05","DETECTOR_FOOTPRINT-D06","DETECTOR_FOOTPRINT-D07","DETECTOR_FOOTPRINT-D08",
-            "DETECTOR_FOOTPRINT-D09","DETECTOR_FOOTPRINT-D10","DETECTOR_FOOTPRINT-D11","DETECTOR_FOOTPRINT-D12"},
+            new String[]{"DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT",
+                    "DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT",
+                    "DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT","DETECTOR_FOOTPRINT"},
             "Detector footprint mask",
-            new String[]{"detector_footprint-D01","detector_footprint-D02","detector_footprint-D03","detector_footprint-D04",
-            "detector_footprint-D05","detector_footprint-D06","detector_footprint-D07","detector_footprint-D08",
-            "detector_footprint-D09","detector_footprint-D10","detector_footprint-D11","detector_footprint-D12"},
-            new String[]{"detector_footprint-D01","detector_footprint-D02","detector_footprint-D03","detector_footprint-D04",
-            "detector_footprint-D05","detector_footprint-D06","detector_footprint-D07","detector_footprint-D08",
-            "detector_footprint-D09","detector_footprint-D10","detector_footprint-D11","detector_footprint-D12"},
+            new String[]{"detector_footprint","detector_footprint","detector_footprint","detector_footprint",
+                    "detector_footprint","detector_footprint","detector_footprint","detector_footprint",
+                    "detector_footprint","detector_footprint","detector_footprint","detector_footprint"
+                },
+            new String[]{"detector_footprint","detector_footprint","detector_footprint","detector_footprint",
+                        "detector_footprint","detector_footprint","detector_footprint","detector_footprint",
+                        "detector_footprint","detector_footprint","detector_footprint","detector_footprint"
+                },
             true,
             new int[]{MaskInfo148.L1C | MaskInfo148.L2A, MaskInfo148.L1C | MaskInfo148.L2A, MaskInfo148.L1C | MaskInfo148.L2A, MaskInfo148.L1C | MaskInfo148.L2A,
                 MaskInfo148.L1C | MaskInfo148.L2A,MaskInfo148.L1C | MaskInfo148.L2A,MaskInfo148.L1C | MaskInfo148.L2A,MaskInfo148.L1C | MaskInfo148.L2A,
@@ -73,7 +75,7 @@ public enum MaskInfo148 {
         new Color[]{Color.ORANGE, Color.YELLOW, Color.magenta, Color.RED, Color.RED, Color.CYAN, Color.PINK, Color.RED.darker()},
         new double[]{MaskInfo148.DEFAULT_TRANSPARENCY, MaskInfo148.DEFAULT_TRANSPARENCY, MaskInfo148.DEFAULT_TRANSPARENCY, MaskInfo148.DEFAULT_TRANSPARENCY,
             MaskInfo148.DEFAULT_TRANSPARENCY, MaskInfo148.DEFAULT_TRANSPARENCY, MaskInfo148.DEFAULT_TRANSPARENCY, MaskInfo148.DEFAULT_TRANSPARENCY},
-        MaskCategory.QUALITY,
+        MaskCategory.TECHNICAL_QUALITY,
         new int[]{1,1,1,1,1,1,1,1},true)
         ,MSK_CLASSI(
             "MSK_CLASSI",
@@ -110,6 +112,7 @@ public enum MaskInfo148 {
     public static final int L3 = (1 << 4);
 
     private static final double DEFAULT_TRANSPARENCY = 0.5;
+    private DecimalFormat df = new DecimalFormat();
 
     MaskInfo148(String mainType, String [] subType, String mainDescription, String [] subDescription, String [] snapName, boolean perBand, int [] levels, Color [] color, double [] transparency, MaskCategory category, int[] values, boolean multiBand) {
         this.mainType = mainType;
@@ -124,6 +127,7 @@ public enum MaskInfo148 {
         this.category = category;
         this.values = values;
         this.multiBand = multiBand;
+        df.setMinimumIntegerDigits(2);
     }
 
     public String getMainType() {
@@ -146,19 +150,31 @@ public enum MaskInfo148 {
         return levels;
     }
 
-    public String getSnapNameForBand(String bandName,int index) {
+    public String getSnapNameForBand(String bandName, int index) {
         if(!validateIndex(index)) {
             return null;
         }
-        return String.format("%s_%s", snapName[index], bandName);
+
+        if(!multiBand) {
+            return String.format("%s-%s-", snapName[index], bandName)+df.format(index);
+        }else
+            return String.format("%s_%s", snapName[index], bandName);
+    }
+
+    public String getSnapNameForDEFTOO(String bandName, int index) {
+        if(!validateIndex(index)) {
+            return null;
+        }
+        String number = bandName.replaceAll("\\D+","");
+        String bandName2Digit = bandName;
+        if(bandName.length()==2)
+            bandName2Digit = bandName.replace(number, df.format(Integer.parseInt(number)));
+        return String.format("%s-%s-", snapName[index], bandName2Digit)+df.format(index);
+
     }
 
     public String getSnapNameForOneBand(String bandName) {
-        String[] strList = snapName[0].split("-");
-        if(strList==null) {
-            return null;
-        }
-        return String.format("%s_%s", strList[0], bandName);
+        return String.format("%s_%s", snapName[0], bandName);
     }
 
     public String getDescription(int index) {
@@ -177,14 +193,17 @@ public enum MaskInfo148 {
         if(!validateIndex(index)) {
             return null;
         }
-        return String.format("%s - %s", getDescription(index), bandName);
+        if(!multiBand) {
+            return String.format("%s_%s - ", snapName[index], bandName)+df.format(index);
+        }else
+            return String.format("%s - %s", getDescription(index), bandName);
     }
 
     public String getDescriptionForBandAndDetector(String bandName, String detector,int index) {
         if(!validateIndex(index)) {
             return null;
         }
-        return String.format("%s - %s - Detector %s", getDescription(index), bandName, detector);
+        return String.format("%s - %s - Detector %s", getDescription(0), bandName, detector);
     }
 
     public Color [] getColors() {
@@ -249,8 +268,7 @@ public enum MaskInfo148 {
         RADIOMETRIC_QUALITY ("s2tbx.dataio.radiometricQualityMasks"),
         TECHNICAL_QUALITY ("s2tbx.dataio.technicalQualityMasks"),
         CLOUD ("s2tbx.dataio.cloudMasks"),
-        QUALITY("s2tbx.dataio.QualityMasks"),
-        CLASSI("s2tbx.dataio.ClassificationMasks");
+        CLASSI("s2tbx.dataio.classificationMasks");
         private final String key;
 
         MaskCategory(String key) {
