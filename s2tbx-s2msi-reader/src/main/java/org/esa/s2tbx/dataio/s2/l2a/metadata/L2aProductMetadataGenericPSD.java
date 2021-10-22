@@ -228,5 +228,12 @@ public class L2aProductMetadataGenericPSD extends GenericXmlMetadata implements 
     public String getFormat() {
         return getAttributeValue(metadataPathProvider.getPATH_PRODUCT_METADATA_PRODUCT_FORMAT(), "SAFE"); //SAFE by default
     }
+
+    @Override
+    public String[] getBOAOffsetList() {
+        return getAttributeValues(metadataPathProvider.getPATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST());
+    }
+
+    
 }
 

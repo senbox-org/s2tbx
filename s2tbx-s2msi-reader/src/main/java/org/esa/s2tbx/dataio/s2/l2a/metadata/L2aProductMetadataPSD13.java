@@ -220,4 +220,10 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
     public String getFormat() {
         return getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE"); //SAFE by default
     }
+
+    @Override
+    public String[] getBOAOffsetList() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

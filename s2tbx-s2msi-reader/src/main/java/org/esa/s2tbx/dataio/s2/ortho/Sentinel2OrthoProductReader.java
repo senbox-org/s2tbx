@@ -52,6 +52,7 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Placemark;
@@ -105,6 +106,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -318,10 +320,41 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return product;
     }
 
+    private String[] getBOAOffsets() {
+        String[] offset = null;
+        List<MetadataElement> metadataElements = orthoMetadataHeader.getMetadataElements();
+        for (MetadataElement element : metadataElements) {
+            if (element.getName().matches("Level-2A_User_Product")) {
+                MetadataElement subElement1 = element.getElement("General_Info");
+                if (subElement1 != null) {
+                    MetadataElement subElement2 = subElement1.getElement("Product_Image_Characteristics");
+                    if (subElement2 != null) {
+                        MetadataElement subElement3 = subElement2.getElement("BOA_ADD_OFFSET_VALUES_LIST");
+                        offset = new String[subElement3.getNumAttributes()];
+                        int k = 0;
+                        for (MetadataAttribute attribute : subElement3.getAttributes()) {
+                            byte[] offsetRaw = (byte[]) attribute.getDataElems();
+                            String str;
+                            try {
+                                str = new String(offsetRaw, "UTF-8");
+                                offset[k] = str;
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+                            k++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return offset;
+    }
+
+
     private void addGRIBBand(Product product, S2Metadata.Tile tile, S2OrthoSceneLayout sceneDescription,
             CoordinateReferenceSystem mapCRS, INamingConvention namingConvention)
             throws IOException, NoSuchAuthorityCodeException, FactoryException {
-
         VirtualPath tileFolder = namingConvention.findGranuleFolderFromTileId(tile.getId());
         S2Metadata.ProductCharacteristics characteristicsAUXDATA = new S2Metadata.ProductCharacteristics();
         VirtualPath folderAUXDATA = tileFolder.resolve("AUX_DATA");
@@ -332,13 +365,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             characteristicsAUXDATA.setMetaDataLevel("Standard");
             VirtualPath[] gribFiles = folderAUXDATA.listPaths();
             for (VirtualPath gribFile : gribFiles) {
-                if (gribFile.getFileName().toString().contains("AUX_ECMWFT")) {
+                if (S2OrthoUtils.enableECMWFTData() && gribFile.getFileName().toString().contains("AUX_ECMWFT")) {
                     ECMWFTReader readerPlugin = new ECMWFTReader(gribFile.getFilePath().getPath(), getCacheDir());
                     List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
                     for (TiePointGrid tiePointGrid : ecmwfGrids) {
                         product.addTiePointGrid(tiePointGrid);
                     }
-                } else if (gribFile.getFileName().toString().contains("AUX_CAMSFO")) {
+                } else if (S2OrthoUtils.enableCAMSData() && gribFile.getFileName().toString().contains("AUX_CAMSFO")) {
                     CAMSReader readerPlugin = new CAMSReader(gribFile.getFilePath().getPath(), getCacheDir());
                     List<TiePointGrid> camsGrids = readerPlugin.getCAMSGrids();
                     for (TiePointGrid tiePointGrid : camsGrids) {
@@ -503,10 +536,17 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         Dimension defaultProductSize = sceneDescription.getSceneDimension(productResolution);
         Collection<String> bandMatrixTileIds = sceneDescription.getTileIds(); // sceneDescription.getOrderedTileIds();
+        S2Metadata.ProductCharacteristics productCharacteristics = this.orthoMetadataHeader
+        .getProductCharacteristics();
+        String productLevel = productCharacteristics.getProcessingLevel();
+        double quantificationValue = productCharacteristics.getQuantificationValue();
         int productMaximumResolutionCount = 0;
         double mosaicOpBackgroundValue = S2Config.FILL_CODE_MOSAIC_BG;
         int bandIndexNumber = 0;
         double mosaicOpSourceThreshold = 1.0d;
+        String[] offsets = null;
+        if((productCharacteristics.getPsd()>147) && S2OrthoUtils.reverseNegativeOffset())
+            offsets = getBOAOffsets();
         for (int i = 0; i < bandInfoList.size(); i++) {
             BandInfo bandInfo = bandInfoList.get(i);
             Dimension defaultBandSize = sceneDescription
@@ -553,16 +593,23 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     GeoCoding geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
                             defaultBandSize, bandBounds);
                     band.setGeoCoding(geoCoding);
-
                     AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
-                    JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform,
-                                                                            bandIndexNumber, mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
-
+                    JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(
+                            resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, bandIndexNumber,
+                            mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
                     ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                     band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
-
+                    if(offsets!=null)
+                    {
+                        for(String offsetStr: offsets) {
+                            double offset = Double.parseDouble(offsetStr);
+                            band.setScalingOffset(-offset/quantificationValue);
+                            System.out.println("revert negative offset: "+quantificationValue+";"+offset/quantificationValue);
+                        }
+                    }
                     product.addBand(band);
                 }
+                
             }
         }
         return productMaximumResolutionCount;
@@ -658,6 +705,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         }
                         Color color = colorIterator.next();
                         String maskName = indexBandInformation.getPrefix() + indexName.toLowerCase();
+
                         if (subsetDef == null || (subsetDef.isNodeAccepted(maskName)
                                 && subsetDef.isNodeAccepted(indexBandInformation.getPhysicalBand()))) {
                             Mask mask = Mask.BandMathsType.create(maskName, description, dimension.width,

@@ -221,4 +221,9 @@ public class L2aProductMetadataPSD148 extends GenericXmlMetadata implements IL2a
     public String getFormat() {
         return getAttributeValue(L2aPSD148Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE"); //SAFE by default
     }
+
+    @Override
+    public String[] getBOAOffsetList() {
+        return getAttributeValues(L2aPSD148Constants.PATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST);
+    }
 }
