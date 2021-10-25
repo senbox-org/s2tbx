@@ -223,7 +223,6 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
 
     @Override
     public String[] getBOAOffsetList() {
-        // TODO Auto-generated method stub
         return null;
     }
 }

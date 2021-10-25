@@ -123,5 +123,5 @@ public class L2aPSD148Constants {
 
     public static final String PATH_GRANULE_METADATA_PVI_FILENAME = "/Level-2A_Tile_ID/Quality_Indicators_Info/PVI_FILENAME";
 
-    public static final String PATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST = "/Level-2A_User_Product/General_Info/Product_Image_Characteristics/BOA_ADD_OFFSET_VALUES_LIST";
+    public static final String PATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST = "/Level-2A_User_Product/General_Info/Product_Image_Characteristics/BOA_ADD_OFFSET_VALUES_LIST/BOA_ADD_OFFSET";
    }

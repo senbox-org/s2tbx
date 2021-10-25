@@ -565,7 +565,15 @@ public abstract class S2Metadata {
         private String metaDataLevel;
         private double quantificationValue;
         private int psd;
+        private String[] offsets;
 
+        public String[] getOffsetList() {
+            return offsets;
+        }
+
+        public void setOffsetList(String[] offsets) {
+            this.offsets = offsets;
+        }
         public int getPsd() {
             return psd;
         }

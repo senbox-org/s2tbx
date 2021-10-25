@@ -320,38 +320,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return product;
     }
 
-    private String[] getBOAOffsets() {
-        String[] offset = null;
-        List<MetadataElement> metadataElements = orthoMetadataHeader.getMetadataElements();
-        for (MetadataElement element : metadataElements) {
-            if (element.getName().matches("Level-2A_User_Product")) {
-                MetadataElement subElement1 = element.getElement("General_Info");
-                if (subElement1 != null) {
-                    MetadataElement subElement2 = subElement1.getElement("Product_Image_Characteristics");
-                    if (subElement2 != null) {
-                        MetadataElement subElement3 = subElement2.getElement("BOA_ADD_OFFSET_VALUES_LIST");
-                        offset = new String[subElement3.getNumAttributes()];
-                        int k = 0;
-                        for (MetadataAttribute attribute : subElement3.getAttributes()) {
-                            byte[] offsetRaw = (byte[]) attribute.getDataElems();
-                            String str;
-                            try {
-                                str = new String(offsetRaw, "UTF-8");
-                                offset[k] = str;
-                            } catch (UnsupportedEncodingException e) {
-                                e.printStackTrace();
-                            }
-                            k++;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        return offset;
-    }
-
-
     private void addGRIBBand(Product product, S2Metadata.Tile tile, S2OrthoSceneLayout sceneDescription,
             CoordinateReferenceSystem mapCRS, INamingConvention namingConvention)
             throws IOException, NoSuchAuthorityCodeException, FactoryException {
@@ -545,8 +513,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         int bandIndexNumber = 0;
         double mosaicOpSourceThreshold = 1.0d;
         String[] offsets = null;
-        if((productCharacteristics.getPsd()>147) && S2OrthoUtils.reverseNegativeOffset())
-            offsets = getBOAOffsets();
+        if((productCharacteristics.getPsd()>147) && S2OrthoUtils.reverseNegativeOffset()) {
+            offsets =productCharacteristics.getOffsetList();
+            if(offsets==null)
+                logger.warning("The metadata offset values are not accessible.");
+        }
         for (int i = 0; i < bandInfoList.size(); i++) {
             BandInfo bandInfo = bandInfoList.get(i);
             Dimension defaultBandSize = sceneDescription
@@ -604,7 +575,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         for(String offsetStr: offsets) {
                             double offset = Double.parseDouble(offsetStr);
                             band.setScalingOffset(-offset/quantificationValue);
-                            System.out.println("revert negative offset: "+quantificationValue+";"+offset/quantificationValue);
                         }
                     }
                     product.addBand(band);
