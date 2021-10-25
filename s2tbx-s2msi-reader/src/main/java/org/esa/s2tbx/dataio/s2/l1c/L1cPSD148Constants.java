@@ -87,6 +87,7 @@ public class L1cPSD148Constants {
 
     public static final String PATH_PRODUCT_METADATA_BAND_LIST = "/Level-1C_User_Product/General_Info/Product_Info/Query_Options/Band_List";
     public static final String PATH_PRODUCT_METADATA_PRODUCT_FORMAT = "/Level-1C_User_Product/General_Info/Product_Info/Query_Options/PRODUCT_FORMAT";
+    public static final String PATH_PRODUCT_METADATA_RADIO_OFFSET_VALUES_LIST = "/Level-1C_User_Product/General_Info/Product_Image_Characteristics/Radiometric_Offset_List/RADIO_ADD_OFFSET";
 
     /*
      * Granule metadata element path

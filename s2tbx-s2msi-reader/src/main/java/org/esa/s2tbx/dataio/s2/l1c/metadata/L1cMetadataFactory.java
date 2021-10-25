@@ -16,7 +16,7 @@ public class L1cMetadataFactory {
         int psd = S2Metadata.getFullPSDversion(metadataPath);
         if(psd <148 ) {
             return L1cProductMetadataPSD13.create(metadataPath);
-        } else if(psd == 148 )  {
+        } else if(psd >147 )  {
             return L1cProductMetadataPSD148.create(metadataPath);
         }else {
             //TODO
@@ -48,7 +48,7 @@ public class L1cMetadataFactory {
         }
         if(psd<148)  {
             return L1cGranuleMetadataPSD13.create(metadataPath);
-        } else if(psd == 148 )  {
+        } else if(psd > 147)  {
             return L1cGranuleMetadataPSD148.create(metadataPath);
         }else {
             //TODO
@@ -60,7 +60,7 @@ public class L1cMetadataFactory {
         int psd = S2Metadata.getFullPSDversion(metadataPath);
         if(psd <148) {
             return L1cDatastripMetadataPSD13.create(metadataPath);
-        } else if(psd == 148 )  {
+        } else if(psd > 147 )  {
             return L1cDatastripMetadataPSD13.create(metadataPath);
         }else {
             //TODO
