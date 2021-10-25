@@ -5,8 +5,15 @@ import org.esa.snap.runtime.Config;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
+import java.awt.Dimension;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+
+import com.bc.ceres.swing.TableLayout;
 
 /**
  * Created by obarrile on 27/06/2016.
@@ -73,13 +80,18 @@ public class S2ReaderPanel extends javax.swing.JPanel {
         Mnemonics.setLocalizedText(removeNegativeOffset,
                                    NbBundle.getMessage(S2ReaderPanel.class,
                                                        "S2TBXReaderOptionsPanel.negativeRadiometricOffset.text"));
-
+        JLabel titleMask = new JLabel("Sentinel-2 masks");
+        JLabel titleAUX = new JLabel("Sentinel-2 auxilary data");
+        JLabel titleOffset = new JLabel("Negative radiometric offset (L1C-L2A)");
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                            .addComponent(titleMask)
+                                                            // .addComponent(sep1)
+                                                            .addGap(0, 512, Short.MAX_VALUE)
                                                             .addComponent(detectorFootprintMasks)
                                                             .addGap(0, 512, Short.MAX_VALUE)
                                                             .addComponent(radiometricQualityMasks)
@@ -90,9 +102,13 @@ public class S2ReaderPanel extends javax.swing.JPanel {
                                                             .addGap(0, 512, Short.MAX_VALUE)
                                                             .addComponent(classificationMasks)
                                                             .addGap(0, 512, Short.MAX_VALUE)
+                                                            .addComponent(titleAUX)
+                                                            .addGap(0, 512, Short.MAX_VALUE)
                                                             .addComponent(ECMWFTData)
                                                             .addGap(0, 512, Short.MAX_VALUE)
                                                             .addComponent(CAMSData)
+                                                            .addGap(0, 512, Short.MAX_VALUE)
+                                                            .addComponent(titleOffset)
                                                             .addGap(0, 512, Short.MAX_VALUE)
                                                             .addComponent(removeNegativeOffset))
                                           .addContainerGap())
@@ -100,6 +116,9 @@ public class S2ReaderPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
+                                          .addComponent(titleMask)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addGap(0, 10,10)
                                           .addComponent(detectorFootprintMasks)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(radiometricQualityMasks)
@@ -109,10 +128,16 @@ public class S2ReaderPanel extends javax.swing.JPanel {
                                           .addComponent(cloudMasks)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(classificationMasks)
+                                          .addGap(0, 10,10)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(titleAUX)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(ECMWFTData)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(CAMSData)
+                                          .addGap(0, 10,10)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(titleOffset)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(removeNegativeOffset)
                                           .addContainerGap())
@@ -137,7 +162,7 @@ public class S2ReaderPanel extends javax.swing.JPanel {
         CAMSData.setSelected(
             preferences.getBoolean("s2tbx.dataio.CAMSData", true));
         removeNegativeOffset.setSelected(
-                preferences.getBoolean("s2tbx.dataio.negativeRadiometricOffset", true));
+                preferences.getBoolean("s2tbx.dataio.negativeRadiometricOffset", false));
     }
 
     void store() {

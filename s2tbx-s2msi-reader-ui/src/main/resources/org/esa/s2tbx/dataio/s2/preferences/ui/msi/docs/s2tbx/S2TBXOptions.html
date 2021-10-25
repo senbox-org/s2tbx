@@ -40,7 +40,7 @@
     It is possible to configure the GDAL library loader to load one of the installed GDAL distribution from the operating system or the internal GDAL distribution within SNAP (version 3.2.1).
 </p>
 
-<img src="../images/gdal_loader_config.jpg" border=0/>
+<img src="../images/gdal_loader_config.png" border=0/>
 
 <p><br>The internal GDAL distribution is used when no GDAL distribution is installed on the operating system or when the installed version is not compatible.
     If the first option is selected and a GDAL distribution is installed on the operating system, SNAP will not load it until the second option is selected.
@@ -67,7 +67,7 @@
     It is possible to configure the Sentinel-2 Cache and to select if, to load or not, the different S2 masks.
 </p>
 
-<img src="../images/s2cache.jpg" border=0/>
+<img src="../images/s2cache.png" border=0/>
 
 <p><br>The S2 images are originally in JP2 format. These images are decompresed (by tiles) to new GeoTiff images internally in SNAP.
      These GeoTiff images are stored in [userFolder]/.snap/var/cache/s2tbx in order to be available in the future when working with the same images.
@@ -77,15 +77,26 @@
 </p>
 
 
-<h4>Sentinel-2 Reader Masks</h4>
+<h4>Sentinel-2 Reader</h4>
 
-<img src="../images/s2masks.jpg" border=0/>
+<img src="../images/s2reader.png
+" border=0/>
 
-<p><br>
-The Sentinel-2 products contain different kind of masks in GML format. By default, all the masks are loaded
-     but the user can select to ignore some of them in order to be able to open the products faster.
+<h5>Sentinel-2 Masks</h5>
+<p>
+    The Sentinel-2 products contain different kind of masks in GML format or newly JPEG2000 format. By default, all the masks are loaded
+    but the user can select to ignore some of them in order to be able to open the products faster.
 </p>
-
+<h5>Sentinel-2 AUX data</h5>
+<p>
+    The Sentinel-2 products contain ECMWFT auxilary data and also from the PSD 14.8 CAMSFO auxilary data. By default, all the auxilary data are loaded
+    but the user can select to ignore some of them in order to be able to open the products faster.
+</p>
+<h5>Sentinel-2 radiometric negative offset</h5>
+<p>
+    From the PSD 14.8, a radiometric offset will be added up to the image reflectance at Level-1C (also at Level-2A).
+    By default, the band are loaded with the negative offset, but the user can select to revert the negative offset.
+</p>
 
 </body>
 </html>
