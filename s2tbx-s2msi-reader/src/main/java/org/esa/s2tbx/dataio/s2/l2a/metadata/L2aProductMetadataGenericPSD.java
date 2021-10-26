@@ -135,7 +135,8 @@ public class L2aProductMetadataGenericPSD extends GenericXmlMetadata implements 
         List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(), boaQuantification,aotQuantification,wvpQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
-        characteristics.setOffsetList(getAttributeValues(metadataPathProvider.getPATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST()));
+        if(characteristics.getPsd()>147)
+            characteristics.setOffsetList(getAttributeValues(metadataPathProvider.getPATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST()));
         return characteristics;
     }
 
