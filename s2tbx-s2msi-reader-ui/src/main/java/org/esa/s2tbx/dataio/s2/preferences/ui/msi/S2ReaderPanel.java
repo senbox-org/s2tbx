@@ -28,7 +28,7 @@ public class S2ReaderPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox classificationMasks;
     private javax.swing.JCheckBox ECMWFTData;
     private javax.swing.JCheckBox CAMSData;
-    private javax.swing.JCheckBox removeNegativeOffset;
+    private javax.swing.JCheckBox addNegativeOffset;
 
     S2ReaderPanel(final S2ReaderPanelController controller) {
         initComponents();
@@ -40,7 +40,7 @@ public class S2ReaderPanel extends javax.swing.JPanel {
         classificationMasks.addItemListener(e -> controller.changed());
         ECMWFTData.addItemListener(e -> controller.changed());
         CAMSData.addItemListener(e -> controller.changed());
-        removeNegativeOffset.addItemListener(e -> controller.changed());
+        addNegativeOffset.addItemListener(e -> controller.changed());
     }
 
     private void initComponents() {
@@ -76,8 +76,8 @@ public class S2ReaderPanel extends javax.swing.JPanel {
                                    NbBundle.getMessage(S2ReaderPanel.class,
                                                        "S2TBXReaderOptionsPanel.CAMSData.text"));
 
-        removeNegativeOffset = new javax.swing.JCheckBox();
-        Mnemonics.setLocalizedText(removeNegativeOffset,
+        addNegativeOffset = new javax.swing.JCheckBox();
+        Mnemonics.setLocalizedText(addNegativeOffset,
                                    NbBundle.getMessage(S2ReaderPanel.class,
                                                        "S2TBXReaderOptionsPanel.negativeRadiometricOffset.text"));
         JLabel titleMask = new JLabel("Sentinel-2 masks");
@@ -110,7 +110,7 @@ public class S2ReaderPanel extends javax.swing.JPanel {
                                                             .addGap(0, 512, Short.MAX_VALUE)
                                                             .addComponent(titleOffset)
                                                             .addGap(0, 512, Short.MAX_VALUE)
-                                                            .addComponent(removeNegativeOffset))
+                                                            .addComponent(addNegativeOffset))
                                           .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -139,7 +139,7 @@ public class S2ReaderPanel extends javax.swing.JPanel {
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(titleOffset)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                          .addComponent(removeNegativeOffset)
+                                          .addComponent(addNegativeOffset)
                                           .addContainerGap())
         );
     }
@@ -161,7 +161,7 @@ public class S2ReaderPanel extends javax.swing.JPanel {
                 preferences.getBoolean("s2tbx.dataio.ECMWFTData", true));
         CAMSData.setSelected(
             preferences.getBoolean("s2tbx.dataio.CAMSData", true));
-        removeNegativeOffset.setSelected(
+        addNegativeOffset.setSelected(
                 preferences.getBoolean("s2tbx.dataio.negativeRadiometricOffset", false));
     }
 
@@ -175,7 +175,7 @@ public class S2ReaderPanel extends javax.swing.JPanel {
         preferences.putBoolean("s2tbx.dataio.classificationMasks", classificationMasks.isSelected());
         preferences.putBoolean("s2tbx.dataio.ECMWFTData", ECMWFTData.isSelected());
         preferences.putBoolean("s2tbx.dataio.CAMSData", CAMSData.isSelected());
-        preferences.putBoolean("s2tbx.dataio.negativeRadiometricOffset", removeNegativeOffset.isSelected());
+        preferences.putBoolean("s2tbx.dataio.negativeRadiometricOffset", addNegativeOffset.isSelected());
 
         try {
             preferences.flush();

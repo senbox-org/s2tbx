@@ -158,7 +158,7 @@ public class S2OrthoUtils {
         }
     }
 
-    static public boolean reverseNegativeOffset() {
+    static public boolean addNegativeOffset() {
         final Preferences preferences = Config.instance("s2tbx").load().preferences();
         final boolean DEFAULT_MASK_ENABLEMENT = true;
         return preferences.getBoolean("s2tbx.dataio.negativeRadiometricOffset", DEFAULT_MASK_ENABLEMENT);
