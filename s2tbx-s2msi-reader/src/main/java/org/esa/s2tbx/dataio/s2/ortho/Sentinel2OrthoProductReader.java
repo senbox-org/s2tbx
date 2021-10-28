@@ -52,7 +52,6 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Placemark;
@@ -730,7 +729,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription, S2SpatialResolution productResolution,
             GeoCoding productDefaultGeoCoding, ProductSubsetDef subsetDef, Dimension defaultJAIReadTileSize)
             throws IOException {
-
+        S2Metadata.ProductCharacteristics productCharacteristics = this.orthoMetadataHeader
+        .getProductCharacteristics();
+        double quantificationValue = productCharacteristics.getQuantificationValue();
         VirtualPath maskPath = null;
         boolean maskFilesFound = false;
         for (S2Metadata.Tile tile : tileList) {
@@ -759,6 +760,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             }
         }
+
 
         if (maskPath == null || !maskFilesFound) {
             return;
@@ -809,17 +811,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             defaultBandSize.width, defaultBandSize.height, isMultiResolution());
                 }
                 if (!bandBounds.isEmpty()) {
-
                     Collection<String> bandMatrixTileIds = sceneDescription.getTileIds();
                     Map<String, VirtualPath> tileIdToPathMapT = new HashMap<String, VirtualPath>();
                     tileIdToPathMapT.put(bandMatrixTileIds.iterator().next(), maskPath);
-                    S2SpectralInformation refSpectralInfo = (S2SpectralInformation) referenceBandInfo
-                            .getBandInformation();
-                    S2SpectralInformation spectralI = new S2SpectralInformation(maskInfo.getSnapName(i),
+                    S2SpectralInformation spectralI = new S2SpectralInformation("B_"+maskInfo.getSnapName(i),
                             referenceBandInfo.getBandInformation().getResolution(), maskPath.getParent().toString(),
-                            maskInfo.getDescription(i), maskInfo.getSubType()[i], 1000.0, refSpectralInfo.getBandId(),
-                            refSpectralInfo.getWavelengthMin(), refSpectralInfo.getWavelengthMax(),
-                            refSpectralInfo.getWavelengthCentral());
+                            maskInfo.getDescription(i), null, quantificationValue, product.getNumBands(),
+                            0.0, 0.0,
+                            0.0);
                     BandInfo maskBandInfo = new BandInfo(tileIdToPathMapT, spectralI, null);
                     MosaicMatrix mosaicMatrix = buildBandMatrix(bandMatrixTileIds, sceneDescription, maskBandInfo);
                     int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix);
@@ -827,7 +826,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     int dataBufferType = computeMatrixCellsDataBufferType(mosaicMatrix);
                     Band band = buildBand(maskBandInfo, bandBounds.width, bandBounds.height, dataBufferType);
                     band.setDescription(maskBandInfo.getBandInformation().getDescription());
-                    band.setUnit(maskBandInfo.getBandInformation().getUnit());
+                    band.setUnit("none");
+                    band.setValidPixelExpression(null);
                     GeoCoding geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
                             defaultBandSize, bandBounds);
                     band.setGeoCoding(geoCoding);
@@ -841,7 +841,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     product.addBand(band);
                     Mask mask = Mask.BandMathsType.create(maskInfo.getSnapName(i), maskInfo.getDescription(i),
                             band.getRasterWidth(), band.getRasterHeight(),
-                            String.format("%s.raw==%d", maskInfo.getSnapName(i), maskInfo.getValue(i)),
+                            String.format("%s.raw==%d", "B_"+maskInfo.getSnapName(i), maskInfo.getValue(i)),
                             maskInfo.getColor(i), maskInfo.getTransparency(i));
                     ProductUtils.copyGeoCoding(band, mask);
                     product.addMask(mask);
@@ -852,9 +852,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             for (int i = 0; i < maskInfo.getSubType().length; i++) {
                 // // This mask is specific to a band
                 String bandName = spectralInfo.getPhysicalBand();
-                String maskBandName =  maskInfo.getSnapNameForBand(bandName, i);
+                String maskBandName =  "B_"+maskInfo.getSnapNameForBand(bandName, i);
                 if (!maskInfo.isMultiBand())
-                    maskBandName = maskInfo.getSnapNameForOneBand(bandName);
+                    maskBandName = "B_"+maskInfo.getSnapNameForOneBand(bandName);
 
                 S2SpatialResolution res = bandInfo.getBandInformation().getResolution();
                 if(bandName.matches("B1")){
@@ -863,9 +863,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 S2SpectralInformation spectralI = new S2SpectralInformation(
                         maskBandName, res,
                         maskPath.getParent().toString(), maskInfo.getDescriptionForBand(bandName, i),
-                        maskInfo.getSubType()[i], 1000.0, spectralInfo.getBandId(),
-                        spectralInfo.getWavelengthMin(), spectralInfo.getWavelengthMax(),
-                        spectralInfo.getWavelengthCentral());
+                        null, quantificationValue, product.getNumBands(),
+                        0.0, 0.0,
+                        0.0);
 
                 Dimension defaultBandSize = sceneDescription.getSceneDimension(spectralI.getResolution());
                 Dimension defaultProductSize = sceneDescription.getSceneDimension(productResolution);
@@ -888,6 +888,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 }
                 if (!bandBounds.isEmpty()) {
                     if (maskInfo.isMultiBand() || (!maskInfo.isMultiBand() && i == 0)) {
+
                         Collection<String> bandMatrixTileIds = sceneDescription.getTileIds();
                         Map<String, VirtualPath> tileIdToPathMapT = new HashMap<String, VirtualPath>();
                         tileIdToPathMapT.put(bandMatrixTileIds.iterator().next(), maskPath);
@@ -897,8 +898,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix);
                         productMaximumResolutionCount = Math.max(productMaximumResolutionCount, resolutionCount);
                         band = buildBand(maskBandInfo, bandBounds.width, bandBounds.height, dataBufferType);
-                        band.setDescription(spectralInfo.getDescription());
-                        band.setUnit(spectralInfo.getUnit());
+                        band.setDescription(maskInfo.getDescriptionForBand(bandName, i));
+                        band.setUnit("none");
+                        band.setValidPixelExpression(null);
+
                         GeoCoding geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
                                 defaultBandSize, bandBounds);
                         band.setGeoCoding(geoCoding);
