@@ -120,8 +120,8 @@ public class Sentinel2OrthoProductReaderTest {
         assertEquals(3035, mask_detector_footprint.getRasterHeight());
 
         Mask mask_msi_lost = finalProduct.getMaskGroup().get("msi_lost_B5");
-        assertEquals(2332, mask_msi_lost.getRasterWidth());
-        assertEquals(1518, mask_msi_lost.getRasterHeight());
+        assertEquals(2331, mask_msi_lost.getRasterWidth());
+        assertEquals(1517, mask_msi_lost.getRasterHeight());
 
         Band band_B1 = finalProduct.getBand("B1");
         assertEquals(777, band_B1.getRasterWidth());
@@ -154,8 +154,8 @@ public class Sentinel2OrthoProductReaderTest {
         assertEquals(0.0900f, pixelValue, 4);
 
         Band band_B5 = finalProduct.getBand("B5");
-        assertEquals(2332, band_B5.getRasterWidth());
-        assertEquals(1518, band_B5.getRasterHeight());
+        assertEquals(2331, band_B5.getRasterWidth());
+        assertEquals(1517, band_B5.getRasterHeight());
 
         pixelValue = band_B5.getSampleFloat(240, 679);
         assertEquals(0.1793f, pixelValue, 4);
@@ -198,8 +198,8 @@ public class Sentinel2OrthoProductReaderTest {
         pixelValue = band_view_azimuth_B5.getSampleFloat(8, 3);
         assertEquals(92.8102f, pixelValue, 4);
 
-        assertNotNull(finalProduct.getTiePointGrid("total_column_water_vapour"));
-        TiePointGrid tiePointGrid_total_column_water_vapour = finalProduct.getTiePointGrid("total_column_water_vapour");
+        assertNotNull(finalProduct.getTiePointGrid("tco3"));
+        TiePointGrid tiePointGrid_total_column_water_vapour = finalProduct.getTiePointGrid("tco3");
         assertEquals(1220.0, tiePointGrid_total_column_water_vapour.getSubSamplingX(),4);
         assertEquals(1220.0, tiePointGrid_total_column_water_vapour.getSubSamplingY(),4);
         pixelValue = tiePointGrid_total_column_water_vapour.getPixelFloat(700, 772);
@@ -211,8 +211,8 @@ public class Sentinel2OrthoProductReaderTest {
         pixelValue = tiePointGrid_total_column_water_vapour.getPixelFloat(10276, 10540);
         assertEquals(15.901403f, pixelValue, 0.1);
 
-        assertNotNull(finalProduct.getTiePointGrid("total_column_ozone"));
-        TiePointGrid tiePointGrid_total_column_ozone = finalProduct.getTiePointGrid("total_column_ozone");
+        assertNotNull(finalProduct.getTiePointGrid("tcwv"));
+        TiePointGrid tiePointGrid_total_column_ozone = finalProduct.getTiePointGrid("tcwv");
         assertEquals(1220.0, tiePointGrid_total_column_ozone.getSubSamplingX(),4);
         assertEquals(1220.0, tiePointGrid_total_column_ozone.getSubSamplingY(),4);
         pixelValue = tiePointGrid_total_column_ozone.getPixelFloat(700, 772);
@@ -224,8 +224,8 @@ public class Sentinel2OrthoProductReaderTest {
         pixelValue = tiePointGrid_total_column_ozone.getPixelFloat(10276, 10540);
         assertEquals(0.005794613f, pixelValue, 0.0001);
 
-        assertNotNull(finalProduct.getTiePointGrid("mean_sea_level_pressure"));
-        TiePointGrid tiePointGrid_mean_sea_level_pressure = finalProduct.getTiePointGrid("mean_sea_level_pressure");
+        assertNotNull(finalProduct.getTiePointGrid("msl"));
+        TiePointGrid tiePointGrid_mean_sea_level_pressure = finalProduct.getTiePointGrid("msl");
         assertEquals(1220.0, tiePointGrid_mean_sea_level_pressure.getSubSamplingX(),4);
         assertEquals(1220.0, tiePointGrid_mean_sea_level_pressure.getSubSamplingY(),4);
         pixelValue = tiePointGrid_mean_sea_level_pressure.getPixelFloat(700, 772);
@@ -297,8 +297,8 @@ public class Sentinel2OrthoProductReaderTest {
         assertEquals(0.0711f, pixelValue, 4);
 
         Band band_B6 = finalProduct.getBand("B6");
-        assertEquals(3442, band_B6.getRasterWidth());
-        assertEquals(2887, band_B6.getRasterHeight());
+        assertEquals(3441, band_B6.getRasterWidth());
+        assertEquals(2886, band_B6.getRasterHeight());
 
         pixelValue = band_B6.getSampleFloat(323, 374);
         assertEquals(0.1545f, pixelValue, 4);
@@ -312,7 +312,7 @@ public class Sentinel2OrthoProductReaderTest {
         assertEquals(0.1791f, pixelValue, 4);
 
         Band band_B9 = finalProduct.getBand("B9");
-        assertEquals(1148, band_B9.getRasterWidth());
+        assertEquals(1147, band_B9.getRasterWidth());
         assertEquals(962, band_B9.getRasterHeight());
 
         pixelValue = band_B9.getSampleFloat(80, 165);
