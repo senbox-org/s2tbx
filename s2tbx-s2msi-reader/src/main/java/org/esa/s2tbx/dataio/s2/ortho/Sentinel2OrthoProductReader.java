@@ -513,7 +513,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         int bandIndexNumber = 0;
         double mosaicOpSourceThreshold = 1.0d;
         String[] offsets = null;
-        if((productCharacteristics.getPsd()>147) && S2OrthoUtils.reverseNegativeOffset()) {
+        if((productCharacteristics.getPsd()>147) && S2OrthoUtils.addNegativeOffset()) {
             offsets =productCharacteristics.getOffsetList();
             if(offsets==null)
                 logger.warning("The metadata offset values are not accessible.");
