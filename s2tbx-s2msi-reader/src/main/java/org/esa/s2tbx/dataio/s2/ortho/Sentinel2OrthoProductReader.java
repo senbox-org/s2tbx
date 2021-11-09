@@ -822,7 +822,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             refSpectralInfo.getWavelengthCentral());
                     BandInfo maskBandInfo = new BandInfo(tileIdToPathMapT, spectralI, null);
                     MosaicMatrix mosaicMatrix = buildBandMatrix(bandMatrixTileIds, sceneDescription, maskBandInfo);
-                    int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix, false);
+                    int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix);
                     productMaximumResolutionCount = Math.max(productMaximumResolutionCount, resolutionCount);
                     int dataBufferType = computeMatrixCellsDataBufferType(mosaicMatrix);
                     Band band = buildBand(maskBandInfo, bandBounds.width, bandBounds.height, dataBufferType);
@@ -894,7 +894,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         BandInfo maskBandInfo = new BandInfo(tileIdToPathMapT, spectralI, null);
                         MosaicMatrix mosaicMatrix = buildBandMatrix(bandMatrixTileIds, sceneDescription, maskBandInfo);
                         int dataBufferType = computeMatrixCellsDataBufferType(mosaicMatrix);
-                        int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix, false);
+                        int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix);
                         productMaximumResolutionCount = Math.max(productMaximumResolutionCount, resolutionCount);
                         band = buildBand(maskBandInfo, bandBounds.width, bandBounds.height, dataBufferType);
                         band.setDescription(spectralInfo.getDescription());

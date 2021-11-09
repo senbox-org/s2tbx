@@ -68,9 +68,6 @@ public class ECMWFTReader {
         } catch (Exception ioe) {
             // Handle less-cool exceptions here
             ioe.printStackTrace();
-        } catch (Exception e) {
-            // Handle less-cool exceptions here
-            e.printStackTrace();
         } finally {
             ncfile.close();
             FileUtils.deleteDirectory(cacheFolderPath.toFile());
