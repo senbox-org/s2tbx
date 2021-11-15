@@ -570,7 +570,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
                     ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                     band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
-                    if(offsets!=null)
+                    if(offsets!=null && band.getUnit().matches("dl"))
                     {
                         for(String offsetStr: offsets) {
                             double offset = Double.parseDouble(offsetStr);
