@@ -43,15 +43,6 @@ public class ECMWFTReader {
         try {
             Files.copy(path, copyPath, StandardCopyOption.REPLACE_EXISTING);
             ncfile = NetcdfFile.openInMemory(copyPath.toString());
-            // String[] nameList = new String[] { "Total_column_water_vapour_surface", "Total_column_ozone_surface",
-            //         "Mean_sea_level_pressure_surface", "Relative_humidity_isobaric",
-            //         "10_metre_U_wind_component_surface", "10_metre_V_wind_component_surface" };
-            // for (String name : nameList) {
-            //     TiePointGrid tpGrid = getGrid(ncfile, name);
-            //     if (tpGrid != null) {
-            //         this.tiePointGrids.add(tpGrid);
-            //     }
-            // }
             List<GridPair> gridList = new ArrayList<GridPair>();
             gridList.add(new GridPair("Total_column_water_vapour_surface","tco3"));
             gridList.add(new GridPair("Total_column_ozone_surface","tcwv"));
