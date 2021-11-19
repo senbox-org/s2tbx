@@ -58,10 +58,10 @@ public enum MaskInfo148 {
             new int[]{1,2,3,4,5,6,7,8,9,10,11,12}, false)
     ,MSK_QUALIT(
         "MSK_QUALIT",
-        new String[]{"ANC_LOST", "ANC_DEG", "MSI_LOST", "MSI_DEG","QT_DEFECTIVE_PIXELS","QT_NODATA_PIXELS", "QT_PARTIALLY_CORRECTED_PIXELS", "CLOUD_INV"},
+        new String[]{"ANC_LOST", "ANC_DEG", "MSI_LOST", "MSI_DEG","QT_DEFECTIVE_PIXELS","QT_NODATA_PIXELS", "QT_PARTIALLY_CORRECTED_PIXELS", "SATURATED_PIXELS_L1A"},
         "quality mask",
-        new String[]{"Ancillary lost data", "Ancillary degraded data", "MSI lost data", "MSI degraded data","Defective pixels (matching defective columns)","Nodata pixels", "Pixels partially corrected during cross-talk processing","Coarse cloud"},
-        new String[]{"ancillary_lost", "ancillary_degraded", "msi_lost", "msi_degraded","defective","nodata", "partially_corrected_crosstalk","coarse_cloud"},
+        new String[]{"Ancillary lost data", "Ancillary degraded data", "MSI lost data", "MSI degraded data","Defective pixels (matching defective columns)","Nodata pixels", "Pixels partially corrected during cross-talk processing","Saturated pixels L1A"},
+        new String[]{"ancillary_lost", "ancillary_degraded", "msi_lost", "msi_degraded","defective","nodata", "partially_corrected_crosstalk","saturated_l1a"},
         true,
         new int[]{MaskInfo148.L1A | MaskInfo148.L1B | MaskInfo148.L1C | MaskInfo148.L2A,
             MaskInfo148.L1A | MaskInfo148.L1B | MaskInfo148.L1C | MaskInfo148.L2A,

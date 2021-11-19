@@ -1720,11 +1720,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     private static String buildAutoGroupingPattern() {
-        return "sun:view:quality:ECMWF:tile:detector_footprint:nodata:partially_corrected_crosstalk:coarse_cloud:snow_and_ice_areas:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile:"
+        return "sun:view:quality:ECMWF:tile:detector_footprint:nodata:partially_corrected_crosstalk:coarse_cloud:snow_and_ice_areas:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:saturated_l1a:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile:"
                 + "detector_footprint-B01:" + "detector_footprint-B02:" + "detector_footprint-B03:"
                 + "detector_footprint-B04:" + "detector_footprint-B05:" + "detector_footprint-B06:"
                 + "detector_footprint-B07:" + "detector_footprint-B08:" + "detector_footprint-B8A:"
                 + "detector_footprint-B09:" + "detector_footprint-B10:" + "detector_footprint-B11:"
-                + "detector_footprint-B12";
+                + "detector_footprint-B12:" + "qualit_mask";
     }
 }
