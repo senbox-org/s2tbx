@@ -49,6 +49,8 @@ import org.esa.s2tbx.dataio.s2.tiles.TileIndexBandMatrixCell;
 import org.esa.s2tbx.dataio.s2.tiles.TileIndexMultiLevelSource;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductSubsetDef;
+import org.esa.snap.core.datamodel.ImageInfo;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.IndexCoding;
@@ -59,6 +61,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.datamodel.VirtualBand;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.image.SourceImageScaler;
@@ -860,6 +863,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             mosaicOpSourceThreshold, defaultJAIReadTileSize);
                     ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                     band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+                    band.setNoDataValueUsed(false);
+                    band.setScalingFactor(1);
+                    band.setScalingOffset(0);
                     product.addBand(band);
                     Mask mask = Mask.BandMathsType.create(maskInfo.getSnapName(i), maskInfo.getDescription(i),
                             band.getRasterWidth(), band.getRasterHeight(),
@@ -871,6 +877,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
         } else {
             Band band = null;
+            GeoCoding geoCoding = null;
+            String bandExpression = "";
+            String[] bandList = new String[ maskInfo.getSubType().length];
             for (int i = 0; i < maskInfo.getSubType().length; i++) {
                 // // This mask is specific to a band
                 String bandName = spectralInfo.getPhysicalBand();
@@ -924,10 +933,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         band.setUnit("none");
                         band.setValidPixelExpression(null);
 
-                        GeoCoding geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
+                        geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
                                 defaultBandSize, bandBounds);
                         band.setGeoCoding(geoCoding);
-
                         AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
 
                         JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(
@@ -935,21 +943,97 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                 mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+                        band.setNoDataValueUsed(false);
+                        if(maskInfo.isMultiBand()) {
+                            band.setScalingFactor(1);
+                            band.setScalingOffset(0);
+                            bandExpression += String.format("bit_set(%s,%d)", maskBandName, i);
+                            bandList[i] = maskBandName;
+                            if(i!=maskInfo.getSubType().length-1)
+                                bandExpression += " AND ";
+                        }
                         product.addBand(band);
-
                     }
+                    if(!maskInfo.isMultiBand()) {
+                        String maskName = maskInfo.getSnapNameForBand(bandName, i);
+                        if(maskInfo.getMainType().contains("MSK_DETFOO"))
+                            maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
+                        Mask mask = Mask.BandMathsType.create(maskName,
+                                maskInfo.getDescriptionForBand(bandName, i), band.getRasterWidth(), band.getRasterHeight(),
+                                String.format("%s.raw==%d", maskBandName, maskInfo.getValue(i)),
+                                maskInfo.getColor(i), maskInfo.getTransparency(i));
+                        ProductUtils.copyGeoCoding(band, mask);
+                        product.addMask(mask);
+                    }
+                }
+            }
+            if(maskInfo.isMultiBand()) {
+                String bandName = spectralInfo.getPhysicalBand();
+                String qualit_band = "qualit_mask_"+bandName;
+                Band mergedBand = new VirtualBand(qualit_band, band.getDataType(), band.getRasterWidth(),  band.getRasterHeight(), bandExpression);
+                product.addBand(mergedBand);
+
+                convertToRealBand(mergedBand, product, "Merged bands of the "+qualit_band);
+
+                //remove the original source bands
+                removeUnecessaryBand(bandList,product);
+
+                product.getBand(qualit_band).setGeoCoding(geoCoding);
+                for (int i = 0; i < maskInfo.getSubType().length; i++) {
                     String maskName = maskInfo.getSnapNameForBand(bandName, i);
                     if(maskInfo.getMainType().contains("MSK_DETFOO"))
                         maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
-
                     Mask mask = Mask.BandMathsType.create(maskName,
                             maskInfo.getDescriptionForBand(bandName, i), band.getRasterWidth(), band.getRasterHeight(),
-                            String.format("%s.raw==%d", maskBandName, maskInfo.getValue(i)),
+                            String.format("bit_set(%s,%d)", qualit_band, i),
                             maskInfo.getColor(i), maskInfo.getTransparency(i));
                     ProductUtils.copyGeoCoding(band, mask);
                     product.addMask(mask);
                 }
             }
+        }
+    }
+
+    private void removeUnecessaryBand(String[] bandList, Product product) {
+        for(String bandName:bandList) {
+            product.removeBand(product.getBand(bandName));
+        }
+    }
+
+    private void convertToRealBand(Band virtualBand, Product product, String description) {
+        Band computedBand = virtualBand;
+        String bandName = computedBand.getName();
+        int width = computedBand.getRasterWidth();
+        int height = computedBand.getRasterHeight();
+        Band realBand = new Band(bandName, computedBand.getDataType(), width, height);
+        realBand.setDescription(description);//createDescription(computedBand));
+        realBand.setValidPixelExpression(computedBand.getValidPixelExpression());
+        realBand.setUnit(computedBand.getUnit());
+        realBand.setSpectralWavelength(computedBand.getSpectralWavelength());
+        realBand.setGeophysicalNoDataValue(computedBand.getGeophysicalNoDataValue());
+        realBand.setNoDataValueUsed(computedBand.isNoDataValueUsed());
+        if (computedBand.isStxSet()) {
+            realBand.setStx(computedBand.getStx());
+        }
+
+        ImageInfo imageInfo = computedBand.getImageInfo();
+        if (imageInfo != null) {
+            realBand.setImageInfo(imageInfo.clone());
+        }
+
+        ProductNodeGroup<Band> bandGroup = product.getBandGroup();
+        int bandIndex = bandGroup.indexOf(computedBand);
+        bandGroup.remove(computedBand);
+        bandGroup.add(bandIndex, realBand);
+        realBand.setSourceImage(createSourceImage(computedBand, realBand));
+        realBand.setModified(true);
+    }
+
+    private MultiLevelImage createSourceImage(Band computedBand, Band realBand) {
+        if (computedBand instanceof VirtualBand) {
+            return VirtualBand.createSourceImage(realBand, ((VirtualBand) computedBand).getExpression());
+        }else {
+            return computedBand.getSourceImage();
         }
     }
 
