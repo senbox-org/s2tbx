@@ -71,7 +71,7 @@ public class MetadataReaderTest {
     public void test2() throws Exception
     {
         final Path path = buildPathResource("metadata/S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLF.xml");
-        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(new VirtualPath(path.toString(), VirtualDirEx.build(path.getParent())));
+        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(new VirtualPath(path.toString(), VirtualDirEx.build(path.getParent())), null);
         assertNotNull(granuleMetadata);
     }
 

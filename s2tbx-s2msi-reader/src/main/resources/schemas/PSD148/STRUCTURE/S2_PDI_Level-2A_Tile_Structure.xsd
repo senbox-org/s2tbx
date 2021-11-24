@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd" targetNamespace="https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd" elementFormDefault="qualified" version="14">
+	<xs:element name="Level-2A_Tile" type="Level-2A_Tile"/>
+	<xs:complexType name="Level-2A_Tile">
+		<xs:annotation>
+			<xs:documentation>Folder</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="AUX_DATA">
+				<xs:annotation>
+					<xs:documentation>Folder containing ECMWF data resampled in UTM projection and resampled DEM (optional) and CAMS data</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="ECMWF_Meteorological_file">
+							<xs:annotation>
+								<xs:documentation>Metetorological data in GRIB format resampled in UTM projection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CAMS_Atmospherical_file">
+                                                        <xs:annotation>
+                                                                <xs:documentation>Atmospherical data in GRIB format</xs:documentation>
+                                                        </xs:annotation>
+                                                </xs:element>
+						<xs:element name="DEM" minOccurs="0" maxOccurs="3">
+							<xs:annotation>
+								<xs:documentation>Optional Digital Elevation Map resampled to image data resolution. Only availablel with the Toolbox version</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="IMG_DATA">
+				<xs:annotation>
+					<xs:documentation>Image Folder</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="R10m">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Surface_reflectance" maxOccurs="4">
+										<xs:annotation>
+											<xs:documentation>4 channels (B2, B3, B4, B8) omitting the original 20m and 60m channels</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Resampled_AOT">
+										<xs:annotation>
+											<xs:documentation>1 file: Aerosol Optical Thickness map (at 550nm) resamped from  20m AOT map</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Resampled_WVP">
+										<xs:annotation>
+											<xs:documentation>1 file: Water Vapour (WVP) map resampled from 20m WVP map</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="TCI" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>1 file: True Color Image composite of bands B2, B3, B4 at 10m resolution (optional)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="R20m">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Surface_reflectance" maxOccurs="10">
+										<xs:annotation>
+											<xs:documentation>10 channels (B1, B2, B3, B4, B5, B6, B7, B8a, B11, B12), omitting the B9 and B10 channels</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="SCL">
+										<xs:annotation>
+											<xs:documentation>Scene Classification map that provides an attribute to each pixel to indicate its type (cloud, snow, vegetation, land, water, etc...).</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="AOT">
+										<xs:annotation>
+											<xs:documentation>1 file: Aerosol Optical Thickness map (at 550nm)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="WVP">
+										<xs:annotation>
+											<xs:documentation>1 file: Water Vapour (WVP) map</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="TCI" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>1 file: True Color Image composite of bands B2, B3, B4 at 20m resolution (optional)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="R60m">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Surface_reflectance" maxOccurs="11">
+										<xs:annotation>
+											<xs:documentation>11 channels (B1, B2, B3, B4, B5, B6, B7, B8a, B9, B11, B12) excluding the 1375 nm cirrus band B10, as it does not contains surface information</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="AOT">
+										<xs:annotation>
+											<xs:documentation>1 file: Aerosol Optical Thickness map (at 550nm)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="WVP">
+										<xs:annotation>
+											<xs:documentation>1 file: Water Vapour (WVP) map</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="SCL">
+										<xs:annotation>
+											<xs:documentation>Scene Classification map that provides an attribute to each pixel to indicate its type (cloud, snow, vegetation, land, water, etc...).</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="TCI" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>1 file: True Color Image composite of bands B2, B3, B4 at 60m resolution (optional)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Level-2A_Tile_Metadata_File">
+				<xs:annotation>
+					<xs:documentation>XML Metadata File </xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="General_Info"/>
+						<xs:element name="Geometric_Info">
+							<xs:complexType/>
+						</xs:element>
+						<xs:element name="Quality_Indicators_Info">
+							<xs:complexType/>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="QI_DATA">
+				<xs:annotation>
+					<xs:documentation>Folder</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="OLQC_Report">
+							<xs:annotation>
+								<xs:documentation>OLQC reports  XML formatted</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="L2A_Quality_Report">
+                                                        <xs:annotation>
+                                                                <xs:documentation>L2A_QUALITY report XML formatted</xs:documentation>
+                                                        </xs:annotation>
+                                                </xs:element>
+						<xs:element name="Quality_Masks">
+							<xs:annotation>
+								<xs:documentation>JP2 Quality Mask files</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Cloud_Confidence">
+							<xs:annotation>
+								<xs:documentation>Raster mask values range from 0 for high confidence clear sky to 100 for high confidence cloudy. Unsigned Integer. JPEG2000. 8bit. available at 20m and 60m resolution.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Snow_Ice_Confidence">
+							<xs:annotation>
+								<xs:documentation>Raster mask values range from 0 for high confidence NO snow/ice to 100 for high confidence snow/ice. Unsigned Integer. JPEG2000. 8bit. available at 20m and 60m resolution.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Preview_Image">
+							<xs:annotation>
+								<xs:documentation>L2A PVI Preview Image file 343 x 343 pixels</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="DDV_pixels" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Raster mask of Dark Dense Vegetation pixels used during AOT retrieval processing (optional)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Inventory_Metadata">
+                                <xs:annotation>
+                                        <xs:documentation>XML File</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType/>
+                        </xs:element>
+			<xs:element name="manifest.safe">
+                                <xs:annotation>
+                                        <xs:documentation>XML File</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType/>
+                        </xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

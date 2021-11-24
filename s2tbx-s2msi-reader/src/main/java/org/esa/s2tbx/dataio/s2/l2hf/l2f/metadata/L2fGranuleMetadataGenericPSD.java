@@ -28,7 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by fdouziech
+ * Created by fdouziech 04/2021
  **/
 public class L2fGranuleMetadataGenericPSD extends GenericXmlMetadata implements IL2fGranuleMetadata {
 

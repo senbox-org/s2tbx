@@ -84,6 +84,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(path));
+        characteristics.setProcessingBaseline(S2Metadata.getProcessingBaseline(path));
         //DatatakeSensingStart is not in the metadata, but it is needed for the image templates. We read it from the file system
         VirtualPath folder = path.resolveSibling("IMG_DATA");
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
@@ -215,21 +216,32 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         if(maskFilenames == null) {
             return null;
         }
+        boolean gmlMaskFormat=false;
+        for (String maskFilename : maskFilenames)
+        {
+            String filenameProcessed = Paths.get(maskFilename).getFileName().toString();
+            if(filenameProcessed.endsWith(".gml"))
+            {
+                gmlMaskFormat = true;
+                break;
+            }
+        }
         for (String maskFilename : maskFilenames) {
             //To be sure that it is not a relative path and finish with .gml
             String filenameProcessed = Paths.get(maskFilename).getFileName().toString();
-            if(!filenameProcessed.endsWith(".gml")) {
-                filenameProcessed = filenameProcessed + ".gml";
+            if(gmlMaskFormat){
+                if(!filenameProcessed.endsWith(".gml")) {
+                    filenameProcessed = filenameProcessed + ".gml";
+                }
             }
-
             VirtualPath QIData = path.resolveSibling("QI_DATA");
-            VirtualPath GmlData = QIData.resolve(filenameProcessed);
+            VirtualPath maskData = QIData.resolve(filenameProcessed);
 
             aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
                                                                                 L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_BAND, null),
                                                        getAttributeSiblingValue(L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
                                                                                 L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_TYPE, null),
-                                                       GmlData));
+                                                                                maskData));
         }
         maskFileNamesArray = aMaskList.toArray(new S2Metadata.MaskFilename[aMaskList.size()]);
         return maskFileNamesArray;

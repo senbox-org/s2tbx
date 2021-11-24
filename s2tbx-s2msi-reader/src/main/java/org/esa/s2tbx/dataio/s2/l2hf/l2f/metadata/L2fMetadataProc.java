@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author opicas-p
+ * @author created by fdouziech 04/2021
  */
 public class L2fMetadataProc extends S2OrthoMetadataProc {
 

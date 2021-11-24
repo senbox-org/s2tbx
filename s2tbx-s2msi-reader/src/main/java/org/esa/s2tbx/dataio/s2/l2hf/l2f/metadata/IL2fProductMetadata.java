@@ -9,7 +9,7 @@ import org.esa.snap.core.datamodel.MetadataElement;
 import java.util.Collection;
 
 /**
- * Created by fdouziech
+ * Created by fdouziech 04/2021
  */
 public interface IL2fProductMetadata {
     L2fMetadata.ProductCharacteristics getProductOrganization(VirtualPath path, S2SpatialResolution resolution);
