@@ -93,7 +93,7 @@ public class MetadataTest {
 
         File file = new File(url.toURI());
         tilePath = file.toPath();
-        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(new VirtualPath(tilePath.toString(), VirtualDirEx.build(file.toPath().getParent())));
+        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(new VirtualPath(tilePath.toString(), VirtualDirEx.build(file.toPath().getParent())), null);
 
         return granuleMetadata;
     }

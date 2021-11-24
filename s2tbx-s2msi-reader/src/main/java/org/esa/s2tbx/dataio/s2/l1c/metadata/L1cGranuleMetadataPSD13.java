@@ -205,22 +205,35 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         if(maskFilenames == null) {
             return null;
         }
+        boolean gmlMaskFormat=false;
+        for (String maskFilename : maskFilenames)
+        {
+            String filenameProcessed = Paths.get(maskFilename).getFileName().toString();
+            if(filenameProcessed.endsWith(".gml"))
+            {
+                gmlMaskFormat = true;
+                break;
+            }
+        }
+
         for (String maskFilename : maskFilenames) {
             //To be sure that it is not a relative path and finish with .gml
             String filenameProcessed = Paths.get(maskFilename).getFileName().toString();
-            if(!filenameProcessed.endsWith(".gml")) {
-                filenameProcessed = filenameProcessed + ".gml";
+            if(gmlMaskFormat){
+                if(!filenameProcessed.endsWith(".gml")) {
+                    filenameProcessed = filenameProcessed + ".gml";
+                }
             }
 
 
             VirtualPath QIData = path.resolveSibling("QI_DATA");
-            VirtualPath GmlData = QIData.resolve(filenameProcessed);
+            VirtualPath maskData = QIData.resolve(filenameProcessed);
 
             aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
                                                                                 L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_BAND, null),
                                                        getAttributeSiblingValue(L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
                                                                                 L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_TYPE, null),
-                                                       GmlData));
+                                                                                maskData));
         }
 
         maskFileNamesArray = aMaskList.toArray(new S2Metadata.MaskFilename[aMaskList.size()]);

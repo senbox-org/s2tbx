@@ -76,6 +76,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     public static String CLD_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_CLD_{{RESOLUTION}}m.jp2";
     public static String SNW_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SNW_{{RESOLUTION}}m.jp2";
     public static String DDV_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_DDV_{{RESOLUTION}}m.jp2";
+    public static String CLASSI_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "MSK_CLASSI_B00.jp2";
 
     //Templates L3
     public static String SPECTRAL_BAND_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator +"L03_{{TILENUMBER}}_{{DATATAKE_START}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";

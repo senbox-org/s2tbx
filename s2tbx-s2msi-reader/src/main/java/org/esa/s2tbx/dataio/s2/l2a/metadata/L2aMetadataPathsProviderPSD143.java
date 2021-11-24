@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2.l2a.metadata;
 
 import org.esa.s2tbx.dataio.s2.l2a.L2aPSD143Constants;
+import org.esa.s2tbx.dataio.s2.l2a.L2aPSD148Constants;
 
 /**
  * Created by obarrile on 06/02/2018.
@@ -165,6 +166,11 @@ public class L2aMetadataPathsProviderPSD143 implements IL2aMetadataPathsProvider
     }
 
     @Override
+    public String getPATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST() {
+        return L2aPSD148Constants.PATH_PRODUCT_METADATA_BOA_ADD_OFFSET_VALUES_LIST;
+    }
+
+    @Override
     public String getPATH_PRODUCT_METADATA_BAND_LIST() {
         return L2aPSD143Constants.PATH_PRODUCT_METADATA_BAND_LIST;
     }
@@ -278,5 +284,6 @@ public class L2aMetadataPathsProviderPSD143 implements IL2aMetadataPathsProvider
     public String getPATH_GRANULE_METADATA_PVI_FILENAME() {
         return L2aPSD143Constants.PATH_GRANULE_METADATA_PVI_FILENAME;
     }
+
 }
 

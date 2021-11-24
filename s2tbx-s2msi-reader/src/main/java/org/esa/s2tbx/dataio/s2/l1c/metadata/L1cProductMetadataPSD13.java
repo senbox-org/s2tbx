@@ -75,8 +75,7 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
     public S2Metadata.ProductCharacteristics getProductOrganization(VirtualPath xmlPath) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
-        characteristics.setPsd(S2Metadata.getPSD(xmlPath));
-
+        characteristics.setPsd(S2Metadata.getFullPSDversion(xmlPath));
         String datatakeSensingStart = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
         if(datatakeSensingStart!=null && datatakeSensingStart.length()>19) {
             String formattedDatatakeSensingStart = datatakeSensingStart.substring(0,4) +
@@ -203,4 +202,10 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
     public String getFormat() {
         return getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE");
     }
+
+	@Override
+	public String[] getRadioOffsetList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

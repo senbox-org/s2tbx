@@ -66,7 +66,7 @@ public class L1cMetadata extends S2OrthoMetadata {
         if (!isGranule) {
             initProduct(path, granuleName, epsg, namingConvention);
         } else {
-            initTile(path, epsg, namingConvention);
+            initTile(path, null,epsg, namingConvention);
         }
     }
 
@@ -117,14 +117,14 @@ public class L1cMetadata extends S2OrthoMetadata {
 
         //Init Tiles
         for (VirtualPath granuleMetadataPath : granuleMetadataPathList) {
-            initTile(granuleMetadataPath, epsg, namingConvention);
+            initTile(granuleMetadataPath, path, epsg, namingConvention);
         }
     }
 
 
-    private void initTile(VirtualPath path, String epsg, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private void initTile(VirtualPath path, VirtualPath metadataProductpath,String epsg, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
-        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(path);
+        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(path, metadataProductpath);
         if(granuleMetadata == null) {
             throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
         }

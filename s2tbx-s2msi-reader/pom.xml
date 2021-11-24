@@ -22,7 +22,6 @@
         <user.language>en</user.language>
         <snap.reader.tests.class.name>org.esa.s2tbx.dataio.s2.</snap.reader.tests.class.name>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -39,6 +38,11 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-netcdf</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -69,6 +73,16 @@
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>lib-gdal</artifactId>
+            <version>8.0.5-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-gdal-reader</artifactId>
+            <version>8.0.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>

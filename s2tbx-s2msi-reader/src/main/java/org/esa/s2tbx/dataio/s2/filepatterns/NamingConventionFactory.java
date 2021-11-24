@@ -141,6 +141,15 @@ public class NamingConventionFactory {
         return null;
     }
 
+    public static String getCLASSITemplate_L2a(String format) {
+        if (format.equals("SAFE")) {
+            return SAFENamingConvention.CLASSI_FILE_TEMPLATE_L2A;
+        } else if (format.equals("SAFE_COMPACT")) {
+            return SAFECOMPACTNamingConvention.CLASSI_FILE_TEMPLATE_L2A;
+        }
+        return null;
+    }
+
     //getters level3 templates
     public static String getSpectralBandImageTemplate_L3(String format, String bandFileId) {
         if (format.equals("SAFE")) {

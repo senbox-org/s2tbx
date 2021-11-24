@@ -267,6 +267,8 @@ public class S2Resampler implements Resampler {
         for(int detectorId = 1 ; detectorId <= 12 ; detectorId++) {
             String maskName = String.format("detector_footprint-%s-%02d",bandConstants.getFilenameBandId(),detectorId);
             String nextMaskName = String.format("detector_footprint-%s-%02d",bandConstants.getFilenameBandId(),detectorId+1);
+            String bandMaskName =  String.format("B_detector_footprint_%s",bandConstants.getPhysicalName());
+
             if(multiSizeProduct.getMaskGroup().get(maskName) == null) {
                 continue;
             }
@@ -277,8 +279,13 @@ public class S2Resampler implements Resampler {
             } else {
                 maskExpression = String.format("'%s'>0 && '%s'==0", maskName, nextMaskName);
             }
-
-            Band auxBand = multiSizeProduct.getBand(bandConstants.getPhysicalName());
+            Band maskBandInfo = multiSizeProduct.getBand(bandMaskName);
+            Band auxBand = null;
+            if(maskBandInfo!=null) {
+                auxBand = maskBandInfo;
+            } else {
+                auxBand = multiSizeProduct.getBand(bandConstants.getPhysicalName());
+            }
 
             //To support MUSCATE products
             if(auxBand == null) {

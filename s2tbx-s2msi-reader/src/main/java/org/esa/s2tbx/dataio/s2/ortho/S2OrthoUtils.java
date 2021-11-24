@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
+import org.esa.snap.runtime.Config;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 /**
  * @author Denisa Stefanescu
@@ -154,5 +156,23 @@ public class S2OrthoUtils {
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    static public boolean addNegativeOffset() {
+        final Preferences preferences = Config.instance("s2tbx").load().preferences();
+        final boolean DEFAULT_MASK_ENABLEMENT = true;
+        return preferences.getBoolean("s2tbx.dataio.negativeRadiometricOffset", DEFAULT_MASK_ENABLEMENT);
+    }
+
+    static public boolean enableECMWFTData() {
+        final Preferences preferences = Config.instance("s2tbx").load().preferences();
+        final boolean DEFAULT_MASK_ENABLEMENT = true;
+        return preferences.getBoolean("s2tbx.dataio.ECMWFTData", DEFAULT_MASK_ENABLEMENT);
+    }
+
+    static public boolean enableCAMSData() {
+        final Preferences preferences = Config.instance("s2tbx").load().preferences();
+        final boolean DEFAULT_MASK_ENABLEMENT = true;
+        return preferences.getBoolean("s2tbx.dataio.CAMSData", DEFAULT_MASK_ENABLEMENT);
     }
 }
