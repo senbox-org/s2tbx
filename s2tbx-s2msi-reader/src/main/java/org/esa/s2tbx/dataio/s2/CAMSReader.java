@@ -9,6 +9,7 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -25,6 +26,10 @@ public class CAMSReader {
         if(!tileId.isEmpty())
             tileId = "_" + tileId; 
         final Path cacheFolderPath = cachedir.resolve("aux_camsfo"+tileId);
+        try {
+            Files.createDirectory(cacheFolderPath);
+        } catch (FileAlreadyExistsException exc) {
+        }
         try {
             final Path copyPath = cacheFolderPath.resolve(path.getFileName().toString());
             Files.createDirectories(copyPath);

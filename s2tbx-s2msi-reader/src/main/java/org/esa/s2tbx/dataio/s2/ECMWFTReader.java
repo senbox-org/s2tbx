@@ -5,7 +5,6 @@ import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.SystemUtils;
 
 import ucar.ma2.InvalidRangeException;
-import ucar.ma2.Range;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
@@ -18,13 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.FileUtils;
-import org.esa.snap.core.datamodel.TiePointGrid;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.operation.TransformException;
 
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.Variable;
 
 public class ECMWFTReader {
 
@@ -37,16 +30,15 @@ public class ECMWFTReader {
             tiePointGrids.clear();
         tiePointGrids = new ArrayList<>();
         NetcdfFile ncfile = null;
-        Path cacheFolderPath = cachedir;
         if(!tileId.isEmpty())
             tileId = "_" + tileId;
-        cacheFolderPath = cacheFolderPath.resolve("aux_ecmfwt"+tileId);
+        final Path cacheFolderPath = cachedir.resolve("aux_ecmfwt"+tileId);
         try {
             Files.createDirectory(cacheFolderPath);
         } catch (FileAlreadyExistsException exc) {
         }
-        Path copyPath = cacheFolderPath.resolve(path.getFileName());
         try {
+            final Path copyPath = cacheFolderPath.resolve(path.getFileName().toString());
             Files.copy(path, copyPath, StandardCopyOption.REPLACE_EXISTING);
             ncfile = NetcdfFile.openInMemory(copyPath.toString());
             List<GridPair> gridList = new ArrayList<GridPair>();
