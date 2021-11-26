@@ -18,6 +18,8 @@ import org.esa.snap.runtime.LogUtils4Tests;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.fail;
+import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
 
 public class ECMWFReaderTest {
 
@@ -27,11 +29,19 @@ public class ECMWFReaderTest {
     }
 
     @Test
-    public void testECMWFReader() throws IOException {
+    public void testECMWFReader() throws IOException, URISyntaxException {
        
-        File testECMWFFile = getTestDataDir("");
-        File dataPath = getTestDataDir("AUX_ECMWFT");
-        ECMWFTReader readerPlugin = new ECMWFTReader(dataPath.toPath(), testECMWFFile.toPath(),"");
+        String pathToTheTestClass = ECMWFReaderTest.class.getResource("/org/esa/s2tbx/dataio/s2/auxdata").toURI().getPath();
+        if(IS_OS_WINDOWS) {
+            pathToTheTestClass = pathToTheTestClass.substring(1);
+        }
+        File testClasseDir = new File(pathToTheTestClass);
+        File cacheDirECMWFTest = new File(testClasseDir,"aux_ecmwf");
+        if (!cacheDirECMWFTest.mkdir()) {
+            fail("Unable to create test cache directory to test ECMWFT reader:"+cacheDirECMWFTest.getPath());
+        }
+        File dataPath = new File(testClasseDir,"AUX_ECMWFT");
+        ECMWFTReader readerPlugin = new ECMWFTReader(dataPath.toPath(), cacheDirECMWFTest.toPath(),"");
         List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
         assertNotNull(ecmwfGrids);
         assertEquals(3, ecmwfGrids.size());
