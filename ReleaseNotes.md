@@ -1,6 +1,24 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 8.0.5
+#### New Feature
+    * [SIITBX-463] - Sentinel 2 evolutions
+    * [SIITBX-464] - Generation of the Level-1C quality masks in raster format
+    * [SIITBX-465] - Addition of the following ECMWF: wind components and relative humidity
+    * [SIITBX-467] - Addition of Level-1C snow/ice mask
+    * [SIITBX-468] - Provision of Band 01 at 20m spatial resolution
+    * [SIITBX-470] - Provision of negative radiometric values (implementing an offset) L1C
+    * [SIITBX-471] - Provision of negative radiometric values (implementing an offset) L2A
+    * [SIITBX-472] - Addition in the product of the CAMS
+    * [SIITBX-473] - Improvement of the topographic and casted shadows
+
+#### Improvement
+     * [SIITBX-357] - Missing ECMWF data in Sentinel-2 MSI products
+     * [SIITBX-475] - Update the S2ResamplerOp for the S2 evolution compatibility
+     * [SIITBX-476] - Update snap jp2 reader for more 4 band
+     * [SIITBX-477] - Update reprojectionOp for new S2 L2A
+
 Changes in S2TBX 8.0.4
 ----------------------
 ### List of solved issues
