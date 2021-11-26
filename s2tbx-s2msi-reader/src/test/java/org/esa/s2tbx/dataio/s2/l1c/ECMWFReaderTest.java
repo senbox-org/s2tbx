@@ -31,7 +31,7 @@ public class ECMWFReaderTest {
        
         File testECMWFFile = getTestDataDir("");
         File dataPath = getTestDataDir("AUX_ECMWFT");
-        ECMWFTReader readerPlugin = new ECMWFTReader(dataPath.toPath(), testECMWFFile.toPath());
+        ECMWFTReader readerPlugin = new ECMWFTReader(dataPath.toPath(), testECMWFFile.toPath(),"");
         List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
         assertNotNull(ecmwfGrids);
         assertEquals(3, ecmwfGrids.size());
