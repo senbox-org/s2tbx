@@ -35,7 +35,7 @@ public class ECMWFReaderTest {
             fail("Unable to create test cache directory to test ECMWFT reader:"+cacheDirECMWFTest.getPath());
         }
         File dataPath = new File(testClasseDir,"AUX_ECMWFT");
-        ECMWFTReader readerPlugin = new ECMWFTReader(dataPath.toPath(), cacheDirECMWFTest.toPath());
+        ECMWFTReader readerPlugin = new ECMWFTReader(dataPath.toPath(), cacheDirECMWFTest.toPath(),"");
         List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
         assertNotNull(ecmwfGrids);
         assertEquals(3, ecmwfGrids.size());

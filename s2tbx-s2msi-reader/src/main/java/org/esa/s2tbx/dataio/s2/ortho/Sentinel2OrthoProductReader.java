@@ -316,6 +316,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 // todo: add reader L2HF for the angle tif data
             }
         }
+
         for (S2Metadata.Tile tile : tileList)
             addGRIBBand(product, tile, sceneDescription, mapCRS, namingConvention);
 
@@ -334,15 +335,18 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             characteristicsAUXDATA.setProcessingLevel("Level-1C");
             characteristicsAUXDATA.setMetaDataLevel("Standard");
             VirtualPath[] gribFiles = folderAUXDATA.listPaths();
+            String tileId = "";//if there is one tile, the tileId are not used
+            if(orthoMetadataHeader.getTileList().size()>1)
+                tileId = tile.getId();
             for (VirtualPath gribFile : gribFiles) {
                 if (S2OrthoUtils.enableECMWFTData() && gribFile.getFileName().toString().contains("AUX_ECMWFT")) {
-                    ECMWFTReader readerPlugin = new ECMWFTReader(gribFile.getFilePath().getPath(), getCacheDir());
+                    ECMWFTReader readerPlugin = new ECMWFTReader(gribFile.getFilePath().getPath(), getCacheDir(),tileId);
                     List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
                     for (TiePointGrid tiePointGrid : ecmwfGrids) {
                         product.addTiePointGrid(tiePointGrid);
                     }
                 } else if (S2OrthoUtils.enableCAMSData() && gribFile.getFileName().toString().contains("AUX_CAMSFO")) {
-                    CAMSReader readerPlugin = new CAMSReader(gribFile.getFilePath().getPath(), getCacheDir());
+                    CAMSReader readerPlugin = new CAMSReader(gribFile.getFilePath().getPath(), getCacheDir(),tileId);
                     List<TiePointGrid> camsGrids = readerPlugin.getCAMSGrids();
                     for (TiePointGrid tiePointGrid : camsGrids) {
                         product.addTiePointGrid(tiePointGrid);

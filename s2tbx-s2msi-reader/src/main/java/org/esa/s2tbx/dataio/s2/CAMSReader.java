@@ -9,6 +9,7 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -19,27 +20,33 @@ public class CAMSReader {
 
     final List<TiePointGrid> tiePointGrids;
 
-    public CAMSReader(Path path, Path cachedir) throws IOException {
+    public CAMSReader(Path path, Path cachedir, String tileId) throws IOException {
         this.tiePointGrids = new ArrayList<>();
         NetcdfFile ncfile = null;
-        final Path cacheFolderPath = cachedir.resolve("aux_camsfo");
+        if(!tileId.isEmpty())
+            tileId = "_" + tileId;
+        final Path cacheFolderPath = cachedir.resolve("aux_camsfo"+tileId);
+        try {
+            Files.createDirectory(cacheFolderPath);
+        } catch (FileAlreadyExistsException exc) {
+        }
         try {
             final Path copyPath = cacheFolderPath.resolve(path.getFileName().toString());
             Files.createDirectories(copyPath);
             Files.copy(path, copyPath, StandardCopyOption.REPLACE_EXISTING);
             ncfile = NetcdfFile.openInMemory(copyPath.toString());
             List<GridPair> gridList = new ArrayList<GridPair>();
-            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_550nm_surface","aod550"));
-            gridList.add(new GridPair("Geopotential_surface","z"));
-            gridList.add(new GridPair("Black_Carbon_Aerosol_Optical_Depth_at_550nm_surface","bcaod550"));
-            gridList.add(new GridPair("Dust_Aerosol_Optical_Depth_at_550nm_surface","duaod550"));
-            gridList.add(new GridPair("Organic_Matter_Aerosol_Optical_Depth_at_550nm_surface","omaod550"));
-            gridList.add(new GridPair("Sea_Salt_Aerosol_Optical_Depth_at_550nm_surface","ssaod550"));
-            gridList.add(new GridPair("Sulphate_Aerosol_Optical_Depth_at_550nm_surface","suaod550"));
-            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_469nm_surface","aod469"));
-            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_670nm_surface","aod670"));
-            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_865nm_surface","aod865"));
-            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_1240nm_surface","aod1240"));
+            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_550nm_surface","aod550"+tileId));
+            gridList.add(new GridPair("Geopotential_surface","z"+tileId));
+            gridList.add(new GridPair("Black_Carbon_Aerosol_Optical_Depth_at_550nm_surface","bcaod550"+tileId));
+            gridList.add(new GridPair("Dust_Aerosol_Optical_Depth_at_550nm_surface","duaod550"+tileId));
+            gridList.add(new GridPair("Organic_Matter_Aerosol_Optical_Depth_at_550nm_surface","omaod550"+tileId));
+            gridList.add(new GridPair("Sea_Salt_Aerosol_Optical_Depth_at_550nm_surface","ssaod550"+tileId));
+            gridList.add(new GridPair("Sulphate_Aerosol_Optical_Depth_at_550nm_surface","suaod550"+tileId));
+            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_469nm_surface","aod469"+tileId));
+            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_670nm_surface","aod670"+tileId));
+            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_865nm_surface","aod865"+tileId));
+            gridList.add(new GridPair("Total_Aerosol_Optical_Depth_at_1240nm_surface","aod1240"+tileId));
             for(GridPair gridPair:gridList) {
                 TiePointGrid tpGrid = getGrid(ncfile, gridPair);
                 if (tpGrid != null) {

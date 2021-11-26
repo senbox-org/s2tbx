@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.s2;
 
 import org.apache.commons.io.FileUtils;
 import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.util.SystemUtils;
 
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
@@ -9,32 +10,42 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ECMWFTReader {
 
-    final List<TiePointGrid> tiePointGrids;
+    static Logger logger = SystemUtils.LOG;
 
-    public ECMWFTReader(Path path, Path cachedir) throws IOException {
-        this.tiePointGrids = new ArrayList<>();
+    List<TiePointGrid> tiePointGrids;
+
+    public ECMWFTReader(Path path, Path cachedir, String tileId) throws IOException {
+        tiePointGrids = new ArrayList<>();
         NetcdfFile ncfile = null;
-        final Path cacheFolderPath = cachedir.resolve("aux_ecmwft");
+        if(!tileId.isEmpty())
+            tileId = "_" + tileId;
+        final Path cacheFolderPath = cachedir.resolve("aux_ecmfwt"+tileId);
+        try {
+            Files.createDirectory(cacheFolderPath);
+        } catch (FileAlreadyExistsException exc) {
+        }
         try {
             final Path copyPath = cacheFolderPath.resolve(path.getFileName().toString());
             Files.createDirectories(copyPath);
             Files.copy(path, copyPath, StandardCopyOption.REPLACE_EXISTING);
             ncfile = NetcdfFile.openInMemory(copyPath.toString());
             List<GridPair> gridList = new ArrayList<GridPair>();
-            gridList.add(new GridPair("Total_column_water_vapour_surface","tco3"));
-            gridList.add(new GridPair("Total_column_ozone_surface","tcwv"));
-            gridList.add(new GridPair("Mean_sea_level_pressure_surface","msl"));
-            gridList.add(new GridPair("Relative_humidity_isobaric","r"));
-            gridList.add(new GridPair("10_metre_U_wind_component_surface","10u"));
-            gridList.add(new GridPair("10_metre_V_wind_component_surface","10v"));
+            gridList.add(new GridPair("Total_column_water_vapour_surface","tco3"+tileId));
+            gridList.add(new GridPair("Total_column_ozone_surface","tcwv"+tileId));
+            gridList.add(new GridPair("Mean_sea_level_pressure_surface","msl"+tileId));
+            gridList.add(new GridPair("Relative_humidity_isobaric","r"+tileId));
+            gridList.add(new GridPair("10_metre_U_wind_component_surface","10u"+tileId));
+            gridList.add(new GridPair("10_metre_V_wind_component_surface","10v"+tileId));
             for(GridPair gridPair:gridList) {
                 TiePointGrid tpGrid = getGrid(ncfile, gridPair);
                 if (tpGrid != null) {
@@ -45,10 +56,14 @@ public class ECMWFTReader {
             // Handle less-cool exceptions here
             ioe.printStackTrace();
         } finally {
-            if (ncfile != null) {
-                ncfile.close();
+            ncfile.close();
+            try{
+                FileUtils.deleteDirectory(cacheFolderPath.toFile());
+            }catch(IOException ioe)
+            {
+                logger.warning("The aux data folder cache has encounterd an issue: "+ioe.getMessage());
             }
-            FileUtils.deleteDirectory(cacheFolderPath.toFile());
+            
         }
     }
 
