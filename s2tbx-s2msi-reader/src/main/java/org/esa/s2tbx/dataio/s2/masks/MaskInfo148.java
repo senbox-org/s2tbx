@@ -84,7 +84,7 @@ public enum MaskInfo148 {
             new String[]{"Opaque clouds", "Cirrus clouds", "Snow and Ice areas"},
             new String[]{"opaque_clouds", "cirrus_clouds", "snow_and_ice_areas"},
             false,
-            new int[]{MaskInfo148.L1A | MaskInfo148.L2A, MaskInfo148.L1A | MaskInfo148.L2A,MaskInfo148.L1A | MaskInfo148.L2A},
+            new int[]{MaskInfo148.L1A | MaskInfo148.L1C | MaskInfo148.L2A, MaskInfo148.L1A | MaskInfo148.L1C | MaskInfo148.L2A,MaskInfo148.L1A | MaskInfo148.L1C | MaskInfo148.L2A},
             new Color[]{Color.BLUE, Color.ORANGE, Color.WHITE},
             new double[]{MaskInfo148.DEFAULT_TRANSPARENCY,MaskInfo148.DEFAULT_TRANSPARENCY,MaskInfo148.DEFAULT_TRANSPARENCY},
             MaskCategory.CLASSI,
