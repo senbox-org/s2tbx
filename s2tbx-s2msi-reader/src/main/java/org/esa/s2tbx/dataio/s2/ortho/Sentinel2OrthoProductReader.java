@@ -578,7 +578,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     if (offsets != null && band.getUnit().matches("dl")) {
                         for (String offsetStr : offsets) {
                             double offset = Double.parseDouble(offsetStr);
-                            band.setScalingOffset(-offset / quantificationValue);
+                            band.setScalingOffset(offset / quantificationValue);
                         }
                     }
                     product.addBand(band);
