@@ -839,7 +839,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     Collection<String> bandMatrixTileIds = sceneDescription.getTileIds();
                     Map<String, VirtualPath> tileIdToPathMapT = new HashMap<String, VirtualPath>();
                     tileIdToPathMapT.put(bandMatrixTileIds.iterator().next(), maskPath);
-                    S2SpectralInformation spectralI = new S2SpectralInformation("B_"+maskInfo.getSnapName(i),
+                    S2SpectralInformation spectralI = new S2SpectralInformation(String.format("B_%s", maskInfo.getSnapName(i)),
                             referenceBandInfo.getBandInformation().getResolution(), maskPath.getParent().toString(),
                             maskInfo.getDescription(i), null, quantificationValue, product.getNumBands(),
                             0.0, 0.0,
@@ -869,7 +869,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     product.addBand(band);
                     Mask mask = Mask.BandMathsType.create(maskInfo.getSnapName(i), maskInfo.getDescription(i),
                             band.getRasterWidth(), band.getRasterHeight(),
-                            String.format("%s.raw==%d", "B_"+maskInfo.getSnapName(i), maskInfo.getValue(i)),
+                            String.format("%s.raw==%d", String.format("B_%s", maskInfo.getSnapName(i)), maskInfo.getValue(i)),
                             maskInfo.getColor(i), maskInfo.getTransparency(i));
                     ProductUtils.copyGeoCoding(band, mask);
                     product.addMask(mask);
@@ -878,14 +878,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         } else {
             Band band = null;
             GeoCoding geoCoding = null;
-            String bandExpression = "";
+            StringBuilder bandExpression = new StringBuilder();
             String[] bandList = new String[ maskInfo.getSubType().length];
             for (int i = 0; i < maskInfo.getSubType().length; i++) {
                 // // This mask is specific to a band
                 String bandName = spectralInfo.getPhysicalBand();
-                String maskBandName =  "B_"+maskInfo.getSnapNameForBand(bandName, i);
+                String maskBandName =  String.format("B_%s", maskInfo.getSnapNameForBand(bandName, i));
                 if (!maskInfo.isMultiBand())
-                    maskBandName = "B_"+maskInfo.getSnapNameForOneBand(bandName);
+                    maskBandName = String.format("B_%s", maskInfo.getSnapNameForOneBand(bandName));
 
                 S2SpatialResolution res = bandInfo.getBandInformation().getResolution();
                 if(bandName.matches("B1")){
@@ -947,10 +947,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         if(maskInfo.isMultiBand()) {
                             band.setScalingFactor(1);
                             band.setScalingOffset(0);
-                            bandExpression += String.format("bit_set(%s,%d)", maskBandName, i);
+                            bandExpression.append(String.format("bit_set(%s,%d)", maskBandName, i));
                             bandList[i] = maskBandName;
                             if(i!=maskInfo.getSubType().length-1)
-                                bandExpression += " AND ";
+                                bandExpression.append(" AND ");
                         }
                         product.addBand(band);
                     }
@@ -969,8 +969,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
             if(maskInfo.isMultiBand()) {
                 String bandName = spectralInfo.getPhysicalBand();
-                String qualit_band = "qualit_mask_"+bandName;
-                Band mergedBand = new VirtualBand(qualit_band, band.getDataType(), band.getRasterWidth(),  band.getRasterHeight(), bandExpression);
+                String qualit_band = String.format("qualit_mask_%s", bandName);
+                Band mergedBand = new VirtualBand(qualit_band, band.getDataType(), band.getRasterWidth(),  band.getRasterHeight(), bandExpression.toString());
                 product.addBand(mergedBand);
 
                 convertToRealBand(mergedBand, product, "Merged bands of the "+qualit_band);
