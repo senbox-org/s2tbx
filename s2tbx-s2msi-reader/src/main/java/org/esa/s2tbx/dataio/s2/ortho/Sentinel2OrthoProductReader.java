@@ -275,18 +275,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 scaleBands(product, bandInfoList, productResolution);
             }
             S2Metadata.Tile tile = tileList.get(0);
-            if (tile.getMaskFilenames() != null) {
-                if (tile.getMaskFilenames()[0].getPath().getFullPathString().endsWith(".gml")) {
-                    addVectorMasks(product, tileList, bandInfoList, subsetDef);
-                    addIndexMasks(product, mapCRS, bandInfoList, sceneDescription, productResolution,
-                            productDefaultGeoCoding, subsetDef);
-                } else {
-
+            if (tile.getMaskFilenames() != null && (!tile.getMaskFilenames()[0].getPath().getFullPathString().endsWith(".gml"))) {
                     addRasterMasks(tileList, product, mapCRS, bandInfoList, sceneDescription, productResolution,
                             productDefaultGeoCoding, subsetDef, defaultJAIReadTileSize);
                     addIndexMasks(product, mapCRS, bandInfoList, sceneDescription, productResolution,
                             productDefaultGeoCoding, subsetDef);
-                }
             }else
             {
                 addVectorMasks(product, tileList, bandInfoList, subsetDef);
