@@ -285,6 +285,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     addIndexMasks(product, mapCRS, bandInfoList, sceneDescription, productResolution,
                             productDefaultGeoCoding, subsetDef);
                 }
+            }else
+            {
+                addVectorMasks(product, tileList, bandInfoList, subsetDef);
+
+                addIndexMasks(product, mapCRS, bandInfoList, sceneDescription, productResolution,
+                        productDefaultGeoCoding, subsetDef);
             }
         }
 
