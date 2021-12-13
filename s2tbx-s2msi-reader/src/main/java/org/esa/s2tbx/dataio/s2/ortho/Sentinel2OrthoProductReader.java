@@ -242,7 +242,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if (!isMultiResolution()) {
                 scaleBands(product, bandInfoList, productResolution);
             }
-
+            S2Metadata.Tile tile = tileList.get(0);
+            System.out.println("tile.getMaskFilenames():"+tile.getMaskFilenames());
             addVectorMasks(product, tileList, bandInfoList, subsetDef);
 
             addIndexMasks(product, mapCRS, bandInfoList, sceneDescription, productResolution, productDefaultGeoCoding, subsetDef);
