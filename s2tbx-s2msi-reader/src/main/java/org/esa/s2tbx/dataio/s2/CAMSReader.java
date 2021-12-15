@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 import org.apache.commons.io.FileUtils;
+import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.datamodel.TiePointGrid;
 
 import ucar.ma2.InvalidRangeException;
@@ -15,8 +16,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class CAMSReader {
+
+    static Logger logger = SystemUtils.LOG;
 
     final List<TiePointGrid> tiePointGrids;
 
@@ -60,7 +64,12 @@ public class CAMSReader {
             if (ncfile != null) {
                 ncfile.close();
             }
-            FileUtils.deleteDirectory(cacheFolderPath.toFile());
+            try{
+                FileUtils.deleteDirectory(cacheFolderPath.toFile());
+            }catch(IOException ioe)
+            {
+                logger.warning("The aux data folder cache has encounterd an issue: "+ioe.getMessage());
+            }
         }
     }
 

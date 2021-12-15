@@ -29,7 +29,7 @@ public class ECMWFTReader {
         NetcdfFile ncfile = null;
         if(!tileId.isEmpty())
             tileId = "_" + tileId;
-        final Path cacheFolderPath = cachedir.resolve("aux_ecmfwt"+tileId);
+        final Path cacheFolderPath = cachedir.resolve("aux_ecmwft"+tileId);
         try {
             Files.createDirectory(cacheFolderPath);
         } catch (FileAlreadyExistsException exc) {
@@ -56,7 +56,8 @@ public class ECMWFTReader {
             // Handle less-cool exceptions here
             ioe.printStackTrace();
         } finally {
-            ncfile.close();
+            if(ncfile!=null)
+                ncfile.close();
             try{
                 FileUtils.deleteDirectory(cacheFolderPath.toFile());
             }catch(IOException ioe)
