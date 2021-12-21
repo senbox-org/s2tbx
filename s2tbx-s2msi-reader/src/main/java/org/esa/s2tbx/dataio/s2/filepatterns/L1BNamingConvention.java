@@ -129,7 +129,9 @@ public class L1BNamingConvention implements INamingConvention {
 
     @Override
     public boolean hasValidStructure() throws IOException {
-        return S2ProductNamingUtils.hasValidStructure(inputType, getInputXml());
+        //Possibly no AUXDATA in the GRANULE struture folder
+        boolean hasAuxDataFolder = false;
+        return S2ProductNamingUtils.hasValidStructure(inputType, getInputXml(), hasAuxDataFolder);
     }
 
     @Override

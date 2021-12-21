@@ -17,4 +17,5 @@ public interface IL1cProductMetadata {
     S2DatastripDirFilename getDatastripDir();
     MetadataElement getMetadataElement();
     String getFormat();
+    String[] getRadioOffsetList();
 }

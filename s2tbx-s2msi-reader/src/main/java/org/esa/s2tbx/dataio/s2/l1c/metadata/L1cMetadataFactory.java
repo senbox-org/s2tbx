@@ -13,30 +13,56 @@ import java.io.IOException;
 public class L1cMetadataFactory {
 
     public static IL1cProductMetadata createL1cProductMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
-        int psd = S2Metadata.getPSD(metadataPath);
-        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 ) {
+        int psd = S2Metadata.getFullPSDversion(metadataPath);
+        if(psd <148 ) {
             return L1cProductMetadataPSD13.create(metadataPath);
-        } else {
+        } else if(psd >147 )  {
+            return L1cProductMetadataPSD148.create(metadataPath);
+        }else {
             //TODO
             return null;
         }
     }
 
-    public static IL1cGranuleMetadata createL1cGranuleMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
-        int psd = S2Metadata.getPSD(metadataPath);
-        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 )  {
+    public static IL1cGranuleMetadata createL1cGranuleMetadata(VirtualPath metadataPath, VirtualPath metadataProductPath) throws IOException, ParserConfigurationException, SAXException {
+        int psd= 0;
+        if(metadataProductPath!=null)
+            psd = S2Metadata.getFullPSDversion(metadataProductPath);
+        else{
+            //check if mask there are no gml format in QIDATA
+            boolean gmlMaskFormat=false;
+            VirtualPath maskDir = metadataPath.getParent().resolve("QI_DATA");
+            VirtualPath[] pathList = maskDir.listPaths();
+            if(pathList!=null)
+            {
+                for(VirtualPath path:pathList) {
+                    if(path.getFullPathString().endsWith(".gml"))
+                    {
+                        gmlMaskFormat = true;
+                        break;
+                    }
+                }
+                if(!gmlMaskFormat)
+                    psd=148;
+            }
+        }
+        if(psd<148)  {
             return L1cGranuleMetadataPSD13.create(metadataPath);
-        } else {
+        } else if(psd > 147)  {
+            return L1cGranuleMetadataPSD148.create(metadataPath);
+        }else {
             //TODO
             return null;
         }
     }
 
     public static IL1cDatastripMetadata createL1cDatastripMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
-        int psd = S2Metadata.getPSD(metadataPath);
-        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 ) {
+        int psd = S2Metadata.getFullPSDversion(metadataPath);
+        if(psd <148) {
             return L1cDatastripMetadataPSD13.create(metadataPath);
-        } else {
+        } else if(psd > 147 )  {
+            return L1cDatastripMetadataPSD13.create(metadataPath);
+        }else {
             //TODO
             return null;
         }

@@ -14,9 +14,9 @@ import re
 
 import openpyxl
 
-AUXDATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'src/main/resources/auxdata/3_0/S2B')
+AUXDATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'src/main/resources/auxdata/3_0/S2A')
 BIOPHYSICAL_VARIABLES = ['LAI', 'LAI_Cab', 'LAI_Cw', 'FAPAR', 'FCOVER']
-FILENAME_TEMPLATE = 'Algo_S2B_{variable}.xlsx'
+FILENAME_TEMPLATE = 'Algo_S2_V2.0_SL2T_{variable}.xlsx'
 CELL_RE = re.compile('([A-Z]+)([0-9]+)')
 
 def letter_range(start, stop):

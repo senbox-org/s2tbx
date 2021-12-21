@@ -559,11 +559,21 @@ public abstract class S2Metadata {
         private String productStopTime;
         private String datatakeSensingStartTime;
         private String processingLevel;
+        private Integer processingBaseline;
+        private String missionID;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
         private double quantificationValue;
         private int psd;
+        private String[] offsets;
 
+        public String[] getOffsetList() {
+            return offsets;
+        }
+
+        public void setOffsetList(String[] offsets) {
+            this.offsets = offsets;
+        }
         public int getPsd() {
             return psd;
         }
@@ -571,7 +581,6 @@ public abstract class S2Metadata {
         public void setPsd(int psd) {
             this.psd = psd;
         }
-
 
         public String getDatatakeSensingStartTime () {
             return datatakeSensingStartTime;
@@ -619,6 +628,14 @@ public abstract class S2Metadata {
 
         public void setProcessingLevel(String processingLevel) {
             this.processingLevel = processingLevel;
+        }
+
+        public void setProcessingBaseline(Integer processingBaseline) {
+            this.processingBaseline = processingBaseline;
+        }
+
+        public Integer getProcessingBaseline() {
+            return processingBaseline;
         }
 
         public S2BandInformation[] getBandInformations() {
@@ -789,6 +806,86 @@ public abstract class S2Metadata {
                     return Integer.parseInt(psdNumber);
                 }
             }
+
+            return 0;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Read the content of 'path' searching the string "psd-XX.sentinel2.eo.esa.int" and return an integer.
+     * Checks also some items in file to be able to distinguish PSD subversion 14.x and convert to an integer 14x
+     * @param path
+     * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
+     */
+    public static int getFullPSDversion(VirtualPath path){
+        int psd=0;
+        int processingBaseline = getProcessingBaseline(path);
+        try (InputStream stream = path.getInputStream()){
+
+            String xmlStreamAsString = IOUtils.toString(stream);
+            String aux = xmlStreamAsString;
+            String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
+
+            Pattern p = Pattern.compile(regex);
+            Matcher m = p.matcher(xmlStreamAsString);
+            if (m.find()) {
+                int position = m.start();
+                String psdNumber = xmlStreamAsString.substring(position+4,position+6);
+
+                //Check specific 14.3 psd, not possible to distinguish in 'regex'
+                if(processingBaseline>1000) {
+                    SystemUtils.LOG.warning("WARNING: the processing baseline is inconsistent. Please, check your product if it is not a demonstration product.");
+                    
+                }
+
+                if(Integer.parseInt(psdNumber) == 14 && processingBaseline>399)
+                {
+                    psd = 148;
+                } else if(Integer.parseInt(psdNumber) == 14 && !aux.contains("L2A_Product_Info") && !aux.contains("TILE_ID_2A")) {
+                    psd = 143;
+                }else{
+                    psd = Integer.parseInt(psdNumber);
+                }
+
+                
+            } else {
+                psd = 0;
+            }
+
+        } catch (Exception e) {
+            psd = 0;
+        }
+        return psd;
+    }
+
+    /**
+     * Read the content of 'path' searching the processing baseline and return the XX parsed to an integer.
+     * @param path
+     * @return the processing baseline version number or 0 if an error
+     */
+    public static int getProcessingBaseline(VirtualPath path) {
+        int bufferSizeInBytes = 5 * 1024;
+        try (InputStream inputStream = path.getInputStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSizeInBytes)) {
+
+            String regex = "<PROCESSING_BASELINE>([.|0-9]{5})</PROCESSING_BASELINE>";
+            Pattern p = Pattern.compile(regex);
+            StringBuilder str = new StringBuilder();
+            char[] buffer = new char[bufferSizeInBytes];
+            int characterReadNow;
+            while ((characterReadNow = bufferedReader.read(buffer)) >= 0) {
+                str.append(buffer, 0, characterReadNow);
+                Matcher m = p.matcher(str);
+                if (m.find()) {
+                    int position = m.start();
+                    String psdNumber = str.substring(position+21, position+26);
+                    psdNumber=psdNumber.replace(".", "");
+                    return Integer.parseInt(psdNumber);
+                }
+            }
             return 0;
         } catch (Exception e) {
             return 0;
@@ -865,13 +962,14 @@ public abstract class S2Metadata {
         try {
             Tile tile = getTile(tileId);
             int resolution = tile.getAnglesResolution();
-            int gridHeight = tile.getSunAnglesGrid().getHeight();
-            int gridWidth = tile.getSunAnglesGrid().getWidth();
+
 
             S2Metadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
             if (sunAnglesGrid == null) {
                 return null;
             }
+            int gridHeight = tile.getSunAnglesGrid().getHeight();
+            int gridWidth = tile.getSunAnglesGrid().getWidth();
 
             float[] sunZeniths = sunAnglesGrid.getZenithArray();
             float[] sunAzimuths = sunAnglesGrid.getAzimuthArray();

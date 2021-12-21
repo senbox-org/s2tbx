@@ -18,4 +18,5 @@ public interface IL2aProductMetadata {
     S2DatastripDirFilename getDatastripDir();
     MetadataElement getMetadataElement();
     String getFormat();
+    String[] getBOAOffsetList();
 }
