@@ -18,6 +18,8 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import static java.lang.Math.pow;
@@ -27,6 +29,10 @@ import static org.junit.Assert.assertEquals;
  * @author Norman Fomferra
  */
 public class Jp2MultiLevelModelTest {
+    @Before
+    public void setup() {
+        System.setProperty("com.sun.media.jai.disableMediaLib", "true");
+    }
     @Test
     public void testModel() throws Exception {
         assertEquals(4096, doit(4096, 0));
