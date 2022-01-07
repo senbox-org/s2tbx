@@ -912,7 +912,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
 
                         JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(
-                                resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, 0,
+                                resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, i,
                                 mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
