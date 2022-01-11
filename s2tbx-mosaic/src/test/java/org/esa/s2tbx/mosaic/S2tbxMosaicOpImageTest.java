@@ -42,7 +42,7 @@ public class S2tbxMosaicOpImageTest {
 
     @Before
     public void setup() {
-
+        System.setProperty("com.sun.media.jai.disableMediaLib", "true");
         sourceImages1 = new RenderedImage[]{
                 ConstantDescriptor.create(10.0f, 10.0f, new Float[]{2.0f}, null),
                 ConstantDescriptor.create(10.0f, 10.0f, new Float[]{3.0f}, null),
