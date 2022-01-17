@@ -308,9 +308,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             HashMap<String, S2BandAnglesGrid[]> anglesGridsMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
                 S2BandAnglesGrid[] bandAnglesGrids = createS2OrthoAnglesGrids(orthoMetadataHeader, tile.getId());
-                System.out.println(bandAnglesGrids);
                 if (bandAnglesGrids != null) {
-                    System.out.println(bandAnglesGrids.length);
                     anglesGridsMap.put(tile.getId(), bandAnglesGrids);
                 }
             }
