@@ -169,7 +169,7 @@ public enum MaskInfo148 {
         String bandName2Digit = bandName;
         if(bandName.length()==2)
             bandName2Digit = bandName.replace(number, df.format(Integer.parseInt(number)));
-        return String.format("%s-%s-", snapName[index], bandName2Digit)+df.format(index);
+        return String.format("%s-%s-", snapName[index], bandName2Digit)+df.format(index+1);
 
     }
 
