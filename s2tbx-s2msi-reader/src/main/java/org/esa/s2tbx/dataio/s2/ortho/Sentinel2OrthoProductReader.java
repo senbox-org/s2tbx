@@ -308,7 +308,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             HashMap<String, S2BandAnglesGrid[]> anglesGridsMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
                 S2BandAnglesGrid[] bandAnglesGrids = createS2OrthoAnglesGrids(orthoMetadataHeader, tile.getId());
+                System.out.println(bandAnglesGrids);
                 if (bandAnglesGrids != null) {
+                    System.out.println(bandAnglesGrids.length);
                     anglesGridsMap.put(tile.getId(), bandAnglesGrids);
                 }
             }
@@ -929,12 +931,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                     if (!maskInfo.isMultiBand()) {
                         String maskName = maskInfo.getSnapNameForBand(bandName, i);
-                        if (maskInfo.getMainType().contains("MSK_DETFOO"))
+                        Mask mask = null;
+                        if(maskInfo.getMainType().contains("MSK_DETFOO")) {
                             maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
-                        Mask mask = Mask.BandMathsType.create(maskName, maskInfo.getDescriptionForBand(bandName, i),
-                                band.getRasterWidth(), band.getRasterHeight(),
-                                String.format("%s.raw==%d", maskBandName, maskInfo.getValue(i)), maskInfo.getColor(i),
-                                maskInfo.getTransparency(i));
+                            mask = Mask.BandMathsType.create(maskName, maskInfo.getDescriptionForBandAndDetector(bandName, String.format("%d",i+1), i),
+                                                band.getRasterWidth(), band.getRasterHeight(),
+                            String.format("%s.raw==%d", maskBandName, maskInfo.getValue(i)), maskInfo.getColor(i),
+                            maskInfo.getTransparency(i));
+                        }else {
+                            mask = Mask.BandMathsType.create(maskName,
+                                maskInfo.getDescriptionForBand(bandName, i), band.getRasterWidth(), band.getRasterHeight(),
+                                String.format("%s.raw==%d", maskBandName, maskInfo.getValue(i)),
+                                maskInfo.getColor(i), maskInfo.getTransparency(i));
+                        }
                         ProductUtils.copyGeoCoding(band, mask);
                         product.addMask(mask);
                     }
@@ -950,12 +959,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 product.getBand(qualit_band).setGeoCoding(geoCoding);
                 for (int i = 0; i < maskInfo.getSubType().length; i++) {
                     String maskName = maskInfo.getSnapNameForBand(bandName, i);
-                    if (maskInfo.getMainType().contains("MSK_DETFOO"))
+                    Mask mask = null;
+                    if (maskInfo.getMainType().contains("MSK_DETFOO")){
                         maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
-                    Mask mask = Mask.BandMathsType.create(maskName, maskInfo.getDescriptionForBand(bandName, i),
+                        mask = Mask.BandMathsType.create(maskName, maskInfo.getDescriptionForBandAndDetector(bandName, String.format("%d",i+1), i),
                             band.getRasterWidth(), band.getRasterHeight(),
                             String.format("bit_set(%s,%d)", qualit_band, i), maskInfo.getColor(i),
                             maskInfo.getTransparency(i));
+                    }else {
+                        mask = Mask.BandMathsType.create(maskName, maskInfo.getDescriptionForBand(bandName, i),
+                            band.getRasterWidth(), band.getRasterHeight(),
+                            String.format("bit_set(%s,%d)", qualit_band, i), maskInfo.getColor(i),
+                            maskInfo.getTransparency(i));
+                    }
                     ProductUtils.copyGeoCoding(band, mask);
                     product.addMask(mask);
                 }
