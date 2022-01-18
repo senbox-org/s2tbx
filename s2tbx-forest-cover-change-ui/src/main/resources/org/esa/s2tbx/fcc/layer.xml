@@ -44,4 +44,11 @@
         </folder>
     </folder>
 
+    <folder name="OperatorUIs">
+        <file name="org.esa.s2tbx.fcc">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.fcc.BandsExtractorUI"/>
+            <attr name="operatorName" stringvalue="BandsExtractorOp"/>
+        </file>
+    </folder>
+
 </filesystem>

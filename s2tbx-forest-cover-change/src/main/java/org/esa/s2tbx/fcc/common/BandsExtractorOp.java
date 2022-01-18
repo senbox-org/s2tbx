@@ -40,7 +40,9 @@ public class BandsExtractorOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
-            throw new OperatorException("Please select at least one band.");
+            // SIITBX-480: do not throw exception for allowing Graph Builder to initialize the UI
+            //throw new OperatorException("Please select at least one band.");
+            this.sourceBandNames = this.sourceProduct.getBandNames();
         }
 
         this.targetProduct = extractBands(this.sourceProduct, this.sourceBandNames, this.sourceMaskNames);
