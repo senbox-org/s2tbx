@@ -1,5 +1,8 @@
 Sentinel-2 Toolbox Release Notes
 ================================
+Changes in S2TBX 8.0.6
+### List of solved issues
+    * [SIITBX-479] - S2resampling - angle bands issue
 
 Changes in S2TBX 8.0.5
 #### New Feature
