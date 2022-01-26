@@ -6,12 +6,19 @@ import com.bc.jnn.JnnLayer;
 import com.bc.jnn.JnnNet;
 import com.bc.jnn.JnnUnit;
 
+import org.mozilla.javascript.tools.jsc.Main;
+
 import static java.util.Objects.deepEquals;
+
+import java.util.HashMap;
 
 /**
  * Created by jmalik on 20/06/16.
  */
 public class BiophysicalAlgo {
+
+    private HashMap<Integer, String> definitionGridMap;
+    private int definitionGridSize;
 
     public class Result {
 
@@ -89,6 +96,7 @@ public class BiophysicalAlgo {
     BiophysicalAlgo(BiophysicalAuxdata auxdata) {
         this.auxdata = auxdata;
         initNN();
+        createHasSetDefinition();
     }
 
     public Result process(double[] input) {
@@ -114,9 +122,29 @@ public class BiophysicalAlgo {
         result.setOutputValue(Double.NaN);
     }
 
+    private void createHasSetDefinition()
+    {
+        definitionGridMap=null;
+        definitionGridSize=0;
+        double [][] definitionDomain = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.DEFINITION_DOMAIN_GRID);
+        if (definitionDomain != null) {
+            definitionGridMap = new HashMap<>();
+            definitionGridSize = definitionDomain[0].length;
+            for (int row = 0; row < definitionDomain.length; row++) {
+                double [] definitionDomainEntry = definitionDomain[row];
+                int [] definitionDomainEntryInt = new int[definitionDomainEntry.length];
+                String domainString = "";
+                for (int i = 0; i < definitionDomainEntry.length; i++) {
+                    definitionDomainEntryInt[i] = (int)definitionDomainEntry[i];
+                    domainString+=String.valueOf(definitionDomainEntry[i]);
+                }
+                definitionGridMap.put(row, domainString);
+            }
+        }
+    }
+
     private void processInputOutOfRange(double[] input, Result result) {
 
-        // TODO for some variables, we don't have the definition domain yet (FCOVER).
         // They should be provided, and the != null tests removed.
 
         /*
@@ -139,31 +167,18 @@ public class BiophysicalAlgo {
          * Second check : be sure input is within the approximated convex hull (see ATBD)
          */
 
-        // Build projection in grid
-        double [][] definitionDomain = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.DEFINITION_DOMAIN_GRID);
-
-        if (bandMinMax != null && definitionDomain != null) {
-            int [] gridProjection = new int[definitionDomain[0].length];
+        if (bandMinMax != null && definitionGridMap != null) {
+            int [] gridProjection = new int[definitionGridSize];
+            String gridProjString="";
             for (int i = 0; i < gridProjection.length; i++) {
                 double bandMin = bandMinMax[0][i];
                 double bandMax = bandMinMax[1][i];
                 gridProjection[i] = (int)Math.floor(10 * (input[i] - bandMin) / (bandMax - bandMin) + 1);
+                gridProjString+=String.valueOf(gridProjection[i]);
             }
-
-            // Find whether gridProjection matches one of the entry in the domain definition grid
-            // todo : using an HashSet would improve performance, there are 11000 entries to test
             boolean insideDefinitionDomain = false;
-            for (int row = 0; row < definitionDomain.length; row++) {
-                double [] definitionDomainEntry = definitionDomain[row];
-                int [] definitionDomainEntryInt = new int[definitionDomainEntry.length];
-                for (int i = 0; i < definitionDomainEntry.length; i++) {
-                    definitionDomainEntryInt[i] = (int)definitionDomainEntry[i];
-                }
-
-                if (deepEquals(definitionDomainEntryInt, gridProjection)) {
-                    insideDefinitionDomain = true;
-                    break;
-                }
+            if(definitionGridMap.containsValue(gridProjString)){
+                insideDefinitionDomain = true;
             }
             if (!insideDefinitionDomain) {
                 setInputOutOfRange(result);
