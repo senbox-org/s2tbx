@@ -6,9 +6,6 @@ import com.bc.jnn.JnnLayer;
 import com.bc.jnn.JnnNet;
 import com.bc.jnn.JnnUnit;
 
-import org.mozilla.javascript.tools.jsc.Main;
-
-import static java.util.Objects.deepEquals;
 
 import java.util.HashMap;
 
@@ -136,7 +133,7 @@ public class BiophysicalAlgo {
                 String domainString = "";
                 for (int i = 0; i < definitionDomainEntry.length; i++) {
                     definitionDomainEntryInt[i] = (int)definitionDomainEntry[i];
-                    domainString+=String.valueOf(definitionDomainEntry[i]);
+                    domainString+=String.valueOf(definitionDomainEntryInt[i]);
                 }
                 definitionGridMap.put(row, domainString);
             }
