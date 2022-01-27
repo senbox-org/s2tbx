@@ -80,7 +80,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>8.0.3.6cv</snap.version>
+        <snap.version>8.0.9.1cv</snap.version>
         <s2tbx.version>8.0.6.1cv</s2tbx.version>
         <geotools.version>20.0</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
