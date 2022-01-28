@@ -1,5 +1,10 @@
 Sentinel-2 Toolbox Release Notes
 ================================
+
+Changes in S2TBX 8.0.7
+#### Improvement
+    * [SIITBX-481] - Execution speed of Sentinel-2 Biophysical Processor
+
 Changes in S2TBX 8.0.6
 ### List of solved issues
     * [SIITBX-479] - S2resampling - angle bands issue
