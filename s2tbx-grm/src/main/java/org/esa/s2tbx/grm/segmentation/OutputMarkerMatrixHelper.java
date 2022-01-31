@@ -1,11 +1,14 @@
 package org.esa.s2tbx.grm.segmentation;
 
-import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
-import it.unimi.dsi.fastutil.ints.IntPriorityQueue;
+import it.unimi.dsi.fastutil.ints.*;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.matrix.IntMatrix;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Jean Coravu
@@ -53,10 +56,22 @@ public class OutputMarkerMatrixHelper {
         int elementCount = this.imageWidth * this.imageHeight;
         ProductData data = ProductData.createInstance(ProductData.TYPE_INT32, elementCount);
 
+        int defaultValueForMissingKey = -1;
+        int counter = 0;
+        Int2IntOpenHashMap uniqueValues = new Int2IntOpenHashMap();
+        uniqueValues.defaultReturnValue(defaultValueForMissingKey);
         for (int y = 1; y < heightCount - 1; y++) {
             for (int x = 1; x < widthCount - 1; x++) {
                 int elementIndex = (this.imageWidth * (y - 1)) + (x - 1);
-                data.setElemIntAt(elementIndex, marker[y][x]);
+                int matrixCellValue = marker[y][x];
+                int value = uniqueValues.get(matrixCellValue);
+                if (value == defaultValueForMissingKey) {
+                    counter++;
+                    uniqueValues.put(matrixCellValue, counter);
+                    value = counter;
+                }
+                data.setElemIntAt(elementIndex, value);
+                //data.setElemIntAt(elementIndex, marker[y][x]);
                 //result.setValueAt(y-1, x-1, marker[y][x]);
             }
         }
