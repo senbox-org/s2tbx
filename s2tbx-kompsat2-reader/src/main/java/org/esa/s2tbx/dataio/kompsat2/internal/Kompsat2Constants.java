@@ -30,7 +30,8 @@ public class Kompsat2Constants {
             "KO2_OPER_MSC_MUL_\\d{1}\\w{1}_\\d{8}T\\d{6}_\\d{8}T\\d{6}_\\d{6}_\\d{4}_\\d{4}_\\d{4}\\.MD.XML",
             "KO2_OPER_MSC_MUL_\\d{1}\\w{1}_\\d{8}T\\d{6}_\\d{8}T\\d{6}_\\d{6}_\\d{4}_\\d{4}_\\d{4}.*.ZIP"};
     public static final String[] KOMSAT2_RGB_PROFILE = new String[]{"MS4", "MS1", "MS2"};
-    public static final String KOMPSAT2_UNIT = "mW cm-2 sr-1 μm-1";
+//    public static final String KOMPSAT2_UNIT = "mW cm-2 sr-1 μm-1";// issues on windows testing platform with special characters, therefore use the characters codes instead
+    public static final String KOMPSAT2_UNIT = "mW cm-2 sr-1 \u03bcm-1";
     public static final Double[] KOMPSAT2_GAIN_VALUES = new Double[]{0.0015092, 0.0021630, 0.0017513, 0.0014689};
 
     public static final String KOMPSAT2_UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";

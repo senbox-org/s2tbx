@@ -181,7 +181,8 @@ public class RapidEyeL1Reader extends AbstractProductReader {
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         targetBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         targetBand.setSpectralWavelength(RapidEyeConstants.WAVELENGTHS[i]);
-                        targetBand.setUnit("cW/m\u00B2 sr μm");
+//                        targetBand.setUnit("cW/m\u00B2 sr μm");// issues on windows testing platform with special characters, therefore use the characters codes instead
+                        targetBand.setUnit("cW/m\u00B2 sr \u03bcm");
                         targetBand.setSpectralBandwidth(RapidEyeConstants.BANDWIDTHS[i]);
                         targetBand.setSpectralBandIndex(i);
                         targetBand.setScalingFactor(metadata.getScaleFactor(i));
