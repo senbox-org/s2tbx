@@ -378,6 +378,7 @@
                     <target>1.8</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
+                	<fork>true</fork>
                 </configuration>
             </plugin>
             <plugin>
