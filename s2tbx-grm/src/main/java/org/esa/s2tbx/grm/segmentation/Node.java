@@ -204,8 +204,7 @@ public abstract class Node {
     }
 
     public Edge findEdge(Node target) {
-        int edgeCount = this.edges.size();
-        for (int i = 0; i < edgeCount; i++) {
+        for (int i = 0; i < this.edges.size(); i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
                 return edge;
@@ -215,33 +214,39 @@ public abstract class Node {
     }
 
     public int removeEdge(Node target) {
-        int edgeCount = this.edges.size();
-        for (int i = 0; i < edgeCount; i++) {
+        for (int i = 0; i < this.edges.size(); i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
                 // found the edge to the target node
-                this.edges.remove(i);
-                WeakReference<Edge> reference = new WeakReference<Edge>(edge);
-                reference.clear();
+                removeEdgeAt(i);
                 return i;
             }
         }
         return -1; // -1 => no edge removed
     }
 
+    public void removeEdgeAt(int index) {
+        Edge edge = this.edges.remove(index);
+        WeakReference<Edge> reference = new WeakReference<Edge>(edge);
+        reference.clear();
+    }
+
     public final void removeEdgeToUnstableNode() {
-        int edgeCount = this.edges.size();
-        for (int j = 0; j < edgeCount; j++) {
+        for (int j = 0; j < this.edges.size(); j++) {
             Edge edge = this.edges.get(j);
             Node nodeNeighbor = edge.getTarget();
-            int removedEdgeIndex = nodeNeighbor.removeEdge(this);
-            assert (removedEdgeIndex >= 0);
+            if (nodeNeighbor == this) {
+                removeEdgeAt(j);
+                j--;
+            } else {
+                int removedEdgeIndex = nodeNeighbor.removeEdge(this);
+                assert (removedEdgeIndex >= 0);
+            }
         }
     }
 
     public void doClose() {
-        int edgeCount = this.edges.size();
-        for (int j = 0; j < edgeCount; j++) {
+        for (int j = 0; j < this.edges.size(); j++) {
             Edge edge = this.edges.get(j);
             if (this != edge.getTarget()) {
                 // the target node is different
@@ -289,7 +294,9 @@ public abstract class Node {
 
                     // increment the boundary of the edge from node a targeting to node neigh_b.
                     Edge toNeighB = findEdge(targetNodeOfCurrentEdge);
-                    toNeighB.setBoundary(toNeighB.getBoundary() + boundary);
+                    if (toNeighB != null) {
+                        toNeighB.setBoundary(toNeighB.getBoundary() + boundary);
+                    }
                 }
             }
         }

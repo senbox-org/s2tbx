@@ -111,12 +111,16 @@ public class Graph {
                 // explore duplicated nodes
                 for (int i=1; i<nodes.size(); i++) {
                     Node currentNode = nodes.get(i);
-                    int edgeCount = currentNode.getEdgeCount();
-                    for (int k=0; k<edgeCount; k++) {
+                    for (int k=0; k<currentNode.getEdgeCount(); k++) {
                         Edge edge = currentNode.getEdgeAt(k);
                         Node neighNit = edge.getTarget();
-                        int removedEdgeIndex = neighNit.removeEdge(currentNode);
-                        assert(removedEdgeIndex >= 0);
+                        if (neighNit == currentNode) {
+                            currentNode.removeEdgeAt(k);
+                            k--;
+                        } else {
+                            int removedEdgeIndex = neighNit.removeEdge(currentNode);
+                            assert(removedEdgeIndex >= 0);
+                        }
 
                         Edge edgeToFirstNode = neighNit.findEdge(refNode);
                         if (edgeToFirstNode == null) {
