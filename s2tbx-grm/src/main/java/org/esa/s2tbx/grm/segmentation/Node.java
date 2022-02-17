@@ -184,7 +184,7 @@ public abstract class Node {
      * @param threshold
      * @return
      */
-    public Node checkLMBF(float threshold) {
+    public Node checkLocalMutualBestFitting(float threshold) {
         if (isValid() && this.edges.size() > 0) {
             Edge firstEdge = this.edges.get(0);
             if (firstEdge.getCost() < threshold) {

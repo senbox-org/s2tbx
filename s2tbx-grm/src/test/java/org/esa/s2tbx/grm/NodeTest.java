@@ -29,7 +29,7 @@ public class NodeTest {
         assertEquals(2, secondNode.getEdgeCount());
         assertEquals(0, thirdNode.getEdgeCount());
 
-        Node node = firstNode.checkLMBF(0.5f);
+        Node node = firstNode.checkLocalMutualBestFitting(0.5f);
         assertNotNull(node);
         assertEquals(firstNode.getId(), node.getId());
     }
