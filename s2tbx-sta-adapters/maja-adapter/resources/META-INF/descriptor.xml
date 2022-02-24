@@ -25,7 +25,7 @@
       <key>MAJA_BIN_DIR</key>
       <value/>
       <windows></windows>
-      <linux>$HOME/.snap/auxdata/MAJA-4.2.1</linux>
+      <linux>$HOME/.snap/auxdata/MAJA-4.5.3</linux>
       <macosx></macosx>
       <isTransient>true</isTransient>
       <isShared>false</isShared>
@@ -200,6 +200,43 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
     <parameter>
+      <name>OUTPUT_FORMAT</name>
+      <dataType>[Ljava.lang.String;</dataType>
+      <defaultValue>natif</defaultValue>
+      <description>Output product type to use to write L2 product in native or muscate format, the default is muscate format</description>
+      <valueSet>
+        <string>natif</string>
+        <string>muscate</string>
+      </valueSet>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>USERCONF</name>
+      <dataType>java.lang.String</dataType>
+      <defaultValue></defaultValue>
+      <description>User Configuration directory, contains for example MAJAUserConfigSystem.xml</description>
+      <label>USERCONF</label>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
+      <name>MAX_L2_DIFF</name>
+      <dataType>java.lang.Integer</dataType>
+      <description>Max timedelta in days between an L1C and L2 product to be considered for a NOMINAL Workplan. By default this is handled independently depending on each platform (i.e. S2=45days).</description>
+      <label>MAX_L2_DIFF</label>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <deprecated>false</deprecated>
+      <parameterType>RegularParameter</parameterType>
+    </parameter>
+    <parameter>
       <name>targetProductFile</name>
       <dataType>java.io.File</dataType>
       <description>Output file</description>
@@ -244,7 +281,7 @@
   <linuxBundle>
     <bundleType>INSTALLER</bundleType>
     <bundleLocation>REMOTE</bundleLocation>
-    <downloadURL>http://step.esa.int/thirdparties/maja/4.2.1/MAJA-4.2.1.run</downloadURL>
+    <downloadURL>http://step.esa.int/thirdparties/maja/4.5.3/MAJA-4.5.3.run</downloadURL>
     <templateparameter>
       <name>arguments</name>
       <dataType>java.io.File</dataType>
@@ -268,12 +305,12 @@
       <template type="simple">
         <contents>--nox11
           --target
-          $targetLocation/MAJA-4.2.1</contents>
+          $targetLocation/MAJA-4.5.3</contents>
       </template>
       <outputFile>Command Template</outputFile>
     </templateparameter>
     <targetLocation>$USERPROFILE/.snap/auxdata</targetLocation>
-    <entryPoint>MAJA-4.2.1.run</entryPoint>
+    <entryPoint>MAJA-4.5.3.run</entryPoint>
     <updateVariable>MAJA_BIN_DIR</updateVariable>
   </linuxBundle>
   <macosxBundle>

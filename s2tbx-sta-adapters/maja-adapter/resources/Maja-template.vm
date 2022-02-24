@@ -38,4 +38,16 @@ $TYPE_DEM
 --platform
 $PLATFORM
 #end
+#if($OUTPUT_FORMAT)
+--output_format
+$OUTPUT_FORMAT
+#end
+#if($USERCONF)
+--userconf
+$USERCONF
+#end
+#if($MAX_L2_DIFF)
+--max_l2_diff
+$MAX_L2_DIFF
+#end
 #end
