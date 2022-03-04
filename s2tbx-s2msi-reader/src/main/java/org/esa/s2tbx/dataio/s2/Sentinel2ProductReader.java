@@ -403,104 +403,82 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return band;
     }
 
-    protected static MosaicMatrix buildBandMatrix(Collection<String> bandMatrixTileIds,
-            S2SceneDescription sceneDescription, BandInfo tileBandInfo,
-            MosaicMatrixCellCallback mosaicMatrixCellCallback) {
-        // find the top left rectangle of the matrix
-        Pair<String, Rectangle> topLeftRectanglePair = null;
+    protected static MosaicMatrix buildBandMatrix(Collection<String> bandMatrixTileIds, S2SceneDescription sceneDescription, BandInfo tileBandInfo,
+                                                  MosaicMatrixCellCallback mosaicMatrixCellCallback) {
+
         S2SpatialResolution bandNativeResolution = tileBandInfo.getBandInformation().getResolution();
-        List<Pair<String, Rectangle>> remainingRectanglePairs = new ArrayList<>(bandMatrixTileIds.size() - 1);
+        Comparator<Integer> comparator = (o1, o2) -> {
+            return o1.compareTo(o2); // sort ascending
+        };
+        Set<Integer> uniqueRectangleX = new TreeSet<>(comparator);
+        Set<Integer> uniqueRectangleY = new TreeSet<>(comparator);
+        Pair<String, Rectangle> topLeftRectanglePair = null;
+        List<Pair<String, Rectangle>> rectanglePairs = new ArrayList<>(bandMatrixTileIds.size());
         for (String tileId : bandMatrixTileIds) {
             Rectangle tileRectangle = sceneDescription.getMatrixTileRectangle(tileId, bandNativeResolution);
+            uniqueRectangleX.add(tileRectangle.x);
+            uniqueRectangleY.add(tileRectangle.y);
             Pair<String, Rectangle> pair = new Pair<>(tileId, tileRectangle);
+            rectanglePairs.add(pair);
             if (tileRectangle.x == 0 && tileRectangle.y == 0) {
                 if (topLeftRectanglePair == null) {
                     topLeftRectanglePair = pair;
                 } else {
                     throw new IllegalStateException("The top left rectangle is duplicate.");
                 }
-            } else {
-                remainingRectanglePairs.add(pair);
             }
         }
         if (topLeftRectanglePair == null) {
             throw new IllegalStateException("No tile images.");
         }
-
-        Set<BandRectangleCoordinates> matrixCellsSet = new HashSet<>();
-        Stack<BandRectangleCoordinates> stack = new Stack<>();
-        stack.push(
-                new BandRectangleCoordinates(topLeftRectanglePair.getFirst(), topLeftRectanglePair.getSecond(), 0, 0));
-        while (!stack.isEmpty()) {
-            BandRectangleCoordinates currentRectangleCoordinates = stack.pop();
-            if (!matrixCellsSet.add(currentRectangleCoordinates)) {
-                throw new IllegalStateException("Dupllicate cell.");
-            }
-            Rectangle currentRectangle = currentRectangleCoordinates.tileRectangle;
-            int leftX = currentRectangle.x;
-            int rightX = currentRectangle.x + currentRectangle.width;
-            int topY = currentRectangle.y;
-            int bottomY = currentRectangle.y + currentRectangle.height;
-            for (int i = 0; i < remainingRectanglePairs.size(); i++) {
-                Pair<String, Rectangle> pair = remainingRectanglePairs.get(i);
-                if (pair != null) {
-                    Rectangle rectangle = pair.getSecond();
-                    if (rectangle.x > leftX && rectangle.x <= rightX) {
-                        // the next column
-                        int rowIndex = currentRectangleCoordinates.rowIndex;
-                        int columnIndex = currentRectangleCoordinates.columnIndex + 1;
-                        BandRectangleCoordinates rectangleCoordinates = new BandRectangleCoordinates(pair.getFirst(),
-                                pair.getSecond(), rowIndex, columnIndex);
-                        stack.push(rectangleCoordinates);
-                        remainingRectanglePairs.set(i, null); // reset the position
-                    } else if (rectangle.y > topY && rectangle.y <= bottomY) {
-                        // the next row
-                        int rowIndex = currentRectangleCoordinates.rowIndex + 1;
-                        int columnIndex = currentRectangleCoordinates.columnIndex;
-                        BandRectangleCoordinates rectangleCoordinates = new BandRectangleCoordinates(pair.getFirst(),
-                                pair.getSecond(), rowIndex, columnIndex);
-                        stack.push(rectangleCoordinates);
-                        remainingRectanglePairs.set(i, null); // reset the position
+        int rowCount = uniqueRectangleY.size();
+        int columnCount = uniqueRectangleX.size();
+        if (rowCount * columnCount != bandMatrixTileIds.size()) {
+            throw new IllegalStateException("Invalid matrix size: row count = " + rowCount + ", column count = " + columnCount + ", bandMatrixTileIds.size=" + bandMatrixTileIds.size());
+        }
+        int[] rows = new int[rowCount];
+        int index = 0;
+        for (Integer value : uniqueRectangleY) {
+            rows[index++] = value.intValue();
+        }
+        int[] columns = new int[columnCount];
+        index = 0;
+        for (Integer value : uniqueRectangleX) {
+            columns[index++] = value.intValue();
+        }
+        Pair<String, Rectangle>[][] bandRectangleCoordinates = new Pair[rows.length][columns.length];
+        for (int rowIndex=0; rowIndex < rowCount; rowIndex++) {
+            for (int columnIndex=0; columnIndex < columnCount; columnIndex++) {
+                for (int i = 0; i < rectanglePairs.size(); i++) {
+                    Pair<String, Rectangle> pair = rectanglePairs.get(i);
+                    if (pair != null) {
+                        Rectangle rectangle = pair.getSecond();
+                        if (rectangle.y == rows[rowIndex] && rectangle.x == columns[columnIndex]) {
+                            bandRectangleCoordinates[rowIndex][columnIndex] = pair;
+                            rectanglePairs.set(i, null); // reset the position
+                        }
                     }
                 }
             }
         }
-        if (matrixCellsSet.size() != bandMatrixTileIds.size()) {
-            throw new IllegalStateException("Invalid matrix size: matrixCellsSet.size = " + matrixCellsSet.size()
-                    + ", bandMatrixTileIds.size() = " + bandMatrixTileIds.size());
-        }
-        int lastRowIndex = -1;
-        int lastColumnIndex = -1;
-        for (BandRectangleCoordinates rectangleCoordinates : matrixCellsSet) {
-            lastRowIndex = Math.max(lastRowIndex, rectangleCoordinates.rowIndex);
-            lastColumnIndex = Math.max(lastColumnIndex, rectangleCoordinates.columnIndex);
-        }
-        int rowCount = lastRowIndex + 1;
-        int columnCount = lastColumnIndex + 1;
-        if (rowCount * columnCount != bandMatrixTileIds.size()) {
-            throw new IllegalStateException("Invalid matrix size: row count = " + rowCount + ", column count = "
-                    + columnCount + ", bandMatrixTileIds.size()=" + bandMatrixTileIds.size());
-        }
-        BandRectangleCoordinates[][] bandRectangleCoordinates = new BandRectangleCoordinates[rowCount][columnCount];
-        for (BandRectangleCoordinates rectangleCoordinates : matrixCellsSet) {
-            bandRectangleCoordinates[rectangleCoordinates.rowIndex][rectangleCoordinates.columnIndex] = rectangleCoordinates;
-        }
         MosaicMatrix mosaicMatrix = new MosaicMatrix(rowCount, columnCount);
         for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
             for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
-                BandRectangleCoordinates rectangleCoordinates = bandRectangleCoordinates[rowIndex][columnIndex];
-                int sceneCellHeight = rectangleCoordinates.tileRectangle.height;
+                Pair<String, Rectangle> rectangleCoordinates = bandRectangleCoordinates[rowIndex][columnIndex];
+                if (rectangleCoordinates == null) {
+                    throw new NullPointerException("The matrix cell is null: rowIndex=" + rowIndex + ", columnIndex=" + columnIndex + ".");
+                }
+                int sceneCellHeight = rectangleCoordinates.getSecond().height;
                 if (rowIndex < rowCount - 1) {
-                    BandRectangleCoordinates nextRowRectangle = bandRectangleCoordinates[rowIndex + 1][columnIndex];
-                    sceneCellHeight = nextRowRectangle.tileRectangle.y - rectangleCoordinates.tileRectangle.y;
+                    Pair<String, Rectangle> nextRowRectangle = bandRectangleCoordinates[rowIndex + 1][columnIndex];
+                    sceneCellHeight = nextRowRectangle.getSecond().y - rectangleCoordinates.getSecond().y;
                 }
-                int sceneCellWidth = rectangleCoordinates.tileRectangle.width;
+                int sceneCellWidth = rectangleCoordinates.getSecond().width;
                 if (columnIndex < columnCount - 1) {
-                    BandRectangleCoordinates nextColumnRectangle = bandRectangleCoordinates[rowIndex][columnIndex + 1];
-                    sceneCellWidth = nextColumnRectangle.tileRectangle.x - rectangleCoordinates.tileRectangle.x;
+                    Pair<String, Rectangle> nextColumnRectangle = bandRectangleCoordinates[rowIndex][columnIndex + 1];
+                    sceneCellWidth = nextColumnRectangle.getSecond().x - rectangleCoordinates.getSecond().x;
                 }
-                MosaicMatrix.MatrixCell matrixCell = mosaicMatrixCellCallback
-                        .buildMatrixCell(rectangleCoordinates.tileId, tileBandInfo, sceneCellWidth, sceneCellHeight);
+                MosaicMatrix.MatrixCell matrixCell = mosaicMatrixCellCallback.buildMatrixCell(rectangleCoordinates.getFirst(), tileBandInfo, sceneCellWidth, sceneCellHeight);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, false, false);
             }
         }
@@ -532,21 +510,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-    private static class BandRectangleCoordinates {
-
-        private Rectangle tileRectangle;
-        private String tileId;
-        private int rowIndex;
-        private int columnIndex;
-
-        private BandRectangleCoordinates(String tileId, Rectangle tileRectangle, int rowIndex, int columnIndex) {
-            this.tileId = tileId;
-            this.tileRectangle = tileRectangle;
-            this.rowIndex = rowIndex;
-            this.columnIndex = columnIndex;
         }
     }
 }
