@@ -5,11 +5,12 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.snap.utils.ArrayListExtended;
 
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 
 /**
  * @author Jean Coravu
  */
-public abstract class Node {
+public abstract class Node implements Comparable<Node>{
     private static final byte VALID_FLAG = 1;
     private static final byte EXPIRED_FLAG = 2;
     private static final byte MERGED_FLAG = 4;
@@ -506,6 +507,27 @@ public abstract class Node {
         int bbY = gridY - bbox.getTopY();
 
         return bbY * bbox.getWidth() + bbX;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return id == node.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(Node node) {
+        if (!this.equals(node)) {
+            return this.id > node.id ? 1 : -1;
+        }
+        return 0;
     }
 }
 

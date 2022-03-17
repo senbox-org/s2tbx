@@ -22,6 +22,7 @@ public class OutputMaskMatrixHelper {
         this.nodeIds = new int[nodeCount];
         this.nodeContours = new Contour[nodeCount];
 
+        graph.sort();
         for (int i = 0; i < nodeCount; i++) {
             Node node = graph.getNodeAt(i);
             this.nodeIds[i] = node.getId();
