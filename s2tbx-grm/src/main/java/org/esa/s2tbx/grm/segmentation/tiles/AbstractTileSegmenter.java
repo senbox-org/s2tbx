@@ -275,7 +275,7 @@ public abstract class AbstractTileSegmenter {
                 int graphNodeCountBeforeRemoving = graph.getNodeCount();
 
                 // remove unstable segments
-                graph.removeUnstableSegmentsInParallel(this.threadCount, this.threadPool, tileToProcess, this.imageWidth);
+                graph.removeUnstableSegmentsInParallel(0, this.threadPool, tileToProcess, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
                     int removedNodeCount = graphNodeCountBeforeRemoving - graph.getNodeCount();
@@ -283,7 +283,7 @@ public abstract class AbstractTileSegmenter {
                 }
 
                 // extract stability margin for all borders different from 0 imageWidth-1 and imageHeight -1 and write them to the stability margin
-                List<Node> nodesToIterate = graph.detectBorderNodes(this.threadCount, this.threadPool, tileToProcess, this.imageWidth, this.imageHeight);
+                List<Node> nodesToIterate = graph.detectBorderNodes(0, this.threadPool, tileToProcess, this.imageWidth, this.imageHeight);
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "First tile segmentation (after detecting border nodes): graph node count: " + graph.getNodeCount() + ", border node count: " + nodesToIterate.size());
@@ -405,7 +405,7 @@ public abstract class AbstractTileSegmenter {
         int tileCountY = this.tileSegmenterMetadata.getComputedTileCountY();
         Graph graph = readGraphSecondPartialSegmentation(currentTile, rowIndex, columnIndex, tileCountX, tileCountY);
 
-        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapInParallel(this.threadCount, this.threadPool, currentTile, rowIndex, columnIndex, tileCountX, tileCountY, this.imageWidth);
+        Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapInParallel(0, this.threadPool, currentTile, rowIndex, columnIndex, tileCountX, tileCountY, this.imageWidth);
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "Second tile segmentation (after building border pixel map): row index: " + rowIndex + ", column index: " + columnIndex+", graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size());
@@ -428,7 +428,7 @@ public abstract class AbstractTileSegmenter {
 
         // remove the useless nodes
         graphNodeCountBeforeRemoving = graph.getNodeCount();
-        List<Node> nodesToIterate = graph.findUselessNodesInParallel(this.threadCount, this.threadPool, currentTile, this.imageWidth);
+        List<Node> nodesToIterate = graph.findUselessNodesInParallel(0, this.threadPool, currentTile, this.imageWidth);
         Int2ObjectMap<Node> borderNodes = extractStabilityMargin(nodesToIterate, numberOfNeighborLayers);
         graph.removeUselessNodes(borderNodes, currentTile);
 
@@ -448,7 +448,7 @@ public abstract class AbstractTileSegmenter {
 
         graphNodeCountBeforeRemoving = graph.getNodeCount();
 
-        graph.removeUnstableSegmentsInParallel(this.threadCount, this.threadPool, currentTile, this.imageWidth);
+        graph.removeUnstableSegmentsInParallel(0, this.threadPool, currentTile, this.imageWidth);
 
         if (logger.isLoggable(Level.FINEST)) {
             int removedNodeCount = graphNodeCountBeforeRemoving - graph.getNodeCount();
@@ -502,7 +502,7 @@ public abstract class AbstractTileSegmenter {
             logger.log(Level.FINEST, "Second tile segmentation (extract the stability margin - after read graph): row index: " + rowIndex + ", column index: " + columnIndex +", graph node count: "+graph.getNodeCount());
         }
 
-        List<Node> nodesToIterate = graph.detectBorderNodes(this.threadCount, this.threadPool, currentTile, this.imageWidth, this.imageHeight);
+        List<Node> nodesToIterate = graph.detectBorderNodes(0, this.threadPool, currentTile, this.imageWidth, this.imageHeight);
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "Second tile segmentation (extract the stability margin - after detecting border nodes): row index: " + rowIndex + ", column index: " + columnIndex+", border node count: " + nodesToIterate.size());
@@ -583,7 +583,7 @@ public abstract class AbstractTileSegmenter {
                     logger.log(Level.FINE, "Merge graphs (build border pixel map): row index: "+rowIndex+", column index: "+columnIndex+", graph node count: " +graph.getNodeCount()+", tile region: " +tileRegionToString(currentTile.getRegion()));
                 }
 
-                Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapInParallel(this.threadCount, this.threadPool, currentTile, rowIndex, columnIndex, tileCountX, tileCountY, this.imageWidth);
+                Int2ObjectMap<List<Node>> borderPixelMap = graph.buildBorderPixelMapInParallel(0, this.threadPool, currentTile, rowIndex, columnIndex, tileCountX, tileCountY, this.imageWidth);
 
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Merge graphs (after building border pixel map): row index: " + rowIndex + ", column index: " + columnIndex+", graph node count: " +graph.getNodeCount()+", map size: "+borderPixelMap.size());

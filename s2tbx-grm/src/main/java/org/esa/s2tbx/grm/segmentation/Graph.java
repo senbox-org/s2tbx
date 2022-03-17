@@ -8,6 +8,7 @@ import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
 import org.esa.snap.utils.ArrayListExtended;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -237,4 +238,9 @@ public class Graph {
         WeakReference<ArrayListExtended<Node>> reference = new WeakReference<ArrayListExtended<Node>>(this.nodes);
         reference.clear();
     }
+
+    public void sort(){
+        Collections.sort(this.nodes);
+    }
+
 }
