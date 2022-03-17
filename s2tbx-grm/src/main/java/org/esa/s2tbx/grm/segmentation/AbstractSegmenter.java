@@ -8,6 +8,7 @@ import java.util.logging.Logger;
  * @author Jean Coravu
  */
 public abstract class AbstractSegmenter {
+
     private static final Logger logger = Logger.getLogger(AbstractSegmenter.class.getName());
 
     protected final float threshold;
@@ -27,9 +28,9 @@ public abstract class AbstractSegmenter {
     public final boolean update(TileDataSource[] sourceTiles, BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
         initNodes(sourceTiles, rectange, addFourNeighbors);
 
-        boolean merged = false;
+        boolean merged;
         if (fastSegmentation) {
-            merged = performAllIterationsWithBF(numberOfIterations);
+            merged = performAllIterationsWithBestFitting(numberOfIterations);
         } else {
             merged = performAllIterationsWithLMBF(numberOfIterations);
         }
@@ -69,7 +70,7 @@ public abstract class AbstractSegmenter {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER, "Iterations with LMBF: iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations);
             }
-            merged = perfomOneIterationWithLMBF();
+            merged = performOneIterationWithLocalMutualBestFitting();
         }
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "Iterations with LMBF: after segmentation graph node count: " +this.graph.getNodeCount());
@@ -77,7 +78,7 @@ public abstract class AbstractSegmenter {
         return merged;
     }
 
-    private boolean performAllIterationsWithBF(int numberOfIterations) {
+    private boolean performAllIterationsWithBestFitting(int numberOfIterations) {
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "Perform iterations with BF: number of iterations: "+numberOfIterations);
         }
@@ -88,7 +89,7 @@ public abstract class AbstractSegmenter {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER, "Iterations with BF: iteration: " + iterations + ", graph node count: " +this.graph.getNodeCount()+", number of iterations: "+numberOfIterations);
             }
-            merged = perfomOneIterationWithBF();
+            merged = performOneIterationWithBestFitting();
         }
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "Iterations with BF: after segmentation graph node count: " +this.graph.getNodeCount());
@@ -96,7 +97,7 @@ public abstract class AbstractSegmenter {
         return merged;
     }
 
-    private boolean perfomOneIterationWithBF() {
+    private boolean performOneIterationWithBestFitting() {
         boolean merged = false;
 
         for (int i = 0; i < this.graph.getNodeCount(); i++) {
@@ -106,26 +107,28 @@ public abstract class AbstractSegmenter {
                 currentNode.setValid(false);
 
                 // compute cost with all its neighbors
-                updateMergingCostsUsingBF(currentNode);
+                updateMergingCostsUsingBestFitting(currentNode);
 
                 // get the most similar segment
                 Edge firstEdge = currentNode.getEdgeAt(0);
                 Node firstEdgeTarget = firstEdge.getTarget();
 
-                if (firstEdge.getCost() < this.threshold && !firstEdgeTarget.isExpired()) {
-                    merged = true;
+                if (firstEdgeTarget != currentNode) {
+                    if (firstEdge.getCost() < this.threshold && !firstEdgeTarget.isExpired()) {
+                        merged = true;
 
-                    Node nodeToUpdate = null;
-                    Node targetNode = null;
-                    if (currentNode.getId() < firstEdgeTarget.getId()) {
-                        nodeToUpdate = currentNode;
-                        targetNode = firstEdgeTarget;
-                    } else {
-                        nodeToUpdate = firstEdgeTarget;
-                        targetNode = currentNode;
+                        Node nodeToUpdate;
+                        Node targetNode;
+                        if (currentNode.getId() < firstEdgeTarget.getId()) {
+                            nodeToUpdate = currentNode;
+                            targetNode = firstEdgeTarget;
+                        } else {
+                            nodeToUpdate = firstEdgeTarget;
+                            targetNode = currentNode;
+                        }
+                        nodeToUpdate.updateInternalAttributes(targetNode, this.imageWidth);
+                        nodeToUpdate.resetCostUpdatedFlagToAllEdges();
                     }
-                    nodeToUpdate.updateInternalAttributes(targetNode, this.imageWidth);
-                    nodeToUpdate.resetCostUpdatedFlagToAllEdges();
                 }
             }
         }
@@ -139,7 +142,7 @@ public abstract class AbstractSegmenter {
         return merged;
     }
 
-    private void updateMergingCostsUsingBF(Node node) {
+    private void updateMergingCostsUsingBestFitting(Node node) {
         float minimumCost = Float.MAX_VALUE;
         int minimumIndex = -1;
         for (int i = 0; i < node.getEdgeCount(); i++) {
@@ -213,7 +216,7 @@ public abstract class AbstractSegmenter {
         }
     }
 
-    private void updateMergingCostsUsingLMBF() {
+    private void updateMergingCostsUsingLocalMutualBestFitting() {
         this.graph.resetCostUpdatedFlagToAllEdges();
 
         int nodeCount = this.graph.getNodeCount();
@@ -232,13 +235,13 @@ public abstract class AbstractSegmenter {
 
                 // compute the cost if necessary
                 if (!edge.isCostUpdated() && (neighborNode.isMerged() || node.isMerged())) {
-                    float merginCost = computeMergingCost(node, neighborNode);
-                    edge.setCost(merginCost);
+                    float mergingCost = computeMergingCost(node, neighborNode);
+                    edge.setCost(mergingCost);
                     edge.setCostUpdated(true);
 
                     Edge edgeFromNeighborToR = neighborNode.findEdge(node);
                     if (edgeFromNeighborToR != null) {
-                        edgeFromNeighborToR.setCost(merginCost);
+                        edgeFromNeighborToR.setCost(mergingCost);
                         edgeFromNeighborToR.setCostUpdated(true);
                     }
                 }
@@ -263,18 +266,20 @@ public abstract class AbstractSegmenter {
         this.graph.resetMergedFlagToAllNodes(); // reset the merge flag for all the regions.
     }
 
-    private boolean perfomOneIterationWithLMBF() {
-        updateMergingCostsUsingLMBF(); // update the costs of merging between adjacent nodes
+    private boolean performOneIterationWithLocalMutualBestFitting() {
+        updateMergingCostsUsingLocalMutualBestFitting(); // update the costs of merging between adjacent nodes
 
         int nodeCount = this.graph.getNodeCount();
         boolean merged = false;
         for (int k = 0; k < nodeCount; k++) {
             Node node = this.graph.getNodeAt(k);
-            Node resultNode = node.checkLMBF(this.threshold);
+            Node resultNode = node.checkLocalMutualBestFitting(this.threshold);
             if (resultNode != null) {
                 Node firstEdgeTarget = resultNode.getEdgeAt(0).getTarget();
-                resultNode.updateInternalAttributes(firstEdgeTarget, this.imageWidth);
-                merged = true;
+                if (firstEdgeTarget != resultNode) {
+                    resultNode.updateInternalAttributes(firstEdgeTarget, this.imageWidth);
+                    merged = true;
+                }
             }
         }
         int remainingNodes = this.graph.removeExpiredNodes();

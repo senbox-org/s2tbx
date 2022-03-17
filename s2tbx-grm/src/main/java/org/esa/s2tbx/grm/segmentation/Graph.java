@@ -8,6 +8,7 @@ import org.esa.s2tbx.grm.segmentation.tiles.ProcessingTile;
 import org.esa.snap.utils.ArrayListExtended;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -111,12 +112,16 @@ public class Graph {
                 // explore duplicated nodes
                 for (int i=1; i<nodes.size(); i++) {
                     Node currentNode = nodes.get(i);
-                    int edgeCount = currentNode.getEdgeCount();
-                    for (int k=0; k<edgeCount; k++) {
+                    for (int k=0; k<currentNode.getEdgeCount(); k++) {
                         Edge edge = currentNode.getEdgeAt(k);
                         Node neighNit = edge.getTarget();
-                        int removedEdgeIndex = neighNit.removeEdge(currentNode);
-                        assert(removedEdgeIndex >= 0);
+                        if (neighNit == currentNode) {
+                            currentNode.removeEdgeAt(k);
+                            k--;
+                        } else {
+                            int removedEdgeIndex = neighNit.removeEdge(currentNode);
+                            assert(removedEdgeIndex >= 0);
+                        }
 
                         Edge edgeToFirstNode = neighNit.findEdge(refNode);
                         if (edgeToFirstNode == null) {
@@ -233,4 +238,9 @@ public class Graph {
         WeakReference<ArrayListExtended<Node>> reference = new WeakReference<ArrayListExtended<Node>>(this.nodes);
         reference.clear();
     }
+
+    public void sort(){
+        Collections.sort(this.nodes);
+    }
+
 }

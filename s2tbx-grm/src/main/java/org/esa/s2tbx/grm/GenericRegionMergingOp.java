@@ -359,7 +359,7 @@ public class GenericRegionMergingOp extends Operator {
         int tileCountY = MathUtils.ceilInt(sceneHeight / (double) tileSize.height);
         this.totalTileCount = tileCountX * tileCountY;
 
-        int threadCount = 1;
+        int threadCount = Runtime.getRuntime().availableProcessors() - 1;
         Executor threadPool = Executors.newCachedThreadPool();
 
         String folderPath = System.getProperty("grm.temp.folder.path");

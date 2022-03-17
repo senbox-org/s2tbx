@@ -5,11 +5,12 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import org.esa.snap.utils.ArrayListExtended;
 
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 
 /**
  * @author Jean Coravu
  */
-public abstract class Node {
+public abstract class Node implements Comparable<Node>{
     private static final byte VALID_FLAG = 1;
     private static final byte EXPIRED_FLAG = 2;
     private static final byte MERGED_FLAG = 4;
@@ -184,7 +185,7 @@ public abstract class Node {
      * @param threshold
      * @return
      */
-    public Node checkLMBF(float threshold) {
+    public Node checkLocalMutualBestFitting(float threshold) {
         if (isValid() && this.edges.size() > 0) {
             Edge firstEdge = this.edges.get(0);
             if (firstEdge.getCost() < threshold) {
@@ -204,8 +205,7 @@ public abstract class Node {
     }
 
     public Edge findEdge(Node target) {
-        int edgeCount = this.edges.size();
-        for (int i = 0; i < edgeCount; i++) {
+        for (int i = 0; i < this.edges.size(); i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
                 return edge;
@@ -215,33 +215,39 @@ public abstract class Node {
     }
 
     public int removeEdge(Node target) {
-        int edgeCount = this.edges.size();
-        for (int i = 0; i < edgeCount; i++) {
+        for (int i = 0; i < this.edges.size(); i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
                 // found the edge to the target node
-                this.edges.remove(i);
-                WeakReference<Edge> reference = new WeakReference<Edge>(edge);
-                reference.clear();
+                removeEdgeAt(i);
                 return i;
             }
         }
         return -1; // -1 => no edge removed
     }
 
+    public void removeEdgeAt(int index) {
+        Edge edge = this.edges.remove(index);
+        WeakReference<Edge> reference = new WeakReference<Edge>(edge);
+        reference.clear();
+    }
+
     public final void removeEdgeToUnstableNode() {
-        int edgeCount = this.edges.size();
-        for (int j = 0; j < edgeCount; j++) {
+        for (int j = 0; j < this.edges.size(); j++) {
             Edge edge = this.edges.get(j);
             Node nodeNeighbor = edge.getTarget();
-            int removedEdgeIndex = nodeNeighbor.removeEdge(this);
-            assert (removedEdgeIndex >= 0);
+            if (nodeNeighbor == this) {
+                removeEdgeAt(j);
+                j--;
+            } else {
+                int removedEdgeIndex = nodeNeighbor.removeEdge(this);
+                assert (removedEdgeIndex >= 0);
+            }
         }
     }
 
     public void doClose() {
-        int edgeCount = this.edges.size();
-        for (int j = 0; j < edgeCount; j++) {
+        for (int j = 0; j < this.edges.size(); j++) {
             Edge edge = this.edges.get(j);
             if (this != edge.getTarget()) {
                 // the target node is different
@@ -289,7 +295,9 @@ public abstract class Node {
 
                     // increment the boundary of the edge from node a targeting to node neigh_b.
                     Edge toNeighB = findEdge(targetNodeOfCurrentEdge);
-                    toNeighB.setBoundary(toNeighB.getBoundary() + boundary);
+                    if (toNeighB != null) {
+                        toNeighB.setBoundary(toNeighB.getBoundary() + boundary);
+                    }
                 }
             }
         }
@@ -499,6 +507,27 @@ public abstract class Node {
         int bbY = gridY - bbox.getTopY();
 
         return bbY * bbox.getWidth() + bbX;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return id == node.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(Node node) {
+        if (!this.equals(node)) {
+            return this.id > node.id ? 1 : -1;
+        }
+        return 0;
     }
 }
 
