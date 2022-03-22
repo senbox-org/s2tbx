@@ -37,7 +37,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -110,6 +110,8 @@ public class GenericRegionMergingOp extends Operator {
     private long startTime;
     private AbstractSegmenter segmenter;
     private ProductData grmData = null;
+
+    private ExecutorService threadPool;
 
     public GenericRegionMergingOp() {
     }
@@ -222,7 +224,7 @@ public class GenericRegionMergingOp extends Operator {
 
     /**
      * [SIITBX-434] Use computeTile() for writing the GRM output on targetTile.
-     * Reason: If JAI execution threads < nr of processing tiles then deadlock occurs.
+     * Reason: If JAI execution threads < nb of processing tiles then deadlock occurs.
      *
      * @param targetBand The target band.
      * @param targetTile The current tile associated with the target band to be computed.
@@ -329,6 +331,9 @@ public class GenericRegionMergingOp extends Operator {
         WeakReference<OutputMarkerMatrixHelper> referenceMarkerMatrix = new WeakReference<OutputMarkerMatrixHelper>(outputMarkerMatrix);
         referenceMarkerMatrix.clear();
 
+        // there is a waiting time of approx 60 sec after the processing, until the operator execution is finished, due to this threadPool
+        threadPool.shutdownNow();
+
         if (logger.isLoggable(Level.FINE)) {
             int imageWidth = tileSegmenter.getImageWidth();
             int imageHeight = tileSegmenter.getImageHeight();
@@ -360,7 +365,7 @@ public class GenericRegionMergingOp extends Operator {
         this.totalTileCount = tileCountX * tileCountY;
 
         int threadCount = Runtime.getRuntime().availableProcessors() - 1;
-        Executor threadPool = Executors.newCachedThreadPool();
+        threadPool = Executors.newCachedThreadPool();
 
         String folderPath = System.getProperty("grm.temp.folder.path");
         if (folderPath == null) {
