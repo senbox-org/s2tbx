@@ -33,7 +33,7 @@ New plugin adapter for Sen2Cor 2.9 is added in SNAP menu.
 
 ### Plugin adapter for MAJA
 
-New plugin adapter for MAJA 4.2.1 is added in SNAP menu.
+New plugin adapter for MAJA 4.5.3 is added in SNAP menu.
 
 #### Solved operators whose UI was not well functioning in Graph Builder
 
