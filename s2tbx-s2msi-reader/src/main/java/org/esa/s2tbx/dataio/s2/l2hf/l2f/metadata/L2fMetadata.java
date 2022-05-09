@@ -193,7 +193,6 @@ public class L2fMetadata extends S2OrthoMetadata {
 
         //granuleMetadata.getMasks(path);
         tile.setMaskFilenames(granuleMetadata.getMasks(path));
-
         addTileToList(tile);
 
         //Search "Granules" metadata element. If it does not exist, it is created

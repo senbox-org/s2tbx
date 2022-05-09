@@ -37,11 +37,12 @@ public class RegularExpressionTest {
     @Test
     public void testFileMatch() throws Exception
     {   
-        Pattern pat = Pattern.compile("(S2A|S2B|S2_|LS8)_([A-Z|0-9|_]{6})_([0-9]{8}T[0-9]{6})_N([0-9]{4})_R([0-9]{3})_.*");
+        Pattern pat = Pattern.compile("(S2A|S2B|S2_|LS8|LS9)_([A-Z|0-9|_]{6})_([0-9]{8}T[0-9]{6})_N([0-9]{4})_R([0-9]{3})_.*");
 
         assertTrue(pat.matcher("S2A_MSIL2H_20200210T105201_N9999_R051_T31UFS_20200210T113338").matches());
 
         assertTrue(pat.matcher("LS8_OLIL2H_20200121T103424_N9999_R198_T31UFS_20200128T084427").matches());
+        assertTrue(pat.matcher("LS9_OLIL2H_20220322T095321_N9999_R191_T33TTG_20220322T193312").matches());
 
     }
 

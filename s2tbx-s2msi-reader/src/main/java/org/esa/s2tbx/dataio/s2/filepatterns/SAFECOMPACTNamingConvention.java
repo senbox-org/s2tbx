@@ -21,10 +21,10 @@ import java.util.regex.Pattern;
  */
 public class SAFECOMPACTNamingConvention implements INamingConvention {
     //REGEXs and getters
-    public static String PRODUCT_REGEX = "(S2A|S2B|S2_|LS8)_([A-Z|0-9|_]{6})_([0-9]{8}T[0-9]{6})_N([0-9]{4})_R([0-9]{3})_.*";
+    public static String PRODUCT_REGEX = "(S2A|S2B|S2_|LS8|LS9)_([A-Z|0-9|_]{6})_([0-9]{8}T[0-9]{6})_N([0-9]{4})_R([0-9]{3})_.*";
     // MTD_OLIL2F
     public static String PRODUCT_XML_REGEX = "MTD_(MSIL(1C|2A|2H|2F|03)|OLIL2(H|F))\\.xml";
-    public static String GRANULE_REGEX = "(L1C|L2A|L2H|L2F|L03)_T([A-Z|0-9|_]{5})_A([0-9]{6})_([0-9]{8}T[0-9]{6})(|_(S2A|S2B|S2_|LS8)_R([0-9]{3}))";
+    public static String GRANULE_REGEX = "(L1C|L2A|L2H|L2F|L03)_T([A-Z|0-9|_]{5})_A([0-9]{6})_([0-9]{8}T[0-9]{6})(|_(S2A|S2B|S2_|LS8|LS9)_R([0-9]{3}))";
     public static String GRANULE_XML_REGEX = "MTD_TL(|_L2H|_L2F)\\.xml";
     public static String DATASTRIP_REGEX = "DS_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_S([0-9]{8}T[0-9]{6})";
     public static String DATASTRIP_XML_REGEX = "MTD_DS\\.xml";

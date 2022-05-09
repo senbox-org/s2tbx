@@ -47,6 +47,7 @@ public class S2Config {
         S2A,
         S2B,
         LS8,
+        LS9,
         UNKNOWN
     }
 

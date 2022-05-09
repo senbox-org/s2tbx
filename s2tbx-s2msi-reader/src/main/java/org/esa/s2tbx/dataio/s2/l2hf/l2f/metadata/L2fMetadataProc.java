@@ -55,7 +55,7 @@ public class L2fMetadataProc extends S2OrthoMetadataProc {
                                                                  double aotQuantification,
                                                                  double wvpQuantification, S2Config.Sentinel2ProductMission missionId) {
         List<S2BandInformation> aInfo = new ArrayList<>();
-        if(missionId == S2Config.Sentinel2ProductMission.LS8){
+        if(missionId == S2Config.Sentinel2ProductMission.LS8||missionId == S2Config.Sentinel2ProductMission.LS9){
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R30M, boaQuantification, false));
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B2, S2SpatialResolution.R10M, boaQuantification, false));
             aInfo.add(makeSpectralInformation(format, S2BandConstants.B3, S2SpatialResolution.R10M, boaQuantification, false));
