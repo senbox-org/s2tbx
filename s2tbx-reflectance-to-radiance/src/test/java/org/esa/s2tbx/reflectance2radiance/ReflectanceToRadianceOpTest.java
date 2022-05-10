@@ -11,7 +11,6 @@ import java.awt.image.Raster;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-
 /**
  * @author Jean Coravu.
  */
@@ -20,7 +19,6 @@ public class ReflectanceToRadianceOpTest extends TestCase {
     private static final String U_ATTRIBUTE_NAME = "u";
     private static final String INCIDENCE_ANGLE_ATTRIBUTE_NAME = "incidenceAngle";
     private static final String SOURCE_BAND_NAMES_ATTRIBUTE_NAME = "sourceBandNames";
-
     public ReflectanceToRadianceOpTest() {
     }
 
@@ -69,6 +67,7 @@ public class ReflectanceToRadianceOpTest extends TestCase {
         int bandIndex = sourceProduct.getBandGroup().getNodeCount();
         Band band = buildBand(sourceBandName, sceneRasterWidth, sceneRasterHeight, 325, 5, 25);
         band.setSpectralBandIndex(bandIndex);
+        band.setDescription("Band1 in Reflectance");
         sourceProduct.addBand(band);
 
         Map<String, Object> annotatedFields = new HashMap<String, Object>();
@@ -88,6 +87,7 @@ public class ReflectanceToRadianceOpTest extends TestCase {
 
         Product targetProduct = operator.getTargetProduct();
         Band targetBand = targetProduct.getBandAt(0);
+        assertTrue(targetBand.getDescription().matches("Band1 in Radiance"));
 
         checkExpectedValues(expectedValues, targetBand);
     }
@@ -100,6 +100,7 @@ public class ReflectanceToRadianceOpTest extends TestCase {
 
         int bandIndex = sourceProduct.getBandGroup().getNodeCount();
         Band band = buildBand(sourceBandName, sceneRasterWidth, sceneRasterHeight, 325, 5, 25);
+        band.setDescription("Band1 in Reflectance");
         band.setSpectralBandIndex(bandIndex);
         sourceProduct.addBand(band);
 
@@ -121,7 +122,6 @@ public class ReflectanceToRadianceOpTest extends TestCase {
         try {
             Product targetProduct = operator.getTargetProduct();
             Band targetBand = targetProduct.getBandAt(0);
-
             checkExpectedValues(expectedValues, targetBand);
         } catch (OperatorException exception) {
             assertEquals("Please specify the incidence angle.", exception.getMessage());

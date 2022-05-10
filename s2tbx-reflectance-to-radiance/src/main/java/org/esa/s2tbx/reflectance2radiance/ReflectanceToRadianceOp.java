@@ -230,7 +230,9 @@ public class ReflectanceToRadianceOp extends Operator {
             // SIITBX-297 : The unit is copied from the source to the target. But it should be set accordingly to the conversion to radiance values.
             targetBand.setUnit("Watts/m^2/micrometer/steradian");
             targetBand.setGeoCoding(sourceBand.getGeoCoding());
-            targetBand.setDescription(targetBand.getDescription().replace("Reflectance", "Radiance"));
+            if(targetBand.getDescription()!=null)
+                targetBand.setDescription(targetBand.getDescription().replace("Reflectance", "Radiance"));
+
             this.targetProduct.addBand(targetBand);
             
             if (sunZenithBand == null) {
