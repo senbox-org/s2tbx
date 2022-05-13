@@ -42,6 +42,7 @@ Updates made for operators: Reflectance to Radiance, Spectral Angle Mapper, Mult
 
 ### List of solved issues
 #### Bug
+    * [SIITBX-487] - Band description still uses reflectance after processing
     * [SIITBX-434] - GenericRegionMerging creates empty output in GB and GPT
     * [SIITBX-435] - GDAL - error writing bands having data type int16
     * [SIITBX-436] - GDAL writer - visual artifacts in produced images when writing in parallel, from multiple threads
