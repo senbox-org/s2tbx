@@ -140,7 +140,9 @@ public class GenericRegionMergingOp extends Operator {
         }
 
         if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
-            throw new OperatorException("Please select at least one band.");
+            // SIITBX-410: do not throw exception for allowing Graph Builder to initialize the UI
+            //throw new OperatorException("Please select at least one band.");
+            this.sourceBandNames = this.sourceProduct.getBandNames();
         }
         Band firstSelectedSourceBand = this.sourceProduct.getBand(this.sourceBandNames[0]);
         int targetWidth = firstSelectedSourceBand.getRasterWidth();

@@ -27,4 +27,10 @@
         </folder>
     </folder>
 
+    <folder name="OperatorUIs">
+        <file name="org.esa.s2tbx.grm">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.grm.GenericRegionMergingUI"/>
+            <attr name="operatorName" stringvalue="GenericRegionMergingOp"/>
+        </file>
+    </folder>
 </filesystem>
