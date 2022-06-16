@@ -391,7 +391,7 @@ public class CoregistrationOp extends Operator {
                             ProductData.TYPE_FLOAT32,
                             b.getRasterWidth(),
                             b.getRasterHeight());
-                    btBand.setSourceImage(targetImage);
+                    btBand.setSourceImage(bImage);
                     targetProduct.addBand(btBand);
 
                 }
