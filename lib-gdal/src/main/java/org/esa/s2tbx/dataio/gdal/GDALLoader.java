@@ -42,7 +42,6 @@ public final class GDALLoader {
     private static final GDALLoader INSTANCE = new GDALLoader();
     private static final Logger logger = Logger.getLogger(GDALLoader.class.getName());
 
-    private boolean gdalIsInitialized = false;
     private boolean gdalInitialisationExecuted = false;
     private GDALVersion gdalVersion;
     private URLClassLoader gdalVersionLoader;
@@ -63,6 +62,18 @@ public final class GDALLoader {
     }
 
     /**
+     * Ensures GDAL library was initialised
+     */
+    public static void ensureGDALInitialised(){
+        if (!GDALInstallInfo.INSTANCE.isPresent()) {
+            getInstance().initGDAL();
+            if (!GDALInstallInfo.INSTANCE.isPresent()) {
+                throw new IllegalStateException("GDAL NOT initialised!");
+            }
+        }
+    }
+
+    /**
      * Initializes GDAL native libraries to be used by SNAP.
      */
     public void initGDAL() {
@@ -71,14 +82,15 @@ public final class GDALLoader {
                 this.gdalVersion = GDALVersion.getGDALVersion();
                 GDALDistributionInstaller.setupDistribution(this.gdalVersion);
                 this.gdalVersionLoader = new URLClassLoader(new URL[]{this.gdalVersion.getJNILibraryFilePath().toUri().toURL()}, GDALLoader.class.getClassLoader());
-                this.gdalIsInitialized = true;
-                initDrivers();
-                postGDALInit();
                 Path gdalDistributionBinFolderPath = Paths.get(this.gdalVersion.getLocation());
                 GDALInstallInfo.INSTANCE.setLocations(gdalDistributionBinFolderPath);
+                initDrivers();
+                postGDALInit();
+                if (logger.isLoggable(Level.FINE)) {
+                    Logger.getLogger(GDALLoader.class.getName()).log(Level.FINE, () -> "GDAL initialised SUCCESSFULLY!");
+                }
             } catch (Throwable t) {
                 logger.log(Level.SEVERE, "Failed to initialize GDAL native drivers. GDAL readers and writers were disabled." + t.getMessage());
-                this.gdalIsInitialized = false;
             }
             this.gdalInitialisationExecuted = true;
         }
@@ -105,9 +117,7 @@ public final class GDALLoader {
      * @return the GDAL JNI URL class loader for loading JNI drivers of current version native libraries
      */
     public URLClassLoader getGDALVersionLoader() {
-        if (!this.gdalIsInitialized) {
-            throw new IllegalStateException("GDAL Loader not initialized.");
-        }
+        ensureGDALInitialised();
         return this.gdalVersionLoader;
     }
 
@@ -118,9 +128,7 @@ public final class GDALLoader {
      * @return the GDAL data type
      */
     public int getGDALDataType(int bandDataType) {
-        if (!this.gdalIsInitialized) {
-            throw new IllegalStateException("GDAL library not initialized");
-        }
+        ensureGDALInitialised();
         Integer gdalResult = this.bandToGDALDataTypes.get(bandDataType);
         if (gdalResult != null) {
             return gdalResult;
@@ -135,9 +143,7 @@ public final class GDALLoader {
      * @return the data type of the band
      */
     public int getBandDataType(int gdalDataType) {
-        if (!this.gdalIsInitialized) {
-            throw new IllegalStateException("GDAL library not initialized");
-        }
+        ensureGDALInitialised();
         for (Map.Entry<Integer, Integer> entry : this.bandToGDALDataTypes.entrySet()) {
             if (entry.getValue() == gdalDataType) {
                 return entry.getKey();
