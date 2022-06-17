@@ -96,10 +96,14 @@ public enum GDALVersion {
      */
     public static GDALVersion getGDALVersion() {
         if (GDALLoaderConfig.getInstance().useInstalledGDALLibrary() && INSTALLED_VERSION != null) {
-            logger.log(Level.INFO, () -> "Installed GDAL " + INSTALLED_VERSION.getId() + " set to be used by SNAP.");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, () -> "Installed GDAL " + INSTALLED_VERSION.getId() + " set to be used by SNAP.");
+            }
             return INSTALLED_VERSION;
         }
-        logger.log(Level.INFO, () -> "Internal GDAL " + INTERNAL_VERSION.getId() + " set to be used by SNAP.");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, () -> "Internal GDAL " + INTERNAL_VERSION.getId() + " set to be used by SNAP.");
+        }
         return INTERNAL_VERSION;
     }
     /**
@@ -165,8 +169,8 @@ public enum GDALVersion {
     private static Map<String,GDALVersion> retrieveInstalledVersions() {
         OSCategory osCategory = OSCategory.getOSCategory();
         String[] installedVersionsPaths = osCategory.getExecutableLocations(GDALINFIO_EXECUTABLE_NAME);
-        if(installedVersionsPaths.length<1){
-            logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used. (f0)");
+        if (installedVersionsPaths.length < 1) {
+            logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used.");
             return null;
         }
         Map<String,GDALVersion> gdalVersions = new LinkedHashMap<>();
@@ -189,7 +193,7 @@ public enum GDALVersion {
                     }
                 }
             } catch (IOException ignored) {
-                logger.log(Level.INFO, () -> "GDAL not found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used. (f1)");
+                logger.log(Level.WARNING, () -> "GDAL not found on system. Internal GDAL " + INTERNAL_VERSION.id + " from distribution will be used.");
             }
         }
         return gdalVersions;

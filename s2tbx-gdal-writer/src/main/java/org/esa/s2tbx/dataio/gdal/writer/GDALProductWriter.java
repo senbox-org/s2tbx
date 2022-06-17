@@ -257,6 +257,7 @@ public class GDALProductWriter extends AbstractProductWriter {
                 }
             }
             this.gdalDataset.delete();
+            this.gdalDataset = null;
         }
     }
 

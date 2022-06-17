@@ -1,7 +1,5 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
-import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.dataio.gdal.reader.GDALMetadataInspector;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
@@ -29,12 +27,8 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
     private final String pluginFormatName;
     protected final Set<String> extensions;
 
-    static {
-        GDALLoader.getInstance().initGDAL();
-    }
 
     protected AbstractDriverProductReaderPlugIn(String driverName, String driverDisplayName) {
-        GDALLoader.getInstance().initGDAL();
         this.extensions = new HashSet<>();
         this.driverName = driverName;
         this.driverDisplayName = driverDisplayName;
@@ -64,12 +58,10 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        if (GDALInstallInfo.INSTANCE.isPresent()) {
-            final String filePath = getInput(input).toString();
-            for (String extension : this.extensions) {
-                if (StringHelper.endsWithIgnoreCase(filePath, extension)) {
-                    return DecodeQualification.SUITABLE;
-                }
+        final String filePath = getInput(input).toString();
+        for (String extension : this.extensions) {
+            if (StringHelper.endsWithIgnoreCase(filePath, extension)) {
+                return DecodeQualification.SUITABLE;
             }
         }
         return DecodeQualification.UNABLE;

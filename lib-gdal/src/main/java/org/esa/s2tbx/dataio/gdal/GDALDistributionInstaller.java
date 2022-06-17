@@ -34,7 +34,9 @@ import java.util.logging.Logger;
         OSCategory osCategory = gdalVersion.getOsCategory();
         if (osCategory.getArchitecture() == null) {
             String msg = "No distribution folder found on " + osCategory.getOperatingSystemName() + ".";
-            logger.log(Level.INFO, msg);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, msg);
+            }
             throw new IllegalStateException(msg);
         }
         Path gdalNativeLibrariesRootFolderPath = gdalVersion.getNativeLibrariesRootFolderPath();
@@ -85,7 +87,9 @@ import java.util.logging.Logger;
         OSCategory osCategory = gdalVersion.getOsCategory();
         if (osCategory.getArchitecture() == null) {
             String msg = "No distribution folder found on " + osCategory.getOperatingSystemName() + ".";
-            logger.log(Level.INFO, msg);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, msg);
+            }
             throw new IllegalStateException(msg);
         }
         Path gdalNativeLibrariesRootFolderPath = gdalVersion.getNativeLibrariesRootFolderPath();
@@ -98,7 +102,7 @@ import java.util.logging.Logger;
         Path gdalDistributionRootFolderPath = installer.copyDistribution(gdalNativeLibrariesRootFolderPath, gdalVersion);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.INFO, "The GDAL JNI drivers has been copied on the local disk.");
+            logger.log(Level.FINE, "The GDAL JNI drivers has been copied on the local disk.");
         }
 
         if (logger.isLoggable(Level.FINE)) {

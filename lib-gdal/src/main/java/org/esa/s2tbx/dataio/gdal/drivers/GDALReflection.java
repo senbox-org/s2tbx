@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.drivers;
 
+import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.s2tbx.dataio.gdal.GDALLoader;
 
 import java.lang.reflect.Method;
@@ -61,6 +62,7 @@ class GDALReflection {
     }
 
     static Class<?> fetchGDALLibraryClass(String className) {
+        GDALLoader.ensureGDALInitialised();
         try {
             return Class.forName(className, false, GDALLoader.getInstance().getGDALVersionLoader());
         } catch (Exception ex) {
