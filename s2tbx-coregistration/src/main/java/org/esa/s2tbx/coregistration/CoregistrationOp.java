@@ -142,6 +142,8 @@ public class CoregistrationOp extends Operator {
                     slaveProduct.getName() + " having bands : " + Arrays.toString(slaveProduct.getBandGroup().toArray()));
         }
         try {
+	    pm.beginTask("performing coregistration", levels * radArray.length);
+	    checkForCancellation();
             getLogger().info("Started coregistration of products " + masterProduct.getName()
                     + "(" + masterProduct.getSceneRasterWidth() + "X" + masterProduct.getSceneRasterHeight() + ")"
                     + " and " + slaveProduct.getName()
@@ -341,9 +343,10 @@ public class CoregistrationOp extends Operator {
 
                         Runtime.getRuntime().gc();
                     }
+		    checkForCancellation();
+		    pm.worked(1);
                 }
             }
-
 
             xFactor = (float) sourceSlaveImage.getWidth() / processedSlaveImage.getWidth();
             yFactor = (float) sourceSlaveImage.getHeight() / processedSlaveImage.getHeight();
@@ -376,7 +379,6 @@ public class CoregistrationOp extends Operator {
                     originalSlaveBand.getRasterWidth(),
                     originalSlaveBand.getRasterHeight());
             targetBand.setSourceImage(targetImage);
-            targetProduct.addBand(targetBand);
 
             for (Band b : Arrays.asList(slaveProduct.getBands())) {
                 if (!b.getName().equals(hiddenSlaveBand)) {
@@ -393,6 +395,9 @@ public class CoregistrationOp extends Operator {
                     targetProduct.addBand(btBand);
 
                 }
+		else{
+		    targetProduct.addBand(targetBand);
+		}
             }
 
             getLogger().info("Finished coregistration in " + (System.currentTimeMillis() - startTime) / 1000f + "sec");
@@ -406,6 +411,7 @@ public class CoregistrationOp extends Operator {
                 getLogger().warning("During coregistration operation, temporary cache folder was not deleted!");
             }
         }
+	pm.done();
     }
 
     public static class Spi extends OperatorSpi {
