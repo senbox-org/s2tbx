@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 1.0.0
-OpenIDE-Module-Implementation-Version: 1.0.0
+OpenIDE-Module-Specification-Version: 9.0.0
+OpenIDE-Module-Implementation-Version: 9.0.0
 OpenIDE-Module-Name: Maja
-OpenIDE-Module-Display-Category: OTB application
+OpenIDE-Module-Display-Category: SNAP Supported Plugins
 AutoUpdate-Show-In-Client: false
 AutoUpdate-Essential-Module: false
 OpenIDE-Module-Java-Dependencies: Java > 1.8

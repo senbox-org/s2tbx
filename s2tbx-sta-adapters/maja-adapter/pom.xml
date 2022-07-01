@@ -7,6 +7,7 @@
         <groupId>org.esa.s2tbx</groupId>
         <version>9.0.0</version>
     </parent>
+    <version>9.0.0</version>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>maja-adapter</artifactId>
