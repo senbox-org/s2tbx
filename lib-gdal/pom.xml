@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.esa.s2tbx</groupId>
         <artifactId>s2tbx</artifactId>
-        <version>9.0.0-SNAPSHOT</version>
+        <version>10.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>lib-gdal</artifactId>
