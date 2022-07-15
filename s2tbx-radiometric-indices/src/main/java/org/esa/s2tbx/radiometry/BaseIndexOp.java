@@ -186,7 +186,7 @@ public abstract class BaseIndexOp extends Operator {
 
         initDefaultMasks();
 
-        String name = getBandName();
+        final String name = sourceProduct.getName() + "_" + getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
 
