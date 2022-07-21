@@ -41,26 +41,28 @@ public class WorldView2Constants {
 
     public static final String[] MINIMAL_PRODUCT_PATTERNS = new String[]{
             ".*_README\\.XML"};
-    public static final String[] BAND_MS1_ABSCALFACTOR_PATTERNS = new String[]{"/isd/imd/band_b/@abscalfactor",
-            "/isd/imd/band_g/@abscalfactor",
-            "/isd/imd/band_r/@abscalfactor",
-            "/isd/imd/band_n/@abscalfactor",
-            "/isd/imd/band_n2/@abscalfactor",
-            "/isd/imd/band_re/@abscalfactor",
-            "/isd/imd/band_y/@abscalfactor",
-            "/isd/imd/band_c/@abscalfactor"
-    };
-    public static final String[] BAND_MS1_EFFECTIVEBANDWIDTH_PATTERNS = new String[]{"/isd/imd/band_b/@effectivebandwidth",
-            "/isd/imd/band_g/@effectivebandwidth",
-            "/isd/imd/band_r/@effectivebandwidth",
-            "/isd/imd/band_n/@effectivebandwidth",
-            "/isd/imd/band_n2/@effectivebandwidth",
-            "/isd/imd/band_re/@effectivebandwidth",
-            "/isd/imd/band_y/@effectivebandwidth",
-            "/isd/imd/band_c/@effectivebandwidth"
-    };
-    public static final String BAND_P_ABSCALFACTOR = "/isd/imd/band_p/@abscalfactor";
-    public static final String BAND_P_EFFECTIVEBANDWIDTH = "/isd/imd/band_p/@effectivebandwidth";
+    public static final Map<String, String> BAND_ABSCALFACTOR_PATTERNS = new HashMap<String, String>() {{
+        put("Coastal", "/isd/imd/band_c/@abscalfactor");
+        put("Blue", "/isd/imd/band_b/@abscalfactor");
+        put("Green", "/isd/imd/band_g/@abscalfactor");
+        put("Yellow", "/isd/imd/band_y/@abscalfactor");
+        put("Red", "/isd/imd/band_r/@abscalfactor");
+        put("Red Edge", "/isd/imd/band_re/@abscalfactor");
+        put("NIR1", "/isd/imd/band_n/@abscalfactor");
+        put("NIR2", "/isd/imd/band_n2/@abscalfactor");
+        put("Pan", "/isd/imd/band_p/@abscalfactor");
+    }};
+    public static final Map<String, String> BAND_EFFECTIVEBANDWIDTH_PATTERNS = new HashMap<String, String>() {{
+        put("Coastal", "/isd/imd/band_c/@effectivebandwidth");
+        put("Blue", "/isd/imd/band_b/@effectivebandwidth");
+        put("Green", "/isd/imd/band_g/@effectivebandwidth");
+        put("Yellow", "/isd/imd/band_y/@effectivebandwidth");
+        put("Red", "/isd/imd/band_r/@effectivebandwidth");
+        put("Red Edge", "/isd/imd/band_re/@effectivebandwidth");
+        put("NIR1", "/isd/imd/band_n/@effectivebandwidth");
+        put("NIR2", "/isd/imd/band_n2/@effectivebandwidth");
+        put("Pan", "/isd/imd/band_p/@effectivebandwidth");
+    }};
 
     public static final String[] WORLDVIEW2_RGB_PROFILE = new String[]{"Red", "Green", "Blue"};
     public static final String WORLDVIEW2_UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
