@@ -395,6 +395,7 @@ public class PleiadesProductReader extends AbstractProductReader {
     }
 
     private static void addGMLMasks(Product target, ImageMetadata metadata, boolean isMultiSize, ProductSubsetDef subsetDef) {
+        ProductNodeGroup<Mask> maskGroup = target.getMaskGroup();
         List<ImageMetadata.MaskInfo> gmlMasks = metadata.getMasks();
         final Iterator<Color> colorIterator = ColorIterator.create();
         Band refBand = findReferenceBand(target, metadata.getRasterWidth());
@@ -410,9 +411,13 @@ public class PleiadesProductReader extends AbstractProductReader {
                 }
                 if (subsetDef == null || subsetDef.isNodeAccepted(maskName)) {
                     if (refBand != null) {
-                        target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
+                        if (!maskGroup.contains(maskName)) {
+                            target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
+                        }
                     } else {
-                        target.addMask(mask.name, node, mask.description, colorIterator.next(), 0.5);
+                        if (!maskGroup.contains(mask.name)) {
+                            target.addMask(mask.name, node, mask.description, colorIterator.next(), 0.5);
+                        }
                     }
                 }
             }
