@@ -25,7 +25,6 @@ import com.bc.ceres.swing.binding.Enablement;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.annotations.ParameterDescriptorFactory;
@@ -40,6 +39,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -70,8 +70,6 @@ class S2tbxMosaicFormModel {
     public static final String PROPERTY_CRS = "crs";
     public static final String PROPERTY_PIXEL_SIZE_X = "pixelSizeX";
     public static final String PROPERTY_PIXEL_SIZE_Y = "pixelSizeY";
-    public static final String PROPERTY_MAX_VALUE = "maxValue";
-    public static final String PROPERTY_MIN_VALUE = "minValue";
     public static final String PROPERTY_NATIVE_RESOLUTION = "nativeResolution";
     public static final String PROPERTY_OVERLAPPING = "overlappingMethod";
 
@@ -182,7 +180,10 @@ class S2tbxMosaicFormModel {
             bindingContext.bindEnabledState("pixelSizeY", false, enableNativeResolution(true));
         }
         /* update region selectable map bounds according to the SourceProducts status: REMOVE or NEW product(s) */
-        if (changeSourceProducts) updateRegionSelectableMapBounds(files);
+        if (changeSourceProducts) {
+            Line2D bounds = S2tbxMosaicOp.extractBounds(this.sourceProductMap.values().toArray(new Product[0]));
+            parentForm.setCardinalBounds(bounds.getX1(), bounds.getY1(), bounds.getX2(), bounds.getY2());
+        }
     }
 
 
@@ -199,77 +200,6 @@ class S2tbxMosaicFormModel {
     }
 
 
-    private void updateRegionSelectableMapBounds(File[] files){
-
-        /* set default values in case files.length == 0 */
-        double southBoundVal = 35.0;
-        double northBoundVal = 75.0;
-        double westBoundVal = -15.0;
-        double eastBoundVal = 30.0;
-
-        if ( (files.length >= 1) && (sourceProductMap.get(files[0]) != null) ) {
-            southBoundVal = computeLatitude(sourceProductMap.get(files[0]), PROPERTY_MIN_VALUE);
-            northBoundVal = computeLatitude(sourceProductMap.get(files[0]), PROPERTY_MAX_VALUE);
-            westBoundVal = computeLongitude(sourceProductMap.get(files[0]), PROPERTY_MIN_VALUE);
-            eastBoundVal = computeLongitude(sourceProductMap.get(files[0]), PROPERTY_MAX_VALUE);
-        }
-
-        for (int i = 1; i < files.length; i++) {
-            if (sourceProductMap.get(files[i]) != null) {
-                double southBoundValTemp = computeLatitude(sourceProductMap.get(files[i]), PROPERTY_MIN_VALUE);
-                double northBoundValTemp = computeLatitude(sourceProductMap.get(files[i]), PROPERTY_MAX_VALUE);
-                double westBoundValTemp = computeLongitude(sourceProductMap.get(files[i]), PROPERTY_MIN_VALUE);
-                double eastBoundValTemp = computeLongitude(sourceProductMap.get(files[i]), PROPERTY_MAX_VALUE);
-
-                if (southBoundValTemp < southBoundVal) southBoundVal = southBoundValTemp;
-                if (northBoundValTemp > northBoundVal) northBoundVal = northBoundValTemp;
-                if (westBoundValTemp < westBoundVal) westBoundVal = westBoundValTemp;
-                if (eastBoundValTemp > eastBoundVal) eastBoundVal = eastBoundValTemp;
-            }
-        }
-
-        parentForm.setCardinalBounds(southBoundVal, northBoundVal, westBoundVal,eastBoundVal);
-
-    }
-
-    private double computeLatitude(Product product, String level){
-        final GeoCoding sceneGeoCoding = product.getSceneGeoCoding();
-        Double[] latitudePoints = {
-                            sceneGeoCoding.getGeoPos(new PixelPos(0, 0), null).getLat(),
-                            sceneGeoCoding.getGeoPos(new PixelPos(0, product.getSceneRasterHeight()), null).getLat(),
-                            sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), 0), null).getLat(),
-                            sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), product.getSceneRasterHeight()), null).getLat()
-        };
-
-        switch(level) {
-            case PROPERTY_MIN_VALUE :
-                return Collections.min(Arrays.asList(latitudePoints));
-            case PROPERTY_MAX_VALUE :
-                return Collections.max(Arrays.asList(latitudePoints));
-            default :
-                return Double.MAX_VALUE;
-        }
-
-    }
-
-    private double computeLongitude(Product product, String level){
-        final GeoCoding sceneGeoCoding = product.getSceneGeoCoding();
-        Double[] longitudePoints = {
-                sceneGeoCoding.getGeoPos(new PixelPos(0, 0), null).getLon(),
-                sceneGeoCoding.getGeoPos(new PixelPos(0, product.getSceneRasterHeight()), null).getLon(),
-                sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), 0), null).getLon(),
-                sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), product.getSceneRasterHeight()), null).getLon()
-        };
-
-        switch(level) {
-            case PROPERTY_MIN_VALUE :
-                return Collections.min(Arrays.asList(longitudePoints));
-            case PROPERTY_MAX_VALUE :
-                return Collections.max(Arrays.asList(longitudePoints));
-            default :
-                return Double.MAX_VALUE;
-        }
-    }
 
     Map<String, Object> getParameterMap() {
         return parameterMap;
