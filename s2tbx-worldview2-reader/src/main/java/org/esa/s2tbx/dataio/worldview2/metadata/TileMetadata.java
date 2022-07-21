@@ -173,45 +173,17 @@ public class TileMetadata extends XmlMetadata {
             String[] lowerLeftRowOffset = result.getAttributeValues(WorldView2Constants.PATH_LOWER_LEFT_ROW_OFFSET);
             String[] lowerRightColumnOffset = result.getAttributeValues(WorldView2Constants.PATH_LOWER_RIGHT_COLUMN_OFFSET);
             String[] lowerRightRowOffset = result.getAttributeValues(WorldView2Constants.PATH_LOWER_RIGHT_ROW_OFFSET);
-            if (bandID.equalsIgnoreCase("MS1")) {
-                for (String pathFactor : WorldView2Constants.BAND_MS1_ABSCALFACTOR_PATTERNS) {
-                    String caseVal = pathFactor.substring(pathFactor.indexOf("_") + 1, pathFactor.lastIndexOf("/"));
-                    switch (caseVal) {
-                        case "b":
-                            abscalfactor.put("Blue", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
-                            break;
-                        case "n":
-                            abscalfactor.put("NIR1", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
-                            break;
-                        case "g":
-                            abscalfactor.put("Green", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
-                            break;
-                        case "r":
-                            abscalfactor.put("Red", Double.parseDouble(result.getAttributeValue(pathFactor, "0")));
-                            break;
-                    }
-
+            for (String bandName : WorldView2Constants.BAND_NAMES_MULTISPECTRAL_8_BANDS) {
+                String pathFactor = WorldView2Constants.BAND_ABSCALFACTOR_PATTERNS.get(bandName);
+                final double abscalfactorValue = Double.parseDouble(result.getAttributeValue(pathFactor, "0"));
+                if (abscalfactorValue != 0) {
+                    abscalfactor.put(bandName, abscalfactorValue);
                 }
-                for (String pathFactor : WorldView2Constants.BAND_MS1_EFFECTIVEBANDWIDTH_PATTERNS) {
-                    String caseVal = pathFactor.substring(pathFactor.indexOf("_") + 1, pathFactor.lastIndexOf("/"));
-                    switch (caseVal) {
-                        case "b":
-                            effectivebandwidth.put("Blue", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
-                            break;
-                        case "n":
-                            effectivebandwidth.put("NIR1", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
-                            break;
-                        case "g":
-                            effectivebandwidth.put("Green", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
-                            break;
-                        case "r":
-                            effectivebandwidth.put("Red", Double.parseDouble(result.getAttributeValue(pathFactor, "1")));
-                            break;
-                    }
+                pathFactor = WorldView2Constants.BAND_EFFECTIVEBANDWIDTH_PATTERNS.get(bandName);
+                final double effectivebandwidthValue = Double.parseDouble(result.getAttributeValue(pathFactor, "1"));
+                if (effectivebandwidthValue != 1) {
+                    effectivebandwidth.put(bandName, effectivebandwidthValue);
                 }
-            } else {
-                abscalfactor.put("Pan", Double.parseDouble(result.getAttributeValue(WorldView2Constants.BAND_P_ABSCALFACTOR, "0")));
-                effectivebandwidth.put("Pan", Double.parseDouble(result.getAttributeValue(WorldView2Constants.BAND_P_EFFECTIVEBANDWIDTH, "1")));
             }
 
             tileComponent.setTileNames(tileNames);
