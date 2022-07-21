@@ -523,9 +523,6 @@ public class PleiadesProductReader extends AbstractProductReader {
                     if (dataType != dataBufferType) {
                         throw new IllegalStateException("Different data type count: rowIndex=" + rowIndex + ", columnIndex=" + columnIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
                     }
-                    if (levelCount != cellLevelCount) {
-                        throw new IllegalStateException("Different level count: rowIndex="+rowIndex+", columnIndex="+columnIndex+", levelCount="+levelCount+", cellLevelCount="+cellLevelCount+".");
-                    }
                 }
                 GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, imagesMetadataParentPath, imageRelativeFilePath, localTempFolder);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
