@@ -22,6 +22,11 @@ public class Constants {
             "img_phr1[ab]_\\w{1,3}_\\d{3}",
             "img_phr1[ab]_\\w{1,3}_\\d{3}[/\\\\]dim_phr1[ab]_\\w{1,3}_\\d{15}_(sen|ort|prj)_\\d{9,10}(-\\d{1,3})?\\.xml",
             "img_phr1[ab]_\\w{1,3}_\\d{3}[/\\\\]img_phr1[ab]_\\w{1,3}_\\d{15}_(sen|ort|prj)_\\d{9,10}(-\\d{1,3})?_r\\d{1}c\\d{1}\\.(jp2|tif)"};
+
+    public static final String[] MINIMAL_FILES_PATTERN_LIST = new String[] {
+            MINIMAL_PATTERN_LIST[0],
+            MINIMAL_PATTERN_LIST[2],
+            MINIMAL_PATTERN_LIST[3]};
     public static final String[] RGB_PROFILE = new String[] { "B2", "B1", "B0" };
     public static final String ROOT_METADATA_FILE = "VOL_PHR.XML";
 
