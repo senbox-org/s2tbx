@@ -254,14 +254,16 @@ public class S2tbxFileArrayEditor {
 
     private void onMoveUpButton() {
         final List<File> selectedFiles = listComponent.getSelectedValuesList();
-        final int index = fileList.indexOf(selectedFiles.get(0));
-        if(index>0) {
-            List<File>copyOfSelectedFiles = new ArrayList<>();
-            copyOfSelectedFiles.addAll(selectedFiles);
-            selectedFiles.forEach(fileList::remove);
-            fileList.addAll(index-1,copyOfSelectedFiles);
-            listComponent.setListData(fileList.toArray(new File[fileList.size()]));
-            notifyListener();
+        if(selectedFiles.size() > 0) {
+            final int index = fileList.indexOf(selectedFiles.get(0));
+            if (index > 0) {
+                List<File> copyOfSelectedFiles = new ArrayList<>();
+                copyOfSelectedFiles.addAll(selectedFiles);
+                selectedFiles.forEach(fileList::remove);
+                fileList.addAll(index - 1, copyOfSelectedFiles);
+                listComponent.setListData(fileList.toArray(new File[fileList.size()]));
+                notifyListener();
+            }
         }
     }
 
@@ -271,14 +273,16 @@ public class S2tbxFileArrayEditor {
 
     private void onMoveDownButton() {
         final List<File> selectedFiles = listComponent.getSelectedValuesList();
-        final int index = fileList.indexOf(selectedFiles.get(selectedFiles.size()-1));
-        if(index<fileList.size()-1) {
-            List<File>copyOfSelectedFiles = new ArrayList<>();
-            copyOfSelectedFiles.addAll(selectedFiles);
-            selectedFiles.forEach(fileList::remove);
-            fileList.addAll(index+1,copyOfSelectedFiles);
-            listComponent.setListData(fileList.toArray(new File[fileList.size()]));
-            notifyListener();
+        if(selectedFiles.size() > 0) {
+            final int index = fileList.indexOf(selectedFiles.get(selectedFiles.size() - 1));
+            if (index < fileList.size() - 1) {
+                List<File> copyOfSelectedFiles = new ArrayList<>();
+                copyOfSelectedFiles.addAll(selectedFiles);
+                selectedFiles.forEach(fileList::remove);
+                fileList.addAll(index + 1, copyOfSelectedFiles);
+                listComponent.setListData(fileList.toArray(new File[fileList.size()]));
+                notifyListener();
+            }
         }
     }
 
