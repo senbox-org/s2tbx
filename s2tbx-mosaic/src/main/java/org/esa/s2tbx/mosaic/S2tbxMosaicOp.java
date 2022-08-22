@@ -107,9 +107,9 @@ public final class S2tbxMosaicOp extends Operator {
 
     @Parameter(description = "The western longitude.", interval = "[-180,180]", defaultValue = "0")
     double westBound;
-    @Parameter(description = "The northern latitude.", interval = "[-90,90]", defaultValue = "0")
+    @Parameter(description = "The northern latitude.", interval = "[-90,90]", defaultValue = "0.1")
     double northBound;
-    @Parameter(description = "The eastern longitude.", interval = "[-180,180]", defaultValue = "0")
+    @Parameter(description = "The eastern longitude.", interval = "[-180,180]", defaultValue = "0.1")
     double eastBound;
     @Parameter(description = "The southern latitude.", interval = "[-90,90]", defaultValue = "0")
     double southBound;
@@ -678,13 +678,13 @@ public final class S2tbxMosaicOp extends Operator {
 
     private void loadBoundsWhenNeeded(){
         Line2D bounds = extractBounds(this.sourceProducts);
-        if (this.northBound == 0) {
+        if (this.northBound == 0.1) {
             this.northBound = bounds.getX1();
         }
         if (this.southBound == 0) {
             this.southBound = bounds.getY1();
         }
-        if (this.eastBound == 0) {
+        if (this.eastBound == 0.1) {
             this.eastBound = bounds.getX2();
         }
         if (this.westBound == 0) {
