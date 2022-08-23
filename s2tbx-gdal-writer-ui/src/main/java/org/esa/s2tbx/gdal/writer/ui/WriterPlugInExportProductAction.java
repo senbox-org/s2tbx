@@ -39,8 +39,7 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
 
     @Override
     public boolean isEnabled() {
-        Product product = SnapApp.getDefault().getAppContext().getSelectedProduct();
-        return (product != null && GDALInstallInfo.INSTANCE.isPresent());
+        return (SnapApp.getDefault().getAppContext().getSelectedProduct() != null);
     }
 
     @Override
