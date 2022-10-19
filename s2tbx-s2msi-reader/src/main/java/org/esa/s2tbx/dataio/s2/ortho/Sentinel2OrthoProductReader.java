@@ -22,6 +22,10 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 
+import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
+import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
+import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
+import org.esa.s2tbx.dataio.gdal.reader.GDALMultiLevelSource;
 import org.esa.s2tbx.dataio.s2.CAMSReader;
 import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.s2tbx.dataio.s2.ECMWFTReader;
@@ -111,6 +115,7 @@ import java.awt.image.WritableRaster;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -529,8 +534,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if(offsets==null)
                 logger.warning("The metadata offset values are not accessible.");
         }
-        for (int i = 0; i < bandInfoList.size(); i++) {
-            BandInfo bandInfo = bandInfoList.get(i);
+        for (BandInfo bandInfo : bandInfoList) {
             Dimension defaultBandSize = sceneDescription
                     .getSceneDimension(bandInfo.getBandInformation().getResolution());
             if (subsetDef == null || subsetDef.isNodeAccepted(bandInfo.getBandName())) {
@@ -547,11 +551,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 int defaultBandHeight = mosaicMatrix.computeTotalHeight();
                 if (defaultBandSize.width != defaultBandWidth) {
                     throw new IllegalStateException("Invalid band width: nativeBandWidth=" + defaultBandSize.width
-                            + ", defaultBandWidth=" + defaultBandWidth);
+                                                            + ", defaultBandWidth=" + defaultBandWidth);
                 }
                 if (defaultBandSize.height != defaultBandHeight) {
                     throw new IllegalStateException("Invalid band height: nativeBandHeight=" + defaultBandSize.height
-                            + ", defaultBandHeight=" + defaultBandHeight);
+                                                            + ", defaultBandHeight=" + defaultBandHeight);
                 }
 
 
@@ -567,10 +571,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     bandBounds = new Rectangle(defaultBandWidth, defaultBandHeight);
                 } else {
                     GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
-                            defaultBandSize, null);
+                                                                    defaultBandSize, null);
                     bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding,
-                            bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth,
-                            defaultBandHeight, isMultiResolution());
+                                                                                    bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height, defaultBandWidth,
+                                                                                    defaultBandHeight, isMultiResolution());
                 }
                 if (!bandBounds.isEmpty()) {
                     Band band = buildBand(bandInfo, bandBounds.width, bandBounds.height, dataBufferType);
@@ -578,7 +582,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     band.setUnit(bandInfo.getBandInformation().getUnit());
 
                     GeoCoding geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
-                            defaultBandSize, bandBounds);
+                                                         defaultBandSize, bandBounds);
                     band.setGeoCoding(geoCoding);
 
                     if (geotiffOption) {
@@ -591,17 +595,25 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         product.addBand(band);
                     } else {
-                        AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
-                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(
-                                resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, bandIndexNumber,
-                                mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
+                        Path localFile = bandInfo.getTileIdToPathMap().values().iterator().next().getLocalFile();
+                        Dataset dataset = GDAL.open(localFile.toString(), GDALConst.gaReadonly());
+                        if (dataset == null) {
+                            throw new IOException("Cannot open " + localFile);
+                        }
+                        org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(1);
+                        GDALMultiLevelSource multiLevelSource =
+                                new GDALMultiLevelSource(localFile,
+                                                         dataBufferType, bandBounds,
+                                                         new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize()),
+                                                         bandIndexNumber, resolutionCount, band.getGeoCoding(),
+                                                         band.getNoDataValue(), defaultJAIReadTileSize);
+                        dataset.delete();
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
-                        if(offsets!=null && band.getUnit().matches("dl"))
-                        {
-                            for(String offsetStr: offsets) {
+                        if (offsets != null && band.getUnit().matches("dl")) {
+                            for (String offsetStr : offsets) {
                                 double offset = Double.parseDouble(offsetStr);
-                                band.setScalingOffset(offset/quantificationValue);
+                                band.setScalingOffset(offset / quantificationValue);
                             }
                         }
                         product.addBand(band);
@@ -616,8 +628,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             throws IOException {
         // Find a reference band for rescaling the bands at other resolution
         MultiLevelImage targetImage = null;
-        for (int i = 0; i < bandInfoList.size(); i++) {
-            BandInfo bandInfo = bandInfoList.get(i);
+        for (BandInfo bandInfo : bandInfoList) {
             if (bandInfo.getBandInformation().getResolution() == productResolution) {
                 Band referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
                 targetImage = referenceBand.getSourceImage();
@@ -798,8 +809,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         double mosaicOpSourceThreshold = 1.0d;
 
+        final String[] subType = maskInfo.getSubType();
         if (spectralInfo == null) {
-            for (int i = 0; i < maskInfo.getSubType().length; i++) {
+            for (int i = 0; i < subType.length; i++) {
                 // This mask is not specific to a band
                 // So we need one version of it for each resolution present in the band list
                 S2SpatialResolution resolution = S2SpatialResolution.R60M;
@@ -823,9 +835,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 Dimension defaultProductSize = sceneDescription.getSceneDimension(productResolution);
                 double pixelSize;
                 if (isMultiResolution()) {
-                    pixelSize = (double) referenceBandInfo.getBandInformation().getResolution().resolution;
+                    pixelSize = referenceBandInfo.getBandInformation().getResolution().resolution;
                 } else {
-                    pixelSize = (double) productResolution.resolution;
+                    pixelSize = productResolution.resolution;
                 }
                 Rectangle bandBounds;
                 if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
@@ -860,10 +872,16 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             defaultBandSize, bandBounds);
                     band.setGeoCoding(geoCoding);
 
-                    AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
-                    JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(resolutionCount,
-                            mosaicMatrix, bandBounds, imageToModelTransform, i, mosaicOpBackgroundValue,
-                            mosaicOpSourceThreshold, defaultJAIReadTileSize);
+                    Dataset dataset = GDAL.open(maskPath.getLocalFile().toString(), GDALConst.gaReadonly());
+                    if (dataset == null) {
+                        throw new IOException("Cannot open " + maskPath.getLocalFile());
+                    }
+                    org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(i + 1);
+                    GDALMultiLevelSource multiLevelSource =
+                            new GDALMultiLevelSource(maskPath.getLocalFile(), dataBufferType, bandBounds,
+                                                     new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize()), i,
+                                                     resolutionCount, band.getGeoCoding(), band.getNoDataValue(), defaultJAIReadTileSize);
+                    dataset.delete();
                     ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                     band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                     band.setNoDataValueUsed(false);
@@ -880,9 +898,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
         } else {
             Band band = null;
-            GeoCoding geoCoding = null;
-
-            for (int i = 0; i < maskInfo.getSubType().length; i++) {
+            GeoCoding geoCoding;
+            for (int i = 0; i < subType.length; i++) {
 
                 // // This mask is specific to a band
                 String bandName = spectralInfo.getPhysicalBand();
@@ -906,9 +923,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 Dimension defaultProductSize = sceneDescription.getSceneDimension(productResolution);
                 double pixelSize;
                 if (isMultiResolution()) {
-                    pixelSize = (double) spectralI.getResolution().resolution;
+                    pixelSize = spectralI.getResolution().resolution;
                 } else {
-                    pixelSize = (double) productResolution.resolution;
+                    pixelSize = productResolution.resolution;
                 }
                 Rectangle bandBounds;
                 if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
@@ -922,7 +939,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             defaultBandSize.width, defaultBandSize.height, isMultiResolution());
                 }
                 if (!bandBounds.isEmpty()) {
-                    if (maskInfo.isMultiBand() || (!maskInfo.isMultiBand() && i == 0)) {
+                    if (maskInfo.isMultiBand() || i == 0) {
 
                         Collection<String> bandMatrixTileIds = sceneDescription.getTileIds();
                         Map<String, VirtualPath> tileIdToPathMapT = new HashMap<String, VirtualPath>();
@@ -940,11 +957,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
                                 defaultBandSize, bandBounds);
                         band.setGeoCoding(geoCoding);
-                        AffineTransform imageToModelTransform = Product.findImageToModelTransform(band.getGeoCoding());
-
-                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(
-                                resolutionCount, mosaicMatrix, bandBounds, imageToModelTransform, i,
-                                mosaicOpBackgroundValue, mosaicOpSourceThreshold, defaultJAIReadTileSize);
+                        Dataset dataset = GDAL.open(maskPath.getLocalFile().toString(), GDALConst.gaReadonly());
+                        if (dataset == null) {
+                            throw new IOException("Cannot open " + maskPath.getLocalFile());
+                        }
+                        org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(i + 1);
+                        GDALMultiLevelSource multiLevelSource =
+                                new GDALMultiLevelSource(maskPath.getLocalFile(), dataBufferType, bandBounds,
+                                                         new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize()), i,
+                                                         resolutionCount, band.getGeoCoding(), band.getNoDataValue(), defaultJAIReadTileSize);
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         band.setNoDataValueUsed(false);
@@ -959,10 +980,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             product.addBand(band);
                             ProductUtils.copyGeoCoding(band, mask);
                             product.addMask(mask);
-                        }else
+                        } else {
                             product.addBand(band);
+                        }
                     }
-                    if(!maskInfo.isMultiBand()) {
+                    if (!maskInfo.isMultiBand()) {
                         String maskName = maskInfo.getSnapNameForBand(bandName, i);
                         if(maskInfo.getMainType().contains("MSK_DETFOO"))
                             maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
