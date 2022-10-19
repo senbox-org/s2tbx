@@ -966,6 +966,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                 new GDALMultiLevelSource(maskPath.getLocalFile(), dataBufferType, bandBounds,
                                                          new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize()), i,
                                                          resolutionCount, band.getGeoCoding(), band.getNoDataValue(), defaultJAIReadTileSize);
+                        dataset.delete();
                         ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                         band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
                         band.setNoDataValueUsed(false);
