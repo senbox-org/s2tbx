@@ -63,7 +63,7 @@ class GDALTileOpImage extends AbstractSubsetTileOpImage {
             try {
                 RenderedImage readTileImage = this.imageReader.read(levelDestinationX, levelDestinationY, levelDestinationWidth, levelDestinationHeight);
                 Raster imageRaster = readTileImage.getData();
-                int bandList[] = new int[]{0}; // the band index is zero
+                int[] bandList = new int[]{0}; // the band index is zero
                 Raster readBandRaster = imageRaster.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
                 levelDestinationRaster.setDataElements(levelDestinationRaster.getMinX(), levelDestinationRaster.getMinY(), readBandRaster);
             } catch (IOException ex) {
