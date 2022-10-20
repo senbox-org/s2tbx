@@ -51,8 +51,6 @@
         <module>s2tbx-biophysical</module>
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
-        <module>lib-gdal</module>
-        <module>lib-gdal-preferences-ui</module>
         <module>s2tbx-gdal-reader</module>
         <module>s2tbx-gdal-writer</module>
         <module>s2tbx-gdal-writer-ui</module>
