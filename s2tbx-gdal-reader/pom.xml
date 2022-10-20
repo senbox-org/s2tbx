@@ -49,14 +49,19 @@
             <artifactId>snap-geotiff</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
+            <groupId>org.esa.snap</groupId>
             <artifactId>lib-gdal</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>s2tbx-commons</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-javahelp</artifactId>
+            <version>${netbeans.version}</version>
         </dependency>
 
         <!-- JUnit -->
