@@ -6,7 +6,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>9.0.1-SNAPSHOT</version>
+        <version>9.0.1.1cv</version>
     </parent>
 
 
