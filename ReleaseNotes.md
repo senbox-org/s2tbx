@@ -1,6 +1,22 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+# New in S2TBX 9.0.1
+--------------------
+
+### List of solved issues
+
+#### Bug
+    * [SIITBX-493] Pleiades - error opening product
+    * [SIITBX-494] Radiometric indices don't use the name of the source product
+
+#### Improvement
+    * [SIITBX-492] Upgrade WorldView2 reader
+    * [SIITBX-495] Upgrade Multi Size Mosaic
+    * [SIITBX-496] Upgrade SPOT 6 reader
+    * [SIITBX-500] Improve SNAP startup time by initialising GDAL native library on first usage
+
+
 Changes in S2TBX 9.0
 --------------------
 
