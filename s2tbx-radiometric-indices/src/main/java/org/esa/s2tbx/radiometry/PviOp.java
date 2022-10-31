@@ -83,7 +83,8 @@ public class PviOp extends BaseIndexOp {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile pvi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile pvi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
             Tile pviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float pviValue;

@@ -91,7 +91,8 @@ public class McariOp extends BaseIndexOp{
             Tile red2Tile = getSourceTile(getSourceProduct().getBand(red2SourceBand), rectangle);
             Tile greenTile = getSourceTile(getSourceProduct().getBand(greenSourceBand), rectangle);
 
-            Tile mcari = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile mcari = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
             Tile mcariFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float mcariValue;

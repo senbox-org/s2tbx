@@ -79,7 +79,8 @@ public class Ndi45Op extends BaseIndexOp{
             Tile redB4Tile = getSourceTile(getSourceProduct().getBand(redSourceBand4), rectangle);
             Tile redB5Tile = getSourceTile(getSourceProduct().getBand(redSourceBand5), rectangle);
 
-            Tile ndi45 = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile ndi45 = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
             Tile ndi45Flags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ndi45Value;
