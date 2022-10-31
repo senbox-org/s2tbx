@@ -80,7 +80,8 @@ public class MndwiOp extends BaseIndexOp{
             Tile greenTile = getSourceTile(getSourceProduct().getBand(greenSourceBand), rectangle);
             Tile mirTile = getSourceTile(getSourceProduct().getBand(mirSourceBand), rectangle);
 
-            Tile mndwi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile mndwi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
             Tile mndwiFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float mndwiValue;

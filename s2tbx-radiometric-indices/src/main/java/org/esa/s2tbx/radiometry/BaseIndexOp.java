@@ -186,6 +186,7 @@ public abstract class BaseIndexOp extends Operator {
 
         initDefaultMasks();
 
+        // SIITBX-494 (add source band as prefix)
         final String name = sourceProduct.getName() + "_" + getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);

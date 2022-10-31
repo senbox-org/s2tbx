@@ -83,7 +83,8 @@ public class CiOp extends BaseIndexOp{
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile greenTile = getSourceTile(getSourceProduct().getBand(greenSourceBand), rectangle);
 
-            Tile ci = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile ci = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
             Tile ciFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ciValue;

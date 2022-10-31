@@ -102,7 +102,8 @@ public class S2repOp extends BaseIndexOp{
             Tile redB6Tile = getSourceTile(getSourceProduct().getBand(redSourceBand6), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile s2rep = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile s2rep = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
             Tile s2repFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float s2repValue;
