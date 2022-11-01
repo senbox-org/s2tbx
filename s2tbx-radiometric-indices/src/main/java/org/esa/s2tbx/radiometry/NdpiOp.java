@@ -101,7 +101,7 @@ public class NdpiOp extends BaseIndexOp{
             Tile mirTile = getSourceTile(getSourceProduct().getBand(mirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile ndpi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile ndpi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile ndpiFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ndpiValue;

@@ -94,7 +94,7 @@ public class Bi2Op extends BaseIndexOp{
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile bi2 = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile bi2 = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile bi2Flags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float bi2Value;

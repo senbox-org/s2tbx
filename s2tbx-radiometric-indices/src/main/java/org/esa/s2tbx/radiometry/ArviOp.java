@@ -96,7 +96,7 @@ public class ArviOp extends BaseIndexOp{
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile arvi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile arvi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile arviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float rbEquationValue;

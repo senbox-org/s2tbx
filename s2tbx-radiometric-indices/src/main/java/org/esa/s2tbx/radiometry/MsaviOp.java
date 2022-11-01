@@ -87,7 +87,7 @@ public class MsaviOp extends BaseIndexOp {
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile msavi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile msavi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile msaviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float msaviValue;
