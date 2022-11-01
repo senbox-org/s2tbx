@@ -81,7 +81,7 @@ public class TndviOp extends BaseIndexOp{
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile tndvi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile tndvi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile tndviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float tndviValue;

@@ -75,7 +75,7 @@ public class IpviOp extends BaseIndexOp {
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile ipvi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile ipvi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile ipviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ipviValue;

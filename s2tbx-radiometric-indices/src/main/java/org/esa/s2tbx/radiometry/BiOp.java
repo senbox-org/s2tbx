@@ -82,7 +82,7 @@ public class BiOp extends BaseIndexOp{
             Tile greenTile = getSourceTile(getSourceProduct().getBand(greenSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile bi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile bi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile biFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float biValue;

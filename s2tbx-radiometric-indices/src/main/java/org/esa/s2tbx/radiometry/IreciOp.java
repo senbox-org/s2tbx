@@ -103,7 +103,7 @@ public class IreciOp extends BaseIndexOp{
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile ireci = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile ireci = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile ireciFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ireciValue;

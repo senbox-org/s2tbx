@@ -82,7 +82,7 @@ public class NdtiOp extends BaseIndexOp{
             Tile greenTile = getSourceTile(getSourceProduct().getBand(greenSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile ndti = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile ndti = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile ndtiFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ndtiValue;

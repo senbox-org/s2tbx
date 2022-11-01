@@ -95,7 +95,7 @@ public class MtciOp extends BaseIndexOp{
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile mtci = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile mtci = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile mtciFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float mtciValue;

@@ -93,7 +93,7 @@ public class TsaviOp extends BaseIndexOp {
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile tsavi = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile tsavi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile tsaviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float tsaviValue;

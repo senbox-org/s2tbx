@@ -105,7 +105,7 @@ public class ReipOp extends BaseIndexOp{
             final float redB6B5SpectralWaveLengthDiff = ((Band)redB6Tile.getRasterDataNode()).getSpectralWavelength() - ((Band)redB5Tile.getRasterDataNode()).getSpectralWavelength();
 
             // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
-            Tile reip = targetTiles.get(targetProduct.getBandWithSuffix("_" + BAND_NAME));
+            Tile reip = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile reipFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float reipValue;
