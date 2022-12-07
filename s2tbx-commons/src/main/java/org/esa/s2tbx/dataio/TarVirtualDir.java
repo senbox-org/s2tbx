@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 /**
- * Private implementation of a virtual directory representing the contents of a tar file.
+ * Private implementation of a virtual directory representing the contents of a tar or a tar-gz file.
  */
 class TarVirtualDir extends VirtualDirEx {
 
@@ -51,12 +51,12 @@ class TarVirtualDir extends VirtualDirEx {
             }
         }
 
-        return path.substring(lastSepIndex + 1, path.length());
+        return path.substring(lastSepIndex + 1);
     }
 
     public static boolean isTgz(String filename) {
-        final String extension = FileUtils.getExtension(filename);
-        return (".tgz".equals(extension) || ".gz".equals(extension));
+        String lowerCaseFilename = filename.toLowerCase();
+        return lowerCaseFilename.endsWith(".tgz") || lowerCaseFilename.endsWith(".tar.gz");
     }
 
     public static boolean isTar(String filename) {
@@ -138,13 +138,13 @@ class TarVirtualDir extends VirtualDirEx {
     }
 
     @Override
-    public void finalize() throws Throwable {
+    protected void finalize() throws Throwable {
         super.finalize();
         close();
     }
 
     @Override
-    public File getTempDir() throws IOException {
+    public File getTempDir() {
         return this.extractDir;
     }
 
@@ -163,7 +163,7 @@ class TarVirtualDir extends VirtualDirEx {
                  BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
                  TarInputStream tis = buildTarInputStream(bufferedInputStream)) {
 
-                byte data[] = new byte[TRANSFER_BUFFER_SIZE];
+                byte[] data = new byte[TRANSFER_BUFFER_SIZE];
                 TarEntry entry;
                 String longLink = null;
                 while ((entry = tis.getNextEntry()) != null) {
@@ -228,13 +228,11 @@ class TarVirtualDir extends VirtualDirEx {
     }
 
     private TarInputStream buildTarInputStream(BufferedInputStream bufferedInputStream) throws IOException {
-        TarInputStream tis = null;
         if (isTgz(this.archiveFile.getFileName().toString())) {
-            tis = new TarInputStream(new GZIPInputStream(bufferedInputStream));
+            return new TarInputStream(new GZIPInputStream(bufferedInputStream));
         } else {
-            tis = new TarInputStream(bufferedInputStream);
+            return new TarInputStream(bufferedInputStream);
         }
-        return tis;
     }
 
     private void ensureDirectory(File targetDir) throws IOException {
@@ -253,7 +251,7 @@ class TarVirtualDir extends VirtualDirEx {
              TarInputStream tis = buildTarInputStream(bufferedInputStream)) {
 
             fileNames = new ArrayList<>();
-            byte data[] = new byte[TRANSFER_BUFFER_SIZE];
+            byte[] data = new byte[TRANSFER_BUFFER_SIZE];
             TarEntry entry;
             String longLink = null;
             while ((entry = tis.getNextEntry()) != null) {
@@ -282,6 +280,6 @@ class TarVirtualDir extends VirtualDirEx {
             // cannot open/read tar, list will be empty
             fileNames = new ArrayList<>();
         }
-        return fileNames.toArray(new String[fileNames.size()]);
+        return fileNames.toArray(new String[0]);
     }
 }
