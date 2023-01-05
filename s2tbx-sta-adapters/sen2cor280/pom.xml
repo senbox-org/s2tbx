@@ -5,9 +5,9 @@
     <parent>
         <artifactId>s2tbx-sta-adapters</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>9.0.1-SNAPSHOT</version>
+        <version>9.0.0</version>
     </parent>
-    <version>9.0.1-SNAPSHOT</version>
+    <version>9.0.0</version>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sen2cor280</artifactId>

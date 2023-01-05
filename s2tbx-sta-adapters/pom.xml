@@ -6,7 +6,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>9.0.1-SNAPSHOT</version>
+        <version>9.0.0</version>
     </parent>
 
     <artifactId>s2tbx-sta-adapters</artifactId>
@@ -20,6 +20,7 @@
         <module>sen2cor255</module>
         <module>sen2cor280</module>
         <module>sen2cor290</module>
+        <module>sen2cor211</module>
         <module>sen2three</module>
         <module>orfeotoolbox</module>
         <module>snaphu-unwrapping</module>
