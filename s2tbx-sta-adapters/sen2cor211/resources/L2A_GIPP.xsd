@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="Flags">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="WV_Correction"/>
+				<xs:element ref="VIS_Update_Mode"/>
+				<xs:element ref="WV_Watermask"/>
+				<xs:element ref="Cirrus_Correction"/>
+				<xs:element ref="DEM_Terrain_Correction"/>
+				<xs:element ref="BRDF_Correction"/>
+				<xs:element ref="BRDF_Lower_Bound"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Product_DOI">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Lib_Dir">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="lib"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Median_Filter">
+		<xs:simpleType>
+			<xs:restriction base="xs:byte">
+				<xs:minInclusive value="0"/>
+				<xs:maxInclusive value="10"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Nr_Threads">
+		<xs:simpleType>
+			<xs:union>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="AUTO"/>
+					</xs:restriction>
+				</xs:simpleType>
+				<xs:simpleType>
+					<xs:restriction base="xs:unsignedByte">
+						<xs:minInclusive value="1"/>
+						<xs:maxInclusive value="8"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:union>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Look_Up_Tables">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Aerosol_Type"/>
+				<xs:element ref="Mid_Latitude"/>
+				<xs:element ref="Ozone_Content"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Calibration">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Adj_Km"/>
+				<xs:element ref="Visibility"/>
+				<xs:element ref="Altitude"/>
+				<xs:element ref="Smooth_WV_Map"/>
+				<xs:element ref="WV_Threshold_Cirrus"/>
+                <xs:element ref="Database_Compression_Level"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Log_Level">
+		<!-- can be: NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="INFO"/>
+				<xs:enumeration value="NOTSET"/>
+				<xs:enumeration value="DEBUG"/>
+				<xs:enumeration value="WARNING"/>
+				<xs:enumeration value="ERROR"/>
+				<xs:enumeration value="CRITICAL"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+    <xs:element name="Region_Of_Interest">
+        <xs:annotation>
+            <xs:documentation>ACIXS 2 scaling parameter</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="row0" default="5490">
+                    <xs:annotation>
+                        <xs:documentation>Row midpoint of Region of Interest</xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:union>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+									<xs:enumeration value="OFF"/>
+                                    <xs:enumeration value="AUTO"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:unsignedInt">
+                                    <xs:minInclusive value="0"/>
+                                    <xs:maxInclusive value="10980"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:union>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="col0" default="5490">
+                    <xs:annotation>
+                        <xs:documentation>Column midpoint of Region of Interest</xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:union>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+									<xs:enumeration value="OFF"/>
+                                    <xs:enumeration value="AUTO"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:unsignedInt">
+                                    <xs:minInclusive value="0"/>
+                                    <xs:maxInclusive value="10980"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:union>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="nrow_win" default="10980">
+                    <xs:annotation>
+                        <xs:documentation>Row Window Size</xs:documentation>
+                    </xs:annotation>
+					<xs:simpleType>
+						<xs:union>
+							<xs:simpleType>
+                                <xs:restriction base="xs:string">
+									<xs:enumeration value="OFF"/>
+                                    <xs:enumeration value="AUTO"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+							<xs:simpleType>
+                        		<xs:restriction base="xs:unsignedInt">
+                            		<xs:minInclusive value="0"/>
+                            		<xs:maxInclusive value="10980"/>
+                        		</xs:restriction>
+                    		</xs:simpleType>
+						</xs:union>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="ncol_win" default="10980">
+                    <xs:annotation>
+                        <xs:documentation>Column Window Size</xs:documentation>
+                    </xs:annotation>
+					<xs:simpleType>
+						<xs:union>
+							<xs:simpleType>
+                                <xs:restriction base="xs:string">
+									<xs:enumeration value="OFF"/>
+                                    <xs:enumeration value="AUTO"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+							<xs:simpleType>
+                        		<xs:restriction base="xs:unsignedInt">
+                            		<xs:minInclusive value="0"/>
+                            		<xs:maxInclusive value="10980"/>
+                        		</xs:restriction>
+                    		</xs:simpleType>
+						</xs:union>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+	<xs:element name="Generate_DEM_Output">
+		<!-- boolean can be: TRUE or FALSE -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="TRUE"/>
+				<xs:enumeration value="FALSE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Force_Exit_On_DEM_Error">
+		<!-- boolean can be: TRUE or FALSE -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="TRUE"/>
+				<xs:enumeration value="FALSE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Generate_TCI_Output">
+		<!-- boolean can be: TRUE or FALSE -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="TRUE"/>
+				<xs:enumeration value="FALSE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Generate_DDV_Output">
+		<!-- boolean can be: TRUE or FALSE -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="TRUE"/>
+				<xs:enumeration value="FALSE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Handle_L1C_QLT_Mask">
+		<!-- boolean can be: TRUE or FALSE -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="TRUE"/>
+				<xs:enumeration value="FALSE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Downsample_20_to_60">
+		<!-- boolean can be: TRUE or FALSE -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="TRUE"/>
+				<xs:enumeration value="FALSE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Aerosol_Type">
+		<!-- can be: RURAL or MARITIME -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="RURAL"/>
+				<xs:enumeration value="MARITIME"/>
+				<xs:enumeration value="AUTO"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Mid_Latitude">
+		<!-- can be: SUMMER or WINTER -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="SUMMER"/>
+				<xs:enumeration value="WINTER"/>
+				<xs:enumeration value="AUTO"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="PSD_Version">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="DEFAULT"/>
+				<xs:enumeration value="14.6"/>
+				<xs:enumeration value="14.7"/>
+				<xs:enumeration value="14.8"/>
+				<xs:enumeration value="14.9"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="PSD_Scheme">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="UP_Scheme_1C"/>
+				<xs:element ref="UP_Scheme_2A"/>
+				<xs:element ref="Tile_Scheme_1C"/>
+				<xs:element ref="Tile_Scheme_2A"/>
+				<xs:element ref="DS_Scheme_1C"/>
+				<xs:element ref="DS_Scheme_2A"/>
+			</xs:sequence>
+			<xs:attribute name="PSD_Version">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="4"/>
+						<xs:pattern value="[0-9][0-9]\.[0-9]"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="PSD_Reference">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="S2(.)+"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Ozone_Content">
+		<!-- an enumarated unsigned integer value as given below:
+        The atmospheric temperature profile and ozone content:
+      	"000" means: get best approximation from metadata (this is smallest difference between metadata and column DU)
+      	
+        For midlatitude summer atmosphere:
+        "f" 250 DU
+        "g" 290 DU
+        "h" 331 DU (standard MS)
+        "i" 370 DU
+        "j" 410 DU
+        "k" 450 DU
+        
+        For midlatitude winter atmosphere:
+        "t" 250 DU
+        "u" 290 DU
+        "v" 330 DU
+        "w" 377 DU (standard MW)
+        "x" 420 DU
+        "y" 460 DU
+       -->
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedInt">
+				<xs:enumeration value="0"/>
+				<xs:enumeration value="250"/>
+				<xs:enumeration value="290"/>
+				<xs:enumeration value="330"/>
+				<xs:enumeration value="331"/>
+				<xs:enumeration value="370"/>
+				<xs:enumeration value="377"/>
+				<xs:enumeration value="410"/>
+				<xs:enumeration value="420"/>
+				<xs:enumeration value="450"/>
+				<xs:enumeration value="460"/>
+			</xs:restriction>
+
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="DS_Scheme_1C">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="S2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="DS_Scheme_2A">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="S2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="UP_Scheme_1C">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="S2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="UP_Scheme_2A">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="S2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="GIPP_Scheme">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="L2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="SC_Scheme">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="L2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="AC_Scheme">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="L2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="PB_Scheme">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="L2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="QI_Scheme">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Product_Generator">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<!-- <xs:enumeration value="NONE"/>  -->
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="DEM_Directory">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<!-- <xs:enumeration value="NONE"/>  -->
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="DEM_Reference" type="xs:anyURI"/>
+	<xs:element name="Common_Section">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Log_Level"/>
+                <xs:element ref="Region_Of_Interest"/>
+				<xs:element ref="Product_DOI"/>
+				<xs:element ref="Nr_Threads"/>
+				<xs:element ref="Product_Generator"/>
+				<xs:element ref="DEM_Directory"/>
+				<xs:element ref="DEM_Reference"/>
+				<xs:element ref="Generate_DEM_Output"/>
+				<xs:element ref="Force_Exit_On_DEM_Error"/>
+                <xs:element ref="Generate_TCI_Output"/>
+                <xs:element ref="Generate_DDV_Output"/>
+				<xs:element ref="Handle_L1C_QLT_Mask"/>
+                <xs:element ref="Downsample_20_to_60"/>
+				<xs:element ref="PSD_Version"/>
+				<xs:element ref="PSD_Scheme" maxOccurs="unbounded"/>
+				<xs:element ref="GIPP_Scheme"/>
+				<xs:element ref="SC_Scheme"/>
+				<xs:element ref="AC_Scheme"/>
+				<xs:element ref="PB_Scheme"/>
+				<xs:element ref="QI_Scheme"/>
+                <!-- xs:element ref="IMG_Output_Format"/>
+                <xs:element ref="COG_Format"/ -->
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Tile_Scheme_1C">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="S2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Tile_Scheme_2A">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value="S2(.)+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="BRDF_Correction">
+		<xs:simpleType>
+			<xs:restriction base="xs:byte">
+				<xs:enumeration value="0"/>
+				<xs:enumeration value="1"/>
+				<xs:enumeration value="2"/>
+				<!--xs:enumeration value="11"/>
+				<xs:enumeration value="12"/>
+				<xs:enumeration value="21"/>
+				<xs:enumeration value="22"/-->
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="VIS_Update_Mode">
+		<xs:simpleType>
+			<xs:restriction base="xs:byte">
+				<xs:enumeration value="0"/>
+				<xs:enumeration value="1"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="BRDF_Lower_Bound">
+		<xs:simpleType>
+			<xs:restriction base="xs:decimal">
+				<xs:minInclusive value="0.1"/>
+				<xs:maxInclusive value="0.25"/>
+				<!-- from the ATDB -->
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+    <xs:element name="IMG_Output_Format">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="JP2"/>
+                <xs:enumeration value="COG"/>
+                <xs:enumeration value="TIF"/>
+                <xs:enumeration value="RAW"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+    <xs:element name="COG_Format">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Compression_Algorithm">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="DEFLATE"/>
+                            <xs:enumeration value="LZW"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="Resampling_Method">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="AVERAGE"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="Downsampling_Levels">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="DL_10">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:token">
+                                        <xs:pattern value="[1-9][0-9]*(, ?[1-9][0-9]*)*"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="DL_20">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:token">
+                                        <xs:pattern value="[1-9][0-9]*(, ?[1-9][0-9]*)*"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="DL_60">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:token">
+                                        <xs:pattern value="[1-9][0-9]*(, ?[1-9][0-9]*)*"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Internal_Tiling">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:token">
+                            <xs:pattern value="[1-9][0-9]*(, ?[1-9][0-9]*)*"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="Internal_Overview">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:token">
+                            <xs:pattern value="[1-9][0-9]*(, ?[1-9][0-9]*)*"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="Interleave">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="BAND"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+	<xs:element name="Scene_Classification">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Filters"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Filters">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Median_Filter"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Atmospheric_Correction">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Look_Up_Tables"/>
+				<xs:element ref="Flags"/>
+				<xs:element ref="Calibration"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Level-2A_Ground_Image_Processing_Parameter">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Common_Section"/>
+				<xs:element ref="Scene_Classification"/>
+				<xs:element ref="Atmospheric_Correction"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Adj_Km">
+		<xs:simpleType>
+			<xs:restriction base="xs:decimal">
+				<xs:minInclusive value="0"/>
+				<xs:maxInclusive value="10"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Altitude">
+		<xs:simpleType>
+			<xs:restriction base="xs:decimal">
+				<xs:minInclusive value="0"/>
+				<xs:maxInclusive value="2.5"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="DEM_Terrain_Correction">
+		<!-- boolean can be: TRUE or FALSE -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="TRUE"/>
+				<xs:enumeration value="FALSE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Visibility">
+		<xs:simpleType>
+			<xs:restriction base="xs:decimal">
+				<xs:minInclusive value="5"/>
+				<xs:maxInclusive value="120"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="WV_Watermask">
+		<xs:simpleType>
+			<xs:restriction base="xs:byte">
+				<xs:enumeration value="0"/>
+				<xs:enumeration value="1"/>
+				<xs:enumeration value="2"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Smooth_WV_Map">
+		<xs:simpleType>
+			<xs:restriction base="xs:decimal">
+				<xs:minInclusive value="0"/>
+				<xs:maxInclusive value="300"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="WV_Correction">
+		<xs:simpleType>
+			<xs:restriction base="xs:byte">
+				<xs:minInclusive value="0"/>
+				<xs:maxInclusive value="1"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Cirrus_Correction">
+		<!-- boolean can be: TRUE or FALSE -->
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="TRUE"/>
+				<xs:enumeration value="FALSE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="WV_Threshold_Cirrus">
+		<xs:simpleType>
+			<xs:restriction base="xs:decimal">
+				<xs:minInclusive value="0.1"/>
+				<xs:maxInclusive value="1.0"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Database_Compression_Level">
+		<xs:simpleType>
+			<xs:restriction base="xs:byte">
+				<xs:minInclusive value="0"/>
+				<xs:maxInclusive value="9"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+</xs:schema>
