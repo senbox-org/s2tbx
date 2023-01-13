@@ -1,9 +1,10 @@
 <operator>
-  <name>Sen2Cor211</name>
+  <name>Sen2Cor 2.11.0</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
+  <!-- This alias should be identical with the one from manifest.mf: OpenIDE-Module-Alias -->
   <alias>Sen2Cor 2.11.0</alias>
   <label>SEN2COR 2.11.0</label>
-  <version>211</version>
+  <version>2.11.0</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
   <authors></authors>
   <copyright></copyright>
