@@ -2,6 +2,10 @@
 --resolution
 $resolution
 #end
+#if($outputDir)
+--output_dir
+$outputDir
+#end
 #if($sourceProduct.FileLocation.Name.endsWith(".xml"))
 $sourceProduct.FileLocation.ParentFile
 #else
