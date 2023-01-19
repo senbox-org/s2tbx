@@ -19,12 +19,12 @@ package org.esa.s2tbx.dataio.gdal.writer;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.lib.gdal.activator.GDALDriverInfo;
-import org.esa.s2tbx.dataio.gdal.GDALLoader;
-import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
-import org.esa.s2tbx.dataio.gdal.drivers.Driver;
-import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
-import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
-import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
+import org.esa.snap.dataio.gdal.GDALLoader;
+import org.esa.snap.dataio.gdal.drivers.Dataset;
+import org.esa.snap.dataio.gdal.drivers.Driver;
+import org.esa.snap.dataio.gdal.drivers.GDAL;
+import org.esa.snap.dataio.gdal.drivers.GDALConst;
+import org.esa.snap.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.snap.core.dataio.AbstractProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -201,7 +201,7 @@ public class GDALProductWriter extends AbstractProductWriter {
 
         Product sourceProduct = getSourceProduct();
         int bandIndex = sourceProduct.getBandIndex(sourceBand.getName());
-        org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = this.gdalDataset.getRasterBand(bandIndex + 1);
+        org.esa.snap.dataio.gdal.drivers.Band gdalBand = this.gdalDataset.getRasterBand(bandIndex + 1);
         if (gdalBand == null) {
             throw new NullPointerException("Failed creating the band with index " + bandIndex + " to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
         }

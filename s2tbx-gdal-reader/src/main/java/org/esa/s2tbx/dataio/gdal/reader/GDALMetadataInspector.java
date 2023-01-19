@@ -3,8 +3,8 @@ package org.esa.s2tbx.dataio.gdal.reader;
 import org.esa.s2tbx.commons.VirtualFile;
 import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.s2tbx.dataio.gdal.drivers.Band;
-import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
+import org.esa.snap.dataio.gdal.drivers.Band;
+import org.esa.snap.dataio.gdal.drivers.Dataset;
 
 import java.io.IOException;
 import java.nio.file.Path;

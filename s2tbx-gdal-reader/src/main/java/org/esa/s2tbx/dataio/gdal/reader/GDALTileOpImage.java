@@ -1,8 +1,8 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
-import org.esa.s2tbx.dataio.gdal.drivers.*;
 import org.esa.snap.core.image.AbstractSubsetTileOpImage;
 import org.esa.snap.core.image.ImageReadBoundsSupport;
+import org.esa.snap.dataio.gdal.drivers.*;
 //import org.esa.snap.core.util.ImageUtils;
 
 import javax.media.jai.PlanarImage;
