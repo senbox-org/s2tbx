@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
-import org.esa.s2tbx.dataio.gdal.GDALVersion;
+import org.esa.snap.dataio.gdal.GDALVersion;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.dataio.geotiff.Utils;
 

@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
 import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.s2tbx.dataio.gdal.GDALLoader;
+import org.esa.snap.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.dataio.gdal.reader.GDALMetadataInspector;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;

@@ -22,9 +22,9 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 
-import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
-import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
-import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
+import org.esa.snap.dataio.gdal.drivers.Dataset;
+import org.esa.snap.dataio.gdal.drivers.GDAL;
+import org.esa.snap.dataio.gdal.drivers.GDALConst;
 import org.esa.s2tbx.dataio.gdal.reader.GDALMultiLevelSource;
 import org.esa.s2tbx.dataio.s2.CAMSReader;
 import org.esa.s2tbx.dataio.s2.ColorIterator;
@@ -593,7 +593,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         if (dataset == null) {
                             throw new IOException("Cannot open " + localFile);
                         }
-                        org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(1);
+                        org.esa.snap.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(1);
                         GDALMultiLevelSource multiLevelSource =
                                 new GDALMultiLevelSource(localFile,
                                                          dataBufferType, bandBounds,
@@ -869,7 +869,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     if (dataset == null) {
                         throw new IOException("Cannot open " + maskPath.getLocalFile());
                     }
-                    org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(i + 1);
+                    org.esa.snap.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(i + 1);
                     GDALMultiLevelSource multiLevelSource =
                             new GDALMultiLevelSource(maskPath.getLocalFile(), dataBufferType, bandBounds,
                                                      new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize()), i,
@@ -954,7 +954,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         if (dataset == null) {
                             throw new IOException("Cannot open " + maskPath.getLocalFile());
                         }
-                        org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(i + 1);
+                        org.esa.snap.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(i + 1);
                         GDALMultiLevelSource multiLevelSource =
                                 new GDALMultiLevelSource(maskPath.getLocalFile(), dataBufferType, bandBounds,
                                                          new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize()), i,
