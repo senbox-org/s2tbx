@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="References">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Snow_Map"/>
+				<xs:element ref="ESACCI_WaterBodies_Map"/>
+				<xs:element ref="ESACCI_LandCover_Map"/>
+				<xs:element ref="ESACCI_SnowCondition_Map_Dir"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Snow_Map">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="ESACCI_WaterBodies_Map">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="ESACCI_LandCover_Map">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="ESACCI_SnowCondition_Map_Dir">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="NO_DATA">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="0"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="SATURATED_DEFECTIVE">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="1"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="DARK_FEATURES">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="2"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="CLOUD_SHADOWS">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="3"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="VEGETATION">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="4"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>	
+	<xs:element name="NOT_VEGETATED">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="5"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="WATER">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="6"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="UNCLASSIFIED">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="7"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="MEDIUM_PROBA_CLOUDS">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="8"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="HIGH_PROBA_CLOUDS">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="9"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="THIN_CIRRUS">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="10"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="SNOW_ICE">
+		<xs:simpleType>
+			<xs:restriction base="xs:unsignedByte">
+				<xs:enumeration value="11"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="RV_B2" type="Th"/>
+	<xs:element name="RV_B3" type="Th"/>
+	<xs:element name="RV_B4" type="Th"/>
+	<xs:element name="RV_B8" type="Th"/>
+	<xs:element name="T_SDW" type="Th"/>
+	<xs:element name="RV_B11" type="Th"/>
+	<xs:element name="RV_B12" type="Th"/>
+	<xs:element name="T1_B02" type="Th"/>
+	<xs:element name="T1_B04" type="Th"/>
+	<xs:element name="T1_B10" type="Th"/>
+	<xs:element name="T1_B12" type="Th"/>
+	<xs:element name="T1_B8A" type="Th"/>
+	<xs:element name="T2_B02" type="Th"/>
+	<xs:element name="T2_B04" type="Th"/>
+	<xs:element name="T2_B10" type="Th"/>
+	<xs:element name="T2_B12" type="Th"/>
+	<xs:element name="T2_B8A" type="Th"/>
+	<xs:element name="T11_B02" type="Th"/>
+	<xs:element name="T12_B02" type="Th"/>
+	<xs:element name="T1_NDVI" type="Th"/>
+	<xs:element name="T1_SNOW" type="Th"/>
+	<xs:element name="T21_B12" type="Th"/>
+	<xs:element name="T22_B12" type="Th"/>
+	<xs:element name="T2_NDVI" type="Th"/>
+	<xs:element name="T2_SNOW" type="Th"/>
+	<xs:element name="T_B02_B12" type="Th"/>
+	<xs:element name="T_CLOUD_HP" type="Th"/>
+	<xs:element name="T_CLOUD_LP" type="Th"/>
+	<xs:element name="T_CLOUD_MP" type="Th"/>
+	<xs:element name="T1_NDSI_CLD" type="Th"/>
+	<xs:element name="T1_NDSI_SNW" type="Th"/>
+	<xs:element name="T2_NDSI_CLD" type="Th"/>
+	<xs:element name="T2_NDSI_SNW" type="Th"/>
+	<xs:element name="T1_R_B02_B04" type="Th"/>
+	<xs:element name="T1_R_B8A_B03" type="Th"/>
+	<xs:element name="T1_R_B8A_B11" type="Th"/>
+	<xs:element name="T2_R_B02_B04" type="Th"/>
+	<xs:element name="T2_R_B8A_B03" type="Th"/>
+	<xs:element name="T2_R_B8A_B11" type="Th"/>
+	<xs:element name="T11_R_B02_B11" type="Th"/>
+	<xs:element name="T12_R_B02_B11" type="Th"/>
+	<xs:element name="T21_R_B02_B11" type="Th"/>
+	<xs:element name="T22_R_B02_B11" type="Th"/>
+		
+	<xs:element name="Thresholds">
+		<xs:complexType>
+			<xs:all>
+				<xs:element ref="T1_B02"/>
+				<xs:element ref="T2_B02"/>
+				<xs:element ref="T1_B04"/>
+				<xs:element ref="T2_B04"/>
+				<xs:element ref="T1_B8A"/>
+				<xs:element ref="T2_B8A"/>
+				<xs:element ref="T1_B10"/>
+				<xs:element ref="T2_B10"/>
+				<xs:element ref="T1_B12"/>
+				<xs:element ref="T2_B12"/>
+				<xs:element ref="T_B02_B12"/>
+				<xs:element ref="T_CLOUD_LP"/>
+				<xs:element ref="T_CLOUD_MP"/>
+				<xs:element ref="T_CLOUD_HP"/>
+				<xs:element ref="T1_NDSI_CLD"/>
+				<xs:element ref="T2_NDSI_CLD"/>
+				<xs:element ref="T1_NDSI_SNW"/>
+				<xs:element ref="T2_NDSI_SNW"/>
+				<xs:element ref="T1_NDVI"/>
+				<xs:element ref="T2_NDVI"/>
+				<xs:element ref="T1_SNOW"/>
+				<xs:element ref="T2_SNOW"/>
+				<xs:element ref="T1_R_B02_B04"/>
+				<xs:element ref="T2_R_B02_B04"/>
+				<xs:element ref="T1_R_B8A_B03"/>
+				<xs:element ref="T2_R_B8A_B03"/>
+				<xs:element ref="T1_R_B8A_B11"/>
+				<xs:element ref="T2_R_B8A_B11"/>
+				<xs:element ref="T11_B02"/>
+				<xs:element ref="T12_B02"/>
+				<xs:element ref="T11_R_B02_B11"/>
+				<xs:element ref="T12_R_B02_B11"/>
+				<xs:element ref="T21_R_B02_B11"/>
+				<xs:element ref="T22_R_B02_B11"/>
+				<xs:element ref="T21_B12"/>
+				<xs:element ref="T22_B12"/>
+				<xs:element ref="RV_B2"/>
+				<xs:element ref="RV_B3"/>
+				<xs:element ref="RV_B4"/>
+				<xs:element ref="RV_B8"/>
+				<xs:element ref="RV_B11"/>
+				<xs:element ref="RV_B12"/>
+				<xs:element ref="T_SDW"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Classificators">
+		<xs:complexType>
+			<xs:all>
+				<xs:element ref="NO_DATA"/>
+				<xs:element ref="SATURATED_DEFECTIVE"/>
+				<xs:element ref="DARK_FEATURES"/>
+				<xs:element ref="CLOUD_SHADOWS"/>
+				<xs:element ref="VEGETATION"/>
+				<xs:element ref="NOT_VEGETATED"/>
+				<xs:element ref="WATER"/>
+				<xs:element ref="UNCLASSIFIED"/>
+				<xs:element ref="MEDIUM_PROBA_CLOUDS"/>
+				<xs:element ref="HIGH_PROBA_CLOUDS"/>
+				<xs:element ref="THIN_CIRRUS"/>
+				<xs:element ref="SNOW_ICE"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="Scene_Classification">
+		<xs:complexType>
+			<xs:all>
+				<xs:element ref="References"/>			
+				<xs:element ref="Classificators"/>
+				<xs:element ref="Thresholds"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="Th">
+		<xs:restriction base="xs:decimal">
+				<xs:minInclusive value="-10"/>
+				<xs:maxInclusive value="10"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:element name="Level-2A_CAL_SC_Ground_Image_Processing_Parameter">
+		<xs:complexType>
+			<xs:all>
+				<xs:element ref="Scene_Classification"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="Calibration">
+		<xs:complexType>
+			<xs:attribute name="units">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="(mW cm-2 sr-1 um-1), L = c0 + c1 * DN"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

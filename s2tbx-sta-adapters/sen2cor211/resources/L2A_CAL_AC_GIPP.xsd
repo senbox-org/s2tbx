@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="References">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Lib_Dir"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Lib_Dir">
+		<xs:simpleType>
+			<xs:restriction base="xs:string"/>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Level-2A_CAL_AC_Ground_Image_Processing_Parameter">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Flags"/>
+				<xs:element ref="References"/>
+				<xs:element ref="Sensor"/>
+				<xs:element name="ACL_Prio_1">
+					<xs:annotation>
+						<xs:documentation>First priority parameter</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="AC_Min_Ddv_Area" default="2.0">
+								<xs:annotation>
+									<xs:documentation>Min DDV area, required number of reference pixels (th_percent)</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="100"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Swir_Refl_Lower_Th" default="0.1">
+								<xs:annotation>
+									<xs:documentation>SWIR reflectance lower threshold to exclude water pixels together with NDVI limit</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Swir_22um_Red_Refl_Ratio" default="0.5">
+								<xs:annotation>
+									<xs:documentation>SWIR-red reflectance ratio (0.4-0,6) (ratio_red_swir (2.2µm), fact)</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0.4"/>
+										<xs:maxInclusive value="0.6"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Red_Blue_Refl_Ratio" default="0.5">
+								<xs:annotation>
+									<xs:documentation>Red-blue reflectance ratio (ratio_blu_red)</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="-1"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Cut_Off_Aot_Iter_Vegetation" default="0.01">
+								<xs:annotation>
+									<xs:documentation>Cut off for AOT-iterations = max percentage of negative reflectance vegetation pixels (B4)  (also reasonable for water pixels (B8)) (Thresh)</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="-1"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Cut_Off_Aot_Iter_Water" default="0.01">
+								<xs:annotation>
+									<xs:documentation>Cut off for AOT-iterations = max percentage of negative reflectance water pixels (B8) (thresh)</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="-1"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Aerosol_Type_Ratio_Th" default="-0.005">
+								<xs:annotation>
+									<xs:documentation>Aerosol type ratio threshold (Scale path radiance for bands in the blue-to-red region)</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="-1"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Topo_Corr_Th" default="0.05">
+								<xs:annotation>
+									<xs:documentation>Topographic correction threshold</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Slope_Th" default="6.0">
+								<xs:annotation>
+									<xs:documentation>Slope threshold</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="90"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Dem_P2p_Val" default="50">
+								<xs:annotation>
+									<xs:documentation>DEM Peak to Peak Value</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="300"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="ACL_Prio_2">
+					<xs:annotation>
+						<xs:documentation>Second priority parameter</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="AC_Swir_Refl_Ndvi_Th" default="0.1">
+								<xs:annotation>
+									<xs:documentation>SWIR reflectance NDVI threshold to exclude water pixels</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Ddv_Swir_Refl_Th1" default="0.05">
+								<xs:annotation>
+									<xs:documentation>DDV SWIR reflectance threshold 1, upper threshold</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Ddv_Swir_Refl_Th2" default="0.1">
+								<xs:annotation>
+									<xs:documentation>DDV SWIR reflectance threshold 2</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Ddv_Swir_Refl_Th3" default="0.12">
+								<xs:annotation>
+									<xs:documentation>DDV SWIR reflectance threshold 3</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Ddv_16um_Refl_Th1" default="0.1">
+								<xs:annotation>
+									<xs:documentation>DDV 1.6µm reflectance threshold 1</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Ddv_16um_Refl_Th2" default="0.15">
+								<xs:annotation>
+									<xs:documentation>DDV 1.6µm reflectance threshold 2</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Ddv_16um_Refl_Th3" default="0.18">
+								<xs:annotation>
+									<xs:documentation>DDV 1.6µm reflectance threshold 3</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Dbv_Nir_Refl_Th" default="0.35">
+								<xs:annotation>
+									<xs:documentation>DBV NIR reflectance Threshold</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Dbv_Ndvi_Th" default="0.66">
+								<xs:annotation>
+									<xs:documentation>DBV NDVI threshold</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Red_Ref_Refl_Th" default="0.02">
+								<xs:annotation>
+									<xs:documentation>Red reference reflectance</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Dbv_Red_Veget_Tst_Ndvi_Th" default="0.45">
+								<xs:annotation>
+									<xs:documentation>DBV red vegetation test NDVI threshold</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Dbv_Red_Veget_Refl_Th" default="0.15">
+								<xs:annotation>
+									<xs:documentation>DBV red vegetation reflectance threshold</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Wv_Iter_Start_Summer" default="1.0">
+								<xs:annotation>
+									<xs:documentation>Start value for wv iterations</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="5.0"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Wv_Iter_Start_Winter" default="0.4">
+								<xs:annotation>
+									<xs:documentation>Start value for wv iterations</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="5.0"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Rng_Nbhd_Terrain_Corr" default="0.5">
+								<xs:annotation>
+									<xs:documentation>Range of neighborhood for terrain correction</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Max_Nr_Topo_Iter">
+								<xs:annotation>
+									<xs:documentation>Max. number of topography  iterations</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="9"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Topo_Corr_Cutoff">
+								<xs:annotation>
+									<xs:documentation>Topographic correction cutoff</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0.0"/>
+										<xs:maxInclusive value="10.0"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Vegetation_Index_Th" default="3.0">
+								<xs:annotation>
+									<xs:documentation>Vegetation index threshold to distinguish soil/sand from vegetation</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="1"/>
+										<xs:maxInclusive value="10"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="ACL_Prio_3">
+					<xs:annotation>
+						<xs:documentation>Third priority parameter</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="AC_Limit_Area_Path_Rad_Scale" default="10">
+								<xs:annotation>
+									<xs:documentation>Threshold to limit the area for path radiance scaling, haze-, DDV- and DBV-tests</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="90"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Ddv_Smooting_Window" default="3.0">
+								<xs:annotation>
+									<xs:documentation>DDV smoothing window size for spatial filtering</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="10"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Terrain_Refl_Start" default="0.1">
+								<xs:annotation>
+									<xs:documentation>Start value for terrain reflectance at terrain correction</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Spr_Refl_Percentage" default="0.25">
+								<xs:annotation>
+									<xs:documentation>Percentage of DDV pixels used in Scale Path Radiance for advanced return criteria</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="AC_Spr_Refl_Promille" default="0.3">
+								<xs:annotation>
+									<xs:documentation>Promille of reference pixels used in Scale Path Radiance for advanced return criteria</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:float">
+										<xs:minInclusive value="0"/>
+										<xs:maxInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Calibration">
+		<xs:complexType>
+			<xs:sequence>
+                <xs:element name="min_sc_blu">
+                	<xs:simpleType>
+                		<xs:restriction base="xs:float">
+                			<xs:minExclusive value="0"></xs:minExclusive>
+                			<xs:maxExclusive value="1"></xs:maxExclusive>
+                		</xs:restriction>
+                	</xs:simpleType>
+                </xs:element>
+                <xs:element name="max_sc_blu">
+                	<xs:simpleType>
+                		<xs:restriction base="xs:float">
+                			<xs:minExclusive value="1"></xs:minExclusive>
+                			<xs:maxExclusive value="2"></xs:maxExclusive>
+                		</xs:restriction>
+                	</xs:simpleType>
+                </xs:element>
+                <xs:element ref="Band_List" />
+			</xs:sequence>
+
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="fwhm">
+		<xs:simpleType>
+			<xs:restriction base="xs:float">
+				<xs:minInclusive value="0"/>
+				<xs:maxInclusive value="1"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="Resolution">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Band_List"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Sensor">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Resolution"/>
+				<xs:element ref="Calibration"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="ST_wavelength">
+		<xs:restriction base="xs:float">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="10"/>	
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="wavelength">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="ST_wavelength">
+					<xs:attribute name="c0">
+						<xs:simpleType>
+							<xs:restriction base="xs:float">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="1"/>	
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="c1">
+						<xs:simpleType>
+							<xs:restriction base="xs:float">
+								<xs:minInclusive value="0"/>
+								<xs:maxInclusive value="1"/>	
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Band_List">
+		<xs:complexType>
+			<xs:choice>
+				<xs:element ref="wavelength" maxOccurs="unbounded"/>
+				<xs:element ref="fwhm" maxOccurs="unbounded"/>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Flags">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Scaling_Limiter" type="xs:boolean"></xs:element>
+				<xs:element name="Scaling_Disabler" type="xs:boolean"></xs:element>
+				<xs:element name="Rho_Retrieval_Step2" type="xs:boolean"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

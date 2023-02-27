@@ -9,30 +9,30 @@
 	<xsl:param name="productGenerator" select="'NONE'"/>
 	<xsl:param name="demDirectory" select="'NONE'"/>
 	<xsl:param name="demReference" select="'NONE'"/>
-	<xsl:param name="generateDEMoutput" select="'FALSE'"/>
-	<xsl:param name="forceExitOnDEMerror" select="'FALSE'"/>
-	<xsl:param name="generateTCIoutput" select="'TRUE'"/>
-	<xsl:param name="generateDDVoutput" select="'FALSE'"/>
-	<xsl:param name="handleL1CQLTmask" select="'FALSE'"/>
+	<xsl:param name="generateDemOutput" select="'FALSE'"/>
+	<xsl:param name="forceExitOnDemError" select="'FALSE'"/>
+	<xsl:param name="generateTciOutput" select="'TRUE'"/>
+	<xsl:param name="generateDdvOutput" select="'FALSE'"/>
+	<xsl:param name="handleL1cQltMask" select="'FALSE'"/>
 	<xsl:param name="downsample" select="'TRUE'"/>
 	<xsl:param name="psdVersion" select="'DEFAULT'"/>
 	<xsl:param name="medianFilter" select="0" />
-	<xsl:param name="aerosol" select="'RURAL'"/>
-	<xsl:param name="midLat" select="'SUMMER'"/>
+	<xsl:param name="aerosolType" select="'RURAL'"/>
+	<xsl:param name="midLatitude" select="'SUMMER'"/>
 	<xsl:param name="ozone" select="'0'"/>
-	<xsl:param name="wvCorrection" select="1"/>
-	<xsl:param name="visUpdateMode" select="1"/>
-	<xsl:param name="wvWatermask" select="1"/>
+	<xsl:param name="wVCorrection" select="1"/>
+	<xsl:param name="vISUpdateMode" select="1"/>
+	<xsl:param name="wVWatermask" select="1"/>
 	<xsl:param name="cirrusCorrection" select="'FALSE'"/>
 	<xsl:param name="terrainCorrection" select="'TRUE'"/>
-	<xsl:param name="brdfCorrection" select="0"/>
-	<xsl:param name="brdfLower" select="0.22"/>
+	<xsl:param name="bRDFCorrection" select="0"/>
+	<xsl:param name="bRDFLowerBound" select="0.22"/>
 	<xsl:param name="adjacencyRange" select="1.000"/>
 	<xsl:param name="visibility" select="40.0"/>
 	<xsl:param name="altitude" select="0.100"/>
 	<xsl:param name="smoothWVMap" select="100.0"/>
-	<xsl:param name="wvThresCirrus" select="0.25"/>
-	<xsl:param name="compressionLevel" select="0"/>
+	<xsl:param name="wVThresholdCirrus" select="0.25"/>
+	<xsl:param name="databaseCompressionLevel" select="0"/>
 	<xsl:template match="/">
 		<Level-2A_Ground_Image_Processing_Parameter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="L2A_GIPP.xsd">
 			<Common_Section>
@@ -70,15 +70,15 @@
 				<!-- should be either a directory in the sen2cor home folder or 'NONE'. If NONE, no DEM will be used -->
 				<DEM_Reference><xsl:value-of select="$demReference"/></DEM_Reference>
 				<!-- will be ignored, if DEM is NONE. A SRTM DEM will be downloaded from this reference, if no local DEM is available -->
-				<Generate_DEM_Output><xsl:value-of select="$generateDEMoutput"/></Generate_DEM_Output>
+				<Generate_DEM_Output><xsl:value-of select="$generateDemOutput"/></Generate_DEM_Output>
 				<!-- FALSE: no DEM output, TRUE: store DEM in the AUX data directory -->
-				<Force_Exit_On_DEM_Error><xsl:value-of select="$forceExitOnDEMerror"/></Force_Exit_On_DEM_Error>
+				<Force_Exit_On_DEM_Error><xsl:value-of select="$forceExitOnDemError"/></Force_Exit_On_DEM_Error>
 				<!-- FALSE: Processing continues with a flat surface, TRUE: processing will be stopped -->
-				<Generate_TCI_Output><xsl:value-of select="$generateTCIoutput"/></Generate_TCI_Output>
+				<Generate_TCI_Output><xsl:value-of select="$generateTciOutput"/></Generate_TCI_Output>
 				<!-- FALSE: no TCI output, TRUE: store TCI in the IMAGE data directory -->
-				<Generate_DDV_Output><xsl:value-of select="$generateDDVoutput"/></Generate_DDV_Output>
+				<Generate_DDV_Output><xsl:value-of select="$generateDdvOutput"/></Generate_DDV_Output>
 				<!-- FALSE: no DDV output, TRUE: store DDV in the QI_DATA directory -->
-				<Handle_L1C_QLT_Mask><xsl:value-of select="$handleL1CQLTmask"/></Handle_L1C_QLT_Mask>
+				<Handle_L1C_QLT_Mask><xsl:value-of select="$handleL1cQltMask"/></Handle_L1C_QLT_Mask>
 				<!-- FALSE: no handling of L1C Quality Mask, TRUE: handling L1C Quality Mask -->
 				<Downsample_20_to_60><xsl:value-of select="$downsample"/></Downsample_20_to_60>
 				<!-- TRUE: create additional 60m bands when 20m is processed -->
@@ -137,9 +137,9 @@
 			</Scene_Classification>
 			<Atmospheric_Correction>
 				<Look_Up_Tables>
-					<Aerosol_Type><xsl:value-of select="$aerosol"/></Aerosol_Type>
+					<Aerosol_Type><xsl:value-of select="$aerosolType"/></Aerosol_Type>
 					<!-- RURAL, MARITIME, AUTO -->
-					<Mid_Latitude><xsl:value-of select="$midLat"/></Mid_Latitude>
+					<Mid_Latitude><xsl:value-of select="$midLatitude"/></Mid_Latitude>
 					<!-- SUMMER, WINTER, AUTO -->
 
 					<xsl:if test="$ozone = '0'">
@@ -197,19 +197,19 @@
  					-->
 				</Look_Up_Tables>
 				<Flags>
-					<WV_Correction><xsl:value-of select="$wvCorrection"/></WV_Correction>
+					<WV_Correction><xsl:value-of select="$wVCorrection"/></WV_Correction>
 					<!-- 0: No WV correction, 1: only 940 nm bands, 2: only 1130 nm bands , 3: both regions used during wv retrieval, 4: Thermal region -->
-					<VIS_Update_Mode><xsl:value-of select="$visUpdateMode"/></VIS_Update_Mode>
+					<VIS_Update_Mode><xsl:value-of select="$vISUpdateMode"/></VIS_Update_Mode>
 					<!-- 0: constant, 1: variable visibility -->
-					<WV_Watermask><xsl:value-of select="$wvWatermask"/></WV_Watermask>
+					<WV_Watermask><xsl:value-of select="$wVWatermask"/></WV_Watermask>
 					<!-- 0: not replaced, 1: land-average, 2: line-average -->
 					<Cirrus_Correction><xsl:value-of select="$cirrusCorrection"/></Cirrus_Correction>
 					<!-- 0: no, 1: yes -->
 					<DEM_Terrain_Correction><xsl:value-of select="$terrainCorrection"/></DEM_Terrain_Correction>
 					<!--Use DEM for Terrain Correction, otherwise only used for WVP and AOT -->
-					<BRDF_Correction><xsl:value-of select="$brdfCorrection"/></BRDF_Correction>
+					<BRDF_Correction><xsl:value-of select="$bRDFCorrection"/></BRDF_Correction>
 					<!-- 0: no BRDF correction, 1: , 2: ,11, 12, 22, 21: -->
-					<BRDF_Lower_Bound><xsl:value-of select="$brdfLower"/></BRDF_Lower_Bound>
+					<BRDF_Lower_Bound><xsl:value-of select="$bRDFLowerBound"/></BRDF_Lower_Bound>
 					<!-- In most cases, g=0.2 to 0.25 is adequate, in extreme cases of overcorrection g=0.1 should be applied -->
 				</Flags>
 				<Calibration>
@@ -221,9 +221,9 @@
 					<!-- [km] -->
 					<Smooth_WV_Map><xsl:value-of select="$smoothWVMap"/></Smooth_WV_Map>
 					<!-- length of square box, [meters] -->
-					<WV_Threshold_Cirrus><xsl:value-of select="$wvThresCirrus"/></WV_Threshold_Cirrus>
+					<WV_Threshold_Cirrus><xsl:value-of select="$wVThresholdCirrus"/></WV_Threshold_Cirrus>
 					<!-- water vapor threshold to switch off cirrus algorithm [cm]Range: 0.1-1.0 -->
-					<Database_Compression_Level><xsl:value-of select="$compressionLevel"/></Database_Compression_Level>
+					<Database_Compression_Level><xsl:value-of select="$databaseCompressionLevel"/></Database_Compression_Level>
 					<!-- zlib compression level for image database [0-9, 0: best speed, 9: best size] -->
 				</Calibration>
 			</Atmospheric_Correction>
