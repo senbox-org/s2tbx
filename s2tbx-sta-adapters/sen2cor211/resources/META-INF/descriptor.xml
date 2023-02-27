@@ -2001,6 +2001,7 @@
         <entryPoint>Sen2Cor-02.11.00-Linux64.run</entryPoint>
         <updateVariable>SEN2COR_BIN211</updateVariable>
     </linuxBundle>
+    <helpID>sen2cor211</helpID>
     <sourceProductDescriptors>
         <org.esa.snap.core.gpf.descriptor.SimpleSourceProductDescriptor>
             <name>sourceProduct</name>
