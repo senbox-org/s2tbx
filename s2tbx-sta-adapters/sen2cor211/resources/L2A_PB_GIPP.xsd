@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+         <xs:element name="GS2_PROCESSING_BASELINE_PARAMETERS">
+               <xs:complexType>
+                     <xs:sequence>
+                           <xs:element name="DATA">
+                                 <xs:complexType>
+                                       <xs:sequence>
+                                             <xs:element name="Idp_Sc_List" maxOccurs="unbounded">
+                                                   <xs:complexType>
+                                                         <xs:sequence>
+                                                               <xs:element name="Idp_Sc_Name" type="xs:string"></xs:element>
+                                                               <xs:element name="Idp_Sc_Version" type="xs:string"></xs:element>
+                                                         </xs:sequence>
+                                                         <xs:attribute name="workflow" type="xs:string"></xs:attribute>
+                                                   </xs:complexType>
+                                             </xs:element>
+                                             <xs:element name="Baseline_Version" type="xs:double"></xs:element>
+                                       </xs:sequence>
+                                 </xs:complexType>
+                           </xs:element>
+                     </xs:sequence>
+               </xs:complexType>
+         </xs:element>
+   </xs:schema>
