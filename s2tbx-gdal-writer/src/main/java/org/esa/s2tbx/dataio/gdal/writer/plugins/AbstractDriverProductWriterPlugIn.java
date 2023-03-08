@@ -1,8 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.writer.plugins;
 
 import org.esa.lib.gdal.activator.GDALDriverInfo;
-import org.esa.lib.gdal.activator.GDALInstallInfo;
-import org.esa.snap.dataio.gdal.GDALLoader;
 import org.esa.s2tbx.dataio.gdal.writer.GDALProductWriter;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductWriter;
@@ -22,12 +20,8 @@ public abstract class AbstractDriverProductWriterPlugIn implements ProductWriter
 
     private final GDALDriverInfo writerDriver;
 
-    static {
-        GDALLoader.getInstance().initGDAL();
-    }
 
     protected AbstractDriverProductWriterPlugIn(String fileExtension, String driverName, String driverDisplayName, String creationDataTypes) {
-        GDALLoader.getInstance().initGDAL();
         this.writerDriver = new GDALDriverInfo(fileExtension, driverName, driverDisplayName, creationDataTypes);
     }
 
@@ -57,10 +51,7 @@ public abstract class AbstractDriverProductWriterPlugIn implements ProductWriter
             return new EncodeQualification(EncodeQualification.Preservation.UNABLE,
                                            "Cannot write multisize products. Consider resampling the product first.");
         }
-        if (GDALInstallInfo.INSTANCE.isPresent()) {
-            return new EncodeQualification(EncodeQualification.Preservation.FULL);
-        }
-        return new EncodeQualification(EncodeQualification.Preservation.UNABLE);
+        return new EncodeQualification(EncodeQualification.Preservation.FULL);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.writer.plugins;
 
-import org.esa.snap.dataio.gdal.GDALLoader;
+import org.esa.snap.dataio.gdal.GDALVersion;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.datamodel.Product;
 
@@ -17,8 +17,8 @@ public class COGDriverProductWriterPlugIn extends AbstractDriverProductWriterPlu
 
     public final EncodeQualification getEncodeQualification(Product product) {
         EncodeQualification encodeQualification = super.getEncodeQualification(product);
-        if (encodeQualification.getPreservation().equals(EncodeQualification.Preservation.FULL) && !GDALLoader.getInstance().getGdalVersion().isCOGCapable()) {
-            return new EncodeQualification(EncodeQualification.Preservation.UNABLE, "GDAL COG writer not supported by the used GDAL version (" + GDALLoader.getInstance().getGdalVersion().getId() + "). Upgrade to 3.1.0 or higher version.");
+        if (encodeQualification.getPreservation().equals(EncodeQualification.Preservation.FULL) && !GDALVersion.getGDALVersion().isCOGCapable()) {
+            return new EncodeQualification(EncodeQualification.Preservation.UNABLE, "GDAL COG writer not supported by the used GDAL version (" + GDALVersion.getGDALVersion().getId() + "). Upgrade to 3.1.0 or higher version.");
         }
         return encodeQualification;
     }

@@ -19,14 +19,7 @@
 package org.esa.s2tbx.radiometry;
 
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.FlagCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.MetadataAttribute;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -186,7 +179,8 @@ public abstract class BaseIndexOp extends Operator {
 
         initDefaultMasks();
 
-        String name = getBandName();
+        // SIITBX-494 (add source band as prefix)
+        final String name = sourceProduct.getName() + "_" + getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
 
@@ -331,6 +325,18 @@ public abstract class BaseIndexOp extends Operator {
         return bestBand;
     }
 
+    protected Band getBandWithSuffix(Product product, String suffix) {
+        // search the node name with the given suffix
+        String[] bandNames = product.getBandNames();
+        final String name = Arrays.stream(bandNames).filter(n -> n.endsWith(suffix))
+                .findFirst()
+                .orElse(null);
+        // if such node is found, retrieve it
+        if (name != null) {
+            return product.getBand(name);
+        }
+        return null;
+    }
     private class MaskDescriptor {
 
         String name;

@@ -33,17 +33,20 @@ Clone the S2TBX source code and related repositories into a directory referred t
 Build SNAP-Engine:
 
     cd ${snap}/snap-engine
-    mvn install
+    mvn clean install
 
 Build SNAP-Desktop:
 
     cd ${snap}/snap-desktop
-    mvn install
+    mvn clean install
+
+    cd ${snap}/snap-desktop/snap-application
+    mvn nbm:cluster-app
 
 Build Sentinel-2 Toolbox:
 
     cd ${snap}/s2tbx
-    mvn install
+    mvn clean install
    
 If unit tests are failing, you can use the following to skip the tests
    

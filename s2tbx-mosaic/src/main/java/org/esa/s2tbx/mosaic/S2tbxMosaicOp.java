@@ -49,19 +49,12 @@ import org.opengis.referencing.operation.TransformException;
 
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalDouble;
+import java.util.*;
 
 /**
  * A mosaic operator that performs mosaicking operations on multisize products
@@ -78,6 +71,9 @@ import java.util.OptionalDouble;
         internal = false)
 
 public final class S2tbxMosaicOp extends Operator {
+
+    public static final String LEVEL_MAX_VALUE = "maxValue";
+    public static final String LEVEL_MIN_VALUE = "minValue";
 
     @SuppressWarnings({"PackageVisibleField"})
     @SourceProducts(count = -1, description = "The source products to be used for mosaicking.")
@@ -109,13 +105,13 @@ public final class S2tbxMosaicOp extends Operator {
     @Parameter(description = "The name of the elevation model for the orthorectification.")
     private String elevationModelName;
 
-    @Parameter(description = "The western longitude.", interval = "[-180,180]", defaultValue = "-15.0")
+    @Parameter(description = "The western longitude.", interval = "[-180,180]", defaultValue = "0")
     double westBound;
-    @Parameter(description = "The northern latitude.", interval = "[-90,90]", defaultValue = "75.0")
+    @Parameter(description = "The northern latitude.", interval = "[-90,90]", defaultValue = "0.1")
     double northBound;
-    @Parameter(description = "The eastern longitude.", interval = "[-180,180]", defaultValue = "30.0")
+    @Parameter(description = "The eastern longitude.", interval = "[-180,180]", defaultValue = "0.1")
     double eastBound;
-    @Parameter(description = "The southern latitude.", interval = "[-90,90]", defaultValue = "35.0")
+    @Parameter(description = "The southern latitude.", interval = "[-90,90]", defaultValue = "0")
     double southBound;
 
     @Parameter(description = "Size of a pixel in X-direction in map units.", defaultValue = "0.005")
@@ -162,6 +158,7 @@ public final class S2tbxMosaicOp extends Operator {
         }
 
         // STEP 2: reproject the source products
+        loadBoundsWhenNeeded();
         if(!nativeResolution){
             this.targetEnvelope = computeReprojectedBounds();
             final int width = MathUtils.floorInt(this.targetEnvelope.getSpan(0) / this.pixelSizeX);
@@ -654,6 +651,47 @@ public final class S2tbxMosaicOp extends Operator {
         }
     }
 
+    public static Line2D.Double extractBounds(Product[] sourceProducts) {
+        if (sourceProducts != null && sourceProducts.length > 0) {
+            /* set default values in case files.length == 0 */
+            double southBoundVal = computeLatitude(sourceProducts[0], LEVEL_MIN_VALUE);
+            ;
+            double northBoundVal = computeLatitude(sourceProducts[0], LEVEL_MAX_VALUE);
+            double westBoundVal = computeLongitude(sourceProducts[0], LEVEL_MIN_VALUE);
+            double eastBoundVal = computeLongitude(sourceProducts[0], LEVEL_MAX_VALUE);
+
+            for (int i = 1; i < sourceProducts.length; i++) {
+                double southBoundValTemp = computeLatitude(sourceProducts[i], LEVEL_MIN_VALUE);
+                double northBoundValTemp = computeLatitude(sourceProducts[i], LEVEL_MAX_VALUE);
+                double westBoundValTemp = computeLongitude(sourceProducts[i], LEVEL_MIN_VALUE);
+                double eastBoundValTemp = computeLongitude(sourceProducts[i], LEVEL_MAX_VALUE);
+
+                if (southBoundValTemp < southBoundVal) southBoundVal = southBoundValTemp;
+                if (northBoundValTemp > northBoundVal) northBoundVal = northBoundValTemp;
+                if (westBoundValTemp < westBoundVal) westBoundVal = westBoundValTemp;
+                if (eastBoundValTemp > eastBoundVal) eastBoundVal = eastBoundValTemp;
+            }
+            return new Line2D.Double(northBoundVal, southBoundVal, eastBoundVal, westBoundVal);
+        }
+        return new Line2D.Double(0, 0, 0, 0);
+    }
+
+    private void loadBoundsWhenNeeded(){
+        Line2D bounds = extractBounds(this.sourceProducts);
+        if (this.northBound == 0.1) {
+            this.northBound = bounds.getX1();
+        }
+        if (this.southBound == 0) {
+            this.southBound = bounds.getY1();
+        }
+        if (this.eastBound == 0.1) {
+            this.eastBound = bounds.getX2();
+        }
+        if (this.westBound == 0) {
+            this.westBound = bounds.getY2();
+        }
+    }
+
 
     public static Map<String, Object> getOperatorParameters(Product product) throws OperatorException {
         final MetadataElement graphElement = product.getMetadataRoot().getElement("Processing_Graph");
@@ -772,6 +810,45 @@ public final class S2tbxMosaicOp extends Operator {
                 final String message = String.format("Cannot find converter for  type '%s'", type);
                 throw new OperatorException(message, e);
             }
+        }
+    }
+
+    private static double computeLatitude(Product product, String level){
+        final GeoCoding sceneGeoCoding = product.getSceneGeoCoding();
+        Double[] latitudePoints = {
+                sceneGeoCoding.getGeoPos(new PixelPos(0, 0), null).getLat(),
+                sceneGeoCoding.getGeoPos(new PixelPos(0, product.getSceneRasterHeight()), null).getLat(),
+                sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), 0), null).getLat(),
+                sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), product.getSceneRasterHeight()), null).getLat()
+        };
+
+        switch(level) {
+            case LEVEL_MIN_VALUE:
+                return Collections.min(Arrays.asList(latitudePoints));
+            case LEVEL_MAX_VALUE:
+                return Collections.max(Arrays.asList(latitudePoints));
+            default :
+                return Double.MAX_VALUE;
+        }
+
+    }
+
+    private static double computeLongitude(Product product, String level){
+        final GeoCoding sceneGeoCoding = product.getSceneGeoCoding();
+        Double[] longitudePoints = {
+                sceneGeoCoding.getGeoPos(new PixelPos(0, 0), null).getLon(),
+                sceneGeoCoding.getGeoPos(new PixelPos(0, product.getSceneRasterHeight()), null).getLon(),
+                sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), 0), null).getLon(),
+                sceneGeoCoding.getGeoPos(new PixelPos(product.getSceneRasterWidth(), product.getSceneRasterHeight()), null).getLon()
+        };
+
+        switch(level) {
+            case LEVEL_MIN_VALUE:
+                return Collections.min(Arrays.asList(longitudePoints));
+            case LEVEL_MAX_VALUE:
+                return Collections.max(Arrays.asList(longitudePoints));
+            default :
+                return Double.MAX_VALUE;
         }
     }
 

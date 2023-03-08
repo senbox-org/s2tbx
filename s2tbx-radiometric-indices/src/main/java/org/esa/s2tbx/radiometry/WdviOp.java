@@ -85,7 +85,8 @@ public class WdviOp extends BaseIndexOp{
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile wdvi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile wdvi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile wdviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float wdviValue;

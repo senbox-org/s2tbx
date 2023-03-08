@@ -2,6 +2,8 @@ package org.esa.s2tbx.dataio.spot6;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
+import org.apache.commons.lang.StringUtils;
 import org.esa.s2tbx.commons.FilePathInputStream;
 import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
@@ -23,7 +25,9 @@ import org.esa.snap.core.subset.PixelSubsetRegion;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.TreeNode;
-import org.esa.snap.engine_utilities.util.Pair;
+import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
+import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReaderPlugIn;
 import org.esa.snap.engine_utilities.util.PathUtils;
 import org.esa.snap.jp2.reader.JP2ImageFile;
 import org.esa.snap.jp2.reader.JP2LocalFile;
@@ -46,10 +50,12 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -206,7 +212,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
                 double[][] scalingAndOffsets = imageMetadata.getScalingAndOffsets();
 
-                BandMatrixData result = buildMosaicMatrix(imageMetadata, this.localCacheFolder);
+                BandMatrixData result = buildMosaicMatrix(imageMetadata, this.localCacheFolder, this.productDirectory);
 
                 int defaultBandWidth = result.getMosaicMatrix().computeTotalWidth();
                 int defaultBandHeight = result.getMosaicMatrix().computeTotalHeight();
@@ -258,10 +264,17 @@ public class Spot6ProductReader extends AbstractProductReader {
                             imageToModelTransform = band.getImageToModelTransform();
                         }
                         int bandIndex = bandInfos[i].getIndex();
-                        JP2MatrixBandMultiLevelSource multiLevelSource = new JP2MatrixBandMultiLevelSource(result.getLevelCount(), result.getMosaicMatrix(), bandBounds, imageToModelTransform, bandIndex,
-                                                                                    (double)noDataValue, null, defaultJAIReadTileSize);
-                        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
-                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+
+                        int maximumBandLevelCount = result.getLevelCount();
+                        int bandLevelCount = DefaultMultiLevelModel.getLevelCount(bandBounds.width, bandBounds.height);
+                        if (bandLevelCount > maximumBandLevelCount) {
+                            bandLevelCount = maximumBandLevelCount;
+                        }
+
+                        DefaultMultiLevelImage multiLevelImage = result.buildBandSourceImage(bandLevelCount, noDataValue, defaultJAIReadTileSize,  bandIndex,
+                                bandBounds, bandGeoCoding, imageToModelTransform);
+                        band.setSourceImage(multiLevelImage);
+
                         product.addBand(band);
                     }
                 }
@@ -314,16 +327,77 @@ public class Spot6ProductReader extends AbstractProductReader {
         return null;
     }
 
-    private static BandMatrixData buildMosaicMatrix(ImageMetadata imageMetadata, Path cacheDir) throws IOException, InterruptedException {
+    private static BandMatrixData buildMosaicMatrix(ImageMetadata imageMetadata, Path cacheDir, VirtualDirEx productDirectory) throws IOException, InterruptedException, IllegalAccessException, InstantiationException, InvocationTargetException {
         int dataTypeFromMetadata = imageMetadata.getPixelDataType();
         int tileRows = imageMetadata.getTileRowsCount();
         int tileCols = imageMetadata.getTileColsCount();
         Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
         String[][] matrixFiles = new String[tileRows][tileCols];
+        boolean allFilesJP2 = true;
+        boolean allFilesGeoTiff = true;
         for (Map.Entry<String, int[]> entry : tileInfo.entrySet()) {
             int[] matrixCoordinates = entry.getValue();
+            String filePath = entry.getKey();
+            boolean extensionMatches = Arrays.stream(GeoTiffProductReaderPlugIn.TIFF_FILE_EXTENSION).anyMatch(filePath.toLowerCase()::endsWith);
+            if (!extensionMatches) {
+                allFilesGeoTiff = false;
+            }
+            if (!StringUtils.endsWithIgnoreCase(entry.getKey(), "jp2")) {
+                allFilesJP2 = false;
+            }
             matrixFiles[matrixCoordinates[0]][matrixCoordinates[1]] = entry.getKey();
         }
+        if (allFilesJP2) {
+            return buildJP2MosaicMatrix(imageMetadata, matrixFiles, cacheDir);
+        }
+        if (allFilesGeoTiff) {
+            Path geotiffMatrixTempFolder = productDirectory.makeLocalTempFolder();
+            return buildGeoTiffMosaicMatrix(imageMetadata, matrixFiles, geotiffMatrixTempFolder);
+        }
+        throw new IllegalStateException("Unknown image files.");
+    }
+
+    private static BandGeoTiffMatrixData buildGeoTiffMosaicMatrix(ImageMetadata imageMetadata, String[][] matrixFiles, Path localTempFolder)
+            throws IOException, InterruptedException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        int tileRows = imageMetadata.getTileRowsCount();
+        int tileCols = imageMetadata.getTileColsCount();
+        int levelCount = 0;
+        int dataType = 0;
+        Path imagesMetadataParentPath = imageMetadata.getPath();
+        MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRows, tileCols);
+        for (int rowIndex = 0; rowIndex < tileRows; rowIndex++) {
+            for (int columnIndex = 0; columnIndex < tileCols; columnIndex++) {
+                String imageRelativeFilePath = matrixFiles[rowIndex][columnIndex];
+                int cellWidth;
+                int cellHeight;
+                int dataBufferType;
+                try (GeoTiffImageReader geoTiffImageReader = GeoTiffImageReader.buildGeoTiffImageReader(imagesMetadataParentPath, imageRelativeFilePath)) {
+                    cellWidth = geoTiffImageReader.getImageWidth();
+                    cellHeight = geoTiffImageReader.getImageHeight();
+                    dataBufferType = geoTiffImageReader.getSampleModel().getDataType();
+                }
+                int cellLevelCount = DefaultMultiLevelModel.getLevelCount(cellWidth, cellHeight);
+                if (columnIndex == 0 && rowIndex == 0) {
+                    dataType = dataBufferType;
+                    levelCount = cellLevelCount;
+                } else {
+                    if (dataType != dataBufferType) {
+                        throw new IllegalStateException("Different data type count: rowIndex=" + rowIndex + ", columnIndex=" + columnIndex + ", dataType=" + dataType + ", dataBufferType=" + dataBufferType + ".");
+                    }
+                }
+                GeoTiffMatrixCell matrixCell = new GeoTiffMatrixCell(cellWidth, cellHeight, dataBufferType, imagesMetadataParentPath, imageRelativeFilePath, localTempFolder);
+                mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, true, true);
+            }
+        }
+
+        validateMatrix(imageMetadata, dataType, mosaicMatrix);
+        return new BandGeoTiffMatrixData(dataType, levelCount, mosaicMatrix);
+    }
+
+    private static BandJP2MatrixData buildJP2MosaicMatrix(ImageMetadata imageMetadata, String[][] matrixFiles, Path cacheFolder) throws IOException, InterruptedException {
+        int tileRows = imageMetadata.getTileRowsCount();
+        int tileCols = imageMetadata.getTileColsCount();
         int levelCount = 0;
         int dataType = 0;
         MosaicMatrix mosaicMatrix = new MosaicMatrix(tileRows, tileCols);
@@ -352,10 +426,17 @@ public class Spot6ProductReader extends AbstractProductReader {
                 JP2ImageFile jp2ImageFile = new JP2ImageFile(jp2LocalFile);
                 int cellWidth = tileLayout.width;
                 int cellHeight = tileLayout.height;
-                JP2MosaicBandMatrixCell matrixCell = new JP2MosaicBandMatrixCell(jp2ImageFile, cacheDir, tileLayout, cellWidth, cellHeight);
+                JP2MosaicBandMatrixCell matrixCell = new JP2MosaicBandMatrixCell(jp2ImageFile, cacheFolder, tileLayout, cellWidth, cellHeight);
                 mosaicMatrix.setCellAt(rowIndex, columnIndex, matrixCell, false, false);
             }
         }
+
+        validateMatrix(imageMetadata, dataType, mosaicMatrix);
+        return new BandJP2MatrixData(dataType, levelCount, mosaicMatrix);
+    }
+
+    private static void validateMatrix(ImageMetadata imageMetadata, int dataType, MosaicMatrix mosaicMatrix) {
+        int dataTypeFromMetadata = imageMetadata.getPixelDataType();
         int bandDataType = ImageManager.getProductDataType(dataType);
         if (bandDataType != dataTypeFromMetadata) {
             throw new IllegalStateException("Different data types: bandDataType="+bandDataType+", dataTypeFromMetadata="+dataTypeFromMetadata+".");
@@ -368,7 +449,6 @@ public class Spot6ProductReader extends AbstractProductReader {
         if (defaultBandHeight != imageMetadata.getRasterHeight()) {
             throw new IllegalStateException("Different height.");
         }
-        return new BandMatrixData(dataType, levelCount, mosaicMatrix);
     }
 
     private static GeoCoding buildBandGeoCoding(ImageMetadata imageMetadata, int defaultBandWidth, int defaultBandHeight, int defaultProductWidth, int defaultProductHeight,
@@ -518,31 +598,6 @@ public class Spot6ProductReader extends AbstractProductReader {
         @Override
         public Path getLocalFile() throws IOException {
             return this.jp2File;
-        }
-    }
-
-    private static class BandMatrixData {
-
-        private final int dataType;
-        private final int levelCount;
-        private final MosaicMatrix mosaicMatrix;
-
-        private BandMatrixData(int dataType, int levelCount, MosaicMatrix mosaicMatrix) {
-            this.dataType = dataType;
-            this.levelCount = levelCount;
-            this.mosaicMatrix = mosaicMatrix;
-        }
-
-        public int getDataType() {
-            return dataType;
-        }
-
-        public int getLevelCount() {
-            return levelCount;
-        }
-
-        public MosaicMatrix getMosaicMatrix() {
-            return mosaicMatrix;
         }
     }
 }

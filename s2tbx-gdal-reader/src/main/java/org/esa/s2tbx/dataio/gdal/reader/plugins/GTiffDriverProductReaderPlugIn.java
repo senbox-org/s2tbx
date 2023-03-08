@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
-import org.esa.snap.dataio.gdal.GDALVersion;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.dataio.geotiff.Utils;
 
@@ -15,9 +14,9 @@ public class GTiffDriverProductReaderPlugIn extends AbstractDriverProductReaderP
 
     public GTiffDriverProductReaderPlugIn() {
         //super("GTiff", "GeoTIFF");
-        // make a difference between GDAL GeoTIFF and SNAP GeoTIFF reader, also display GDAL version in order to help users knowing if their GDAL version supports Cloud Optimized GeoTIFF,
+        // make a difference between GDAL GeoTIFF and SNAP GeoTIFF reader
         // in case this driver is enabled from GDAL
-        super("GTiff", "GeoTIFF (GDAL " + GDALVersion.getGDALVersion().getId() + ")");
+        super("GTiff", "GeoTIFF (GDAL)");
 
         addExtension(".tif");
         addExtension(".tiff");

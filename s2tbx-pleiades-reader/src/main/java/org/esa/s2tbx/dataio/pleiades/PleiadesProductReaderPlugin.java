@@ -16,6 +16,7 @@
  */
 package org.esa.s2tbx.dataio.pleiades;
 
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.pleiades.dimap.Constants;
 import org.esa.s2tbx.dataio.pleiades.internal.PleiadesMetadataInspector;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
@@ -25,7 +26,13 @@ import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Reader plugin for Pleiades products.
@@ -74,7 +81,7 @@ public class PleiadesProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     protected String[] getMinimalPatternList() {
-        return Constants.MINIMAL_PATTERN_LIST;
+        return Constants.MINIMAL_FILES_PATTERN_LIST;
     }
 
     @Override
@@ -89,6 +96,44 @@ public class PleiadesProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        return super.getDecodeQualification(input);
+        Path inputPath = convertInputToPath(input);
+        try (VirtualDirEx virtualDir = VirtualDirEx.build(inputPath, false, true)){
+            DecodeQualification returnValue = DecodeQualification.UNABLE;
+            if (virtualDir != null) {
+                Pattern[] patternList = new Pattern[Constants.MINIMAL_PATTERN_LIST.length];
+                for (int i = 0; i < Constants.MINIMAL_PATTERN_LIST.length; i++) {
+                    patternList[i] = Pattern.compile(Constants.MINIMAL_PATTERN_LIST[i], Pattern.CASE_INSENSITIVE);
+                }
+                String[] filteredFiles = null;
+                if (virtualDir.isCompressed()) {
+                    // list all the files without filters and apply the filters later
+                    String[] availableFiles = virtualDir.listAll();
+                    if (availableFiles == null) {
+                        //throw new NullPointerException("The files array is null."); //getDecodeQualification should not throw any exception
+                        return DecodeQualification.UNABLE;
+                    }
+                    // apply the reader plugin filters
+                    List<String> filteredFileNames = new ArrayList<>();
+                    for (String availableFile : availableFiles) {
+                        if (VirtualDirEx.matchFilters(availableFile, patternList)) {
+                            filteredFileNames.add(availableFile);
+                        }
+                    }
+                    filteredFiles = new String[filteredFileNames.size()];
+                    filteredFileNames.toArray(filteredFiles);
+                } else if (Files.isRegularFile(inputPath)) {
+                    boolean matches = Arrays.stream(patternList).anyMatch(p -> p.matcher(inputPath.getFileName().toString()).matches());
+                    if (matches) {
+                        filteredFiles = virtualDir.listAll(patternList);
+                    }
+                }
+                if (filteredFiles != null && filteredFiles.length >= patternList.length && this.enforcer.isConsistent(filteredFiles)) {
+                    returnValue = DecodeQualification.INTENDED;
+                }
+            }
+            return returnValue;
+        } catch (Throwable e) { //getDecodeQualification should not throw any exception, so use Throwable instead of IOException
+            return DecodeQualification.UNABLE;
+        }
     }
 }
