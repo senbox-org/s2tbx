@@ -13,7 +13,7 @@ public final class GDALLibraryInstaller {
 
     public static void install() {
         if (!INSTALLED.getAndSet(true)) {
-            GDALLoader.getInstance().initGDAL();
+            GDALLoader.ensureGDALInitialised();
         }
     }
 }

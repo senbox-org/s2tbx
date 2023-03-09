@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import org.apache.commons.lang.SystemUtils;
-import org.esa.lib.gdal.activator.GDALInstallInfo;
 import org.esa.snap.dataio.gdal.GDALLoader;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
@@ -29,9 +28,7 @@ public class GDALDistributionInstallerTest {
     @Test
     public void testInstall() {
         try {
-            if (!GDALInstallInfo.INSTANCE.isPresent()) {
-                GDALLoader.getInstance().initGDAL();
-            }
+            GDALLoader.ensureGDALInitialised();
         } catch (Throwable e) {
             // the GDAL library has not been installed
             StringWriter stringWriter = new StringWriter();
