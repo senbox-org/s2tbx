@@ -43,9 +43,7 @@ public abstract class AbstractTestDriverProductReaderPlugIn {
 
     @Before
     public final void setUp() throws Exception {
-        if (!GDALInstallInfo.INSTANCE.isPresent()) {
-            GDALLoader.getInstance().initGDAL();
-        }
+        GDALLoader.ensureGDALInitialised();
     }
 
     @Test
