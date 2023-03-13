@@ -22,7 +22,6 @@
  */
 package org.esa.s2tbx.about;
 
-import com.bc.ceres.core.runtime.Version;
 import org.esa.snap.rcp.about.AboutBox;
 import org.esa.snap.rcp.util.BrowserUtils;
 import org.openide.modules.ModuleInfo;
@@ -41,7 +40,7 @@ import java.util.TimeZone;
 @AboutBox(displayName = "S2TBX", position = 20)
 public class S2tbxAboutBox extends JPanel {
 
-    private final static String releaseNotesUrlString = "https://senbox.atlassian.net/issues/?filter=-4&jql=project%20%3D%20SIITBX%20AND%20fixVersion%20%3D%20";
+    private final static String releaseNotesUrlString = "https://github.com/senbox-org/s2tbx/blob/master/ReleaseNotes.md";
 
     public S2tbxAboutBox() {
         super(new BorderLayout(4, 4));
@@ -60,12 +59,9 @@ public class S2tbxAboutBox extends JPanel {
         final ModuleInfo moduleInfo = Modules.getDefault().ownerOf(S2tbxAboutBox.class);
         JLabel versionLabel = new JLabel("<html><b>Sentinel-2 Toolbox (S2TBX) version " + moduleInfo.getImplementationVersion() + "</b>", SwingConstants.CENTER);
 
-        Version specVersion = Version.parseVersion(moduleInfo.getSpecificationVersion().toString());
-        String versionString = String.format("%s.%s.%s", specVersion.getMajor(), specVersion.getMinor(), specVersion.getMicro());
-        String changelogUrl = releaseNotesUrlString + versionString;
-        final JLabel releaseNoteLabel = new JLabel("<html><a href=\"" + changelogUrl + "\">Release Notes</a>", SwingConstants.CENTER);
+        final JLabel releaseNoteLabel = new JLabel("<html><a href=\"" + releaseNotesUrlString + "\">Release Notes</a>", SwingConstants.CENTER);
         releaseNoteLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        releaseNoteLabel.addMouseListener(new BrowserUtils.URLClickAdaptor(changelogUrl));
+        releaseNoteLabel.addMouseListener(new BrowserUtils.URLClickAdaptor(releaseNotesUrlString));
 
         final JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
