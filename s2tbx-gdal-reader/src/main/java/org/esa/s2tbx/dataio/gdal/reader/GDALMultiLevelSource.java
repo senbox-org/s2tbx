@@ -19,7 +19,7 @@ import java.nio.file.Path;
  * @author Jean Coravu
  * @author Adrian Draghici
  */
-class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implements UncompressedTileOpImageCallback<Void>, GDALBandSource {
+public class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implements UncompressedTileOpImageCallback<Void>, GDALBandSource {
 
     private final Path sourceLocalFile;
     private final int dataBufferType;
@@ -27,7 +27,7 @@ class GDALMultiLevelSource extends AbstractMosaicSubsetMultiLevelSource implemen
     private final Double noDataValue;
     private final Dimension defaultJAIReadTileSize;
 
-    GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, int bandIndex,
+    public GDALMultiLevelSource(Path sourceLocalFile, int dataBufferType, Rectangle imageReadBounds, Dimension tileSize, int bandIndex,
                          int levelCount, GeoCoding geoCoding, Double noDataValue, Dimension defaultJAIReadTileSize) {
 
         super(levelCount, imageReadBounds, tileSize, geoCoding);

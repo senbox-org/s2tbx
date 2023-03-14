@@ -19,12 +19,12 @@ package org.esa.s2tbx.dataio.gdal.writer;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.lib.gdal.activator.GDALDriverInfo;
-import org.esa.s2tbx.dataio.gdal.GDALLoader;
-import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
-import org.esa.s2tbx.dataio.gdal.drivers.Driver;
-import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
-import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
-import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
+import org.esa.snap.dataio.gdal.GDALLoader;
+import org.esa.snap.dataio.gdal.drivers.Dataset;
+import org.esa.snap.dataio.gdal.drivers.Driver;
+import org.esa.snap.dataio.gdal.drivers.GDAL;
+import org.esa.snap.dataio.gdal.drivers.GDALConst;
+import org.esa.snap.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.snap.core.dataio.AbstractProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -42,8 +42,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,9 +54,8 @@ import java.util.logging.Logger;
 public class GDALProductWriter extends AbstractProductWriter {
 
     private static final Logger logger = Logger.getLogger(GDALProductWriter.class.getName());
-
     private final GDALDriverInfo writerDriver;
-
+    private String[] writeOptions;
     private Dataset gdalDataset;
 
     private int gdalDataType;
@@ -66,7 +63,6 @@ public class GDALProductWriter extends AbstractProductWriter {
 
     public GDALProductWriter(ProductWriterPlugIn writerPlugIn, GDALDriverInfo writerDriver) {
         super(writerPlugIn);
-
         this.writerDriver = writerDriver;
     }
 
@@ -150,13 +146,23 @@ public class GDALProductWriter extends AbstractProductWriter {
             logger.log(Level.FINE, "Using the GDAL driver '" + this.gdalDriver.getLongName() + "' (" + this.gdalDriver.getShortName() + ") to save the product.");
         }
 
-        final String gdalWriteOptions = Config.instance().preferences().get("snap.dataio.gdal.creationoptions", "");
-        if (!gdalWriteOptions.isEmpty()) {
-            String[] options = StringUtils.stringToArray(gdalWriteOptions, ";");
-            this.gdalDataset = this.gdalDriver.create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType, options);
-        } else {
-            this.gdalDataset = this.gdalDriver.create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
+        String gdalWriteOptions = Config.instance().preferences().get("snap.dataio.gdal.creationoptions", "TILED=YES");
+        if (gdalWriteOptions.contains("COMPRESS") && !gdalWriteOptions.contains("PREDICTOR")) {
+            if (this.gdalDataType == GDALConstConstants.gdtByte() ||
+                    this.gdalDataType == GDALConstConstants.gdtUint16() ||
+                    this.gdalDataType == GDALConstConstants.gdtInt16() ||
+                    this.gdalDataType == GDALConstConstants.gdtUint32() ||
+                    this.gdalDataType == GDALConstConstants.gdtInt32() ||
+                    this.gdalDataType == GDALConstConstants.gdtCInt16() ||
+                    this.gdalDataType == GDALConstConstants.gdtCInt32()) {
+                gdalWriteOptions += "PREDICTOR=2";
+
+            } else {
+                gdalWriteOptions += "PREDICTOR=3";
+            }
         }
+        writeOptions = StringUtils.stringToArray(gdalWriteOptions, ";");
+        this.gdalDataset = this.gdalDriver.create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType, writeOptions);
         if (this.gdalDataset == null) {
             throw new NullPointerException("Failed creating the file to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
         }
@@ -195,7 +201,7 @@ public class GDALProductWriter extends AbstractProductWriter {
 
         Product sourceProduct = getSourceProduct();
         int bandIndex = sourceProduct.getBandIndex(sourceBand.getName());
-        org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = this.gdalDataset.getRasterBand(bandIndex + 1);
+        org.esa.snap.dataio.gdal.drivers.Band gdalBand = this.gdalDataset.getRasterBand(bandIndex + 1);
         if (gdalBand == null) {
             throw new NullPointerException("Failed creating the band with index " + bandIndex + " to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
         }
@@ -242,14 +248,13 @@ public class GDALProductWriter extends AbstractProductWriter {
             if (this.writerDriver.getDriverName().contentEquals("COG")) {//when the writer attempts to write COG
                 Driver cogDriver = GDAL.getDriverByName(this.writerDriver.getDriverName());//use the COG driver
                 String outputFile = getFileInput(getOutput()).toString();//use the real output file name
-                final String gdalWriteOptions = Config.instance().preferences().get("snap.dataio.gdal.creationoptions", "");
                 Dataset tempDataset = this.gdalDataset;
-                if (gdalWriteOptions.isEmpty()) {
+                if (writeOptions == null) {
                     this.gdalDataset = cogDriver.createCopy(outputFile, this.gdalDataset, new String[0]);//create the final output dataset file (the COG product) from temporary dataset file without options for write
                 }else{
-                    this.gdalDataset = cogDriver.createCopy(outputFile, this.gdalDataset, StringUtils.stringToArray(gdalWriteOptions, ";"));//create the final output dataset file (the COG product) from temporary dataset file with options for write
+                    this.gdalDataset = cogDriver.createCopy(outputFile, this.gdalDataset, writeOptions);//create the final output dataset file (the COG product) from temporary dataset file with options for write
                 }
-                Vector fileList=tempDataset.getFileList();//fetch the temporary dataset file path
+                Vector fileList = tempDataset.getFileList();//fetch the temporary dataset file path
                 tempDataset.delete();//close the temporary dataset file
                 for (Object datasetFileO : fileList) {
                     String datasetFile = (String) datasetFileO;

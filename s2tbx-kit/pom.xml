@@ -238,18 +238,6 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-gdal</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-gdal-preferences-ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-gdal-reader</artifactId>
             <version>${project.version}</version>
         </dependency>

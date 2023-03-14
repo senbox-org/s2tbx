@@ -44,9 +44,9 @@
             <artifactId>snap-ui</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
+            <groupId>org.esa.snap</groupId>
             <artifactId>lib-gdal</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

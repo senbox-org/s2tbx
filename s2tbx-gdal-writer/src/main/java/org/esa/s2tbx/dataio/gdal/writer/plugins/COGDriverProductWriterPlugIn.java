@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.writer.plugins;
 
-import org.esa.s2tbx.dataio.gdal.GDALLoader;
-import org.esa.s2tbx.dataio.gdal.GDALVersion;
+import org.esa.snap.dataio.gdal.GDALVersion;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.datamodel.Product;
 
