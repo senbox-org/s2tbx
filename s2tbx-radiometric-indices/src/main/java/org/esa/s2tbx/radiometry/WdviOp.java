@@ -34,7 +34,8 @@ import java.util.Map;
         alias = "WdviOp",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
-        description = "Weighted Difference Vegetation Index retrieves the Isovegetation lines parallel to soil line. Soil line has an arbitrary slope and passes through origin",
+        description = "Weighted Difference Vegetation Index retrieves the Isovegetation lines parallel to soil line.\n" +
+                      "Soil line has an arbitrary slope and passes through origin",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
 public class WdviOp extends BaseIndexOp{
