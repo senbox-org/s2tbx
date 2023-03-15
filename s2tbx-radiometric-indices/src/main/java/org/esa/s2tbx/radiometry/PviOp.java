@@ -34,7 +34,8 @@ import java.util.Map;
         alias = "PviOp",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
-        description = "Perpendicular Vegetation Index retrieves the Isovegetation lines parallel to soil line. Soil line has an arbitrary slope and passes through origin",
+        description = "Perpendicular Vegetation Index retrieves the Isovegetation lines parallel to soil line.\n" +
+                      "Soil line has an arbitrary slope and passes through origin",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
 public class PviOp extends BaseIndexOp {
