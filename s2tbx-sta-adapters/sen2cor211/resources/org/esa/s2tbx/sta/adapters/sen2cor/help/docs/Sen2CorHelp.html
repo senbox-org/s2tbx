@@ -64,7 +64,7 @@
     <thead>
     <tr>
         <th>Console Parameter</th>
-        <th>Name</th>
+        <th>Parameter Name</th>
         <th>Description</th>
         <th>Default value</th>
         <th>Allowed value(s)</th>
@@ -229,7 +229,7 @@
     <thead>
     <tr>
         <th>XML Parameter</th>
-        <th>Name</th>
+        <th>Parameter Name</th>
         <th>Description</th>
         <th>Default value</th>
         <th>Allowed value(s)</th>
@@ -254,14 +254,14 @@
         <td>nrow_win</td>
         <td>N row win</td>
         <td>Specifies the row Window Size</td>
-        <td>OFF</td>
+        <td>1200</td>
         <td>OFF, AUTO, an integer number between 0 and 10980</td>
     </tr>
     <tr>
         <td>ncol_win</td>
         <td>N col win</td>
         <td>Specifies the column Window Size</td>
-        <td>OFF</td>
+        <td>1200</td>
         <td>OFF, AUTO, an integer number between 0 and 10980</td>
     </tr>
     <tr>
@@ -280,63 +280,63 @@
     </tr>
     <tr>
         <td>DEM_Directory</td>
-        <td>Dem directory</td>
+        <td>DEM directory</td>
         <td>Specifies the DEM directory</td>
         <td>NONE</td>
         <td>NONE, a valid directory path</td>
     </tr>
     <tr>
         <td>DEM_Reference</td>
-        <td>Dem reference</td>
+        <td>DEM reference</td>
         <td>Specifies the DEM reference</td>
         <td>NONE</td>
         <td>NONE, an URL</td>
     </tr>
     <tr>
         <td>Generate_DEM_Output</td>
-        <td>Generate dem output</td>
+        <td>Generate DEM output</td>
         <td>Specifies whether generate DEM output</td>
         <td>FALSE</td>
         <td>TRUE, FALSE</td>
     </tr>
     <tr>
         <td>Force_Exit_On_DEM_Error</td>
-        <td>Force exit on dem error</td>
+        <td>Force exit on DEM error</td>
         <td>Specifies whether force exit on DEM error</td>
         <td>FALSE</td>
         <td>TRUE, FALSE</td>
     </tr>
     <tr>
         <td>Generate_TCI_Output</td>
-        <td>Generate tci output</td>
+        <td>Generate TCI output</td>
         <td>Specifies whether generate TCI output</td>
         <td>TRUE</td>
         <td>TRUE, FALSE</td>
     </tr>
     <tr>
         <td>Generate_DDV_Output</td>
-        <td>Generate ddv output</td>
+        <td>Generate DDV output</td>
         <td>Specifies whether generate DDV output</td>
         <td>FALSE</td>
         <td>TRUE, FALSE</td>
     </tr>
     <tr>
         <td>Handle_L1C_QLT_Mask</td>
-        <td>HandleL1c qlt mask</td>
+        <td>HandleL1c QLT mask</td>
         <td>Specifies whether handle L1C QLT mask</td>
         <td>FALSE</td>
         <td>TRUE, FALSE</td>
     </tr>
     <tr>
         <td>Downsample_20_to_60</td>
-        <td>Downsample</td>
+        <td>Downsample 20 to 60</td>
         <td>Specifies whether downsample</td>
         <td>TRUE</td>
         <td>TRUE, FALSE</td>
     </tr>
     <tr>
         <td>PSD_Version</td>
-        <td>Psd version</td>
+        <td>PSD version</td>
         <td>Specifies the PSD version</td>
         <td>DEFAULT</td>
         <td>DEFAULT, 14.6, 14.7, 14.8, 14.9</td>
@@ -373,21 +373,21 @@
         <td>WV_Correction</td>
         <td>WV correction</td>
         <td>Specifies the WV correction</td>
-        <td>0</td>
+        <td>1</td>
         <td>0, 1</td>
     </tr>
     <tr>
         <td>VIS_Update_Mode</td>
         <td>VIS update mode</td>
         <td>Specifies the VIS update mode</td>
-        <td>0</td>
+        <td>1</td>
         <td>0, 1</td>
     </tr>
     <tr>
         <td>WV_Watermask</td>
         <td>WV watermask</td>
         <td>Specifies the WV watermask</td>
-        <td>0</td>
+        <td>1</td>
         <td>0, 1, 2</td>
     </tr>
     <tr>
@@ -441,7 +441,7 @@
     </tr>
     <tr>
         <td>Smooth_WV_Map</td>
-        <td>SmoothWV map</td>
+        <td>Smooth WV map</td>
         <td>Specifies the smooth WV map</td>
         <td>100.0</td>
         <td>a decimal number between 0 and 300</td>
@@ -471,7 +471,7 @@
     <thead>
     <tr>
         <th>XML Parameter</th>
-        <th>Name</th>
+        <th>Parameter Name</th>
         <th>Description</th>
         <th>Default value</th>
         <th>Allowed value(s)</th>
@@ -557,77 +557,77 @@
     </tr>
     <tr>
         <td>T_CLOUD_LP</td>
-        <td>T cloud lp</td>
+        <td>T CLOUD LP</td>
         <td>Specifies the T CLOUD LP</td>
         <td>0.0</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T_CLOUD_MP</td>
-        <td>T cloud mp</td>
+        <td>T CLOUD MP</td>
         <td>Specifies the T CLOUD MP</td>
         <td>0.20</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T_CLOUD_HP</td>
-        <td>T cloud hp</td>
+        <td>T CLOUD HP</td>
         <td>Specifies the T CLOUD HP</td>
         <td>0.80</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T1_NDSI_CLD</td>
-        <td>T1 ndsi cld</td>
+        <td>T1 NDSI CLD</td>
         <td>Specifies the T1 NDSI CLD</td>
         <td>-0.24</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T2_NDSI_CLD</td>
-        <td>T2 ndsi cld</td>
+        <td>T2 NDSI CLD</td>
         <td>Specifies the T2 NDSI CLD</td>
         <td>-0.16</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T1_NDSI_SNW</td>
-        <td>T1 ndsi snw</td>
+        <td>T1 NDSI SNW</td>
         <td>Specifies the T1 NDSI SNW</td>
         <td>0.35</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T2_NDSI_SNW</td>
-        <td>T2 ndsi snw</td>
+        <td>T2 NDSI SNW</td>
         <td>Specifies the T2 NDSI SNW</td>
         <td>0.50</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T1_NDVI</td>
-        <td>T1 ndvi</td>
+        <td>T1 NDVI</td>
         <td>Specifies the T1 NDVI</td>
         <td>0.36</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T2_NDVI</td>
-        <td>T2 ndvi</td>
+        <td>T2 NDVI</td>
         <td>Specifies the T2 NDVI</td>
         <td>0.42</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T1_SNOW</td>
-        <td>T1 snow</td>
+        <td>T1 SNOW</td>
         <td>Specifies the T1 SNOW</td>
         <td>0.12</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T2_SNOW</td>
-        <td>T2 snow</td>
+        <td>T2 SNOW</td>
         <td>Specifies the T2 SNOW</td>
         <td>0.25</td>
         <td>a decimal number between -10 and 10</td>
@@ -739,42 +739,42 @@
     </tr>
     <tr>
         <td>RV_B3</td>
-        <td>Rv B3</td>
+        <td>RV B3</td>
         <td>Specifies the RV B3</td>
         <td>5.26667</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>RV_B4</td>
-        <td>Rv B4</td>
+        <td>RV B4</td>
         <td>Specifies the RV B4</td>
         <td>5.37708</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>RV_B8</td>
-        <td>Rv B8</td>
+        <td>RV B8</td>
         <td>Specifies the RV B8</td>
         <td>7.52000</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>RV_B11</td>
-        <td>Rv B11</td>
+        <td>RV B11</td>
         <td>Specifies the RV B11</td>
         <td>5.45000</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>RV_B12</td>
-        <td>Rv B12</td>
+        <td>RV B12</td>
         <td>Specifies the RV B12</td>
         <td>2.55000</td>
         <td>a decimal number between -10 and 10</td>
     </tr>
     <tr>
         <td>T_SDW</td>
-        <td>T sdw</td>
+        <td>T SDW</td>
         <td>Specifies the T SDW</td>
         <td>0.75</td>
         <td>a decimal number between -10 and 10</td>
@@ -790,7 +790,7 @@
     <thead>
     <tr>
         <th>XML Parameter</th>
-        <th>Name</th>
+        <th>Parameter Name</th>
         <th>Description</th>
         <th>Default value</th>
         <th>Allowed value(s)</th>
@@ -1205,7 +1205,7 @@
     </tr>
     <tr>
         <td>AC_Min_Ddv_Area</td>
-        <td>AC min ddv area</td>
+        <td>AC min DDV area</td>
         <td>Specifies the min DDV area, required number of reference pixels (th percent)</td>
         <td>2.0</td>
         <td>a decimal number between 0 and 100</td>
@@ -1282,42 +1282,42 @@
     </tr>
     <tr>
         <td>AC_Ddv_Swir_Refl_Th1</td>
-        <td>AC ddv swir refl th1</td>
+        <td>AC DDV swir refl th1</td>
         <td>Specifies the DDV SWIR reflectance threshold 1, upper threshold</td>
         <td>0.05</td>
         <td>a decimal number between 0 and 1</td>
     </tr>
     <tr>
         <td>AC_Ddv_Swir_Refl_Th2</td>
-        <td>AC ddv swir refl th2</td>
+        <td>AC DDV swir refl th2</td>
         <td>Specifies the DDV SWIR reflectance threshold 2</td>
         <td>0.10</td>
         <td>a decimal number between 0 and 1</td>
     </tr>
     <tr>
         <td>AC_Ddv_Swir_Refl_Th3</td>
-        <td>AC ddv swir refl th3</td>
+        <td>AC DDV swir refl th3</td>
         <td>Specifies the DDV SWIR reflectance threshold 3</td>
         <td>0.12</td>
         <td>a decimal number between 0 and 1</td>
     </tr>
     <tr>
         <td>AC_Ddv_16um_Refl_Th1</td>
-        <td>AC ddv16um refl th1</td>
+        <td>AC DDV 16um refl th1</td>
         <td>Specifies the DDV 1.6Âlm reflectance threshold 1</td>
         <td>0.10</td>
         <td>a decimal number between 0 and 1</td>
     </tr>
     <tr>
         <td>AC_Ddv_16um_Refl_Th2</td>
-        <td>AC ddv16um refl th2</td>
+        <td>AC DDV 16um refl th2</td>
         <td>Specifies the DDV 1.6Âlm reflectance threshold 2</td>
         <td>0.15</td>
         <td>a decimal number between 0 and 1</td>
     </tr>
     <tr>
         <td>AC_Ddv_16um_Refl_Th3</td>
-        <td>AC ddv16um refl th3</td>
+        <td>AC DDV 16um refl th3</td>
         <td>Specifies the DDV 1.6Âlm reflectance threshold 3</td>
         <td>0.18</td>
         <td>a decimal number between 0 and 1</td>
@@ -1359,15 +1359,15 @@
     </tr>
     <tr>
         <td>AC_Wv_Iter_Start_Summer</td>
-        <td>AC wv iter start summer</td>
-        <td>Specifies the start value for wv iterations</td>
+        <td>AC WV iter start summer</td>
+        <td>Specifies the start value for WV iterations</td>
         <td>1.0</td>
         <td>a decimal number between 0 and 5.0</td>
     </tr>
     <tr>
         <td>AC_Wv_Iter_Start_Winter</td>
-        <td>AC wv iter start winter</td>
-        <td>Specifies the start value for wv iterations</td>
+        <td>AC WV iter start winter</td>
+        <td>Specifies the start value for WV iterations</td>
         <td>0.4</td>
         <td>a decimal number between 0 and 5.0</td>
     </tr>
@@ -1408,7 +1408,7 @@
     </tr>
     <tr>
         <td>AC_Ddv_Smooting_Window</td>
-        <td>AC ddv smooting window</td>
+        <td>AC DDV smooting window</td>
         <td>Specifies the DDV smoothing window size for spatial filtering</td>
         <td>1.0</td>
         <td>a decimal number between 0 and 10</td>
@@ -1445,7 +1445,7 @@
     <thead>
     <tr>
         <th>XML Parameter</th>
-        <th>Name</th>
+        <th>Parameter Name</th>
         <th>Description</th>
         <th>Default value</th>
         <th>Allowed value(s)</th>
@@ -1460,14 +1460,14 @@
         <td>a string</td>
     </tr>
     <tr>
-        <td>Idp_Sc_Name</td>
+        <td>IDP_SC_Name</td>
         <td>IDP SC name</td>
         <td>Specifies the IDP SC name</td>
         <td>Sen2Cor</td>
         <td>a string</td>
     </tr>
     <tr>
-        <td>Idp_Sc_Version</td>
+        <td>IDP_SC_Version</td>
         <td>IDP SC version</td>
         <td>Specifies the IDP SC version</td>
         <td>02.11.00</td>
