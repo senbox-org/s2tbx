@@ -59,7 +59,7 @@ $processingBaseline
 #if($sceneCog)
 --sc_cog
 #end
-#if($crOnly)
+#if($creationOnly)
 --cr_only
 #end
 --GIP_L2A
