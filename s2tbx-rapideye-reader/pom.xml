@@ -24,7 +24,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>9.0.1-SNAPSHOT</version>
+        <version>9.0.1</version>
     </parent>
 
     <artifactId>s2tbx-rapideye-reader</artifactId>
@@ -112,7 +112,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-runtime</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
