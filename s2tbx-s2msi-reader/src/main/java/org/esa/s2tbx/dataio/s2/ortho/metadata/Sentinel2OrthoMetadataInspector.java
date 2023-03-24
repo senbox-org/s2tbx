@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2.ortho.metadata;
 
-import org.esa.s2tbx.dataio.gdal.drivers.Band;
+import org.esa.snap.dataio.gdal.drivers.Band;
 import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2Config;

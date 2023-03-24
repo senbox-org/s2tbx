@@ -34,9 +34,7 @@ import java.util.Map;
         alias = "CiOp",
         version="1.0",
         category = "Optical/Thematic Land Processing/Soil Radiometric Indices",
-        description = "Colour Index  was developed to differentiate soils in the field.\n" +
-                      "In most cases the CI gives complementary information with the BI and the NDVI.\n" +
-                      " Used for diachronic analyses, they help for a better understanding of the evolution of soil surfaces.",
+        description = "Colour Index  was developed to differentiate soils in the field. It gives complementary information with the BI and the NDVI.",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
 public class CiOp extends BaseIndexOp{
@@ -83,7 +81,8 @@ public class CiOp extends BaseIndexOp{
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile greenTile = getSourceTile(getSourceProduct().getBand(greenSourceBand), rectangle);
 
-            Tile ci = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile ci = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile ciFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ciValue;

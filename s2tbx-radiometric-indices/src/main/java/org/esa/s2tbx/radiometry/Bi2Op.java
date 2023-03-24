@@ -34,8 +34,7 @@ import java.util.Map;
         alias = "Bi2Op",
         version="1.0",
         category = "Optical/Thematic Land Processing/Soil Radiometric Indices",
-        description = "The Brightness index represents the average of the brightness of a satellite image.\n" +
-                "This index is sensitive to the brightness of soils which is highly correlated with the humidity and the presence of salts in surface",
+        description = "The second Brightness index represents the average of the brightness of a satellite image.",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
 public class Bi2Op extends BaseIndexOp{
@@ -93,7 +92,8 @@ public class Bi2Op extends BaseIndexOp{
             Tile greenTile = getSourceTile(getSourceProduct().getBand(greenSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile bi2 = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile bi2 = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile bi2Flags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float bi2Value;

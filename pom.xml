@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>9.0.1.1cv</version>
+    <version>9.0.2-SNAPSHOT</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://sentinel.esa.int/web/sentinel/toolboxes/sentinel-2</url>
@@ -51,8 +51,6 @@
         <module>s2tbx-biophysical</module>
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
-        <module>lib-gdal</module>
-        <module>lib-gdal-preferences-ui</module>
         <module>s2tbx-gdal-reader</module>
         <module>s2tbx-gdal-writer</module>
         <module>s2tbx-gdal-writer-ui</module>
@@ -80,8 +78,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>9.0.3.1cv</snap.version>
-        <s2tbx.version>9.0.1.1cv</s2tbx.version>
+        <snap.version>9.0.6-SNAPSHOT</snap.version>
+        <s2tbx.version>9.0.2-SNAPSHOT</s2tbx.version>
         <geotools.version>20.0</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
@@ -142,7 +140,7 @@
     <licenses>
         <license>
             <name>GNU General Public License (GPL)</name>
-            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <url>https://www.gnu.org/licenses/gpl.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>

@@ -9,7 +9,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>9.0.1.1cv</version>
+        <version>9.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-gdal-writer</artifactId>
@@ -41,9 +41,14 @@
             <artifactId>snap-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
+            <groupId>org.esa.snap</groupId>
             <artifactId>lib-gdal</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-javahelp</artifactId>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

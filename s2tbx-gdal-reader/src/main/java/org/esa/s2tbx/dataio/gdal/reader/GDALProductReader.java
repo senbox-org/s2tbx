@@ -3,12 +3,12 @@ package org.esa.s2tbx.dataio.gdal.reader;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.commons.VirtualFile;
-import org.esa.s2tbx.dataio.gdal.drivers.Dataset;
-import org.esa.s2tbx.dataio.gdal.drivers.Driver;
-import org.esa.s2tbx.dataio.gdal.drivers.GCP;
-import org.esa.s2tbx.dataio.gdal.drivers.GDAL;
-import org.esa.s2tbx.dataio.gdal.drivers.GDALConst;
-import org.esa.s2tbx.dataio.gdal.drivers.GDALConstConstants;
+import org.esa.snap.dataio.gdal.drivers.Dataset;
+import org.esa.snap.dataio.gdal.drivers.Driver;
+import org.esa.snap.dataio.gdal.drivers.GCP;
+import org.esa.snap.dataio.gdal.drivers.GDAL;
+import org.esa.snap.dataio.gdal.drivers.GDALConst;
+import org.esa.snap.dataio.gdal.drivers.GDALConstConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -89,8 +89,8 @@ public class GDALProductReader extends AbstractProductReader {
         return gdalDataset;
     }
 
-    static String computeMaskName(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, String bandName) {
-        org.esa.s2tbx.dataio.gdal.drivers.Band maskBand = gdalBand.getMaskBand();
+    static String computeMaskName(org.esa.snap.dataio.gdal.drivers.Band gdalBand, String bandName) {
+        org.esa.snap.dataio.gdal.drivers.Band maskBand = gdalBand.getMaskBand();
         if (maskBand != null) {
             int maskFlags = gdalBand.getMaskFlags();
             String maskPrefix = null;
@@ -108,7 +108,7 @@ public class GDALProductReader extends AbstractProductReader {
         return null;
     }
 
-    private static Dimension computeBandTileSize(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, int productWidth, int productHeight) {
+    private static Dimension computeBandTileSize(org.esa.snap.dataio.gdal.drivers.Band gdalBand, int productWidth, int productHeight) {
         Dimension tileSize = new Dimension(gdalBand.getXSize(), gdalBand.getYSize());
         if (tileSize.width <= 1 || tileSize.width > productWidth) {
             tileSize.width = productWidth;
@@ -119,7 +119,7 @@ public class GDALProductReader extends AbstractProductReader {
         return tileSize;
     }
 
-    static String computeBandName(org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand, int bandIndex) {
+    static String computeBandName(org.esa.snap.dataio.gdal.drivers.Band gdalBand, int bandIndex) {
         String bandName = gdalBand.getDescription();
         if (StringUtils.isNullOrEmpty(bandName)) {
             bandName = String.format("band_%s", bandIndex + 1);
@@ -329,7 +329,7 @@ public class GDALProductReader extends AbstractProductReader {
             int bandCount = gdalDataset.getRasterCount();
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // bands are not 0-base indexed, so we must add 1
-                org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
+                org.esa.snap.dataio.gdal.drivers.Band gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
                 String bandName = computeBandName(gdalBand, bandIndex);
 
                 if (subsetDef == null || subsetDef.isNodeAccepted(bandName)) {
@@ -363,7 +363,7 @@ public class GDALProductReader extends AbstractProductReader {
                             if (iOverview != 0) {
                                 str.append(", ");
                             }
-                            org.esa.s2tbx.dataio.gdal.drivers.Band hOverview = gdalBand.getOverview(iOverview);
+                            org.esa.snap.dataio.gdal.drivers.Band hOverview = gdalBand.getOverview(iOverview);
                             str.append(hOverview.getXSize())
                                     .append("x")
                                     .append(hOverview.getYSize());
@@ -405,7 +405,7 @@ public class GDALProductReader extends AbstractProductReader {
                     }
 
                     GDALMultiLevelSource multiLevelSource = new GDALMultiLevelSource(localFile, dataBufferType.dataBufferType, productBounds, tileSize, bandIndex,
-                                                                                     levelCount, geoCoding, noDataValue, defaultJAIReadTileSize);
+                            levelCount, geoCoding, noDataValue, defaultJAIReadTileSize);
                     // compute the tile size of the image layout object based on the tile size from the tileOpImage used to read the data
                     ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
                     productBand.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));

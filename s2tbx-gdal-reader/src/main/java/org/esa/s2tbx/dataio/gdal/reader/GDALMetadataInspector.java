@@ -3,6 +3,8 @@ package org.esa.s2tbx.dataio.gdal.reader;
 import org.esa.s2tbx.commons.VirtualFile;
 import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.dataio.gdal.drivers.Band;
+import org.esa.snap.dataio.gdal.drivers.Dataset;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,7 +19,7 @@ public class GDALMetadataInspector implements MetadataInspector {
 
     @Override
     public Metadata getMetadata(Path productPath) throws IOException {
-        org.esa.s2tbx.dataio.gdal.drivers.Dataset gdalDataset = null;
+        Dataset gdalDataset = null;
         VirtualFile virtualFile = null;
         try {
             virtualFile = new VirtualFile(productPath);
@@ -31,7 +33,7 @@ public class GDALMetadataInspector implements MetadataInspector {
             int bandCount = gdalDataset.getRasterCount();
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // bands are not 0-base indexed, so we must add 1
-                org.esa.s2tbx.dataio.gdal.drivers.Band gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
+                Band gdalBand = gdalDataset.getRasterBand(bandIndex + 1);
 
                 String bandName = GDALProductReader.computeBandName(gdalBand, bandIndex);
                 metadata.getBandList().add(bandName);

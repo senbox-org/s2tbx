@@ -5,7 +5,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>9.0.1.1cv</version>
+        <version>9.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-kit</artifactId>
@@ -233,18 +233,6 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-reflectance-to-radiance-ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-gdal</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-gdal-preferences-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
 

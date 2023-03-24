@@ -1,5 +1,7 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import org.esa.snap.dataio.gdal.GDALLoader;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class GDALLibraryInstaller {
@@ -11,7 +13,7 @@ public final class GDALLibraryInstaller {
 
     public static void install() {
         if (!INSTALLED.getAndSet(true)) {
-            GDALLoader.getInstance().initGDAL();
+            GDALLoader.ensureGDALInitialised();
         }
     }
 }

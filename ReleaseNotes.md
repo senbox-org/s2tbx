@@ -1,6 +1,26 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+# New in S2TBX 9.0.1
+--------------------
+
+### List of solved issues
+
+#### Bug
+    * [SNAP-2065] S2 Resampling Error "Failed to Read Data for level 0 and rectangle"
+    * [SNAP-2217] Pleiades - error opening product
+    * [SNAP-2224] Radiometric indices don't use the name of the source product
+
+#### Improvement
+    * [SNAP-2442] Upgrade WorldView2 reader
+    * [SNAP-2433] Improve SNAP startup time by initialising GDAL native library on first usage
+    * [SNAP-2447] Upgrade SPOT 6 reader
+    * [SNAP-2448] Upgrade Multi Size Mosaic
+
+#### Task
+    * [SNAP-3458] Update SNAP & toolboxes AboutBox with proper release notes links
+
+
 Changes in S2TBX 9.0
 --------------------
 

@@ -34,7 +34,8 @@ import java.util.Map;
         alias = "PviOp",
         version="1.0",
         category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
-        description = "Perpendicular Vegetation Index retrieves the Isovegetation lines parallel to soil line. Soil line has an arbitrary slope and passes through origin",
+        description = "Perpendicular Vegetation Index retrieves the Isovegetation lines parallel to soil line.\n" +
+                      "Soil line has an arbitrary slope and passes through origin",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
 public class PviOp extends BaseIndexOp {
@@ -83,7 +84,8 @@ public class PviOp extends BaseIndexOp {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile pvi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            // SIITBX-494 - retrieve bands after suffix (which is the operator band name)
+            Tile pvi = targetTiles.get(getBandWithSuffix(targetProduct, "_" + BAND_NAME));
             Tile pviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float pviValue;
