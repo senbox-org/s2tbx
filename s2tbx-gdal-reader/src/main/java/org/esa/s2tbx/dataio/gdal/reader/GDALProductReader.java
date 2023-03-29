@@ -278,11 +278,10 @@ public class GDALProductReader extends AbstractProductReader {
             throw new NullPointerException("The local file is null.");
         }
         if (!AbstractFile.isLocalPath(localFile)) {
-            throw new IllegalArgumentException("The file '" + localFile.toString() + "' is not a local file.");
+            throw new IllegalArgumentException("The file '" + localFile + "' is not a local file.");
         }
 
-        Dataset gdalDataset = openGDALDataset(localFile);
-        try {
+        try (Dataset gdalDataset = openGDALDataset(localFile)) {
             int defaultProductWidth = gdalDataset.getRasterXSize();
             int defaultProductHeight = gdalDataset.getRasterYSize();
 
@@ -426,8 +425,8 @@ public class GDALProductReader extends AbstractProductReader {
             }
             product.setNumResolutionsMax(maximumResolutionCount);
             return product;
-        } finally {
-            gdalDataset.delete();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
