@@ -19,12 +19,8 @@ public class GDALMetadataInspector implements MetadataInspector {
 
     @Override
     public Metadata getMetadata(Path productPath) throws IOException {
-        Dataset gdalDataset = null;
-        VirtualFile virtualFile = null;
-        try {
-            virtualFile = new VirtualFile(productPath);
-            gdalDataset = GDALProductReader.openGDALDataset(virtualFile.getLocalFile());
-
+        try (VirtualFile virtualFile = new VirtualFile(productPath);
+             Dataset gdalDataset = GDALProductReader.openGDALDataset(virtualFile.getLocalFile())){
             Metadata metadata = new Metadata(gdalDataset.getRasterXSize(), gdalDataset.getRasterYSize());
 
             GeoCoding productGeoCoding = GDALProductReader.buildGeoCoding(gdalDataset, null, null);
@@ -49,16 +45,6 @@ public class GDALMetadataInspector implements MetadataInspector {
             throw exception;
         } catch (Exception exception) {
             throw new IOException(exception);
-        } finally {
-            try {
-                if (gdalDataset != null) {
-                    gdalDataset.delete();
-                }
-            } finally {
-                if (virtualFile != null) {
-                    virtualFile.close();
-                }
-            }
         }
     }
 }
