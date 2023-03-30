@@ -5,6 +5,8 @@ import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.dataio.gdal.drivers.Band;
 import org.esa.snap.dataio.gdal.drivers.Dataset;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -19,12 +21,8 @@ public class GDALMetadataInspector implements MetadataInspector {
 
     @Override
     public Metadata getMetadata(Path productPath) throws IOException {
-        Dataset gdalDataset = null;
-        VirtualFile virtualFile = null;
-        try {
-            virtualFile = new VirtualFile(productPath);
-            gdalDataset = GDALProductReader.openGDALDataset(virtualFile.getLocalFile());
-
+        try (VirtualFile virtualFile = new VirtualFile(productPath);
+             Dataset gdalDataset = GDALProductReader.openGDALDataset(virtualFile.getLocalFile())){
             Metadata metadata = new Metadata(gdalDataset.getRasterXSize(), gdalDataset.getRasterYSize());
 
             GeoCoding productGeoCoding = GDALProductReader.buildGeoCoding(gdalDataset, null, null);
@@ -45,20 +43,8 @@ public class GDALMetadataInspector implements MetadataInspector {
             }
 
             return metadata;
-        } catch (RuntimeException | IOException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            throw new IOException(exception);
-        } finally {
-            try {
-                if (gdalDataset != null) {
-                    gdalDataset.delete();
-                }
-            } finally {
-                if (virtualFile != null) {
-                    virtualFile.close();
-                }
-            }
+        } catch (FactoryException | TransformException e) {
+            throw new IOException(e);
         }
     }
 }
