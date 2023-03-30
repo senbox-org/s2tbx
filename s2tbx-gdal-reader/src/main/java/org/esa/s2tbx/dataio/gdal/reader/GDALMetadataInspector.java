@@ -5,6 +5,8 @@ import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.dataio.gdal.drivers.Band;
 import org.esa.snap.dataio.gdal.drivers.Dataset;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -41,10 +43,8 @@ public class GDALMetadataInspector implements MetadataInspector {
             }
 
             return metadata;
-        } catch (RuntimeException | IOException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            throw new IOException(exception);
+        } catch (FactoryException | TransformException e) {
+            throw new IOException(e);
         }
     }
 }
