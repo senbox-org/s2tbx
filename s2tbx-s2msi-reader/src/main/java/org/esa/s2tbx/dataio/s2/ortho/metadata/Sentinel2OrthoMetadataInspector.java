@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.s2.ortho.metadata;
 
-import org.esa.snap.dataio.gdal.drivers.Band;
 import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2Config;
@@ -11,7 +10,6 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader.BandInfo;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
@@ -27,15 +25,15 @@ import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoUtils;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.metadata.MetadataInspector;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Placemark;
+import org.esa.snap.core.metadata.MetadataInspector;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -57,7 +55,6 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
 
     private final S2Config.Sentinel2ProductLevel productLevel;
     private final String epsg;
-    private int maskLevel;
 
     public Sentinel2OrthoMetadataInspector(S2Config.Sentinel2ProductLevel level, String epsg) {
         this.productLevel = level;
@@ -70,23 +67,34 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
             Path inputPath = S2ProductNamingUtils.processInputPath(productPath);
             virtualPath = S2NamingConventionUtils.transformToSentinel2VirtualPath(inputPath);
             INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(virtualPath);
-            AbstractS2OrthoMetadataReader productMetadataReader = null;
+            if (namingConvention == null) {
+                throw new IOException(String.format("Could not detect naming convention from virtual path: %s", virtualPath.getFullPathString()));
+            }
+            AbstractS2OrthoMetadataReader productMetadataReader;
             S2SpatialResolution productResolution = namingConvention.getResolution();
+            int maskLevel;
             if (productLevel == S2Config.Sentinel2ProductLevel.L2A) {
                 productMetadataReader = new S2L2aProductMetadataReader(virtualPath, epsg);
-                this.maskLevel = MaskInfo.L2A;
-            }else if (productLevel == S2Config.Sentinel2ProductLevel.L2H) {
+                maskLevel = MaskInfo.L2A;
+            } else if (productLevel == S2Config.Sentinel2ProductLevel.L2H) {
                 productMetadataReader = new S2L2hProductMetadataReader(virtualPath, epsg);
-                this.maskLevel = MaskInfo.L2A;
-            }else if (productLevel == S2Config.Sentinel2ProductLevel.L2F) {
+                maskLevel = MaskInfo.L2A;
+            } else if (productLevel == S2Config.Sentinel2ProductLevel.L2F) {
                 productMetadataReader = new S2L2fProductMetadataReader(virtualPath, epsg);
-                this.maskLevel = MaskInfo.L2A;
+                maskLevel = MaskInfo.L2A;
             } else if (productLevel == S2Config.Sentinel2ProductLevel.L1C) {
                 productMetadataReader = new S2L1cProductMetadataReader(virtualPath, epsg);
-                this.maskLevel = MaskInfo.L1C;
+                maskLevel = MaskInfo.L1C;
             } else if (productLevel == S2Config.Sentinel2ProductLevel.L3) {
                 productMetadataReader = new S2L3ProductMetadataReader(virtualPath, epsg);
-                this.maskLevel = MaskInfo.L3;
+                maskLevel = MaskInfo.L3;
+            } else {
+                throw new IOException(String.format("Unsupported product level (%s). Could not create metadata reader.", productLevel));
+            }
+
+
+            if (productMetadataReader.getNamingConvention() == null) {
+                throw new IOException(String.format("Product metadata reader could not detect naming convention from virtual Path %s", virtualPath.getFullPathString()));
             }
             VirtualPath inputVirtualPath = productMetadataReader.getNamingConvention().getInputXml();
             S2Config config = productMetadataReader.readTileLayouts(inputVirtualPath);
@@ -111,40 +119,36 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
                     Arrays.stream(indexCoding.getIndexNames()).forEach(index -> metadata.getMaskList().add(indexBandInformation.getPrefix() + index.toLowerCase()));
                 }
             }
-            if (MaskInfo.values() != null) {
-                for (MaskInfo maskInfo : MaskInfo.values()) {
-                    if (!maskInfo.isPresentAtLevel(maskLevel))
-                        continue;
-                    if (!maskInfo.isEnabled())
-                        continue;
-                    if (!maskInfo.isPerBand()) {
-                        // cloud masks are provided once and valid for all bands
-                        addVectorMask(tileList, maskInfo, null, metadata);
-                    } else {
-                        // for other masks, we have one mask instance for each spectral band
-                        for (Sentinel2ProductReader.BandInfo bandInfo : bandInfoList) {
-                            if (bandInfo.getBandInformation() instanceof S2SpectralInformation) {
-                                addVectorMask(tileList, maskInfo, (S2SpectralInformation) bandInfo.getBandInformation(), metadata);
-                            }
+            for (MaskInfo maskInfo : MaskInfo.values()) {
+                if (!maskInfo.isPresentAtLevel(maskLevel))
+                    continue;
+                if (!maskInfo.isEnabled())
+                    continue;
+                if (!maskInfo.isPerBand()) {
+                    // cloud masks are provided once and valid for all bands
+                    addVectorMask(tileList, maskInfo, null, metadata);
+                } else {
+                    // for other masks, we have one mask instance for each spectral band
+                    for (Sentinel2ProductReader.BandInfo bandInfo : bandInfoList) {
+                        if (bandInfo.getBandInformation() instanceof S2SpectralInformation) {
+                            addVectorMask(tileList, maskInfo, (S2SpectralInformation) bandInfo.getBandInformation(), metadata);
                         }
                     }
                 }
             }
-            if(MaskInfo148.values() != null) {
-                for (MaskInfo148 maskInfo : MaskInfo148.values()) {
-                    if (!maskInfo.isPresentAtLevel(maskLevel))
-                        continue;
-                    if (!maskInfo.isEnabled())
-                        continue;
-                    if (!maskInfo.isPerBand()) {
-                        // cloud masks are provided once and valid for all bands
-                        addRasterMask(tileList, maskInfo,  null, null, bandInfoList, metadata);
-                    } else {
-                        // for other masks, we have one mask instance for each spectral band
-                        for (Sentinel2ProductReader.BandInfo bandInfo : bandInfoList) {
-                            if (bandInfo.getBandInformation() instanceof S2SpectralInformation) {
-                                addRasterMask(tileList, maskInfo, (S2SpectralInformation) bandInfo.getBandInformation(), bandInfo, bandInfoList, metadata);
-                            }
+            for (MaskInfo148 maskInfo : MaskInfo148.values()) {
+                if (!maskInfo.isPresentAtLevel(maskLevel))
+                    continue;
+                if (!maskInfo.isEnabled())
+                    continue;
+                if (!maskInfo.isPerBand()) {
+                    // cloud masks are provided once and valid for all bands
+                    addRasterMask(tileList, maskInfo, null, metadata);
+                } else {
+                    // for other masks, we have one mask instance for each spectral band
+                    for (Sentinel2ProductReader.BandInfo bandInfo : bandInfoList) {
+                        if (bandInfo.getBandInformation() instanceof S2SpectralInformation) {
+                            addRasterMask(tileList, maskInfo, (S2SpectralInformation) bandInfo.getBandInformation(), metadata);
                         }
                     }
                 }
@@ -263,11 +267,9 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
     }
 
     private void addRasterMask(List<S2Metadata.Tile> tileList, MaskInfo148 maskInfo, S2SpectralInformation spectralInfo,
-            BandInfo bandInfo,List<BandInfo> bandInfoList, MetadataInspector.Metadata metadata)
-            throws IOException {
+                               MetadataInspector.Metadata metadata) throws IOException {
 
         VirtualPath maskPath = null;
-        boolean maskFilesFound = false;
         for (S2Metadata.Tile tile : tileList) {
             if (tile.getMaskFilenames() == null) {
                 continue;
@@ -283,19 +285,17 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
                     // We are only interested in masks for a certain band
                     if (maskFilename.getBandId().equals(String.format("%s", spectralInfo.getBandId()))) {
                         maskPath = maskFilename.getPath();
-                        maskFilesFound = true;
                         break;
                     }
                 } else {
                     maskPath = maskFilename.getPath();
-                    maskFilesFound = true;
                     break;
                 }
 
             }
         }
 
-        if (maskPath == null || !maskFilesFound) {
+        if (maskPath == null) {
             return;
         }
 
@@ -304,12 +304,11 @@ public class Sentinel2OrthoMetadataInspector implements MetadataInspector {
                 metadata.getMaskList().add(maskInfo.getSnapName(i));
             }
         } else {
-            Band band = null;
             for (int i = 0; i < maskInfo.getSubType().length; i++) {
                 // // This mask is specific to a band
                 String bandName = spectralInfo.getPhysicalBand();
                 String maskName = maskInfo.getSnapNameForBand(bandName, i);
-                if(maskInfo.getMainType().contains("MSK_DETFOO"))
+                if (maskInfo.getMainType().contains("MSK_DETFOO"))
                     maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
                 metadata.getMaskList().add(maskName);
             }
