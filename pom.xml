@@ -88,6 +88,9 @@
         <brandingToken>s2tbx</brandingToken>
         <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
         <buildDate>${maven.build.timestamp}</buildDate>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+        <sonar.java.binaries>**/classes</sonar.java.binaries>
+        <sonar.exclusions>*/src</sonar.exclusions>
     </properties>
 
     <repositories>
