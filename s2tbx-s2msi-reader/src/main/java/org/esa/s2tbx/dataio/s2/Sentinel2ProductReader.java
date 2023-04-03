@@ -34,9 +34,6 @@ import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.MosaicMatrix;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.dataio.gdal.drivers.Dataset;
-import org.esa.snap.dataio.gdal.drivers.GDAL;
-import org.esa.snap.dataio.gdal.drivers.GDALConst;
 import org.esa.snap.dataio.geotiff.GeoTiffImageReader;
 import org.esa.snap.dataio.geotiff.GeoTiffMatrixCell;
 import org.esa.snap.engine_utilities.util.Pair;
@@ -291,29 +288,19 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     protected static int computeJP2MatrixCellsResolutionCount(MosaicMatrix mosaicMatrix) {
-        try {
-            JP2MosaicBandMatrixCell matrixCell = (JP2MosaicBandMatrixCell) mosaicMatrix.getCellAt(0, 0);
-            try (Dataset open = GDAL.open(matrixCell.getJp2ImageFile().getLocalFile().toString(), GDALConst.gaReadonly())) {
-                if (open == null) {
-                    throw new IOException("Null Gdal dataset");
-                }
-                return open.getRasterBand(1).getOverviewCount();
-            }
-        } catch (IOException e) {
-            JP2MosaicBandMatrixCell firstMatrixCell = (JP2MosaicBandMatrixCell) mosaicMatrix.getCellAt(0, 0);
-            for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
-                for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
-                    JP2MosaicBandMatrixCell matrixCell = (JP2MosaicBandMatrixCell) mosaicMatrix.getCellAt(rowIndex,
-                                                                                                          columnIndex);
-                    if (firstMatrixCell.getResolutionCount() != matrixCell.getResolutionCount()) {
-                        throw new IllegalStateException("Different resolution count: cell at " + rowIndex + ", "
-                                                                + columnIndex + " has data type " + matrixCell.getResolutionCount() + " and cell at " + 0
-                                                                + ", " + 0 + " has resolution count " + firstMatrixCell.getResolutionCount() + ".");
-                    }
+        JP2MosaicBandMatrixCell firstMatrixCell = (JP2MosaicBandMatrixCell) mosaicMatrix.getCellAt(0, 0);
+        for (int rowIndex = 0; rowIndex < mosaicMatrix.getRowCount(); rowIndex++) {
+            for (int columnIndex = 0; columnIndex < mosaicMatrix.getColumnCount(); columnIndex++) {
+                JP2MosaicBandMatrixCell matrixCell = (JP2MosaicBandMatrixCell) mosaicMatrix.getCellAt(rowIndex,
+                        columnIndex);
+                if (firstMatrixCell.getResolutionCount() != matrixCell.getResolutionCount()) {
+                    throw new IllegalStateException("Different resolution count: cell at " + rowIndex + ", "
+                            + columnIndex + " has data type " + matrixCell.getResolutionCount() + " and cell at " + 0
+                            + ", " + 0 + " has resolution count " + firstMatrixCell.getResolutionCount() + ".");
                 }
             }
-            return firstMatrixCell.getResolutionCount();
         }
+        return firstMatrixCell.getResolutionCount();
     }
 
     protected static int computeTiffMatrixCellsResolutionCount(MosaicMatrix mosaicMatrix) {
