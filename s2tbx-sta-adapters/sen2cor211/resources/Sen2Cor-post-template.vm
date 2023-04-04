@@ -1,28 +1,21 @@
 #set($targetName = "noOutput")
 #set($targetFilePath = $sourceProduct.fileLocation.getParentFile().toPath().resolve("noOutput.tif"))
-#set($fileName = $sourceProduct.fileLocation.getName().replace("L1C", "L2A").replace("OPER", "USER"))
 #if($sourceProduct.fileLocation.isDirectory())
-    #set($fileList = $sourceProduct.fileLocation.getParentFile().listFiles())
-    #foreach($file in $fileList)
-        #if($file.isDirectory() && $file.getName().endsWith(".SAFE") && $fileName.length() > 27 && $file.getName().startsWith($fileName.replace("OPER", "USER").substring(0,27)))
-			#set($targetName = $file.getName())
-			#set($targetFilePath = $file.toPath().resolve("MTD_MSIL2A.xml"))
-        #end
-    #end
+    #set($targetDir = $sourceProduct.fileLocation.getParentFile())
+    #set($sourceProductDirName = $sourceProduct.fileLocation.getName())
 #else
-    #set($fileList = $sourceProduct.fileLocation.getParentFile().getParentFile().listFiles())
-    #set($parentFileName = $sourceProduct.fileLocation.getParentFile().getName().replace("L1C", "L2A").replace("OPER", "USER"))
-    #foreach($file in $fileList)
-        #if($file.isDirectory() && $parentFileName.length() > 27 && $file.getName().startsWith($parentFileName.substring(0,27)))
-            #set($parentFile = $file)
-            #set($fileList2 = $file.listFiles())
-            #foreach($file2 in $fileList2)
-                #if($file2.getName().endsWith(".xml") && !$file2.getName().endsWith("report.xml") && $fileName.length() > 10 && $file2.getName().startsWith($fileName.substring(0,10)))
-                    #set($targetName = $file.getName())
-					#set($targetFilePath = $file2.toPath())
-                #end
-            #end
-        #end
+    #set($targetDir = $sourceProduct.fileLocation.getParentFile().getParentFile())
+    #set($sourceProductDirName = $sourceProduct.fileLocation.getParentFile().getName())
+#end
+#if($outputDir)
+    #set($targetDir = $outputDir)
+#end
+#set($targetProductDirName = $sourceProductDirName.replace("L1C", "L2A").replace("OPER", "USER"))
+#set($targetDirContents = $targetDir.listFiles())
+#foreach($targetDirContent in $targetDirContents)
+    #if($targetDirContent.isDirectory() && $targetDirContent.getName().endsWith(".SAFE") && $targetProductDirName.length() > 27 && $targetDirContent.getName().startsWith($targetProductDirName.substring(0,27)))
+        #set($targetName = $targetDirContent.getName())
+        #set($targetFilePath = $targetDirContent.toPath().resolve("MTD_MSIL2A.xml"))
     #end
 #end
 #set($targetProductFile = $targetFilePath.toFile())
