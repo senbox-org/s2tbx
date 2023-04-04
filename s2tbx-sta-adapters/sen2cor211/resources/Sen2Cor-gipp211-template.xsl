@@ -3,8 +3,8 @@
 	<xsl:output method="xml" indent="yes" encoding="UTF-8"/>
 	<xsl:param name="row0" select="'OFF'"/>
 	<xsl:param name="col0" select="'OFF'"/>
-	<xsl:param name="nrow_win" select="'1200'"/>
-	<xsl:param name="ncol_win" select="'1200'"/>
+	<xsl:param name="n_row_win" select="'1200'"/>
+	<xsl:param name="n_col_win" select="'1200'"/>
 	<xsl:param name="Nr_Threads" select="'AUTO'" />
 	<xsl:param name="Product_Generator" select="'NONE'"/>
 	<xsl:param name="DEM_Directory" select="'NONE'"/>
@@ -27,7 +27,7 @@
 	<xsl:param name="DEM_Terrain_Correction" select="'TRUE'"/>
 	<xsl:param name="BRDF_Correction" select="0"/>
 	<xsl:param name="BRDF_Lower_Bound" select="0.22"/>
-	<xsl:param name="Adj_Km" select="1.000"/>
+	<xsl:param name="Adjacency_Range" select="1.000"/>
 	<xsl:param name="Visibility" select="40.0"/>
 	<xsl:param name="Altitude" select="0.100"/>
 	<xsl:param name="Smooth_WV_Map" select="100.0"/>
@@ -52,11 +52,11 @@
                     <!-- else: col0: specifies the midpoint of the region of interest -->
                     <!-- col0 must be integer divisible by 6, to prevent rounding errors for downsampling -->
                     <!-- specify always a 10m resolution ROI, it will be automatically adapted to the lower resolutions -->
-                    <nrow_win><xsl:value-of select="$nrow_win"/></nrow_win>
+                    <nrow_win><xsl:value-of select="$n_row_win"/></nrow_win>
                     <!-- if row0, col0 not OFF or AUTO: nrow_win, ncol_win defines a rectangle around the midpoint in pixel -->
                     <!-- nrow_win must be integer divisible by 6, to prevent rounding errors for downsampling -->
                     <!-- specify always a 10m resolution ROI, it will be automatically adapted to the lower resolutions -->
-                    <ncol_win><xsl:value-of select="$ncol_win"/></ncol_win>
+                    <ncol_win><xsl:value-of select="$n_col_win"/></ncol_win>
                     <!-- if row0, col0 not OFF or AUTO: ncol_win, ncol_win defines a rectangle around the midpoint in pixel -->
                     <!-- ncol_win must be integer divisible by 6, to prevent rounding errors for downsampling -->
                     <!-- specify always a 10m resolution ROI, it will be automatically adapted to the lower resolutions -->
@@ -213,7 +213,7 @@
                     <!-- In most cases, g=0.2 to 0.25 is adequate, in extreme cases of overcorrection g=0.1 should be applied -->
                 </Flags>
                 <Calibration>
-                    <Adj_Km><xsl:value-of select="$Adj_Km"/></Adj_Km>
+                    <Adj_Km><xsl:value-of select="$Adjacency_Range"/></Adj_Km>
                     <!-- Adjancency Range [km] -->
                     <Visibility><xsl:value-of select="$Visibility"/></Visibility>
                     <!-- visibility (5 <= visib <= 120 km) -->

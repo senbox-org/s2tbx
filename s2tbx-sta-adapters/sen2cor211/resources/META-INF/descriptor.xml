@@ -242,7 +242,7 @@
             <parameterType>RegularParameter</parameterType>
         </parameter>
         <parameter>
-            <name>crOnly</name>
+            <name>creationOnly</name>
             <dataType>java.lang.Boolean</dataType>
             <defaultValue>false</defaultValue>
             <description>Specify whether performs only the creation of the L2A product tree, no processing</description>
@@ -294,7 +294,7 @@
                     <parameterType>RegularParameter</parameterType>
                 </parameter>
                 <parameter>
-                    <name>nrow_win</name>
+                    <name>n_row_win</name>
                     <dataType>java.lang.String</dataType>
                     <defaultValue>1200</defaultValue>
                     <description>Defines a rectangle around the midpoint in pixel</description>
@@ -304,7 +304,7 @@
                     <parameterType>RegularParameter</parameterType>
                 </parameter>
                 <parameter>
-                    <name>ncol_win</name>
+                    <name>n_col_win</name>
                     <dataType>java.lang.String</dataType>
                     <defaultValue>1200</defaultValue>
                     <description>Defines a rectangle around the midpoint in pixel</description>
@@ -604,7 +604,7 @@
                     <parameterType>RegularParameter</parameterType>
                 </parameter>
                 <parameter>
-                    <name>Adj_Km</name>
+                    <name>Adjacency_Range</name>
                     <dataType>java.lang.Float</dataType>
                     <defaultValue>1.000</defaultValue>
                     <description>Adjancency Range [km]</description>
@@ -701,7 +701,7 @@
             <parameterType>RegularParameter</parameterType>
         </parameter>
         <parameter>
-            <name>nrow_win</name>
+            <name>n_row_win</name>
             <dataType>java.lang.String</dataType>
             <defaultValue>1200</defaultValue>
             <description>Defines a rectangle around the midpoint in pixel</description>
@@ -711,7 +711,7 @@
             <parameterType>RegularParameter</parameterType>
         </parameter>
         <parameter>
-            <name>ncol_win</name>
+            <name>n_col_win</name>
             <dataType>java.lang.String</dataType>
             <defaultValue>1200</defaultValue>
             <description>Defines a rectangle around the midpoint in pixel</description>
@@ -1011,7 +1011,7 @@
             <parameterType>RegularParameter</parameterType>
         </parameter>
         <parameter>
-            <name>Adj_Km</name>
+            <name>Adjacency_Range</name>
             <dataType>java.lang.Float</dataType>
             <defaultValue>1.000</defaultValue>
             <description>Adjancency Range [km]</description>
@@ -3488,7 +3488,7 @@
                     <parameterType>RegularParameter</parameterType>
                 </parameter>
                 <parameter>
-                    <name>Idp_Sc_Name</name>
+                    <name>IDP_SC_Name</name>
                     <dataType>java.lang.String</dataType>
                     <defaultValue>Sen2Cor</defaultValue>
                     <notNull>false</notNull>
@@ -3496,7 +3496,7 @@
                     <parameterType>RegularParameter</parameterType>
                 </parameter>
                 <parameter>
-                    <name>Idp_Sc_Version</name>
+                    <name>IDP_SC_Version</name>
                     <dataType>java.lang.String</dataType>
                     <defaultValue>02.11.00</defaultValue>
                     <notNull>false</notNull>
@@ -3526,7 +3526,7 @@
             <parameterType>RegularParameter</parameterType>
         </parameter>
         <parameter>
-            <name>Idp_Sc_Name</name>
+            <name>IDP_SC_Name</name>
             <dataType>java.lang.String</dataType>
             <defaultValue>Sen2Cor</defaultValue>
             <notNull>false</notNull>
@@ -3534,7 +3534,7 @@
             <parameterType>RegularParameter</parameterType>
         </parameter>
         <parameter>
-            <name>Idp_Sc_Version</name>
+            <name>IDP_SC_Version</name>
             <dataType>java.lang.String</dataType>
             <defaultValue>02.11.00</defaultValue>
             <notNull>false</notNull>
