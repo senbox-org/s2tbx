@@ -136,6 +136,16 @@
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
     </parameter>
+    <parameter>
+      <name>outputDir</name>
+      <description>Specify output directory</description>
+      <alias><![CDATA[<html><body>Output directory<br>(If not specified,<br>the input product<br>location is used)</body></html>]]></alias>
+      <dataType>java.io.File</dataType>
+      <defaultValue/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>FolderParameter</parameterType>
+    </parameter>
 
     <parameter>
       <name>useL2AGIPP</name>
