@@ -1,0 +1,21 @@
+#set($targetName = "noOutput")
+#set($targetFilePath = $sourceProduct.fileLocation.getParentFile().toPath().resolve("noOutput.tif"))
+#if($sourceProduct.fileLocation.isDirectory())
+    #set($targetDir = $sourceProduct.fileLocation.getParentFile())
+    #set($sourceProductDirName = $sourceProduct.fileLocation.getName())
+#else
+    #set($targetDir = $sourceProduct.fileLocation.getParentFile().getParentFile())
+    #set($sourceProductDirName = $sourceProduct.fileLocation.getParentFile().getName())
+#end
+#if($outputDir)
+    #set($targetDir = $outputDir)
+#end
+#set($targetProductDirName = $sourceProductDirName.replace("L1C", "L2A").replace("OPER", "USER"))
+#set($targetDirContents = $targetDir.listFiles())
+#foreach($targetDirContent in $targetDirContents)
+    #if($targetDirContent.isDirectory() && $targetDirContent.getName().endsWith(".SAFE") && $targetProductDirName.length() > 27 && $targetDirContent.getName().startsWith($targetProductDirName.substring(0,27)))
+        #set($targetName = $targetDirContent.getName())
+        #set($targetFilePath = $targetDirContent.toPath().resolve("MTD_MSIL2A.xml"))
+    #end
+#end
+#set($targetProductFile = $targetFilePath.toFile())
