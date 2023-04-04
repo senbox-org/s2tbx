@@ -1,33 +1,28 @@
-#set($targetName = $sourceProduct.FileLocation.AbsolutePath.toString())
-#if($sourceProduct.FileLocation.Directory)
-    #set($fileList = $sourceProduct.FileLocation.ParentFile.listFiles())
+#set($targetName = "noOutput")
+#set($targetFilePath = $sourceProduct.fileLocation.getParentFile().toPath().resolve("noOutput.tif"))
+#set($fileName = $sourceProduct.fileLocation.getName().replace("L1C", "L2A").replace("OPER", "USER"))
+#if($sourceProduct.fileLocation.isDirectory())
+    #set($fileList = $sourceProduct.fileLocation.getParentFile().listFiles())
     #foreach($file in $fileList)
-        #if($file.Name.startsWith($sourceProduct.FileLocation.Name.replace("L1C", "L2A").replace("OPER", "USER").substring(0,27)) && $file.Directory && $file.Name.endsWith(".SAFE"))
-            #set($targetName = $file.toPath().resolve("MTD_MSIL2A.xml").toString())
+        #if($file.isDirectory() && $file.getName().endsWith(".SAFE") && $fileName.length() > 27 && $file.getName().startsWith($fileName.replace("OPER", "USER").substring(0,27)))
+			#set($targetName = $file.getName())
+			#set($targetFilePath = $file.toPath().resolve("MTD_MSIL2A.xml"))
         #end
     #end
 #else
-    #set($fileList = $sourceProduct.FileLocation.ParentFile.ParentFile.listFiles())
+    #set($fileList = $sourceProduct.fileLocation.getParentFile().getParentFile().listFiles())
+    #set($parentFileName = $sourceProduct.fileLocation.getParentFile().getName().replace("L1C", "L2A").replace("OPER", "USER"))
     #foreach($file in $fileList)
-        #if($file.Name.startsWith($sourceProduct.FileLocation.ParentFile.Name.replace("L1C", "L2A").replace("OPER", "USER").substring(0,27)) && $file.Directory)
+        #if($file.isDirectory() && $parentFileName.length() > 27 && $file.getName().startsWith($parentFileName.substring(0,27)))
             #set($parentFile = $file)
             #set($fileList2 = $file.listFiles())
             #foreach($file2 in $fileList2)
-                #if($file2.Name.startsWith($sourceProduct.FileLocation.Name.replace("L1C", "L2A").replace("OPER", "USER").substring(0,10)) && $file2.Name.endsWith(".xml") && !$file2.Name.endsWith("report.xml"))
-                    #set($targetName = $file2.AbsolutePath.toString())
+                #if($file2.getName().endsWith(".xml") && !$file2.getName().endsWith("report.xml") && $fileName.length() > 10 && $file2.getName().startsWith($fileName.substring(0,10)))
+                    #set($targetName = $file.getName())
+					#set($targetFilePath = $file2.toPath())
                 #end
             #end
         #end
     #end
 #end
-#set($fileClass=$sourceProduct.FileLocation.Class.forName("java.io.File"))
-#set($stringClass = $sourceProduct.FileLocation.Class.forName("java.lang.String"))
-#set($paramList = [$targetName])
-#set($paramArray = $paramList.toArray())
-#set($ctors = $fileClass.Constructors)
-
-#foreach ($ctor in $ctors)
-    #if ($ctor.toString() == "public java.io.File(java.lang.String)")
-        #set($targetProductFile = $ctor.newInstance($paramArray))
-    #end
-#end
+#set($targetProductFile = $targetFilePath.toFile())
