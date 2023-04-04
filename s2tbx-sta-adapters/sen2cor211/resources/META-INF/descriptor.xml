@@ -158,9 +158,49 @@
       <parameterType>TemplateParameter</parameterType>
       <parameters>
         <parameter>
-          <name>nbThreads</name>
+          <name>row0</name>
           <dataType>java.lang.String</dataType>
-          <defaultValue>1</defaultValue>
+          <defaultValue>OFF</defaultValue>
+          <description>specifies the midpoint of the region of interest or AUTO to detect automatically via an algorithm or OFF to disable ROI detection</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>col0</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>OFF</defaultValue>
+          <description>specifies the midpoint of the region of interest or AUTO to detect automatically via an algorithm or OFF to disable ROI detection</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>nRowWin</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>1200</defaultValue>
+          <description>defines a rectangle around the midpoint in pixel</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>nColWin</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>1200</defaultValue>
+          <description>defines a rectangle around the midpoint in pixel</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>nrThreads</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>AUTO</defaultValue>
           <description>Number of threads used for reading the OpenJPEG2 images</description>
           <valueSet>
             <string>AUTO</string>
@@ -172,6 +212,127 @@
             <string>6</string>
             <string>7</string>
             <string>8</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>productGenerator</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>NONE</defaultValue>
+          <description>should be either a directory in the sen2cor home folder or &apos;NONE&apos;. If NONE, no DEM will be used</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>demDirectory</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>NONE</defaultValue>
+          <description>should be either a directory in the sen2cor home folder or &apos;NONE&apos;. If NONE, no DEM will be used</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>demReference</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>NONE</defaultValue>
+          <description>Ignored if DEM is NONE. A DEM will be downloaded from this ref, if no local DEM</description>
+          <valueSet>
+            <string>NONE</string>
+            <string>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>generateDEMoutput</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>FALSE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>forceExitOnDEMerror</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>FALSE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>generateTCIoutput</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>TRUE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>generateDDVoutput</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>FALSE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>handleL1CQLTmask</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>FALSE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>Downsample_20_to_60</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>TRUE</defaultValue>
+          <valueSet>
+            <string>FALSE</string>
+            <string>TRUE</string>
+          </valueSet>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>PSD_Version</name>
+          <dataType>java.lang.String</dataType>
+          <defaultValue>DEFAULT</defaultValue>
+          <valueSet>
+            <string>DEFAULT</string>
+            <string>14.2</string>
+            <string>14.6</string>
+            <string>14.7</string>
+            <string>14.8</string>
+            <string>14.9</string>
           </valueSet>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -217,7 +378,7 @@
         <parameter>
           <name>ozone</name>
           <dataType>java.lang.String</dataType>
-          <defaultValue>h - 331</defaultValue>
+          <defaultValue>0</defaultValue>
           <description>Ozone content</description>
           <valueSet>
             <string>0</string>
@@ -334,9 +495,19 @@
           <parameterType>RegularParameter</parameterType>
         </parameter>
         <parameter>
+          <name>adjacencyRange</name>
+          <dataType>java.lang.Float</dataType>
+          <defaultValue>1.000</defaultValue>
+          <description>Adjancency Range [km]</description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
           <name>visibility</name>
           <dataType>java.lang.Float</dataType>
-          <defaultValue>23.0</defaultValue>
+          <defaultValue>40.0</defaultValue>
           <description>5 &lt;= visibility &lt;= 120</description>
           <valueSet/>
           <notNull>false</notNull>
@@ -346,8 +517,18 @@
         <parameter>
           <name>altitude</name>
           <dataType>java.lang.Float</dataType>
-          <defaultValue>0.1</defaultValue>
+          <defaultValue>0.100</defaultValue>
           <description></description>
+          <valueSet/>
+          <notNull>false</notNull>
+          <notEmpty>false</notEmpty>
+          <parameterType>RegularParameter</parameterType>
+        </parameter>
+        <parameter>
+          <name>smoothWVMap</name>
+          <dataType>java.lang.Float</dataType>
+          <defaultValue>100.0</defaultValue>
+          <description>length of square box, [meters]</description>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -384,356 +565,12 @@
           <notEmpty>false</notEmpty>
           <parameterType>RegularParameter</parameterType>
         </parameter>
-        <parameter>
-          <name>demDirectory</name>
-          <dataType>java.lang.String</dataType>
-          <defaultValue>NONE</defaultValue>
-          <description>should be either a directory in the sen2cor home folder or &apos;NONE&apos;. If NONE, no DEM will be used</description>
-          <valueSet/>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
-        <parameter>
-          <name>demReference</name>
-          <dataType>java.lang.String</dataType>
-          <defaultValue>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</defaultValue>
-          <description>Ignored if DEM is NONE. A DEM will be downloaded from this ref, if no local DEM</description>
-          <valueSet>
-            <string>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</string>
-          </valueSet>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
-        <parameter>
-          <name>adjacencyRange</name>
-          <dataType>java.lang.Float</dataType>
-          <defaultValue>1.000</defaultValue>
-          <description>Adjancency Range [km]</description>
-          <valueSet/>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
-        <parameter>
-          <name>smoothWVMap</name>
-          <dataType>java.lang.Float</dataType>
-          <defaultValue>100.0</defaultValue>
-          <description>length of square box, [meters]</description>
-          <valueSet/>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
-        <parameter>
-          <name>generateDEMoutput</name>
-          <dataType>java.lang.String</dataType>
-          <defaultValue>FALSE</defaultValue>
-          <valueSet>
-            <string>FALSE</string>
-            <string>TRUE</string>
-          </valueSet>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
-        <parameter>
-          <name>generateTCIoutput</name>
-          <dataType>java.lang.String</dataType>
-          <defaultValue>TRUE</defaultValue>
-          <valueSet>
-            <string>FALSE</string>
-            <string>TRUE</string>
-          </valueSet>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
-        <parameter>
-          <name>generateDDVoutput</name>
-          <dataType>java.lang.String</dataType>
-          <defaultValue>FALSE</defaultValue>
-          <valueSet>
-            <string>FALSE</string>
-            <string>TRUE</string>
-          </valueSet>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
-        <parameter>
-          <name>Downsample_20_to_60</name>
-          <dataType>java.lang.String</dataType>
-          <defaultValue>TRUE</defaultValue>
-          <valueSet>
-            <string>FALSE</string>
-            <string>TRUE</string>
-          </valueSet>
-          <notNull>false</notNull>
-          <notEmpty>false</notEmpty>
-          <parameterType>RegularParameter</parameterType>
-        </parameter>
       </parameters>
       <template type="file">
         <file>Sen2Cor-gipp211-template.xsl</file>
       </template>
       <outputFile>L2A-GIPP211-custom.xml</outputFile>
     </templateparameter>
-
-
-    <parameter>
-      <name>nbThreads</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>AUTO</defaultValue>
-      <description>Number of threads used for reading the OpenJPEG2 images</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>medianFilter</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>0</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[2]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>aerosol</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>RURAL</defaultValue>
-      <description>Aerosol model</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[3]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>midLat</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>SUMMER</defaultValue>
-      <description></description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[4]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>ozone</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>h - 331</defaultValue>
-      <description>Ozone content</description>
-      <valueSet>
-        <string>0</string>
-        <string>f - 250</string>
-        <string>g - 290</string>
-        <string>h - 331</string>
-        <string>i - 370</string>
-        <string>j - 410</string>
-        <string>k - 450</string>
-        <string>t - 250</string>
-        <string>u - 290</string>
-        <string>v - 330</string>
-        <string>w - 377</string>
-        <string>x - 420</string>
-        <string>y - 460</string>
-      </valueSet>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>wvCorrection</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>1</defaultValue>
-      <description>0=no correciton;1=940nm;2=1130nm;3=both;4=thermal</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[6]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>visUpdateMode</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>1</defaultValue>
-      <description>0=constant, 1=variable visibility</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[7]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>wvWatermask</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>1</defaultValue>
-      <description>0=not replaced;1=land-average;2=line-average</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[8]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>cirrusCorrection</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>FALSE</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[9]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>DEMTerrainCorrection</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>FALSE</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[10]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>brdfCorrection</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>0</defaultValue>
-      <description>0=no correction</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[11]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>brdfLower</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>0.22</defaultValue>
-      <description>0.2 to 0.25 is adequate, in extreme cases of overcorrection g=0.1 should be applied</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[12]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>visibility</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>23.0</defaultValue>
-      <description>5 &lt;= visibility &lt;= 120</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[13]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>altitude</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>0.1</defaultValue>
-      <description></description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[14]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>wvThresCirrus</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>0.25</defaultValue>
-      <description>water vapor threshold to switch off cirrus algorithm [cm]Range: 0.1-1.0</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[15]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>compressionLevel</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>0</defaultValue>
-      <description>zlib compression level for image database [0-9, 0: best speed, 9: best size]</description>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[16]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>demDirectory</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>NONE</defaultValue>
-      <description>should be either a directory in the sen2cor home folder or &apos;NONE&apos;. If NONE, no DEM will be used</description>
-      <valueSet/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>demReference</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</defaultValue>
-      <description>Ignored if DEM is NONE. A DEM will be downloaded from this ref, if no local DEM</description>
-      <valueSet>
-        <string>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</string>
-      </valueSet>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>adjacencyRange</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>1.0</defaultValue>
-      <description>Adjancency Range [km]</description>
-      <valueSet/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>smoothWVMap</name>
-      <dataType>java.lang.Float</dataType>
-      <defaultValue>100.0</defaultValue>
-      <description>length of square box, [meters]</description>
-      <valueSet/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>generateDEMoutput</name>
-      <alias>Generate DEM output</alias>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>FALSE</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[21]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>generateTCIoutput</name>
-      <alias>Generate TCI output</alias>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>TRUE</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[22]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>generateDDVoutput</name>
-      <alias>Generate DDV output</alias>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>FALSE</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[23]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>Downsample_20_to_60</name>
-      <dataType>java.lang.String</dataType>
-      <defaultValue>TRUE</defaultValue>
-      <valueSet reference="../../templateparameter[2]/parameters/parameter[24]/valueSet"/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
 
   </parameters>
   <source>user</source>
