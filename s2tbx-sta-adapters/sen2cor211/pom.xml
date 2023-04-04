@@ -16,8 +16,15 @@
     <name>Sentinel-2 SEN2COR processor v02.11.00</name>
     <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products using Sen2Cor v02.11.00</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-javahelp</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
-        <sourceDirectory>../src/main/java</sourceDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>resources</directory>
@@ -46,6 +53,13 @@
                     <keystorepassword>snap-123</keystorepassword>
                     <requiresRestart>true</requiresRestart>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.help</groupId>
+                        <artifactId>javahelp</artifactId>
+                        <version>${javahelp.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

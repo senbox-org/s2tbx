@@ -1,0 +1,1293 @@
+<!--
+  ~ Copyright (C) 2015 CS SI
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>Sentinel Toolbox Help - Sen2Cor 2.11.0</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            Sen2Cor 2.11.0
+        </td>
+        <td class="header" align="right"><a
+                href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img
+                src="images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>Sen2Cor Overview</h3>
+
+<p>Sen2Cor is a processor for Sentinel-2 Level 2A product generation and formatting;
+    it performs the atmospheric correction of Level-1C input data.
+    Sen2Cor creates Bottom-Of-Atmosphere, optionally terrain and cirrus corrected reflectance images.
+    Additionally, it generates also Aerosol Optical Thickness, Water Vapor, Scene Classification Maps and Quality
+    Indicators
+    for cloud and snow probabilities.
+    Its output product format is equivalent to the Level 1C User Product:
+    JPEG 2000 images, three different resolutions, 60, 20 and 10 m.</p>
+
+<p>
+    For Sen2Cor documentation and Software User Manual please visit <a
+        href="https://step.esa.int/main/snap-supported-plugins/sen2cor/sen2cor-v2-11/">STEP Website</a>
+</p>
+
+<h3>Sen2Cor v2.11 Parameters</h3>
+
+<div style="text-align: center">
+    <img src="images/sec2corParamesters.png" border=0 align="center"/>
+</div>
+<br>
+
+<p>
+    Sen2Cor general parameters:
+</p><br>
+
+<table border="1" cellspacing="0" cellpadding="0" style="margin-left:auto;margin-right:auto;">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Default value</th>
+        <th>Allowed value(s)</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Mode</td>
+        <td>Specifies the processing mode</td>
+        <td>TOOLBOX</td>
+        <td>TOOLBOX, generate_datastrip, process_tile</td>
+    </tr>
+    <tr>
+        <td>Resolution</td>
+        <td>Specifies the target resolution.<br>It can be 10, 20 or 60m.<br>If omitted, only 20 and 10m resolutions
+            will
+            be processed
+        </td>
+        <td>60</td>
+        <td>10, 20, 60</td>
+    </tr>
+    <tr>
+        <td>Datastrip</td>
+        <td>Specifies the datastrip folder</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>Tile</td>
+        <td>Specifies the tile folder</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>Output directory</td>
+        <td>Specifies the output directory. When unspecified, the parent directory of input will be used.</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>Work directory</td>
+        <td>Specifies the work directory</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>Img database directory</td>
+        <td>Specifies the database directory for L1C input images</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>Res database directory</td>
+        <td>Specifies the database directory for results and temporary products</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>Processing centre</td>
+        <td>Specifies the processing centre</td>
+        <td></td>
+        <td>a string which matches the regex: ^[A-Z_]{4}$, e.g "SGS_"</td>
+    </tr>
+    <tr>
+        <td>Archiving centre</td>
+        <td>Specifies the archiving centre</td>
+        <td></td>
+        <td>a string which matches the regex: ^[A-Z_]{4}$, e.g. "SGS_"</td>
+    </tr>
+    <tr>
+        <td>Processing baseline</td>
+        <td>Specifies the processing baseline</td>
+        <td></td>
+        <td>a string in the format: "dd.dd", where d=[0:9]</td>
+    </tr>
+    <tr>
+        <td>Raw</td>
+        <td>Specifies whether export raw images in rawl format with ENVI hdr</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Tif</td>
+        <td>Specifies whether export raw images in TIFF format instead of JPEG-2000</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Scene only</td>
+        <td>Specifies whether performs only the scene classification at 60 or 20m resolution</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Scene classification</td>
+        <td>Specifies whether performs scene classification in Sen2Cor 2.9 mode</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Scene cog</td>
+        <td>Specifies whether export SCL image in COG format instead of JPEG_2000</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Cr only</td>
+        <td>Specifies whether performs only the creation of the L2A product tree, no processing</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>L2A_GIPP file</td>
+        <td>Specifies the user GIPP</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>L2A_CAL_SC_GIPP file</td>
+        <td>Specifies the scene classification GIPP</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>L2A_CAL_AC_GIPP file</td>
+        <td>Specifies the atmospheric correction GIPP</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    <tr>
+        <td>L2A_PB_GIPP file</td>
+        <td>Specifies the processing baseline GIPP</td>
+        <td></td>
+        <td>an absolute path to existing directory</td>
+    </tr>
+    </tbody>
+</table><br>
+
+<p>
+    Sen2Cor L2A_GIPP parameters (used when L2A_GIPP file unspecified):
+</p><br>
+
+<table border="1" cellspacing="0" cellpadding="0" style="margin-left:auto;margin-right:auto;">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Default value</th>
+        <th>Allowed value(s)</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Row0</td>
+        <td>Specifies the row midpoint of Region of Interest</td>
+        <td>OFF</td>
+        <td>OFF, AUTO, an integer number between 0 and 10980</td>
+    </tr>
+    <tr>
+        <td>Col0</td>
+        <td>Specifies the column midpoint of Region of Interest</td>
+        <td>OFF</td>
+        <td>OFF, AUTO, an integer number between 0 and 10980</td>
+    </tr>
+    <tr>
+        <td>N row win</td>
+        <td>Specifies the row Window Size</td>
+        <td>OFF</td>
+        <td>OFF, AUTO, an integer number between 0 and 10980</td>
+    </tr>
+    <tr>
+        <td>N col win</td>
+        <td>Specifies the column Window Size</td>
+        <td>OFF</td>
+        <td>OFF, AUTO, an integer number between 0 and 10980</td>
+    </tr>
+    <tr>
+        <td>Nr threads</td>
+        <td>Specifies the number of threads</td>
+        <td>AUTO</td>
+        <td>AUTO, an integer number between 1 and 8</td>
+    </tr>
+    <tr>
+        <td>Product generator</td>
+        <td>Specifies the product generator</td>
+        <td>NONE</td>
+        <td>NONE, a string</td>
+    </tr>
+    <tr>
+        <td>Dem directory</td>
+        <td>Specifies the DEM directory</td>
+        <td>NONE</td>
+        <td>NONE, a valid directory path</td>
+    </tr>
+    <tr>
+        <td>Dem reference</td>
+        <td>Specifies the DEM reference</td>
+        <td>NONE</td>
+        <td>NONE, an URL</td>
+    </tr>
+    <tr>
+        <td>Generate dem output</td>
+        <td>Specifies whether generate DEM output</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Force exit on dem error</td>
+        <td>Specifies whether force exit on DEM error</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Generate tci output</td>
+        <td>Specifies whether generate TCI output</td>
+        <td>TRUE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Generate ddv output</td>
+        <td>Specifies whether generate DDV output</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>HandleL1c qlt mask</td>
+        <td>Specifies whether handle L1C QLT mask</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Downsample</td>
+        <td>Specifies whether downsample</td>
+        <td>TRUE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Psd version</td>
+        <td>Specifies the PSD version</td>
+        <td>DEFAULT</td>
+        <td>DEFAULT, 14.6, 14.7, 14.8, 14.9</td>
+    </tr>
+    <tr>
+        <td>Median filter</td>
+        <td>Specifies the median filter</td>
+        <td>0</td>
+        <td>an integer number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Aerosol type</td>
+        <td>Specifies the aerosol type</td>
+        <td>RURAL</td>
+        <td>RURAL, MARITIME, AUTO</td>
+    </tr>
+    <tr>
+        <td>Mid lat</td>
+        <td>Specifies the mid latitude</td>
+        <td>SUMMER</td>
+        <td>SUMMER, WINTER, AUTO</td>
+    </tr>
+    <tr>
+        <td>Ozone</td>
+        <td>Specifies the ozone content</td>
+        <td>0</td>
+        <td>0, f - 250, g - 290, h - 331, i - 370, j - 410, k - 450, t - 250, u - 290, v - 330, w - 377, x - 420, y - 460</td>
+    </tr>
+    <tr>
+        <td>WV correction</td>
+        <td>Specifies the WV correction</td>
+        <td>0</td>
+        <td>0, 1</td>
+    </tr>
+    <tr>
+        <td>VIS update mode</td>
+        <td>Specifies the VIS update mode</td>
+        <td>0</td>
+        <td>0, 1</td>
+    </tr>
+    <tr>
+        <td>WV watermask</td>
+        <td>Specifies the WV watermask</td>
+        <td>0</td>
+        <td>0, 1, 2</td>
+    </tr>
+    <tr>
+        <td>Cirrus correction</td>
+        <td>Specifies the cirrus correction</td>
+        <td>FALSE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>DEM terrain correction</td>
+        <td>Specifies the DEM terrain correction</td>
+        <td>TRUE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>BRDF correction</td>
+        <td>Specifies the BRDF correction</td>
+        <td>0</td>
+        <td>0, 1, 2</td>
+    </tr>
+    <tr>
+        <td>BRDF lower bound</td>
+        <td>Specifies the BRDF lower bound</td>
+        <td>0.22</td>
+        <td>a decimal number between 0.1 and 0.25</td>
+    </tr>
+    <tr>
+        <td>Adjacency range</td>
+        <td>Specifies the adjacency range</td>
+        <td>1.0</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Visibility</td>
+        <td>Specifies the visibility</td>
+        <td>40.0</td>
+        <td>a decimal number between 5 and 120</td>
+    </tr>
+    <tr>
+        <td>Altitude</td>
+        <td>Specifies the altitude</td>
+        <td>0.1</td>
+        <td>a decimal number between 0 and 2.5</td>
+    </tr>
+    <tr>
+        <td>SmoothWV map</td>
+        <td>Specifies the smooth WV map</td>
+        <td>100.0</td>
+        <td>a decimal number between 0 and 300</td>
+    </tr>
+    <tr>
+        <td>WV threshold cirrus</td>
+        <td>Specifies the WV threshold cirrus</td>
+        <td>0.25</td>
+        <td>a decimal number between 0.1 and 1.0</td>
+    </tr>
+    <tr>
+        <td>Database compression level</td>
+        <td>Specifies the database compression level</td>
+        <td>0</td>
+        <td>0, 1, 2, 3, 4, 5, 6, 7, 8, 9</td>
+    </tr>
+    </tbody>
+</table><br>
+
+<p>
+    Sen2Cor L2A_CAL_SC_GIPP parameters (used when L2A_CAL_SC_GIPP file unspecified):
+</p><br>
+
+<table border="1" cellspacing="0" cellpadding="0" style="margin-left:auto;margin-right:auto;">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Default value</th>
+        <th>Allowed value(s)</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>T1B02</td>
+        <td>Specifies the T1 B02</td>
+        <td>0.18</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2B02</td>
+        <td>Specifies the T2 B02</td>
+        <td>0.22</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1B04</td>
+        <td>Specifies the T1 B04</td>
+        <td>0.06</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2B04</td>
+        <td>Specifies the T2 B04</td>
+        <td>0.25</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1B8a</td>
+        <td>Specifies the T1 B8a</td>
+        <td>0.15</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2B8a</td>
+        <td>Specifies the T2 B8a</td>
+        <td>0.35</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1B10</td>
+        <td>Specifies the T1 B10</td>
+        <td>0.012</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2B10</td>
+        <td>Specifies the T2 B10</td>
+        <td>0.035</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1B12</td>
+        <td>Specifies the T1 B12</td>
+        <td>0.25</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2B12</td>
+        <td>Specifies the T2 B12</td>
+        <td>0.12</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>TB02B12</td>
+        <td>Specifies the T B02 B12</td>
+        <td>0.018</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T cloud lp</td>
+        <td>Specifies the T CLOUD LP</td>
+        <td>0.0</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T cloud mp</td>
+        <td>Specifies the T CLOUD MP</td>
+        <td>0.20</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T cloud hp</td>
+        <td>Specifies the T CLOUD HP</td>
+        <td>0.80</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1 ndsi cld</td>
+        <td>Specifies the T1 NDSI CLD</td>
+        <td>-0.24</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2 ndsi cld</td>
+        <td>Specifies the T2 NDSI CLD</td>
+        <td>-0.16</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1 ndsi snw</td>
+        <td>Specifies the T1 NDSI SNW</td>
+        <td>0.35</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2 ndsi snw</td>
+        <td>Specifies the T2 NDSI SNW</td>
+        <td>0.50</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1 ndvi</td>
+        <td>Specifies the T1 NDVI</td>
+        <td>0.36</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2 ndvi</td>
+        <td>Specifies the T2 NDVI</td>
+        <td>0.42</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1 snow</td>
+        <td>Specifies the T1 SNOW</td>
+        <td>0.12</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2 snow</td>
+        <td>Specifies the T2 SNOW</td>
+        <td>0.25</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1RB02B04</td>
+        <td>Specifies the T1 R B02 B04</td>
+        <td>0.85</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2RB02B04</td>
+        <td>Specifies the T2 R B02 B04</td>
+        <td>0.95</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1RB8aB03</td>
+        <td>Specifies the T1 R B8a B03</td>
+        <td>1.50</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2RB8aB03</td>
+        <td>Specifies the T2 R B8a B03</td>
+        <td>2.50</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T1RB8aB11</td>
+        <td>Specifies the T1 R B8a B11</td>
+        <td>0.90</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T2RB8aB11</td>
+        <td>Specifies the T2 R B8a B11</td>
+        <td>1.10</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T11B02</td>
+        <td>Specifies the T11 B02</td>
+        <td>-0.40</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T12B02</td>
+        <td>Specifies the T12 B02</td>
+        <td>0.46</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T11RB02B11</td>
+        <td>Specifies the T11 R B02 B11</td>
+        <td>0.70</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T12RB02B11</td>
+        <td>Specifies the T12 R B02 B11</td>
+        <td>1.0</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T21RB02B11</td>
+        <td>Specifies the T21 R B02 B11</td>
+        <td>2.00</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T22RB02B11</td>
+        <td>Specifies the T22 R B02 B11</td>
+        <td>4.00</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T21B12</td>
+        <td>Specifies the T21 B12</td>
+        <td>0.1</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T22B12</td>
+        <td>Specifies the T22 B12</td>
+        <td>-0.09</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>RvB2</td>
+        <td>Specifies the RV B2</td>
+        <td>6.96000</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>RvB3</td>
+        <td>Specifies the RV B3</td>
+        <td>5.26667</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>RvB4</td>
+        <td>Specifies the RV B4</td>
+        <td>5.37708</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>RvB8</td>
+        <td>Specifies the RV B8</td>
+        <td>7.52000</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>RvB11</td>
+        <td>Specifies the RV B11</td>
+        <td>5.45000</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>RvB12</td>
+        <td>Specifies the RV B12</td>
+        <td>2.55000</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    <tr>
+        <td>T sdw</td>
+        <td>Specifies the T SDW</td>
+        <td>0.75</td>
+        <td>a decimal number between -10 and 10</td>
+    </tr>
+    </tbody>
+</table><br>
+
+<p>
+    Sen2Cor L2A_CAL_AC_GIPP parameters (used when L2A_CAL_AC_GIPP file unspecified):
+</p><br>
+
+<table border="1" cellspacing="0" cellpadding="0" style="margin-left:auto;margin-right:auto;">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Default value</th>
+        <th>Allowed value(s)</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Scaling limiter</td>
+        <td>Specifies the Scaling limiter</td>
+        <td>TRUE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Scaling disabler</td>
+        <td>Specifies the Scaling disabler</td>
+        <td>TRUE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Rho retrieval step2</td>
+        <td>Specifies the Rho retrieval step2</td>
+        <td>TRUE</td>
+        <td>TRUE, FALSE</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B1</td>
+        <td>Specifies the Fwhm band B1</td>
+        <td>0.020</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B2</td>
+        <td>Specifies the Fwhm band B2</td>
+        <td>0.065</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B3</td>
+        <td>Specifies the Fwhm band B3</td>
+        <td>0.035</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B4</td>
+        <td>Specifies the Fwhm band B4</td>
+        <td>0.030</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B5</td>
+        <td>Specifies the Fwhm band B5</td>
+        <td>0.015</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B6</td>
+        <td>Specifies the Fwhm band B6</td>
+        <td>0.015</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B7</td>
+        <td>Specifies the Fwhm band B7</td>
+        <td>0.020</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B8</td>
+        <td>Specifies the Fwhm band B8</td>
+        <td>0.115</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B8A</td>
+        <td>Specifies the Fwhm band B8A</td>
+        <td>0.020</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B9</td>
+        <td>Specifies the Fwhm band B9</td>
+        <td>0.020</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B10</td>
+        <td>Specifies the Fwhm band B10</td>
+        <td>0.030</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B11</td>
+        <td>Specifies the Fwhm band B11</td>
+        <td>0.090</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Fwhm band B12</td>
+        <td>Specifies the Fwhm band B12</td>
+        <td>0.180</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Min sc blu</td>
+        <td>Specifies the Min sc blu</td>
+        <td>0.9</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Max sc blu</td>
+        <td>Specifies the Max sc blu</td>
+        <td>1.1</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B1</td>
+        <td>Specifies the wavelength for band B1</td>
+        <td>0.443</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B1 C0</td>
+        <td>Specifies the C0 of wavelength for band B1</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B1 C1</td>
+        <td>Specifies the C1 of wavelength for band B1</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B2</td>
+        <td>Specifies the wavelength for band B2</td>
+        <td>0.490</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B2 C0</td>
+        <td>Specifies the C0 of wavelength for band B2</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B2 C1</td>
+        <td>Specifies the C1 of wavelength for band B2</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B3</td>
+        <td>Specifies the wavelength for band B3</td>
+        <td>0.560</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B3 C0</td>
+        <td>Specifies the C0 of wavelength for band B3</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B3 C1</td>
+        <td>Specifies the C1 of wavelength for band B3</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B4</td>
+        <td>Specifies the wavelength for band B4</td>
+        <td>0.665</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B4 C0</td>
+        <td>Specifies the C0 of wavelength for band B4</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B4 C1</td>
+        <td>Specifies the C1 of wavelength for band B4</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B5</td>
+        <td>Specifies the wavelength for band B5</td>
+        <td>0.705</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B5 C0</td>
+        <td>Specifies the C0 of wavelength for band B5</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B5 C1</td>
+        <td>Specifies the C1 of wavelength for band B5</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B6</td>
+        <td>Specifies the wavelength for band B6</td>
+        <td>0.740</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B6 C0</td>
+        <td>Specifies the C0 of wavelength for band B6</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B6 C1</td>
+        <td>Specifies the C1 of wavelength for band B6</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B7</td>
+        <td>Specifies the wavelength for band B7</td>
+        <td>0.783</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B7 C0</td>
+        <td>Specifies the C0 of wavelength for band B7</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B7 C1</td>
+        <td>Specifies the C1 of wavelength for band B7</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B8</td>
+        <td>Specifies the wavelength for band B8</td>
+        <td>0.842</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B8 C0</td>
+        <td>Specifies the C0 of wavelength for band B8</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B8 C1</td>
+        <td>Specifies the C1 of wavelength for band B8</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B8A</td>
+        <td>Specifies the wavelength for band B8A</td>
+        <td>0.865</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B8A C0</td>
+        <td>Specifies the C0 of wavelength for band B8A</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B8A C1</td>
+        <td>Specifies the C1 of wavelength for band B8A</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B9</td>
+        <td>Specifies the wavelength for band B9</td>
+        <td>0.945</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B9 C0</td>
+        <td>Specifies the C0 of wavelength for band B9</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B9 C1</td>
+        <td>Specifies the C1 of wavelength for band B9</td>
+        <td>0.001</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B10</td>
+        <td>Specifies the wavelength for band B10</td>
+        <td>1.375</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B10 C0</td>
+        <td>Specifies the C0 of wavelength for band B10</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B10 C1</td>
+        <td>Specifies the C1 of wavelength for band B10</td>
+        <td>0.0005</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B11</td>
+        <td>Specifies the wavelength for band B11</td>
+        <td>1.610</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B11 C0</td>
+        <td>Specifies the C0 of wavelength for band B11</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B11 C1</td>
+        <td>Specifies the C1 of wavelength for band B11</td>
+        <td>0.0002</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B12</td>
+        <td>Specifies the wavelength for band B12</td>
+        <td>2.190</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B12 C0</td>
+        <td>Specifies the C0 of wavelength for band B12</td>
+        <td>0.00000</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>Wavelength band B12 C1</td>
+        <td>Specifies the C1 of wavelength for band B12</td>
+        <td>0.00005</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC min ddv area</td>
+        <td>Specifies the min DDV area, required number of reference pixels (th_percent)</td>
+        <td>2.0</td>
+        <td>a decimal number between 0 and 100</td>
+    </tr>
+    <tr>
+        <td>AC swir refl lower th</td>
+        <td>Specifies the SWIR reflectance lower threshold to exclude water pixels together with NDVI limit</td>
+        <td>0.01</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC swir22um red refl ratio</td>
+        <td>Specifies the SWIR-red reflectance ratio (0.4-0,6) (ratio_red_swir (2.2µm), fact)</td>
+        <td>0.5</td>
+        <td>a decimal number between 0.4 and 0.6</td>
+    </tr>
+    <tr>
+        <td>AC red blue refl ratio</td>
+        <td>Specifies the red-blue reflectance ratio (ratio_blu_red)</td>
+        <td>0.5</td>
+        <td>a decimal number between -1 and 1</td>
+    </tr>
+    <tr>
+        <td>AC cut off aot iter vegetation</td>
+        <td>Specifies the cut off for AOT-iterations = max percentage of negative reflectance vegetation pixels (B4) (also reasonable for water pixels (B8)) (Thresh)</td>
+        <td>0.01</td>
+        <td>a decimal number between -1 and 1</td>
+    </tr>
+    <tr>
+        <td>AC cut off aot iter water</td>
+        <td>Specifies the cut off for AOT-iterations = max percentage of negative reflectance water pixels (B8) (thresh)</td>
+        <td>-0.005</td>
+        <td>a decimal number between -1 and 1</td>
+    </tr>
+    <tr>
+        <td>AC aerosol type ratio th</td>
+        <td>Specifies the aerosol type ratio threshold (Scale path radiance for bands in the blue-to-red region)</td>
+        <td>0.05</td>
+        <td>a decimal number between -1 and 1</td>
+    </tr>
+    <tr>
+        <td>AC topo corr th</td>
+        <td>Specifies the topographic correction threshold</td>
+        <td>0.01</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC slope th</td>
+        <td>Specifies the slope threshold</td>
+        <td>6.0</td>
+        <td>a decimal number between 0 and 90</td>
+    </tr>
+    <tr>
+        <td>AC demP2p val</td>
+        <td>Specifies the DEM Peak to Peak Value</td>
+        <td>50.0</td>
+        <td>a decimal number between 0 and 300</td>
+    </tr>
+    <tr>
+        <td>AC swir refl ndvi th</td>
+        <td>Specifies the SWIR reflectance NDVI threshold to exclude water pixels</td>
+        <td>0.10</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC ddv swir refl th1</td>
+        <td>Specifies the DDV SWIR reflectance threshold 1, upper threshold</td>
+        <td>0.05</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC ddv swir refl th2</td>
+        <td>Specifies the DDV SWIR reflectance threshold 2</td>
+        <td>0.10</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC ddv swir refl th3</td>
+        <td>Specifies the DDV SWIR reflectance threshold 3</td>
+        <td>0.12</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC ddv16um refl th1</td>
+        <td>Specifies the DDV 1.6µm reflectance threshold 1</td>
+        <td>0.10</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC ddv16um refl th2</td>
+        <td>Specifies the DDV 1.6µm reflectance threshold 2</td>
+        <td>0.15</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC ddv16um refl th3</td>
+        <td>Specifies the DDV 1.6µm reflectance threshold 3</td>
+        <td>0.18</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC dbv nir refl th</td>
+        <td>Specifies the DBV NIR reflectance Threshold</td>
+        <td>0.35</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC dbv ndvi th</td>
+        <td>Specifies the DBV NDVI threshold</td>
+        <td>0.66</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC red ref refl th</td>
+        <td>Specifies the Red reference reflectance</td>
+        <td>0.02</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC dbv red veget tst ndvi th</td>
+        <td>Specifies the DBV red vegetation test NDVI threshold</td>
+        <td>0.40</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC dbv red veget refl th</td>
+        <td>Specifies the DBV red vegetation reflectance threshold</td>
+        <td>0.15</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC wv iter start summer</td>
+        <td>Specifies the start value for wv iterations</td>
+        <td>1.0</td>
+        <td>a decimal number between 0 and 5.0</td>
+    </tr>
+    <tr>
+        <td>AC wv iter start winter</td>
+        <td>Specifies the start value for wv iterations</td>
+        <td>0.4</td>
+        <td>a decimal number between 0 and 5.0</td>
+    </tr>
+    <tr>
+        <td>AC rng nbhd terrain corr</td>
+        <td>Specifies the range of neighborhood for terrain correction</td>
+        <td>0.5</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC max nr topo iter</td>
+        <td>Specifies the max number of topography iterations</td>
+        <td>3</td>
+        <td>a decimal number between 0 and 9</td>
+    </tr>
+    <tr>
+        <td>AC topo corr cutoff</td>
+        <td>Specifies the topographic correction cutoff</td>
+        <td>1.5</td>
+        <td>a decimal number between 0.0 and 10.0</td>
+    </tr>
+    <tr>
+        <td>AC vegetation index th</td>
+        <td>Specifies the vegetation index threshold to distinguish soil/sand from vegetation</td>
+        <td>3.0</td>
+        <td>a decimal number between 1 and 10</td>
+    </tr>
+    <tr>
+        <td>AC limit area path rad scale</td>
+        <td>Specifies the threshold to limit the area for path radiance scaling, haze-DDV and DBV-tests</td>
+        <td>0</td>
+        <td>a decimal number between 0 and 90</td>
+    </tr>
+    <tr>
+        <td>AC ddv smooting window</td>
+        <td>Specifies the DDV smoothing window size for spatial filtering</td>
+        <td>1.0</td>
+        <td>a decimal number between 0 and 10</td>
+    </tr>
+    <tr>
+        <td>AC terrain refl start</td>
+        <td>Specifies the start value for terrain reflectance at terrain correction</td>
+        <td>0.1</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC spr refl percentage</td>
+        <td>Specifies the percentage of DDV pixels used in Scale Path Radiance for advanced return criteria</td>
+        <td>0.25</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    <tr>
+        <td>AC spr refl promille</td>
+        <td>Specifies the promille of reference pixels used in Scale Path Radiance for advanced return criteria</td>
+        <td>0.3</td>
+        <td>a decimal number between 0 and 1</td>
+    </tr>
+    </tbody>
+</table><br>
+
+<p>
+    Sen2Cor L2A_PB_GIPP parameters (used when L2A_PB_GIPP file unspecified):
+</p><br>
+
+<table border="1" cellspacing="0" cellpadding="0" style="margin-left:auto;margin-right:auto;">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Default value</th>
+        <th>Allowed value(s)</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>workflow</td>
+        <td>Specifies the workflow</td>
+        <td>l2a</td>
+        <td>a string</td>
+    </tr>
+    <tr>
+        <td>IDP SC name</td>
+        <td>Specifies the IDP SC name</td>
+        <td>Sen2Cor</td>
+        <td>a string</td>
+    </tr>
+    <tr>
+        <td>IDP SC version</td>
+        <td>Specifies the IDP SC version</td>
+        <td>02.11.00</td>
+        <td>a string</td>
+    </tr>
+    <tr>
+        <td>Baseline version</td>
+        <td>Specifies the baseline version</td>
+        <td>02.11</td>
+        <td>a decimal number</td>
+    </tr>
+    </tbody>
+</table><br>
+
+<p>
+    For any questions about the usage of Sen2Cor, please follow the general <a
+        href="https://forum.step.esa.int/c/s2tbx/sen2cor">STEP forum</a> area dedicated to Sen2Cor.
+</p>
+
+</body>
+</html>
