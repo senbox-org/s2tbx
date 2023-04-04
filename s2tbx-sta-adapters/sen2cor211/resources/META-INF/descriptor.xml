@@ -1,7 +1,7 @@
 <operator>
   <name>Sen2Cor211</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
-  <alias>Sen2Cor211</alias>
+  <alias>Sen2Cor 2.11.0</alias>
   <label>SEN2COR 2.11.0</label>
   <version>211</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
@@ -221,7 +221,7 @@
           <name>productGenerator</name>
           <dataType>java.lang.String</dataType>
           <defaultValue>NONE</defaultValue>
-          <description>should be either a directory in the sen2cor home folder or &apos;NONE&apos;. If NONE, no DEM will be used</description>
+          <description>should be either a directory in the sen2cor home folder or &apos;NONE&apos;. If NONE, Toolbox mode of operation will be used</description>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -244,7 +244,7 @@
           <description>Ignored if DEM is NONE. A DEM will be downloaded from this ref, if no local DEM</description>
           <valueSet>
             <string>NONE</string>
-            <string>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</string>
+            <string>http://srtm.csi.cgiar.org/wp-content/uploads/files/srtm_5x5/TIFF/</string>
           </valueSet>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -365,7 +365,7 @@
           <name>midLat</name>
           <dataType>java.lang.String</dataType>
           <defaultValue>SUMMER</defaultValue>
-          <description></description>
+          <description>Mid Latitude</description>
           <valueSet>
             <string>SUMMER</string>
             <string>WINTER</string>
@@ -403,13 +403,10 @@
           <name>wvCorrection</name>
           <dataType>java.lang.Integer</dataType>
           <defaultValue>1</defaultValue>
-          <description>0=no correction;1=940nm;2=1130nm;3=both;4=thermal</description>
+          <description>0=no WV correction;1=correction with 940 nm band (default)</description>
           <valueSet>
             <string>0</string>
             <string>1</string>
-            <string>2</string>
-            <string>3</string>
-            <string>4</string>
           </valueSet>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -457,7 +454,7 @@
         <parameter>
           <name>DEMTerrainCorrection</name>
           <dataType>java.lang.String</dataType>
-          <defaultValue>FALSE</defaultValue>
+          <defaultValue>TRUE</defaultValue>
           <valueSet>
             <string>FALSE</string>
             <string>TRUE</string>
@@ -470,15 +467,11 @@
           <name>brdfCorrection</name>
           <dataType>java.lang.Integer</dataType>
           <defaultValue>0</defaultValue>
-          <description>0=no correction</description>
+          <description>0=no correction; 1, 2: see IODD for explanation</description>
           <valueSet>
             <string>0</string>
             <string>1</string>
             <string>2</string>
-            <string>11</string>
-            <string>12</string>
-            <string>22</string>
-            <string>21</string>
           </valueSet>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -508,7 +501,7 @@
           <name>visibility</name>
           <dataType>java.lang.Float</dataType>
           <defaultValue>40.0</defaultValue>
-          <description>5 &lt;= visibility &lt;= 120</description>
+          <description>visibility (5 &lt;= visibility &lt;= 120 km)</description>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -518,7 +511,7 @@
           <name>altitude</name>
           <dataType>java.lang.Float</dataType>
           <defaultValue>0.100</defaultValue>
-          <description></description>
+          <description>Altitude [km]</description>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
@@ -538,7 +531,7 @@
           <name>wvThresCirrus</name>
           <dataType>java.lang.Float</dataType>
           <defaultValue>0.25</defaultValue>
-          <description>water vapor threshold to switch off cirrus algorithm [cm]Range: 0.1-1.0</description>
+          <description>water vapor threshold to switch off cirrus algorithm [cm] Range: 0.1-1.0</description>
           <valueSet/>
           <notNull>false</notNull>
           <notEmpty>false</notEmpty>
