@@ -109,6 +109,7 @@
                 <string>10</string>
                 <string>20</string>
                 <string>60</string>
+                <string>ALL</string>
             </valueSet>
             <notNull>false</notNull>
             <notEmpty>false</notEmpty>
