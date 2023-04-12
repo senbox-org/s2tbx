@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>9.0.2-SNAPSHOT</version>
+    <version>9.0.2</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://sentinel.esa.int/web/sentinel/toolboxes/sentinel-2</url>
@@ -78,8 +78,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>9.0.6-SNAPSHOT</snap.version>
-        <s2tbx.version>9.0.2-SNAPSHOT</s2tbx.version>
+        <snap.version>9.0.6</snap.version>
+        <s2tbx.version>9.0.2</s2tbx.version>
         <geotools.version>20.0</geotools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
