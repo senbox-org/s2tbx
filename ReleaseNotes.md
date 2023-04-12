@@ -1,6 +1,22 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+# New in S2TBX 9.0.2
+--------------------
+
+### List of solved issues
+
+#### Bug
+    * [SNAP-3476] Error opening bands from Sen2Cor output products
+    * [SNAP-3482] GDAL reader opens too many file handles
+
+#### Improvement
+    * [SNAP-3460] SNAP plugin adapter for Sen2Cor 2.11.0
+
+#### Task
+    * [[SNAP-3442] S2 Collection 1: Masks detector_footprint-B01-## do not fit to B1 size in Level 2A
+
+
 # New in S2TBX 9.0.1
 --------------------
 
