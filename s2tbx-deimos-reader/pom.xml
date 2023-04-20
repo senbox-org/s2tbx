@@ -22,7 +22,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>9.0.2</version>
+        <version>9.0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-deimos-reader</artifactId>
