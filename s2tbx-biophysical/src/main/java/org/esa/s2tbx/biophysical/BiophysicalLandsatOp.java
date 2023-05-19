@@ -29,6 +29,7 @@ import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
+import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.pointop.PixelOperator;
 import org.esa.snap.core.gpf.pointop.ProductConfigurer;
 import org.esa.snap.core.gpf.pointop.Sample;
@@ -55,6 +56,9 @@ import java.util.Map;
 public class BiophysicalLandsatOp extends PixelOperator {
 
     private Map<BiophysicalVariable, BiophysicalAlgo> algos = new HashMap<>();
+
+    @TargetProduct
+    private Product targetProduct;
 
     @SourceProduct(alias = "source", description = "The source product.")
     private Product sourceProduct;
@@ -167,13 +171,13 @@ public class BiophysicalLandsatOp extends PixelOperator {
         productConfigurer.copyMetadata();
         productConfigurer.copyMasks();
 
-        Product tp = productConfigurer.getTargetProduct();
+        targetProduct = productConfigurer.getTargetProduct();
         // todo setDescription
 
         for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
             if (BiophysicalModel.LANDSAT8.computesVariable(biophysicalVariable) && isComputed(biophysicalVariable)) {
                 // Add biophysical variable band
-                final Band biophysicalVariableBand = tp.addBand(biophysicalVariable.getBandName(), ProductData.TYPE_FLOAT32);
+                final Band biophysicalVariableBand = targetProduct.addBand(biophysicalVariable.getBandName(), ProductData.TYPE_FLOAT32);
                 biophysicalVariableBand.setDescription(biophysicalVariable.getDescription());
                 biophysicalVariableBand.setUnit(biophysicalVariable.getUnit());
                 // todo better setDescription
@@ -184,18 +188,18 @@ public class BiophysicalLandsatOp extends PixelOperator {
 
                 // Add corresponding flag band
                 String flagBandName = String.format("%s_flags", biophysicalVariable.getBandName());
-                final Band biophysicalVariableFlagBand = tp.addBand(flagBandName, ProductData.TYPE_UINT8);
+                final Band biophysicalVariableFlagBand = targetProduct.addBand(flagBandName, ProductData.TYPE_UINT8);
                 final FlagCoding biophysicalVariableFlagCoding = new FlagCoding(flagBandName);
                 for (BiophysicalFlag flagDef : BiophysicalFlag.values()) {
                     biophysicalVariableFlagCoding.addFlag(flagDef.getName(), flagDef.getFlagValue(), flagDef.getDescription());
                 }
-                tp.getFlagCodingGroup().add(biophysicalVariableFlagCoding);
+                targetProduct.getFlagCodingGroup().add(biophysicalVariableFlagCoding);
                 biophysicalVariableFlagBand.setSampleCoding(biophysicalVariableFlagCoding);
 
                 // Add a mask for each flag
                 for (BiophysicalFlag flagDef : BiophysicalFlag.values()) {
                     String maskName = String.format("%s_%s", biophysicalVariable.getBandName(), flagDef.getName().toLowerCase());
-                    tp.addMask(maskName,
+                    targetProduct.addMask(maskName,
                                String.format("%s.%s", flagBandName, flagDef.getName()),
                                flagDef.getDescription(),
                                flagDef.getColor(), flagDef.getTransparency());
