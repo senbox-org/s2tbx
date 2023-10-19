@@ -886,91 +886,93 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 if (!maskInfo.isMultiBand())
                     maskBandName = String.format("B_%s", maskInfo.getSnapNameForOneBand(bandName));
 
-                S2SpatialResolution res = bandInfo.getBandInformation().getResolution();
-                S2SpectralInformation spectralI = new S2SpectralInformation(
-                        maskBandName, res,
-                        maskPath.getParent().toString(), maskInfo.getDescriptionForBand(bandName, i),
-                        null, quantificationValue, product.getNumBands(),
-                        0.0, 0.0,
-                        0.0);
+                try (Dataset dataset = GDAL.open(maskPath.getLocalFile().toString(), GDALConst.gaReadonly())) {
+                    if (dataset == null) {
+                        throw new IOException("Cannot open " + maskPath.getLocalFile());
+                    }
+                    final double[] geoTransform = new double[6];
+                    dataset.getGeoTransform(geoTransform);
+                    S2SpatialResolution res = S2SpatialResolution.valueOfResolution((int) geoTransform[1]);
+                    S2SpectralInformation spectralI = new S2SpectralInformation(
+                            maskBandName, res,
+                            maskPath.getParent().toString(), maskInfo.getDescriptionForBand(bandName, i),
+                            null, quantificationValue, product.getNumBands(),
+                            0.0, 0.0,
+                            0.0);
 
-                Dimension defaultBandSize = sceneDescription.getSceneDimension(spectralI.getResolution());
-                Dimension defaultProductSize = sceneDescription.getSceneDimension(productResolution);
-                double pixelSize;
-                if (isMultiResolution()) {
-                    pixelSize = spectralI.getResolution().resolution;
-                } else {
-                    pixelSize = productResolution.resolution;
-                }
-                Rectangle bandBounds;
-                if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
-                    bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
-                } else {
+                    Dimension defaultBandSize = sceneDescription.getSceneDimension(spectralI.getResolution());
+                    Dimension defaultProductSize = sceneDescription.getSceneDimension(productResolution);
+                    double pixelSize;
+                    if (isMultiResolution()) {
+                        pixelSize = spectralI.getResolution().resolution;
+                    } else {
+                        pixelSize = productResolution.resolution;
+                    }
+                    Rectangle bandBounds;
+                    if (subsetDef == null || subsetDef.getSubsetRegion() == null) {
+                        bandBounds = new Rectangle(defaultBandSize.width, defaultBandSize.height);
+                    } else {
 
-                    GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
-                            defaultBandSize, null);
-                    bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding,
-                            bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height,
-                            defaultBandSize.width, defaultBandSize.height, isMultiResolution());
-                }
-                if (!bandBounds.isEmpty()) {
-                    if (maskInfo.isMultiBand() || i == 0) {
+                        GeoCoding bandDefaultGeoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
+                                defaultBandSize, null);
+                        bandBounds = subsetDef.getSubsetRegion().computeBandPixelRegion(productDefaultGeoCoding,
+                                bandDefaultGeoCoding, defaultProductSize.width, defaultProductSize.height,
+                                defaultBandSize.width, defaultBandSize.height, isMultiResolution());
+                    }
+                    if (!bandBounds.isEmpty()) {
+                        if (maskInfo.isMultiBand() || i == 0) {
 
-                        Collection<String> bandMatrixTileIds = sceneDescription.getTileIds();
-                        Map<String, VirtualPath> tileIdToPathMapT = new HashMap<>();
-                        tileIdToPathMapT.put(bandMatrixTileIds.iterator().next(), maskPath);
-                        BandInfo maskBandInfo = new BandInfo(tileIdToPathMapT, spectralI, null);
-                        MosaicMatrix mosaicMatrix = buildBandMatrix(bandMatrixTileIds, sceneDescription, maskBandInfo);
-                        int dataBufferType = computeMatrixCellsDataBufferType(mosaicMatrix);
-                        int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix, false);
-                        productMaximumResolutionCount = Math.max(productMaximumResolutionCount, resolutionCount);
-                        band = buildBand(maskBandInfo, bandBounds.width, bandBounds.height, dataBufferType);
-                        band.setDescription(maskInfo.getDescriptionForBand(bandName, i));
-                        band.setUnit("none");
-                        band.setValidPixelExpression(null);
+                            Collection<String> bandMatrixTileIds = sceneDescription.getTileIds();
+                            Map<String, VirtualPath> tileIdToPathMapT = new HashMap<>();
+                            tileIdToPathMapT.put(bandMatrixTileIds.iterator().next(), maskPath);
+                            BandInfo maskBandInfo = new BandInfo(tileIdToPathMapT, spectralI, null);
+                            MosaicMatrix mosaicMatrix = buildBandMatrix(bandMatrixTileIds, sceneDescription, maskBandInfo);
+                            int dataBufferType = computeMatrixCellsDataBufferType(mosaicMatrix);
+                            int resolutionCount = computeMatrixCellsResolutionCount(mosaicMatrix, false);
+                            productMaximumResolutionCount = Math.max(productMaximumResolutionCount, resolutionCount);
+                            band = buildBand(maskBandInfo, bandBounds.width, bandBounds.height, dataBufferType);
+                            band.setDescription(maskInfo.getDescriptionForBand(bandName, i));
+                            band.setUnit("none");
+                            band.setValidPixelExpression(null);
 
-                        geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
-                                defaultBandSize, bandBounds);
-                        band.setGeoCoding(geoCoding);
-                        GDALMultiLevelSource multiLevelSource;
-                        try (Dataset dataset = GDAL.open(maskPath.getLocalFile().toString(), GDALConst.gaReadonly())) {
-                            if (dataset == null) {
-                                throw new IOException("Cannot open " + maskPath.getLocalFile());
-                            }
+                            geoCoding = buildGeoCoding(sceneDescription, mapCRS, pixelSize, pixelSize,
+                                    defaultBandSize, bandBounds);
+                            band.setGeoCoding(geoCoding);
+                            GDALMultiLevelSource multiLevelSource;
                             try (org.esa.snap.dataio.gdal.drivers.Band gdalBand = dataset.getRasterBand(i + 1)) {
                                 multiLevelSource = new GDALMultiLevelSource(maskPath.getLocalFile(), dataBufferType, bandBounds,
-                                                                            new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize()), i,
-                                                                            resolutionCount, band.getGeoCoding(), band.getNoDataValue(), defaultJAIReadTileSize);
+                                        new Dimension(gdalBand.getBlockXSize(), gdalBand.getBlockYSize()), i,
+                                        resolutionCount, band.getGeoCoding(), band.getNoDataValue(), defaultJAIReadTileSize);
+                            }
+                            ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
+                            band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
+                            band.setNoDataValueUsed(false);
+                            if (maskInfo.isMultiBand()) {
+                                band.setScalingFactor(1);
+                                band.setScalingOffset(0);
+                                String maskName = maskInfo.getSnapNameForBand(bandName, i);
+                                Mask mask = Mask.BandMathsType.create(maskName, maskInfo.getDescriptionForBand(bandName, i),
+                                        band.getRasterWidth(), band.getRasterHeight(),
+                                        String.format("%s.raw==%d", maskBandName, 1), maskInfo.getColor(i),
+                                        maskInfo.getTransparency(i));
+                                product.addBand(band);
+                                ProductUtils.copyGeoCoding(band, mask);
+                                product.addMask(mask);
+                            } else {
+                                product.addBand(band);
                             }
                         }
-                        ImageLayout imageLayout = multiLevelSource.buildMultiLevelImageLayout();
-                        band.setSourceImage(new DefaultMultiLevelImage(multiLevelSource, imageLayout));
-                        band.setNoDataValueUsed(false);
-                        if(maskInfo.isMultiBand()) {
-                            band.setScalingFactor(1);
-                            band.setScalingOffset(0);
+                        if (!maskInfo.isMultiBand() && band != null) {
                             String maskName = maskInfo.getSnapNameForBand(bandName, i);
-                            Mask mask = Mask.BandMathsType.create(maskName, maskInfo.getDescriptionForBand(bandName, i),
-                                    band.getRasterWidth(), band.getRasterHeight(),
-                                    String.format("%s.raw==%d", maskBandName, 1), maskInfo.getColor(i),
-                                    maskInfo.getTransparency(i));
-                            product.addBand(band);
+                            if (maskInfo.getMainType().contains("MSK_DETFOO"))
+                                maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
+                            Mask mask = Mask.BandMathsType.create(maskName,
+                                    maskInfo.getDescriptionForBand(bandName, i), band.getRasterWidth(), band.getRasterHeight(),
+                                    String.format("%s.raw==%d", maskBandName, maskInfo.getValue(i)),
+                                    maskInfo.getColor(i), maskInfo.getTransparency(i));
                             ProductUtils.copyGeoCoding(band, mask);
                             product.addMask(mask);
-                        } else {
-                            product.addBand(band);
                         }
-                    }
-                    if (!maskInfo.isMultiBand()) {
-                        String maskName = maskInfo.getSnapNameForBand(bandName, i);
-                        if(maskInfo.getMainType().contains("MSK_DETFOO"))
-                            maskName = maskInfo.getSnapNameForDEFTOO(bandName, i);
-                        Mask mask = Mask.BandMathsType.create(maskName,
-                                maskInfo.getDescriptionForBand(bandName, i), band.getRasterWidth(), band.getRasterHeight(),
-                                String.format("%s.raw==%d", maskBandName, maskInfo.getValue(i)),
-                                maskInfo.getColor(i), maskInfo.getTransparency(i));
-                        ProductUtils.copyGeoCoding(band, mask);
-                        product.addMask(mask);
                     }
                 }
             }
