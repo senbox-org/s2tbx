@@ -36,7 +36,10 @@ public class CAMSReader {
         }
         try {
             final Path copyPath = cacheFolderPath.resolve(path.getFileName().toString());
-            Files.createDirectories(copyPath);
+            try {
+                Files.createDirectories(copyPath);
+            } catch (FileAlreadyExistsException exc) {
+            }
             Files.copy(path, copyPath, StandardCopyOption.REPLACE_EXISTING);
             ncfile = NetcdfFile.openInMemory(copyPath.toString());
             List<GridPair> gridList = new ArrayList<GridPair>();
@@ -83,7 +86,7 @@ public class CAMSReader {
             return null;
         }
         String description = variable.getDescription();
-        if( description.contains("@"))
+        if(description != null && description.contains("@"))
             description = description.split(" @")[0] + " at surface level provided by CAMS";
         String units = variable.getUnitsString();
         final int[] shape = variable.getShape();

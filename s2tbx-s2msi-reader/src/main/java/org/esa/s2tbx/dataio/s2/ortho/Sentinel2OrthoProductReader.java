@@ -342,13 +342,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if(orthoMetadataHeader.getTileList().size()>1)
                 tileId = tile.getId();
             for (VirtualPath gribFile : gribFiles) {
-                if (S2OrthoUtils.enableECMWFTData() && gribFile.getFileName().toString().contains("AUX_ECMWFT")) {
+                if (S2OrthoUtils.enableECMWFTData() && "AUX_ECMWFT".equals(gribFile.getFileName().toString())) {
                     ECMWFTReader readerPlugin = new ECMWFTReader(gribFile.getFilePath().getPath(), getCacheDir(),tileId);
                     List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
                     for (TiePointGrid tiePointGrid : ecmwfGrids) {
                         product.addTiePointGrid(tiePointGrid);
                     }
-                } else if (S2OrthoUtils.enableCAMSData() && gribFile.getFileName().toString().contains("AUX_CAMSFO")) {
+                } else if (S2OrthoUtils.enableCAMSData() && "AUX_CAMSFO".equals(gribFile.getFileName().toString())) {
                     CAMSReader readerPlugin = new CAMSReader(gribFile.getFilePath().getPath(), getCacheDir(),tileId);
                     List<TiePointGrid> camsGrids = readerPlugin.getCAMSGrids();
                     for (TiePointGrid tiePointGrid : camsGrids) {
