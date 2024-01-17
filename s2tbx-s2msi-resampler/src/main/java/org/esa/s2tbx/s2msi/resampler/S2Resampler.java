@@ -315,7 +315,8 @@ public class S2Resampler implements Resampler {
                                                                      anglesGridByDetector[1].getHeight());
             int extendedWidth = anglesGridByDetector[0].getWidth() + 2;
             int extendedHeight = anglesGridByDetector[0].getHeight() + 2;
-            AffineTransform originalAffineTransform5000 = new AffineTransform(anglesGridByDetector[0].getResolutionX(), 0.0f, 0.0f, -anglesGridByDetector[0].getResolutionX(), anglesGridByDetector[0].originX, anglesGridByDetector[0].originY);
+            float resx = anglesGridByDetector[0].getResolutionX();
+            AffineTransform originalAffineTransform5000 = new AffineTransform(resx, 0.0f, 0.0f, -resx, anglesGridByDetector[0].originX-resx/2, anglesGridByDetector[0].originY+resx/2);
             AffineTransform extendedAffineTransform5000 = (AffineTransform) originalAffineTransform5000.clone();
             extendedAffineTransform5000.translate(-1d,-1d);
             MultiLevelImage zenithMultiLevelImage = S2ResamplerUtils.createMultiLevelImage(extendedZenithData,extendedWidth,extendedHeight,extendedAffineTransform5000);
