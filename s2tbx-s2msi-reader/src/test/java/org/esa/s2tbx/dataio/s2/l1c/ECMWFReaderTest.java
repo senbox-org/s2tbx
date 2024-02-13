@@ -38,7 +38,7 @@ public class ECMWFReaderTest {
         ECMWFTReader readerPlugin = new ECMWFTReader(dataPath.toPath(), cacheDirECMWFTest.toPath(),"");
         List<TiePointGrid> ecmwfGrids = readerPlugin.getECMWFGrids();
         assertNotNull(ecmwfGrids);
-        assertEquals(3, ecmwfGrids.size());
+        assertEquals(5, ecmwfGrids.size());
         TiePointGrid tiePointGrid_total_column_water_vapour = ecmwfGrids.get(0);
         assertEquals(1220.0, tiePointGrid_total_column_water_vapour.getSubSamplingX(), 4);
         assertEquals(1220.0, tiePointGrid_total_column_water_vapour.getSubSamplingY(), 4);
