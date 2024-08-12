@@ -18,8 +18,10 @@ public class L2aMetadataFactory {
             return L2aProductMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD13());
         } else if (psd == 143) {
             return L2aProductMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD143());
-        }else if (psd > 147) {
+        }else if (psd > 147 && psd < 150) {
             return L2aProductMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD148());
+        } else if (psd >= 150) {
+            return L2aProductMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD150());
         } else {
             //TODO
             return null;
@@ -32,9 +34,11 @@ public class L2aMetadataFactory {
             return L2aGranuleMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD13());
         } else if (psd == 143) {
             return L2aGranuleMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD143());
-        } else if (psd > 147) {
+        } else if (psd > 147 && psd < 150) {
             return L2aGranuleMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD148());
-        }else {
+        } else if (psd >= 150) {
+            return L2aGranuleMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD150());
+        } else {
             //TODO
             return null;
         }
@@ -47,8 +51,10 @@ public class L2aMetadataFactory {
             return L2aDatastripMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD13());
         } else if (psd == 143) {
             return L2aDatastripMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD143());
-        } else if (psd >147) {
+        } else if (psd >147 && psd < 150) {
             return L2aDatastripMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD148());
+        } else if (psd >= 150) {
+            return L2aDatastripMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD150());
         } else {
             //TODO
             return null;

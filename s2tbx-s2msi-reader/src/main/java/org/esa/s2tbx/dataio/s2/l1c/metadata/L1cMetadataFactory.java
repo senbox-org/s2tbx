@@ -14,7 +14,9 @@ public class L1cMetadataFactory {
 
     public static IL1cProductMetadata createL1cProductMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
         int psd = S2Metadata.getFullPSDversion(metadataPath);
-        if(psd <148 ) {
+        if(psd >= 150 ) {
+            return L1cProductMetadataPSD150.create(metadataPath);
+        } else if(psd <148 ) {
             return L1cProductMetadataPSD13.create(metadataPath);
         } else if(psd >147 )  {
             return L1cProductMetadataPSD148.create(metadataPath);
@@ -46,7 +48,9 @@ public class L1cMetadataFactory {
                     psd=148;
             }
         }
-        if(psd<148)  {
+        if (psd >= 150) {
+            return L1cGranuleMetadataPSD150.create(metadataPath);
+        } else if(psd<148)  {
             return L1cGranuleMetadataPSD13.create(metadataPath);
         } else if(psd > 147)  {
             return L1cGranuleMetadataPSD148.create(metadataPath);
@@ -58,7 +62,9 @@ public class L1cMetadataFactory {
 
     public static IL1cDatastripMetadata createL1cDatastripMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
         int psd = S2Metadata.getFullPSDversion(metadataPath);
-        if(psd <148) {
+        if (psd >= 150) {
+            return L1cDatastripMetadataPSD150.create(metadataPath);
+        } else if(psd <148) {
             return L1cDatastripMetadataPSD13.create(metadataPath);
         } else if(psd > 147 )  {
             return L1cDatastripMetadataPSD13.create(metadataPath);
