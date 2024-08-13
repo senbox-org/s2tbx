@@ -18,8 +18,14 @@ public class L2aMetadataFactory {
             return L2aProductMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD13());
         } else if (psd == 143) {
             return L2aProductMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD143());
-        }else if (psd > 147) {
+        }else if (psd > 147 && psd < 150) {
             return L2aProductMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD148());
+        } else if (psd >= 150) {
+            // TODO hannes
+            System.err.println("L2AMetadataFactory");
+            System.err.println("using L2aProductMetadataGenericPSD with L2aMetadataPathsProviderPSD150");
+
+            return L2aProductMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD150());
         } else {
             //TODO
             return null;
@@ -32,8 +38,13 @@ public class L2aMetadataFactory {
             return L2aGranuleMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD13());
         } else if (psd == 143) {
             return L2aGranuleMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD143());
-        } else if (psd > 147) {
+        } else if (psd > 147 && psd < 150) {
             return L2aGranuleMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD148());
+        } else if (psd >= 150) {
+            // TODO hannes
+            System.err.println("L2aMetadataFactory");
+            System.err.println("Using L2aMetadataPathsProviderPSD150");
+            return L2aGranuleMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD150());
         }else {
             //TODO
             return null;
@@ -43,12 +54,20 @@ public class L2aMetadataFactory {
 
     public static IL2aDatastripMetadata createL2aDatastripMetadata(VirtualPath metadataPath) throws IOException, ParserConfigurationException, SAXException {
         int psd = S2Metadata.getFullPSDversion(metadataPath);
+        // TODO hannes
+        System.err.println("L2AMetadataFactory - IL2aDatastripMetadata");
+        System.err.println("psd is " + psd);
         if(psd == 14 || psd == 13 || psd == 12 || psd == 0 )  {
             return L2aDatastripMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD13());
         } else if (psd == 143) {
             return L2aDatastripMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD143());
-        } else if (psd >147) {
+        } else if (psd >147 && psd < 150) {
             return L2aDatastripMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD148());
+        } else if (psd >= 150){
+            // TODO hannes
+            System.err.println("L2AMetadataFactory");
+            System.err.println("using L2aDatastripMetadataGenericPSD with L2aMetadataPathsProviderPSD150");
+            return L2aDatastripMetadataGenericPSD.create(metadataPath, new L2aMetadataPathsProviderPSD150());
         } else {
             //TODO
             return null;

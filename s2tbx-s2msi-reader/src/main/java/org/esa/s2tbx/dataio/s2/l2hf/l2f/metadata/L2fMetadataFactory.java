@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.s2.l2hf.l2f.metadata;
 
 import org.esa.s2tbx.dataio.s2.VirtualPath;
-import org.esa.s2tbx.dataio.s2.l2a.metadata.L2aMetadataPathsProviderPSD148;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;

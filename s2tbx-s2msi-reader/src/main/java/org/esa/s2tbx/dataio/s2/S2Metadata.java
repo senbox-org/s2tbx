@@ -845,9 +845,15 @@ public abstract class S2Metadata {
                     psd = 148;
                 } else if(Integer.parseInt(psdNumber) == 14 && !aux.contains("L2A_Product_Info") && !aux.contains("TILE_ID_2A")) {
                     psd = 143;
+                } else if (Integer.parseInt(psdNumber) >= 15) {
+                    psd = Integer.parseInt(psdNumber) * 10;
                 }else{
                     psd = Integer.parseInt(psdNumber);
                 }
+
+                // TODO hannes
+                System.err.println("S2Metadata");
+                System.err.println("psd = " + psd);
 
                 
             } else {
