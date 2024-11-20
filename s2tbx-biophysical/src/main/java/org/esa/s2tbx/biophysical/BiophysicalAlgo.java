@@ -7,14 +7,15 @@ import com.bc.jnn.JnnNet;
 import com.bc.jnn.JnnUnit;
 
 
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Created by jmalik on 20/06/16.
  */
 public class BiophysicalAlgo {
 
-    private HashMap<Integer, String> definitionGridMap;
+    private HashSet<Integer> definitionGridSet;
     private int definitionGridSize;
 
     public class Result {
@@ -121,21 +122,17 @@ public class BiophysicalAlgo {
 
     private void createHasSetDefinition()
     {
-        definitionGridMap=null;
+        definitionGridSet=null;
         definitionGridSize=0;
         double [][] definitionDomain = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.DEFINITION_DOMAIN_GRID);
         if (definitionDomain != null) {
-            definitionGridMap = new HashMap<>();
+            definitionGridSet = new HashSet<>(definitionDomain.length);
             definitionGridSize = definitionDomain[0].length;
             for (int row = 0; row < definitionDomain.length; row++) {
-                double [] definitionDomainEntry = definitionDomain[row];
-                int [] definitionDomainEntryInt = new int[definitionDomainEntry.length];
-                String domainString = "";
-                for (int i = 0; i < definitionDomainEntry.length; i++) {
-                    definitionDomainEntryInt[i] = (int)definitionDomainEntry[i];
-                    domainString+=String.valueOf(definitionDomainEntryInt[i]);
-                }
-                definitionGridMap.put(row, domainString);
+                int[] definitionDomainEntry = Arrays.stream(definitionDomain[row])
+                        .mapToInt(d -> (int) d)
+                        .toArray();
+                definitionGridSet.add(Arrays.hashCode(definitionDomainEntry));
             }
         }
     }
@@ -162,26 +159,21 @@ public class BiophysicalAlgo {
 
         /*
          * Second check : be sure input is within the approximated convex hull (see ATBD)
+         * the domain of the convex hull was calculated in advance and
+         * the resulting point cloud is stored in DefinitionDomain_Grid.
+         * it contains ALL valid points and NOT the boundaries of the hull.
          */
 
-        if (bandMinMax != null && definitionGridMap != null) {
-            int [] gridProjection = new int[definitionGridSize];
-            String gridProjString="";
-            for (int i = 0; i < gridProjection.length; i++) {
+        if (bandMinMax != null && definitionGridSet != null) {
+            int[] inputPointProjection = new int[definitionGridSize];
+            for (int i = 0; i < definitionGridSize; i++) {
                 double bandMin = bandMinMax[0][i];
                 double bandMax = bandMinMax[1][i];
-                gridProjection[i] = (int)Math.floor(10 * (input[i] - bandMin) / (bandMax - bandMin) + 1);
-                gridProjString+=String.valueOf(gridProjection[i]);
+                inputPointProjection[i] = (int)Math.floor(10 * (input[i] - bandMin) / (bandMax - bandMin) + 1);
             }
-            boolean insideDefinitionDomain = false;
-            if(definitionGridMap.containsValue(gridProjString)){
-                insideDefinitionDomain = true;
-            }
-            if (!insideDefinitionDomain) {
+            if(!definitionGridSet.contains(Arrays.hashCode(inputPointProjection))){
                 setInputOutOfRange(result);
-                return;
             }
-
         }
     }
 
