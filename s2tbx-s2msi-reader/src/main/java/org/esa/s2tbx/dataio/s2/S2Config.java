@@ -46,6 +46,8 @@ public class S2Config {
     public enum Sentinel2ProductMission {
         S2A,
         S2B,
+        S2C,
+        S2D,
         LS8,
         LS9,
         UNKNOWN
@@ -57,7 +59,7 @@ public class S2Config {
     }
 
 
-    public static final String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_.*";
+    public static final String REGEX = "(S2A|S2B|S2C|S2D|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_.*";
 
     public static final boolean DEBUG = Boolean.getBoolean("org.esa.s2tbx.dataio.s2.l1c.S2Config.DEBUG");
     public static final boolean NODUMP = Boolean.getBoolean("org.esa.s2tbx.dataio.s2.l1c.S2Config.NODUMP");

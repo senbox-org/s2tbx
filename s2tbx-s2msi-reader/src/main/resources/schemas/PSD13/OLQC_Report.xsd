@@ -65,13 +65,15 @@
 						<xs:element name="Notes" type="xs:string"/>
 						<xs:element name="Mission">
 							<xs:annotation>
-								<xs:documentation>Fixed string : Mission ID extracted from filename (MMM = "S2_"|"S2A"|"S2B")</xs:documentation>
+								<xs:documentation>Fixed string : Mission ID extracted from filename (MMM = "S2_"|"S2A"|"S2B"|"S2C"|"S2D")</xs:documentation>
 							</xs:annotation>
 							<xs:simpleType>
 								<xs:restriction base="xs:string">
 									<xs:enumeration value="S2_"/>
 									<xs:enumeration value="S2A"/>
 									<xs:enumeration value="S2B"/>
+									<xs:enumeration value="S2C"/>
+									<xs:enumeration value="S2D"/>
 								</xs:restriction>
 							</xs:simpleType>
 						</xs:element>

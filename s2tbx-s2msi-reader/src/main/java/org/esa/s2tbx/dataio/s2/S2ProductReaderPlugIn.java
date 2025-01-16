@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  */
 public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
 
-    protected final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_.*";
+    protected final static String REGEX = "(S2A|S2B|S2C|S2D|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_.*";
     protected final static Pattern PATTERN = Pattern.compile(REGEX);
     protected final static String FORMAT_NAME = "SENTINEL-2-MSI";
 

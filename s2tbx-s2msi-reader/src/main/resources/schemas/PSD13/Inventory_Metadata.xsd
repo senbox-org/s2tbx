@@ -289,6 +289,8 @@
 						<xs:restriction base="xs:string">
 							<xs:enumeration value="S2A"/>
 							<xs:enumeration value="S2B"/>
+							<xs:enumeration value="S2C"/>
+							<xs:enumeration value="S2D"/>
 							<xs:enumeration value="NIL"/>
 						</xs:restriction>
 					</xs:simpleType>

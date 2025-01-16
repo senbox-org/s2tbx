@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  */
 public class S2L1BGranuleDirFilename extends S2GranuleDirFilename {
 
-    final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_S([0-9]{8}T[0-9]{6})_(D(0[1-9]|1[0-2]))(_N[0-9]{2}\\.[0-9]{2})";
+    final static String REGEX = "(S2A|S2B|S2C|S2D|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_S([0-9]{8}T[0-9]{6})_(D(0[1-9]|1[0-2]))(_N[0-9]{2}\\.[0-9]{2})";
     final static Pattern PATTERN = Pattern.compile(REGEX);
 
 

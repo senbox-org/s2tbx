@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  */
 public class S2OrthoGranuleMetadataFilename extends S2GranuleMetadataFilename {
 
-    final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(A[0-9]{6})_(T[A-Z|0-9]{5})(\\.[A-Z|a-z|0-9]{3,4})?";
+    final static String REGEX = "(S2A|S2B|S2C|S2D|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(A[0-9]{6})_(T[A-Z|0-9]{5})(\\.[A-Z|a-z|0-9]{3,4})?";
     final static Pattern PATTERN = Pattern.compile(REGEX);
 
 

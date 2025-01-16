@@ -79,6 +79,10 @@ public class L2hfUtils {
             return S2Config.Sentinel2ProductMission.S2A;
         else if(path.getFullPathString().contains("S2B"))
             return S2Config.Sentinel2ProductMission.S2B;
+        else if(path.getFullPathString().contains("S2C"))
+            return S2Config.Sentinel2ProductMission.S2C;
+        else if(path.getFullPathString().contains("S2D"))
+            return S2Config.Sentinel2ProductMission.S2D;
         else if(path.getFullPathString().contains("LS8"))
             return S2Config.Sentinel2ProductMission.LS8;
         else if(path.getFullPathString().contains("LS9"))
